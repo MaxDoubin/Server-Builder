@@ -214,6 +214,8 @@ function RackGrid({
     snapX: number;
     snapY: number;
   } | null>(null);
+  const pointerGridRef = useRef<{ x: number; y: number } | null>(null);
+  const intersectionRef = useRef(new THREE.Vector3());
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
 
   const maxCol = Math.max(...racks.map((r) => r.positionX), 0);
@@ -236,16 +238,20 @@ function RackGrid({
     const drag = draggingRef.current;
     if (!drag && onPointerGridChange) {
       raycaster.setFromCamera(mouse, camera);
-      const intersection = new THREE.Vector3();
+      const intersection = intersectionRef.current;
       if (raycaster.ray.intersectPlane(floorPlane, intersection)) {
         const positionX = Math.round((intersection.x + centerX) / rackSpacing);
         const positionY = Math.round((intersection.z + centerZ) / aisleSpacing);
-        onPointerGridChange(positionX, positionY);
+        const last = pointerGridRef.current;
+        if (!last || last.x !== positionX || last.y !== positionY) {
+          pointerGridRef.current = { x: positionX, y: positionY };
+          onPointerGridChange(positionX, positionY);
+        }
       }
     }
     if (!drag) return;
     raycaster.setFromCamera(mouse, camera);
-    const intersection = new THREE.Vector3();
+    const intersection = intersectionRef.current;
     if (!raycaster.ray.intersectPlane(floorPlane, intersection)) return;
     const targetX = intersection.x + drag.offsetX;
     const targetZ = intersection.z + drag.offsetZ;

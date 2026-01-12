@@ -68,7 +68,6 @@ export function DataCenter3D() {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [rackScale, setRackScale] = useState(1);
   const [controlDockOpen, setControlDockOpen] = useState(true);
-  const [pointerGrid, setPointerGrid] = useState({ x: 0, y: 0 });
   const [placingRack, setPlacingRack] = useState(false);
 
   const [fastRamp, setFastRamp] = useState(false);
@@ -248,9 +247,6 @@ export function DataCenter3D() {
         forceSimplified={isStaticMode && fastRamp}
         lodResetToken={lodResetToken}
         onPerfWarningChange={setPerfWarning}
-        onPointerGridChange={(positionX, positionY) => {
-          setPointerGrid({ x: positionX, y: positionY });
-        }}
         onPointerGridConfirm={(positionX, positionY) => {
           if (!placingRack) return;
           addEmptyRackAtPosition(positionX, positionY);
