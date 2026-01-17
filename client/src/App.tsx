@@ -7,6 +7,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
+import { disposePooledAssets } from "@/lib/asset-pool";
+import { PageBackground } from "@/components/ui/page-background";
+import { startPerfMonitor } from "@/lib/perf-monitor";
 import { DataCenter3D } from "@/pages/datacenter-3d";
 import { BuildDashboard } from "@/pages/build-dashboard";
 import { FloorDashboard } from "@/pages/floor-dashboard";
@@ -14,8 +17,6 @@ import { NetworkDashboard } from "@/pages/network-dashboard";
 import { NocDashboard } from "@/pages/noc-dashboard";
 import { IncidentsDashboard } from "@/pages/incidents-dashboard";
 import { AboutDashboard } from "@/pages/about-dashboard";
-import { disposePooledAssets } from "@/lib/asset-pool";
-import { PageBackground } from "@/components/ui/page-background";
 
 export default function App() {
   useEffect(() => {
@@ -25,6 +26,11 @@ export default function App() {
       window.removeEventListener("beforeunload", handleUnload);
       disposePooledAssets();
     };
+  }, []);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    return startPerfMonitor();
   }, []);
 
   return (

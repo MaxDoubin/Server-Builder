@@ -58,6 +58,14 @@
   --tracking-normal: 0em;
   --spacing: 0.25rem;
   --font-scale: 1;
+  --motion-fast: 120ms;
+  --motion-medium: 220ms;
+  --motion-slow: 360ms;
+  --motion-stagger: 80ms;
+  --ease-standard: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
 /* Fallback for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
@@ -136,6 +144,14 @@
   --shadow-lg: 0px 2px 0px 0px hsl(210 5% 94% / 0.00), 0px 4px 6px -1px hsl(210 5% 94% / 0.00);
   --shadow-xl: 0px 2px 0px 0px hsl(210 5% 94% / 0.00), 0px 8px 10px -1px hsl(210 5% 94% / 0.00);
   --shadow-2xl: 0px 2px 0px 0px hsl(210 5% 94% / 0.00);
+  --motion-fast: 120ms;
+  --motion-medium: 220ms;
+  --motion-slow: 360ms;
+  --motion-stagger: 80ms;
+  --ease-standard: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
 
 /* Fallback for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
@@ -213,6 +229,114 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 1ms;
+    --motion-medium: 1ms;
+    --motion-slow: 1ms;
+    --motion-stagger: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  body {
+    background-image: url("/IMG_9293.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(0deg, rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.5)),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(56, 189, 248, 0.07),
+        rgba(56, 189, 248, 0.07) 1px,
+        transparent 1px,
+        transparent 6px
+      );
+    opacity: 0.5;
+    animation: scanline-drift 14s linear infinite;
+  }
+}
+
+@keyframes scanline-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+@keyframes rack-led-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rack-led-flicker {
+  0% {
+    opacity: 0.7;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes rack-fan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rack-led-pulse {
+  animation: rack-led-pulse 1.8s ease-in-out infinite;
+}
+
+.rack-led-flicker {
+  animation: rack-led-flicker 2.2s ease-in-out infinite;
+}
+
+.rack-fan-spin {
+  animation: rack-fan-spin 0.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+
+  .rack-led-pulse,
+  .rack-led-flicker,
+  .rack-fan-spin {
+    animation: none;
+  }
+}
+
 /**
  * Using the elevate system.
  * Automatic contrast adjustment.
@@ -234,6 +358,50 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
+  @keyframes motion-fade-in {
+    from {
+      opacity: 0.6;
+      transform: translate3d(0, 8px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes motion-rise-in {
+    from {
+      opacity: 0.6;
+      transform: translate3d(0, 12px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .motion-enter {
+    animation: motion-fade-in var(--motion-medium) var(--ease-emphasized) both;
+  }
+
+  .motion-rise {
+    animation: motion-rise-in var(--motion-slow) var(--ease-emphasized) both;
+  }
+
+  .motion-surface {
+    transition: transform var(--motion-fast) var(--ease-standard),
+      box-shadow var(--motion-fast) var(--ease-standard),
+      background-color var(--motion-fast) var(--ease-standard),
+      border-color var(--motion-fast) var(--ease-standard);
+  }
+
+  .motion-interactive {
+    transition: transform var(--motion-fast) var(--ease-standard),
+      box-shadow var(--motion-fast) var(--ease-standard),
+      color var(--motion-fast) var(--ease-standard),
+      background-color var(--motion-fast) var(--ease-standard),
+      border-color var(--motion-fast) var(--ease-standard);
+  }
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
