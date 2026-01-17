@@ -10,9 +10,6 @@ import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { PageBackground } from "@/components/ui/page-background";
 import { startPerfMonitor } from "@/lib/perf-monitor";
-import { IntroOverlay } from "@/components/ui/intro-overlay";
-import { IntroProvider, useIntro } from "@/lib/intro-context";
-import { startAnimationScheduler } from "@/lib/animation-scheduler";
 import { DataCenter3D } from "@/pages/datacenter-3d";
 import { BuildDashboard } from "@/pages/build-dashboard";
 import { FloorDashboard } from "@/pages/floor-dashboard";
@@ -37,11 +34,6 @@ function AppShell() {
     if (!import.meta.env.DEV) return;
     return startPerfMonitor();
   }, []);
-
-  useLayoutEffect(() => {
-    markReady("layout");
-    return startAnimationScheduler();
-  }, [markReady]);
 
   return (
     <QueryClientProvider client={queryClient}>

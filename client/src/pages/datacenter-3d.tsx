@@ -25,7 +25,6 @@ import type { AutosaveSnapshot, SaveSlot } from "@/lib/save-system";
 import { useBuild } from "@/lib/build-context";
 import { useLocation } from "wouter";
 import { usePrefersReducedMotion } from "@/lib/motion";
-import { useIntro } from "@/lib/intro-context";
 
 type CameraMode = "orbit" | "auto" | "cinematic";
 type SessionMode = "build" | "explore";
@@ -50,7 +49,6 @@ export function DataCenter3D() {
   const { toast } = useToast();
   const [location] = useLocation();
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { markReady } = useIntro();
 
   const [sessionMode, setSessionMode] = useState<SessionMode | null>(null);
   const introVisible = sessionMode === null;
@@ -255,7 +253,6 @@ export function DataCenter3D() {
         forceSimplified={isStaticMode && fastRamp}
         lodResetToken={lodResetToken}
         onPerfWarningChange={setPerfWarning}
-        onSceneReady={() => markReady("scene")}
         onPointerGridConfirm={(positionX, positionY) => {
           if (!placingRack) return;
           addEmptyRackAtPosition(positionX, positionY);

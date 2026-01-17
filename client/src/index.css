@@ -248,143 +248,92 @@
 }
 
 @layer utilities {
-  .intro-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: grid;
-    place-items: center;
-    background: #02050b;
-    color: #f8fafc;
-    overflow: hidden;
-    contain: layout paint;
-    pointer-events: none;
-    transition: opacity var(--motion-medium) var(--ease-emphasized),
-      transform var(--motion-medium) var(--ease-emphasized);
-  }
-
-  .intro-overlay[data-intro-state="exit"] {
-    opacity: 0;
-    transform: translate3d(0, -8px, 0);
-    pointer-events: none;
-  }
-
-  .intro-overlay__media {
-    position: absolute;
-    inset: 0;
+  body {
     background-image: url("/IMG_9293.jpg");
     background-size: cover;
     background-position: center;
-    opacity: 0.4;
-    transform: scale(1.02);
-    animation: intro-pan 14s ease-in-out infinite;
+    background-attachment: fixed;
   }
 
-  .intro-overlay__scrim {
-    position: absolute;
+  body::before {
+    content: "";
+    position: fixed;
     inset: 0;
-    background: radial-gradient(circle at top, rgba(2, 132, 199, 0.35), transparent 55%),
-      linear-gradient(180deg, rgba(2, 6, 23, 0.85) 0%, rgba(2, 6, 23, 0.9) 55%, rgba(2, 6, 23, 0.98) 100%);
-  }
-
-  .intro-overlay__content {
-    position: relative;
-    z-index: 1;
-    width: min(920px, 92vw);
-    padding: clamp(1.5rem, 4vw, 3rem);
-    display: grid;
-    gap: 1.5rem;
-    text-align: left;
-  }
-
-  .intro-overlay__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: rgba(165, 243, 252, 0.8);
-  }
-
-  .intro-overlay__dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 999px;
-    background: #22d3ee;
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.8);
-  }
-
-  .intro-overlay__title {
-    font-size: clamp(1.8rem, 4vw, 2.75rem);
-    font-weight: 600;
-    margin: 0;
-  }
-
-  .intro-overlay__subtitle {
-    font-size: 0.95rem;
-    color: rgba(226, 232, 240, 0.72);
-    max-width: 36rem;
-    margin: 0;
-  }
-
-  .intro-overlay__grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-
-  .intro-overlay__panel {
-    border-radius: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(2, 6, 23, 0.6);
-    padding: 1.25rem;
-    display: grid;
-    gap: 0.75rem;
-    box-shadow: 0 0 18px rgba(34, 211, 238, 0.12);
-  }
-
-  .intro-overlay__panel-title {
-    font-size: 0.7rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(165, 243, 252, 0.7);
-  }
-
-  .intro-overlay__panel-row {
-    height: 0.35rem;
-    border-radius: 999px;
-    background: rgba(248, 250, 252, 0.1);
-  }
-
-  .intro-overlay__panel-line {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: rgba(226, 232, 240, 0.75);
-  }
-
-  @keyframes intro-pan {
-    0% {
-      transform: scale(1.02) translate3d(0, 0, 0);
-    }
-    50% {
-      transform: scale(1.05) translate3d(0, -1.5%, 0);
-    }
-    100% {
-      transform: scale(1.02) translate3d(0, 0, 0);
-    }
+    pointer-events: none;
+    background: linear-gradient(0deg, rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.5)),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(56, 189, 248, 0.07),
+        rgba(56, 189, 248, 0.07) 1px,
+        transparent 1px,
+        transparent 6px
+      );
+    opacity: 0.5;
+    animation: scanline-drift 14s linear infinite;
   }
 }
 
+@keyframes scanline-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+@keyframes rack-led-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rack-led-flicker {
+  0% {
+    opacity: 0.7;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes rack-fan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rack-led-pulse {
+  animation: rack-led-pulse 1.8s ease-in-out infinite;
+}
+
+.rack-led-flicker {
+  animation: rack-led-flicker 2.2s ease-in-out infinite;
+}
+
+.rack-fan-spin {
+  animation: rack-fan-spin 0.6s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .intro-overlay {
-    transition: none;
+  body::before {
+    animation: none;
   }
 
-  .intro-overlay__media {
+  .rack-led-pulse,
+  .rack-led-flicker,
+  .rack-fan-spin {
     animation: none;
-    transform: none;
   }
 }
 
@@ -431,11 +380,11 @@
     }
   }
 
-  html[data-motion="ready"] .motion-enter {
+  .motion-enter {
     animation: motion-fade-in var(--motion-medium) var(--ease-emphasized) both;
   }
 
-  html[data-motion="ready"] .motion-rise {
+  .motion-rise {
     animation: motion-rise-in var(--motion-slow) var(--ease-emphasized) both;
   }
 
