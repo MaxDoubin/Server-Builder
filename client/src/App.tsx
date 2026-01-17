@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
@@ -9,32 +9,21 @@ import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { PageBackground } from "@/components/ui/page-background";
-import { InstantShell } from "@/components/ui/instant-shell";
 import { startPerfMonitor } from "@/lib/perf-monitor";
+import { IntroOverlay } from "@/components/ui/intro-overlay";
+import { IntroProvider, useIntro } from "@/lib/intro-context";
+import { startAnimationScheduler } from "@/lib/animation-scheduler";
+import { DataCenter3D } from "@/pages/datacenter-3d";
+import { BuildDashboard } from "@/pages/build-dashboard";
+import { FloorDashboard } from "@/pages/floor-dashboard";
+import { NetworkDashboard } from "@/pages/network-dashboard";
+import { NocDashboard } from "@/pages/noc-dashboard";
+import { IncidentsDashboard } from "@/pages/incidents-dashboard";
+import { AboutDashboard } from "@/pages/about-dashboard";
 
-const DataCenter3D = lazy(() =>
-  import("@/pages/datacenter-3d").then((module) => ({ default: module.DataCenter3D })),
-);
-const BuildDashboard = lazy(() =>
-  import("@/pages/build-dashboard").then((module) => ({ default: module.BuildDashboard })),
-);
-const FloorDashboard = lazy(() =>
-  import("@/pages/floor-dashboard").then((module) => ({ default: module.FloorDashboard })),
-);
-const NetworkDashboard = lazy(() =>
-  import("@/pages/network-dashboard").then((module) => ({ default: module.NetworkDashboard })),
-);
-const NocDashboard = lazy(() =>
-  import("@/pages/noc-dashboard").then((module) => ({ default: module.NocDashboard })),
-);
-const IncidentsDashboard = lazy(() =>
-  import("@/pages/incidents-dashboard").then((module) => ({ default: module.IncidentsDashboard })),
-);
-const AboutDashboard = lazy(() =>
-  import("@/pages/about-dashboard").then((module) => ({ default: module.AboutDashboard })),
-);
+function AppShell() {
+  const { markReady } = useIntro();
 
-export default function App() {
   useEffect(() => {
     const handleUnload = () => disposePooledAssets();
     window.addEventListener("beforeunload", handleUnload);
@@ -49,33 +38,10 @@ export default function App() {
     return startPerfMonitor();
   }, []);
 
-  useEffect(() => {
-    const idleCallback =
-      window.requestIdleCallback?.(() => {
-        void import("@/pages/build-dashboard");
-        void import("@/pages/floor-dashboard");
-        void import("@/pages/network-dashboard");
-        void import("@/pages/noc-dashboard");
-        void import("@/pages/incidents-dashboard");
-        void import("@/pages/about-dashboard");
-      }) ??
-      window.setTimeout(() => {
-        void import("@/pages/build-dashboard");
-        void import("@/pages/floor-dashboard");
-        void import("@/pages/network-dashboard");
-        void import("@/pages/noc-dashboard");
-        void import("@/pages/incidents-dashboard");
-        void import("@/pages/about-dashboard");
-      }, 1200);
-
-    return () => {
-      if (window.cancelIdleCallback) {
-        window.cancelIdleCallback(idleCallback);
-      } else {
-        window.clearTimeout(idleCallback);
-      }
-    };
-  }, []);
+  useLayoutEffect(() => {
+    markReady("layout");
+    return startAnimationScheduler();
+  }, [markReady]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -104,5 +70,14 @@ export default function App() {
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <IntroProvider>
+      <IntroOverlay />
+      <AppShell />
+    </IntroProvider>
   );
 }

@@ -8,10 +8,11 @@ Use this checklist to verify load speed and animation smoothness before shipping
 3. Check **Disable cache**.
 4. Record a hard refresh and first interaction (click + scroll) for ~10 seconds.
 5. Confirm:
-   - No blank screen on first paint.
+   - Intro overlay renders immediately (no blank screen).
    - No long tasks > 50ms during initial interactions.
    - Average frame budget near 8-16ms.
    - Above-the-fold animation starts within 0–50ms after FCP.
+   - Intro overlay transitions out once the scene is ready (no multi-screen swaps).
 
 ## Long tasks + layout shift
 1. Open the console in development.
@@ -32,3 +33,4 @@ Use this checklist to verify load speed and animation smoothness before shipping
 - No `opacity: 0` or `display: none` gating on app shell.
 - Reduced motion preference removes large camera movements.
 - Animation tokens are used for new UI motion.
+- Intro overlay uses the static rack hero without blocking interactions.
