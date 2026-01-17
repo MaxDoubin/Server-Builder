@@ -51,16 +51,18 @@ function AppShell() {
             <BuildProvider>
               <PageBackground />
               <div className="relative z-10">
-                <Switch>
-                  <Route path="/" component={DataCenter3D} />
-                  <Route path="/floor" component={DataCenter3D} />
-                  <Route path="/build" component={BuildDashboard} />
-                  <Route path="/floor-dashboard" component={FloorDashboard} />
-                  <Route path="/network" component={NetworkDashboard} />
-                  <Route path="/noc" component={NocDashboard} />
-                  <Route path="/incidents" component={IncidentsDashboard} />
-                  <Route path="/about" component={AboutDashboard} />
-                </Switch>
+                <Suspense fallback={<InstantShell />}>
+                  <Switch>
+                    <Route path="/" component={DataCenter3D} />
+                    <Route path="/floor" component={DataCenter3D} />
+                    <Route path="/build" component={BuildDashboard} />
+                    <Route path="/floor-dashboard" component={FloorDashboard} />
+                    <Route path="/network" component={NetworkDashboard} />
+                    <Route path="/noc" component={NocDashboard} />
+                    <Route path="/incidents" component={IncidentsDashboard} />
+                    <Route path="/about" component={AboutDashboard} />
+                  </Switch>
+                </Suspense>
               </div>
             </BuildProvider>
           </GameProvider>

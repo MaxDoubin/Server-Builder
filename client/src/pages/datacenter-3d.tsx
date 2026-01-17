@@ -233,6 +233,11 @@ export function DataCenter3D() {
       : cameraMode;
   return (
     <div className="relative w-full h-screen overflow-hidden bg-transparent">
+      {showInstantShell && (
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <InstantShell className="pointer-events-none" />
+        </div>
+      )}
       <DatacenterScene
         onSelectRack={handleSelectRack}
         selectedRackId={selectedRackId}
