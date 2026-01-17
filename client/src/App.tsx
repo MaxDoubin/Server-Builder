@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
@@ -18,7 +18,9 @@ import { NocDashboard } from "@/pages/noc-dashboard";
 import { IncidentsDashboard } from "@/pages/incidents-dashboard";
 import { AboutDashboard } from "@/pages/about-dashboard";
 
-export default function App() {
+function AppShell() {
+  const { markReady } = useIntro();
+
   useEffect(() => {
     const handleUnload = () => disposePooledAssets();
     window.addEventListener("beforeunload", handleUnload);
@@ -41,16 +43,18 @@ export default function App() {
             <BuildProvider>
               <PageBackground />
               <div className="relative z-10">
-                <Switch>
-                  <Route path="/" component={DataCenter3D} />
-                  <Route path="/floor" component={DataCenter3D} />
-                  <Route path="/build" component={BuildDashboard} />
-                  <Route path="/floor-dashboard" component={FloorDashboard} />
-                  <Route path="/network" component={NetworkDashboard} />
-                  <Route path="/noc" component={NocDashboard} />
-                  <Route path="/incidents" component={IncidentsDashboard} />
-                  <Route path="/about" component={AboutDashboard} />
-                </Switch>
+                <Suspense fallback={<InstantShell />}>
+                  <Switch>
+                    <Route path="/" component={DataCenter3D} />
+                    <Route path="/floor" component={DataCenter3D} />
+                    <Route path="/build" component={BuildDashboard} />
+                    <Route path="/floor-dashboard" component={FloorDashboard} />
+                    <Route path="/network" component={NetworkDashboard} />
+                    <Route path="/noc" component={NocDashboard} />
+                    <Route path="/incidents" component={IncidentsDashboard} />
+                    <Route path="/about" component={AboutDashboard} />
+                  </Switch>
+                </Suspense>
               </div>
             </BuildProvider>
           </GameProvider>
@@ -58,5 +62,14 @@ export default function App() {
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <IntroProvider>
+      <IntroOverlay />
+      <AppShell />
+    </IntroProvider>
   );
 }
