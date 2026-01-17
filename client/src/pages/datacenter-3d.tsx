@@ -5,7 +5,7 @@ import { GameHUD } from "@/components/3d/GameHUD";
 import { RackDetailPanel } from "@/components/3d/RackDetailPanel";
 import { MiniMap } from "@/components/3d/MiniMap";
 import { BuildToolbar } from "@/components/3d/BuildToolbar";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { InstantShell } from "@/components/ui/instant-shell";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -25,6 +25,7 @@ import type { Rack } from "@shared/schema";
 import type { AutosaveSnapshot, SaveSlot } from "@/lib/save-system";
 import { useBuild } from "@/lib/build-context";
 import { useLocation } from "wouter";
+import { usePrefersReducedMotion } from "@/lib/motion";
 
 type CameraMode = "orbit" | "auto" | "cinematic";
 type SessionMode = "build" | "explore";
@@ -49,6 +50,7 @@ export function DataCenter3D() {
   const { fontScale, setFontScale, highContrast, toggleHighContrast } = useTheme();
   const { toast } = useToast();
   const [location] = useLocation();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const [sessionMode, setSessionMode] = useState<SessionMode | null>(null);
   const introVisible = sessionMode === null;
@@ -97,7 +99,7 @@ export function DataCenter3D() {
   const selectedRackId = selectedIds[0] ?? null;
   const visibleRacks = isStaticMode ? racks.slice(0, rackCount) : racks;
   const selectedRack = visibleRacks?.find((r) => r.id === selectedRackId) || null;
-  const effectiveEffects = showEffects && !fastRamp;
+  const effectiveEffects = showEffects && !fastRamp && !prefersReducedMotion;
 
 
 
@@ -224,12 +226,20 @@ export function DataCenter3D() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [introVisible, redo, undo]);
 
-  if (isLoading) return <LoadingScreen />;
-
-  const sceneCameraMode: CameraMode = introVisible ? "cinematic" : cameraMode;
+  const sceneCameraMode: CameraMode = prefersReducedMotion
+    ? "orbit"
+    : introVisible
+      ? "cinematic"
+      : cameraMode;
+  const showInstantShell = isLoading && racks.length === 0;
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-transparent">
+      {showInstantShell && (
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <InstantShell className="pointer-events-none" />
+        </div>
+      )}
       <DatacenterScene
         onSelectRack={handleSelectRack}
         selectedRackId={selectedRackId}

@@ -9,7 +9,8 @@ import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { PageBackground } from "@/components/ui/page-background";
-import { LoadingScreen } from "@/components/ui/loading-screen";
+import { InstantShell } from "@/components/ui/instant-shell";
+import { startPerfMonitor } from "@/lib/perf-monitor";
 
 const DataCenter3D = lazy(() =>
   import("@/pages/datacenter-3d").then((module) => ({ default: module.DataCenter3D })),
@@ -41,6 +42,11 @@ export default function App() {
       window.removeEventListener("beforeunload", handleUnload);
       disposePooledAssets();
     };
+  }, []);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    return startPerfMonitor();
   }, []);
 
   useEffect(() => {
@@ -79,7 +85,7 @@ export default function App() {
             <BuildProvider>
               <PageBackground />
               <div className="relative z-10">
-                <Suspense fallback={<LoadingScreen />}>
+                <Suspense fallback={<InstantShell />}>
                   <Switch>
                     <Route path="/" component={DataCenter3D} />
                     <Route path="/floor" component={DataCenter3D} />

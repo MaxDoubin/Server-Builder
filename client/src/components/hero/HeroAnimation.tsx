@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Rack3D } from "@/components/3d/Rack3D";
 import { staticEquipmentCatalog } from "@/lib/static-equipment";
+import { usePrefersReducedMotion } from "@/lib/motion";
 import type { Rack } from "@shared/schema";
 
 type HeroAnimationProps = {
@@ -129,18 +130,6 @@ const buildDatacenterRack = (index: number, seed: number): Rack => {
     positionX: 0,
     positionY: 0,
   };
-};
-
-const usePrefersReducedMotion = () => {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  return reduced;
 };
 
 const usePageVisibility = () => {
