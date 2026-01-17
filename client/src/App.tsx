@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
@@ -7,6 +7,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
+import { disposePooledAssets } from "@/lib/asset-pool";
+import { PageBackground } from "@/components/ui/page-background";
+import { startPerfMonitor } from "@/lib/perf-monitor";
+import { IntroOverlay } from "@/components/ui/intro-overlay";
+import { IntroProvider, useIntro } from "@/lib/intro-context";
+import { startAnimationScheduler } from "@/lib/animation-scheduler";
 import { DataCenter3D } from "@/pages/datacenter-3d";
 import { BuildDashboard } from "@/pages/build-dashboard";
 import { FloorDashboard } from "@/pages/floor-dashboard";
@@ -14,10 +20,10 @@ import { NetworkDashboard } from "@/pages/network-dashboard";
 import { NocDashboard } from "@/pages/noc-dashboard";
 import { IncidentsDashboard } from "@/pages/incidents-dashboard";
 import { AboutDashboard } from "@/pages/about-dashboard";
-import { disposePooledAssets } from "@/lib/asset-pool";
-import { PageBackground } from "@/components/ui/page-background";
 
-export default function App() {
+function AppShell() {
+  const { markReady } = useIntro();
+
   useEffect(() => {
     const handleUnload = () => disposePooledAssets();
     window.addEventListener("beforeunload", handleUnload);
@@ -26,6 +32,16 @@ export default function App() {
       disposePooledAssets();
     };
   }, []);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    return startPerfMonitor();
+  }, []);
+
+  useLayoutEffect(() => {
+    markReady("layout");
+    return startAnimationScheduler();
+  }, [markReady]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -52,5 +68,14 @@ export default function App() {
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <IntroProvider>
+      <IntroOverlay />
+      <AppShell />
+    </IntroProvider>
   );
 }

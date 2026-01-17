@@ -5,7 +5,6 @@ import { GameHUD } from "@/components/3d/GameHUD";
 import { RackDetailPanel } from "@/components/3d/RackDetailPanel";
 import { MiniMap } from "@/components/3d/MiniMap";
 import { BuildToolbar } from "@/components/3d/BuildToolbar";
-import { LoadingScreen } from "@/components/ui/loading-screen";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -25,6 +24,8 @@ import type { Rack } from "@shared/schema";
 import type { AutosaveSnapshot, SaveSlot } from "@/lib/save-system";
 import { useBuild } from "@/lib/build-context";
 import { useLocation } from "wouter";
+import { usePrefersReducedMotion } from "@/lib/motion";
+import { useIntro } from "@/lib/intro-context";
 
 type CameraMode = "orbit" | "auto" | "cinematic";
 type SessionMode = "build" | "explore";
@@ -38,7 +39,6 @@ function isTypingTarget(target: EventTarget | null) {
 
 export function DataCenter3D() {
   const {
-    isLoading,
     racks,
     isStaticMode,
     setRacksFromSave,
@@ -49,6 +49,8 @@ export function DataCenter3D() {
   const { fontScale, setFontScale, highContrast, toggleHighContrast } = useTheme();
   const { toast } = useToast();
   const [location] = useLocation();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const { markReady } = useIntro();
 
   const [sessionMode, setSessionMode] = useState<SessionMode | null>(null);
   const introVisible = sessionMode === null;
@@ -68,7 +70,6 @@ export function DataCenter3D() {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [rackScale, setRackScale] = useState(1);
   const [controlDockOpen, setControlDockOpen] = useState(true);
-  const [pointerGrid, setPointerGrid] = useState({ x: 0, y: 0 });
   const [placingRack, setPlacingRack] = useState(false);
 
   const [fastRamp, setFastRamp] = useState(false);
@@ -98,7 +99,7 @@ export function DataCenter3D() {
   const selectedRackId = selectedIds[0] ?? null;
   const visibleRacks = isStaticMode ? racks.slice(0, rackCount) : racks;
   const selectedRack = visibleRacks?.find((r) => r.id === selectedRackId) || null;
-  const effectiveEffects = showEffects && !fastRamp;
+  const effectiveEffects = showEffects && !fastRamp && !prefersReducedMotion;
 
 
 
@@ -225,10 +226,11 @@ export function DataCenter3D() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [introVisible, redo, undo]);
 
-  if (isLoading) return <LoadingScreen />;
-
-  const sceneCameraMode: CameraMode = introVisible ? "cinematic" : cameraMode;
-
+  const sceneCameraMode: CameraMode = prefersReducedMotion
+    ? "orbit"
+    : introVisible
+      ? "cinematic"
+      : cameraMode;
   return (
     <div className="relative w-full h-screen overflow-hidden bg-transparent">
       <DatacenterScene
@@ -248,9 +250,7 @@ export function DataCenter3D() {
         forceSimplified={isStaticMode && fastRamp}
         lodResetToken={lodResetToken}
         onPerfWarningChange={setPerfWarning}
-        onPointerGridChange={(positionX, positionY) => {
-          setPointerGrid({ x: positionX, y: positionY });
-        }}
+        onSceneReady={() => markReady("scene")}
         onPointerGridConfirm={(positionX, positionY) => {
           if (!placingRack) return;
           addEmptyRackAtPosition(positionX, positionY);

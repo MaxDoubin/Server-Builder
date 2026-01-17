@@ -48,6 +48,7 @@ interface DatacenterSceneProps {
   forceSimplified?: boolean;
   lodResetToken?: number;
   onPerfWarningChange?: (warning: string | null) => void;
+  onSceneReady?: () => void;
   onPointerGridChange?: (positionX: number, positionY: number) => void;
   onPointerGridConfirm?: (positionX: number, positionY: number) => void;
   proceduralOptions?: {
@@ -135,11 +136,16 @@ function LoadingFallback() {
   );
 }
 
-function ScenePrecompiler() {
+function ScenePrecompiler({ onReady }: { onReady?: () => void }) {
   const { gl, scene, camera } = useThree();
+  const hasSignaled = useRef(false);
   useEffect(() => {
     precompileSceneMaterials(gl, scene, camera);
-  }, [gl, scene, camera]);
+    if (onReady && !hasSignaled.current) {
+      hasSignaled.current = true;
+      requestAnimationFrame(() => onReady());
+    }
+  }, [gl, scene, camera, onReady]);
   return null;
 }
 
@@ -214,6 +220,8 @@ function RackGrid({
     snapX: number;
     snapY: number;
   } | null>(null);
+  const pointerGridRef = useRef<{ x: number; y: number } | null>(null);
+  const intersectionRef = useRef(new THREE.Vector3());
   const floorPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
 
   const maxCol = Math.max(...racks.map((r) => r.positionX), 0);
@@ -236,16 +244,20 @@ function RackGrid({
     const drag = draggingRef.current;
     if (!drag && onPointerGridChange) {
       raycaster.setFromCamera(mouse, camera);
-      const intersection = new THREE.Vector3();
+      const intersection = intersectionRef.current;
       if (raycaster.ray.intersectPlane(floorPlane, intersection)) {
         const positionX = Math.round((intersection.x + centerX) / rackSpacing);
         const positionY = Math.round((intersection.z + centerZ) / aisleSpacing);
-        onPointerGridChange(positionX, positionY);
+        const last = pointerGridRef.current;
+        if (!last || last.x !== positionX || last.y !== positionY) {
+          pointerGridRef.current = { x: positionX, y: positionY };
+          onPointerGridChange(positionX, positionY);
+        }
       }
     }
     if (!drag) return;
     raycaster.setFromCamera(mouse, camera);
-    const intersection = new THREE.Vector3();
+    const intersection = intersectionRef.current;
     if (!raycaster.ray.intersectPlane(floorPlane, intersection)) return;
     const targetX = intersection.x + drag.offsetX;
     const targetZ = intersection.z + drag.offsetZ;
@@ -550,6 +562,7 @@ export function DatacenterScene({
   forceSimplified = false,
   lodResetToken = 0,
   onPerfWarningChange,
+  onSceneReady,
   onPointerGridChange,
   onPointerGridConfirm,
   proceduralOptions,
@@ -822,7 +835,7 @@ export function DatacenterScene({
             onWarningChange={onPerfWarningChange}
           />
 
-          <ScenePrecompiler />
+          <ScenePrecompiler onReady={onSceneReady} />
           <Preload all />
         </Suspense>
       </Canvas>

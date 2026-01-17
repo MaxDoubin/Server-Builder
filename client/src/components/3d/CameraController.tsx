@@ -116,6 +116,11 @@ export function CinematicFlythrough({
   const { camera } = useThree();
   const progress = useRef(0);
   const currentWaypoint = useRef(0);
+  const currentPosition = useRef(new THREE.Vector3());
+  const nextPosition = useRef(new THREE.Vector3());
+  const currentTarget = useRef(new THREE.Vector3());
+  const nextTarget = useRef(new THREE.Vector3());
+  const lookAtTarget = useRef(new THREE.Vector3());
 
   useFrame((_, delta) => {
     if (!active || waypoints.length < 2) return;
@@ -137,8 +142,8 @@ export function CinematicFlythrough({
     const smoothT = t * t * (3 - 2 * t);
 
     camera.position.lerpVectors(
-      new THREE.Vector3(...current.position),
-      new THREE.Vector3(...next.position),
+      currentPosition.current.set(...current.position),
+      nextPosition.current.set(...next.position),
       smoothT
     );
     if (maxHeight !== undefined && camera.position.y > maxHeight) {
@@ -148,9 +153,9 @@ export function CinematicFlythrough({
       camera.position.y = minHeight;
     }
 
-    const lookAt = new THREE.Vector3().lerpVectors(
-      new THREE.Vector3(...current.target),
-      new THREE.Vector3(...next.target),
+    const lookAt = lookAtTarget.current.lerpVectors(
+      currentTarget.current.set(...current.target),
+      nextTarget.current.set(...next.target),
       smoothT
     );
     camera.lookAt(lookAt);
