@@ -7,15 +7,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
-import { DataCenter3D } from "@/pages/datacenter-3d";
-import { BuildDashboard } from "@/pages/build-dashboard";
-import { FloorDashboard } from "@/pages/floor-dashboard";
-import { NetworkDashboard } from "@/pages/network-dashboard";
-import { NocDashboard } from "@/pages/noc-dashboard";
-import { IncidentsDashboard } from "@/pages/incidents-dashboard";
-import { AboutDashboard } from "@/pages/about-dashboard";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { PageBackground } from "@/components/ui/page-background";
+import { startPerfMonitor } from "@/lib/perf-monitor";
+import { AppShell } from "@/components/layout/app-shell";
+import { Home } from "@/pages/home";
+import { HyperscaleGame } from "@/pages/hyperscale-game";
+import { About } from "@/pages/about";
+import { routes } from "@/lib/routes";
 
 export default function App() {
   useEffect(() => {
@@ -27,6 +26,11 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    return startPerfMonitor();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -36,14 +40,21 @@ export default function App() {
               <PageBackground />
               <div className="relative z-10">
                 <Switch>
-                  <Route path="/" component={DataCenter3D} />
-                  <Route path="/floor" component={DataCenter3D} />
-                  <Route path="/build" component={BuildDashboard} />
-                  <Route path="/floor-dashboard" component={FloorDashboard} />
-                  <Route path="/network" component={NetworkDashboard} />
-                  <Route path="/noc" component={NocDashboard} />
-                  <Route path="/incidents" component={IncidentsDashboard} />
-                  <Route path="/about" component={AboutDashboard} />
+                  <Route path={routes.home}>
+                    <AppShell>
+                      <Home />
+                    </AppShell>
+                  </Route>
+                  <Route path={routes.game}>
+                    <AppShell fullBleed>
+                      <HyperscaleGame />
+                    </AppShell>
+                  </Route>
+                  <Route path={routes.about}>
+                    <AppShell>
+                      <About />
+                    </AppShell>
+                  </Route>
                 </Switch>
               </div>
             </BuildProvider>

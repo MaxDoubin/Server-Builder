@@ -6,12 +6,63 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@400..900&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
     <title>Hyperscale - Data Center Architect</title>
     <meta name="description" content="Design, build, and operate hyper-realistic data centers. From rack assembly to NOC operations.">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-shell">
+        <header class="app-shell__header">
+          <div class="app-shell__brand">
+            <span class="app-shell__logo"></span>
+            <span class="app-shell__title">Hyperscale</span>
+          </div>
+          <nav class="app-shell__nav" aria-label="Primary">
+            <a href="/" class="app-shell__link">Home</a>
+            <a href="/game" class="app-shell__link">Hyperscale Game</a>
+            <a href="/about" class="app-shell__link">About</a>
+          </nav>
+        </header>
+
+        <main class="home">
+          <section class="home-hero">
+            <div class="home-hero__content">
+              <p class="home-hero__eyebrow">Main Menu</p>
+              <h1 class="home-hero__title">Design, build, and run hyperscale systems.</h1>
+              <p class="home-hero__subtitle">
+                Command the datacenter, explore live telemetry, and launch the HyperScale simulator.
+              </p>
+              <div class="home-hero__actions">
+                <a class="home-cta" href="/game">Enter Hyperscale</a>
+                <a class="home-cta home-cta--ghost" href="/about">Learn more</a>
+              </div>
+            </div>
+            <div class="home-hero__visual" aria-hidden="true">
+              <div class="home-hero__grid home-hero__panel"></div>
+              <div class="home-hero__pulse home-hero__core"></div>
+              <div class="home-hero__scan home-hero__scanline"></div>
+            </div>
+          </section>
+
+          <section class="home-menu" aria-label="Main menu">
+            <a class="home-card" href="/game">
+              <div class="home-card__title">Hyperscale Game</div>
+              <div class="home-card__desc">Launch the immersive datacenter simulator.</div>
+            </a>
+            <a class="home-card" href="/about">
+              <div class="home-card__title">About</div>
+              <div class="home-card__desc">Learn about the platform vision and roadmap.</div>
+            </a>
+            <div class="home-card home-card--static">
+              <div class="home-card__title">New modules</div>
+              <div class="home-card__desc">Power, cooling, and network packs are ready.</div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
