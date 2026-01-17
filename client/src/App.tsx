@@ -10,13 +10,11 @@ import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { PageBackground } from "@/components/ui/page-background";
 import { startPerfMonitor } from "@/lib/perf-monitor";
-import { DataCenter3D } from "@/pages/datacenter-3d";
-import { BuildDashboard } from "@/pages/build-dashboard";
-import { FloorDashboard } from "@/pages/floor-dashboard";
-import { NetworkDashboard } from "@/pages/network-dashboard";
-import { NocDashboard } from "@/pages/noc-dashboard";
-import { IncidentsDashboard } from "@/pages/incidents-dashboard";
-import { AboutDashboard } from "@/pages/about-dashboard";
+import { AppShell } from "@/components/layout/app-shell";
+import { Home } from "@/pages/home";
+import { HyperscaleGame } from "@/pages/hyperscale-game";
+import { About } from "@/pages/about";
+import { routes } from "@/lib/routes";
 
 function AppShell() {
   const { markReady } = useIntro();
@@ -43,18 +41,23 @@ function AppShell() {
             <BuildProvider>
               <PageBackground />
               <div className="relative z-10">
-                <Suspense fallback={<InstantShell />}>
-                  <Switch>
-                    <Route path="/" component={DataCenter3D} />
-                    <Route path="/floor" component={DataCenter3D} />
-                    <Route path="/build" component={BuildDashboard} />
-                    <Route path="/floor-dashboard" component={FloorDashboard} />
-                    <Route path="/network" component={NetworkDashboard} />
-                    <Route path="/noc" component={NocDashboard} />
-                    <Route path="/incidents" component={IncidentsDashboard} />
-                    <Route path="/about" component={AboutDashboard} />
-                  </Switch>
-                </Suspense>
+                <Switch>
+                  <Route path={routes.home}>
+                    <AppShell>
+                      <Home />
+                    </AppShell>
+                  </Route>
+                  <Route path={routes.game}>
+                    <AppShell fullBleed>
+                      <HyperscaleGame />
+                    </AppShell>
+                  </Route>
+                  <Route path={routes.about}>
+                    <AppShell>
+                      <About />
+                    </AppShell>
+                  </Route>
+                </Switch>
               </div>
             </BuildProvider>
           </GameProvider>

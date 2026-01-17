@@ -9,7 +9,9 @@ const warn = (message: string, details?: Record<string, unknown>) => {
 };
 
 const checkBaselineAnimation = () => {
-  const baseline = document.querySelectorAll(".rack-led-pulse, .rack-led-flicker, .rack-fan-spin");
+  const baseline = document.querySelectorAll(
+    ".rack-led-pulse, .rack-led-flicker, .rack-fan-spin, .home-hero__grid, .home-hero__pulse"
+  );
   if (baseline.length === 0) {
     warn("[perf] Baseline animation classes not found in DOM.");
   }
@@ -89,10 +91,20 @@ export const startPerfMonitor = (): PerfCleanup => {
 
   let rafId = 0;
   let lastFrame = performance.now();
+  let slowFrameStreak = 0;
   const frameCheck = (now: number) => {
     const delta = now - lastFrame;
     if (delta > 50) {
       warn("[perf] Long frame detected (>50ms).", { delta: Math.round(delta) });
+    }
+    if (delta > 24) {
+      slowFrameStreak += 1;
+      if (slowFrameStreak >= 3) {
+        warn("[perf] Repeated frame drops detected (>24ms).", { delta: Math.round(delta) });
+        slowFrameStreak = 0;
+      }
+    } else {
+      slowFrameStreak = 0;
     }
     lastFrame = now;
     rafId = window.requestAnimationFrame(frameCheck);

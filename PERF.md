@@ -12,6 +12,7 @@ Use this checklist to verify load speed and animation smoothness before shipping
    - No long tasks > 50ms during initial interactions.
    - Average frame budget near 8-16ms.
    - Above-the-fold animation starts within 0–50ms after FCP.
+   - Home baseline motion runs with JS disabled.
 
 ## Long tasks + layout shift
 1. Open the console in development.
@@ -23,6 +24,7 @@ Use this checklist to verify load speed and animation smoothness before shipping
 1. Use the **Rendering** tab → enable **FPS meter**.
 2. Confirm stable 60fps during camera movement and hover interactions.
 3. If frame drops are visible, profile GPU timeline for heavy effects.
+4. Watch for console warnings about repeated frames >24ms.
 
 ## Mid-tier device simulation
 1. Open DevTools → **Performance** → set **CPU 4× slowdown**.
