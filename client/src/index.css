@@ -631,6 +631,114 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 1ms;
+    --motion-medium: 1ms;
+    --motion-slow: 1ms;
+    --motion-stagger: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  body {
+    background-image: url("/IMG_9293.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(0deg, rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.5)),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(56, 189, 248, 0.07),
+        rgba(56, 189, 248, 0.07) 1px,
+        transparent 1px,
+        transparent 6px
+      );
+    opacity: 0.5;
+    animation: scanline-drift 14s linear infinite;
+  }
+}
+
+@keyframes scanline-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 6px, 0);
+  }
+}
+
+@keyframes rack-led-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rack-led-flicker {
+  0% {
+    opacity: 0.7;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes rack-fan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rack-led-pulse {
+  animation: rack-led-pulse 1.8s ease-in-out infinite;
+}
+
+.rack-led-flicker {
+  animation: rack-led-flicker 2.2s ease-in-out infinite;
+}
+
+.rack-fan-spin {
+  animation: rack-fan-spin 0.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+
+  .rack-led-pulse,
+  .rack-led-flicker,
+  .rack-fan-spin {
+    animation: none;
+  }
+}
+
 /**
  * Using the elevate system.
  * Automatic contrast adjustment.

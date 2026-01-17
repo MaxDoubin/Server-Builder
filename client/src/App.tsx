@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
@@ -16,7 +16,9 @@ import { HyperscaleGame } from "@/pages/hyperscale-game";
 import { About } from "@/pages/about";
 import { routes } from "@/lib/routes";
 
-export default function App() {
+function AppShell() {
+  const { markReady } = useIntro();
+
   useEffect(() => {
     const handleUnload = () => disposePooledAssets();
     window.addEventListener("beforeunload", handleUnload);
@@ -63,5 +65,14 @@ export default function App() {
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <IntroProvider>
+      <IntroOverlay />
+      <AppShell />
+    </IntroProvider>
   );
 }
