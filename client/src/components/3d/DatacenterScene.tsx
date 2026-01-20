@@ -48,7 +48,6 @@ interface DatacenterSceneProps {
   forceSimplified?: boolean;
   lodResetToken?: number;
   onPerfWarningChange?: (warning: string | null) => void;
-  onSceneReady?: () => void;
   onPointerGridChange?: (positionX: number, positionY: number) => void;
   onPointerGridConfirm?: (positionX: number, positionY: number) => void;
   proceduralOptions?: {
@@ -136,16 +135,11 @@ function LoadingFallback() {
   );
 }
 
-function ScenePrecompiler({ onReady }: { onReady?: () => void }) {
+function ScenePrecompiler() {
   const { gl, scene, camera } = useThree();
-  const hasSignaled = useRef(false);
   useEffect(() => {
     precompileSceneMaterials(gl, scene, camera);
-    if (onReady && !hasSignaled.current) {
-      hasSignaled.current = true;
-      requestAnimationFrame(() => onReady());
-    }
-  }, [gl, scene, camera, onReady]);
+  }, [gl, scene, camera]);
   return null;
 }
 
@@ -562,7 +556,6 @@ export function DatacenterScene({
   forceSimplified = false,
   lodResetToken = 0,
   onPerfWarningChange,
-  onSceneReady,
   onPointerGridChange,
   onPointerGridConfirm,
   proceduralOptions,
@@ -835,7 +828,7 @@ export function DatacenterScene({
             onWarningChange={onPerfWarningChange}
           />
 
-          <ScenePrecompiler onReady={onSceneReady} />
+          <ScenePrecompiler />
           <Preload all />
         </Suspense>
       </Canvas>

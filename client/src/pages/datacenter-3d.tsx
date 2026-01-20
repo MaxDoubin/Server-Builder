@@ -5,6 +5,7 @@ import { GameHUD } from "@/components/3d/GameHUD";
 import { RackDetailPanel } from "@/components/3d/RackDetailPanel";
 import { MiniMap } from "@/components/3d/MiniMap";
 import { BuildToolbar } from "@/components/3d/BuildToolbar";
+import { InstantShell } from "@/components/ui/instant-shell";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -38,6 +39,7 @@ function isTypingTarget(target: EventTarget | null) {
 
 export function DataCenter3D() {
   const {
+    isLoading,
     racks,
     isStaticMode,
     setRacksFromSave,
@@ -229,6 +231,8 @@ export function DataCenter3D() {
     : introVisible
       ? "cinematic"
       : cameraMode;
+  const showInstantShell = isLoading && racks.length === 0;
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-transparent">
       {showInstantShell && (

@@ -1,66 +1,92 @@
 <!DOCTYPE html>
-<html lang="en" data-motion="pending">
+<html lang="en" data-motion="ready">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@400..900&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
     <title>Hyperscale - Data Center Architect</title>
     <meta name="description" content="Design, build, and operate hyper-realistic data centers. From rack assembly to NOC operations.">
   </head>
   <body>
     <div id="root">
-      <div class="app-shell">
-        <header class="app-shell__header">
-          <div class="app-shell__brand">
-            <span class="app-shell__logo"></span>
-            <span class="app-shell__title">Hyperscale</span>
-          </div>
-          <nav class="app-shell__nav" aria-label="Primary">
-            <a href="/" class="app-shell__link">Home</a>
-            <a href="/game" class="app-shell__link">Hyperscale Game</a>
-            <a href="/about" class="app-shell__link">About</a>
-          </nav>
-        </header>
+      <div class="app-shell relative isolate w-full">
+        <div class="app-shell__glow pointer-events-none absolute inset-0 opacity-70"></div>
+        <div class="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-6 py-12">
+          <header class="motion-enter flex flex-col gap-3">
+            <div class="inline-flex items-center gap-3 text-xs uppercase tracking-[0.4em] text-cyan-200/80">
+              <span class="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.8)]"></span>
+              Hyperscale
+            </div>
+            <h1 class="text-2xl font-semibold text-white sm:text-3xl">Hyperscale Command</h1>
+            <p class="max-w-xl text-sm text-white/70">
+              Live orchestration across power, thermals, and network topology.
+            </p>
+          </header>
 
-        <main class="home">
-          <section class="home-hero">
-            <div class="home-hero__content">
-              <p class="home-hero__eyebrow">Main Menu</p>
-              <h1 class="home-hero__title">Design, build, and run hyperscale systems.</h1>
-              <p class="home-hero__subtitle">
-                Command the datacenter, explore live telemetry, and launch the HyperScale simulator.
-              </p>
-              <div class="home-hero__actions">
-                <a class="home-cta" href="/game">Enter Hyperscale</a>
-                <a class="home-cta home-cta--ghost" href="/about">Learn more</a>
+          <section class="motion-rise grid gap-4 sm:grid-cols-[1.2fr_1fr]" style="animation-delay: 40ms;">
+            <div class="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-[0_0_24px_rgba(34,211,238,0.15)] motion-surface">
+              <div class="mb-4 text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">
+                System status
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <span class="h-2 w-2 rounded-full bg-cyan-300/80 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>
+                  <div class="h-2.5 w-full rounded-full bg-white/10"></div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="h-2 w-2 rounded-full bg-cyan-300/80 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>
+                  <div class="h-2.5 w-full rounded-full bg-white/10"></div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="h-2 w-2 rounded-full bg-cyan-300/80 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>
+                  <div class="h-2.5 w-full rounded-full bg-white/10"></div>
+                </div>
               </div>
             </div>
-            <div class="home-hero__visual" aria-hidden="true">
-              <div class="home-hero__grid home-hero__panel"></div>
-              <div class="home-hero__pulse home-hero__core"></div>
-              <div class="home-hero__scan home-hero__scanline"></div>
+
+            <div class="rounded-2xl border border-white/10 bg-black/30 p-5 motion-surface">
+              <div class="mb-4 text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">
+                Live modules
+              </div>
+              <div class="space-y-3 text-sm text-white/70">
+                <div class="flex items-center justify-between">
+                  <span>Thermal balance</span>
+                  <span class="text-cyan-200/80">Ready</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>Network flow</span>
+                  <span class="text-cyan-200/80">Ready</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>Power envelope</span>
+                  <span class="text-cyan-200/80">Ready</span>
+                </div>
+              </div>
             </div>
           </section>
 
-          <section class="home-menu" aria-label="Main menu">
-            <a class="home-card" href="/game">
-              <div class="home-card__title">Hyperscale Game</div>
-              <div class="home-card__desc">Launch the immersive datacenter simulator.</div>
-            </a>
-            <a class="home-card" href="/about">
-              <div class="home-card__title">About</div>
-              <div class="home-card__desc">Learn about the platform vision and roadmap.</div>
-            </a>
-            <div class="home-card home-card--static">
-              <div class="home-card__title">New modules</div>
-              <div class="home-card__desc">Power, cooling, and network packs are ready.</div>
+          <div class="app-shell__line h-px w-full opacity-60"></div>
+          <div class="motion-enter grid gap-4 sm:grid-cols-3" style="animation-delay: 160ms;">
+            <div class="rounded-xl border border-white/10 bg-black/20 p-4 motion-surface">
+              <div class="mb-3 h-2 w-24 rounded-full bg-white/15"></div>
+              <div class="h-2 w-full rounded-full bg-white/10"></div>
+              <div class="mt-2 h-2 w-5/6 rounded-full bg-white/10"></div>
             </div>
-          </section>
-        </main>
+            <div class="rounded-xl border border-white/10 bg-black/20 p-4 motion-surface">
+              <div class="mb-3 h-2 w-24 rounded-full bg-white/15"></div>
+              <div class="h-2 w-full rounded-full bg-white/10"></div>
+              <div class="mt-2 h-2 w-5/6 rounded-full bg-white/10"></div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-black/20 p-4 motion-surface">
+              <div class="mb-3 h-2 w-24 rounded-full bg-white/15"></div>
+              <div class="h-2 w-full rounded-full bg-white/10"></div>
+              <div class="mt-2 h-2 w-5/6 rounded-full bg-white/10"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

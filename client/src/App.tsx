@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
@@ -9,16 +9,32 @@ import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { PageBackground } from "@/components/ui/page-background";
+import { InstantShell } from "@/components/ui/instant-shell";
 import { startPerfMonitor } from "@/lib/perf-monitor";
-import { AppShell } from "@/components/layout/app-shell";
-import { Home } from "@/pages/home";
-import { HyperscaleGame } from "@/pages/hyperscale-game";
-import { About } from "@/pages/about";
-import { routes } from "@/lib/routes";
 
-function AppShell() {
-  const { markReady } = useIntro();
+const DataCenter3D = lazy(() =>
+  import("@/pages/datacenter-3d").then((module) => ({ default: module.DataCenter3D })),
+);
+const BuildDashboard = lazy(() =>
+  import("@/pages/build-dashboard").then((module) => ({ default: module.BuildDashboard })),
+);
+const FloorDashboard = lazy(() =>
+  import("@/pages/floor-dashboard").then((module) => ({ default: module.FloorDashboard })),
+);
+const NetworkDashboard = lazy(() =>
+  import("@/pages/network-dashboard").then((module) => ({ default: module.NetworkDashboard })),
+);
+const NocDashboard = lazy(() =>
+  import("@/pages/noc-dashboard").then((module) => ({ default: module.NocDashboard })),
+);
+const IncidentsDashboard = lazy(() =>
+  import("@/pages/incidents-dashboard").then((module) => ({ default: module.IncidentsDashboard })),
+);
+const AboutDashboard = lazy(() =>
+  import("@/pages/about-dashboard").then((module) => ({ default: module.AboutDashboard })),
+);
 
+export default function App() {
   useEffect(() => {
     const handleUnload = () => disposePooledAssets();
     window.addEventListener("beforeunload", handleUnload);
@@ -33,6 +49,34 @@ function AppShell() {
     return startPerfMonitor();
   }, []);
 
+  useEffect(() => {
+    const idleCallback =
+      window.requestIdleCallback?.(() => {
+        void import("@/pages/build-dashboard");
+        void import("@/pages/floor-dashboard");
+        void import("@/pages/network-dashboard");
+        void import("@/pages/noc-dashboard");
+        void import("@/pages/incidents-dashboard");
+        void import("@/pages/about-dashboard");
+      }) ??
+      window.setTimeout(() => {
+        void import("@/pages/build-dashboard");
+        void import("@/pages/floor-dashboard");
+        void import("@/pages/network-dashboard");
+        void import("@/pages/noc-dashboard");
+        void import("@/pages/incidents-dashboard");
+        void import("@/pages/about-dashboard");
+      }, 1200);
+
+    return () => {
+      if (window.cancelIdleCallback) {
+        window.cancelIdleCallback(idleCallback);
+      } else {
+        window.clearTimeout(idleCallback);
+      }
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -41,23 +85,18 @@ function AppShell() {
             <BuildProvider>
               <PageBackground />
               <div className="relative z-10">
-                <Switch>
-                  <Route path={routes.home}>
-                    <AppShell>
-                      <Home />
-                    </AppShell>
-                  </Route>
-                  <Route path={routes.game}>
-                    <AppShell fullBleed>
-                      <HyperscaleGame />
-                    </AppShell>
-                  </Route>
-                  <Route path={routes.about}>
-                    <AppShell>
-                      <About />
-                    </AppShell>
-                  </Route>
-                </Switch>
+                <Suspense fallback={<InstantShell />}>
+                  <Switch>
+                    <Route path="/" component={DataCenter3D} />
+                    <Route path="/floor" component={DataCenter3D} />
+                    <Route path="/build" component={BuildDashboard} />
+                    <Route path="/floor-dashboard" component={FloorDashboard} />
+                    <Route path="/network" component={NetworkDashboard} />
+                    <Route path="/noc" component={NocDashboard} />
+                    <Route path="/incidents" component={IncidentsDashboard} />
+                    <Route path="/about" component={AboutDashboard} />
+                  </Switch>
+                </Suspense>
               </div>
             </BuildProvider>
           </GameProvider>
@@ -65,14 +104,5 @@ function AppShell() {
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
-  );
-}
-
-export default function App() {
-  return (
-    <IntroProvider>
-      <IntroOverlay />
-      <AppShell />
-    </IntroProvider>
   );
 }

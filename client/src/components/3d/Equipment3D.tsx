@@ -64,7 +64,7 @@ function EquipmentFace({
           
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <div
-              className="w-1.5 h-1.5 rounded-full rack-led-pulse"
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{
                 background: statusGlow,
                 boxShadow: `0 0 6px ${statusGlow}`,
@@ -108,9 +108,10 @@ function EquipmentFace({
               {Array.from({ length: 2 }).map((_, i) => (
                 <div
                   key={i}
-                  className="w-3 h-3 rounded-full rack-fan-spin"
+                  className="w-3 h-3 rounded-full animate-spin"
                   style={{
                     background: 'radial-gradient(circle at center, #2a2a2a 30%, #0a0a0a 100%)',
+                    animationDuration: '0.5s',
                     boxShadow: 'inset 0 0 2px rgba(0,0,0,0.5)',
                   }}
                 />
@@ -136,7 +137,7 @@ function EquipmentFace({
           </div>
           
           <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full rack-led-pulse"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full animate-pulse"
             style={{
               background: statusGlow,
               boxShadow: `0 0 8px ${statusGlow}`,
@@ -157,19 +158,19 @@ function EquipmentFace({
                   border: '1px solid rgba(255,255,255,0.05)',
                 }}
               >
-                  <div
-                    className="absolute right-0.5 top-1/2 -translate-y-1/2 w-0.5 h-0.5 rounded-full rack-led-flicker"
-                    style={{
-                      background: i % 4 === 0 ? '#0088ff' : '#00ff00',
-                      boxShadow: `0 0 2px ${i % 4 === 0 ? '#0088ff' : '#00ff00'}`,
-                    }}
-                  />
-                </div>
+                <div
+                  className="absolute right-0.5 top-1/2 -translate-y-1/2 w-0.5 h-0.5 rounded-full"
+                  style={{
+                    background: i % 4 === 0 ? '#0088ff' : '#00ff00',
+                    boxShadow: `0 0 2px ${i % 4 === 0 ? '#0088ff' : '#00ff00'}`,
+                  }}
+                />
+              </div>
             ))}
           </div>
           
           <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full rack-led-pulse"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
             style={{
               background: equipment.ledColor || '#0088ff',
               boxShadow: `0 0 8px ${equipment.ledColor || '#0088ff'}`,
@@ -190,19 +191,19 @@ function EquipmentFace({
                   border: '1px solid rgba(255,255,255,0.1)',
                 }}
               >
-                  <div
-                    className="w-1 h-1 rounded-full mx-auto mt-0.5 rack-led-flicker"
-                    style={{
-                      background: i < 4 ? '#00ff00' : '#ffaa00',
-                      boxShadow: `0 0 2px ${i < 4 ? '#00ff00' : '#ffaa00'}`,
-                    }}
-                  />
-                </div>
+                <div
+                  className="w-1 h-1 rounded-full mx-auto mt-0.5"
+                  style={{
+                    background: i < 4 ? '#00ff00' : '#ffaa00',
+                    boxShadow: `0 0 2px ${i < 4 ? '#00ff00' : '#ffaa00'}`,
+                  }}
+                />
+              </div>
             ))}
           </div>
           
           <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full rack-led-pulse"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full animate-pulse"
             style={{
               background: statusGlow,
               boxShadow: `0 0 6px ${statusGlow}`,
