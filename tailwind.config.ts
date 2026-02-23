@@ -11,9 +11,9 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       fontFamily: {
-        sans: ["IBM Plex Sans", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
-        display: ["Orbitron", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
         noc: {

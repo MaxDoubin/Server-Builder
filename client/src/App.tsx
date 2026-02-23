@@ -5,34 +5,47 @@ import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
-import { GameProvider } from "@/lib/game-context";
-import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
-import { PageBackground } from "@/components/ui/page-background";
-import { InstantShell } from "@/components/ui/instant-shell";
-import { startPerfMonitor } from "@/lib/perf-monitor";
 
-const DataCenter3D = lazy(() =>
-  import("@/pages/datacenter-3d").then((module) => ({ default: module.DataCenter3D })),
+import { Home } from "@/pages/Home";
+import { Blog } from "@/pages/Blog";
+import { BlogPost } from "@/pages/BlogPost";
+import { Projects } from "@/pages/Projects";
+import { Contact } from "@/pages/Contact";
+import { Layout } from "@/components/site/Layout";
+
+const GamePage = lazy(() =>
+  import("@/pages/GamePage").then((module) => ({ default: module.GamePage })),
 );
-const BuildDashboard = lazy(() =>
-  import("@/pages/build-dashboard").then((module) => ({ default: module.BuildDashboard })),
-);
-const FloorDashboard = lazy(() =>
-  import("@/pages/floor-dashboard").then((module) => ({ default: module.FloorDashboard })),
-);
-const NetworkDashboard = lazy(() =>
-  import("@/pages/network-dashboard").then((module) => ({ default: module.NetworkDashboard })),
-);
-const NocDashboard = lazy(() =>
-  import("@/pages/noc-dashboard").then((module) => ({ default: module.NocDashboard })),
-);
-const IncidentsDashboard = lazy(() =>
-  import("@/pages/incidents-dashboard").then((module) => ({ default: module.IncidentsDashboard })),
-);
-const AboutDashboard = lazy(() =>
-  import("@/pages/about-dashboard").then((module) => ({ default: module.AboutDashboard })),
-);
+
+function GameLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p className="mt-4 text-sm text-muted-foreground">Loading game...</p>
+      </div>
+    </div>
+  );
+}
+
+function NotFound() {
+  return (
+    <Layout>
+      <div className="flex flex-col items-center justify-center py-24">
+        <h1 className="text-6xl font-bold text-muted-foreground/30">404</h1>
+        <p className="mt-4 text-lg text-muted-foreground">Page not found</p>
+        <a
+          href="/"
+          className="mt-6 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          data-testid="link-404-home"
+        >
+          Go Home
+        </a>
+      </div>
+    </Layout>
+  );
+}
 
 export default function App() {
   useEffect(() => {
@@ -44,62 +57,23 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!import.meta.env.DEV) return;
-    return startPerfMonitor();
-  }, []);
-
-  useEffect(() => {
-    const idleCallback =
-      window.requestIdleCallback?.(() => {
-        void import("@/pages/build-dashboard");
-        void import("@/pages/floor-dashboard");
-        void import("@/pages/network-dashboard");
-        void import("@/pages/noc-dashboard");
-        void import("@/pages/incidents-dashboard");
-        void import("@/pages/about-dashboard");
-      }) ??
-      window.setTimeout(() => {
-        void import("@/pages/build-dashboard");
-        void import("@/pages/floor-dashboard");
-        void import("@/pages/network-dashboard");
-        void import("@/pages/noc-dashboard");
-        void import("@/pages/incidents-dashboard");
-        void import("@/pages/about-dashboard");
-      }, 1200);
-
-    return () => {
-      if (window.cancelIdleCallback) {
-        window.cancelIdleCallback(idleCallback);
-      } else {
-        window.clearTimeout(idleCallback);
-      }
-    };
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
-          <GameProvider>
-            <BuildProvider>
-              <PageBackground />
-              <div className="relative z-10">
-                <Suspense fallback={<InstantShell />}>
-                  <Switch>
-                    <Route path="/" component={DataCenter3D} />
-                    <Route path="/floor" component={DataCenter3D} />
-                    <Route path="/build" component={BuildDashboard} />
-                    <Route path="/floor-dashboard" component={FloorDashboard} />
-                    <Route path="/network" component={NetworkDashboard} />
-                    <Route path="/noc" component={NocDashboard} />
-                    <Route path="/incidents" component={IncidentsDashboard} />
-                    <Route path="/about" component={AboutDashboard} />
-                  </Switch>
-                </Suspense>
-              </div>
-            </BuildProvider>
-          </GameProvider>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/blog" component={Blog} />
+            <Route path="/blog/:slug" component={BlogPost} />
+            <Route path="/projects" component={Projects} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/game">
+              <Suspense fallback={<GameLoading />}>
+                <GamePage />
+              </Suspense>
+            </Route>
+            <Route component={NotFound} />
+          </Switch>
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>

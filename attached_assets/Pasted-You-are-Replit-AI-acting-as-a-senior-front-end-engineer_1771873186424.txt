@@ -1,0 +1,204 @@
+You are Replit AI acting as a senior front end engineer and product designer. Your mission is to completely revamp my current website repo from “game starts immediately” into a SUPER professional personal website where the default landing experience is my About Me page, and the game becomes a separate section of the site.
+
+NON NEGOTIABLE CONSTRAINTS
+- The entire website must be completely static.
+- No backend at all. No server routes, no databases, no auth, no serverless functions, no runtime API required for core features.
+- Everything must work on a basic static host (GitHub Pages style) where it only serves files.
+- If the current project uses a dev server for local development, that is fine, but the final output must build/export to static files.
+
+Creative permission
+- You are allowed to generate and add as many AI generated images as you want (hero images, background textures, icons, blog cover images, OG images, illustrations, subtle patterns, etc).
+- You are allowed to keep improving the website beyond the minimum requirements if it increases polish, usability, and “this looks like a real pro built it” quality.
+- Prioritize coherence. All generated images should match a consistent visual style and brand vibe across the site.
+- Store generated images in a clear folder (example: /public/images or /src/assets/images), use good filenames, and optimize them (WebP or AVIF when possible, with fallback if needed).
+- Every image must have proper alt text and must not hurt performance.
+
+High level goals
+1) Make the site feel like a modern, polished personal website (portfolio + blog), not a game site.
+2) The home route (/) must land on the About Me page content first, not the game.
+3) Add a real blog system so I can post updates easily, while staying fully static.
+4) Include my Instagram handle and link: @maxdoubin (https://instagram.com/maxdoubin).
+5) Keep the existing game accessible as its own page/section (not deleted), with a clear “Play the Game” entry in navigation.
+6) Keep the site fast, mobile friendly, accessible, and clean.
+7) Make it feel premium in design and engineering.
+
+First step: analyze the existing repo
+- Inspect the current codebase and identify the stack (plain HTML, React, Next.js, Astro, etc).
+- Do not guess. Read package.json, build config, entrypoints, and how the game is loaded.
+- Propose a refactor plan that reuses as much working code as possible, but reorganizes it into a multi page site with clean routes.
+- Because this must be static, prefer true multi page static output when possible, so deep links work without special hosting rewrites.
+
+Routing requirement (static hosting safe)
+Pick the safest approach for the detected stack:
+
+Option A: Multi page static files (preferred for maximum compatibility)
+- Create real pages like:
+  - /index.html (About)
+  - /blog/index.html
+  - /blog/<slug>/index.html
+  - /projects/index.html
+  - /game/index.html
+  - /contact/index.html
+- This avoids SPA refresh issues on static hosts.
+
+Option B: Static SPA with hash routing (only if the repo is already SPA and refactor cost is huge)
+- Use hash based routing so deep links still work on static hosting:
+  - /#/ (About)
+  - /#/blog
+  - /#/blog/<slug>
+  - /#/projects
+  - /#/game
+  - /#/contact
+- Only do this if true multi page output is not realistic in the existing stack.
+
+Do not use history API routing unless you also implement a build/export that outputs real HTML pages per route or the host is guaranteed to rewrite requests (assume it is NOT).
+
+Information architecture (pages and routes)
+Implement at least these pages:
+
+A) Home/About
+- Route: /
+- This is the default landing page.
+- Content: “About Me” style page with hero section, short bio, highlights, and links.
+- Use placeholders where needed, but make it easy for me to edit the text in a single obvious file.
+- Add a prominent Instagram link and optional embed preview (static embed or screenshot, no backend).
+
+B) Blog (static)
+- Route: /blog
+- Blog index listing posts with title, date, tags, excerpt, cover image.
+- Route: /blog/<slug>
+- Individual blog post page with proper formatting, code blocks, images, and share metadata.
+- Must support adding posts without rewriting app logic each time.
+
+C) Projects
+- Route: /projects
+- Cards for projects with title, description, tech, links.
+- Include a card that links to the Game page as one project.
+
+D) Game
+- Route: /game (or /play)
+- This is where the existing game lives.
+- The game should be embedded or rendered exactly as before, but contained inside the site layout.
+- Add a short intro above it explaining it is one of my projects.
+- Add a “Back to About” button.
+
+E) Contact
+- Route: /contact
+- Must be static. Use social links and a mailto link.
+- Optional: a static contact form only if it posts to a third party form endpoint (example: Formspree or similar), and only if you can set it up cleanly with no secrets in the repo.
+
+Navigation and layout requirements
+- Add a top navigation bar with links: About, Blog, Projects, Game, Contact.
+- Add a footer with copyright, Instagram link, and optional email placeholder.
+- The layout should be consistent across all pages.
+- Make it responsive for phones, tablets, and desktops.
+- Add a skip to content link, proper heading hierarchy, and keyboard navigability.
+
+Brand and visual design system (must be consistent)
+- Create a small design system: CSS variables or theme tokens for colors, spacing, radii, shadows, and typography.
+- Include a dark mode toggle if it fits cleanly (recommended). Persist preference in localStorage (client only).
+- Use subtle microinteractions (hover states, focus rings, smooth transitions) but keep it accessible (respect prefers-reduced-motion).
+- Use a high quality font setup (system font stack is acceptable, or a web font if implemented safely and fast).
+- Use consistent iconography. If you generate icons, keep them stylistically consistent.
+
+Static blog implementation (mandatory, no backend)
+You must implement the blog as static content in the repo.
+
+Recommended approach (choose based on stack)
+- If the stack supports build time content imports (Astro, Eleventy, Next static, Vite):
+  - Store posts as Markdown in /content/posts
+  - Use frontmatter fields:
+    - title
+    - date (YYYY-MM-DD)
+    - tags (array)
+    - excerpt
+    - coverImage (optional)
+    - draft (optional)
+  - Generate:
+    - Blog index page (sorted newest first)
+    - Static pages for each post slug
+  - Render Markdown with syntax highlighting.
+  - Support local images referenced in posts.
+
+- If the repo is plain HTML/JS with no build tooling:
+  - Add a minimal build step using Node that:
+    1) Reads Markdown posts in /content/posts
+    2) Converts them to HTML (Markdown parser)
+    3) Outputs static files into /dist/blog/<slug>/index.html
+    4) Builds /dist/blog/index.html with an auto-generated list
+  - Keep it extremely simple, documented, and reliable.
+
+Do not create any admin panel. No CMS. No database. Everything is committed as files.
+
+SEO and polish (static friendly)
+- Add meaningful page titles and meta descriptions for each route.
+- Add Open Graph tags for sharing, especially blog posts.
+- Add a favicon and a basic site manifest if appropriate.
+- Add a sitemap.xml and robots.txt (static generated).
+- Make sure URLs are clean and consistent.
+- Add a 404 page (static).
+- Ensure social previews look good (OG image).
+
+Performance and quality
+- Keep bundle size minimal.
+- Avoid heavy UI libraries unless the project already uses them.
+- Use semantic HTML and accessible components.
+- Add linting/formatting if the repo supports it, but keep it lightweight.
+- Remove dead code and unused assets where safe.
+- Keep the game code working. Do not break it during refactor.
+- Prefer pre-rendered content over runtime fetching.
+- Optimize images and avoid layout shifts (set width/height where possible).
+
+Content customization hooks for me
+Create a single obvious place to edit:
+- My name, tagline, and short bio
+- Social links (Instagram must be included)
+- Projects list
+For example: a siteConfig file, JSON, or a small TS/JS module depending on stack.
+
+Professional design vibe
+- Clean hero section with name, tagline, and call to action buttons: “Read the Blog” and “View Projects”.
+- About page should feel complete: highlights, skills, achievements, what I am building, featured posts.
+- Use consistent spacing and typography so it feels premium, not messy.
+- Use tasteful visuals, not random stock look.
+
+AI generated images requirements
+You may generate as many images as needed. Follow these rules:
+- Keep style consistent (example: modern minimal, soft gradients, clean geometry, tasteful tech aesthetic).
+- Prefer lightweight images, avoid huge files.
+- Use responsive images when supported.
+- Generate at least:
+  - A hero image or hero background for the About page
+  - A default blog cover image template plus at least 2 sample cover images
+  - A site wide default Open Graph image (and per post OG if feasible)
+  - A few subtle decorative accents (patterns/shapes) used consistently
+- Make sure images do not feel mismatched.
+
+Deliverables
+When done, provide:
+1) A short summary of what changed and why.
+2) Exact routes available and how they map to files.
+3) How I add a new blog post step by step (Markdown file creation, frontmatter fields, images).
+4) How to run locally in Replit (dev command).
+5) How to build/export static files (build command) and where output lives (dist or build folder).
+6) Where images live and how to regenerate or swap them.
+
+Acceptance tests (you must verify these)
+- Visiting / shows About content first, not the game.
+- Navbar works and highlights current page (if applicable).
+- /blog lists posts and /blog/<slug> renders a post correctly with formatting, code blocks, and images.
+- Instagram link works and is visible on About and in footer.
+- /game loads and plays exactly like before.
+- Mobile layout looks good and navigation is usable.
+- No console errors on page load.
+- Static hosting deep links work (either real multi page files, or hash routing).
+- Images are optimized and not gigantic.
+- Accessibility basics work: keyboard navigation, focus states, readable contrast, alt text.
+
+Implementation notes
+- Use the existing stack’s best practices.
+- If you add dependencies, explain why and keep it minimal.
+- Keep code organized: components, pages, content, styles, utils.
+- Add comments only where helpful.
+
+Now start by analyzing the repository structure and telling me your refactor plan in bullet points, then implement it. Keep iterating until it feels like a real professional personal brand site, while staying 100% static.
