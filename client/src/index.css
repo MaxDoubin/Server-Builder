@@ -329,6 +329,71 @@
     background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
   }
 
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s var(--ease-emphasized), transform 0.7s var(--ease-emphasized);
+  }
+
+  .scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .scroll-reveal-left {
+    opacity: 0;
+    transform: translateX(-24px);
+    transition: opacity 0.7s var(--ease-emphasized), transform 0.7s var(--ease-emphasized);
+  }
+
+  .scroll-reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .stagger-1 { transition-delay: 0ms; }
+  .stagger-2 { transition-delay: 80ms; }
+  .stagger-3 { transition-delay: 160ms; }
+  .stagger-4 { transition-delay: 240ms; }
+  .stagger-5 { transition-delay: 320ms; }
+  .stagger-6 { transition-delay: 400ms; }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes border-shimmer {
+    0% { border-color: hsl(var(--border) / 0.3); }
+    50% { border-color: hsl(var(--primary) / 0.4); }
+    100% { border-color: hsl(var(--border) / 0.3); }
+  }
+
+  .card-hover {
+    transition: transform 0.3s var(--ease-emphasized),
+      border-color 0.3s var(--ease-standard),
+      box-shadow 0.3s var(--ease-standard);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 8px 30px -8px hsl(var(--primary) / 0.15);
+  }
+
+  @keyframes scan-line {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .stat-glow {
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.2);
+  }
+
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;

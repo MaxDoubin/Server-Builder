@@ -1,10 +1,42 @@
-import { Suspense, lazy } from "react";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Suspense, lazy, Component, type ReactNode } from "react";
+import { Maximize2, Minimize2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+
+class GameErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch() {}
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-full items-center justify-center bg-black/90">
+          <div className="text-center max-w-md px-6">
+            <AlertTriangle className="mx-auto h-10 w-10 text-amber-400" />
+            <h2 className="mt-4 text-lg font-semibold text-white">
+              WebGL Required
+            </h2>
+            <p className="mt-2 text-sm text-white/60">
+              The Hyperscale game needs WebGL to run. Please try a browser that supports hardware-accelerated 3D graphics.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const DataCenter3D = lazy(() =>
   import("@/pages/datacenter-3d").then((module) => ({ default: module.DataCenter3D })),
@@ -37,9 +69,11 @@ export function GamePage() {
             >
               <Minimize2 className="h-5 w-5" />
             </button>
-            <Suspense fallback={<GameLoading />}>
-              <DataCenter3D />
-            </Suspense>
+            <GameErrorBoundary>
+              <Suspense fallback={<GameLoading />}>
+                <DataCenter3D />
+              </Suspense>
+            </GameErrorBoundary>
           </div>
         </BuildProvider>
       </GameProvider>
@@ -74,9 +108,11 @@ export function GamePage() {
         <div className="h-[70vh] min-h-[500px] bg-black">
           <GameProvider>
             <BuildProvider>
-              <Suspense fallback={<GameLoading />}>
-                <DataCenter3D />
-              </Suspense>
+              <GameErrorBoundary>
+                <Suspense fallback={<GameLoading />}>
+                  <DataCenter3D />
+                </Suspense>
+              </GameErrorBoundary>
             </BuildProvider>
           </GameProvider>
         </div>
