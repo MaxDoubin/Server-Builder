@@ -1,0 +1,99 @@
+I need you to fully redesign and fix my personal website. This site must be about me, written in a natural human tone, and it must not look or feel AI-generated. Do not use any em dashes anywhere in the site copy, code comments, or documentation.
+
+Non-negotiable requirements:
+
+All aspects must work perfectly. No broken links, no missing assets, no half-finished UI, no dummy content.
+
+No placeholders of any kind. Do not leave “coming soon,” filler text, lorem ipsum, or generic fake projects. Everything must be real, complete, and functional.
+
+Fix all photos. None of the photos currently load. You must make every photo display correctly on desktop and mobile. Use correct file paths, confirm filenames match exactly (including capitalization), and ensure the images render in the browser. If you restructure assets, update every reference. Include a short verification checklist at the end explaining what you changed and how you confirmed the photos work.
+
+Redesign the site to look much more professional and modern. Improve layout, typography, spacing, color system, and overall polish. Make it feel like a serious portfolio, not a template.
+
+Make it fully responsive for mobile and PC. Add a proper mobile navigation pattern (hamburger menu or equivalent), flexible layout, and clean spacing at all breakpoints.
+
+The website must clearly present me as someone interested in enterprise networking and informatics. It must feel personal and specific to me, not generic. Write like a real person, not a marketing page. Avoid buzzwords and overly polished corporate language.
+
+Core content requirements:
+
+Hero section: professional intro, focus areas (enterprise networking and informatics), and clear call to action (contact, resume, projects).
+
+About section: who I am, what I like building, what I am learning, what I want to do next.
+
+Skills section: enterprise networking and informatics focused. Include concrete tools and concepts.
+
+Projects section: only real items. If any info is missing, ask me for it rather than inventing or using placeholders. Each project must have a description, tech used, outcomes, and links if available.
+
+Experience and leadership section: real roles and responsibilities. If details are missing, ask me for them rather than guessing.
+
+Contact section: working email link and any real social links I provide.
+
+Footer: professional and minimal.
+
+Advanced features to implement (all must be real, complete, and working):
+
+Fully responsive layout using modern CSS (grid and flex) with multiple breakpoints.
+
+Mobile navigation with accessible hamburger menu, focus trapping, and keyboard support.
+
+Image optimization system: responsive images (srcset or equivalent) and correct sizing to prevent layout shift.
+
+Lazy loading for below-the-fold images with smooth loading behavior.
+
+Dark mode toggle with saved preference (localStorage) and correct contrast in both modes.
+
+Smooth, subtle animations using CSS only (no heavy libraries), respecting prefers-reduced-motion.
+
+Accessibility pass: semantic HTML, correct heading hierarchy, aria labels, visible focus states, and good color contrast.
+
+SEO basics: correct title, meta description, Open Graph tags, and a clean URL structure.
+
+Performance improvements: preconnect for fonts if used, minimal render-blocking, compressed assets, and fast load.
+
+A clean design system: consistent spacing scale, font scale, and reusable components.
+
+Projects filtering or sorting (by category like networking, security, informatics) that works on mobile.
+
+Contact form that actually works (not fake). Use a real method like a mailto fallback plus a serverless form option if applicable, and explain how to configure it.
+
+Resume section with a real downloadable PDF and a visible “View Resume” button that works.
+
+Sticky header that behaves correctly, does not cover content, and adapts on scroll.
+
+Error-proof asset handling: handle missing images gracefully with a styled fallback, but also ensure no images are missing in the final build.
+
+Client-side form validation with clear error messages and accessibility support.
+
+A “Now” or “Currently” section that shows what I am studying or building, written naturally.
+
+Microinteractions: polished hover states, button transitions, and card interactions that feel professional.
+
+Structured data (JSON-LD) for a personal site (Person, WebSite) for search engines.
+
+A deployment-ready build with a clear folder structure and exact instructions for hosting on a static site host.
+
+Deliverables:
+
+Provide the complete updated code for the site (HTML, CSS, and JS if used).
+
+Provide the final folder structure, including where images and the resume PDF live.
+
+Include exact instructions to run locally and deploy.
+
+Include a final verification section: how you tested mobile, desktop, links, images, forms, and dark mode.
+
+Do not invent details about me. If you need specifics (project names, links, photos, resume file name), ask me for them instead of guessing.
+
+Final verification checklist before you deliver:
+
+Every image loads on desktop and mobile.
+
+No placeholder text or placeholder projects exist anywhere.
+
+All buttons, nav links, and contact methods work perfectly.
+
+No em dashes exist anywhere.
+
+The writing sounds like a real person, not AI.
+
+The site looks modern, clean, and professional.
