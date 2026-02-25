@@ -1,10 +1,10 @@
 # Max Doubin - Personal Website
 
-A modern, professional personal website with an integrated 3D datacenter simulation game. The site features an About Me landing page, blog system, projects showcase, and the Hyperscale game accessible as a separate section.
+A professional personal website for Max Doubin, focused on enterprise networking, cybersecurity, and informatics. The site features an About Me landing page, blog system, projects showcase with category filtering, a contact form, and the Hyperscale datacenter simulation game accessible as a separate section.
 
 ## Overview
 
-This is a full-stack web application built with React + Express, restructured as a personal portfolio and blog site. The landing page is the About Me page, with the Hyperscale datacenter game accessible at /game.
+Full-stack web application built with React + Express. The landing page is the About Me page. The Hyperscale datacenter game is accessible at /game. No em dashes are used anywhere in the codebase.
 
 ## Tech Stack
 
@@ -21,50 +21,49 @@ This is a full-stack web application built with React + Express, restructured as
 
 ```
 client/
-├── src/
-│   ├── components/
-│   │   ├── site/                  # Site-wide components
-│   │   │   ├── Navbar.tsx         # Responsive navigation bar
-│   │   │   ├── Footer.tsx         # Site footer with social links
-│   │   │   └── Layout.tsx         # Page layout wrapper
-│   │   ├── 3d/                    # 3D game visualization components
-│   │   ├── builder/               # Game builder UI
-│   │   ├── ui/                    # shadcn + custom UI components
-│   │   └── ...
-│   ├── lib/
-│   │   ├── siteConfig.ts          # Central site configuration (name, bio, social, projects)
-│   │   ├── blogPosts.ts           # Blog post content and utilities
-│   │   ├── game-context.tsx       # Game state management
-│   │   ├── build-context.tsx      # Builder state management
-│   │   ├── theme-provider.tsx     # Dark/light mode
-│   │   └── ...
-│   ├── pages/
-│   │   ├── Home.tsx               # Landing page / About Me
-│   │   ├── Blog.tsx               # Blog index with tag filtering
-│   │   ├── BlogPost.tsx           # Individual blog post view
-│   │   ├── Projects.tsx           # Projects showcase
-│   │   ├── Contact.tsx            # Contact & social links
-│   │   ├── GamePage.tsx           # Game wrapper with fullscreen support
-│   │   └── datacenter-3d.tsx      # Core game component
-│   ├── App.tsx                    # Root app with routing
-│   └── main.tsx                   # Entry point
-├── public/
-│   ├── images/                    # AI-generated images
-│   ├── robots.txt                 # SEO robots file
-│   └── sitemap.xml                # SEO sitemap
-└── index.html                     # HTML template with OG tags
+  src/
+    components/
+      site/                  # Site-wide components
+        Navbar.tsx           # Responsive sticky nav with mobile hamburger
+        Footer.tsx           # Site footer with social links
+        Layout.tsx           # Page layout wrapper
+      3d/                    # 3D game visualization components
+      builder/               # Game builder UI
+      ui/                    # shadcn + custom UI components
+    lib/
+      siteConfig.ts          # Central site configuration (bio, skills, leadership, projects, achievements)
+      blogPosts.ts           # Blog post content and utilities
+      game-context.tsx       # Game state management
+      build-context.tsx      # Builder state management
+      theme-provider.tsx     # Dark/light mode
+    pages/
+      Home.tsx               # Landing page / About Me with hero, skills, achievements, currently section
+      Blog.tsx               # Blog index with tag filtering
+      BlogPost.tsx           # Individual blog post view
+      Projects.tsx           # Projects showcase with category filtering
+      Contact.tsx            # Contact form and social links
+      GamePage.tsx           # Game wrapper with fullscreen support
+      datacenter-3d.tsx      # Core game component
+    App.tsx                  # Root app with routing
+    main.tsx                 # Entry point
+  public/
+    images/                  # AI-generated images (hero, blog covers, OG)
+    robots.txt               # SEO robots file
+    sitemap.xml              # SEO sitemap
+    favicon.png              # Site favicon
+  index.html                 # HTML template with OG tags and JSON-LD structured data
 ```
 
 ## Routes
 
 | Path | Page | Description |
 |------|------|-------------|
-| `/` | Home | About Me landing page with hero, bio, skills, recent posts |
+| `/` | Home | About Me landing page with hero, bio, skills, achievements, currently |
 | `/blog` | Blog | Blog index with tag filtering |
 | `/blog/:slug` | BlogPost | Individual blog post with markdown rendering |
-| `/projects` | Projects | Project cards with links |
+| `/projects` | Projects | Project cards with category filtering |
 | `/game` | GamePage | Hyperscale datacenter simulation |
-| `/contact` | Contact | Social links and contact info |
+| `/contact` | Contact | Contact form and social links |
 
 ## Content Management
 
@@ -78,7 +77,7 @@ client/
    - `tags`: Array of tag strings
    - `excerpt`: Short description
    - `coverImage`: Path to cover image in `/images/`
-   - `content`: Markdown content string
+   - `content`: Markdown content string (no em dashes)
 3. Optionally add `draft: true` to hide from listing
 
 ### Editing Site Info
@@ -87,19 +86,26 @@ Edit `client/src/lib/siteConfig.ts` to change:
 - Name, tagline, bio
 - Social links (Instagram, GitHub)
 - Email address
-- Skills list
-- Highlights
-- Projects
+- Skill categories
+- Leadership roles
+- Achievements
+- Currently section
+- Projects (with categories for filtering)
 
 ## Features
 
 ### Personal Website
 - Clean, responsive About Me landing page
 - Blog with tag filtering and markdown rendering
-- Projects showcase with game integration
-- Contact page with social links
-- Dark/light mode toggle
-- SEO meta tags and Open Graph support
+- Projects showcase with category filtering (networking, simulation, web)
+- Contact page with form (mailto-based) and social links
+- Dark/light mode toggle with localStorage persistence
+- SEO meta tags, Open Graph, and JSON-LD structured data
+- Sticky header with backdrop blur
+- Mobile hamburger menu with accessibility support
+- Skip-to-content link
+- prefers-reduced-motion support
+- No em dashes anywhere in the codebase
 
 ### Hyperscale Game (at /game)
 - Interactive 3D datacenter visualization
@@ -109,6 +115,7 @@ Edit `client/src/lib/siteConfig.ts` to change:
 - Build and explore modes
 - Equipment catalog with real-world hardware specs
 - Fullscreen support
+- Lazy-loaded to keep other pages fast
 
 ## Design System
 
@@ -131,6 +138,15 @@ The app runs on port 5000 with both frontend and backend served together.
 
 The site is published via Replit and accessible at maxdoubin.com.
 
-## Instagram
+## Important Notes
 
-@maxdoubin - https://instagram.com/maxdoubin
+- Images must be placed in `client/public/images/` to be included in Vite builds
+- No em dashes (the character) are used anywhere; use periods, commas, or rewrite sentences instead
+- All content about Max is real and specific; no placeholder or filler text
+- Contact form uses mailto: protocol to open the user's email client
+- The email address is doubinemail@gmail.com
+
+## Social
+
+- Instagram: @maxdoubin - https://instagram.com/maxdoubin
+- GitHub: maxdoubin - https://github.com/maxdoubin

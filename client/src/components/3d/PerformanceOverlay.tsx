@@ -59,7 +59,7 @@ export function PerformanceOverlay({
         onQualityChange?.("low", "low-fps");
       }
       const msg =
-        "Low FPS detected — consider switching to low quality.";
+        "Low FPS detected. Consider switching to low quality.";
       if (warnRef.current.lastMsg !== msg) {
         warnRef.current.lastMsg = msg;
         onWarningChange?.(msg);

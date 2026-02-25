@@ -10,7 +10,9 @@ export function Footer() {
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
           <div className="text-center sm:text-left">
             <div className="text-sm font-semibold text-foreground">{siteConfig.name}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{siteConfig.tagline}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Enterprise Networking, Cybersecurity, and Informatics
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

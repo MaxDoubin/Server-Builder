@@ -15,9 +15,14 @@ export function Blog() {
   return (
     <Layout>
       <div className="pb-16 pt-4">
-        <h1 className="text-3xl font-bold text-foreground" data-testid="text-blog-title">Blog</h1>
+        <h1
+          className="text-3xl font-bold text-foreground"
+          data-testid="text-blog-title"
+        >
+          Blog
+        </h1>
         <p className="mt-2 text-muted-foreground">
-          Thoughts on engineering, creative coding, and building things.
+          Writing about networking, cybersecurity, infrastructure, and what I am learning along the way.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2" data-testid="blog-tags">
@@ -76,12 +81,16 @@ export function Blog() {
                     })}
                   </time>
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-                  <span>{Math.ceil(post.content.split(/\s+/).length / 200)} min read</span>
+                  <span>
+                    {Math.ceil(post.content.split(/\s+/).length / 200)} min read
+                  </span>
                 </div>
-                <h2 className="mt-2 text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                <h2 className="mt-2 text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
                   {post.title}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                  {post.excerpt}
+                </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {post.tags.map((tag) => (
                     <span
@@ -98,7 +107,10 @@ export function Blog() {
         </div>
 
         {filteredPosts.length === 0 && (
-          <div className="mt-12 text-center text-muted-foreground" data-testid="text-no-posts">
+          <div
+            className="mt-12 text-center text-muted-foreground"
+            data-testid="text-no-posts"
+          >
             No posts found for this tag.
           </div>
         )}
