@@ -1,17 +1,17 @@
 # Max Doubin - Personal Website
 
-A professional personal website for Max Doubin, focused on enterprise networking, cybersecurity, and informatics. The site features an About Me landing page, blog system, projects showcase with category filtering, a contact form, and the Hyperscale datacenter simulation game accessible as a separate section.
+A professional personal website for Max Doubin, focused on enterprise networking, cybersecurity, and informatics. The site features an About Me landing page with a 3D datacenter hero animation, 43 blog posts, projects showcase with category filtering, a contact form, and the Hyperscale datacenter simulation game accessible at /game.
 
 ## Overview
 
-Full-stack web application built with React + Express. The landing page is the About Me page. The Hyperscale datacenter game is accessible at /game. No em dashes are used anywhere in the codebase.
+Full-stack web application built with React + Express. The landing page is the About Me page with a mind-blowing 3D hero section featuring a datacenter flythrough animation, typing effect, animated stat counters, and scroll-reveal animations throughout. The Hyperscale datacenter game is accessible at /game. No em dashes are used anywhere in the codebase.
 
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Backend**: Express.js + TypeScript (for dev server; site works statically)
 - **Styling**: Tailwind CSS + shadcn/ui components
-- **3D Visualization**: Three.js + React Three Fiber (game only)
+- **3D Visualization**: Three.js + React Three Fiber (hero + game)
 - **Markdown**: marked (for blog post rendering)
 - **State Management**: React Context + TanStack Query
 - **Routing**: wouter
@@ -27,22 +27,28 @@ client/
         Navbar.tsx           # Responsive sticky nav with mobile hamburger
         Footer.tsx           # Site footer with social links
         Layout.tsx           # Page layout wrapper
+        ScrollReveal.tsx     # Scroll-triggered fade-in animation wrapper
+        AnimatedCounter.tsx  # Number counter that animates on scroll
+        HeroErrorBoundary.tsx # Error boundary for 3D hero fallback
+      hero/
+        HeroAnimation.tsx    # 3D datacenter flythrough (lazy-loaded)
       3d/                    # 3D game visualization components
       builder/               # Game builder UI
       ui/                    # shadcn + custom UI components
     lib/
       siteConfig.ts          # Central site configuration (bio, skills, leadership, projects, achievements)
-      blogPosts.ts           # Blog post content and utilities
+      blogPosts.ts           # 43 blog posts with full markdown content
+      useInView.ts           # IntersectionObserver hook for scroll animations
       game-context.tsx       # Game state management
       build-context.tsx      # Builder state management
       theme-provider.tsx     # Dark/light mode
     pages/
-      Home.tsx               # Landing page / About Me with hero, skills, achievements, currently section
+      Home.tsx               # Landing page with 3D hero, typing animation, stats, scroll reveals
       Blog.tsx               # Blog index with tag filtering
       BlogPost.tsx           # Individual blog post view
       Projects.tsx           # Projects showcase with category filtering
       Contact.tsx            # Contact form and social links
-      GamePage.tsx           # Game wrapper with fullscreen support
+      GamePage.tsx           # Game wrapper with fullscreen support and error boundary
       datacenter-3d.tsx      # Core game component
     App.tsx                  # Root app with routing
     main.tsx                 # Entry point
@@ -58,8 +64,8 @@ client/
 
 | Path | Page | Description |
 |------|------|-------------|
-| `/` | Home | About Me landing page with hero, bio, skills, achievements, currently |
-| `/blog` | Blog | Blog index with tag filtering |
+| `/` | Home | Professional landing page with 3D hero, stats, expertise, achievements |
+| `/blog` | Blog | Blog index with tag filtering (43 posts) |
 | `/blog/:slug` | BlogPost | Individual blog post with markdown rendering |
 | `/projects` | Projects | Project cards with category filtering |
 | `/game` | GamePage | Hyperscale datacenter simulation |
@@ -95,17 +101,29 @@ Edit `client/src/lib/siteConfig.ts` to change:
 ## Features
 
 ### Personal Website
-- Clean, responsive About Me landing page
-- Blog with tag filtering and markdown rendering
-- Projects showcase with category filtering (networking, simulation, web)
-- Contact page with form (mailto-based) and social links
+- Full-viewport 3D datacenter hero animation with gradient overlays
+- Typing animation cycling through specialties
+- Animated stat counters (14TB RAM, 500+TB storage, 99% NCL, #1 Percussionist)
+- Scroll-reveal animations with staggered timing on all sections
+- Card hover effects with glow and lift
+- Floating grid background effect
+- "Scroll" indicator with bounce animation
+- Blog with 43 posts and tag filtering
+- Projects showcase with category filtering
+- Contact page with validated mailto form
 - Dark/light mode toggle with localStorage persistence
 - SEO meta tags, Open Graph, and JSON-LD structured data
-- Sticky header with backdrop blur
-- Mobile hamburger menu with accessibility support
-- Skip-to-content link
+- Error boundaries for WebGL fallback
 - prefers-reduced-motion support
 - No em dashes anywhere in the codebase
+
+### Blog Topics
+- Enterprise servers (Dell PowerEdge R740, Mac Pro rack-mount)
+- Apple hardware analysis (Mac Pro, Afterburner, T2 chip, APFS, Xserve history)
+- Networking (VLANs, Cisco switching, STP, 10GbE, subnetting, DNS)
+- Cybersecurity (Wireshark, Nmap, firewall policy, incident response)
+- Infrastructure (ZFS, RAID, UPS, PDUs, cable management, rack planning)
+- Homelab (Proxmox vs ESXi, backups, monitoring, automation)
 
 ### Hyperscale Game (at /game)
 - Interactive 3D datacenter visualization
@@ -116,15 +134,16 @@ Edit `client/src/lib/siteConfig.ts` to change:
 - Equipment catalog with real-world hardware specs
 - Fullscreen support
 - Lazy-loaded to keep other pages fast
+- Error boundary shows friendly message if WebGL unavailable
 
 ## Design System
 
-- **Theme**: Clean, modern personal brand with dark mode default
+- **Theme**: Professional portfolio with dark mode default
 - **Primary Color**: Blue (hsl 217)
 - **Typography**: Inter for UI, JetBrains Mono for code
 - **Layout**: Max-width 5xl (64rem), 6 unit padding
-- **Cards**: Subtle borders, transparent backgrounds
-- **Interactions**: Smooth transitions, hover effects
+- **Cards**: Gradient backgrounds, subtle borders, hover glow effects
+- **Animations**: hero-entrance, scroll-reveal, typing, floating grid, counter animation
 
 ## Running the Project
 
@@ -142,9 +161,11 @@ The site is published via Replit and accessible at maxdoubin.com.
 
 - Images must be placed in `client/public/images/` to be included in Vite builds
 - No em dashes (the character) are used anywhere; use periods, commas, or rewrite sentences instead
+- No references to grade levels, "student", "freshman", or "middle school" in public-facing content
 - All content about Max is real and specific; no placeholder or filler text
 - Contact form uses mailto: protocol to open the user's email client
 - The email address is doubinemail@gmail.com
+- 3D hero animation has error boundary with gradient fallback for browsers without WebGL
 
 ## Social
 

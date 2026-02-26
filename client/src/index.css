@@ -373,18 +373,6 @@
     100% { border-color: hsl(var(--border) / 0.3); }
   }
 
-  .card-hover {
-    transition: transform 0.3s var(--ease-emphasized),
-      border-color 0.3s var(--ease-standard),
-      box-shadow 0.3s var(--ease-standard);
-  }
-
-  .card-hover:hover {
-    transform: translateY(-2px);
-    border-color: hsl(var(--primary) / 0.3);
-    box-shadow: 0 8px 30px -8px hsl(var(--primary) / 0.15);
-  }
-
   @keyframes scan-line {
     0% { transform: translateY(-100%); }
     100% { transform: translateY(100vh); }
@@ -392,6 +380,75 @@
 
   .stat-glow {
     text-shadow: 0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.2);
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes float-slow {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(10px, -20px); }
+    50% { transform: translate(-5px, 10px); }
+    75% { transform: translate(15px, 5px); }
+  }
+
+  .animate-float-slow {
+    animation: float-slow 20s ease-in-out infinite;
+  }
+
+  @keyframes float-slow-reverse {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-15px, 10px); }
+    50% { transform: translate(8px, -15px); }
+    75% { transform: translate(-10px, -5px); }
+  }
+
+  .animate-float-slow-reverse {
+    animation: float-slow-reverse 25s ease-in-out infinite;
+  }
+
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  .animate-bounce-slow {
+    animation: bounce-slow 2s ease-in-out infinite;
+  }
+
+  .hero-content-entrance {
+    animation: hero-entrance 1.2s var(--ease-emphasized) both;
+  }
+
+  @keyframes hero-entrance {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card-hover {
+    transition: transform 0.4s var(--ease-emphasized),
+      border-color 0.4s var(--ease-standard),
+      box-shadow 0.4s var(--ease-standard),
+      background-color 0.4s var(--ease-standard);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-3px);
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 12px 40px -12px hsl(var(--primary) / 0.15),
+      0 4px 12px -4px rgba(0, 0, 0, 0.1);
   }
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */

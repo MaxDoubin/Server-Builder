@@ -2,7 +2,7 @@ import { User, Award, BookOpen, ShieldCheck } from "lucide-react";
 import { DashboardShell } from "@/pages/dashboard-shell";
 import { Panel } from "@/pages/dashboard-widgets";
 
-const bio = `Max Doubin is a student at South Career and Technical Academy with a strong focus on technology, leadership, and community impact. He serves as president of the Cyber Club and the Music Club, and competes on Varsity Quiz. Max is also a Blue Ribbon Commissioner for Educational Excellence for the City of Henderson, where he works directly with the City Council and local school boards to support efforts that improve educational opportunities and student outcomes.
+const bio = `Max Doubin is focused on enterprise networking, cybersecurity, and informatics. He serves as president of the Cyber Club and the Music Club, and competes on Varsity Quiz. Max is also a Blue Ribbon Commissioner for Educational Excellence for the City of Henderson, where he works directly with the City Council and local school boards to support efforts that improve educational opportunities and student outcomes.
 
 A top 1% National Cyber League competitor, Max is passionate about cybersecurity, systems, and building real projects. Over several years, Max has built and continuously expanded a large-scale home lab that manages more than 1.2 petabytes of data and is backed by 12 TB of RAM. He developed this environment as a serious engineering platform, designed to support high-fidelity testing, large workloads, and real-world infrastructure experimentation.
 
