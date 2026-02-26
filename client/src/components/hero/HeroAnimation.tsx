@@ -143,12 +143,12 @@ const usePageVisibility = () => {
 };
 
 const SEGMENT_LENGTH = 22;
-const SEGMENT_COUNT = 30;
-const RACKS_PER_SEGMENT = 6;
+const SEGMENT_COUNT = 12;
+const RACKS_PER_SEGMENT = 4;
 const RACK_SPACING = 3.0;
 const AISLE_HALF_WIDTH = 2.4;
-const DETAIL_BUDGET = 120;
-const DETAIL_RADIUS = 80;
+const DETAIL_BUDGET = 80;
+const DETAIL_RADIUS = 60;
 
 function BlinkingIndicator({
   position,
@@ -457,7 +457,7 @@ function DatacenterScene({
   return (
     <>
       <color attach="background" args={[palette.base]} />
-      <fog attach="fog" args={[palette.base, 16, 130]} />
+      <fog attach="fog" args={[palette.base, 12, 80]} />
       <PerspectiveCamera makeDefault fov={42} position={[0, 1.55, 2.8]} />
 
       <ambientLight intensity={0.45} color={palette.ambient} />
@@ -466,8 +466,8 @@ function DatacenterScene({
         intensity={0.9}
         color={palette.cool}
         castShadow
-        shadow-mapSize-width={768}
-        shadow-mapSize-height={768}
+        shadow-mapSize-width={512}
+        shadow-mapSize-height={512}
         shadow-bias={-0.00015}
       />
       <directionalLight
@@ -514,9 +514,10 @@ export function HeroAnimation({
     <div className={className}>
       <Canvas
         shadows
-        dpr={[1, 1.1]}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
+        dpr={[0.75, 1]}
+        gl={{ antialias: false, powerPreference: "high-performance" }}
         frameloop={paused ? "never" : "always"}
+        performance={{ min: 0.5 }}
         className="h-full w-full"
       >
         <DatacenterScene

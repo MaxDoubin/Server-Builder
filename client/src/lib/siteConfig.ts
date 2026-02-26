@@ -50,7 +50,7 @@ export const siteConfig = {
       category: "Music",
       items: [
         "Ranked #1 percussionist in Nevada for 2024 and 2025",
-        "All-State Band selection every year since 2019",
+        "All-State Band selection every year since 2023",
         "Precision, discipline, and performance under pressure",
       ],
     },
@@ -176,7 +176,7 @@ export const siteConfig = {
     {
       title: "All-State Band, Percussion",
       description:
-        "Selected for Nevada All-State Band every year since 2019. Consistent top-level performance.",
+        "Selected for Nevada All-State Band every year since 2023. Consistent top-level performance.",
     },
     {
       title: "Cyber Team, 7th in the Nation",

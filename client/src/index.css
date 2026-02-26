@@ -333,22 +333,26 @@
     opacity: 0;
     transform: translateY(24px);
     transition: opacity 0.7s var(--ease-emphasized), transform 0.7s var(--ease-emphasized);
+    will-change: opacity, transform;
   }
 
   .scroll-reveal.visible {
     opacity: 1;
     transform: translateY(0);
+    will-change: auto;
   }
 
   .scroll-reveal-left {
     opacity: 0;
     transform: translateX(-24px);
     transition: opacity 0.7s var(--ease-emphasized), transform 0.7s var(--ease-emphasized);
+    will-change: opacity, transform;
   }
 
   .scroll-reveal-left.visible {
     opacity: 1;
     transform: translateX(0);
+    will-change: auto;
   }
 
   .stagger-1 { transition-delay: 0ms; }
@@ -400,6 +404,7 @@
 
   .animate-float-slow {
     animation: float-slow 20s ease-in-out infinite;
+    will-change: transform;
   }
 
   @keyframes float-slow-reverse {
@@ -411,6 +416,7 @@
 
   .animate-float-slow-reverse {
     animation: float-slow-reverse 25s ease-in-out infinite;
+    will-change: transform;
   }
 
   @keyframes bounce-slow {
@@ -424,6 +430,7 @@
 
   .hero-content-entrance {
     animation: hero-entrance 1.2s var(--ease-emphasized) both;
+    will-change: opacity, transform;
   }
 
   @keyframes hero-entrance {

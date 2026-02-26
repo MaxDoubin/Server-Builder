@@ -222,7 +222,7 @@ export function Home() {
               { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
               { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
               { end: 1, prefix: "#", suffix: "", label: "Percussionist, NV", icon: Music },
-              { end: 2019, prefix: "", suffix: "+", label: "All-State Since", icon: Award },
+              { end: 2023, prefix: "", suffix: "+", label: "All-State Since", icon: Award },
             ].map((stat, i) => (
               <ScrollReveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center">
@@ -340,8 +340,8 @@ export function Home() {
               },
               {
                 icon: Music,
-                title: "All-State Band, Every Year Since 2019",
-                desc: "Selected for Nevada All-State Band every year since 2019. Consistent top-level performance in competitive auditions.",
+                title: "All-State Band, Every Year Since 2023",
+                desc: "Selected for Nevada All-State Band every year since 2023. Consistent top-level performance in competitive auditions.",
               },
               {
                 icon: Shield,
@@ -486,6 +486,7 @@ export function Home() {
                         alt={post.title}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                         loading="lazy"
+                        decoding="async"
                       />
                     </div>
                     <div className="p-5">

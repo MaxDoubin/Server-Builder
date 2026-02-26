@@ -103,7 +103,7 @@ Edit `client/src/lib/siteConfig.ts` to change:
 ### Personal Website
 - Full-viewport 3D datacenter hero animation with gradient overlays
 - Typing animation cycling through specialties
-- Animated stat counters (Top 1% Cyber League, #7 Nationally Team, #1 Percussionist, All-State Since 2019+)
+- Animated stat counters (Top 1% Cyber League, #7 Nationally Team, #1 Percussionist, All-State Since 2023+)
 - Scroll-reveal animations with staggered timing on all sections
 - Card hover effects with glow and lift
 - Floating grid background effect
