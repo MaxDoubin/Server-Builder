@@ -219,10 +219,10 @@ export function Home() {
         <div className="mx-auto max-w-5xl px-6 py-10">
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {[
-              { end: 14, suffix: " TB", label: "RAM Capacity", icon: HardDrive },
-              { end: 500, suffix: "+", label: "TB Storage", icon: Server },
-              { end: 99, prefix: "", suffix: "%", label: "NCL Percentile", icon: Shield },
+              { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
+              { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
               { end: 1, prefix: "#", suffix: "", label: "Percussionist, NV", icon: Music },
+              { end: 2019, prefix: "", suffix: "+", label: "All-State Since", icon: Award },
             ].map((stat, i) => (
               <ScrollReveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center">
@@ -271,7 +271,7 @@ export function Home() {
               {
                 icon: Shield,
                 title: "Cybersecurity",
-                desc: "99th percentile National Cyber League. Traffic analysis, log investigation, scanning, cryptography, forensics, and incident response.",
+                desc: "Top 1 percent National Cyber League. Traffic analysis, log investigation, scanning, cryptography, forensics, and incident response.",
                 color: "from-green-500/10 to-green-500/5",
                 iconColor: "text-green-400",
                 borderColor: "hover:border-green-500/30",
@@ -287,7 +287,7 @@ export function Home() {
               {
                 icon: Terminal,
                 title: "Infrastructure",
-                desc: "14 TB of RAM and 500+ TB of storage across enterprise servers. Virtualization, ZFS, network segmentation, and monitoring at scale.",
+                desc: "Enterprise servers running virtualization, ZFS, network segmentation, and monitoring at scale. Real hardware, real workloads.",
                 color: "from-cyan-500/10 to-cyan-500/5",
                 iconColor: "text-cyan-400",
                 borderColor: "hover:border-cyan-500/30",
@@ -330,8 +330,8 @@ export function Home() {
             {[
               {
                 icon: Target,
-                title: "National Cyber League, 99th Percentile",
-                desc: "Ranked in the top 1% nationally across practical cybersecurity challenges, including traffic analysis, log investigation, forensics, and real-world problem solving.",
+                title: "National Cyber League, Top 1 Percent",
+                desc: "Ranked in the top 1 percent nationally across practical cybersecurity challenges, including traffic analysis, log investigation, forensics, and real-world problem solving.",
               },
               {
                 icon: Award,

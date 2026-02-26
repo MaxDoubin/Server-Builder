@@ -2,9 +2,9 @@ import { User, Award, BookOpen, ShieldCheck } from "lucide-react";
 import { DashboardShell } from "@/pages/dashboard-shell";
 import { Panel } from "@/pages/dashboard-widgets";
 
-const bio = `Max Doubin is focused on enterprise networking, cybersecurity, and informatics. He serves as president of the Cyber Club and the Music Club, and competes on Varsity Quiz. Max is also a Blue Ribbon Commissioner for Educational Excellence for the City of Henderson, where he works directly with the City Council and local school boards to support efforts that improve educational opportunities and student outcomes.
+const bio = `Max Doubin is focused on enterprise networking, cybersecurity, and systems engineering. He serves as president of the Cyber Club and the Music Club, and competes on Varsity Quiz. Max is also a Blue Ribbon Commissioner for Educational Excellence for the City of Henderson, where he works directly with the City Council and local school boards to support efforts that improve educational opportunities and student outcomes.
 
-A top 1% National Cyber League competitor, Max is passionate about cybersecurity, systems, and building real projects. Over several years, Max has built and continuously expanded a large-scale home lab that manages more than 1.2 petabytes of data and is backed by 12 TB of RAM. He developed this environment as a serious engineering platform, designed to support high-fidelity testing, large workloads, and real-world infrastructure experimentation.
+A top 1 percent National Cyber League competitor, Max is passionate about cybersecurity, systems, and building real projects. Over several years, Max has built and continuously expanded a large-scale home lab running multiple enterprise servers. He developed this environment as a serious engineering platform, designed to support high-fidelity testing, large workloads, and real-world infrastructure experimentation.
 
 That foundation directly led to Max’s work on HyperScale: a hyper-realistic, scalable datacenter simulation built for technical users who want to model how modern infrastructure behaves under real constraints. HyperScale is designed to make datacenter concepts tangible, from capacity planning and resource contention to failure scenarios and performance tradeoffs, giving builders a practical way to stress-test ideas before they reach production.
 

@@ -1,12 +1,12 @@
 export const siteConfig = {
   name: "Max Doubin",
-  tagline: "Enterprise Networking, Cybersecurity, and Informatics",
+  tagline: "Enterprise Networking, Cybersecurity, and Systems Engineering",
   shortBio:
-    "Enterprise networking and cybersecurity specialist based in Las Vegas. 99th percentile National Cyber League competitor. Building and operating large-scale infrastructure with 14 TB of RAM and over 500 TB of storage.",
+    "Student at South CTA. Enterprise networking and cybersecurity specialist based in Las Vegas. Top 1 percent National Cyber League competitor. I build and operate real enterprise infrastructure at scale.",
   fullBio: [
-    "I build infrastructure that works. My focus is enterprise networking, cybersecurity, and informatics, with an emphasis on doing things the right way: clean architecture, good segmentation, strong authentication, predictable performance, and real monitoring so you can prove what is happening instead of guessing.",
-    "On the informatics side, I focus on how data moves through systems and how to turn raw information into something usable. That includes structuring data, understanding logs and telemetry, organizing information so it stays consistent, and making systems easier to manage because the data actually tells the truth.",
-    "Most of my learning happens through hands-on work. I have been building and expanding my homelab for years, and it is a core part of how I develop my skills. My environment currently runs 14 TB of RAM and over 500 TB of storage across multiple enterprise servers. I use it to test infrastructure designs, practice deployment and troubleshooting at scale, and push well beyond basic setups.",
+    "I build infrastructure that works. My focus is enterprise networking, cybersecurity, and systems engineering, with an emphasis on doing things the right way: clean architecture, good segmentation, strong authentication, predictable performance, and real monitoring so you can prove what is happening instead of guessing.",
+    "I run enterprise servers, manage complex network environments, and work hands-on with the kind of hardware you find in real datacenters. Everything from rack deployment and power planning to virtualization, storage architecture, and network segmentation.",
+    "Most of my learning happens through hands-on work. I have been building and expanding my homelab for years, and it is a core part of how I develop my skills. I run multiple enterprise servers and use them to test infrastructure designs, practice deployment and troubleshooting at scale, and push well beyond basic setups.",
   ],
   email: "doubinemail@gmail.com",
   social: {
@@ -26,14 +26,14 @@ export const siteConfig = {
       category: "Infrastructure",
       items: [
         "Operating a multi-server enterprise homelab environment",
-        "Current capacity: 14 TB RAM and over 500 TB storage",
+        "Running real enterprise hardware for testing and development",
         "Experimenting with architecture, testing designs, and refining troubleshooting methodology",
       ],
     },
     {
       category: "Cybersecurity",
       items: [
-        "National Cyber League competitor, 99th percentile",
+        "National Cyber League competitor, top 1 percent",
         "Regular hands-on practice through challenge-style labs and technical problem solving",
         "Focused on traffic analysis, forensics, and defensive security",
       ],
@@ -95,7 +95,7 @@ export const siteConfig = {
       ],
     },
     {
-      name: "Informatics and Automation",
+      name: "Automation and Tooling",
       skills: [
         "Logging and Telemetry",
         "Data Organization and Analysis",
@@ -164,7 +164,7 @@ export const siteConfig = {
 
   achievements: [
     {
-      title: "National Cyber League, 99th Percentile",
+      title: "National Cyber League, Top 1 Percent",
       description:
         "Ranked in the top 1 percent nationally across practical cybersecurity challenges, problem solving, and technical analysis.",
     },
@@ -201,7 +201,7 @@ export const siteConfig = {
       id: "homelab",
       title: "Enterprise Homelab",
       description:
-        "A large-scale lab environment with 14 TB of RAM and over 500 TB of storage across multiple Dell enterprise servers. Used for testing network designs, practicing deployment workflows, running virtualization workloads, and building real troubleshooting skills.",
+        "A large-scale lab environment running multiple Dell enterprise servers. Used for testing network designs, practicing deployment workflows, running virtualization workloads, and building real troubleshooting skills.",
       tech: [
         "Dell Enterprise Hardware",
         "Linux",

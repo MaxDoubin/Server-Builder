@@ -11,7 +11,7 @@ export function Footer() {
           <div className="text-center sm:text-left">
             <div className="text-sm font-semibold text-foreground">{siteConfig.name}</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              Enterprise Networking, Cybersecurity, and Informatics
+              Enterprise Networking, Cybersecurity, and Systems Engineering
             </div>
           </div>
 

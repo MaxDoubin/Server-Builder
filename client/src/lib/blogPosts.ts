@@ -17,7 +17,7 @@ export const blogPosts: BlogPost[] = [
     tags: ["three.js", "react", "simulation", "servers"],
     excerpt:
       "How I built an immersive 3D datacenter simulation with procedural generation, real-time thermal modeling, and React Three Fiber.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-building-hyperscale.png",
     content: `
 ## Why I Built This
 
@@ -73,13 +73,13 @@ Building this project taught me a lot about the relationship between software an
     tags: ["networking", "homelab", "servers"],
     excerpt:
       "How running real enterprise hardware at home changed the way I learn about networking, systems, and troubleshooting.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-why-homelabs-matter.png",
     content: `
 ## Beyond the Textbook
 
 Reading about VLANs and subnetting is one thing. Configuring them on real hardware, breaking something, and spending two hours figuring out why your trunk port is dropping tagged traffic is a completely different experience. That is why I run a homelab.
 
-My homelab currently has 14 TB of RAM and over 500 TB of storage across multiple Dell enterprise servers. It is not a Raspberry Pi cluster or a single tower PC. It is enterprise hardware running enterprise workloads, and that is the point.
+My homelab runs multiple Dell enterprise servers with serious compute and storage capacity. It is not a Raspberry Pi cluster or a single tower PC. It is enterprise hardware running enterprise workloads, and that is the point.
 
 ## What I Actually Run
 
@@ -109,8 +109,8 @@ These habits carry directly into professional environments. The difference betwe
     date: "2026-01-28",
     tags: ["cybersecurity", "competition", "networking"],
     excerpt:
-      "What I learned from reaching the 99th percentile in competitive cybersecurity, and why the process matters more than the ranking.",
-    coverImage: "/images/blog-cover-webdev.png",
+      "What I learned from reaching the top 1 percent in competitive cybersecurity, and why the process matters more than the ranking.",
+    coverImage: "/images/blog-ncl-competition-lessons.png",
     content: `
 ## What NCL Actually Tests
 
@@ -146,7 +146,7 @@ Those habits translate directly to real-world troubleshooting. When a network go
     tags: ["apple", "mac-pro", "servers", "homelab"],
     excerpt:
       "Why I added a rack-mount Mac Pro to my server infrastructure and what it actually brings to the table alongside Dell PowerEdge systems.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-mac-pro-rack-mount-homelab.png",
     content: `
 ## Why a Mac Pro in a Server Rack
 
@@ -180,7 +180,7 @@ But for specific use cases, the rack-mount Mac Pro is hard to beat. It is the be
     tags: ["dell", "servers", "homelab", "hardware"],
     excerpt:
       "A deep dive into the PowerEdge R740 and why it is still one of the best platforms for a serious home lab environment.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-dell-poweredge-r740-deep-dive.png",
     content: `
 ## Why the R740
 
@@ -216,7 +216,7 @@ Used R740s are available from resellers and auction sites. Prices vary a lot bas
     tags: ["apple", "servers", "hardware", "mac-pro"],
     excerpt:
       "Apple Silicon changed the laptop game. Here is why it probably will not replace x86 in datacenters any time soon, and what would need to change.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-apple-silicon-server-future.png",
     content: `
 ## The Performance Argument
 
@@ -252,7 +252,7 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     tags: ["storage", "zfs", "servers", "homelab"],
     excerpt:
       "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-zfs-on-enterprise-hardware.png",
     content: `
 ## Why ZFS
 
@@ -295,7 +295,7 @@ ZFS rewards careful planning. Choose your pool layout thoughtfully because chang
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "How I moved from gigabit to 10 gigabit Ethernet across my lab and what actually changed in practice.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-10gbe-networking-homelab.png",
     content: `
 ## Why 10GbE
 
@@ -331,7 +331,7 @@ Backup windows also shrank significantly. A full backup that took 45 minutes ove
     tags: ["servers", "hardware", "networking"],
     excerpt:
       "Why out-of-band management is essential for running servers, and how IPMI and iDRAC actually work under the hood.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-ipmi-remote-management.png",
     content: `
 ## What Is Out-of-Band Management
 
@@ -376,7 +376,7 @@ Change the default password immediately. Enable HTTPS and disable HTTP. Keep the
     tags: ["servers", "homelab", "hardware"],
     excerpt:
       "Good cable management is not about aesthetics. It is about airflow, troubleshooting speed, and not hating yourself six months from now.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-server-rack-cable-management.png",
     content: `
 ## Why It Matters
 
@@ -414,7 +414,7 @@ Power cables get their own vertical cable manager on the right side of the rack.
     tags: ["virtualization", "servers", "homelab"],
     excerpt:
       "I have run both Proxmox and VMware ESXi in my lab. Here is how they compare for real workloads.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-proxmox-vs-esxi.png",
     content: `
 ## The Two Contenders
 
@@ -454,7 +454,7 @@ For a homelab, Proxmox wins on value. You get enterprise-class virtualization wi
     tags: ["hardware", "servers", "storage"],
     excerpt:
       "A practical explanation of ECC memory, why it matters for servers, and when you actually need it.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-ecc-ram-explained.png",
     content: `
 ## What ECC Does
 
@@ -488,7 +488,7 @@ For a homelab, ECC is a strong recommendation but not an absolute requirement. I
     tags: ["apple", "mac-pro", "dell", "servers"],
     excerpt:
       "Two very different approaches to rack-mount hardware. Here is how the Mac Pro and PowerEdge compare for real workloads.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-mac-pro-vs-poweredge-comparison.png",
     content: `
 ## Different Tools for Different Jobs
 
@@ -532,7 +532,7 @@ Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific 
     tags: ["hardware", "servers", "homelab", "power"],
     excerpt:
       "A practical guide to choosing the right UPS for your servers, including how to calculate your actual power needs.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-ups-sizing-homelab.png",
     content: `
 ## Why You Need a UPS
 
@@ -577,7 +577,7 @@ The total cost was significant, but it has already saved my data at least three 
     tags: ["networking", "security", "homelab"],
     excerpt:
       "How I use VLANs to segment my home network into isolated zones for security, performance, and sanity.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-vlan-segmentation-guide.png",
     content: `
 ## What VLANs Actually Do
 
@@ -620,7 +620,7 @@ It takes some effort to set up, but once it is running, you have a network that 
     tags: ["networking", "security", "homelab", "fortinet"],
     excerpt:
       "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-fortigate-firewall-homelab.png",
     content: `
 ## Why Fortinet
 
@@ -668,7 +668,7 @@ The IPS features have also caught real threats. Even in a homelab, there is scan
     tags: ["hardware", "servers", "apple"],
     excerpt:
       "A guide to picking the right processor for your server workload, covering Intel Xeon, AMD EPYC, and Apple's approach.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-server-cpu-selection-guide.png",
     content: `
 ## Intel Xeon
 
@@ -714,7 +714,7 @@ Pick your CPU based on your actual workload:
     tags: ["servers", "datacenter", "hardware"],
     excerpt:
       "The principles behind datacenter cooling and how I apply hot/cold aisle concepts even in a homelab environment.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-hot-cold-aisle-containment.png",
     content: `
 ## The Problem
 
@@ -752,7 +752,7 @@ Airflow management is not optional for servers. Hot air recirculation causes the
     tags: ["hardware", "servers", "power", "homelab"],
     excerpt:
       "A guide to power distribution units for server racks, from basic power strips to intelligent metered PDUs.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-pdu-selection-guide.png",
     content: `
 ## What Is a PDU
 
@@ -792,7 +792,7 @@ I currently run on 120V because that is what my circuit supports, but if I expan
     tags: ["networking", "cybersecurity", "tools"],
     excerpt:
       "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
-    coverImage: "/images/blog-cover-webdev.png",
+    coverImage: "/images/blog-wireshark-packet-analysis.png",
     content: `
 ## More Than a Packet Viewer
 
@@ -846,7 +846,7 @@ The best way to get good at packet analysis is to capture your own traffic and s
     tags: ["cybersecurity", "networking", "tools"],
     excerpt:
       "How I use Nmap for network discovery and security assessment, with practical examples from my lab environment.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-nmap-scanning-techniques.png",
     content: `
 ## What Nmap Does
 
@@ -910,7 +910,7 @@ I regularly scan my own lab environment to practice and to verify my security po
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "A look at what makes the 2019 Mac Pro's internal design unique compared to traditional server hardware.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-mac-pro-2019-teardown-analysis.png",
     content: `
 ## The Design Philosophy
 
@@ -946,7 +946,7 @@ For datacenter use where density matters, the Mac Pro loses. For a lab or studio
     tags: ["cybersecurity", "linux", "servers"],
     excerpt:
       "The fundamental security configurations I apply to every Linux server in my lab, and why each one matters.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-linux-server-hardening.png",
     content: `
 ## Start with Updates
 
@@ -1007,7 +1007,7 @@ These are basics, but basics done consistently are more valuable than advanced t
     tags: ["servers", "networking", "windows"],
     excerpt:
       "How I set up a full Active Directory domain in my lab to practice enterprise identity management.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-active-directory-homelab.png",
     content: `
 ## Why Active Directory
 
@@ -1053,7 +1053,7 @@ Understanding the attacks makes me better at configuring the defenses.
     tags: ["networking", "hardware"],
     excerpt:
       "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-sfp-transceivers-explained.png",
     content: `
 ## What Transceivers Do
 
@@ -1097,7 +1097,7 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
     tags: ["storage", "servers", "homelab"],
     excerpt:
       "A practical guide to implementing a real backup strategy using the 3-2-1 rule with enterprise hardware.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-backup-strategy-321-rule.png",
     content: `
 ## The Rule
 
@@ -1133,7 +1133,7 @@ All of this is automated. Backups run on schedules, retention policies are enfor
     tags: ["networking", "tools", "homelab"],
     excerpt:
       "A practical look at the monitoring tools running in my homelab and what each one tells me about my network.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-network-monitoring-tools.png",
     content: `
 ## Why Monitor
 
@@ -1171,7 +1171,7 @@ My main Grafana dashboard shows a high-level view of the entire lab: all servers
     tags: ["apple", "networking", "hardware"],
     excerpt:
       "How Thunderbolt networking works, where it fits, and why it is both brilliant and frustrating for mixed environments.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-thunderbolt-networking.png",
     content: `
 ## What Thunderbolt Networking Is
 
@@ -1205,7 +1205,7 @@ The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE 
     tags: ["networking", "cisco", "homelab"],
     excerpt:
       "The core switching concepts I learned on Cisco hardware and use every day in my lab environment.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-cisco-switching-fundamentals.png",
     content: `
 ## Why Cisco
 
@@ -1258,7 +1258,7 @@ One of the most common mistakes on Cisco switches is forgetting to save the conf
     tags: ["dell", "servers", "hardware"],
     excerpt:
       "Advanced iDRAC features that most people overlook, from virtual console to automated alerts and firmware management.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-dell-idrac-tips-tricks.png",
     content: `
 ## Beyond the Basics
 
@@ -1310,7 +1310,7 @@ This is how I configure iDRAC on new servers. Run the script, and every setting 
     tags: ["apple", "mac-pro", "storage", "hardware"],
     excerpt:
       "The options for adding storage to a Mac Pro, from internal NVMe to Thunderbolt expansion and network-attached storage.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-mac-pro-storage-expansion.png",
     content: `
 ## The Challenge
 
@@ -1350,7 +1350,7 @@ My storage hierarchy mirrors what you would see in a professional post-productio
     tags: ["networking", "homelab"],
     excerpt:
       "How I think about subnetting in practice, with real examples from my network instead of textbook exercises.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-subnetting-practical-guide.png",
     content: `
 ## Why Subnetting Matters
 
@@ -1397,7 +1397,7 @@ The second most common mistake is forgetting the gateway. Every subnet needs a g
     tags: ["servers", "hardware", "performance"],
     excerpt:
       "The BIOS settings I configure on every server and why each one makes a difference for performance and reliability.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-server-bios-configuration.png",
     content: `
 ## Why BIOS Settings Matter
 
@@ -1439,7 +1439,7 @@ Keep the BIOS firmware updated. Dell releases BIOS updates that fix bugs, improv
     tags: ["networking", "servers", "homelab"],
     excerpt:
       "Why DNS is the most critical piece of network infrastructure and how I run it in my lab.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-dns-fundamentals-infrastructure.png",
     content: `
 ## DNS Is Everything
 
@@ -1484,7 +1484,7 @@ Always test from the perspective of the client that is having the problem. DNS i
     tags: ["apple", "servers", "hardware", "history"],
     excerpt:
       "Apple used to make rack-mount servers. Here is why the Xserve mattered, why Apple killed it, and what it means for the Mac Pro.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-xserve-apple-server-legacy.png",
     content: `
 ## What Was the Xserve
 
@@ -1520,7 +1520,7 @@ The Xserve was ahead of its time in build quality and design. But it was in a ma
     tags: ["storage", "servers", "hardware"],
     excerpt:
       "A practical comparison of RAID levels with real performance and reliability tradeoffs from my lab experience.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-raid-levels-comparison.png",
     content: `
 ## What RAID Does
 
@@ -1562,7 +1562,7 @@ I use ZFS RAIDZ2 (which is conceptually similar to RAID 6) for my bulk storage a
     tags: ["networking", "automation", "tools"],
     excerpt:
       "How I use Python to automate repetitive network configuration and monitoring tasks in my lab.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-python-network-automation.png",
     content: `
 ## Why Automate
 
@@ -1637,7 +1637,7 @@ Each script is simple, focused, and reliable. They save me hours of manual check
     tags: ["servers", "hardware", "homelab"],
     excerpt:
       "How I planned and organized my server rack, from choosing the right size to power distribution and cooling.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-server-rack-planning.png",
     content: `
 ## Choosing a Rack
 
@@ -1688,7 +1688,7 @@ Buy more rack than you think you need. Label everything during installation, not
     tags: ["networking", "cisco", "troubleshooting"],
     excerpt:
       "Real STP problems I have encountered and how I diagnosed them using show commands and packet captures.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-stp-troubleshooting.png",
     content: `
 ## STP Is Everywhere
 
@@ -1739,7 +1739,7 @@ These two features together prevent most common STP issues on access ports.
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "What Apple's Afterburner accelerator card does, how it works, and why hardware-accelerated ProRes decoding matters.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-mac-pro-afterburner-card.png",
     content: `
 ## What Afterburner Does
 
@@ -1775,7 +1775,7 @@ Afterburner is a good example of how hardware acceleration can transform specifi
     tags: ["security", "networking", "fortinet"],
     excerpt:
       "How I approach firewall policy design, with practical examples from my FortiGate configuration.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-firewall-policy-design.png",
     content: `
 ## The Principle of Least Privilege
 
@@ -1828,7 +1828,7 @@ Firewall policies are not set-and-forget. I review my policies monthly to remove
     tags: ["networking", "virtualization", "servers"],
     excerpt:
       "How virtual switches, port groups, and VLAN tagging work inside hypervisors, and how they connect to physical networks.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-virtualization-networking-concepts.png",
     content: `
 ## Virtual Switches
 
@@ -1864,7 +1864,7 @@ I use SR-IOV for my NFS storage VMs that need maximum throughput, and standard v
     tags: ["cybersecurity", "tools", "servers"],
     excerpt:
       "My methodology for analyzing logs to find problems, with examples from real troubleshooting sessions.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-log-analysis-methodology.png",
     content: `
 ## Logs Tell the Truth
 
@@ -1914,7 +1914,7 @@ Log analysis is a major category in the National Cyber League competition. The s
     tags: ["apple", "mac-pro", "security", "hardware"],
     excerpt:
       "What the T2 chip does in the Mac Pro, how it affects server use, and the tradeoffs between security and flexibility.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-apple-t2-security-chip.png",
     content: `
 ## What the T2 Does
 
@@ -1952,7 +1952,7 @@ In my lab, I keep the Mac Pro on its default macOS configuration and use my Dell
     tags: ["networking", "homelab", "tools"],
     excerpt:
       "How I document my network infrastructure in a way that is useful during outages, not just for show.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-network-documentation-best-practices.png",
     content: `
 ## The Problem
 
@@ -1992,7 +1992,7 @@ The hardest part of documentation is keeping it updated. I make it a rule: no in
     tags: ["servers", "hardware", "homelab", "power"],
     excerpt:
       "How I monitor power usage in my rack and the settings that made the biggest difference in my electricity bill.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-power-consumption-monitoring.png",
     content: `
 ## Measuring Power
 
@@ -2043,7 +2043,7 @@ Power costs add up over years. A 500W reduction saves over $500 per year at typi
     tags: ["cybersecurity", "networking", "servers"],
     excerpt:
       "My approach to handling infrastructure incidents, from detection through resolution and documentation.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-incident-response-methodology.png",
     content: `
 ## Incidents Will Happen
 
@@ -2089,7 +2089,7 @@ I occasionally create intentional incidents in my lab environment to practice re
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "How the Mac Pro's dual Vega II GPUs handle compute workloads and where they fit in the GPU computing landscape.",
-    coverImage: "/images/blog-cover-datacenter.png",
+    coverImage: "/images/blog-mac-pro-gpu-compute.png",
     content: `
 ## The Hardware
 
@@ -2127,7 +2127,7 @@ I use the Mac Pro's GPUs primarily for video processing and as a learning platfo
     tags: ["security", "networking", "servers"],
     excerpt:
       "A practical explanation of TLS certificates, certificate authorities, and how to manage certificates on your own infrastructure.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-ssl-tls-certificates-explained.png",
     content: `
 ## What TLS Does
 
@@ -2175,7 +2175,7 @@ The biggest challenge with certificates is tracking expiration dates. An expired
     tags: ["apple", "storage", "mac-pro"],
     excerpt:
       "How APFS works, what it does well, and why it is not a replacement for ZFS in server environments.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-apple-file-system-apfs.png",
     content: `
 ## What APFS Is
 
@@ -2216,7 +2216,7 @@ This hybrid approach uses each filesystem where it is strongest.
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-homelab-network-evolution.png",
     content: `
 ## Stage 1: Consumer Router
 
@@ -2257,7 +2257,7 @@ Start with a managed switch and a firewall from the beginning. The consumer rout
     tags: ["virtualization", "servers", "homelab"],
     excerpt:
       "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog-container-orchestration-basics.png",
     content: `
 ## Containers vs VMs
 

@@ -1,6 +1,6 @@
 # Max Doubin - Personal Website
 
-A professional personal website for Max Doubin, focused on enterprise networking, cybersecurity, and informatics. The site features an About Me landing page with a 3D datacenter hero animation, 43 blog posts, projects showcase with category filtering, a contact form, and the Hyperscale datacenter simulation game accessible at /game.
+A professional personal website for Max Doubin, focused on enterprise networking, cybersecurity, and systems engineering. The site features an About Me landing page with a 3D datacenter hero animation, 43 blog posts, projects showcase with category filtering, a contact form, and the Hyperscale datacenter simulation game accessible at /game.
 
 ## Overview
 
@@ -103,7 +103,7 @@ Edit `client/src/lib/siteConfig.ts` to change:
 ### Personal Website
 - Full-viewport 3D datacenter hero animation with gradient overlays
 - Typing animation cycling through specialties
-- Animated stat counters (14TB RAM, 500+TB storage, 99% NCL, #1 Percussionist)
+- Animated stat counters (Top 1% Cyber League, #7 Nationally Team, #1 Percussionist, All-State Since 2019+)
 - Scroll-reveal animations with staggered timing on all sections
 - Card hover effects with glow and lift
 - Floating grid background effect
