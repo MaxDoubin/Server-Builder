@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState, useCallback } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { siteConfig } from "@/lib/siteConfig";
 import { Layout } from "@/components/site/Layout";
@@ -44,43 +44,40 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
   const [currentWord, setCurrentWord] = useState(0);
   const [currentChar, setCurrentChar] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const tick = useCallback(() => {
-    const word = words[currentWord];
-    if (isPaused) return;
-
-    if (!isDeleting) {
-      if (currentChar < word.length) {
-        setCurrentChar((c) => c + 1);
-      } else {
-        setIsPaused(true);
-        setTimeout(() => {
-          setIsPaused(false);
-          setIsDeleting(true);
-        }, 2000);
-      }
-    } else {
-      if (currentChar > 0) {
-        setCurrentChar((c) => c - 1);
-      } else {
-        setIsDeleting(false);
-        setCurrentWord((w) => (w + 1) % words.length);
-      }
-    }
-  }, [currentWord, currentChar, isDeleting, isPaused, words]);
+  const pauseUntilRef = useRef(0);
 
   useEffect(() => {
-    const speed = isDeleting ? 40 : 80;
-    const timer = setTimeout(tick, speed);
-    return () => clearTimeout(timer);
-  }, [tick, isDeleting]);
+    const interval = window.setInterval(() => {
+      const now = Date.now();
+      if (now < pauseUntilRef.current) return;
 
-  const displayed = words[currentWord].substring(0, currentChar);
+      const word = words[currentWord];
+      if (!isDeleting) {
+        if (currentChar < word.length) {
+          setCurrentChar((count) => count + 1);
+          return;
+        }
+
+        pauseUntilRef.current = now + 1200;
+        setIsDeleting(true);
+        return;
+      }
+
+      if (currentChar > 0) {
+        setCurrentChar((count) => Math.max(0, count - 1));
+        return;
+      }
+
+      setIsDeleting(false);
+      setCurrentWord((wordIndex) => (wordIndex + 1) % words.length);
+    }, isDeleting ? 40 : 70);
+
+    return () => window.clearInterval(interval);
+  }, [currentWord, currentChar, isDeleting, words]);
 
   return (
     <span className={className}>
-      {displayed}
+      {words[currentWord].slice(0, currentChar)}
       <span className="animate-blink text-primary">|</span>
     </span>
   );
@@ -103,21 +100,31 @@ function FloatingGrid() {
 
 export function Home() {
   const recentPosts = getAllPosts().slice(0, 3);
+  const [showHeroAnimation, setShowHeroAnimation] = useState(false);
+
+  useEffect(() => {
+    const deferredStart = window.setTimeout(() => setShowHeroAnimation(true), 1200);
+    return () => window.clearTimeout(deferredStart);
+  }, []);
 
   return (
     <Layout>
       <section className="relative -mx-6 -mt-4 overflow-hidden" data-testid="section-hero">
         <div className="relative min-h-[100vh] flex items-center">
           <div className="absolute inset-0">
-            <HeroErrorBoundary fallback={<HeroFallback />}>
-              <Suspense fallback={<HeroFallback />}>
-                <HeroAnimation
-                  className="absolute inset-0 h-full w-full"
-                  variant="about"
-                  seed={42}
-                />
-              </Suspense>
-            </HeroErrorBoundary>
+            {showHeroAnimation ? (
+              <HeroErrorBoundary fallback={<HeroFallback />}>
+                <Suspense fallback={<HeroFallback />}>
+                  <HeroAnimation
+                    className="absolute inset-0 h-full w-full"
+                    variant="about"
+                    seed={42}
+                  />
+                </Suspense>
+              </HeroErrorBoundary>
+            ) : (
+              <HeroFallback />
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           </div>
