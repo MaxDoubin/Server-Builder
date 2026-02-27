@@ -80,7 +80,7 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
 
   return (
     <span className={className}>
-      {displayed}
+      {words[currentWord].slice(0, currentChar)}
       <span className="animate-blink text-primary">|</span>
     </span>
   );
