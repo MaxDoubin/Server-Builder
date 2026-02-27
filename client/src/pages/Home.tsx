@@ -1,11 +1,9 @@
-import { Suspense, lazy, useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { siteConfig } from "@/lib/siteConfig";
 import { Layout } from "@/components/site/Layout";
 import { getAllPosts } from "@/lib/blogPosts";
-import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { AnimatedCounter } from "@/components/site/AnimatedCounter";
-import { HeroErrorBoundary } from "@/components/site/HeroErrorBoundary";
 import {
   ArrowRight,
   Instagram,
@@ -23,11 +21,14 @@ import {
   HardDrive,
 } from "lucide-react";
 
-const HeroAnimation = lazy(() =>
-  import("@/components/hero/HeroAnimation").then((m) => ({
-    default: m.HeroAnimation,
-  }))
-);
+
+type RevealProps = {
+  children: ReactNode;
+};
+
+function Reveal({ children }: RevealProps) {
+  return <>{children}</>;
+}
 
 function HeroFallback() {
   return (
@@ -41,42 +42,49 @@ function HeroFallback() {
 }
 
 function TypeWriter({ words, className }: { words: string[]; className?: string }) {
-  const [currentWord, setCurrentWord] = useState(0);
-  const [currentChar, setCurrentChar] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const tick = useCallback(() => {
-    const word = words[currentWord];
-    if (isPaused) return;
-
-    if (!isDeleting) {
-      if (currentChar < word.length) {
-        setCurrentChar((c) => c + 1);
-      } else {
-        setIsPaused(true);
-        setTimeout(() => {
-          setIsPaused(false);
-          setIsDeleting(true);
-        }, 2000);
-      }
-    } else {
-      if (currentChar > 0) {
-        setCurrentChar((c) => c - 1);
-      } else {
-        setIsDeleting(false);
-        setCurrentWord((w) => (w + 1) % words.length);
-      }
-    }
-  }, [currentWord, currentChar, isDeleting, isPaused, words]);
+  const [displayed, setDisplayed] = useState("");
+  const wordIndexRef = useRef(0);
+  const charIndexRef = useRef(0);
+  const deletingRef = useRef(false);
+  const pauseUntilRef = useRef(0);
 
   useEffect(() => {
-    const speed = isDeleting ? 40 : 80;
-    const timer = setTimeout(tick, speed);
-    return () => clearTimeout(timer);
-  }, [tick, isDeleting]);
+    let timeoutId: number | undefined;
 
-  const displayed = words[currentWord].substring(0, currentChar);
+    const tick = () => {
+      const now = Date.now();
+      if (now < pauseUntilRef.current) {
+        timeoutId = window.setTimeout(tick, 40);
+        return;
+      }
+
+      const word = words[wordIndexRef.current] ?? "";
+
+      if (!deletingRef.current) {
+        if (charIndexRef.current < word.length) {
+          charIndexRef.current += 1;
+        } else {
+          pauseUntilRef.current = now + 1200;
+          deletingRef.current = true;
+        }
+      } else if (charIndexRef.current > 0) {
+        charIndexRef.current -= 1;
+      } else {
+        deletingRef.current = false;
+        wordIndexRef.current = (wordIndexRef.current + 1) % words.length;
+      }
+
+      const nextWord = words[wordIndexRef.current] ?? "";
+      setDisplayed(nextWord.slice(0, charIndexRef.current));
+
+      timeoutId = window.setTimeout(tick, deletingRef.current ? 28 : 52);
+    };
+
+    tick();
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [words]);
 
   return (
     <span className={className}>
@@ -86,38 +94,30 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
   );
 }
 
+
 function FloatingGrid() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 opacity-[0.03]"
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div
+        className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `linear-gradient(rgba(56,189,248,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.3) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundImage:
+            "linear-gradient(rgba(56,189,248,0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.22) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
         }}
       />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-[100px] animate-float-slow" />
-      <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-blue-500/5 blur-[80px] animate-float-slow-reverse" />
     </div>
   );
 }
 
 export function Home() {
   const recentPosts = getAllPosts().slice(0, 3);
-
   return (
     <Layout>
       <section className="relative -mx-6 -mt-4 overflow-hidden" data-testid="section-hero">
         <div className="relative min-h-[100vh] flex items-center">
           <div className="absolute inset-0">
-            <HeroErrorBoundary fallback={<HeroFallback />}>
-              <Suspense fallback={<HeroFallback />}>
-                <HeroAnimation
-                  className="absolute inset-0 h-full w-full"
-                  variant="about"
-                  seed={42}
-                />
-              </Suspense>
-            </HeroErrorBoundary>
+            <HeroFallback />
             <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           </div>
@@ -129,7 +129,7 @@ export function Home() {
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary/90 backdrop-blur-sm">
                 <div className="relative h-2 w-2">
                   <div className="absolute inset-0 rounded-full bg-green-400" />
-                  <div className="absolute inset-0 rounded-full bg-green-400 animate-ping" />
+                  <div className="absolute inset-0 rounded-full bg-green-400 opacity-60" />
                 </div>
                 Available for opportunities
               </div>
@@ -168,7 +168,7 @@ export function Home() {
                 </Link>
                 <Link
                   href="/game"
-                  className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
+                  className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
                   data-testid="button-play-game"
                 >
                   <Zap className="h-4 w-4 text-cyan-400 transition-all group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
@@ -176,7 +176,7 @@ export function Home() {
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
                   data-testid="button-contact"
                 >
                   Get in Touch
@@ -206,7 +206,7 @@ export function Home() {
             </div>
           </div>
 
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce-slow">
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
             <div className="flex flex-col items-center gap-2 text-white/30">
               <span className="text-xs uppercase tracking-widest">Scroll</span>
               <div className="h-8 w-[1px] bg-gradient-to-b from-white/30 to-transparent" />
@@ -224,7 +224,7 @@ export function Home() {
               { end: 1, prefix: "#", suffix: "", label: "Percussionist, NV", icon: Music },
               { end: 2023, prefix: "", suffix: "+", label: "All-State Since", icon: Award },
             ].map((stat, i) => (
-              <ScrollReveal key={stat.label} stagger={i + 1}>
+              <Reveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center">
                   <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-colors group-hover:text-primary" />
                   <div className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
@@ -234,7 +234,7 @@ export function Home() {
                     {stat.label}
                   </div>
                 </div>
-              </ScrollReveal>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -243,7 +243,7 @@ export function Home() {
       <div className="px-0 relative">
         <FloatingGrid />
 
-        <ScrollReveal>
+        <Reveal>
           <section className="pb-16 pt-20" data-testid="section-about">
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
@@ -256,16 +256,16 @@ export function Home() {
               ))}
             </div>
           </section>
-        </ScrollReveal>
+        </Reveal>
 
         <section className="pb-16" data-testid="section-highlights">
-          <ScrollReveal>
+          <Reveal>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Expertise</h2>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-          </ScrollReveal>
+          </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
@@ -301,7 +301,7 @@ export function Home() {
                 borderColor: "hover:border-amber-500/30",
               },
             ].map((item, i) => (
-              <ScrollReveal key={item.title} stagger={i + 1}>
+              <Reveal key={item.title} stagger={i + 1}>
                 <div className={`group card-hover rounded-xl border border-border/30 bg-gradient-to-b ${item.color} p-6 ${item.borderColor} h-full`}>
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-background/50 p-2 ring-1 ring-border/30 transition-all group-hover:ring-primary/30">
@@ -313,19 +313,19 @@ export function Home() {
                     {item.desc}
                   </p>
                 </div>
-              </ScrollReveal>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="pb-16" data-testid="section-achievements">
-          <ScrollReveal>
+          <Reveal>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Achievements</h2>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-          </ScrollReveal>
+          </Reveal>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
               {
@@ -349,7 +349,7 @@ export function Home() {
                 desc: "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity. Discipline and preparation over everything.",
               },
             ].map((item, i) => (
-              <ScrollReveal key={item.title} stagger={i + 1}>
+              <Reveal key={item.title} stagger={i + 1}>
                 <div className="group card-hover flex gap-4 rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50">
                   <div className="mt-0.5 flex-shrink-0 rounded-lg bg-primary/10 p-2 ring-1 ring-primary/20 transition-all group-hover:bg-primary/15 group-hover:ring-primary/30">
                     <item.icon className="h-4 w-4 text-primary" />
@@ -361,22 +361,22 @@ export function Home() {
                     </p>
                   </div>
                 </div>
-              </ScrollReveal>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="pb-16" data-testid="section-currently">
-          <ScrollReveal>
+          <Reveal>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Currently</h2>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-          </ScrollReveal>
+          </Reveal>
           <div className="grid gap-4 sm:grid-cols-2">
             {siteConfig.currently.map((section, i) => (
-              <ScrollReveal key={section.category} stagger={i + 1}>
+              <Reveal key={section.category} stagger={i + 1}>
                 <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-primary/80">
                     {section.category}
@@ -393,22 +393,22 @@ export function Home() {
                     ))}
                   </ul>
                 </div>
-              </ScrollReveal>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="pb-16" data-testid="section-skills">
-          <ScrollReveal>
+          <Reveal>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Technical Skills</h2>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-          </ScrollReveal>
+          </Reveal>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {siteConfig.skillCategories.map((category, i) => (
-              <ScrollReveal key={category.name} stagger={(i % 3) + 1}>
+              <Reveal key={category.name} stagger={(i % 3) + 1}>
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
                     {category.name}
@@ -425,22 +425,22 @@ export function Home() {
                     ))}
                   </div>
                 </div>
-              </ScrollReveal>
+              </Reveal>
             ))}
           </div>
         </section>
 
         <section className="pb-16" data-testid="section-leadership">
-          <ScrollReveal>
+          <Reveal>
             <div className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Leadership</h2>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-          </ScrollReveal>
+          </Reveal>
           <div className="grid gap-4 sm:grid-cols-2">
             {siteConfig.leadership.map((role, i) => (
-              <ScrollReveal key={role.title} stagger={(i % 2) + 1}>
+              <Reveal key={role.title} stagger={(i % 2) + 1}>
                 <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full">
                   <h3 className="font-semibold text-foreground">{role.title}</h3>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-primary/60">
@@ -458,23 +458,23 @@ export function Home() {
                     ))}
                   </ul>
                 </div>
-              </ScrollReveal>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {recentPosts.length > 0 && (
           <section className="pb-20" data-testid="section-recent-posts">
-            <ScrollReveal>
+            <Reveal>
               <div className="flex items-center gap-3 mb-8">
                 <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Latest Posts</h2>
                 <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
               </div>
-            </ScrollReveal>
+            </Reveal>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {recentPosts.map((post, i) => (
-                <ScrollReveal key={post.slug} stagger={i + 1}>
+                <Reveal key={post.slug} stagger={i + 1}>
                   <Link
                     href={`/blog/${post.slug}`}
                     className="group overflow-hidden rounded-xl border border-border/30 bg-card/30 card-hover block hover:bg-card/50 h-full"
@@ -513,10 +513,10 @@ export function Home() {
                       </p>
                     </div>
                   </Link>
-                </ScrollReveal>
+                </Reveal>
               ))}
             </div>
-            <ScrollReveal>
+            <Reveal>
               <div className="mt-8 text-center">
                 <Link
                   href="/blog"
@@ -527,7 +527,7 @@ export function Home() {
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
-            </ScrollReveal>
+            </Reveal>
           </section>
         )}
       </div>
