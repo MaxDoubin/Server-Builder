@@ -150,6 +150,37 @@ const AISLE_HALF_WIDTH = 2.4;
 const DETAIL_BUDGET = 80;
 const DETAIL_RADIUS = 60;
 
+const getDeviceTier = () => {
+  if (typeof navigator === "undefined") return "high" as const;
+
+  const cores = navigator.hardwareConcurrency ?? 8;
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+
+  if (cores <= 4 || memory <= 4) return "low" as const;
+  if (cores <= 6 || memory <= 6) return "medium" as const;
+  return "high" as const;
+};
+
+const useHeroVisibility = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.05 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return { containerRef, isVisible };
+};
+
 function BlinkingIndicator({
   position,
   color,
@@ -507,22 +538,33 @@ export function HeroAnimation({
 }: HeroAnimationProps) {
   const reducedMotion = usePrefersReducedMotion();
   const visible = usePageVisibility();
+  const { containerRef, isVisible } = useHeroVisibility();
   const palette = paletteMap[variant];
-  const paused = !visible;
+  const deviceTier = useMemo(() => getDeviceTier(), []);
+  const paused = !visible || !isVisible;
+  const lowQuality = reducedMotion || deviceTier === "low";
+  const mediumQuality = !lowQuality && deviceTier === "medium";
+
+  const sceneSeed = lowQuality ? seed + 31 : mediumQuality ? seed + 13 : seed;
+  const dprRange: [number, number] = lowQuality
+    ? [0.5, 0.75]
+    : mediumQuality
+      ? [0.65, 0.9]
+      : [0.75, 1];
 
   return (
-    <div className={className}>
+    <div ref={containerRef} className={className}>
       <Canvas
-        shadows
-        dpr={[0.75, 1]}
+        shadows={!lowQuality}
+        dpr={dprRange}
         gl={{ antialias: false, powerPreference: "high-performance" }}
         frameloop={paused ? "never" : "always"}
-        performance={{ min: 0.5 }}
+        performance={{ min: lowQuality ? 0.3 : 0.5 }}
         className="h-full w-full"
       >
         <DatacenterScene
           palette={palette}
-          seed={seed}
+          seed={sceneSeed}
           paused={paused}
           reducedMotion={reducedMotion}
         />
