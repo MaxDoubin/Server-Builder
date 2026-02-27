@@ -1,11 +1,10 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { siteConfig } from "@/lib/siteConfig";
 import { Layout } from "@/components/site/Layout";
 import { getAllPosts } from "@/lib/blogPosts";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { AnimatedCounter } from "@/components/site/AnimatedCounter";
-import { HeroErrorBoundary } from "@/components/site/HeroErrorBoundary";
 import {
   ArrowRight,
   Instagram,
@@ -23,12 +22,6 @@ import {
   HardDrive,
 } from "lucide-react";
 
-const HeroAnimation = lazy(() =>
-  import("@/components/hero/HeroAnimation").then((m) => ({
-    default: m.HeroAnimation,
-  }))
-);
-
 function HeroFallback() {
   return (
     <div className="h-full w-full bg-gradient-to-br from-[#020812] via-[#0a1628] to-[#020812]">
@@ -41,39 +34,49 @@ function HeroFallback() {
 }
 
 function TypeWriter({ words, className }: { words: string[]; className?: string }) {
-  const [currentWord, setCurrentWord] = useState(0);
-  const [currentChar, setCurrentChar] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [displayed, setDisplayed] = useState("");
+  const wordIndexRef = useRef(0);
+  const charIndexRef = useRef(0);
+  const deletingRef = useRef(false);
   const pauseUntilRef = useRef(0);
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
+    let timeoutId: number | undefined;
+
+    const tick = () => {
       const now = Date.now();
-      if (now < pauseUntilRef.current) return;
+      if (now < pauseUntilRef.current) {
+        timeoutId = window.setTimeout(tick, 40);
+        return;
+      }
 
-      const word = words[currentWord];
-      if (!isDeleting) {
-        if (currentChar < word.length) {
-          setCurrentChar((count) => count + 1);
-          return;
+      const word = words[wordIndexRef.current] ?? "";
+
+      if (!deletingRef.current) {
+        if (charIndexRef.current < word.length) {
+          charIndexRef.current += 1;
+        } else {
+          pauseUntilRef.current = now + 1200;
+          deletingRef.current = true;
         }
-
-        pauseUntilRef.current = now + 1200;
-        setIsDeleting(true);
-        return;
+      } else if (charIndexRef.current > 0) {
+        charIndexRef.current -= 1;
+      } else {
+        deletingRef.current = false;
+        wordIndexRef.current = (wordIndexRef.current + 1) % words.length;
       }
 
-      if (currentChar > 0) {
-        setCurrentChar((count) => Math.max(0, count - 1));
-        return;
-      }
+      const nextWord = words[wordIndexRef.current] ?? "";
+      setDisplayed(nextWord.slice(0, charIndexRef.current));
 
-      setIsDeleting(false);
-      setCurrentWord((wordIndex) => (wordIndex + 1) % words.length);
-    }, isDeleting ? 40 : 70);
+      timeoutId = window.setTimeout(tick, deletingRef.current ? 28 : 52);
+    };
 
-    return () => window.clearInterval(interval);
-  }, [currentWord, currentChar, isDeleting, words]);
+    tick();
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [words]);
 
   return (
     <span className={className}>
@@ -82,6 +85,7 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
     </span>
   );
 }
+
 
 function FloatingGrid() {
   return (
@@ -100,31 +104,12 @@ function FloatingGrid() {
 
 export function Home() {
   const recentPosts = getAllPosts().slice(0, 3);
-  const [showHeroAnimation, setShowHeroAnimation] = useState(false);
-
-  useEffect(() => {
-    const deferredStart = window.setTimeout(() => setShowHeroAnimation(true), 1200);
-    return () => window.clearTimeout(deferredStart);
-  }, []);
-
   return (
     <Layout>
       <section className="relative -mx-6 -mt-4 overflow-hidden" data-testid="section-hero">
         <div className="relative min-h-[100vh] flex items-center">
           <div className="absolute inset-0">
-            {showHeroAnimation ? (
-              <HeroErrorBoundary fallback={<HeroFallback />}>
-                <Suspense fallback={<HeroFallback />}>
-                  <HeroAnimation
-                    className="absolute inset-0 h-full w-full"
-                    variant="about"
-                    seed={42}
-                  />
-                </Suspense>
-              </HeroErrorBoundary>
-            ) : (
-              <HeroFallback />
-            )}
+            <HeroFallback />
             <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
           </div>
