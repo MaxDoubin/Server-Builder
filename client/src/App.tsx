@@ -7,12 +7,27 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool";
 
-import { Home } from "@/pages/Home";
-import { Blog } from "@/pages/Blog";
-import { BlogPost } from "@/pages/BlogPost";
-import { Projects } from "@/pages/Projects";
-import { Contact } from "@/pages/Contact";
 import { Layout } from "@/components/site/Layout";
+
+const Home = lazy(() =>
+  import("@/pages/Home").then((module) => ({ default: module.Home })),
+);
+
+const Blog = lazy(() =>
+  import("@/pages/Blog").then((module) => ({ default: module.Blog })),
+);
+
+const BlogPost = lazy(() =>
+  import("@/pages/BlogPost").then((module) => ({ default: module.BlogPost })),
+);
+
+const Projects = lazy(() =>
+  import("@/pages/Projects").then((module) => ({ default: module.Projects })),
+);
+
+const Contact = lazy(() =>
+  import("@/pages/Contact").then((module) => ({ default: module.Contact })),
+);
 
 const GamePage = lazy(() =>
   import("@/pages/GamePage").then((module) => ({ default: module.GamePage })),
@@ -25,6 +40,14 @@ function GameLoading() {
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         <p className="mt-4 text-sm text-muted-foreground">Loading game...</p>
       </div>
+    </div>
+  );
+}
+
+function RouteLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   );
 }
@@ -62,11 +85,31 @@ export default function App() {
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
           <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/blog" component={Blog} />
-            <Route path="/blog/:slug" component={BlogPost} />
-            <Route path="/projects" component={Projects} />
-            <Route path="/contact" component={Contact} />
+            <Route path="/">
+              <Suspense fallback={<RouteLoading />}>
+                <Home />
+              </Suspense>
+            </Route>
+            <Route path="/blog">
+              <Suspense fallback={<RouteLoading />}>
+                <Blog />
+              </Suspense>
+            </Route>
+            <Route path="/blog/:slug">
+              <Suspense fallback={<RouteLoading />}>
+                <BlogPost />
+              </Suspense>
+            </Route>
+            <Route path="/projects">
+              <Suspense fallback={<RouteLoading />}>
+                <Projects />
+              </Suspense>
+            </Route>
+            <Route path="/contact">
+              <Suspense fallback={<RouteLoading />}>
+                <Contact />
+              </Suspense>
+            </Route>
             <Route path="/game">
               <Suspense fallback={<GameLoading />}>
                 <GamePage />
