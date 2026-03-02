@@ -277,40 +277,40 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         prev.map((rack) => {
           if (rack.id !== rackId) return rack;
           if (uStart < 1 || uEnd > rack.totalUs) return rack;
-          const overlappingIds = new Set(
-            rack.slots
-              .filter(
-                (slot) =>
-                  slot.uPosition >= uStart &&
-                  slot.uPosition <= uEnd &&
-                  slot.equipmentInstanceId
-              )
-              .map((slot) => slot.equipmentInstanceId!)
-          );
 
-          // IMPORTANT FIX: Ensure we only count equipment that is ACTUALLY in the installedEquipment array
-          // and matches the slots' instance IDs. This prevents "ghost" equipment from blocking space.
-          const actualInstalledIds = new Set(rack.installedEquipment.map(ie => ie.id));
-          const validOverlappingIds = new Set([...overlappingIds].filter(id => actualInstalledIds.has(id)));
+          // Use installedEquipment as the single source of truth for overlap detection.
+          // Slot-level equipmentInstanceId can become stale after removal, so we check
+          // the authoritative installedEquipment list directly.
+          const overlappingInstalled = rack.installedEquipment.filter((inst) => {
+            if (!inst.id || inst.uStart === undefined || inst.uEnd === undefined) return false;
+            return !(uEnd < inst.uStart || uStart > inst.uEnd);
+          });
 
           const equipmentById = new Map(staticEquipmentCatalog.map((item) => [item.id, item]));
+          const overlappingInstanceIds = new Set(overlappingInstalled.map((inst) => inst.id));
+
           const cleanedInstalled = rack.installedEquipment.filter(
-            (item) => !validOverlappingIds.has(item.id)
+            (item) => !overlappingInstanceIds.has(item.id)
           );
-          const removedPower = rack.installedEquipment.reduce((acc, item) => {
-            if (!validOverlappingIds.has(item.id)) return acc;
+          const removedPower = overlappingInstalled.reduce((acc, item) => {
             const removed = equipmentById.get(item.equipmentId);
             return acc + (removed?.powerDraw ?? 0);
           }, 0);
+
           didAdd = true;
           const instanceId = `inst-${equipment.id}-${uStart}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-          const updatedSlots = rack.slots.map((slot) =>
-            slot.uPosition >= uStart && slot.uPosition <= uEnd
-              ? { ...slot, equipmentInstanceId: instanceId }
-              : validOverlappingIds.has(slot.equipmentInstanceId ?? "")
-              ? { ...slot, equipmentInstanceId: null }
-              : slot
-          );
+
+          // Update slots: assign new instance to target range, clear any stale references
+          const updatedSlots = rack.slots.map((slot) => {
+            if (slot.uPosition >= uStart && slot.uPosition <= uEnd) {
+              return { ...slot, equipmentInstanceId: instanceId };
+            }
+            if (slot.equipmentInstanceId && overlappingInstanceIds.has(slot.equipmentInstanceId)) {
+              return { ...slot, equipmentInstanceId: null };
+            }
+            return slot;
+          });
+
           return {
             ...rack,
             slots: updatedSlots,
@@ -348,11 +348,19 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           if (!installed) return rack;
           didRemove = true;
           const equipment = equipmentById.get(installed.equipmentId);
-          const updatedSlots = rack.slots.map((slot) =>
-            slot.equipmentInstanceId === equipmentInstanceId
-              ? { ...slot, equipmentInstanceId: null }
-              : slot
-          );
+
+          // Clear all slots that reference this equipment instance, AND also clear
+          // any slots in the U-range that might have stale references from prior state.
+          const updatedSlots = rack.slots.map((slot) => {
+            if (slot.equipmentInstanceId === equipmentInstanceId) {
+              return { ...slot, equipmentInstanceId: null };
+            }
+            if (slot.uPosition >= installed.uStart && slot.uPosition <= installed.uEnd) {
+              return { ...slot, equipmentInstanceId: null };
+            }
+            return slot;
+          });
+
           return {
             ...rack,
             slots: updatedSlots,

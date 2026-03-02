@@ -212,19 +212,17 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
   const canFitEquipment = useCallback((equipment: Equipment) => {
     const endSlot = selectedSlot + equipment.uHeight - 1;
     if (selectedSlot < 1 || endSlot > rack.totalUs) return false;
-    
-    // IMPORTANT FIX: Check if slot is ACTUALLY occupied by an existing piece of equipment
-    // in the installedEquipment array. This prevents "ghost" instance IDs from blocking space.
-    const actualInstalledIds = new Set(rack.installedEquipment.map(ie => ie.id));
-    
-    for (let u = selectedSlot; u <= endSlot; u++) {
-      const slot = rack.slots.find((s) => s.uPosition === u);
-      if (slot?.equipmentInstanceId && actualInstalledIds.has(slot.equipmentInstanceId)) {
-        return false;
-      }
+
+    // Only check the installedEquipment array directly for overlaps.
+    // Slot-level equipmentInstanceId can become stale after removal,
+    // so we rely on the authoritative installedEquipment list instead.
+    for (const inst of rack.installedEquipment) {
+      if (!inst.id || inst.uStart === undefined || inst.uEnd === undefined) continue;
+      const overlaps = !(endSlot < inst.uStart || selectedSlot > inst.uEnd);
+      if (overlaps) return false;
     }
     return true;
-  }, [rack.slots, rack.totalUs, selectedSlot, rack.installedEquipment]);
+  }, [rack.totalUs, selectedSlot, rack.installedEquipment]);
 
   const registerRecent = useCallback((equipmentId: string) => {
     setRecentIds((prev) => {
