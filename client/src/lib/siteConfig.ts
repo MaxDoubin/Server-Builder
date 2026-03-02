@@ -26,7 +26,7 @@ export const siteConfig = {
       category: "Infrastructure",
       items: [
         "Operating a multi-server enterprise homelab environment",
-        "Running real enterprise hardware for testing and development",
+        "Assisted in installing enterprise network systems and hardware",
         "Experimenting with architecture, testing designs, and refining troubleshooting methodology",
       ],
     },

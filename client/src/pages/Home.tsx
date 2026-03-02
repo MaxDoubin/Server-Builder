@@ -221,8 +221,8 @@ export function Home() {
             {[
               { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
               { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
-              { end: 1, prefix: "#", suffix: "", label: "Percussionist", icon: Music },
-              { end: 2023, prefix: "", suffix: "+", label: "All-State", icon: Award },
+              { end: 10, prefix: "", suffix: "GbE", label: "Network Fiber", icon: Network },
+              { end: 24, prefix: "", suffix: "TB", label: "Enterprise Storage", icon: HardDrive },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center transition-all duration-500 hover:scale-110">
