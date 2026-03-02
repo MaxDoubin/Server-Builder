@@ -2,11 +2,11 @@ export const siteConfig = {
   name: "Max Doubin",
   tagline: "Enterprise Networking, Cybersecurity, and Systems Engineering",
   shortBio:
-    "Student at South CTA. Enterprise networking and cybersecurity specialist based in Las Vegas. Top 1 percent National Cyber League competitor. I build and operate real enterprise infrastructure at scale.",
+    "Student at South CTA. Nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas. Top 1 percent National Cyber League competitor. I build and operate real enterprise infrastructure at scale.",
   fullBio: [
     "I build infrastructure that works. My focus is enterprise networking, cybersecurity, and systems engineering, with an emphasis on doing things the right way: clean architecture, good segmentation, strong authentication, predictable performance, and real monitoring so you can prove what is happening instead of guessing.",
     "I run enterprise servers, manage complex network environments, and work hands-on with the kind of hardware you find in real datacenters. Everything from rack deployment and power planning to virtualization, storage architecture, and network segmentation.",
-    "Most of my learning happens through hands-on work. I have been building and expanding my homelab for years, and it is a core part of how I develop my skills. I run multiple enterprise servers and use them to test infrastructure designs, practice deployment and troubleshooting at scale, and push well beyond basic setups.",
+    "Beyond technical operations, I am committed to community engagement through technology. I have hosted several coding camps for youth across the Las Vegas Valley, teaching the fundamentals of systems and software to the next generation of builders.",
   ],
   email: "doubinemail@gmail.com",
   social: {
@@ -47,11 +47,18 @@ export const siteConfig = {
       ],
     },
     {
+      category: "Community",
+      items: [
+        "Hosting coding camps for youth around the Las Vegas Valley",
+        "Developing curriculum for introductory systems and networking",
+        "Mentoring students in cybersecurity and technical problem solving",
+      ],
+    },
+    {
       category: "Music",
       items: [
         "Ranked #1 percussionist in Nevada for 2024 and 2025",
         "All-State Band selection every year since 2023",
-        "Precision, discipline, and performance under pressure",
       ],
     },
   ],
@@ -121,6 +128,15 @@ export const siteConfig = {
 
   leadership: [
     {
+      title: "Lead Instructor, Youth Coding Camps",
+      org: "Las Vegas Valley",
+      details: [
+        "Organize and host technical camps for youth across the valley",
+        "Teach core concepts in software development, systems, and networking",
+        "Built a curriculum focused on hands-on learning and problem solving",
+      ],
+    },
+    {
       title: "President, Cyber Club",
       org: "South CTA",
       details: [
@@ -132,8 +148,7 @@ export const siteConfig = {
       title: "President, Music Club",
       org: "South CTA",
       details: [
-        "Lead meetings and coordinate activities for musicians",
-        "Organize participation, events, and member engagement",
+        "Coordinate activities for musicians and lead member engagement",
       ],
     },
     {
@@ -166,22 +181,17 @@ export const siteConfig = {
     {
       title: "National Cyber League, Top 1 Percent",
       description:
-        "Ranked in the top 1 percent nationally across practical cybersecurity challenges, problem solving, and technical analysis.",
-    },
-    {
-      title: "#1 Percussionist in Nevada (2024 and 2025)",
-      description:
-        "Earned statewide top ranking in percussion performance for two consecutive years.",
-    },
-    {
-      title: "All-State Band, Percussion",
-      description:
-        "Selected for Nevada All-State Band every year since 2023. Consistent top-level performance.",
+        "Nationally recognized for practical cybersecurity excellence, ranking in the top 1 percent across challenges in traffic analysis, forensics, and technical problem solving.",
     },
     {
       title: "Cyber Team, 7th in the Nation",
       description:
         "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity.",
+    },
+    {
+      title: "#1 Percussionist in Nevada",
+      description:
+        "Earned statewide top ranking in percussion performance for 2024 and 2025.",
     },
   ],
 

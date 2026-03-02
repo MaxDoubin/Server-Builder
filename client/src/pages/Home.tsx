@@ -221,8 +221,8 @@ export function Home() {
             {[
               { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
               { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
-              { end: 1, prefix: "#", suffix: "", label: "Percussionist, NV", icon: Music },
-              { end: 2023, prefix: "", suffix: "+", label: "All-State Since", icon: Award },
+              { end: 1, prefix: "#", suffix: "", label: "Percussionist", icon: Music },
+              { end: 2023, prefix: "", suffix: "+", label: "All-State", icon: Award },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center">
@@ -331,22 +331,17 @@ export function Home() {
               {
                 icon: Target,
                 title: "National Cyber League, Top 1 Percent",
-                desc: "Ranked in the top 1 percent nationally across practical cybersecurity challenges, including traffic analysis, log investigation, forensics, and real-world problem solving.",
-              },
-              {
-                icon: Award,
-                title: "#1 Percussionist in Nevada (2024, 2025)",
-                desc: "Earned the top statewide ranking in percussion performance for two consecutive years.",
-              },
-              {
-                icon: Music,
-                title: "All-State Band, Every Year Since 2023",
-                desc: "Selected for Nevada All-State Band every year since 2023. Consistent top-level performance in competitive auditions.",
+                desc: "Nationally recognized for practical cybersecurity challenges, including traffic analysis, log investigation, forensics, and real-world problem solving.",
               },
               {
                 icon: Shield,
                 title: "Cyber Team, 7th in the Nation",
-                desc: "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity. Discipline and preparation over everything.",
+                desc: "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity. Prep and technical discipline at scale.",
+              },
+              {
+                icon: Music,
+                title: "#1 Percussionist in Nevada",
+                desc: "Earned the top statewide ranking in percussion performance for two consecutive years.",
               },
             ].map((item, i) => (
               <Reveal key={item.title} stagger={i + 1}>
