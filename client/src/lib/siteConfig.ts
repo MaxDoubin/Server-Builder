@@ -177,7 +177,7 @@ export const siteConfig = {
     },
   ],
 
-  achievements: [
+   achievements: [
     {
       title: "National Cyber League, Top 1 Percent",
       description:
@@ -192,6 +192,10 @@ export const siteConfig = {
       title: "#1 Percussionist in Nevada",
       description:
         "Earned statewide top ranking in percussion performance for 2024 and 2025.",
+    },
+    {
+      title: "Youth Coding Camp Lead",
+      description: "Organized and hosted technical training for youth in the Las Vegas Valley.",
     },
   ],
 

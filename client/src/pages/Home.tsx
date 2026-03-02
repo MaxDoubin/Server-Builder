@@ -26,10 +26,13 @@ type RevealProps = {
   children: ReactNode;
 };
 
+// Reveal component for scroll animations
 function Reveal({ children }: RevealProps) {
+  // Return children directly for now, animations are handled by CSS classes
   return <>{children}</>;
 }
 
+// Fallback background for the hero section
 function HeroFallback() {
   return (
     <div className="h-full w-full bg-gradient-to-br from-[#020812] via-[#0a1628] to-[#020812]">
@@ -41,6 +44,11 @@ function HeroFallback() {
   );
 }
 
+/**
+ * TypeWriter component for cycling through strings with a typing effect
+ * @param words - Array of strings to cycle through
+ * @param className - Optional CSS classes
+ */
 function TypeWriter({ words, className }: { words: string[]; className?: string }) {
   const [displayed, setDisplayed] = useState("");
   const wordIndexRef = useRef(0);
@@ -51,8 +59,10 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
   useEffect(() => {
     let timeoutId: number | undefined;
 
+    // Main animation tick function
     const tick = () => {
       const now = Date.now();
+      // Handle pauses after typing or deleting
       if (now < pauseUntilRef.current) {
         timeoutId = window.setTimeout(tick, 40);
         return;
@@ -61,15 +71,19 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
       const word = words[wordIndexRef.current] ?? "";
 
       if (!deletingRef.current) {
+        // Typing phase
         if (charIndexRef.current < word.length) {
           charIndexRef.current += 1;
         } else {
+          // Pause before deleting
           pauseUntilRef.current = now + 1200;
           deletingRef.current = true;
         }
       } else if (charIndexRef.current > 0) {
+        // Deleting phase
         charIndexRef.current -= 1;
       } else {
+        // Switch to next word
         deletingRef.current = false;
         wordIndexRef.current = (wordIndexRef.current + 1) % words.length;
       }
@@ -77,6 +91,7 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
       const currentWord = words[wordIndexRef.current] ?? "";
       setDisplayed(currentWord.slice(0, charIndexRef.current));
 
+      // Schedule next tick with speed variation
       timeoutId = window.setTimeout(tick, deletingRef.current ? 28 : 52);
     };
 
@@ -94,7 +109,7 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
   );
 }
 
-
+// Decorative floating grid background
 function FloatingGrid() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -163,7 +178,7 @@ export function Home() {
                   className="group inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02]"
                   data-testid="button-view-projects"
                 >
-                  View My Work
+                  Projects
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
@@ -172,14 +187,14 @@ export function Home() {
                   data-testid="button-play-game"
                 >
                   <Zap className="h-4 w-4 text-cyan-400 transition-all group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
-                  Launch Hyperscale
+                  Hyperscale
                 </Link>
                 <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
-                  data-testid="button-contact"
+                  href="/blog"
+                  className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
+                  data-testid="button-blog"
                 >
-                  Get in Touch
+                  Blog
                 </Link>
               </div>
 
