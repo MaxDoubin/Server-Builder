@@ -298,12 +298,20 @@ export function Rack3D({
   const appearDelay = 0;
   const appearDuration = 0.9;
 
-  const thermalStatus = useMemo(() => {
-    if (rack.inletTemp > 30) return "critical";
-    if (rack.inletTemp > 27) return "warning";
-    if (rack.inletTemp > 25) return "elevated";
+  const operationalStatus = useMemo(() => {
+    // 1. Check for critical equipment status
+    const hasCriticalEq = rack.installedEquipment.some(eq => eq.status === "critical");
+    if (hasCriticalEq || rack.inletTemp > 32 || rack.currentPowerDraw > rack.powerCapacity * 0.98) return "critical";
+
+    // 2. Check for warning equipment status or elevated metrics
+    const hasWarningEq = rack.installedEquipment.some(eq => eq.status === "warning");
+    if (hasWarningEq || rack.inletTemp > 28 || rack.currentPowerDraw > rack.powerCapacity * 0.9) return "warning";
+
+    // 3. Check for slightly elevated metrics
+    if (rack.inletTemp > 25 || rack.currentPowerDraw > rack.powerCapacity * 0.75) return "elevated";
+
     return "normal";
-  }, [rack.inletTemp]);
+  }, [rack.inletTemp, rack.currentPowerDraw, rack.powerCapacity, rack.installedEquipment]);
 
   const [isDetailedView, setIsDetailedView] = useState(true);
   const allowDetailed = !forceSimplified && (detailBudget === undefined || lodIndex < detailBudget);
@@ -343,7 +351,12 @@ export function Rack3D({
     return [...rack.installedEquipment].sort((a, b) => a.uStart - b.uStart);
   }, [allowDetailed, rack.installedEquipment]);
 
-  const statusGlowIntensity = 1.5 + Math.sin(Date.now() * 0.002) * 0.5;
+  // Dynamic glow intensity based on status - faster pulsing for critical
+  const statusGlowIntensity = useMemo(() => {
+    const baseGlow = 1.5;
+    const pulseSpeed = operationalStatus === "critical" ? 0.006 : operationalStatus === "warning" ? 0.004 : 0.002;
+    return baseGlow + Math.sin(Date.now() * pulseSpeed) * (operationalStatus === "critical" ? 0.8 : 0.4);
+  }, [operationalStatus]);
 
   return (
     <group
@@ -369,7 +382,7 @@ export function Rack3D({
         <>
           <RackFrame
             isSelected={isSelected}
-            thermalStatus={thermalStatus}
+            thermalStatus={operationalStatus}
             statusGlowIntensity={statusGlowIntensity}
           />
 
@@ -412,7 +425,7 @@ export function Rack3D({
           })}
         </>
       ) : (
-        <SimplifiedRack thermalStatus={thermalStatus} />
+        <SimplifiedRack thermalStatus={operationalStatus} />
       )}
 
       <mesh position={[0, RACK_HEIGHT / 2, 0]}>
@@ -442,14 +455,14 @@ export function Rack3D({
                 <Badge
                   variant="outline"
                   className={`text-[9px] uppercase h-4 px-1 ${
-                    thermalStatus === "critical"
+                    operationalStatus === "critical"
                       ? "border-red-500 text-red-400"
-                      : thermalStatus === "warning"
+                      : operationalStatus === "warning"
                       ? "border-amber-500 text-amber-400"
                       : "border-green-500 text-green-400"
                   }`}
                 >
-                  {thermalStatus}
+                  {operationalStatus}
                 </Badge>
               </div>
               <div className="space-y-1.5">
