@@ -220,9 +220,9 @@ export function Home() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {[
               { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
+              { end: 4, prefix: "", suffix: "+ Years", label: "Technical Intern", icon: Terminal },
               { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
-              { end: 10, prefix: "", suffix: "GbE", label: "Network Fiber", icon: Network },
-              { end: 24, prefix: "", suffix: "TB", label: "Enterprise Storage", icon: HardDrive },
+              { end: 2029, prefix: "Class of ", suffix: "", label: "South CTA", icon: Award },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center transition-all duration-500 hover:scale-110">

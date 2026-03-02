@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Max Doubin",
   tagline: "Enterprise Networking, Cybersecurity, and Systems Engineering",
   shortBio:
-    "Student at South CTA. Nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas. Top 1 percent National Cyber League competitor. I build and operate real enterprise infrastructure at scale.",
+    "Nationally recognized cybersecurity specialist and enterprise networking expert. Technical intern with 4+ years of hands-on experience in infrastructure and defense. Class of 2029.",
   fullBio: [
     "I build infrastructure that works. My focus is enterprise networking, cybersecurity, and systems engineering, with an emphasis on doing things the right way: clean architecture, good segmentation, strong authentication, predictable performance, and real monitoring so you can prove what is happening instead of guessing.",
     "I run enterprise servers, manage complex network environments, and work hands-on with the kind of hardware you find in real datacenters. Everything from rack deployment and power planning to virtualization, storage architecture, and network segmentation.",
