@@ -1,5 +1,5 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Sparkles as DreiSparkles } from "@react-three/drei";
 import { useEffect, useMemo, useState } from "react";
 import * as React from "react";
 import { Link } from "wouter";

@@ -3,7 +3,6 @@ import { useGame } from "@/lib/game-context";
 import { DatacenterScene } from "@/components/3d/DatacenterScene";
 import { GameHUD } from "@/components/3d/GameHUD";
 import { RackDetailPanel } from "@/components/3d/RackDetailPanel";
-import { MiniMap } from "@/components/3d/MiniMap";
 import { BuildToolbar } from "@/components/3d/BuildToolbar";
 import { InstantShell } from "@/components/ui/instant-shell";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
@@ -421,14 +420,6 @@ export function DataCenter3D() {
       {!introVisible && showOverlays && !focusMode && (
         <>
           {sessionMode === "build" && showToolbars && <BuildToolbar />}
-          <div className="fixed bottom-4 left-4 z-50">
-            <MiniMap 
-              racks={visibleRacks} 
-              selectedRackId={selectedRackId} 
-              onSelectRack={(r) => handleSelectRack(r)} 
-              floorSize={floorSize} 
-            />
-          </div>
           <GameHUD
             isUnlocked={isUnlocked}
             onUnlock={handleUnlock}
