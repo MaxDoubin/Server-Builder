@@ -135,13 +135,13 @@ export function Home() {
               </div>
 
               <h1
-                className="mt-8 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl"
+                className="mt-8 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl animate-slide-up"
                 data-testid="text-hero-name"
               >
                 {siteConfig.name}
               </h1>
 
-              <div className="mt-5 h-8 sm:h-10" data-testid="text-hero-tagline">
+              <div className="mt-5 h-8 sm:h-10 animate-slide-up [animation-delay:200ms]" data-testid="text-hero-tagline">
                 <TypeWriter
                   words={[
                     "Enterprise Networking",
@@ -153,11 +153,11 @@ export function Home() {
                 />
               </div>
 
-              <p className="mt-8 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
+              <p className="mt-8 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg animate-slide-up [animation-delay:400ms]">
                 {siteConfig.shortBio}
               </p>
 
-              <div className="mt-10 flex flex-wrap gap-3">
+              <div className="mt-10 flex flex-wrap gap-3 animate-slide-up [animation-delay:600ms]">
                 <Link
                   href="/projects"
                   className="group inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02]"
@@ -225,9 +225,9 @@ export function Home() {
               { end: 2023, prefix: "", suffix: "+", label: "All-State", icon: Award },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
-                <div className="group text-center">
-                  <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-colors group-hover:text-primary" />
-                  <div className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
+                <div className="group text-center transition-all duration-500 hover:scale-110">
+                  <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-all duration-300 group-hover:text-primary group-hover:animate-bounce" />
+                  <div className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl group-hover:animate-glow" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
                     <AnimatedCounter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
                   </div>
                   <div className="mt-2 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
@@ -250,9 +250,9 @@ export function Home() {
               <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">About</h2>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-            <div className="max-w-3xl mx-auto space-y-5 text-muted-foreground leading-relaxed text-center sm:text-lg">
+            <div className="max-w-3xl mx-auto space-y-5 text-muted-foreground leading-relaxed text-center sm:text-lg animate-pulse-subtle">
               {siteConfig.fullBio.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
+                <p key={i} className="transition-all duration-700 hover:text-foreground hover:translate-y-[-2px]">{paragraph}</p>
               ))}
             </div>
           </section>
@@ -302,14 +302,14 @@ export function Home() {
               },
             ].map((item, i) => (
               <Reveal key={item.title} stagger={i + 1}>
-                <div className={`group card-hover rounded-xl border border-border/30 bg-gradient-to-b ${item.color} p-6 ${item.borderColor} h-full`}>
+                <div className={`group card-hover rounded-xl border border-border/30 bg-gradient-to-b ${item.color} p-6 ${item.borderColor} h-full transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20`}>
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-background/50 p-2 ring-1 ring-border/30 transition-all group-hover:ring-primary/30">
-                      <item.icon className={`h-5 w-5 ${item.iconColor}`} />
+                    <div className="rounded-lg bg-background/50 p-2 ring-1 ring-border/30 transition-all duration-300 group-hover:ring-primary/50 group-hover:scale-110 group-hover:rotate-3">
+                      <item.icon className={`h-5 w-5 ${item.iconColor} transition-transform duration-500 group-hover:animate-pulse`} />
                     </div>
-                    <h3 className="font-semibold text-foreground">{item.title}</h3>
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.title}</h3>
                   </div>
-                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.desc}
                   </p>
                 </div>
@@ -345,13 +345,13 @@ export function Home() {
               },
             ].map((item, i) => (
               <Reveal key={item.title} stagger={i + 1}>
-                <div className="group card-hover flex gap-4 rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50">
-                  <div className="mt-0.5 flex-shrink-0 rounded-lg bg-primary/10 p-2 ring-1 ring-primary/20 transition-all group-hover:bg-primary/15 group-hover:ring-primary/30">
-                    <item.icon className="h-4 w-4 text-primary" />
+                <div className="group card-hover flex gap-4 rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10">
+                  <div className="mt-0.5 flex-shrink-0 rounded-lg bg-primary/10 p-2 ring-1 ring-primary/20 transition-all duration-300 group-hover:bg-primary/20 group-hover:ring-primary/50 group-hover:scale-110 group-hover:-rotate-3">
+                    <item.icon className="h-4 w-4 text-primary transition-transform duration-500 group-hover:scale-125" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
                       {item.desc}
                     </p>
                   </div>
@@ -372,17 +372,17 @@ export function Home() {
           <div className="grid gap-4 sm:grid-cols-2">
             {siteConfig.currently.map((section, i) => (
               <Reveal key={section.category} stagger={i + 1}>
-                <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-primary/80">
+                <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full transition-all duration-500 hover:shadow-lg hover:border-primary/20">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-primary/80 group-hover:animate-pulse">
                     {section.category}
                   </h3>
                   <ul className="mt-4 space-y-2.5">
                     {section.items.map((item, j) => (
                       <li
                         key={j}
-                        className="flex items-start gap-2.5 text-sm text-muted-foreground"
+                        className="flex items-start gap-2.5 text-sm text-muted-foreground transition-all duration-300 hover:text-foreground hover:translate-x-1"
                       >
-                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/40" />
+                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/40 transition-colors group-hover:text-primary" />
                         <span>{item}</span>
                       </li>
                     ))}
@@ -412,7 +412,7 @@ export function Home() {
                     {category.skills.map((skill) => (
                       <span
                         key={skill}
-                        className="rounded-full border border-border/30 bg-card/40 px-3 py-1.5 text-xs font-medium text-foreground/80 transition-all duration-300 hover:border-primary/30 hover:bg-primary/10 hover:text-foreground"
+                        className="rounded-full border border-border/30 bg-card/40 px-3 py-1.5 text-xs font-medium text-foreground/80 transition-all duration-500 hover:border-primary/50 hover:bg-primary/10 hover:text-foreground hover:scale-110 hover:shadow-md hover:shadow-primary/10"
                         data-testid={`badge-skill-${skill.toLowerCase().replace(/\s+/g, "-").replace(/[()\/]/g, "")}`}
                       >
                         {skill}
@@ -436,18 +436,18 @@ export function Home() {
           <div className="grid gap-4 sm:grid-cols-2">
             {siteConfig.leadership.map((role, i) => (
               <Reveal key={role.title} stagger={(i % 2) + 1}>
-                <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full">
-                  <h3 className="font-semibold text-foreground">{role.title}</h3>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-primary/60">
+                <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full transition-all duration-500 hover:shadow-xl hover:border-primary/20">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{role.title}</h3>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-primary/60 group-hover:animate-pulse">
                     {role.org}
                   </p>
                   <ul className="mt-4 space-y-2">
                     {role.details.map((detail, j) => (
                       <li
                         key={j}
-                        className="flex items-start gap-2.5 text-sm text-muted-foreground"
+                        className="flex items-start gap-2.5 text-sm text-muted-foreground transition-all duration-300 hover:text-foreground hover:translate-x-1"
                       >
-                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/40" />
+                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/40 group-hover:text-primary" />
                         <span>{detail}</span>
                       </li>
                     ))}
