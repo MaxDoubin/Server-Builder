@@ -16,7 +16,18 @@ export interface AutosaveSnapshot {
 
 const SAVE_SLOTS_KEY = "hyperscale-save-slots";
 const AUTOSAVE_KEY = "hyperscale-autosave-snapshots";
+const SAVE_VERSION_KEY = "hyperscale-save-version";
+const CURRENT_SAVE_VERSION = 2;
 const MAX_AUTOSAVES = 5;
+
+if (typeof window !== "undefined") {
+  const savedVersion = Number(localStorage.getItem(SAVE_VERSION_KEY) || "0");
+  if (savedVersion < CURRENT_SAVE_VERSION) {
+    localStorage.removeItem(AUTOSAVE_KEY);
+    localStorage.removeItem(SAVE_SLOTS_KEY);
+    localStorage.setItem(SAVE_VERSION_KEY, String(CURRENT_SAVE_VERSION));
+  }
+}
 
 const cloneRacks = (racks: Rack[]) => {
   try {
@@ -28,10 +39,29 @@ const cloneRacks = (racks: Rack[]) => {
 
 const normalizeRack = (rack: Rack): Rack => {
   const totalUs = Number.isFinite(rack.totalUs) && rack.totalUs > 0 ? rack.totalUs : 42;
-  const installed = rack.installedEquipment.filter((item) => {
+  const validInstalled = rack.installedEquipment.filter((item) => {
     const validRange = item.uStart >= 1 && item.uEnd <= totalUs && item.uStart <= item.uEnd;
     return Boolean(item.id && item.equipmentId && validRange);
   });
+
+  const installed: typeof validInstalled = [];
+  const occupiedSlots = new Set<number>();
+  for (const item of validInstalled) {
+    let hasOverlap = false;
+    for (let u = item.uStart; u <= item.uEnd; u++) {
+      if (occupiedSlots.has(u)) {
+        hasOverlap = true;
+        break;
+      }
+    }
+    if (!hasOverlap) {
+      installed.push(item);
+      for (let u = item.uStart; u <= item.uEnd; u++) {
+        occupiedSlots.add(u);
+      }
+    }
+  }
+
   const installedIds = new Set(installed.map((item) => item.id));
   const slots = Array.from({ length: totalUs }).map((_, index) => {
     const position = index + 1;

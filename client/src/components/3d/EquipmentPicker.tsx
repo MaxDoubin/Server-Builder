@@ -209,20 +209,20 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
       .filter(Boolean) as EquipmentCatalogItem[];
   }, [equipmentCatalog, recentIds]);
 
-  const canFitEquipment = useCallback((equipment: Equipment) => {
+  const canFitEquipment = (equipment: Equipment): boolean => {
+    const totalUs = rack.totalUs ?? 42;
+    const installed = rack.installedEquipment ?? [];
     const endSlot = selectedSlot + equipment.uHeight - 1;
-    if (selectedSlot < 1 || endSlot > rack.totalUs) return false;
-
-    // Only check the installedEquipment array directly for overlaps.
-    // Slot-level equipmentInstanceId can become stale after removal,
-    // so we rely on the authoritative installedEquipment list instead.
-    for (const inst of rack.installedEquipment) {
-      if (!inst.id || inst.uStart === undefined || inst.uEnd === undefined) continue;
-      const overlaps = !(endSlot < inst.uStart || selectedSlot > inst.uEnd);
-      if (overlaps) return false;
+    if (selectedSlot < 1 || endSlot > totalUs) return false;
+    for (let i = 0; i < installed.length; i++) {
+      const inst = installed[i];
+      if (inst.uStart == null || inst.uEnd == null) continue;
+      if (endSlot >= inst.uStart && selectedSlot <= inst.uEnd) return false;
     }
     return true;
-  }, [rack.totalUs, selectedSlot, rack.installedEquipment]);
+  };
+
+  const fitableCount = equipmentCatalog.filter((eq) => canFitEquipment(eq)).length;
 
   const registerRecent = useCallback((equipmentId: string) => {
     setRecentIds((prev) => {
@@ -276,7 +276,7 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
         },
       }
     );
-  }, [addEquipmentMutation, canFitEquipment, isStaticMode, rack.id, registerRecent, selectedSlot, toast]);
+  }, [addEquipmentMutation, isStaticMode, rack, selectedSlot, registerRecent, toast, addEquipmentToRack, onSuccess]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -301,7 +301,7 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
           <div>
             <h2 className="font-display font-bold text-lg">Add Equipment</h2>
             <p className="text-sm text-muted-foreground">
-              {rack.name} - Starting at U{selectedSlot}
+              {rack.name} - U{selectedSlot}{fitableCount === 0 ? " - All slots occupied" : ` - ${fitableCount} items available`}
             </p>
           </div>
           <Button size="icon" variant="ghost" onClick={onClose} data-testid="button-close-picker">
