@@ -213,12 +213,18 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
     const endSlot = selectedSlot + equipment.uHeight - 1;
     if (selectedSlot < 1 || endSlot > rack.totalUs) return false;
     
+    // IMPORTANT FIX: Check if slot is ACTUALLY occupied by an existing piece of equipment
+    // in the installedEquipment array. This prevents "ghost" instance IDs from blocking space.
+    const actualInstalledIds = new Set(rack.installedEquipment.map(ie => ie.id));
+    
     for (let u = selectedSlot; u <= endSlot; u++) {
       const slot = rack.slots.find((s) => s.uPosition === u);
-      if (slot?.equipmentInstanceId) return false;
+      if (slot?.equipmentInstanceId && actualInstalledIds.has(slot.equipmentInstanceId)) {
+        return false;
+      }
     }
     return true;
-  }, [rack.slots, rack.totalUs, selectedSlot]);
+  }, [rack.slots, rack.totalUs, selectedSlot, rack.installedEquipment]);
 
   const registerRecent = useCallback((equipmentId: string) => {
     setRecentIds((prev) => {

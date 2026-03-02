@@ -287,12 +287,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
               )
               .map((slot) => slot.equipmentInstanceId!)
           );
+
+          // IMPORTANT FIX: Ensure we only count equipment that is ACTUALLY in the installedEquipment array
+          // and matches the slots' instance IDs. This prevents "ghost" equipment from blocking space.
+          const actualInstalledIds = new Set(rack.installedEquipment.map(ie => ie.id));
+          const validOverlappingIds = new Set([...overlappingIds].filter(id => actualInstalledIds.has(id)));
+
           const equipmentById = new Map(staticEquipmentCatalog.map((item) => [item.id, item]));
           const cleanedInstalled = rack.installedEquipment.filter(
-            (item) => !overlappingIds.has(item.id)
+            (item) => !validOverlappingIds.has(item.id)
           );
           const removedPower = rack.installedEquipment.reduce((acc, item) => {
-            if (!overlappingIds.has(item.id)) return acc;
+            if (!validOverlappingIds.has(item.id)) return acc;
             const removed = equipmentById.get(item.equipmentId);
             return acc + (removed?.powerDraw ?? 0);
           }, 0);
@@ -301,7 +307,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           const updatedSlots = rack.slots.map((slot) =>
             slot.uPosition >= uStart && slot.uPosition <= uEnd
               ? { ...slot, equipmentInstanceId: instanceId }
-              : overlappingIds.has(slot.equipmentInstanceId ?? "")
+              : validOverlappingIds.has(slot.equipmentInstanceId ?? "")
               ? { ...slot, equipmentInstanceId: null }
               : slot
           );
