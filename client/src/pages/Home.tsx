@@ -99,7 +99,7 @@ function FloatingGrid() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.02] animate-grid-flow"
         style={{
           backgroundImage:
             "linear-gradient(rgba(56,189,248,0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.22) 1px, transparent 1px)",
@@ -125,14 +125,14 @@ export function Home() {
           <FloatingGrid />
 
           <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-24 sm:py-32">
-            <div className="max-w-2xl hero-content-entrance">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary/90 backdrop-blur-sm">
-                <div className="relative h-2 w-2">
-                  <div className="absolute inset-0 rounded-full bg-green-400" />
-                  <div className="absolute inset-0 rounded-full bg-green-400 opacity-60" />
+              <div className="max-w-2xl hero-content-entrance">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary/90 backdrop-blur-sm animate-pulse-subtle hover:scale-105 transition-transform cursor-default">
+                  <div className="relative h-2 w-2">
+                    <div className="absolute inset-0 rounded-full bg-green-400 animate-ping" />
+                    <div className="absolute inset-0 rounded-full bg-green-400 opacity-60" />
+                  </div>
+                  Available for opportunities
                 </div>
-                Available for opportunities
-              </div>
 
               <h1
                 className="mt-8 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl animate-slide-up"
@@ -220,14 +220,14 @@ export function Home() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {[
               { end: 1, prefix: "", suffix: "%", label: "Top 1% Cyber League", icon: Shield },
-              { end: 4, prefix: "", suffix: "+", label: "Technical Intern", icon: Terminal },
+              { end: 4, prefix: "", suffix: "+", label: "4+ Years Tech Experience", icon: Terminal },
               { end: 3500, prefix: "", suffix: "+", label: "TB Data Managed", icon: HardDrive },
               { end: 2029, prefix: "'", suffix: "", label: "Class of 2029", icon: Award },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
-                <div className="group text-center transition-all duration-500 hover:scale-110">
-                  <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-all duration-300 group-hover:text-primary group-hover:animate-bounce" />
-                  <div className="text-4xl font-black text-foreground sm:text-5xl lg:text-6xl group-hover:animate-glow leading-none" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
+                <div className="group text-center transition-all duration-500 hover:scale-110 hover:-rotate-1">
+                  <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-all duration-300 group-hover:text-primary group-hover:animate-bounce group-hover:drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+                  <div className="text-4xl font-black text-foreground sm:text-5xl lg:text-6xl group-hover:animate-glow leading-none transition-all duration-300 group-hover:text-primary" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
                     <AnimatedCounter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
                   </div>
                   <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors group-hover:text-primary/70">
