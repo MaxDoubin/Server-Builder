@@ -265,6 +265,29 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     updateIncidentMutation.mutate({ id, status });
   }, [updateIncidentMutation]);
 
+  /**
+   * Checks if a piece of equipment can fit into a specific rack at a given U-slot.
+   * Cross-references against already installed equipment to prevent overlaps.
+   */
+  const canFitEquipment = useCallback(
+    (rackId: string, equipmentId: string, uStart: number) => {
+      const rack = racks.find((r) => r.id === rackId);
+      const equipment = equipmentCatalog.find((e) => e.id === equipmentId);
+      if (!rack || !equipment) return false;
+
+      const uEnd = uStart + (equipment.uHeight - 1);
+      if (uEnd > rack.totalUs) return false;
+
+      // Ensure no overlap with existing equipment by filtering out ghost instances
+      return !rack.installedEquipment
+        .filter(inst => inst.id && inst.uStart !== undefined)
+        .some((inst) => {
+          return !(uEnd < inst.uStart || uStart > inst.uEnd);
+        });
+    },
+    [racks, equipmentCatalog]
+  );
+
   const addEquipmentToRack = useCallback(
     (rackId: string, equipmentId: string, uStart: number) => {
       if (!useStaticData) return false;
