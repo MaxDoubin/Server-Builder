@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/lib/theme-provider";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, Monitor } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { href: "/", label: "About" },
@@ -13,7 +20,7 @@ const navLinks = [
 
 export function Navbar() {
   const [location] = useLocation();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -37,7 +44,7 @@ export function Navbar() {
         data-testid="navbar"
       >
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
-          <Link href="/" className="text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-primary" data-testid="link-home">
+          <Link href="/" className="text-lg font-bold tracking-tight text-primary transition-colors hover:text-primary/80" data-testid="link-home">
             Max Doubin
           </Link>
 
@@ -48,7 +55,7 @@ export function Navbar() {
                 href={link.href}
                 className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   isActive(link.href)
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-primary/10 text-primary font-bold"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
                 data-testid={`link-nav-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
@@ -56,25 +63,56 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <button
-              onClick={toggleTheme}
-              className="ml-2 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              data-testid="button-theme-toggle"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 ml-2" data-testid="button-theme-toggle">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  <span>Light</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  <span>Dark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <Monitor className="mr-2 h-4 w-4" />
+                  <span>System</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <button
-              onClick={toggleTheme}
-              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              data-testid="button-theme-toggle-mobile"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="button-theme-toggle-mobile">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  <span>Light</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  <span>Dark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <Monitor className="mr-2 h-4 w-4" />
+                  <span>System</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -88,7 +126,7 @@ export function Navbar() {
         </div>
 
         {mobileOpen && (
-          <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden">
+          <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden animate-in slide-in-from-top-2">
             <div className="space-y-1 px-6 py-4">
               {navLinks.map((link) => (
                 <Link
@@ -97,7 +135,7 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive(link.href)
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-primary/10 text-primary font-bold"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                   data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
