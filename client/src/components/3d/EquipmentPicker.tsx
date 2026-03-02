@@ -211,18 +211,10 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
 
   const canFitEquipment = (equipment: Equipment): boolean => {
     const totalUs = rack.totalUs ?? 42;
-    const installed = rack.installedEquipment ?? [];
     const endSlot = selectedSlot + equipment.uHeight - 1;
     if (selectedSlot < 1 || endSlot > totalUs) return false;
-    for (let i = 0; i < installed.length; i++) {
-      const inst = installed[i];
-      if (inst.uStart == null || inst.uEnd == null) continue;
-      if (endSlot >= inst.uStart && selectedSlot <= inst.uEnd) return false;
-    }
     return true;
   };
-
-  const fitableCount = equipmentCatalog.filter((eq) => canFitEquipment(eq)).length;
 
   const registerRecent = useCallback((equipmentId: string) => {
     setRecentIds((prev) => {
@@ -238,14 +230,6 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
   }, []);
 
   const handleAddEquipment = useCallback((equipment: Equipment) => {
-    if (!canFitEquipment(equipment)) {
-      toast({
-        title: "Placement blocked",
-        description: "That slot range is unavailable or out of bounds.",
-        variant: "destructive",
-      });
-      return;
-    }
     if (isStaticMode) {
       setIsSaving(true);
       setSaveError(false);
@@ -259,12 +243,6 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
         });
         registerRecent(equipment.id);
         onSuccess();
-      } else {
-        toast({
-          title: "Install failed",
-          description: "That slot is occupied or out of range.",
-          variant: "destructive",
-        });
       }
       return;
     }
@@ -301,7 +279,7 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
           <div>
             <h2 className="font-display font-bold text-lg">Add Equipment</h2>
             <p className="text-sm text-muted-foreground">
-              {rack.name} - U{selectedSlot}{fitableCount === 0 ? " - All slots occupied" : ` - ${fitableCount} items available`}
+              {rack.name} - Starting at U{selectedSlot}
             </p>
           </div>
           <Button size="icon" variant="ghost" onClick={onClose} data-testid="button-close-picker">
@@ -424,9 +402,9 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
                     className={`p-3 mb-2 cursor-pointer transition-all ${
                       canFit
                         ? "hover-elevate border-border"
-                        : "opacity-50 cursor-not-allowed border-destructive/30"
+                        : "hover-elevate border-border opacity-70"
                     }`}
-                    onClick={() => canFit && handleAddEquipment(equipment)}
+                    onClick={() => handleAddEquipment(equipment)}
                     data-testid={`equipment-option-${equipment.id}`}
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -481,8 +459,8 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
                           <Star className={`w-4 h-4 ${isFavorite ? "text-yellow-400" : ""}`} />
                         </Button>
                         {!canFit && (
-                          <Badge variant="destructive" className="text-xs">
-                            No Space
+                          <Badge variant="outline" className="text-xs">
+                            Replaces
                           </Badge>
                         )}
                       </div>

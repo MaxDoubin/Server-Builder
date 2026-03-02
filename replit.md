@@ -20,3 +20,10 @@ A professional personal website for Max Doubin, focused on enterprise networking
 - Error boundaries for WebGL fallback
 - prefers-reduced-motion support
 - No em dashes anywhere in the codebase
+
+## Hyperscale Game Equipment System
+- Equipment placement uses force-placement: clicking any slot (empty or occupied) opens the picker, and placing equipment auto-removes anything in the way
+- `addEquipmentToRack` in game-context.tsx handles overlap by removing existing equipment in the target U-range before placing new equipment
+- Save system (save-system.ts) has versioned autosave that auto-clears stale data on version bump
+- `normalizeRack` deduplicates overlapping installed equipment entries on load
+- Source of truth for rack state is `rack.installedEquipment` (not `rack.slots`)

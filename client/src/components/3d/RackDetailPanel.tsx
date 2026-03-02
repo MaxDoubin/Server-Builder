@@ -66,24 +66,15 @@ export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelPr
 
   const handleSlotClick = (uPosition: number) => {
     if (!isUnlocked) return;
-    if (!isSlotOccupied(uPosition)) {
-      setSelectedSlot(uPosition);
-      setShowPicker(true);
-    }
+    setSelectedSlot(uPosition);
+    setShowPicker(true);
   };
 
   const handleDropEquipment = (equipmentId: string, uPosition: number) => {
     const equipment = equipmentCatalog.find((item) => item.id === equipmentId);
     if (!equipment) return;
     if (isStaticMode) {
-      const ok = addEquipmentToRack(rack.id, equipmentId, uPosition);
-      if (!ok) {
-        toast({
-          title: "Install failed",
-          description: "That slot is occupied or out of range.",
-          variant: "destructive",
-        });
-      }
+      addEquipmentToRack(rack.id, equipmentId, uPosition);
       return;
     }
     apiRequest("POST", `/api/racks/${rack.id}/equipment`, { equipmentId, uStart: uPosition })
@@ -109,7 +100,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelPr
       if (eqData) {
         const uHeight = eqData.equipment.uHeight;
         slots.push(
-          <div key={u} className="relative group">
+          <div key={u} className="relative group cursor-pointer" onClick={() => handleSlotClick(u)}>
             <Equipment3D
               equipment={eqData.equipment}
               installed={eqData.installed}
@@ -120,16 +111,10 @@ export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelPr
                 size="icon"
                 variant="destructive"
                 className="absolute -right-2 top-1/2 -translate-y-1/2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (isStaticMode) {
-                    const ok = removeEquipmentFromRack(rack.id, eqData.installed.id);
-                    if (!ok) {
-                      toast({
-                        title: "Removal failed",
-                        description: "Unable to remove this equipment right now.",
-                        variant: "destructive",
-                      });
-                    }
+                    removeEquipmentFromRack(rack.id, eqData.installed.id);
                     return;
                   }
                   removeEquipmentMutation.mutate(eqData.installed.id);
@@ -160,6 +145,18 @@ export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelPr
         );
         u--;
       } else {
+        slots.push(
+          <div key={u} className="relative">
+            <EmptySlot
+              uPosition={u}
+              onClick={() => handleSlotClick(u)}
+              onDropEquipment={(equipmentId) => handleDropEquipment(equipmentId, u)}
+            />
+            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[10px] font-mono text-muted-foreground">
+              {u}
+            </div>
+          </div>
+        );
         u--;
       }
     }
