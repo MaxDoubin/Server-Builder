@@ -221,7 +221,7 @@ export function Home() {
             {[
               { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
               { end: 4, prefix: "", suffix: "+ Years", label: "Technical Intern", icon: Terminal },
-              { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
+              { end: 3500, prefix: "", suffix: "+ TB", label: "Data Managed", icon: HardDrive },
               { end: 2029, prefix: "Class of ", suffix: "", label: "South CTA", icon: Award },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
