@@ -74,8 +74,8 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
         wordIndexRef.current = (wordIndexRef.current + 1) % words.length;
       }
 
-      const nextWord = words[wordIndexRef.current] ?? "";
-      setDisplayed(nextWord.slice(0, charIndexRef.current));
+      const currentWord = words[wordIndexRef.current] ?? "";
+      setDisplayed(currentWord.slice(0, charIndexRef.current));
 
       timeoutId = window.setTimeout(tick, deletingRef.current ? 28 : 52);
     };
@@ -88,7 +88,7 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
 
   return (
     <span className={className}>
-      {words[currentWord].slice(0, currentChar)}
+      {displayed}
       <span className="animate-blink text-primary">|</span>
     </span>
   );

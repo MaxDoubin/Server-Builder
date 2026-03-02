@@ -81,16 +81,21 @@ class RouteChunkBoundary extends Component<RouteChunkBoundaryProps, RouteChunkBo
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-background px-6">
-          <div className="max-w-md rounded-xl border border-border/70 bg-card/80 p-6 text-center">
-            <p className="text-base font-semibold text-foreground">We couldn't load this page.</p>
-            <p className="mt-2 text-sm text-muted-foreground">Please reload to retry.</p>
+        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] px-6">
+          <div className="max-w-md rounded-xl border border-white/10 bg-[#111] p-8 text-center shadow-2xl">
+            <div className="mx-auto mb-4 h-12 w-12 text-red-500/80">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-white">Application Error</h2>
+            <p className="mt-2 text-sm text-gray-400">We encountered a problem loading the site resources. This usually happens due to a temporary connection issue or a large asset failing to download.</p>
             <button
               type="button"
               onClick={this.handleReload}
-              className="mt-4 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#111]"
             >
-              Reload page
+              Reload Website
             </button>
           </div>
         </div>

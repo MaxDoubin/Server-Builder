@@ -142,43 +142,39 @@ const usePageVisibility = () => {
   return visible;
 };
 
+const useHeroVisibility = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return { containerRef, isVisible };
+};
+
 const SEGMENT_LENGTH = 22;
-const SEGMENT_COUNT = 12;
-const RACKS_PER_SEGMENT = 4;
-const RACK_SPACING = 3.0;
+const SEGMENT_COUNT = 8;
+const RACKS_PER_SEGMENT = 3;
+const RACK_SPACING = 3.2;
 const AISLE_HALF_WIDTH = 2.4;
-const DETAIL_BUDGET = 80;
-const DETAIL_RADIUS = 60;
+const DETAIL_BUDGET = 60;
+const DETAIL_RADIUS = 30;
 
 const getDeviceTier = () => {
   if (typeof navigator === "undefined") return "high" as const;
-
   const cores = navigator.hardwareConcurrency ?? 8;
   const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
 
   if (cores <= 4 || memory <= 4) return "low" as const;
   if (cores <= 6 || memory <= 6) return "medium" as const;
   return "high" as const;
-};
-
-const useHeroVisibility = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const node = containerRef.current;
-    if (!node) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.05 },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  return { containerRef, isVisible };
 };
 
 function BlinkingIndicator({
