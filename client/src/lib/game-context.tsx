@@ -300,6 +300,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           didAdd = true;
           const instanceId = `inst-${equipment.id}-${uStart}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
+          // Update metrics
+          const newCurrentPowerDraw = Math.max(0, rack.currentPowerDraw - removedPower + equipment.powerDraw);
+
           // Update slots: assign new instance to target range, clear any stale references
           const updatedSlots = rack.slots.map((slot) => {
             if (slot.uPosition >= uStart && slot.uPosition <= uEnd) {
@@ -327,10 +330,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 networkActivity: Math.random() * 90 + 5,
               },
             ],
-            currentPowerDraw: Math.max(0, rack.currentPowerDraw - removedPower + equipment.powerDraw),
+            currentPowerDraw: newCurrentPowerDraw,
+            // Force a property update to trigger React re-render for both 2D and 3D
+            _lastUpdate: Date.now(),
           };
         })
       );
+      // Trigger a state refresh for anything listening to the entire racks array
+      setStaticRacksState(prev => [...prev]);
       return didAdd;
     },
     [useStaticData]

@@ -316,6 +316,12 @@ export function Rack3D({
   const [isDetailedView, setIsDetailedView] = useState(true);
   const allowDetailed = !forceSimplified && (detailBudget === undefined || lodIndex < detailBudget);
 
+  // Force re-render when rack._lastUpdate changes
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    forceUpdate({});
+  }, [rack._lastUpdate]);
+
   useFrame((state, delta) => {
     if (groupRef.current) {
       const elapsed = state.clock.getElapsedTime();

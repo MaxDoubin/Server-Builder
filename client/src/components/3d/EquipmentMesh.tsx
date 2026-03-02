@@ -92,6 +92,12 @@ function DriveBay({ position, hasActivity }: { position: [number, number, number
 export function EquipmentMesh({ equipment, installed, position, rackWidth, rackDepth, uHeight }: EquipmentMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
 
+  // Force re-render when installed equipment data changes (like ID or status)
+  const [, forceUpdate] = useState({});
+  useMemo(() => {
+    forceUpdate({});
+  }, [installed.id, installed.status]);
+
   const equipmentHeight = equipment.uHeight * uHeight;
   const equipmentWidth = rackWidth - 0.08;
   const equipmentDepth = rackDepth - 0.1;
