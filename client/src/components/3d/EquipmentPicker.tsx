@@ -101,6 +101,7 @@ function VirtualizedList({ items, emptyMessage, renderItem }: VirtualizedListPro
     }
   }, [items]);
 
+  const totalHeight = items.length * ROW_HEIGHT;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - 2);
   const visibleCount = Math.ceil((height || 500) / ROW_HEIGHT) + 4;
   const endIndex = Math.min(items.length, startIndex + visibleCount);
@@ -112,6 +113,9 @@ function VirtualizedList({ items, emptyMessage, renderItem }: VirtualizedListPro
       className="flex-1 overflow-y-auto overflow-x-hidden min-h-[300px] scrollbar-thin scrollbar-thumb-muted-foreground/20" 
       onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerUp={(e) => e.stopPropagation()}
+      onPointerMove={(e) => e.stopPropagation()}
     >
       {items.length === 0 ? (
         <div className="py-10 text-center text-muted-foreground">{emptyMessage}</div>
@@ -280,12 +284,16 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={onClose}
+      data-ui="true"
     >
       <Card 
         className="w-[720px] max-h-[90vh] flex flex-col bg-background/95 border-border shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div 
+          className="flex items-center justify-between p-4 border-b border-border"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <div>
             <h2 className="font-display font-bold text-lg">Add Equipment</h2>
             <p className="text-sm text-muted-foreground">
@@ -297,7 +305,10 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
           </Button>
         </div>
 
-        <div className="px-4 py-3 border-b border-border space-y-3">
+        <div 
+          className="px-4 py-3 border-b border-border space-y-3"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[220px]">
               <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
@@ -354,14 +365,26 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
         </div>
 
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col">
-          <div className="px-4 pt-2">
+          <div 
+            className="px-4 pt-2"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <TabsList className="w-full grid grid-cols-7">
-              <TabsTrigger value="all" className="text-xs gap-1">
+              <TabsTrigger 
+                value="all" 
+                className="text-xs gap-1"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 <Cpu className="w-3 h-3" />
                 <span className="hidden sm:inline">All</span>
               </TabsTrigger>
               {Object.entries(categoryConfig).map(([key, config]) => (
-                <TabsTrigger key={key} value={key} className="text-xs gap-1">
+                <TabsTrigger 
+                  key={key} 
+                  value={key} 
+                  className="text-xs gap-1"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
                   <config.icon className="w-3 h-3" />
                   <span className="hidden sm:inline">{config.label}</span>
                 </TabsTrigger>
@@ -369,14 +392,20 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
             </TabsList>
           </div>
 
-          <div className="px-4 pt-3">
+          <div 
+            className="px-4 pt-3"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             {recentEquipment.length > 0 && (
               <div className="mb-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide mb-2">
                   <Clock className="w-3 h-3" />
                   Recent adds
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div 
+                  className="flex flex-wrap gap-2"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
                   {recentEquipment.map((equipment) => (
                     <Button
                       key={equipment.id}
@@ -400,7 +429,12 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
             </div>
           </div>
 
-          <TabsContent key={selectedCategory} value={selectedCategory} className="mt-0 flex flex-col flex-1">
+          <TabsContent 
+            key={selectedCategory} 
+            value={selectedCategory} 
+            className="mt-0 flex flex-col flex-1"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <VirtualizedList
               items={filteredEquipment}
               emptyMessage="No equipment matches the current filters."
@@ -438,13 +472,16 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
                         <div className="text-xs text-muted-foreground">
                           {equipment.manufacturer} {equipment.model}
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-2 text-xs text-muted-foreground">
-                          {equipment.tags.slice(0, 4).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-[10px]">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
+                    <div 
+                      className="flex items-wrap gap-2 mt-2 text-xs text-muted-foreground"
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      {equipment.tags.slice(0, 4).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-[10px]">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                         <div className="flex gap-4 mt-2 text-xs">
                           <span className="text-noc-yellow">
                             {equipment.powerDraw}W
@@ -484,13 +521,19 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
         </Tabs>
 
         {(addEquipmentMutation.isPending || isSaving) && (
-          <div className="p-4 border-t border-border bg-muted/30">
+          <div 
+            className="p-4 border-t border-border bg-muted/30"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <p className="text-sm text-center text-muted-foreground">Adding equipment...</p>
           </div>
         )}
 
         {(addEquipmentMutation.isError || saveError) && (
-          <div className="p-4 border-t border-destructive/30 bg-destructive/10">
+          <div 
+            className="p-4 border-t border-destructive/30 bg-destructive/10"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <p className="text-sm text-center text-destructive">
               Failed to add equipment. Please try again.
             </p>
