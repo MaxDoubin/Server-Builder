@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Component, Suspense, lazy, useEffect, type ErrorInfo, type ReactNode } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
@@ -9,9 +9,7 @@ import { disposePooledAssets } from "@/lib/asset-pool";
 
 import { Layout } from "@/components/site/Layout";
 
-const Home = lazy(() =>
-  import("@/pages/Home").then((module) => ({ default: module.Home })),
-);
+import { Home } from "@/pages/Home";
 
 const Blog = lazy(() =>
   import("@/pages/Blog").then((module) => ({ default: module.Blog })),
@@ -47,9 +45,60 @@ function GameLoading() {
 function RouteLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="text-center">
+        <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p className="mt-3 text-sm text-muted-foreground">Loading page...</p>
+      </div>
     </div>
   );
+}
+
+
+
+type RouteChunkBoundaryProps = {
+  children: ReactNode;
+};
+
+type RouteChunkBoundaryState = {
+  hasError: boolean;
+};
+
+class RouteChunkBoundary extends Component<RouteChunkBoundaryProps, RouteChunkBoundaryState> {
+  state: RouteChunkBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): RouteChunkBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Route chunk failed to load", error, errorInfo);
+  }
+
+  handleReload = () => {
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background px-6">
+          <div className="max-w-md rounded-xl border border-border/70 bg-card/80 p-6 text-center">
+            <p className="text-base font-semibold text-foreground">We couldn't load this page.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Please reload to retry.</p>
+            <button
+              type="button"
+              onClick={this.handleReload}
+              className="mt-4 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            >
+              Reload page
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 function NotFound() {
@@ -84,12 +133,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
+          <RouteChunkBoundary>
           <Switch>
-            <Route path="/">
-              <Suspense fallback={<RouteLoading />}>
-                <Home />
-              </Suspense>
-            </Route>
+            <Route path="/" component={Home} />
             <Route path="/blog">
               <Suspense fallback={<RouteLoading />}>
                 <Blog />
@@ -117,6 +163,7 @@ export default function App() {
             </Route>
             <Route component={NotFound} />
           </Switch>
+          </RouteChunkBoundary>
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>
