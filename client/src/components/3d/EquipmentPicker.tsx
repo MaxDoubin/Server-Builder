@@ -101,32 +101,31 @@ function VirtualizedList({ items, emptyMessage, renderItem }: VirtualizedListPro
     }
   }, [items]);
 
-  const totalHeight = items.length * ROW_HEIGHT;
-  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - 3);
-  const visibleCount = Math.ceil((height || 600) / ROW_HEIGHT) + 6;
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - 2);
+  const visibleCount = Math.ceil((height || 500) / ROW_HEIGHT) + 4;
   const endIndex = Math.min(items.length, startIndex + visibleCount);
-  const visibleItems = items.slice(startIndex, endIndex);
+  const visibleItems = items.slice(startIndex, startIndex + visibleCount);
 
   return (
     <div 
       ref={containerRef} 
-      className="flex-1 overflow-y-auto overflow-x-hidden min-h-[300px]" 
+      className="flex-1 overflow-y-auto overflow-x-hidden min-h-[300px] scrollbar-thin scrollbar-thumb-muted-foreground/20" 
       onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       onClick={(e) => e.stopPropagation()}
     >
       {items.length === 0 ? (
         <div className="py-10 text-center text-muted-foreground">{emptyMessage}</div>
       ) : (
-        <div className="relative" style={{ height: totalHeight }}>
-          {visibleItems.map((item, index) => {
-            const actualIndex = startIndex + index;
+        <div className="relative w-full" style={{ height: totalHeight }}>
+          {items.map((item, index) => {
+            if (index < startIndex || index >= endIndex) return null;
             return (
               <div
                 key={item.id}
                 className="absolute left-0 right-0 px-4"
-                style={{ top: actualIndex * ROW_HEIGHT }}
+                style={{ top: index * ROW_HEIGHT, height: ROW_HEIGHT }}
               >
-                {renderItem(item, actualIndex)}
+                {renderItem(item, index)}
               </div>
             );
           })}
@@ -340,6 +339,7 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
                   type="button"
                   variant={active ? "secondary" : "outline"}
                   size="sm"
+                  className="h-7 px-2 text-[10px]"
                   onClick={() =>
                     setSelectedTags((prev) =>
                       prev.includes(tag) ? prev.filter((existing) => existing !== tag) : [...prev, tag]
