@@ -103,12 +103,17 @@ function VirtualizedList({ items, emptyMessage, renderItem }: VirtualizedListPro
 
   const totalHeight = items.length * ROW_HEIGHT;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - 3);
-  const visibleCount = Math.ceil(height / ROW_HEIGHT) + 6;
+  const visibleCount = Math.ceil((height || 600) / ROW_HEIGHT) + 6;
   const endIndex = Math.min(items.length, startIndex + visibleCount);
   const visibleItems = items.slice(startIndex, endIndex);
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-auto" onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}>
+    <div 
+      ref={containerRef} 
+      className="flex-1 overflow-y-auto overflow-x-hidden min-h-[300px]" 
+      onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+      onClick={(e) => e.stopPropagation()}
+    >
       {items.length === 0 ? (
         <div className="py-10 text-center text-muted-foreground">{emptyMessage}</div>
       ) : (
@@ -273,8 +278,14 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
   }, [filteredEquipment, handleAddEquipment]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <Card className="w-[720px] max-h-[80vh] flex flex-col bg-background/95 border-border">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <Card 
+        className="w-[720px] max-h-[90vh] flex flex-col bg-background/95 border-border shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
             <h2 className="font-display font-bold text-lg">Add Equipment</h2>
