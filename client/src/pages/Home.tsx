@@ -219,18 +219,18 @@ export function Home() {
         <div className="mx-auto max-w-5xl px-6 py-10">
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {[
-              { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
-              { end: 4, prefix: "", suffix: "+ Years", label: "Technical Intern", icon: Terminal },
-              { end: 3500, prefix: "", suffix: "+ TB", label: "Data Managed", icon: HardDrive },
-              { end: 2029, prefix: "Class of ", suffix: "", label: "South CTA", icon: Award },
+              { end: 1, prefix: "", suffix: "%", label: "Top 1% Cyber League", icon: Shield },
+              { end: 4, prefix: "", suffix: "+", label: "Technical Intern", icon: Terminal },
+              { end: 3500, prefix: "", suffix: "+", label: "TB Data Managed", icon: HardDrive },
+              { end: 2029, prefix: "'", suffix: "", label: "Class of 2029", icon: Award },
             ].map((stat, i) => (
               <Reveal key={stat.label} stagger={i + 1}>
                 <div className="group text-center transition-all duration-500 hover:scale-110">
                   <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-all duration-300 group-hover:text-primary group-hover:animate-bounce" />
-                  <div className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl group-hover:animate-glow" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
+                  <div className="text-4xl font-black text-foreground sm:text-5xl lg:text-6xl group-hover:animate-glow leading-none" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
                     <AnimatedCounter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
                   </div>
-                  <div className="mt-2 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
+                  <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors group-hover:text-primary/70">
                     {stat.label}
                   </div>
                 </div>
