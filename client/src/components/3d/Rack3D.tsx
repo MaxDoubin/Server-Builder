@@ -67,13 +67,13 @@ function RackFrame({
   const statusGlowHex = useMemo(() => {
     switch (thermalStatus) {
       case "critical":
-        return "#ff2200";
+        return "#ff3333";
       case "warning":
-        return "#ffaa00";
+        return "#ff9900";
       case "elevated":
-        return "#ffcc00";
+        return "#ffff00";
       default:
-        return "#00ff44";
+        return "#00ff66";
     }
   }, [thermalStatus]);
 
@@ -216,13 +216,13 @@ function SimplifiedRack({ thermalStatus }: { thermalStatus: string }) {
   const statusGlowHex = useMemo(() => {
     switch (thermalStatus) {
       case "critical":
-        return "#ff2200";
+        return "#ff3333";
       case "warning":
-        return "#ffaa00";
+        return "#ff9900";
       case "elevated":
-        return "#ffcc00";
+        return "#ffff00";
       default:
-        return "#00ff44";
+        return "#00ff66";
     }
   }, [thermalStatus]);
 

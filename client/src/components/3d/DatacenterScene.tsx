@@ -805,7 +805,12 @@ export function DatacenterScene({
               buildMode={buildMode}
               canMove={isUnlocked}
               onMoveRack={(rackId, positionX, positionY) => {
-                updateRackPosition(rackId, positionX, positionY);
+                const isOccupied = displayRacks.some(
+                  (r) => r.id !== rackId && r.positionX === positionX && r.positionY === positionY
+                );
+                if (!isOccupied) {
+                  updateRackPosition(rackId, positionX, positionY);
+                }
               }}
               rackScale={rackScale}
               onPointerGridChange={onPointerGridChange}

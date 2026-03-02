@@ -296,20 +296,52 @@ export function DataCenter3D() {
             </div>
 
             <div className="mt-4 space-y-3">
-              <div>
-                <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-white/60">
-                  <span>Rack density</span>
-                  <span className="text-cyan-200">{sliderValue}</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-white/60">
+                    <span>Rack density</span>
+                    <span className="text-cyan-200">{sliderValue}</span>
+                  </div>
+                  <Slider
+                    value={[sliderValue]}
+                    min={1}
+                    max={500}
+                    step={1}
+                    onValueChange={(value) => handleRackCountChange(value[0])}
+                  />
                 </div>
-                <Slider
-                  value={[sliderValue]}
-                  min={1}
-                  max={500}
-                  step={1}
-                  onValueChange={(value) => handleRackCountChange(value[0])}
-                />
+                <div>
+                  <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-white/60">
+                    <span>Fill Rate</span>
+                    <span className="text-cyan-200">{proceduralOptions.fillRateMultiplier}x</span>
+                  </div>
+                  <Slider
+                    value={[proceduralOptions.fillRateMultiplier]}
+                    min={0.1}
+                    max={2}
+                    step={0.1}
+                    onValueChange={(v) => setProceduralOptions(p => ({ ...p, fillRateMultiplier: v[0] }))}
+                  />
+                </div>
               </div>
+
               <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setShowHeatmap(p => !p)}
+                  className={`bg-white/10 text-white hover:bg-white/20 ${showHeatmap ? "border border-orange-400/60 shadow-[0_0_8px_rgba(251,146,60,0.4)]" : ""}`}
+                >
+                  Heatmap: {showHeatmap ? "ON" : "OFF"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setShowHUD(p => !p)}
+                  className={`bg-white/10 text-white hover:bg-white/20 ${showHUD ? "border border-cyan-400/60" : ""}`}
+                >
+                  HUD: {showHUD ? "ON" : "OFF"}
+                </Button>
                 <Button
                   size="sm"
                   variant="secondary"
@@ -333,50 +365,10 @@ export function DataCenter3D() {
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={handleShowIntro}
-                  className="bg-white/10 text-white hover:bg-white/20"
-                >
-                  Intro
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setShowDiagnostics((prev) => !prev)}
-                  className="bg-white/10 text-white hover:bg-white/20"
-                >
-                  Diagnostics
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setShowPerfOverlay((prev) => !prev)}
-                  className="bg-white/10 text-white hover:bg-white/20"
-                >
-                  Perf HUD
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
                   onClick={() => setQualityMode((prev) => (prev === "high" ? "low" : "high"))}
                   className="bg-white/10 text-white hover:bg-white/20"
                 >
                   Quality: {qualityMode.toUpperCase()}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setRackScale((prev) => Math.min(1.6, prev + 0.1))}
-                  className="bg-white/10 text-white hover:bg-white/20"
-                >
-                  Scale +
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setRackScale((prev) => Math.max(0.6, prev - 0.1))}
-                  className="bg-white/10 text-white hover:bg-white/20"
-                >
-                  Scale -
                 </Button>
                 <Button
                   size="sm"
@@ -390,15 +382,15 @@ export function DataCenter3D() {
                   }}
                   className="bg-white/10 text-white hover:bg-white/20"
                 >
-                  {placingRack ? "Cancel Placement" : "Spawn Empty Rack"}
+                  {placingRack ? "Cancel" : "Spawn Rack"}
                 </Button>
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() => setPlacingRack((prev) => !prev)}
-                  className="bg-white/10 text-white hover:bg-white/20"
+                  className={`bg-white/10 text-white hover:bg-white/20 ${placingRack ? "border border-green-400/60" : ""}`}
                 >
-                  {placingRack ? "Click to Place Rack" : "Place Rack"}
+                  {placingRack ? "Drop Mode" : "Place Rack"}
                 </Button>
               </div>
             </div>
@@ -429,6 +421,14 @@ export function DataCenter3D() {
       {!introVisible && showOverlays && !focusMode && (
         <>
           {sessionMode === "build" && showToolbars && <BuildToolbar />}
+          <div className="fixed bottom-4 left-4 z-50">
+            <MiniMap 
+              racks={visibleRacks} 
+              selectedRackId={selectedRackId} 
+              onSelectRack={(r) => handleSelectRack(r)} 
+              floorSize={floorSize} 
+            />
+          </div>
           <GameHUD
             isUnlocked={isUnlocked}
             onUnlock={handleUnlock}
