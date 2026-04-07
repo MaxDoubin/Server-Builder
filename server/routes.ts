@@ -7,6 +7,7 @@ import {
   insertRackSchema,
   insertServerConfigSchema,
   incidentSchema,
+  alertSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(
@@ -181,8 +182,17 @@ export async function registerRoutes(
   });
 
   app.post("/api/alerts", async (req, res) => {
-    const alert = await storage.createAlert(req.body);
-    res.status(201).json(alert);
+    try {
+      const insertAlertSchema = alertSchema.omit({ id: true });
+      const validated = insertAlertSchema.parse(req.body);
+      const alert = await storage.createAlert(validated);
+      res.status(201).json(alert);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid alert data", details: error.errors });
+      }
+      throw error;
+    }
   });
 
   app.patch("/api/alerts/:id/acknowledge", async (req, res) => {

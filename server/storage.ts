@@ -227,7 +227,8 @@ function createInstalledEquipment(eqId: string, uStart: number, uHeight: number,
 function createRackWithEquipment(id: string, name: string, power: number, inlet: number, exhaust: number, airflow: number, x: number, y: number): Rack {
   const equipment: InstalledEquipment[] = [];
   
-  const configs = [
+  type ConfigItem = { eq: string; u: number; status?: InstalledEquipment["status"] };
+  const configs: ConfigItem[][] = [
     [
       { eq: "eq-pdu-1u", u: 1 },
       { eq: "eq-ups-2u", u: 2 },
@@ -258,7 +259,7 @@ function createRackWithEquipment(id: string, name: string, power: number, inlet:
       { eq: "eq-stor-4u-pure", u: 5 },
       { eq: "eq-stor-2u-dell", u: 9 },
       { eq: "eq-sw-2u-cisco", u: 11 },
-      { eq: "eq-srv-2u-dell", u: 13, status: "warning" as const },
+      { eq: "eq-srv-2u-dell", u: 13, status: "warning" },
       { eq: "eq-srv-2u-dell", u: 15 },
     ],
   ];
@@ -269,7 +270,7 @@ function createRackWithEquipment(id: string, name: string, power: number, inlet:
   for (const item of config) {
     const eq = equipmentCatalog.find(e => e.id === item.eq);
     if (eq) {
-      equipment.push(createInstalledEquipment(item.eq, item.u, eq.uHeight, (item as any).status || "online"));
+      equipment.push(createInstalledEquipment(item.eq, item.u, eq.uHeight, item.status ?? "online"));
     }
   }
   
