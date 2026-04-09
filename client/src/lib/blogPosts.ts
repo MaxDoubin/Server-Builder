@@ -2299,6 +2299,2467 @@ volumes:
 There is no universal answer to "containers or VMs." Both have their place. My rule of thumb: if it needs its own kernel or strong isolation, use a VM. If it is a Linux service that can share the host kernel, use a container. If it is a portable application packaged as a Docker image, use Docker.
 `,
   },
+  {
+    slug: "bgp-for-network-engineers",
+    title: "BGP for Network Engineers: A Practical Introduction",
+    date: "2026-02-21",
+    tags: ["networking", "bgp", "routing"],
+    excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
+    coverImage: "/images/blog-bgp-for-network-engineers.png",
+    content: `
+## What BGP Actually Is
+
+BGP (Border Gateway Protocol) is the routing protocol that connects autonomous systems on the internet. Unlike interior routing protocols like OSPF or EIGRP, BGP is designed for policy-based routing between organizations. It is not just about finding the shortest path. It is about controlling which paths are preferred, which ones are advertised, and which ones are filtered entirely.
+
+If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
+
+## Key Concepts
+
+**Autonomous Systems (AS):** Every network that participates in BGP has an AS number (ASN). This is how BGP identifies routing domains. Large ISPs, cloud providers, and universities all have their own ASNs.
+
+**eBGP vs iBGP:** External BGP (eBGP) runs between different autonomous systems. Internal BGP (iBGP) runs within the same AS, typically to distribute routes learned from eBGP peers throughout the network.
+
+**BGP Attributes:** BGP uses path attributes to make routing decisions. The most important ones are:
+- **AS Path:** The list of AS numbers a route has traversed. Shorter is generally preferred.
+- **Local Preference:** Used internally to prefer one exit point over another.
+- **MED:** Multi-Exit Discriminator, used to suggest preferred ingress points to external peers.
+- **Next Hop:** The next-hop IP for reaching a destination.
+
+## Basic Configuration
+
+\`\`\`
+router bgp 65001
+  neighbor 192.168.1.2 remote-as 65002
+  neighbor 192.168.1.2 description UPSTREAM_ISP
+  network 10.0.0.0 mask 255.255.255.0
+\`\`\`
+
+## Why It Matters in the Real World
+
+Even if you work in enterprise networking rather than ISP networking, BGP comes up constantly. Cloud providers use it for connecting on-premises networks to AWS, Azure, or GCP via Direct Connect or ExpressRoute. SD-WAN solutions often use BGP internally. Understanding BGP makes you a much more effective network engineer.
+
+## Where to Practice
+
+You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start with a simple two-AS topology, peer them, and watch the route tables populate. Then add filters and attributes to see how routing decisions change.
+`,
+  },
+  {
+    slug: "fortigate-cli-essentials",
+    title: "FortiGate CLI: Commands You Will Use Every Day",
+    date: "2026-02-22",
+    tags: ["fortinet", "firewall", "networking"],
+    excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
+    coverImage: "/images/blog-fortigate-cli-essentials.png",
+    content: `
+## Why Learn the CLI
+
+The FortiGate GUI is well designed and handles most tasks fine. But when you are troubleshooting a production issue under pressure, the CLI is faster, more precise, and more scriptable. It also gives you access to diagnostic tools and detailed output that the GUI does not expose.
+
+## Essential Show Commands
+
+\`\`\`bash
+# Show interface status and IP assignments
+get system interface
+
+# Show routing table
+get router info routing-table all
+
+# Show firewall policies
+show firewall policy
+
+# Show active sessions
+diagnose sys session list
+
+# Show BGP neighbors and state
+get router info bgp summary
+
+# Show hardware and version info
+get system status
+\`\`\`
+
+## Packet Capture
+
+FortiGate has a built-in packet sniffer that is invaluable for troubleshooting:
+
+\`\`\`bash
+# Capture traffic on port1 matching a host
+diagnose sniffer packet port1 "host 192.168.1.100" 4 0 l
+
+# The parameters: interface, filter, verbosity (4 = full packet), count (0 = unlimited), timestamp format
+\`\`\`
+
+## Debug Flow
+
+The debug flow tool shows you exactly what the FortiGate does with each packet through the policy engine:
+
+\`\`\`bash
+diagnose debug reset
+diagnose debug flow filter addr 192.168.1.100
+diagnose debug flow show console enable
+diagnose debug enable
+diagnose debug flow trace start 10
+\`\`\`
+
+This output tells you which policy matches the traffic, whether NAT is applied, and whether the packet is allowed or dropped. It is the fastest way to diagnose connectivity problems.
+
+## HA Status
+
+\`\`\`bash
+# Check HA cluster status
+diagnose sys ha status
+
+# Show which unit is primary
+get system ha status
+\`\`\`
+
+## Tips
+
+Always run \`diagnose debug disable\` and \`diagnose debug reset\` when you are done debugging. Leaving debug enabled affects performance. And document any changes you make in the CLI, because the GUI does not always show CLI-only configurations clearly.
+`,
+  },
+  {
+    slug: "kvm-proxmox-esxi-comparison",
+    title: "KVM vs Proxmox vs ESXi: Choosing a Hypervisor",
+    date: "2026-02-23",
+    tags: ["virtualization", "servers", "homelab"],
+    excerpt: "Three serious hypervisors, three different trade-offs. Here is how to think about choosing between KVM, Proxmox, and VMware ESXi for your environment.",
+    coverImage: "/images/blog-kvm-proxmox-esxi-comparison.png",
+    content: `
+## The Core Question
+
+All three of these platforms run virtual machines. The differences are in management, ecosystem, licensing, and how well they fit specific use cases. Choosing the right one depends on what you are trying to do.
+
+## Bare-Metal KVM
+
+KVM (Kernel-based Virtual Machine) is built into the Linux kernel. If you install Ubuntu or RHEL on a server, you already have a hypervisor. Add QEMU for machine emulation and libvirt for management, and you have a complete virtualization stack.
+
+**Best for:** Developers who want full control, cloud infrastructure builders, or situations where you need to integrate virtualization into a custom system.
+
+**Trade-offs:** No built-in management UI. You manage everything through the command line or third-party tools like Cockpit or virt-manager. More flexible but more work to set up and operate.
+
+## Proxmox VE
+
+Proxmox is built on Debian Linux and KVM, with a polished web UI and built-in features for clustering, high availability, and both VM and container (LXC) management. It is free and open source, with paid support subscriptions available.
+
+**Best for:** Homelabs, small datacenters, anyone who wants KVM's power with a proper management interface. This is what I run in my homelab.
+
+**Trade-offs:** The community version works great but shows nag messages about subscriptions. The clustering features require some networking configuration to get right.
+
+## VMware ESXi
+
+ESXi is the industry standard in enterprise environments. If you work in a large organization, you almost certainly have ESXi somewhere. It runs as a bare-metal hypervisor with a very thin footprint, and the VMware ecosystem (vCenter, vSAN, NSX) is extremely mature.
+
+**Best for:** Enterprise environments, organizations that need vendor support, situations where vCenter is already deployed.
+
+**Trade-offs:** Licensing costs are significant. Since Broadcom's acquisition of VMware, the pricing and licensing model has become much less friendly for small organizations and homelabs. Free ESXi is now unavailable.
+
+## My Take
+
+For a homelab or small lab environment, Proxmox is the clear winner. You get all the power of KVM with a proper UI, no licensing costs, and excellent documentation. For enterprise, ESXi remains dominant simply because the tooling and ecosystem are unmatched, even if the cost has increased substantially.
+`,
+  },
+  {
+    slug: "nvme-vs-sata-enterprise-storage",
+    title: "NVMe vs SATA in Enterprise Storage",
+    date: "2026-02-24",
+    tags: ["storage", "hardware", "servers"],
+    excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
+    coverImage: "/images/blog-nvme-vs-sata-enterprise-storage.png",
+    content: `
+## The Numbers
+
+A typical SATA SSD tops out at around 550 MB/s sequential read. A modern NVMe SSD reaches 5,000 MB/s or more on PCIe 4.0, and enterprise NVMe drives designed for consistent random I/O push even harder. The gap is not marginal. It is an order of magnitude.
+
+But raw speed is only part of the story. The more important metric for servers is IOPS (input/output operations per second) for random small-block reads and writes. That is where NVMe really pulls ahead.
+
+## Where NVMe Wins Clearly
+
+**VM storage:** Virtual machines doing lots of random I/O benefit enormously from NVMe. Boot times drop, responsiveness improves, and you can run more VMs per storage device before hitting I/O bottlenecks.
+
+**Database workloads:** Any database doing lots of small random reads and writes sees dramatic improvements with NVMe.
+
+**Live migrations:** Moving a running VM between hosts over NVMe-backed storage is smoother and faster than SATA.
+
+## Where SATA Is Still Fine
+
+**Bulk storage and archives:** If you are storing backup files, logs, or large media files that are written once and read occasionally, SATA is perfectly adequate. Sequential throughput on SATA is more than sufficient for these workloads.
+
+**Cold data tiers:** Many storage systems implement tiering, where hot data lives on NVMe and cold data moves to SATA or spinning disk. SATA fits naturally in this architecture.
+
+## Enterprise NVMe Specifics
+
+Consumer NVMe drives are not designed for 24/7 server duty. Enterprise NVMe drives have features like power loss protection (capacitors that complete writes if power fails), consistent latency profiles under sustained load, and much higher endurance ratings.
+
+In my lab, I run NVMe for VM storage pools and SATA SSDs for secondary storage. The performance difference is obvious in daily use, and the cost difference has narrowed enough that NVMe is the right choice for anything performance-sensitive.
+`,
+  },
+  {
+    slug: "network-monitoring-system-build",
+    title: "Building a Network Monitoring System from Scratch",
+    date: "2026-02-25",
+    tags: ["networking", "monitoring", "homelab"],
+    excerpt: "A step-by-step look at building a monitoring system that gives you real visibility into your network's health, traffic, and events.",
+    coverImage: "/images/blog-network-monitoring-system-build.png",
+    content: `
+## Why Build Your Own
+
+Commercial network monitoring tools are expensive and often overkill for a lab or small environment. Building your own gives you deep understanding of how monitoring works and exactly the visibility you need without paying for features you never use.
+
+## The Stack
+
+My monitoring stack uses four main components:
+
+**SNMP polling with Prometheus SNMP Exporter:** Collects interface statistics, CPU and memory utilization, and other metrics from network devices via SNMP. Prometheus scrapes these metrics on a schedule and stores them.
+
+**Grafana for visualization:** Grafana connects to Prometheus and renders dashboards. You can build exactly the views you need: interface utilization graphs, device health panels, and alert history.
+
+**Alertmanager for notifications:** When metrics cross thresholds, Alertmanager routes alerts to email or other destinations. A down interface or a device with 95 percent CPU should wake you up.
+
+**Syslog collection with Loki:** Devices send syslog messages to a central collector. Loki stores them, and Grafana lets you search and correlate logs with metrics.
+
+## Setting Up SNMP
+
+First, enable SNMP on your devices with a strong community string or, better, SNMPv3 with authentication and encryption. Then configure the SNMP Exporter with the appropriate module for your device type.
+
+\`\`\`yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: 'snmp'
+    static_configs:
+      - targets:
+        - 192.168.1.1  # FortiGate
+        - 192.168.1.10  # Cisco switch
+    metrics_path: /snmp
+    params:
+      module: [if_mib]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: localhost:9116
+\`\`\`
+
+## What to Monitor
+
+Focus first on the things that cause outages or degraded service: interface utilization and error rates, device CPU and memory, BGP session state if applicable, and power supply status. Add more metrics over time as you understand your environment better.
+
+The goal is not to collect everything. It is to make sure you find out about real problems before your users do.
+`,
+  },
+  {
+    slug: "redundant-power-supplies",
+    title: "Redundant Power Supplies: How and Why They Work",
+    date: "2026-02-26",
+    tags: ["hardware", "servers", "homelab"],
+    excerpt: "Redundant PSUs are a fundamental part of enterprise server design. Here is how they actually work and when they matter.",
+    coverImage: "/images/blog-redundant-power-supplies.png",
+    content: `
+## The Problem They Solve
+
+A server with a single power supply has a single point of failure. If that PSU fails, the server goes down. In a production environment, unplanned downtime is expensive. Redundant power supplies eliminate the PSU as a single point of failure.
+
+## How Redundancy Works
+
+Enterprise servers typically support 1+1 or 2+1 redundancy. In a 1+1 configuration, two PSUs share the load equally. If one fails, the other takes the full load without interruption. The server keeps running. You get an alert, you replace the failed unit during business hours, and there is no outage.
+
+The PSUs connect to the server's power distribution board, which handles the load sharing and failover automatically. Modern enterprise PSUs support hot-swap, meaning you can remove the failed unit and install a replacement while the server is running.
+
+## Connecting to Separate Circuits
+
+Redundant PSUs only provide real protection if they connect to independent power sources. In a data center, each PSU connects to a separate PDU on a separate circuit, ideally fed from separate UPS units and ultimately separate utility feeds.
+
+In a homelab, you can approximate this by running each PSU to a different outlet on a different circuit, ideally on different breakers. It is not full enterprise-grade redundancy, but it protects against a tripped breaker or a failed power strip.
+
+## Checking PSU Health
+
+Dell iDRAC provides real-time PSU status, including input voltage, output power, and health state. You can see whether each PSU is active and contributing to the load, which is essential for confirming that redundancy is actually working.
+
+\`\`\`bash
+# Via racadm
+racadm getsensorinfo | grep -i power
+\`\`\`
+
+## In Practice
+
+I run all my lab servers with redundant PSUs and connect them to separate circuits. I have tested failover by unplugging one PSU while the server was running, and in every case the server continued without any interruption. The investment in a second PSU is minimal compared to the cost of an unexpected shutdown.
+`,
+  },
+  {
+    slug: "spanning-tree-protocol-deep-dive",
+    title: "Spanning Tree Protocol: What It Does and Why It Breaks Things",
+    date: "2026-02-27",
+    tags: ["networking", "switching", "homelab"],
+    excerpt: "STP prevents broadcast storms but introduces its own complexity. Understanding it deeply is essential for anyone working with switched networks.",
+    coverImage: "/images/blog-spanning-tree-protocol-deep-dive.png",
+    content: `
+## The Problem STP Solves
+
+Ethernet switches forward frames by MAC address. If you have two switches connected by two cables (creating a physical loop), a broadcast frame will loop forever, duplicating with each pass until the network is completely saturated. This is a broadcast storm, and it will take down your entire network in seconds.
+
+STP (Spanning Tree Protocol) prevents this by detecting loops and blocking redundant paths at the logical level. Only one active path exists between any two network nodes, but the blocked paths are available as backups if the active path fails.
+
+## How It Works
+
+STP elects a root bridge based on bridge priority and MAC address. Every other switch calculates the lowest-cost path to the root bridge and designates one port as the root port. Redundant ports that would create loops are put in a blocking state.
+
+When topology changes, STP reconverges. This can take 30 to 50 seconds with classic STP (802.1D), which is why RSTP (Rapid STP, 802.1w) was developed. RSTP reconverges in seconds using negotiation between switches rather than timers.
+
+## Common STP Problems
+
+**Suboptimal root bridge election:** If you do not manually configure bridge priorities, the switch with the lowest MAC address becomes root. This might not be the most centrally connected or highest-capacity switch. Always set bridge priority explicitly.
+
+\`\`\`
+spanning-tree vlan 1 priority 4096
+\`\`\`
+
+**TCN (Topology Change Notifications) flooding:** Every time a port changes state, STP flushes MAC tables. In a large network with frequently changing ports (like access ports with PCs), this can cause excessive flooding. PortFast and BPDU Guard on access ports solve this.
+
+**Inferior paths surviving:** With complex topologies, STP may choose a slower path as the root port if costs are not tuned properly.
+
+## Best Practices
+
+Enable Rapid PVST+ (or MSTP in larger environments). Set explicit bridge priorities so your core switches are root. Enable PortFast on all access ports and BPDU Guard to protect against unauthorized switches. Document your STP topology so you understand which paths are active and which are blocking.
+`,
+  },
+  {
+    slug: "ssh-hardening-linux-servers",
+    title: "SSH Hardening: Locking Down Remote Access",
+    date: "2026-02-28",
+    tags: ["linux", "security", "servers"],
+    excerpt: "Default SSH configuration is functional but not secure. Here is how to harden it against the most common attack vectors.",
+    coverImage: "/images/blog-ssh-hardening-linux-servers.png",
+    content: `
+## Why Default SSH Is Not Enough
+
+A server with SSH exposed on port 22 will see hundreds or thousands of brute-force login attempts per day. Most of them come from automated bots scanning the internet. Default SSH configuration allows password authentication, which means a weak password is all that separates your server from unauthorized access.
+
+## Key-Based Authentication
+
+The most important change is disabling password authentication and requiring key pairs. Generate a key pair on your workstation and copy the public key to the server:
+
+\`\`\`bash
+ssh-keygen -t ed25519 -C "admin@myserver"
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@server
+\`\`\`
+
+Then in \`/etc/ssh/sshd_config\`:
+
+\`\`\`
+PasswordAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+\`\`\`
+
+## Other Critical Settings
+
+\`\`\`
+# Disable root login entirely
+PermitRootLogin no
+
+# Limit login attempts per connection
+MaxAuthTries 3
+
+# Use only modern algorithms
+KexAlgorithms curve25519-sha256,diffie-hellman-group16-sha512
+Ciphers aes256-gcm@openssh.com,chacha20-poly1305@openssh.com
+MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com
+
+# Idle timeout
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# Limit which users can log in
+AllowUsers admin deployer
+
+# Disable X11 forwarding unless needed
+X11Forwarding no
+\`\`\`
+
+## Port Change and Fail2Ban
+
+Changing SSH to a non-standard port (e.g., 2222) reduces automated scanning noise significantly. It is security by obscurity and not a substitute for real controls, but it is a low-cost way to reduce log clutter.
+
+Fail2ban monitors failed login attempts and automatically blocks IPs after a configurable number of failures:
+
+\`\`\`bash
+apt install fail2ban
+systemctl enable fail2ban
+\`\`\`
+
+With key-based auth, a changed port, and fail2ban in place, your SSH attack surface is dramatically reduced.
+`,
+  },
+  {
+    slug: "ipv6-in-the-real-world",
+    title: "IPv6 in the Real World: What Actually Changes",
+    date: "2026-03-01",
+    tags: ["networking", "ipv6"],
+    excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
+    coverImage: "/images/blog-ipv6-in-the-real-world.png",
+    content: `
+## Why IPv6 Exists
+
+IPv4 has approximately 4.3 billion addresses. The internet has more than 4.3 billion devices connected to it. The math does not work without NAT, and NAT creates its own complexity and problems. IPv6 solves this with a 128-bit address space that provides enough addresses for every device that will ever exist, many times over.
+
+## The Address Space
+
+An IPv6 address looks like this: \`2001:db8:85a3::8a2e:370:7334\`. It is 128 bits expressed in eight groups of four hexadecimal digits, separated by colons. Consecutive groups of zeros can be abbreviated with \`::\`.
+
+A typical IPv6 prefix for a network segment is /64, which gives you 18 quintillion possible addresses on that segment. The idea of running out of addresses on a single subnet is gone.
+
+## What Changes for Network Configuration
+
+**No more NAT (mostly):** With enough addresses for every device to have a globally routable address, NAT is no longer necessary. Devices can communicate end-to-end directly.
+
+**Stateless Address Autoconfiguration (SLAAC):** Devices can self-configure IPv6 addresses based on the network prefix advertised by routers. DHCP is still used in many enterprise environments, but SLAAC simplifies device configuration.
+
+**Link-local addresses:** Every IPv6 interface automatically gets a link-local address (\`fe80::/10\`) that is used for on-link communication without needing global routing.
+
+**Neighbor Discovery Protocol (NDP):** NDP replaces ARP for address resolution on local segments.
+
+## What Stays the Same
+
+Routing, firewall rules, VLANs, and most other networking concepts work the same way. You apply them to IPv6 addresses instead of IPv4 addresses. Your firewall still needs rules. Your switches still handle frames the same way. The mental model transfers directly.
+
+## Getting Started
+
+Most enterprise environments now operate dual-stack, running both IPv4 and IPv6 simultaneously. Start by enabling IPv6 on your homelab router, get a prefix delegation from your ISP if available, and experiment with connectivity. The best way to learn IPv6 is to use it.
+`,
+  },
+  {
+    slug: "cisco-ios-fundamentals",
+    title: "Cisco IOS Fundamentals Every Network Engineer Should Know",
+    date: "2026-03-02",
+    tags: ["cisco", "networking", "routing"],
+    excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
+    coverImage: "/images/blog-cisco-ios-fundamentals.png",
+    content: `
+## Navigating IOS Modes
+
+Cisco IOS has several privilege levels and configuration modes:
+
+\`\`\`
+Router>           # User EXEC mode (read-only)
+Router# enable    # Privileged EXEC mode (full show commands)
+Router# conf t    # Global configuration mode
+Router(config)#   # Now in global config
+
+Router(config)# interface GigabitEthernet0/0
+Router(config-if)#   # Interface config submode
+\`\`\`
+
+\`\`\`end\`\` or \`Ctrl+Z\`\` returns to privileged EXEC from any config mode.
+
+## Essential Show Commands
+
+\`\`\`
+show version           # IOS version, uptime, hardware
+show running-config    # Current active configuration
+show interfaces        # Interface status, statistics, errors
+show ip interface brief # Quick summary of all interfaces
+show ip route          # Routing table
+show cdp neighbors     # Connected Cisco devices
+show vlan brief        # VLAN database (on switches)
+show spanning-tree     # STP state
+show log               # System log
+\`\`\`
+
+## Basic Interface Configuration
+
+\`\`\`
+interface GigabitEthernet0/0
+  description UPLINK_TO_CORE
+  ip address 10.0.0.1 255.255.255.0
+  no shutdown
+\`\`\`
+
+## VLAN Configuration on Switches
+
+\`\`\`
+vlan 100
+  name SERVERS
+
+interface GigabitEthernet1/0/1
+  switchport mode access
+  switchport access vlan 100
+
+interface GigabitEthernet1/0/24
+  switchport mode trunk
+  switchport trunk allowed vlan 100,200,300
+\`\`\`
+
+## Saving Configuration
+
+\`\`\`
+copy running-config startup-config
+\`\`\`
+
+Or the shortcut: \`write\`. Always save after making changes. The running config is what is active; the startup config is what loads on boot. They are separate files.
+
+## The IOS Help System
+
+Type \`?\` at any point to see available commands. This works in all modes. \`show ip ?\` shows all sub-commands of \`show ip\`. Learning to use the help system is as important as memorizing specific commands.
+`,
+  },
+  {
+    slug: "storage-area-networks-explained",
+    title: "Storage Area Networks Explained",
+    date: "2026-03-03",
+    tags: ["storage", "networking", "servers"],
+    excerpt: "SANs power the storage backends of most enterprise datacenters. Here is how they work and why they are architected the way they are.",
+    coverImage: "/images/blog-storage-area-networks-explained.png",
+    content: `
+## What a SAN Is
+
+A Storage Area Network is a dedicated high-speed network that connects servers to storage arrays. Unlike a NAS (Network Attached Storage) that presents files over a network, a SAN presents raw block devices. The server sees the storage as if it were a locally attached disk.
+
+This distinction matters. Block-level access is faster and more flexible than file-level access for most database and virtualization workloads.
+
+## Fibre Channel vs iSCSI
+
+Traditional SANs use Fibre Channel (FC), a dedicated network technology optimized for storage. FC requires specialized switches (FC switches or directors) and HBAs (Host Bus Adapters) in the servers. It is expensive but extremely reliable and performant.
+
+iSCSI runs the SCSI storage protocol over standard Ethernet. It is less expensive because it reuses existing network infrastructure, and performance has improved dramatically as 10GbE and 25GbE become standard. Many organizations have moved from FC to iSCSI for new deployments.
+
+## How Targets and Initiators Work
+
+In iSCSI terminology:
+- **Target:** The storage device (SAN array)
+- **Initiator:** The server connecting to the storage
+
+The initiator connects to targets using iSCSI Qualified Names (IQNs). Once connected and authenticated, the OS sees the target LUNs as local disks.
+
+\`\`\`bash
+# Discover iSCSI targets
+iscsiadm -m discovery -t sendtargets -p 192.168.10.50
+
+# Connect to a target
+iscsiadm -m node -T iqn.2024-01.com.storage:array1 -p 192.168.10.50 --login
+\`\`\`
+
+## Multipathing
+
+Enterprise storage connects servers via multiple independent paths to eliminate single points of failure. The OS uses multipath software (MPIO on Windows, multipathd on Linux) to manage these paths transparently. If one path fails, I/O continues over the surviving paths.
+
+## When SANs Make Sense
+
+SANs make sense when you need shared storage for clustered workloads, high-performance block storage, or centralized storage management at scale. For simpler environments, NFS or direct-attached NVMe may be more appropriate.
+`,
+  },
+  {
+    slug: "proxmox-clustering-high-availability",
+    title: "Proxmox Clustering and High Availability Setup",
+    date: "2026-03-04",
+    tags: ["proxmox", "virtualization", "homelab"],
+    excerpt: "Proxmox clustering lets multiple hosts share workloads and survive individual node failures. Here is how to set it up and what to watch out for.",
+    coverImage: "/images/blog-proxmox-clustering-high-availability.png",
+    content: `
+## Why Cluster
+
+A single Proxmox node is useful, but a cluster is where the platform gets interesting. With a cluster, you can live-migrate VMs between nodes, balance workloads, and configure automatic failover so that if a node fails, its VMs restart on surviving nodes.
+
+## Network Requirements
+
+Before clustering, you need a plan for your networks:
+
+- **Cluster communication network:** Used for Proxmox corosync traffic (cluster heartbeats and state sync). This should be a dedicated, low-latency link. 10GbE is ideal.
+- **VM traffic network:** Regular network for VMs.
+- **Storage network:** If you are using shared storage (Ceph or iSCSI), it needs its own network.
+
+Mixing cluster traffic with VM traffic works but is not recommended for production.
+
+## Creating a Cluster
+
+On the first node:
+\`\`\`bash
+pvecm create my-cluster
+\`\`\`
+
+On subsequent nodes:
+\`\`\`bash
+pvecm add 192.168.1.10  # IP of the first node
+\`\`\`
+
+Verify cluster status:
+\`\`\`bash
+pvecm status
+\`\`\`
+
+## Quorum and Fencing
+
+Proxmox uses quorum to decide which nodes are authoritative. In a two-node cluster, you need a quorum device (a third vote, even a small VM or a NAS) to avoid split-brain scenarios. Three-node clusters have natural quorum.
+
+Fencing ensures that a failed node is truly offline before its VMs are restarted elsewhere. Without proper fencing, two instances of the same VM could run simultaneously, causing data corruption. Configure IPMI/iDRAC-based fencing so the cluster can power-cycle failed nodes.
+
+## High Availability Groups
+
+Configure HA groups to control which nodes can host specific VMs:
+
+\`\`\`bash
+ha-manager add vm:100
+ha-manager set vm:100 --state started --group ha-group1
+\`\`\`
+
+## Shared Storage
+
+HA VM migration requires shared storage so both source and destination nodes can access the VM disk. Ceph, NFS, and iSCSI are all supported. Ceph is native to Proxmox and integrates cleanly, though it has its own complexity and resource requirements.
+`,
+  },
+  {
+    slug: "fortigate-sdwan-configuration",
+    title: "FortiGate SD-WAN: Intelligent WAN Link Selection",
+    date: "2026-03-05",
+    tags: ["fortinet", "networking", "firewall"],
+    excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
+    coverImage: "/images/blog-fortigate-sdwan-configuration.png",
+    content: `
+## What SD-WAN Solves
+
+Traditional WAN routing uses static routes or simple metrics to decide how traffic exits the network. A primary link fails, and you wait for the failover route to take over. Performance degrades silently. You have no visibility into what is actually happening across your WAN links.
+
+SD-WAN adds active performance measurement and policy-based routing. The FortiGate constantly measures latency, jitter, and packet loss on each WAN link and makes routing decisions based on actual conditions.
+
+## Basic SD-WAN Setup
+
+First, create an SD-WAN zone and add your WAN interfaces:
+
+\`\`\`
+config system sdwan
+  set status enable
+  config zone
+    edit "virtual-wan-link"
+      set members wan1 wan2
+    next
+  end
+  config members
+    edit 1
+      set interface wan1
+      set gateway 203.0.113.1
+    next
+    edit 2
+      set interface wan2
+      set gateway 198.51.100.1
+    next
+  end
+end
+\`\`\`
+
+## Performance SLAs
+
+Define what acceptable performance looks like for each type of traffic:
+
+\`\`\`
+config system sdwan
+  config health-check
+    edit "Google_DNS"
+      set server "8.8.8.8"
+      set protocol ping
+      set interval 500
+      set failtime 3
+      set recoverytime 5
+      set latency-threshold 150
+      set jitter-threshold 30
+      set packetloss-threshold 1
+    next
+  end
+end
+\`\`\`
+
+## Rules
+
+SD-WAN rules define which traffic uses which links based on the performance SLAs:
+
+\`\`\`
+config system sdwan
+  config service
+    edit 1
+      set name "Business_Apps"
+      set dst "critical-servers"
+      set priority-members 1 2
+      set sla "Google_DNS" 1 2
+    next
+  end
+end
+\`\`\`
+
+## The Result
+
+Traffic automatically routes over the best-performing link. When a link degrades below your SLA thresholds, traffic shifts to the healthier link without manual intervention. You get visibility into link performance through the FortiGate dashboard and can build detailed reports on WAN utilization over time.
+`,
+  },
+  {
+    slug: "network-security-zones-dmz",
+    title: "Network Security Zones and DMZ Design",
+    date: "2026-03-06",
+    tags: ["security", "networking", "firewall"],
+    excerpt: "A well-designed zone architecture is the foundation of network security. Here is how to think about segmenting your network into security zones.",
+    coverImage: "/images/blog-network-security-zones-dmz.png",
+    content: `
+## The Zone Model
+
+A security zone is a group of systems with similar trust levels and security requirements. Traffic between zones is controlled by firewall policies. Traffic within a zone may or may not be inspected, depending on your requirements.
+
+The classic zone model has three zones:
+- **Inside (LAN):** Trusted internal network
+- **Outside (WAN/Internet):** Untrusted external network
+- **DMZ:** Semi-trusted zone for systems that must be accessible from outside
+
+## Why Zones Matter
+
+Without zones, a compromised internal host can reach any other internal system directly. Zones limit blast radius. If a web server in the DMZ is compromised, the attacker is stuck in the DMZ. They cannot reach your database servers on the internal network because the firewall blocks DMZ-to-LAN traffic.
+
+## Designing a DMZ
+
+The DMZ sits between the inside and outside zones. Systems in the DMZ need to be reachable from the internet (like web servers or email servers) but should not have access to internal systems.
+
+Key firewall rules:
+- **Outside to DMZ:** Allow specific inbound traffic (HTTP/443 to web servers, 25 to mail servers)
+- **DMZ to Inside:** Deny by default. Allow specific exceptions only (like a web server querying a database on a dedicated database VLAN)
+- **Inside to DMZ:** Allow for administration, deny for general browsing
+- **Inside to Outside:** Allow with inspection
+
+## Beyond the Basic DMZ
+
+More mature environments add additional zones:
+- **Server VLAN:** Isolated from user workstations but trusted more than the DMZ
+- **Management VLAN:** For out-of-band device management (iDRAC, switch management)
+- **Guest WiFi:** Fully isolated from everything internal
+- **IoT:** Isolated from trusted systems
+
+Each additional zone adds security but also adds management complexity. Start with the basics and add complexity only when you have a clear reason for it.
+`,
+  },
+  {
+    slug: "power-over-ethernet-poe",
+    title: "Power over Ethernet: How PoE Works in Enterprise Networks",
+    date: "2026-03-07",
+    tags: ["networking", "hardware", "switching"],
+    excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
+    coverImage: "/images/blog-power-over-ethernet-poe.png",
+    content: `
+## What PoE Does
+
+Power over Ethernet delivers electrical power over standard Ethernet cabling, allowing devices like IP phones, wireless access points, and security cameras to operate without a separate power supply. A PoE switch powers the device through the same cable that carries data.
+
+## The Standards
+
+**PoE (IEEE 802.3af):** Original standard, up to 15.4W per port. Sufficient for basic IP phones and low-power APs.
+
+**PoE+ (IEEE 802.3at):** Up to 30W per port. Handles most access points and PTZ cameras.
+
+**PoE++ (IEEE 802.3bt):** Up to 60W (Type 3) or 100W (Type 4) per port. Powers high-performance APs, thin clients, and even small displays.
+
+## Planning PoE Budgets
+
+Every PoE switch has a total power budget shared across all ports. A 24-port switch might have a 370W budget. If you connect 24 PoE+ devices drawing 25W each, that is 600W, which exceeds the budget. Some ports will not receive full power.
+
+Calculate your power requirements before deploying. Group high-power devices carefully and check the switch's documentation for per-port power limits and total budget.
+
+## How It Works
+
+The switch (PSE - Power Sourcing Equipment) applies a small voltage to the cable and checks for a signature resistor in the connected device (PD - Powered Device). If the signature matches an IEEE 802.3 profile, power is enabled. This prevents accidents with non-PoE equipment.
+
+## Practical Considerations
+
+- Check that the cable quality supports PoE, particularly for longer runs
+- Use cable testers that can verify PoE voltage and current
+- Consider inline PoE injectors for individual devices in environments without PoE switches
+- Monitor per-port power consumption in the switch management interface for troubleshooting
+
+PoE simplifies physical deployments significantly. The ability to mount an AP or camera anywhere you can run a cable, without running power separately, is a real advantage.
+`,
+  },
+  {
+    slug: "server-memory-architecture",
+    title: "Server Memory Architecture: DIMM Slots, Channels, and ECC",
+    date: "2026-03-08",
+    tags: ["hardware", "servers", "memory"],
+    excerpt: "Server memory is more complex than desktop memory. Understanding channels, DIMM placement, and ECC is essential for getting the performance and reliability you expect.",
+    coverImage: "/images/blog-server-memory-architecture.png",
+    content: `
+## Memory Channels
+
+Modern server CPUs support multiple memory channels. Intel Xeon Scalable processors support six or eight channels per CPU. Running memory in more channels increases memory bandwidth significantly, which matters for memory-intensive workloads like virtualization and databases.
+
+To use all available channels, you need to populate DIMMs in the correct slots. The motherboard manual (or Dell's memory compatibility matrix for PowerEdge servers) specifies exactly which slots to fill first and in what combinations to maximize channel utilization.
+
+## DIMM Placement Rules
+
+The rule of thumb: populate symmetrically. If you have a dual-socket server, put the same amount of memory in each socket. If a socket has eight memory channels, fill one DIMM per channel before adding a second DIMM to any channel.
+
+For a Dell PowerEdge R740 with two CPUs and 24 DIMM slots, filling 12 DIMMs (6 per CPU) in the correct slots gives you full channel utilization. Adding more DIMMs fills the remaining slots.
+
+## ECC Memory
+
+ECC (Error-Correcting Code) memory detects and corrects single-bit memory errors automatically. It also detects (but cannot correct) multi-bit errors. For servers running production workloads, ECC is not optional. Silent memory corruption can corrupt data and cause crashes that are extremely difficult to diagnose.
+
+All enterprise server platforms require ECC registered (RDIMM) or load-reduced (LRDIMM) memory. Consumer platforms typically do not support ECC at all.
+
+## LRDIMM vs RDIMM
+
+Registered DIMMs (RDIMMs) use a register to buffer signals between the memory controller and the DRAM chips. Load-Reduced DIMMs (LRDIMMs) buffer data signals as well, reducing electrical load and allowing higher memory capacities per server.
+
+LRDIMMs support larger capacity configurations but add a small amount of latency. For most virtualization workloads, this is an acceptable trade-off when you need maximum memory capacity.
+
+## Speed Considerations
+
+Memory speed is limited by the slowest DIMM installed and by the number of DIMMs per channel. Adding a second DIMM to a channel often drops the maximum speed. Always check the specific speed rating for your configuration in the server's documentation.
+`,
+  },
+  {
+    slug: "soc-home-lab-build",
+    title: "Building a SOC Home Lab for Cybersecurity Practice",
+    date: "2026-03-09",
+    tags: ["cybersecurity", "homelab", "security"],
+    excerpt: "A SOC home lab gives you a realistic environment to practice threat detection, log analysis, and incident response without touching production systems.",
+    coverImage: "/images/blog-soc-home-lab-build.png",
+    content: `
+## Why a SOC Lab
+
+Security operations work requires practice in a realistic environment. Reading about SIEM correlation rules or log analysis is useful, but actually running the tools and analyzing real (or simulated) attacks is how the skills develop. A home SOC lab gives you that environment.
+
+## Core Components
+
+**SIEM (Wazuh or ELK Stack):** The SIEM collects and correlates logs from across the environment. Wazuh is open source, well-documented, and integrates directly with the ELK stack for visualization.
+
+**Log sources:** Your SIEM is only as good as what it ingests. Configure log forwarding from firewalls, switches, servers, and endpoints. Each source adds visibility.
+
+**Threat simulation:** You need something to detect. Use tools like Atomic Red Team to simulate adversary techniques mapped to MITRE ATT&CK, generating realistic telemetry for your detection rules to catch.
+
+**Packet capture:** A dedicated packet capture setup (like SecurityOnion or a simple tcpdump-based collector) gives you full packet data for investigation.
+
+## Building the Environment
+
+Start small. Set up Wazuh on a dedicated VM. Forward logs from a couple of Linux servers using the Wazuh agent. Configure your FortiGate or pfSense to send syslog to Wazuh.
+
+Once you have basic log collection working, run some Atomic Red Team tests and see what alerts generate. Review the logs manually to understand what the attack looks like in telemetry, then write detection rules to catch it automatically next time.
+
+## Detection Engineering
+
+Detection engineering is the process of writing, testing, and maintaining detection rules. Start with known-bad: impossible login times, logins from multiple geographic locations, command injection patterns in web server logs. As your understanding grows, develop more sophisticated behavioral rules.
+
+Document every detection you build: what it detects, how it works, and what the expected false positive rate is. This discipline makes you a better analyst and better engineer.
+`,
+  },
+  {
+    slug: "iscsi-storage-protocol",
+    title: "iSCSI Storage: How to Configure and Use It",
+    date: "2026-03-10",
+    tags: ["storage", "networking", "servers"],
+    excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
+    coverImage: "/images/blog-iscsi-storage-protocol.png",
+    content: `
+## iSCSI Basics
+
+iSCSI encapsulates SCSI commands in TCP/IP packets, allowing servers to access block storage devices over a standard network. From the operating system's perspective, an iSCSI volume looks and behaves like a locally attached disk. You can format it with any filesystem, use it for VMs, or run a database directly on it.
+
+## Setting Up a Target (TrueNAS)
+
+TrueNAS is a popular option for an iSCSI target in a homelab:
+
+1. Create a storage pool and a block zvol
+2. Enable the iSCSI service
+3. Create a portal (IP/port combination to listen on)
+4. Create an initiator group (which IQNs or IP ranges can connect)
+5. Create a target and associate it with the portal
+6. Create an extent linked to your zvol
+7. Associate the extent with the target
+
+## Connecting from Linux
+
+\`\`\`bash
+# Install the initiator
+apt install open-iscsi
+
+# Discover targets on the storage server
+iscsiadm -m discovery -t st -p 192.168.10.50:3260
+
+# Log into a target
+iscsiadm -m node -T iqn.2024-01.com.truenas:data -p 192.168.10.50:3260 --login
+
+# The disk should now appear
+lsblk
+\`\`\`
+
+## Performance Considerations
+
+iSCSI performance depends heavily on network quality. Use a dedicated storage network, enable jumbo frames (MTU 9000) consistently across the path, and consider multipath for both performance and redundancy.
+
+\`\`\`bash
+# Install multipath tools
+apt install multipath-tools
+systemctl enable multipathd
+\`\`\`
+
+## CHAP Authentication
+
+CHAP (Challenge Handshake Authentication Protocol) adds authentication to iSCSI connections. Configure CHAP credentials on both the target and the initiator. Always use CHAP in any shared environment.
+
+## Practical Uses in a Lab
+
+I use iSCSI to provide shared storage for my Proxmox cluster. All nodes can access the same iSCSI volumes from TrueNAS, which enables live VM migration and HA failover. The setup takes about an hour to configure properly, and once it is running it is very reliable.
+`,
+  },
+  {
+    slug: "dns-security-dnssec",
+    title: "DNS Security: DNSSEC, DoH, and Protecting Name Resolution",
+    date: "2026-03-11",
+    tags: ["security", "networking", "dns"],
+    excerpt: "DNS is foundational to every network connection, which makes it a prime target for attacks. Here is how DNSSEC and encrypted DNS protect the resolution process.",
+    coverImage: "/images/blog-dns-security-dnssec.png",
+    content: `
+## Why DNS Security Matters
+
+DNS translates domain names to IP addresses. If an attacker can manipulate DNS responses, they can redirect traffic to malicious servers, intercept credentials, or block legitimate services entirely. DNS cache poisoning, DNS hijacking, and DNS-based data exfiltration are all real attack categories.
+
+## DNSSEC
+
+DNSSEC (DNS Security Extensions) adds cryptographic signatures to DNS records. When a resolver queries a DNSSEC-enabled zone, it verifies that the response is signed by the correct key. This prevents an attacker from injecting fake responses.
+
+DNSSEC creates a chain of trust from the root zone down to individual domains. Each level signs the next level's keys. If you are querying \`example.com\`, the resolver verifies the \`com\` zone's signature on the \`example.com\` key, and the root zone's signature on \`com\`.
+
+To verify DNSSEC is working:
+\`\`\`bash
+dig +dnssec example.com
+# Look for the AD (Authenticated Data) flag in the response
+\`\`\`
+
+## DNS over HTTPS (DoH) and DNS over TLS (DoT)
+
+Traditional DNS queries are sent in plaintext. Anyone on the network path can see what domains you are resolving. DoH and DoT encrypt DNS queries:
+
+- **DoT (RFC 7858):** DNS over TLS on port 853. Easy to block if an organization needs to inspect or filter DNS.
+- **DoH (RFC 8484):** DNS over HTTPS on port 443. Looks like regular web traffic, harder to block.
+
+Both improve privacy by preventing passive observation of DNS queries. In enterprise environments, DoT is often preferred because it is easier to manage at the network level.
+
+## DNS Filtering
+
+DNS-layer filtering blocks connections to known-malicious domains before a TCP connection is even attempted. Tools like Pi-hole block ad and tracking domains. Enterprise platforms like Cisco Umbrella provide threat intelligence and policy-based filtering.
+
+Implementing DNS filtering is one of the highest-value, lowest-cost security controls you can deploy. Block domains associated with malware command-and-control, phishing, and known-bad infrastructure at the DNS layer and you stop a significant portion of threats before they get started.
+`,
+  },
+  {
+    slug: "high-availability-clustering",
+    title: "High Availability Clustering with Pacemaker and Corosync",
+    date: "2026-03-12",
+    tags: ["linux", "servers", "high-availability"],
+    excerpt: "Pacemaker and Corosync provide Linux HA clustering that can automatically restart services and VMs after node failures.",
+    coverImage: "/images/blog-high-availability-clustering.png",
+    content: `
+## What High Availability Clustering Does
+
+A high availability cluster monitors services and nodes. When a service crashes or a node fails, the cluster automatically restarts the service or moves it to another node. The goal is minimizing downtime without manual intervention.
+
+## The Stack
+
+- **Corosync:** Handles cluster communication, membership, and quorum. Nodes use Corosync to know who is alive in the cluster.
+- **Pacemaker:** The cluster resource manager. It decides what to do when failures are detected. Start this service on that node, move this IP address to another node.
+
+## Installation (RHEL/Rocky Linux)
+
+\`\`\`bash
+dnf install pacemaker corosync pcs
+systemctl enable pcsd
+passwd hacluster  # Set the hacluster user password
+\`\`\`
+
+## Creating a Cluster
+
+\`\`\`bash
+# On all nodes, authenticate
+pcs host auth node1 node2
+
+# Create the cluster from node1
+pcs cluster setup ha-cluster node1 node2
+pcs cluster start --all
+pcs cluster enable --all
+\`\`\`
+
+## Configuring Resources
+
+\`\`\`bash
+# Create a floating IP resource
+pcs resource create virtual-ip IPaddr2 ip=192.168.1.100 \
+  cidr_netmask=24 op monitor interval=30s
+
+# Create a service resource
+pcs resource create nginx systemd:nginx \
+  op monitor interval=30s
+
+# Create a resource group (starts in order, stops in reverse)
+pcs resource group add web-group virtual-ip nginx
+\`\`\`
+
+## Fencing
+
+Fencing (STONITH - Shoot The Other Node In The Head) ensures that a failed node is truly offline before resources are moved. Without fencing, two nodes might both believe they are authoritative, leading to data corruption. Configure IPMI-based fencing so the cluster can power-cycle a node it cannot reach.
+
+\`\`\`bash
+pcs stonith create ipmi-node1 fence_ipmilan \
+  ipaddr=192.168.10.101 username=admin password=secret \
+  pcmk_host_list=node1
+\`\`\`
+`,
+  },
+  {
+    slug: "network-access-control-8021x",
+    title: "Network Access Control with 802.1X",
+    date: "2026-03-13",
+    tags: ["networking", "security", "switching"],
+    excerpt: "802.1X port authentication ensures that only authorized devices can connect to your network. Here is how to implement it with a RADIUS server.",
+    coverImage: "/images/blog-network-access-control-8021x.png",
+    content: `
+## The Problem 802.1X Solves
+
+Without port authentication, anyone who can physically plug into a network jack can access the network. Visitors, contractors, attackers with physical access, or unauthorized personal devices all become part of the network the moment they connect a cable or join WiFi.
+
+802.1X requires every device to authenticate before it receives network access. Until authenticated, the port only allows RADIUS traffic. After authentication, the port is placed in the appropriate VLAN for that device.
+
+## The Three Components
+
+**Supplicant:** The device trying to connect. Must have an 802.1X client (built into Windows, macOS, and Linux).
+
+**Authenticator:** The network switch or wireless AP. It enforces the authentication requirement and relays credentials to the RADIUS server.
+
+**Authentication Server (RADIUS):** Validates credentials and tells the switch what access to grant. FreeRADIUS is the standard open-source option.
+
+## Basic FreeRADIUS Setup
+
+\`\`\`bash
+# Install
+apt install freeradius
+
+# Add clients (the switches that will query RADIUS)
+# In /etc/freeradius/3.0/clients.conf:
+client switch1 {
+  ipaddr = 192.168.1.10
+  secret = radius-secret-here
+}
+
+# Add users (or integrate with Active Directory)
+# In /etc/freeradius/3.0/users:
+jsmith  Cleartext-Password := "password123"
+\`\`\`
+
+## Cisco Switch Configuration
+
+\`\`\`
+aaa new-model
+aaa authentication dot1x default group radius
+dot1x system-auth-control
+
+radius server RADIUS-SRV
+  address ipv4 192.168.1.50 auth-port 1812
+  key radius-secret-here
+
+interface GigabitEthernet1/0/1
+  authentication port-control auto
+  dot1x pae authenticator
+\`\`\`
+
+## Dynamic VLAN Assignment
+
+The real power of 802.1X is RADIUS-based VLAN assignment. Employees get the corporate VLAN; contractors get the guest VLAN. This happens automatically based on credentials, without manual VLAN configuration per port.
+
+Configure RADIUS to return VLAN attributes in the Access-Accept response, and the switch automatically places the port in the correct VLAN.
+`,
+  },
+  {
+    slug: "vxlan-network-virtualization",
+    title: "VXLAN and Network Virtualization Explained",
+    date: "2026-03-14",
+    tags: ["networking", "virtualization", "datacenter"],
+    excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
+    coverImage: "/images/blog-vxlan-network-virtualization.png",
+    content: `
+## The Problem with VLANs at Scale
+
+Traditional VLANs are limited to 4096 IDs. In a cloud or large multi-tenant datacenter environment, you need isolation for thousands or millions of tenants. You also need to stretch Layer 2 networks across physical boundaries, which traditional VLANs cannot do without complex MPLS configurations.
+
+## What VXLAN Does
+
+VXLAN (Virtual Extensible LAN) encapsulates Layer 2 Ethernet frames inside UDP packets. This allows you to carry a virtual Layer 2 network over a standard Layer 3 (IP) infrastructure. The VXLAN Network Identifier (VNI) supports 16 million unique segments, which eliminates the VLAN scalability problem.
+
+A VXLAN Tunnel Endpoint (VTEP) handles encapsulation and decapsulation. When a VM sends a frame, the VTEP wraps it in a VXLAN UDP packet and sends it to the destination VTEP, which unwraps it and delivers it to the destination VM.
+
+## How VTEPs Work
+
+VTEPs can be physical switches (hardware VTEPs) or software-based (like Open vSwitch). Each hypervisor running VXLAN acts as a VTEP.
+
+\`\`\`bash
+# Create a VXLAN interface on Linux
+ip link add vxlan100 type vxlan id 100 dstport 4789 remote 192.168.1.2 local 192.168.1.1 dev eth0
+ip link set vxlan100 up
+ip addr add 10.100.0.1/24 dev vxlan100
+\`\`\`
+
+## BGP EVPN Control Plane
+
+Early VXLAN implementations used multicast or flood-and-learn for MAC address discovery, which does not scale well. BGP EVPN (Ethernet VPN) provides a control plane for VXLAN, distributing MAC and IP address information via BGP rather than flooding.
+
+BGP EVPN is the standard in modern datacenter fabrics (Cisco ACI, Arista, Juniper). It enables scalable, efficient VXLAN deployments with millisecond failover.
+
+## Where You See VXLAN
+
+AWS VPCs, Azure virtual networks, and most cloud networking platforms are built on VXLAN or similar overlay technologies. Kubernetes networking (Flannel, Calico, Cilium) frequently uses VXLAN for pod-to-pod communication. Understanding VXLAN is increasingly essential for anyone working in modern infrastructure.
+`,
+  },
+  {
+    slug: "troubleshooting-packet-captures",
+    title: "Troubleshooting Network Issues with Packet Captures",
+    date: "2026-03-15",
+    tags: ["networking", "troubleshooting", "wireshark"],
+    excerpt: "Packet captures are the most powerful diagnostic tool in networking. Here is a systematic approach to using them effectively for real troubleshooting.",
+    coverImage: "/images/blog-troubleshooting-packet-captures.png",
+    content: `
+## When to Reach for Packet Captures
+
+Use packet captures when layer 2-4 problems are not obvious from interface statistics and logs. Common scenarios: unexplained TCP retransmissions, connection resets, intermittent connectivity, suspected firewall misconfigurations, and application performance issues where the application team blames the network.
+
+## Capturing in the Right Place
+
+The most common mistake is capturing in the wrong place. To diagnose a problem, you need captures on both sides of the suspected failure point:
+
+- Client-side capture shows what the client sent and received
+- Server-side capture shows what the server sent and received
+- A mismatch between them tells you where packets are being dropped or modified
+
+For a firewall issue, capture on both the inside and outside interfaces simultaneously.
+
+## Filtering Effectively
+
+Capturing everything is usually too much data. Use display filters in Wireshark to focus on what matters:
+
+\`\`\`
+# Filter to a specific host
+ip.addr == 192.168.1.100
+
+# Show only TCP problems
+tcp.analysis.flags && !tcp.analysis.ack
+
+# Show DNS traffic
+dns
+
+# Show TLS handshakes
+ssl.handshake
+
+# Show HTTP requests
+http.request
+\`\`\`
+
+## What to Look For
+
+**TCP retransmissions:** The sender is not receiving acknowledgments. Usually indicates packet loss.
+
+**TCP resets (RST):** An abrupt connection termination. Could be a firewall blocking mid-session, a crashed service, or a NAT timeout.
+
+**ICMP unreachable messages:** The return path might be failing while the forward path works.
+
+**Time deltas:** In the time column, large deltas before a packet indicate delay at the sending side. Large deltas before an ACK indicate delay at the receiving side.
+
+**Window size zero:** The receiver's buffer is full. Application is not reading data fast enough.
+
+## Capturing on Linux
+
+\`\`\`bash
+# Capture on eth0 to a file
+tcpdump -i eth0 -w capture.pcap host 192.168.1.100
+
+# Rotate files every 100MB, keep 10 files
+tcpdump -i eth0 -w capture.pcap -C 100 -W 10
+\`\`\`
+`,
+  },
+  {
+    slug: "runbooks-infrastructure-teams",
+    title: "Writing Runbooks That Actually Get Used",
+    date: "2026-03-16",
+    tags: ["operations", "documentation", "servers"],
+    excerpt: "A runbook that no one reads is just a box-checking exercise. Here is how to write documentation that engineers actually reach for during incidents.",
+    coverImage: "/images/blog-runbooks-infrastructure-teams.png",
+    content: `
+## Why Runbooks Fail
+
+Most runbooks fail for the same reasons. They are written once and never updated. They assume too much context. They describe what the system does rather than what the operator should do. They live in a wiki no one can find during an incident.
+
+Good runbooks are written for an engineer who is stressed at 2 AM and needs to solve a specific problem without having to think about things they should not need to think about.
+
+## The Structure That Works
+
+**Title and purpose:** One sentence. "Restart the payment processing service when it becomes unresponsive." Not "Payment Service Runbook."
+
+**When to use this:** What symptoms trigger this runbook? High latency on checkout? A specific alert firing? Be specific.
+
+**Prerequisites:** What access does the engineer need? What tools? Is there a maintenance window required?
+
+**Steps:** Numbered, specific, and actionable. Not "check the service health" but "run \`systemctl status payment-service\` and verify it shows Active: active (running)."
+
+**Validation:** How does the engineer know it worked? What output or metric confirms success?
+
+**Escalation:** If the runbook does not resolve the issue, who do you contact? What information do you gather before escalating?
+
+## Example Step Format
+
+\`\`\`
+Step 3: Restart the service
+
+ssh admin@payment-server-01.prod
+sudo systemctl restart payment-service
+
+Expected output:
+[output of systemctl status payment-service]
+Active: active (running) since ...
+
+If the service fails to start, see Step 6 (Escalation).
+\`\`\`
+
+## Keeping Runbooks Current
+
+A runbook is only useful if it matches reality. Assign ownership. When the system changes, the runbook changes. After every incident where a runbook was used, update it to reflect what actually worked. Run through runbooks in tabletop exercises before you need them in production.
+
+Runbooks are living documentation. Treat them that way.
+`,
+  },
+  {
+    slug: "ospf-routing-protocol",
+    title: "OSPF: The Interior Routing Protocol That Powers Enterprise Networks",
+    date: "2026-03-17",
+    tags: ["networking", "routing", "ospf"],
+    excerpt: "OSPF is the most common interior gateway protocol in enterprise environments. Here is how it works and how to configure it correctly.",
+    coverImage: "/images/blog-ospf-routing-protocol.png",
+    content: `
+## What OSPF Does
+
+OSPF (Open Shortest Path First) is a link-state routing protocol. Every router running OSPF builds a complete map of the network topology (the Link State Database) and uses Dijkstra's algorithm to calculate the shortest path to every destination. This is different from distance-vector protocols like RIP, where routers only know what their neighbors tell them.
+
+## Key Concepts
+
+**Areas:** OSPF divides networks into areas to limit the scope of topology information. Area 0 is the backbone. All other areas must connect to Area 0. This design keeps routing databases from growing too large in big networks.
+
+**DR and BDR:** On multi-access networks like Ethernet, OSPF elects a Designated Router (DR) and Backup DR (BDR). These routers reduce OSPF traffic by acting as a hub for LSA flooding. Routers form adjacencies with the DR/BDR rather than with every other router.
+
+**Metric (Cost):** OSPF uses cost as its metric, calculated as a reference bandwidth divided by interface bandwidth. By default, the reference bandwidth is 100 Mbps, which means gigabit and faster interfaces all get cost 1. Always configure the reference bandwidth to match your fastest links.
+
+## Basic Configuration (Cisco)
+
+\`\`\`
+router ospf 1
+  router-id 1.1.1.1
+  auto-cost reference-bandwidth 10000  ! Reference 10Gbps
+  network 10.0.0.0 0.255.255.255 area 0
+  passive-interface GigabitEthernet0/1  ! Don't send hellos on this interface
+\`\`\`
+
+## Tuning Hello and Dead Intervals
+
+OSPF uses hello packets to detect neighbor failures. The default hello interval is 10 seconds, dead interval 40 seconds. In a lab or point-to-point environment, you can reduce these for faster convergence:
+
+\`\`\`
+interface GigabitEthernet0/0
+  ip ospf hello-interval 5
+  ip ospf dead-interval 15
+\`\`\`
+
+## OSPF Authentication
+
+Always configure OSPF authentication in production to prevent unauthorized routers from injecting routes:
+
+\`\`\`
+interface GigabitEthernet0/0
+  ip ospf authentication message-digest
+  ip ospf message-digest-key 1 md5 secretpassword
+\`\`\`
+`,
+  },
+  {
+    slug: "idrac-advanced-features",
+    title: "Dell iDRAC Advanced Features You Should Be Using",
+    date: "2026-03-18",
+    tags: ["dell", "servers", "hardware"],
+    excerpt: "Most people use iDRAC for basic console access and power control. Here are the features that make it genuinely powerful for server management.",
+    coverImage: "/images/blog-idrac-advanced-features.png",
+    content: `
+## Beyond Basic Remote Access
+
+iDRAC (Integrated Dell Remote Access Controller) ships with every current Dell PowerEdge server and provides a level of remote management that goes far beyond a simple console. If you are only using it for KVM and power control, you are missing most of what it can do.
+
+## Lifecycle Controller
+
+The Lifecycle Controller is a firmware-based management environment that runs independently of the OS. You can:
+
+- Update firmware for all components (BIOS, iDRAC, PERC, NICs) without an OS
+- Perform OS deployments via Dell OpenManage integration
+- Configure RAID arrays before installing an OS
+- Run hardware diagnostics
+
+Access it by pressing F10 during POST or from the iDRAC web interface under Maintenance.
+
+## SupportAssist and Proactive Monitoring
+
+SupportAssist monitors hardware health and can automatically open support cases with Dell when hardware failures are detected. For a homelab this is not useful, but in a production environment it means you can get a replacement drive or PSU on the way before you even look at your monitoring dashboard.
+
+## iDRAC REST API
+
+iDRAC supports the Redfish API standard, which allows programmatic management:
+
+\`\`\`bash
+# Get system information
+curl -k -u admin:password \
+  https://idrac-ip/redfish/v1/Systems/System.Embedded.1
+
+# Power on the server
+curl -k -u admin:password -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"ResetType":"On"}' \
+  https://idrac-ip/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset
+\`\`\`
+
+This enables automation: deploy scripts that configure servers, update firmware, and verify health checks without human interaction.
+
+## Group Manager
+
+In environments with multiple Dell servers, iDRAC Group Manager provides a unified view of all servers from a single interface. Monitor health, deploy firmware updates, and export inventory data across your entire fleet from one pane.
+
+## Alert Configuration
+
+Configure iDRAC alerts to notify you immediately when hardware events occur. Options include email, SNMP traps, and syslog. Set up alerts for: drive failures, PSU failures, temperature warnings, memory errors, and POST errors. Do not wait to find out about hardware failures through a monitoring system with a five-minute polling interval.
+`,
+  },
+  {
+    slug: "syslog-centralized-logging",
+    title: "Centralized Logging with Syslog: A Practical Guide",
+    date: "2026-03-19",
+    tags: ["operations", "monitoring", "servers"],
+    excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
+    coverImage: "/images/blog-syslog-centralized-logging.png",
+    content: `
+## Why Centralize Logs
+
+Logs on individual devices are hard to search across, get lost when devices fail, and can be tampered with by an attacker who compromises the device. Centralizing logs to a dedicated server solves all three problems.
+
+A central log server lets you search across all your infrastructure from one place, retain logs longer than individual devices can store, and preserve logs even if a device is compromised or fails.
+
+## Setting Up rsyslog as a Central Server
+
+On the log server (Ubuntu):
+
+\`\`\`bash
+# /etc/rsyslog.conf - uncomment these lines to enable UDP and TCP reception
+module(load="imudp")
+input(type="imudp" port="514")
+
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+# Store logs per hostname
+template(name="RemoteLogs" type="string" string="/var/log/remote/%HOSTNAME%/%PROGRAMNAME%.log")
+*.* ?RemoteLogs
+\`\`\`
+
+## Configuring Clients
+
+On each server you want to log centrally:
+
+\`\`\`bash
+# /etc/rsyslog.conf
+*.* @@192.168.1.50:514  # TCP
+# or
+*.* @192.168.1.50:514   # UDP
+\`\`\`
+
+Network devices (switches, firewalls) send syslog natively. Configure the syslog server IP and severity level in the device's management interface.
+
+## Loki and Grafana for Search
+
+rsyslog handles collection and storage. Grafana Loki provides a log aggregation and query system that integrates natively with Grafana dashboards. The combination gives you:
+
+- A unified interface for metrics and logs
+- Full-text log search across all sources
+- Log alerts that trigger when specific patterns appear
+- Correlation between metrics spikes and log events
+
+## Log Retention and Security
+
+Define a log retention policy. Security logs often need to be kept for 90 days or longer for compliance. Protect the log server: logs are forensic evidence, and they must be trustworthy. Use a dedicated network path for syslog traffic, restrict write access to log files, and consider sending logs offsite or to an immutable storage destination for high-security environments.
+`,
+  },
+  {
+    slug: "container-networking-fundamentals",
+    title: "Container Networking Fundamentals: How Pods and Containers Communicate",
+    date: "2026-03-20",
+    tags: ["networking", "containers", "kubernetes"],
+    excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
+    coverImage: "/images/blog-container-networking-fundamentals.png",
+    content: `
+## Network Namespaces
+
+The foundation of container networking is Linux network namespaces. Each namespace has its own isolated network stack: its own interfaces, routing table, and firewall rules. A container runs inside a network namespace, giving it the appearance of a dedicated network.
+
+When Docker starts a container, it creates a new network namespace and connects it to the host via a virtual Ethernet pair (veth). One end lives in the container namespace; the other lives in the host namespace and connects to a bridge.
+
+## The Docker Bridge
+
+By default, Docker creates a bridge called \`docker0\`. Every container on the default network connects to this bridge. The bridge performs NAT, translating between container IPs on the \`172.17.0.0/16\` range and the host's real IP address.
+
+\`\`\`bash
+# See container networking
+docker inspect container-name | grep -A 20 '"Networks"'
+
+# View the host-side veth interfaces
+ip link show type veth
+\`\`\`
+
+## Kubernetes Networking Model
+
+Kubernetes has three networking requirements:
+1. All pods on a node can communicate with all other pods without NAT
+2. All nodes can communicate with all pods without NAT
+3. The IP a pod sees for itself is the same IP other pods see for it
+
+This means no NAT between pods. Every pod gets a real routable IP. The Container Network Interface (CNI) plugins (Calico, Flannel, Cilium) implement this model.
+
+## How Calico Works
+
+Calico uses BGP to distribute pod routes across nodes. Each node peers with a route reflector (or directly with other nodes) and advertises the pod CIDR it is responsible for. Packets between pods on different nodes follow the BGP-learned routes, flowing directly without encapsulation.
+
+This makes Calico extremely performant and easy to troubleshoot because the routing is standard IP routing.
+
+## Service Networking
+
+Kubernetes Services provide stable IP addresses for groups of pods. Service IPs are virtual. When a pod sends to a service IP, kube-proxy (or eBPF with Cilium) intercepts the packet using iptables or BPF rules and rewrites the destination to one of the backing pod IPs.
+
+Understanding this rewrite is key to debugging connectivity problems in Kubernetes.
+`,
+  },
+  {
+    slug: "ssh-key-based-authentication",
+    title: "SSH Key-Based Authentication: Setup and Best Practices",
+    date: "2026-03-21",
+    tags: ["linux", "security", "servers"],
+    excerpt: "Key-based SSH authentication is more secure than passwords and more convenient with proper setup. Here is how to do it right.",
+    coverImage: "/images/blog-ssh-key-based-authentication.png",
+    content: `
+## Why Keys Are Better Than Passwords
+
+A password is a shared secret. It can be guessed, phished, or leaked. An SSH key pair is asymmetric. The private key never leaves your machine. The server only holds your public key. Even if the server is compromised, your private key is not exposed.
+
+Keys are also more convenient at scale. You can authorize a key on hundreds of servers, and logging in to any of them requires no passwords or prompts.
+
+## Generating a Key Pair
+
+\`\`\`bash
+# Generate an Ed25519 key (modern, fast, secure)
+ssh-keygen -t ed25519 -C "admin@workstation" -f ~/.ssh/id_ed25519
+
+# Or RSA if you need compatibility with older systems
+ssh-keygen -t rsa -b 4096 -C "admin@workstation" -f ~/.ssh/id_rsa
+\`\`\`
+
+Always set a passphrase. The passphrase encrypts the private key on disk, so even if someone steals your laptop, they cannot use the key without the passphrase.
+
+## Distributing the Public Key
+
+\`\`\`bash
+# Copy to a server (simplest method)
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@server
+
+# Or manually append to authorized_keys
+cat ~/.ssh/id_ed25519.pub | ssh user@server "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+\`\`\`
+
+## Using ssh-agent
+
+The SSH agent stores your decrypted private key in memory so you only need to enter the passphrase once per session:
+
+\`\`\`bash
+eval $(ssh-agent)
+ssh-add ~/.ssh/id_ed25519
+\`\`\`
+
+## SSH Config for Multiple Keys and Hosts
+
+\`\`\`
+# ~/.ssh/config
+Host prod-*
+  User deploy
+  IdentityFile ~/.ssh/id_ed25519_prod
+  ForwardAgent no
+
+Host lab-server
+  Hostname 192.168.1.50
+  User admin
+  IdentityFile ~/.ssh/id_ed25519_lab
+  Port 2222
+\`\`\`
+
+## Key Rotation
+
+Rotate SSH keys periodically. When an employee leaves, remove their public key from authorized_keys on every server. This is why centralized key management (via LDAP, Teleport, or HashiCorp Vault SSH) makes sense at scale. Manual key management across hundreds of servers is error-prone.
+`,
+  },
+  {
+    slug: "nfs-vs-smb-network-storage",
+    title: "NFS vs SMB: Choosing the Right Network Filesystem",
+    date: "2026-03-22",
+    tags: ["storage", "networking", "servers"],
+    excerpt: "NFS and SMB both share files over a network, but they are designed for different environments. Here is how to choose between them.",
+    coverImage: "/images/blog-nfs-vs-smb-network-storage.png",
+    content: `
+## The Basic Difference
+
+NFS (Network File System) is a Unix/Linux protocol. SMB (Server Message Block, also called CIFS) is a Windows protocol. Both allow clients to mount remote filesystems as if they were local, but they have different strengths and trade-offs.
+
+## When to Use NFS
+
+NFS is the right choice for Linux-to-Linux file sharing. It is the standard for NAS shares in Linux environments, VM storage, and shared filesystems in HPC (high-performance computing) clusters.
+
+**Advantages:**
+- Very low overhead, efficient for large file I/O
+- Native integration with Linux permissions and UID/GID mapping
+- Excellent performance for sequential workloads
+- NFSv4 adds strong security, locking, and delegation
+
+**Limitations:**
+- Not natively supported on Windows (requires additional software)
+- User ID mapping can be complex in mixed environments
+
+\`\`\`bash
+# Mount an NFS share on Linux
+mount -t nfs 192.168.1.50:/data /mnt/data
+
+# Permanent mount in /etc/fstab
+192.168.1.50:/data  /mnt/data  nfs  defaults,_netdev  0  0
+\`\`\`
+
+## When to Use SMB
+
+SMB is the right choice when Windows clients are involved. It is the native protocol for Windows file sharing and is well-supported on macOS as well. Samba implements SMB on Linux, allowing Linux servers to serve files to Windows clients.
+
+**Advantages:**
+- Native on Windows and macOS
+- Supports Windows ACLs and Active Directory integration
+- Works well across mixed environments
+
+**Limitations:**
+- Higher overhead than NFS for Linux-only environments
+- Active Directory integration requires additional configuration
+
+## Performance Comparison
+
+For pure Linux workloads, NFS consistently outperforms SMB for large sequential reads and writes. For random I/O with many small files, the difference narrows. For mixed environments with Windows clients, SMB is the practical choice regardless of the performance difference.
+
+## My Setup
+
+I use NFS for VM storage and Linux data shares in my lab. Windows VMs that need shared storage use SMB served from TrueNAS, which supports both protocols from the same storage pool.
+`,
+  },
+  {
+    slug: "ntp-enterprise-networks",
+    title: "NTP: Why Time Synchronization Matters in Enterprise Networks",
+    date: "2026-03-23",
+    tags: ["networking", "servers", "operations"],
+    excerpt: "Accurate time is foundational to authentication, logging, and troubleshooting. Here is how NTP works and how to deploy it properly.",
+    coverImage: "/images/blog-ntp-enterprise-networks.png",
+    content: `
+## Why Time Matters
+
+Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. DNSSEC and many security protocols depend on accurate time.
+
+## How NTP Works
+
+NTP (Network Time Protocol) synchronizes clocks using a hierarchy called stratum. Stratum 0 devices are atomic clocks or GPS receivers. Stratum 1 servers connect directly to Stratum 0 sources. Stratum 2 servers sync from Stratum 1, and so on.
+
+NTP measures the round-trip delay to the time server and uses statistical algorithms to estimate clock offset and drift. It then adjusts the local clock gradually rather than jumping, which prevents the kind of time discontinuities that break applications.
+
+## Deploying NTP in an Enterprise Network
+
+The recommended pattern:
+1. Two or three internal NTP servers sync from external Stratum 1/2 sources
+2. All internal devices sync from the internal servers, not directly from the internet
+3. The firewall only allows the internal NTP servers to reach external NTP
+
+\`\`\`bash
+# /etc/chrony.conf on the internal NTP server
+server pool.ntp.org iburst prefer
+allow 192.168.0.0/16  # Allow clients in this range
+\`\`\`
+
+## Configuring Clients
+
+\`\`\`bash
+# /etc/chrony.conf on a client
+server 192.168.1.10 iburst prefer  # Internal NTP server 1
+server 192.168.1.11 iburst          # Internal NTP server 2
+
+# Check synchronization status
+chronyc tracking
+chronyc sources -v
+\`\`\`
+
+## Network Devices
+
+Configure network switches and firewalls to use your internal NTP servers:
+
+\`\`\`
+ntp server 192.168.1.10 prefer
+ntp server 192.168.1.11
+\`\`\`
+
+## Monitoring Time
+
+Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause subtle, hard-to-diagnose failures. Track the offset and jitter of your internal NTP servers and alert if they fall out of acceptable ranges.
+`,
+  },
+  {
+    slug: "nginx-reverse-proxy-setup",
+    title: "Setting Up Nginx as a Reverse Proxy for Lab Services",
+    date: "2026-03-24",
+    tags: ["linux", "networking", "servers"],
+    excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
+    coverImage: "/images/blog-nginx-reverse-proxy-setup.png",
+    content: `
+## Why a Reverse Proxy
+
+Without a reverse proxy, every service in your lab needs its own port. Accessing Grafana is port 3000, Proxmox is 8006, your web apps are on random ports. A reverse proxy sits in front of all these services and routes traffic based on the hostname in the request. You access everything on port 443 with a proper domain name.
+
+It also centralizes TLS. Instead of managing certificates on each service, you terminate TLS at the proxy and forward unencrypted traffic internally.
+
+## Basic Nginx Configuration
+
+\`\`\`nginx
+# /etc/nginx/sites-available/grafana
+server {
+    listen 443 ssl;
+    server_name grafana.lab.internal;
+
+    ssl_certificate /etc/nginx/ssl/lab.crt;
+    ssl_certificate_key /etc/nginx/ssl/lab.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+\`\`\`
+
+## WebSocket Support
+
+Some services (Proxmox console, Grafana live updates) use WebSockets. Add these lines to the location block:
+
+\`\`\`nginx
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+\`\`\`
+
+## Internal PKI
+
+For a homelab, create your own Certificate Authority. Add its certificate to your browser's trusted CAs, and all your internal services get valid HTTPS without certificate warnings.
+
+\`\`\`bash
+# Create a CA key and certificate
+openssl req -x509 -nodes -newkey rsa:4096 -keyout ca.key \
+  -out ca.crt -days 3650 -subj "/CN=Lab CA"
+\`\`\`
+
+## Rate Limiting
+
+Add basic rate limiting to prevent abuse:
+
+\`\`\`nginx
+http {
+    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+}
+
+location /api/ {
+    limit_req zone=api burst=20 nodelay;
+    proxy_pass http://backend;
+}
+\`\`\`
+`,
+  },
+  {
+    slug: "lacp-link-aggregation",
+    title: "LACP and Link Aggregation: Combining Links for More Bandwidth",
+    date: "2026-03-25",
+    tags: ["networking", "switching", "hardware"],
+    excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
+    coverImage: "/images/blog-lacp-link-aggregation.png",
+    content: `
+## What Link Aggregation Does
+
+Link Aggregation (also called bonding on Linux, or an EtherChannel on Cisco) combines multiple physical Ethernet links into a single logical interface. The benefits are increased bandwidth and redundancy. If one physical link fails, traffic automatically flows through the remaining links.
+
+LACP (Link Aggregation Control Protocol, IEEE 802.3ad) is the standard protocol for negotiating link aggregation between two devices. Both ends send LACP PDUs to establish and maintain the aggregate.
+
+## How Hashing Works
+
+Link aggregation does not actually bond the links into a single higher-speed pipe for individual flows. Instead, traffic is distributed across links using a hashing algorithm. Common hash inputs:
+
+- **Layer 2 (src/dst MAC):** Distributes based on source and destination MAC
+- **Layer 3 (src/dst IP):** Better distribution for multi-host environments
+- **Layer 4 (src/dst IP + port):** Best distribution for high-traffic flows between few hosts
+
+A single TCP connection always flows over a single physical link. You cannot exceed the speed of one link for a single stream. The benefit is total throughput across many flows.
+
+## Cisco Configuration
+
+\`\`\`
+interface Port-channel1
+  description TRUNK_TO_SERVER
+  switchport mode trunk
+
+interface GigabitEthernet1/0/1
+  channel-group 1 mode active
+  
+interface GigabitEthernet1/0/2
+  channel-group 1 mode active
+\`\`\`
+
+## Linux Configuration (systemd-networkd)
+
+\`\`\`ini
+# /etc/systemd/network/bond0.netdev
+[NetDev]
+Name=bond0
+Kind=bond
+
+[Bond]
+Mode=802.3ad
+LACPTransmitRate=fast
+TransmitHashPolicy=layer3+4
+
+# /etc/systemd/network/bond0.network
+[Match]
+Name=bond0
+
+[Network]
+Address=192.168.1.100/24
+Gateway=192.168.1.1
+\`\`\`
+
+## Troubleshooting
+
+Check that both sides are in the same LACP mode (active/active or active/passive, not passive/passive which will not negotiate). Verify speed and duplex match on all member links. Check that the switch port channel is up and members are showing as bundled.
+`,
+  },
+  {
+    slug: "enterprise-wifi-vs-consumer",
+    title: "Enterprise WiFi vs Consumer Grade: What Actually Differs",
+    date: "2026-03-26",
+    tags: ["networking", "wireless", "hardware"],
+    excerpt: "Enterprise access points cost significantly more than consumer routers. Here is what you actually get for that investment.",
+    coverImage: "/images/blog-enterprise-wifi-vs-consumer.png",
+    content: `
+## The Core Difference
+
+Consumer WiFi routers are designed for home use: a small number of devices, low density, non-technical users. Enterprise APs are designed for high-density environments with many concurrent users, centralized management, and predictable performance.
+
+## What Enterprise APs Do Better
+
+**Centralized management:** Enterprise systems (Cisco Meraki, Ubiquiti UniFi, Aruba Instant) provide a single pane of glass for all APs. Push a configuration change and it deploys to every AP in seconds. See per-client statistics, channel utilization, and interference maps from one interface.
+
+**Band steering and load balancing:** Enterprise APs actively steer clients to the optimal band (5GHz preferred over 2.4GHz) and distribute clients across APs based on signal strength and load.
+
+**High-density design:** The antenna arrays, radio configurations, and firmware optimizations in enterprise APs are designed for many simultaneous clients. A $200 consumer router starts degrading noticeably at 30+ active clients. A good enterprise AP handles 200+ without issues.
+
+**PoE integration:** Enterprise APs run on PoE, eliminating the need for power outlets at every mounting location.
+
+**Seamless roaming (802.11r/k/v):** Clients can move between APs without dropping connections, which matters for voice and video applications.
+
+## The UniFi Middle Ground
+
+Ubiquiti UniFi occupies an interesting position: professional hardware and management at prices between consumer and full enterprise. For a homelab or small office, UniFi provides most of the enterprise capabilities without the enterprise price tag.
+
+I run UniFi in my lab. The controller software manages all APs from a single interface, provides detailed statistics, and handles automatic firmware updates.
+
+## When Consumer Is Fine
+
+For a home with a handful of devices and no performance-sensitive applications, a good consumer router is perfectly adequate. The investment in enterprise hardware only makes sense when you need the density, management, or reliability features.
+`,
+  },
+  {
+    slug: "dhcp-snooping-arp-inspection",
+    title: "DHCP Snooping and Dynamic ARP Inspection: Layer 2 Security",
+    date: "2026-03-27",
+    tags: ["networking", "security", "switching"],
+    excerpt: "DHCP snooping and DAI are essential Layer 2 security features that prevent common attacks on switched networks. Here is how to configure them.",
+    coverImage: "/images/blog-dhcp-snooping-arp-inspection.png",
+    content: `
+## The Attacks These Prevent
+
+**DHCP Spoofing:** A rogue device on the network runs a DHCP server and responds to DHCP requests faster than the legitimate server. Clients receive IP addresses from the rogue server, with a gateway pointing to the attacker. All traffic flows through the attacker's device.
+
+**ARP Poisoning:** ARP has no authentication. An attacker can send gratuitous ARP replies claiming to own any IP address, including the default gateway. Other hosts update their ARP tables and send traffic through the attacker.
+
+Both attacks enable man-in-the-middle interception of traffic without detection.
+
+## DHCP Snooping
+
+DHCP snooping builds a binding table: which MAC address received which IP address on which port. It marks ports as trusted or untrusted. DHCP server responses from untrusted ports are dropped.
+
+\`\`\`
+ip dhcp snooping
+ip dhcp snooping vlan 10,20,30
+
+! Mark the uplink to the real DHCP server as trusted
+interface GigabitEthernet1/0/48
+  ip dhcp snooping trust
+
+! Access ports are untrusted by default
+interface range GigabitEthernet1/0/1-47
+  ip dhcp snooping limit rate 15
+\`\`\`
+
+## Dynamic ARP Inspection
+
+DAI uses the DHCP snooping binding table to validate ARP packets. If a host claims to be an IP address that DHCP snooping assigned to a different MAC, the ARP is dropped.
+
+\`\`\`
+ip arp inspection vlan 10,20,30
+
+! Uplinks and router ports must be trusted
+interface GigabitEthernet1/0/48
+  ip arp inspection trust
+
+! Access ports are untrusted by default
+interface range GigabitEthernet1/0/1-47
+  ip arp inspection limit rate 100
+\`\`\`
+
+## What to Watch
+
+Both features generate logs for violations. Review these periodically. A device frequently triggering DHCP snooping violations might be misconfigured, but it could also be a malicious device. Unexpected ARP inspection violations could indicate an active attack.
+
+These features are lightweight and should be standard configuration on access layer switches in any environment where you do not fully trust every connected device.
+`,
+  },
+  {
+    slug: "prometheus-server-monitoring",
+    title: "Monitoring Infrastructure with Prometheus and Grafana",
+    date: "2026-03-28",
+    tags: ["monitoring", "servers", "operations"],
+    excerpt: "Prometheus and Grafana together provide powerful, flexible infrastructure monitoring. Here is how to get a production-quality monitoring setup running.",
+    coverImage: "/images/blog-prometheus-server-monitoring.png",
+    content: `
+## Why Prometheus
+
+Prometheus is a time-series database and monitoring system designed for dynamic environments. Unlike traditional monitoring tools that push metrics to a central server, Prometheus pulls (scrapes) metrics from target endpoints. This pull model makes it easy to add and remove targets without reconfiguring the monitoring server.
+
+The query language (PromQL) is powerful and expressive. You can aggregate, transform, and calculate derived metrics that reveal system behavior not visible in raw numbers.
+
+## Setting Up Prometheus
+
+\`\`\`yaml
+# prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['server1:9100', 'server2:9100', 'server3:9100']
+
+  - job_name: 'proxmox'
+    static_configs:
+      - targets: ['proxmox:9090']
+\`\`\`
+
+## Node Exporter
+
+Install the Prometheus Node Exporter on every Linux server you want to monitor. It exposes hundreds of system metrics including CPU, memory, disk I/O, network, and filesystem usage.
+
+\`\`\`bash
+# Install and start
+apt install prometheus-node-exporter
+systemctl enable prometheus-node-exporter
+
+# Verify it is running
+curl http://localhost:9100/metrics
+\`\`\`
+
+## Useful PromQL Queries
+
+\`\`\`
+# CPU usage percentage
+100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+# Memory usage
+(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100
+
+# Disk I/O utilization
+rate(node_disk_io_time_seconds_total[5m]) * 100
+
+# Network traffic
+rate(node_network_receive_bytes_total[5m])
+\`\`\`
+
+## Alerting with Alertmanager
+
+\`\`\`yaml
+# alert_rules.yml
+groups:
+  - name: servers
+    rules:
+      - alert: HighCPU
+        expr: cpu_usage > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+\`\`\`
+
+Pair Alertmanager with routing rules to send alerts to email, Slack, or PagerDuty based on severity and team ownership.
+`,
+  },
+  {
+    slug: "bgp-route-filtering-security",
+    title: "BGP Route Filtering and Security Best Practices",
+    date: "2026-03-29",
+    tags: ["networking", "bgp", "security"],
+    excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
+    coverImage: "/images/blog-bgp-route-filtering-security.png",
+    content: `
+## Why BGP Filtering Matters
+
+BGP route leaks and hijacks happen because many networks do not filter what they accept or advertise. A misconfigured router at one AS can accidentally advertise another AS's prefixes, causing traffic to route through unexpected paths. In some cases, this is accidental. In others, it is intentional hijacking.
+
+The internet is more stable when every AS filters aggressively. And your network is more secure when you only accept routes you expect from each peer.
+
+## Prefix Lists
+
+Prefix lists filter routes based on the network prefix and prefix length. Use them to whitelist specific prefixes from peers and to control what you advertise:
+
+\`\`\`
+ip prefix-list PEER-IN permit 192.0.2.0/24
+ip prefix-list PEER-IN permit 198.51.100.0/24
+ip prefix-list PEER-IN deny 0.0.0.0/0 le 32  ! Deny everything else
+
+ip prefix-list MY-PREFIXES permit 203.0.113.0/24
+
+router bgp 65001
+  neighbor 10.0.0.2 prefix-list PEER-IN in
+  neighbor 10.0.0.2 prefix-list MY-PREFIXES out
+\`\`\`
+
+## Bogon Filtering
+
+Never accept or advertise bogon prefixes: RFC 1918 private addresses, loopback addresses, documentation ranges, or prefixes shorter than /8 or longer than /24.
+
+\`\`\`
+ip prefix-list BOGONS deny 10.0.0.0/8 le 32
+ip prefix-list BOGONS deny 172.16.0.0/12 le 32
+ip prefix-list BOGONS deny 192.168.0.0/16 le 32
+ip prefix-list BOGONS deny 127.0.0.0/8 le 32
+ip prefix-list BOGONS deny 0.0.0.0/8 le 32
+ip prefix-list BOGONS permit 0.0.0.0/0 le 32
+\`\`\`
+
+## RPKI
+
+RPKI (Resource Public Key Infrastructure) provides cryptographic validation that a prefix is authorized to be advertised by a specific AS. Route Origin Authorizations (ROAs) are published by IP address holders and validated by routers. Invalid prefixes (where the announcing AS does not match the ROA) can be dropped.
+
+RPKI is one of the most effective tools for preventing BGP hijacking. Major ISPs and cloud providers now validate RPKI. If you run BGP, enable RPKI validation.
+
+## AS Path Filtering
+
+Limit the AS path length you accept. An AS path longer than a reasonable maximum (like 10 or 20 hops) is likely bogus or part of a route leak.
+`,
+  },
+  {
+    slug: "secure-network-design-principles",
+    title: "Secure Network Design: Principles That Actually Matter",
+    date: "2026-03-30",
+    tags: ["security", "networking", "architecture"],
+    excerpt: "Security is most effective when it is built into network architecture from the start, not added on top afterward. Here are the foundational principles.",
+    coverImage: "/images/blog-secure-network-design-principles.png",
+    content: `
+## Defense in Depth
+
+No single control is sufficient. A network designed for security has multiple independent layers. If an attacker bypasses the perimeter firewall, they still face internal segmentation. If they compromise a server, they cannot reach other segments without traversing another control point.
+
+Defense in depth means assuming any individual control will fail and designing so that failure does not cascade.
+
+## Least Privilege Network Access
+
+Every device and every user should only have network access to what they need. A printer should not be able to reach your domain controllers. A guest WiFi network should not be able to reach anything internal. A database server should only accept connections from the application servers that query it.
+
+Enforce this with firewall rules, ACLs, and VLAN segmentation. Document what should be allowed and deny everything else by default.
+
+## Separate Management Plane
+
+Network device management (SSH, HTTPS, SNMP) should never ride on the same network as production traffic. Create a dedicated management VLAN or network. Only devices with a specific need to manage infrastructure can reach the management plane.
+
+This means that even if an attacker compromises a server, they cannot reach your router's management interface because it is on a physically or logically separate network.
+
+## Assume Breach
+
+Design the network assuming an attacker will eventually get in. The question is not whether the perimeter will be breached, but what they can do once inside. Micro-segmentation, zero-trust access controls, and comprehensive logging all limit the damage from a successful intrusion.
+
+## Visibility by Default
+
+You cannot defend what you cannot see. Every network should have:
+- Centralized logging from all devices
+- Flow data (NetFlow, sFlow, or IPFIX) for traffic analysis
+- DNS query logging
+- Authentication event logging
+
+Security without visibility is guesswork. Build observability into the network from day one.
+`,
+  },
+  {
+    slug: "scaling-homelab-lessons",
+    title: "Scaling a Homelab: Lessons from Growing a Lab Environment",
+    date: "2026-03-31",
+    tags: ["homelab", "servers", "networking"],
+    excerpt: "A homelab that grows without a plan becomes chaos. Here are the lessons I learned growing from one server to a multi-rack lab environment.",
+    coverImage: "/images/blog-scaling-homelab-lessons.png",
+    content: `
+## Start with the Network
+
+The biggest mistake in homelab growth is treating the network as an afterthought. When you add your fifth server and third VLAN, suddenly the flat network you started with is a mess. Traffic that should stay local hops through random paths. Troubleshooting is painful.
+
+Plan for segmentation from the beginning, even if you only have one server. A managed switch, a few VLANs, and a firewall cost relatively little and provide the structure you need to grow cleanly.
+
+## Document Before You Forget
+
+Documentation is easiest when you are setting something up the first time. A week later, you will not remember which port on which switch connects to which server, or which IP address you assigned to which management interface.
+
+I keep a simple network diagram (updated whenever something changes) and a spreadsheet with IP assignments. It takes ten minutes to update and saves hours of confusion later.
+
+## Power Planning
+
+Power is often the binding constraint in a homelab. A single R740 under load pulls 400-600W. Add another server, a UPS, and a few switches, and you are approaching the capacity of a typical residential circuit.
+
+Calculate your power draw before buying hardware. Know which circuits you have available, what their capacity is, and how you will distribute load across them. A UPS gives you clean power and runtime for graceful shutdowns.
+
+## Cables and Cable Management
+
+Cable management that seems like excessive effort when you have three devices becomes essential when you have thirty. Spend time on it early. Label everything: patch cables, power cables, fiber. A label maker is one of the best investments in a growing lab.
+
+## Test Everything
+
+Each time you add something to the lab, test it thoroughly before relying on it. A new switch, a new server, a new cable: verify it works under load before you depend on it for anything important.
+
+The lab is a place to practice and learn. Let it teach you through failures in controlled conditions, not through production outages.
+`,
+  },
+  {
+    slug: "firewall-log-analysis",
+    title: "Firewall Log Analysis: Finding What Matters",
+    date: "2026-04-01",
+    tags: ["security", "firewall", "operations"],
+    excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
+    coverImage: "/images/blog-firewall-log-analysis.png",
+    content: `
+## The Volume Problem
+
+A firewall in a medium-sized network generates millions of log entries per day. Looking at raw logs is not practical. Effective log analysis means knowing what to look for, reducing noise, and using tools to surface anomalies automatically.
+
+## Start with Denies
+
+Allowed traffic is mostly expected. Denied traffic is interesting. Start your analysis there. What is being blocked, and why? Is something trying to reach a destination it should not? Is internal traffic trying to reach an external IP that looks suspicious?
+
+\`\`\`bash
+# Extract denied connections from FortiGate syslog
+grep "action=deny" /var/log/fortigate/traffic.log | \
+  awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+\`\`\`
+
+## Identify Traffic Patterns
+
+Look for traffic patterns that do not match business activity:
+
+- **After-hours traffic:** A server initiating many connections to external IPs at 3 AM is suspicious
+- **Port scanning:** A source hitting many different destination ports in a short time
+- **Repeated authentication failures:** Brute force attempts against exposed services
+- **DNS tunneling indicators:** Unusually long DNS queries or high query volumes to a single domain
+
+## Baseline Normal
+
+You cannot identify anomalies without knowing what normal looks like. Spend time understanding your baseline: which servers connect to the internet, on which ports, at what volumes. When something deviates from baseline, investigate.
+
+## Automation with SIEM
+
+Manual log analysis does not scale. Feed firewall logs into a SIEM (Wazuh, Splunk, or Elastic). Write correlation rules that alert when patterns suggesting attacks occur:
+
+- Same source hitting 20+ different internal IPs in five minutes
+- Any traffic from an internal server to a known-malicious IP
+- Multiple failed authentications followed by a successful one
+
+## The Follow-Through
+
+An alert is only valuable if someone acts on it. Build a workflow: alerts generate tickets, tickets get investigated, findings get documented. Close the loop on every alert, even if the finding is "false positive, tuned rule."
+`,
+  },
+  {
+    slug: "qos-enterprise-networks",
+    title: "Quality of Service in Enterprise Networks",
+    date: "2026-04-02",
+    tags: ["networking", "qos", "switching"],
+    excerpt: "QoS ensures that critical traffic gets priority when bandwidth is constrained. Here is how to design and implement a QoS policy that actually works.",
+    coverImage: "/images/blog-qos-enterprise-networks.png",
+    content: `
+## When QoS Matters
+
+QoS is about managing contention. On an uncongested link, every packet gets through immediately regardless of its type. When a link is congested (more traffic than bandwidth), some packets get delayed or dropped. QoS controls which packets get priority in that situation.
+
+The main use cases: ensuring voice (VoIP) stays clear even when the network is busy, prioritizing business-critical applications over bulk transfers, and limiting the impact of backup traffic on interactive workloads.
+
+## The QoS Model
+
+**Classification:** Mark traffic with a DSCP (Differentiated Services Code Point) value that indicates its priority. This is done as close to the source as possible.
+
+**Queuing:** Network devices place packets into queues based on DSCP values. High-priority queues are served first.
+
+**Policing and shaping:** Limit the bandwidth available to specific traffic classes. Shaping buffers excess traffic and sends it later; policing drops it.
+
+## DSCP Values
+
+The standard markings used in most enterprise environments:
+
+| Traffic Type | DSCP Value | Per-Hop Behavior |
+|---|---|---|
+| VoIP | 46 | Expedited Forwarding |
+| Video conferencing | 34 | Assured Forwarding 4 |
+| Business critical | 26 | Assured Forwarding 3 |
+| Best effort | 0 | Default |
+| Scavenger (backups) | 8 | CS1 |
+
+## Cisco Configuration
+
+\`\`\`
+! Mark VoIP traffic from IP phones
+class-map match-all VOIP
+  match ip dscp ef
+
+policy-map QOS-POLICY
+  class VOIP
+    priority 20  ! Guaranteed 20% bandwidth with strict priority
+  class BUSINESS-APPS
+    bandwidth percent 40
+  class class-default
+    fair-queue
+
+interface GigabitEthernet0/1
+  service-policy output QOS-POLICY
+\`\`\`
+
+## Testing Your QoS Policy
+
+Use iPerf to generate test traffic and verify that QoS is working as expected. Generate competing flows of different traffic types and measure whether the priority traffic maintains its performance while lower-priority traffic degrades.
+`,
+  },
+  {
+    slug: "ansible-network-automation",
+    title: "Automating Network Configuration with Ansible",
+    date: "2026-04-03",
+    tags: ["networking", "automation", "operations"],
+    excerpt: "Ansible's network modules allow you to configure routers, switches, and firewalls programmatically. Here is how to get started with network automation.",
+    coverImage: "/images/blog-ansible-network-automation.png",
+    content: `
+## Why Automate Network Configuration
+
+Manual configuration is slow, error-prone, and does not scale. When you have ten switches and need to add a new VLAN, logging into each one individually and repeating the same commands ten times is tedious and introduces inconsistency. Automation makes configuration changes fast, consistent, and repeatable.
+
+## How Ansible Connects to Network Devices
+
+Unlike servers where Ansible pushes changes via SSH and runs commands on the remote host, network devices are typically managed by connecting from the Ansible control node and issuing CLI commands over SSH. Ansible uses connection plugins like \`network_cli\` for this.
+
+## Basic Inventory
+
+\`\`\`yaml
+# inventory.yml
+all:
+  children:
+    switches:
+      hosts:
+        core-sw-01:
+          ansible_host: 192.168.1.10
+          ansible_network_os: ios
+          ansible_user: ansible
+          ansible_password: "{{ vault_switch_password }}"
+          ansible_connection: network_cli
+        core-sw-02:
+          ansible_host: 192.168.1.11
+          ansible_network_os: ios
+\`\`\`
+
+## Simple VLAN Playbook
+
+\`\`\`yaml
+# add_vlan.yml
+- name: Add VLAN to all access switches
+  hosts: switches
+  gather_facts: no
+  
+  tasks:
+    - name: Create VLAN
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: 200
+            name: NEW_SEGMENT
+            state: active
+        state: merged
+    
+    - name: Save configuration
+      cisco.ios.ios_command:
+        commands:
+          - write memory
+\`\`\`
+
+## Idempotency
+
+Ansible is designed to be idempotent: running a playbook multiple times produces the same result. If the VLAN already exists, the playbook skips creating it. This makes automation safe to run repeatedly and makes it practical to run on a schedule as a configuration compliance check.
+
+## Ansible Vault
+
+Store credentials securely using Ansible Vault:
+
+\`\`\`bash
+# Encrypt a password
+ansible-vault encrypt_string 'mypassword' --name vault_switch_password
+
+# Run playbook with vault password
+ansible-playbook add_vlan.yml --ask-vault-pass
+\`\`\`
+`,
+  },
+  {
+    slug: "network-engineer-role-2026",
+    title: "The Network Engineer Role in 2026: What Has Changed",
+    date: "2026-04-04",
+    tags: ["networking", "career", "technology"],
+    excerpt: "Networking has changed significantly in the last few years. Here is what the role looks like now and what skills matter most going forward.",
+    coverImage: "/images/blog-network-engineer-role-2026.png",
+    content: `
+## What Has Changed
+
+The network engineer of five years ago spent most of their time on physical infrastructure: racking switches, running cables, configuring VLANs, and troubleshooting Layer 2 problems. While all of that still exists, the center of gravity has shifted.
+
+Today, a significant portion of enterprise networking happens in software. Cloud networking, overlay fabrics, SD-WAN, and software-defined controllers mean that network configuration is increasingly declarative, API-driven, and version-controlled.
+
+## What Has Not Changed
+
+The fundamentals remain completely relevant. If you do not understand IP routing, BGP, spanning tree, and firewall policy design, you cannot be effective regardless of what tools are in use. The abstractions built on top of these fundamentals require understanding what is underneath to troubleshoot effectively.
+
+## Skills That Are Growing in Importance
+
+**Automation:** Network engineers who can write Python and Ansible, use APIs, and work with version control systems are significantly more valuable than those who cannot. Config-as-code is becoming standard practice.
+
+**Cloud networking:** AWS VPCs, Azure VNets, and GCP networking are now core skills for most enterprise network teams. Hybrid connectivity (Direct Connect, ExpressRoute, VPN) between on-premises and cloud is ubiquitous.
+
+**Security integration:** The boundary between network engineering and network security has blurred. Network engineers are expected to understand and implement security controls, not just hand off to a separate security team.
+
+## What I Am Focusing On
+
+The combination of deep fundamentals with automation and cloud skills is the most valuable place to be. A network engineer who can troubleshoot a BGP route leak AND write an Ansible playbook to fix it AND understand how that routing decision propagates in a cloud environment is solving genuinely hard problems.
+
+That combination is not common, which makes it worth investing in.
+`,
+  },
+  {
+    slug: "penetration-testing-basics",
+    title: "Penetration Testing Basics: A Defensive Perspective",
+    date: "2026-04-05",
+    tags: ["cybersecurity", "security", "networking"],
+    excerpt: "Understanding how penetration testing works helps defenders build better controls. Here is what pen testers actually do and what it means for defense.",
+    coverImage: "/images/blog-penetration-testing-basics.png",
+    content: `
+## Why Defenders Should Understand Offense
+
+Defense is most effective when you understand what you are defending against. A network engineer who has never run an Nmap scan does not understand what information their open ports reveal. A sysadmin who has never used Mimikatz does not understand why credential hygiene matters.
+
+Understanding attacker methodology helps you prioritize controls, identify gaps, and detect attacks by recognizing their telltale patterns.
+
+## The Penetration Testing Phases
+
+**Reconnaissance:** Gathering information without active exploitation. OSINT, DNS enumeration, certificate transparency logs, LinkedIn scraping. The goal is understanding the target's attack surface before touching it.
+
+**Scanning:** Active discovery of systems, ports, and services. Nmap is the standard tool.
+
+\`\`\`bash
+# Service version detection, OS detection, default scripts
+nmap -sV -sC -O 192.168.1.0/24
+
+# Scan specific ports quickly
+nmap -p 22,80,443,3389,5985 192.168.1.0/24
+\`\`\`
+
+**Exploitation:** Attempting to exploit discovered vulnerabilities. Metasploit is the standard framework for public exploits. Custom exploits require significantly more skill.
+
+**Post-exploitation:** What can you do once you have a foothold? Enumerate local system, dump credentials, escalate privileges, move laterally to other systems.
+
+**Reporting:** A penetration test without a clear report is useless. The report must describe what was found, how it was found, what the impact is, and how to fix it.
+
+## What This Means for Defense
+
+Every pen test phase has a defensive countermeasure. Limit public information exposure. Minimize exposed ports and services. Patch known vulnerabilities. Monitor for scanning patterns and post-exploitation techniques.
+
+The MITRE ATT&CK framework maps attacker techniques to defensive detections. If you know what techniques pen testers use, you can build detection rules for exactly those techniques.
+`,
+  },
+  {
+    slug: "tls-modern-encryption",
+    title: "TLS 1.3 and Modern Encryption: What Changed and Why It Matters",
+    date: "2026-04-06",
+    tags: ["security", "encryption", "networking"],
+    excerpt: "TLS 1.3 significantly improved on TLS 1.2 in both security and performance. Here is what changed and what you need to do about it.",
+    coverImage: "/images/blog-tls-modern-encryption.png",
+    content: `
+## Why TLS 1.3 Is Important
+
+TLS 1.2 is secure when configured correctly, but "when configured correctly" is the problem. TLS 1.2 supported a wide range of cipher suites, many of which are now considered weak. Misconfigured servers using RC4, 3DES, or export-grade ciphers were common attack targets for years.
+
+TLS 1.3 removed all the dangerous cipher suites, mandated forward secrecy, simplified the protocol, and reduced handshake latency. It is strictly better than TLS 1.2 and should be preferred wherever possible.
+
+## What Changed in TLS 1.3
+
+**Removed cipher suites:** RC4, 3DES, AES-CBC mode, and many others are simply gone. TLS 1.3 only supports AEAD ciphers: AES-GCM and ChaCha20-Poly1305.
+
+**Mandatory forward secrecy:** TLS 1.3 only allows ephemeral key exchange (ECDHE). If the server's private key is ever compromised, past sessions cannot be decrypted. TLS 1.2 allowed RSA key exchange, which did not provide forward secrecy.
+
+**Faster handshake:** TLS 1.3 requires only one round trip for the handshake (compared to two for TLS 1.2). 0-RTT resumption allows reconnecting clients to send data in the first packet.
+
+**Encrypted certificates:** In TLS 1.2, the server's certificate was sent in plaintext. TLS 1.3 encrypts it, improving privacy.
+
+## Enabling TLS 1.3
+
+\`\`\`nginx
+# nginx.conf
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_ciphers ECDH+AESGCM:ECDH+CHACHA20:!aNULL:!MD5;
+ssl_prefer_server_ciphers on;
+\`\`\`
+
+## What You Should Disable
+
+Disable TLS 1.0 and 1.1 everywhere. These versions have known vulnerabilities (POODLE, BEAST) and no modern client requires them. Check your servers and load balancers for these settings.
+
+Monitor your cipher suite usage and set a timeline for deprecating TLS 1.2 once you have confirmed all clients support 1.3.
+`,
+  },
+  {
+    slug: "server-consolidation-virtualization",
+    title: "Server Consolidation with Virtualization: A Practical Guide",
+    date: "2026-04-07",
+    tags: ["virtualization", "servers", "operations"],
+    excerpt: "Server consolidation using virtualization reduces hardware costs, power consumption, and management complexity. Here is how to plan and execute it.",
+    coverImage: "/images/blog-server-consolidation-virtualization.png",
+    content: `
+## The Case for Consolidation
+
+Physical servers are expensive to buy, expensive to power, and expensive to manage. A rack of physical servers, each running at 15 percent CPU utilization, is wasting most of its capacity while still consuming full power and requiring full maintenance.
+
+Virtualization consolidates many workloads onto fewer physical hosts. The same compute, done on fewer machines, with lower cost, lower power, and less physical complexity.
+
+## Planning the Consolidation
+
+Start with an inventory of what you are consolidating. For each physical server:
+- CPU utilization over time (average and peak)
+- Memory utilization
+- Storage I/O requirements
+- Network throughput
+- Any special hardware requirements (GPU, USB passthrough, NUMA sensitivity)
+
+A server running at 20 percent CPU average with 30 percent peak can share a physical host with several other similar workloads. A server running at 80 percent CPU peak needs a dedicated host or careful co-placement planning.
+
+## Sizing the New Infrastructure
+
+Rule of thumb: plan for 4:1 to 8:1 VM-to-physical-core ratios for typical workloads, 2:1 for compute-intensive, and 1:1 or even less for databases.
+
+For memory, there is no overcommitment that is safe for production. VM memory should sum to less than physical host memory, with headroom for the hypervisor.
+
+## Migration Strategy
+
+**Lift and shift:** Convert the existing OS to a VM without changes. Fastest approach, minimal risk, but you carry over any technical debt.
+
+**Rebuild:** Deploy a fresh OS in a VM and reinstall applications. More work but produces a cleaner result.
+
+P2V (physical-to-virtual) tools can automate the lift and shift conversion. VMware vCenter Converter and the open-source Clonezilla are common options.
+
+## Post-Consolidation Monitoring
+
+After consolidation, monitor CPU ready time (VMs waiting to be scheduled), memory balloon and swap activity, and storage latency. These metrics reveal whether your sizing was correct and where you need to rebalance workloads.
+`,
+  },
+  {
+    slug: "personal-brand-in-tech",
+    title: "Building a Personal Brand in Tech: What Actually Works",
+    date: "2026-04-08",
+    tags: ["career", "community", "technology"],
+    excerpt: "A genuine personal brand opens doors that credentials alone do not. Here is how to build one that reflects real expertise rather than manufactured content.",
+    coverImage: "/images/blog-personal-brand-in-tech.png",
+    content: `
+## What a Personal Brand Actually Is
+
+A personal brand is your reputation, made visible. It is what people think of when they see your name in a professional context. It is built on consistent, genuine output over time, not on clever marketing or posting a lot.
+
+The foundation is expertise. You cannot fake technical depth to an audience of technical people. Every post, project, and contribution either builds or undermines that foundation.
+
+## Building Through Output
+
+The most durable personal brands in tech are built by people who share what they learn. Writing blog posts, creating tools, contributing to open source, answering questions in forums, and teaching others all create a record of thinking and problem-solving that is hard to fake and hard to misrepresent.
+
+This site is part of that for me. Writing about what I actually do in the lab, what competitions have taught me, and what I think about infrastructure and security creates a record that is honest and specific. That specificity is what makes it valuable.
+
+## The Long Game
+
+The mistake most people make is expecting fast results. Personal brands compound slowly. A blog post written today might be discovered by someone a year from now. A project that gets 50 GitHub stars this year might get 500 next year. The timeline is long and the feedback loop is delayed.
+
+This means consistency matters more than any individual piece of output. Write regularly, build regularly, contribute regularly. Over months and years, the accumulation becomes significant.
+
+## Being Specific
+
+Generic content does not build reputation. "Networking is important" is not valuable. "Here is exactly how I debugged a spanning tree loop that was causing packet loss on a specific VLAN" is valuable. Specificity demonstrates that you have actually done the thing.
+
+## Teaching Youth as a Brand Builder
+
+Teaching coding camps in the Las Vegas Valley has been one of the most meaningful ways I have built reputation in the local tech community. It is genuinely valuable work that directly demonstrates technical knowledge, communication skills, and commitment to the community. Those things travel.
+`,
+  },
+  {
+    slug: "teaching-youth-to-code",
+    title: "What I've Learned Teaching Youth to Code",
+    date: "2026-04-09",
+    tags: ["community", "education", "coding"],
+    excerpt: "Running coding camps for youth in the Las Vegas Valley has taught me as much as it has taught the students. Here is what actually works when introducing young people to technology.",
+    coverImage: "/images/blog-teaching-youth-to-code.png",
+    content: `
+## Why It Matters
+
+Technical education changes life trajectories. A student who discovers they are good at programming at 13 has years of compounding learning ahead of them before they ever start a career. Someone who finds out at 22 has to move faster with less time. Getting the exposure early makes a real difference.
+
+The Las Vegas Valley has a lot of students who would thrive in technical careers but who have not yet encountered the right context or the right encouragement. The coding camps try to close that gap.
+
+## What I Have Learned About Teaching
+
+**The first hour is everything.** If a student does not have a successful experience in the first hour, they disengage. The first project has to work, has to be interesting, and has to feel achievable. I design every camp to put something working in front of students within the first 30 minutes.
+
+**Projects over lectures.** I have tried pure instruction and I have tried project-based learning. There is no comparison. Students who are building something retain concepts dramatically better than students who are being told about those concepts.
+
+**The right level of difficulty.** Too easy and it is boring. Too hard and it is discouraging. The sweet spot is something that requires real thinking but is achievable in the session. Finding that balance for a room with varied experience levels is the hardest part of teaching.
+
+## What Students Teach Me
+
+Teaching forces you to understand things more deeply. When a student asks why we use a for loop instead of copying code three times, you have to explain clearly and completely. If your explanation is confusing, it usually means your own understanding has a gap.
+
+I have refined my understanding of basic programming, logic, and systems concepts by having to explain them simply to people who have no context at all. That kind of clarity is useful far beyond the classroom.
+
+## Looking Forward
+
+I want to expand what we cover in the camps beyond basic coding. Networking fundamentals, cybersecurity basics, and systems thinking are all approachable at a high school level and are genuinely valuable career skills. The foundation we build early shapes what people pursue later.
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {

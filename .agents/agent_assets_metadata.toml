@@ -1,0 +1,596 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "suFjJrqHeRsgolg3blY68"
+uri = "file://public/images/blog-building-hyperscale.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "qW1Rr1ZZS6WlLiPQZvZLb"
+uri = "file://public/images/blog-why-homelabs-matter.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "YXWpK1tYTWHH7flX68U3B"
+uri = "file://public/images/blog-ncl-competition-lessons.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "7QW9tpUW_XBaxIGGKQY7n"
+uri = "file://public/images/blog-mac-pro-rack-mount-homelab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "5gcYZ6z2q43EcgS2dxN6e"
+uri = "file://public/images/blog-dell-poweredge-r740-deep-dive.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "d7JJMbfP9R8ymYAbzDEsr"
+uri = "file://public/images/blog-apple-silicon-server-future.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ruaZCF1DmLPXRB_4ecRgI"
+uri = "file://public/images/blog-zfs-on-enterprise-hardware.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "P30ju9jlT0N03U48icn6n"
+uri = "file://public/images/blog-10gbe-networking-homelab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "5-Sk_X6O_837d_SaGVUG1"
+uri = "file://public/images/blog-ipmi-remote-management.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "_YbenzGIhgIotNstlRVGd"
+uri = "file://public/images/blog-server-rack-cable-management.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "v_6RjaiRXLJDqrNyCplJA"
+uri = "file://public/images/blog-proxmox-vs-esxi.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "qDpBDXfOchzqX-2MP8Rvl"
+uri = "file://public/images/blog-ecc-ram-explained.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "sj3js66DDbu9Z7mrdmTN_"
+uri = "file://public/images/blog-mac-pro-vs-poweredge-comparison.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "jBoHPULnQKiEso5YBi20p"
+uri = "file://public/images/blog-ups-sizing-homelab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Nq1F5vTZxdrIAv6lt5HB-"
+uri = "file://public/images/blog-vlan-segmentation-guide.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "z1bfA7eSOlBqJklWDxlgN"
+uri = "file://public/images/blog-fortigate-firewall-homelab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "pFSZIvbQW3T6oTZouLvOE"
+uri = "file://public/images/blog-server-cpu-selection-guide.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "UKz2o84gR1zYO7Hu8sUjL"
+uri = "file://public/images/blog-hot-cold-aisle-containment.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "nQ7LUP7dW46KIRfl8YFxn"
+uri = "file://public/images/blog-pdu-selection-guide.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "sN_T65CV_U_cyzHuWAL7Q"
+uri = "file://public/images/blog-wireshark-packet-analysis.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "0B44QlKA-JMYg5Ja4A0H5"
+uri = "file://public/images/blog-nmap-scanning-techniques.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ORFUMrTBoU1W_5p7T3Sma"
+uri = "file://public/images/blog-mac-pro-2019-teardown-analysis.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "E0ixBnObz2dX9st_FEcPQ"
+uri = "file://public/images/blog-linux-server-hardening.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "BETh1wYz-xG8MZQL-_8fF"
+uri = "file://public/images/blog-active-directory-homelab.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "kX-pYM2_yqaYme039jV9k"
+uri = "file://public/images/blog-sfp-transceivers-explained.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "K--eMCDCOqCCZpkwdnzJe"
+uri = "file://public/images/blog-backup-strategy-321-rule.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "9-mXUpjBDil7SeybyDtuh"
+uri = "file://public/images/blog-network-monitoring-tools.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "xXOf8ydPL31og9jI0ut9X"
+uri = "file://public/images/blog-thunderbolt-networking.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "TCfA4Wnno9NWsb_f52WbS"
+uri = "file://public/images/blog-cisco-switching-fundamentals.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "28Wo9qPYxL9Xi-Mm6XwKv"
+uri = "file://public/images/blog-dell-idrac-tips-tricks.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "4FGcia7-bS_Pll1xZjQqC"
+uri = "file://public/images/blog-mac-pro-storage-expansion.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "L6hSbx49MrgoW1hXwO3Wr"
+uri = "file://public/images/blog-subnetting-practical-guide.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "9ofaBQ-7xnDNNitazCYFT"
+uri = "file://public/images/blog-server-bios-configuration.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "4InDSeJ1pHedIDF1RDFXc"
+uri = "file://public/images/blog-dns-fundamentals-infrastructure.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "gPR8H2N56R0yFTD3-WzJU"
+uri = "file://public/images/blog-xserve-apple-server-legacy.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "b1TtuwG8e37lIt5wsjxN-"
+uri = "file://public/images/blog-raid-levels-comparison.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "hTnYRrKB0NUTPszhCVCKa"
+uri = "file://public/images/blog-python-network-automation.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "tYQqMzJ9vodxEIxVHVYPB"
+uri = "file://public/images/blog-server-rack-planning.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "KPSZSc9po5E5qCsTvEVHX"
+uri = "file://public/images/blog-stp-troubleshooting.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "UX-cd0nks2NXARwmOU3pw"
+uri = "file://public/images/blog-mac-pro-afterburner-card.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "bXRZ8dQFertj_S6QIx7gL"
+uri = "file://public/images/blog-firewall-policy-design.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "CUhVp14im5laqOFIgutUl"
+uri = "file://public/images/blog-virtualization-networking-concepts.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "JjJhSl3IpBh9Dis4QYu7G"
+uri = "file://public/images/blog-log-analysis-methodology.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "zkNYd1x3YQS0Soylx2jvx"
+uri = "file://public/images/blog-apple-t2-security-chip.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "nVT_UMocgtWEbTD9FUOEf"
+uri = "file://public/images/blog-network-documentation-best-practices.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "jt6Cw7XArxkndLEb6jN5a"
+uri = "file://public/images/blog-power-consumption-monitoring.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "sEVkb8IAt9gJ987pk41D9"
+uri = "file://public/images/blog-incident-response-methodology.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "awuNBTpwqqDoB7dj2KuLb"
+uri = "file://public/images/blog-mac-pro-gpu-compute.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "DuljOv0EBvMemc4nUoSyr"
+uri = "file://public/images/blog-ssl-tls-certificates-explained.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "_WAvNn0-RFwlRK5syWNvt"
+uri = "file://public/images/blog-apple-file-system-apfs.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "TGQxV_7z92zp2sPeh6tKm"
+uri = "file://public/images/blog-homelab-network-evolution.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "c3UpR3WXvC7zuaTANnIm4"
+uri = "file://public/images/blog-container-orchestration-basics.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "NzqUdFJURus1s78CA4r4g"
+uri = "file://public/images/blog-bgp-for-network-engineers.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "0mUojaCxFWeGguCMrL1Ar"
+uri = "file://public/images/blog-fortigate-cli-essentials.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "GXLe64bQBIJ_RIctwFLDt"
+uri = "file://public/images/blog-kvm-proxmox-esxi-comparison.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "_o41KolLYRPSBoj_fnjfl"
+uri = "file://public/images/blog-nvme-vs-sata-enterprise-storage.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "19LqLs7_sxiMZ0n_TB6_e"
+uri = "file://public/images/blog-network-monitoring-system-build.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "gB2qWAI0H4jHUYR3DYagO"
+uri = "file://public/images/blog-redundant-power-supplies.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "HXAmsY3SD9WitqAKRdnD5"
+uri = "file://public/images/blog-spanning-tree-protocol-deep-dive.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "uBH4ZMgkVLaYHESAQSfSU"
+uri = "file://public/images/blog-ssh-hardening-linux-servers.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "WY4PjwsT14IKUSv-23xCi"
+uri = "file://public/images/blog-ipv6-in-the-real-world.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "FunAFiSJFwNbJFpVCzcRY"
+uri = "file://public/images/blog-cisco-ios-fundamentals.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "hwhX1h6Atz_KYIaFzqOQ1"
+uri = "file://public/images/blog-storage-area-networks-explained.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "4Y1DaMghdJLVjgeQKtRHZ"
+uri = "file://public/images/blog-proxmox-clustering-high-availability.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ja9yQ3sq8e_EKxe9K4o07"
+uri = "file://public/images/blog-fortigate-sdwan-configuration.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "NGerYEVWGBB8ByrxQfM0i"
+uri = "file://public/images/blog-network-security-zones-dmz.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "M792jSl6hEPeAOZo8_sUd"
+uri = "file://public/images/blog-power-over-ethernet-poe.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "3tYugBV5lWHcVbj9xtXCt"
+uri = "file://public/images/blog-server-memory-architecture.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "HJM92wDrH1axq30qoCJf_"
+uri = "file://public/images/blog-soc-home-lab-build.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "W4FrTg7_0Es9BPDiG7PUD"
+uri = "file://public/images/blog-iscsi-storage-protocol.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ky7NV7e8tSHM-HIjCxTEi"
+uri = "file://public/images/blog-dns-security-dnssec.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "7RT9zRjKh4JaQRocg0_kP"
+uri = "file://public/images/blog-high-availability-clustering.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "v-CsAjNTQ1kfh5AdbL-_W"
+uri = "file://public/images/blog-network-access-control-8021x.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Po6or3M9eVnTJx_9AUMw7"
+uri = "file://public/images/blog-vxlan-network-virtualization.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "6jWU6tebAkePdrhTxiAS_"
+uri = "file://public/images/blog-troubleshooting-packet-captures.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "BV0AJxhf0GTtD4J4auCkH"
+uri = "file://public/images/blog-runbooks-infrastructure-teams.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "opulgRNlMuyyj-0dzWnKL"
+uri = "file://public/images/blog-ospf-routing-protocol.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Y3vLDmnMgzBeDupaYCJ9R"
+uri = "file://public/images/blog-idrac-advanced-features.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ldEJEsPVphwOAKTm5FTOA"
+uri = "file://public/images/blog-container-networking-fundamentals.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Oqr0NtBcJKqbLGsOqSltc"
+uri = "file://public/images/blog-ssh-key-based-authentication.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "bW3XL9mYuBV7AJ0a5IRdP"
+uri = "file://public/images/blog-nfs-vs-smb-network-storage.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "hbsJn2wILzFYytSJMG6M7"
+uri = "file://public/images/blog-ntp-enterprise-networks.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "XFW_RJGZWGL1Bf2j8_Izh"
+uri = "file://public/images/blog-nginx-reverse-proxy-setup.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "aj3kW_TYKQj5TNKDpzhMr"
+uri = "file://public/images/blog-lacp-link-aggregation.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "5yH45SDRBJyBDYCxbU2lR"
+uri = "file://public/images/blog-enterprise-wifi-vs-consumer.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "xo5F0eYucH-MDLkmlOMM0"
+uri = "file://public/images/blog-dhcp-snooping-arp-inspection.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "k3c3K5V1UuSSDtRTeA1Xg"
+uri = "file://public/images/blog-prometheus-server-monitoring.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "rXHcaFeFhH_SdZi7WPxEZ"
+uri = "file://public/images/blog-bgp-route-filtering-security.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "dmjmml-U55eNjIVcB20em"
+uri = "file://public/images/blog-secure-network-design-principles.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "LgLvsC2jEiVx-MY3ujVDN"
+uri = "file://public/images/blog-scaling-homelab-lessons.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "gt1K8aZeGlgxjUMq-36AJ"
+uri = "file://public/images/blog-firewall-log-analysis.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "6A95crYMRjow2mkPVlvHM"
+uri = "file://public/images/blog-qos-enterprise-networks.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "IFaWY2SH93rt3RXE8UrJt"
+uri = "file://public/images/blog-ansible-network-automation.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "A_1-fKZaOSCyRKD5-Geku"
+uri = "file://public/images/blog-network-engineer-role-2026.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "26tZAnooKrLubNZ_CEDKJ"
+uri = "file://public/images/blog-penetration-testing-basics.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "1mpjNhiwin9Mr3md54DP9"
+uri = "file://public/images/blog-tls-modern-encryption.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "kv1JR8jN9EfGG6pFdkHQ_"
+uri = "file://public/images/blog-server-consolidation-virtualization.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "M75fbAmhHSJWGbEtcbBE_"
+uri = "file://public/images/blog-personal-brand-in-tech.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "OTPdmXO5H8hWiVMCoA0e8"
+uri = "file://public/images/blog-teaching-youth-to-code.png"
+type = "image"
+title = "generated_image"
