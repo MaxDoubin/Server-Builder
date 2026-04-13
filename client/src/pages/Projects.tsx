@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
 import { siteConfig } from "@/lib/siteConfig";
 import { ArrowRight, Sparkles, ExternalLink } from "lucide-react";
+import { useSEO } from "@/lib/useSEO";
 
 const categories = [
   { value: "all", label: "All" },
@@ -12,6 +13,13 @@ const categories = [
 ];
 
 export function Projects() {
+  useSEO({
+    title: "Projects | Max Doubin",
+    description:
+      "Projects by Max Doubin in cybersecurity, enterprise networking, 3D datacenter simulation, and web development.",
+    canonical: "https://maxdoubin.com/projects",
+  });
+
   const [activeCategory, setActiveCategory] = useState("all");
 
   const filteredProjects =

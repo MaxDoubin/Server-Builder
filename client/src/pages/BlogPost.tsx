@@ -1,9 +1,10 @@
 import { useRoute, Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
 import { getPostBySlug } from "@/lib/blogPosts";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { marked } from "marked";
 import { ArrowLeft } from "lucide-react";
+import { useSEO } from "@/lib/useSEO";
 
 marked.setOptions({
   gfm: true,
@@ -23,93 +24,56 @@ export function BlogPost() {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  useEffect(() => {
-    const defaultTitle = "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
-    const defaultDesc = "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.";
-
-    if (!post) {
-      document.title = defaultTitle;
-      return;
-    }
-
-    document.title = `${post.title} | Max Doubin`;
-
-    const descMeta = document.querySelector('meta[name="description"]');
-    if (descMeta) descMeta.setAttribute("content", post.excerpt);
-
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute("content", `${post.title} | Max Doubin`);
-
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute("content", post.excerpt);
-
-    const ogImg = document.querySelector('meta[property="og:image"]');
-    if (ogImg) ogImg.setAttribute("content", `${SITE_URL}${post.coverImage}`);
-
-    const ogUrl = document.querySelector('meta[property="og:url"]');
-    if (ogUrl) ogUrl.setAttribute("content", `${SITE_URL}/blog/${post.slug}`);
-
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.setAttribute("href", `${SITE_URL}/blog/${post.slug}`);
-
-    const schema = {
+  const postSchema = useMemo(() => {
+    if (!post) return null;
+    return {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       "@id": `${SITE_URL}/blog/${post.slug}`,
-      "headline": post.title,
-      "name": post.title,
-      "description": post.excerpt,
-      "datePublished": post.date,
-      "dateModified": post.date,
-      "url": `${SITE_URL}/blog/${post.slug}`,
-      "image": {
+      headline: post.title,
+      name: post.title,
+      description: post.excerpt,
+      datePublished: post.date,
+      dateModified: post.date,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      image: {
         "@type": "ImageObject",
-        "url": `${SITE_URL}${post.coverImage}`,
-        "contentUrl": `${SITE_URL}${post.coverImage}`
+        url: `${SITE_URL}${post.coverImage}`,
+        contentUrl: `${SITE_URL}${post.coverImage}`,
       },
-      "author": {
+      author: {
         "@type": "Person",
         "@id": `${SITE_URL}/#person`,
-        "name": "Max Doubin",
-        "url": SITE_URL
+        name: "Max Doubin",
+        url: SITE_URL,
       },
-      "publisher": {
+      publisher: {
         "@type": "Person",
         "@id": `${SITE_URL}/#person`,
-        "name": "Max Doubin",
-        "url": SITE_URL
+        name: "Max Doubin",
+        url: SITE_URL,
       },
-      "isPartOf": {
-        "@type": "Blog",
-        "@id": `${SITE_URL}/#blog`
-      },
-      "keywords": post.tags.join(", "),
-      "inLanguage": "en-US",
-      "mainEntityOfPage": {
+      isPartOf: { "@type": "Blog", "@id": `${SITE_URL}/#blog` },
+      keywords: post.tags.join(", "),
+      inLanguage: "en-US",
+      mainEntityOfPage: {
         "@type": "WebPage",
-        "@id": `${SITE_URL}/blog/${post.slug}`
-      }
-    };
-
-    const existing = document.getElementById("post-schema");
-    if (existing) existing.remove();
-
-    const script = document.createElement("script");
-    script.id = "post-schema";
-    script.type = "application/ld+json";
-    script.textContent = JSON.stringify(schema);
-    document.head.appendChild(script);
-
-    return () => {
-      document.title = defaultTitle;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) metaDesc.setAttribute("content", defaultDesc);
-      const canon = document.querySelector('link[rel="canonical"]');
-      if (canon) canon.setAttribute("href", SITE_URL);
-      const s = document.getElementById("post-schema");
-      if (s) s.remove();
+        "@id": `${SITE_URL}/blog/${post.slug}`,
+      },
+      wordCount: post.content.split(/\s+/).length,
     };
   }, [post]);
+
+  useSEO({
+    title: post ? `${post.title} | Max Doubin` : "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert",
+    description: post?.excerpt ?? "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+    canonical: post ? `${SITE_URL}/blog/${post.slug}` : SITE_URL,
+    ogType: post ? "article" : "profile",
+    ogImage: post ? `${SITE_URL}${post.coverImage}` : `${SITE_URL}/images/og-image.png`,
+    ogImageAlt: post ? post.title : "Max Doubin - Cybersecurity Specialist",
+    schema: postSchema,
+    schemaId: "post-schema",
+  });
 
   const htmlContent = useMemo(() => {
     if (!post) return "";
@@ -152,6 +116,7 @@ export function BlogPost() {
             className="aspect-[2.5/1] w-full object-cover"
             width="800"
             height="320"
+            fetchPriority="high"
           />
         </div>
 
@@ -174,7 +139,7 @@ export function BlogPost() {
             {post.tags.map((tag) => (
               <Link
                 key={tag}
-                href={`/blog`}
+                href="/blog"
                 className="rounded-full bg-accent/70 px-3 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 {tag}
