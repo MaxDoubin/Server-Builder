@@ -8,7 +8,7 @@ export const siteConfig = {
     "I run enterprise servers, manage complex network environments, and work hands-on with the kind of hardware you find in real datacenters. Everything from rack deployment and power planning to virtualization, storage architecture, and network segmentation.",
     "Beyond technical operations, I am committed to community engagement through technology. I have hosted several coding camps for youth across the Las Vegas Valley, teaching the fundamentals of systems and software to the next generation of builders.",
   ],
-  email: "doubinemail@gmail.com",
+  email: "max@maxdoubin.com",
   social: {
     instagram: {
       handle: "@maxdoubin",
@@ -161,10 +161,10 @@ export const siteConfig = {
     },
     {
       title: "Blue Ribbon Commissioner",
-      org: "City of Henderson",
+      org: "Blue Ribbon Commission on Youth, City of Henderson, Nevada",
       details: [
-        "Serve on the youth civic leadership commission",
-        "Provide input on local priorities, education, and engagement efforts",
+        "Appointed commissioner on the City of Henderson's youth civic leadership body",
+        "Provide input on local priorities, education, and community engagement",
       ],
     },
     {
