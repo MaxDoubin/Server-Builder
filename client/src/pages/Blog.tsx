@@ -1,12 +1,48 @@
 import { Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
 import { getAllPosts, getAllTags } from "@/lib/blogPosts";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSEO } from "@/lib/useSEO";
+
+const SITE_URL = "https://maxdoubin.com";
 
 export function Blog() {
   const allPosts = getAllPosts();
   const allTags = getAllTags();
   const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  const blogListSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "@id": `${SITE_URL}/blog`,
+      name: "Max Doubin's Blog",
+      url: `${SITE_URL}/blog`,
+      description:
+        "Technical writing on enterprise networking, cybersecurity, homelab infrastructure, and systems engineering.",
+      author: { "@id": `${SITE_URL}/#person` },
+      inLanguage: "en-US",
+      blogPost: allPosts.slice(0, 10).map((p) => ({
+        "@type": "BlogPosting",
+        "@id": `${SITE_URL}/blog/${p.slug}`,
+        headline: p.title,
+        url: `${SITE_URL}/blog/${p.slug}`,
+        datePublished: p.date,
+        description: p.excerpt,
+      })),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  useSEO({
+    title: "Blog | Max Doubin",
+    description:
+      "Technical writing on enterprise networking, cybersecurity, homelab infrastructure, and systems engineering by Max Doubin.",
+    canonical: `${SITE_URL}/blog`,
+    schema: blogListSchema,
+    schemaId: "blog-list-schema",
+  });
 
   const filteredPosts = activeTag
     ? allPosts.filter((post) => post.tags.includes(activeTag))

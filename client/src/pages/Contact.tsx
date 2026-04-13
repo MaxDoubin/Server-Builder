@@ -2,8 +2,16 @@ import { useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { siteConfig } from "@/lib/siteConfig";
 import { Instagram, Github, Mail, ArrowUpRight, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { useSEO } from "@/lib/useSEO";
 
 export function Contact() {
+  useSEO({
+    title: "Contact | Max Doubin",
+    description:
+      "Get in touch with Max Doubin — cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+    canonical: "https://maxdoubin.com/contact",
+  });
+
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);

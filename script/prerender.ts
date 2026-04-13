@@ -1,0 +1,303 @@
+/**
+ * Static pre-renderer for maxdoubin.com
+ *
+ * Runs after `vite build` and writes per-page HTML files into dist/public.
+ * Each file contains correct <title>, <meta>, <link rel="canonical">, JSON-LD
+ * schema, and the full rendered blog content inside the <div id="root"> so
+ * Google can read everything without executing JavaScript.
+ *
+ * React's createRoot will take over the root div when JS loads — the page
+ * content is identical, so there is no visible flash for users.
+ */
+
+import { readFile, writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
+import { Marked } from "marked";
+
+// ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
+const { blogPosts } = await import("../client/src/lib/blogPosts.ts");
+
+// ─── constants ───────────────────────────────────────────────────────────────
+const SITE_URL = "https://maxdoubin.com";
+const DIST = path.resolve("dist/public");
+const BATCH = 10; // blog posts per parallel batch
+
+const marked = new Marked({ gfm: true, breaks: true });
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+function esc(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** Replace a meta tag's attribute value in raw HTML using a regex. */
+function replaceMeta(
+  html: string,
+  selector: string,
+  attrName: string,
+  value: string,
+): string {
+  // Match e.g. <meta property="og:title" content="...">
+  // The selector here is something like: meta[property="og:title"]
+  // We convert it into a regex that matches the attribute value.
+  const escaped = selector.replace(/[\[\]"]/g, (c) =>
+    ({ "[": "\\[", "]": "\\]", '"': '"' })[c] ?? c,
+  );
+  const re = new RegExp(
+    `(<${escaped}[^>]*\\s${attrName}=")([^"]*)(")`,
+    "i",
+  );
+  return html.replace(re, `$1${esc(value)}$3`);
+}
+
+function replaceTitle(html: string, title: string): string {
+  return html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`);
+}
+
+function replaceCanonical(html: string, url: string): string {
+  return html.replace(
+    /(<link rel="canonical" href=")[^"]*(")/,
+    `$1${url}$2`,
+  );
+}
+
+function injectBeforeHead(html: string, injection: string): string {
+  return html.replace("</head>", `${injection}\n</head>`);
+}
+
+function injectRootContent(html: string, content: string): string {
+  // Replace the spinner placeholder with pre-rendered content.
+  // React's createRoot overwrites this on hydration — purely for crawlers.
+  return html.replace(
+    /<div id="root">[\s\S]*?<\/div>\s*<style>/,
+    `<div id="root">${content}</div>\n    <style>`,
+  );
+}
+
+// ─── page injection ───────────────────────────────────────────────────────────
+
+interface PageMeta {
+  title: string;
+  description: string;
+  canonical: string;
+  ogType?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  schema?: string;
+  rootContent?: string;
+}
+
+function buildPageHtml(base: string, meta: PageMeta): string {
+  let html = base;
+  const {
+    title,
+    description,
+    canonical,
+    ogType = "website",
+    ogImage = `${SITE_URL}/images/og-image.png`,
+    ogImageAlt = "Max Doubin",
+    schema,
+    rootContent,
+  } = meta;
+
+  html = replaceTitle(html, title);
+  html = replaceCanonical(html, canonical);
+
+  // <meta name="description">
+  html = html.replace(
+    /(<meta name="description" content=")[^"]*(")/,
+    `$1${esc(description)}$2`,
+  );
+
+  // Open Graph
+  html = html.replace(/(<meta property="og:title" content=")[^"]*(")/,   `$1${esc(title)}$2`);
+  html = html.replace(/(<meta property="og:description" content=")[^"]*(")/,`$1${esc(description)}$2`);
+  html = html.replace(/(<meta property="og:url" content=")[^"]*(")/,     `$1${canonical}$2`);
+  html = html.replace(/(<meta property="og:type" content=")[^"]*(")/,    `$1${ogType}$2`);
+  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${ogImage}$2`);
+  html = html.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1${esc(ogImageAlt)}$2`);
+
+  // Twitter
+  html = html.replace(/(<meta name="twitter:title" content=")[^"]*(")/,      `$1${esc(title)}$2`);
+  html = html.replace(/(<meta name="twitter:description" content=")[^"]*(")/,`$1${esc(description)}$2`);
+  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${ogImage}$2`);
+  html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${esc(ogImageAlt)}$2`);
+  html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${canonical}$2`);
+
+  if (schema) html = injectBeforeHead(html, schema);
+  if (rootContent) html = injectRootContent(html, rootContent);
+
+  return html;
+}
+
+// ─── write helpers ────────────────────────────────────────────────────────────
+
+async function writePage(
+  relDir: string,
+  base: string,
+  meta: PageMeta,
+): Promise<void> {
+  const dir = path.join(DIST, relDir);
+  await mkdir(dir, { recursive: true });
+  const html = buildPageHtml(base, meta);
+  await writeFile(path.join(dir, "index.html"), html, "utf-8");
+}
+
+// ─── blog post pre-render ─────────────────────────────────────────────────────
+
+async function prerenderPost(
+  base: string,
+  post: (typeof blogPosts)[number],
+): Promise<void> {
+  const url = `${SITE_URL}/blog/${post.slug}`;
+  const ogImage = `${SITE_URL}${post.coverImage}`;
+
+  const schema = `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "@id": url,
+  headline: post.title,
+  description: post.excerpt,
+  datePublished: post.date,
+  dateModified: post.date,
+  url,
+  image: { "@type": "ImageObject", url: ogImage, contentUrl: ogImage },
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin", url: SITE_URL },
+  publisher: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin", url: SITE_URL },
+  isPartOf: { "@type": "Blog", "@id": `${SITE_URL}/#blog` },
+  keywords: post.tags.join(", "),
+  inLanguage: "en-US",
+  wordCount: post.content.split(/\s+/).length,
+  mainEntityOfPage: { "@type": "WebPage", "@id": url },
+})}
+</script>`;
+
+  // Full article HTML — Google reads this on the first HTML crawl
+  const contentHtml = await Promise.resolve(marked.parse(post.content));
+  const dateStr = new Date(post.date).toLocaleDateString("en-US", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+  const readMins = Math.ceil(post.content.split(/\s+/).length / 200);
+  const tagLinks = post.tags
+    .map((t) => `<a href="${SITE_URL}/blog">${esc(t)}</a>`)
+    .join(" ");
+
+  const rootContent = `
+<main>
+  <a href="${SITE_URL}/blog">← Back to Blog</a>
+  <img src="${ogImage}" alt="${esc(post.title)}" width="800" height="320" />
+  <article>
+    <time datetime="${post.date}">${dateStr}</time> · ${readMins} min read
+    <h1>${esc(post.title)}</h1>
+    <p>${esc(post.excerpt)}</p>
+    <nav>${tagLinks}</nav>
+    ${contentHtml}
+  </article>
+</main>`;
+
+  await writePage(`blog/${post.slug}`, base, {
+    title: `${post.title} | Max Doubin`,
+    description: post.excerpt,
+    canonical: url,
+    ogType: "article",
+    ogImage,
+    ogImageAlt: post.title,
+    schema,
+    rootContent,
+  });
+}
+
+// ─── main ─────────────────────────────────────────────────────────────────────
+
+async function main(): Promise<void> {
+  if (!existsSync(DIST)) {
+    console.log("⚠  dist/public not found — skipping prerender");
+    return;
+  }
+
+  const base = await readFile(path.join(DIST, "index.html"), "utf-8");
+  const posts = blogPosts.filter((p) => !p.draft);
+
+  // ── blog posts ──
+  console.log(`Prerendering ${posts.length} blog posts...`);
+  for (let i = 0; i < posts.length; i += BATCH) {
+    const batch = posts.slice(i, i + BATCH);
+    await Promise.all(batch.map((p) => prerenderPost(base, p)));
+    process.stdout.write(`  ${Math.min(i + BATCH, posts.length)}/${posts.length}\r`);
+  }
+  console.log(`  ${posts.length}/${posts.length} done          `);
+
+  // ── blog list ──
+  const blogListSchema = `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "@id": `${SITE_URL}/blog`,
+  name: "Max Doubin's Blog",
+  url: `${SITE_URL}/blog`,
+  description: "Technical writing on enterprise networking, cybersecurity, homelab infrastructure, and systems engineering.",
+  author: { "@id": `${SITE_URL}/#person` },
+  inLanguage: "en-US",
+  blogPost: posts.slice(0, 20).map((p) => ({
+    "@type": "BlogPosting",
+    "@id": `${SITE_URL}/blog/${p.slug}`,
+    headline: p.title,
+    url: `${SITE_URL}/blog/${p.slug}`,
+    datePublished: p.date,
+    description: p.excerpt,
+  })),
+})}
+</script>`;
+
+  const blogRootContent = `
+<main>
+  <h1>Blog | Max Doubin</h1>
+  <p>Technical writing on enterprise networking, cybersecurity, homelab infrastructure, and systems engineering.</p>
+  <ul>
+    ${posts
+      .map(
+        (p) =>
+          `<li><a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a> — <span>${esc(p.excerpt)}</span></li>`,
+      )
+      .join("\n    ")}
+  </ul>
+</main>`;
+
+  await writePage("blog", base, {
+    title: "Blog | Max Doubin",
+    description:
+      "Technical writing on enterprise networking, cybersecurity, homelab infrastructure, and systems engineering by Max Doubin.",
+    canonical: `${SITE_URL}/blog`,
+    schema: blogListSchema,
+    rootContent: blogRootContent,
+  });
+
+  // ── projects ──
+  await writePage("projects", base, {
+    title: "Projects | Max Doubin",
+    description:
+      "Projects by Max Doubin in cybersecurity, enterprise networking, 3D datacenter simulation, and web development.",
+    canonical: `${SITE_URL}/projects`,
+  });
+
+  // ── contact ──
+  await writePage("contact", base, {
+    title: "Contact | Max Doubin",
+    description:
+      "Get in touch with Max Doubin — cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+    canonical: `${SITE_URL}/contact`,
+  });
+
+  console.log("Prerender complete.");
+}
+
+main().catch((err) => {
+  console.error("Prerender failed:", err);
+  process.exit(1);
+});

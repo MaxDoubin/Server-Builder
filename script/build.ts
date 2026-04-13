@@ -38,6 +38,10 @@ async function buildAll() {
   console.log("building client...");
   await viteBuild();
 
+  console.log("prerendering pages for SEO...");
+  const { execSync } = await import("child_process");
+  execSync("npx tsx script/prerender.ts", { stdio: "inherit" });
+
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));
   const allDeps = [
