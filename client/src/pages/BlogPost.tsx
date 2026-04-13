@@ -47,18 +47,18 @@ export function BlogPost() {
     if (ogImg) ogImg.setAttribute("content", `${SITE_URL}${post.coverImage}`);
 
     const ogUrl = document.querySelector('meta[property="og:url"]');
-    if (ogUrl) ogUrl.setAttribute("content", `${SITE_URL}/#/blog/${post.slug}`);
+    if (ogUrl) ogUrl.setAttribute("content", `${SITE_URL}/blog/${post.slug}`);
 
     const schema = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      "@id": `${SITE_URL}/#/blog/${post.slug}`,
+      "@id": `${SITE_URL}/blog/${post.slug}`,
       "headline": post.title,
       "name": post.title,
       "description": post.excerpt,
       "datePublished": post.date,
       "dateModified": post.date,
-      "url": `${SITE_URL}/#/blog/${post.slug}`,
+      "url": `${SITE_URL}/blog/${post.slug}`,
       "image": {
         "@type": "ImageObject",
         "url": `${SITE_URL}${post.coverImage}`,
@@ -84,7 +84,7 @@ export function BlogPost() {
       "inLanguage": "en-US",
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `${SITE_URL}/#/blog/${post.slug}`
+        "@id": `${SITE_URL}/blog/${post.slug}`
       }
     };
 
