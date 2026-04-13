@@ -49,6 +49,9 @@ export function BlogPost() {
     const ogUrl = document.querySelector('meta[property="og:url"]');
     if (ogUrl) ogUrl.setAttribute("content", `${SITE_URL}/blog/${post.slug}`);
 
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute("href", `${SITE_URL}/blog/${post.slug}`);
+
     const schema = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
@@ -101,6 +104,8 @@ export function BlogPost() {
       document.title = defaultTitle;
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) metaDesc.setAttribute("content", defaultDesc);
+      const canon = document.querySelector('link[rel="canonical"]');
+      if (canon) canon.setAttribute("href", SITE_URL);
       const s = document.getElementById("post-schema");
       if (s) s.remove();
     };
