@@ -131,8 +131,14 @@ export function Home() {
             {/* Avatar */}
             <div className="flex-shrink-0 flex justify-center lg:justify-start">
               <div className="relative">
-                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-2xl bg-gradient-to-br from-primary/20 via-blue-600/20 to-indigo-600/20 ring-1 ring-primary/20 flex items-center justify-center shadow-2xl shadow-primary/10">
-                  <span className="text-5xl sm:text-6xl font-black text-primary/80 select-none">MD</span>
+                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-2xl ring-1 ring-primary/20 shadow-2xl shadow-primary/10 overflow-hidden">
+                  <img
+                    src="/IMG_9293.jpg"
+                    alt="Max Doubin"
+                    className="h-full w-full object-cover object-top"
+                    width="160"
+                    height="160"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 flex items-center gap-1.5 rounded-full border border-green-500/30 bg-background/90 px-3 py-1 text-xs font-medium text-green-400 shadow-lg backdrop-blur-sm">
                   <span className="relative flex h-1.5 w-1.5">
