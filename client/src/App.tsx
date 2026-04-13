@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, type ErrorInfo, type ReactNode } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Route, Switch, Link } from "wouter";
+import { Route, Switch, Router } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
@@ -137,37 +137,39 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
-          <RouteChunkBoundary>
-            <Switch>
-              <Route path="/" component={Home} />
-              <Route path="/blog">
-                <Suspense fallback={<RouteLoading />}>
-                  <Blog />
-                </Suspense>
-              </Route>
-              <Route path="/blog/:slug">
-                <Suspense fallback={<RouteLoading />}>
-                  <BlogPost />
-                </Suspense>
-              </Route>
-              <Route path="/projects">
-                <Suspense fallback={<RouteLoading />}>
-                  <Projects />
-                </Suspense>
-              </Route>
-              <Route path="/contact">
-                <Suspense fallback={<RouteLoading />}>
-                  <Contact />
-                </Suspense>
-              </Route>
-              <Route path="/game">
-                <Suspense fallback={<GameLoading />}>
-                  <GamePage />
-                </Suspense>
-              </Route>
-              <Route component={NotFound} />
-            </Switch>
-          </RouteChunkBoundary>
+          <Router>
+            <RouteChunkBoundary>
+              <Switch>
+                <Route path="/" component={Home} />
+                <Route path="/blog">
+                  <Suspense fallback={<RouteLoading />}>
+                    <Blog />
+                  </Suspense>
+                </Route>
+                <Route path="/blog/:slug">
+                  <Suspense fallback={<RouteLoading />}>
+                    <BlogPost />
+                  </Suspense>
+                </Route>
+                <Route path="/projects">
+                  <Suspense fallback={<RouteLoading />}>
+                    <Projects />
+                  </Suspense>
+                </Route>
+                <Route path="/contact">
+                  <Suspense fallback={<RouteLoading />}>
+                    <Contact />
+                  </Suspense>
+                </Route>
+                <Route path="/game">
+                  <Suspense fallback={<GameLoading />}>
+                    <GamePage />
+                  </Suspense>
+                </Route>
+                <Route component={NotFound} />
+              </Switch>
+            </RouteChunkBoundary>
+          </Router>
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>
