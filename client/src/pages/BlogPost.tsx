@@ -10,6 +10,8 @@ marked.setOptions({
   breaks: true,
 });
 
+const SITE_URL = "https://maxdoubin.com";
+
 export function BlogPost() {
   const [, params] = useRoute("/blog/:slug");
   const slug = params?.slug ?? "";
@@ -20,6 +22,89 @@ export function BlogPost() {
     setMounted(true);
     window.scrollTo(0, 0);
   }, [slug]);
+
+  useEffect(() => {
+    const defaultTitle = "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
+    const defaultDesc = "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.";
+
+    if (!post) {
+      document.title = defaultTitle;
+      return;
+    }
+
+    document.title = `${post.title} | Max Doubin`;
+
+    const descMeta = document.querySelector('meta[name="description"]');
+    if (descMeta) descMeta.setAttribute("content", post.excerpt);
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", `${post.title} | Max Doubin`);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", post.excerpt);
+
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.setAttribute("content", `${SITE_URL}${post.coverImage}`);
+
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute("content", `${SITE_URL}/#/blog/${post.slug}`);
+
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "@id": `${SITE_URL}/#/blog/${post.slug}`,
+      "headline": post.title,
+      "name": post.title,
+      "description": post.excerpt,
+      "datePublished": post.date,
+      "dateModified": post.date,
+      "url": `${SITE_URL}/#/blog/${post.slug}`,
+      "image": {
+        "@type": "ImageObject",
+        "url": `${SITE_URL}${post.coverImage}`,
+        "contentUrl": `${SITE_URL}${post.coverImage}`
+      },
+      "author": {
+        "@type": "Person",
+        "@id": `${SITE_URL}/#person`,
+        "name": "Max Doubin",
+        "url": SITE_URL
+      },
+      "publisher": {
+        "@type": "Person",
+        "@id": `${SITE_URL}/#person`,
+        "name": "Max Doubin",
+        "url": SITE_URL
+      },
+      "isPartOf": {
+        "@type": "Blog",
+        "@id": `${SITE_URL}/#blog`
+      },
+      "keywords": post.tags.join(", "),
+      "inLanguage": "en-US",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `${SITE_URL}/#/blog/${post.slug}`
+      }
+    };
+
+    const existing = document.getElementById("post-schema");
+    if (existing) existing.remove();
+
+    const script = document.createElement("script");
+    script.id = "post-schema";
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    return () => {
+      document.title = defaultTitle;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute("content", defaultDesc);
+      const s = document.getElementById("post-schema");
+      if (s) s.remove();
+    };
+  }, [post]);
 
   const htmlContent = useMemo(() => {
     if (!post) return "";
