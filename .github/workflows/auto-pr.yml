@@ -1,0 +1,38 @@
+name: Auto Create Pull Request
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  auto-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create pull request if one doesn't exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          COMMIT_MSG="$(git log -1 --pretty=%s)"
+
+          # Check if a PR already exists for this branch
+          EXISTING=$(gh pr list --head "$BRANCH" --base main --json number --jq '.[0].number' 2>/dev/null)
+
+          if [ -z "$EXISTING" ]; then
+            gh pr create \
+              --title "$COMMIT_MSG" \
+              --body "Auto-generated pull request for branch \`$BRANCH\`." \
+              --base main \
+              --head "$BRANCH"
+            echo "Pull request created."
+          else
+            echo "Pull request #$EXISTING already exists for $BRANCH — skipping."
+          fi
