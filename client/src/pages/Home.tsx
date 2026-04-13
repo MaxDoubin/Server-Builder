@@ -8,47 +8,44 @@ import {
   ArrowRight,
   Instagram,
   Shield,
-  Server,
   Users,
   ChevronRight,
-  Zap,
   Award,
   Target,
   Music,
   Github,
   Terminal,
   Network,
-  HardDrive,
+  MapPin,
+  Mail,
+  BookOpen,
 } from "lucide-react";
 
-
-type RevealProps = {
-  children: ReactNode;
-};
-
-// Reveal component for scroll animations
-function Reveal({ children }: RevealProps) {
-  // Return children directly for now, animations are handled by CSS classes
-  return <>{children}</>;
+function useScrollReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).style.opacity = "1";
+            (entry.target as HTMLElement).style.transform = "translateY(0)";
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+    for (const el of els) {
+      el.style.opacity = "0";
+      el.style.transform = "translateY(24px)";
+      el.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+      observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, []);
 }
 
-// Fallback background for the hero section
-function HeroFallback() {
-  return (
-    <div className="h-full w-full bg-gradient-to-br from-[#020812] via-[#0a1628] to-[#020812]">
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(56,189,248,0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(129,140,248,0.12),transparent_50%)]" />
-      </div>
-    </div>
-  );
-}
-
-/**
- * TypeWriter component for cycling through strings with a typing effect
- * @param words - Array of strings to cycle through
- * @param className - Optional CSS classes
- */
 function TypeWriter({ words, className }: { words: string[]; className?: string }) {
   const [displayed, setDisplayed] = useState("");
   const wordIndexRef = useRef(0);
@@ -58,47 +55,32 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
 
   useEffect(() => {
     let timeoutId: number | undefined;
-
-    // Main animation tick function
     const tick = () => {
       const now = Date.now();
-      // Handle pauses after typing or deleting
       if (now < pauseUntilRef.current) {
         timeoutId = window.setTimeout(tick, 40);
         return;
       }
-
       const word = words[wordIndexRef.current] ?? "";
-
       if (!deletingRef.current) {
-        // Typing phase
         if (charIndexRef.current < word.length) {
           charIndexRef.current += 1;
         } else {
-          // Pause before deleting
-          pauseUntilRef.current = now + 1200;
+          pauseUntilRef.current = now + 1400;
           deletingRef.current = true;
         }
       } else if (charIndexRef.current > 0) {
-        // Deleting phase
         charIndexRef.current -= 1;
       } else {
-        // Switch to next word
         deletingRef.current = false;
         wordIndexRef.current = (wordIndexRef.current + 1) % words.length;
       }
-
       const currentWord = words[wordIndexRef.current] ?? "";
       setDisplayed(currentWord.slice(0, charIndexRef.current));
-
-      // Schedule next tick with speed variation
       timeoutId = window.setTimeout(tick, deletingRef.current ? 28 : 52);
     };
-
     tick();
-    return () => {
-      if (timeoutId) window.clearTimeout(timeoutId);
-    };
+    return () => { if (timeoutId) window.clearTimeout(timeoutId); };
   }, [words]);
 
   return (
@@ -109,435 +91,461 @@ function TypeWriter({ words, className }: { words: string[]; className?: string 
   );
 }
 
-// Decorative floating grid background
-function FloatingGrid() {
+function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      <div
-        className="absolute inset-0 opacity-[0.02] animate-grid-flow"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(56,189,248,0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.22) 1px, transparent 1px)",
-          backgroundSize: "72px 72px",
-        }}
-      />
+    <div className="flex items-center gap-3 mb-8" data-reveal>
+      <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
+      <h2 className="text-xs font-bold uppercase tracking-widest text-primary/80">{label}</h2>
+      <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
     </div>
   );
 }
 
 export function Home() {
   const recentPosts = getAllPosts().slice(0, 3);
+  useScrollReveal();
+
   return (
     <Layout>
-      <section className="relative -mx-6 -mt-4 overflow-hidden" data-testid="section-hero">
-        <div className="relative min-h-[100vh] flex items-center">
-          <div className="absolute inset-0">
-            <HeroFallback />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-          </div>
+      {/* ── Hero / Profile Header ───────────────────────────────── */}
+      <section
+        className="relative -mx-6 -mt-4 overflow-hidden border-b border-border/20"
+        data-testid="section-hero"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#020812] via-[#0a1628] to-[#020812]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(129,140,248,0.06),transparent_50%)]" />
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(56,189,248,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.3) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-          <FloatingGrid />
+        <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 sm:py-28">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
 
-          <div className="relative z-10 mx-auto w-full max-w-5xl px-6 py-24 sm:py-32">
-              <div className="max-w-2xl hero-content-entrance">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary/90 backdrop-blur-sm animate-pulse-subtle hover:scale-105 transition-transform cursor-default">
-                  <div className="relative h-2 w-2">
-                    <div className="absolute inset-0 rounded-full bg-green-400 animate-ping" />
-                    <div className="absolute inset-0 rounded-full bg-green-400 opacity-60" />
-                  </div>
-                  Available for opportunities
+            {/* Avatar */}
+            <div className="flex-shrink-0 flex justify-center lg:justify-start">
+              <div className="relative">
+                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-2xl bg-gradient-to-br from-primary/20 via-blue-600/20 to-indigo-600/20 ring-1 ring-primary/20 flex items-center justify-center shadow-2xl shadow-primary/10">
+                  <span className="text-5xl sm:text-6xl font-black text-primary/80 select-none">MD</span>
                 </div>
+                <div className="absolute -bottom-2 -right-2 flex items-center gap-1.5 rounded-full border border-green-500/30 bg-background/90 px-3 py-1 text-xs font-medium text-green-400 shadow-lg backdrop-blur-sm">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-400" />
+                  </span>
+                  Open
+                </div>
+              </div>
+            </div>
 
+            {/* Identity */}
+            <div className="flex-1 text-center lg:text-left">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary/60 mb-2">About Me</p>
               <h1
-                className="mt-8 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl animate-slide-up"
+                className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl"
                 data-testid="text-hero-name"
               >
                 {siteConfig.name}
               </h1>
 
-              <div className="mt-5 h-8 sm:h-10 animate-slide-up [animation-delay:200ms]" data-testid="text-hero-tagline">
+              <div className="mt-3 h-7" data-testid="text-hero-tagline">
                 <TypeWriter
                   words={[
+                    "Cybersecurity Specialist",
                     "Enterprise Networking",
-                    "Cybersecurity",
-                    "Infrastructure Architecture",
-                    "Systems Engineering",
+                    "Infrastructure Engineer",
+                    "Systems Architect",
                   ]}
-                  className="text-lg font-mono font-medium text-blue-400 sm:text-xl lg:text-2xl"
+                  className="font-mono text-base font-medium text-blue-400 sm:text-lg"
                 />
               </div>
 
-              <p className="mt-8 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg animate-slide-up [animation-delay:400ms]">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/40 lg:justify-start">
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5" /> Las Vegas, Nevada
+                </span>
+                <span className="hidden sm:inline text-white/20">·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5 text-blue-400/70" /> Top 1% NCL
+                </span>
+                <span className="hidden sm:inline text-white/20">·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Award className="h-3.5 w-3.5 text-amber-400/70" /> Class of 2029
+                </span>
+              </div>
+
+              <p className="mt-5 max-w-xl text-sm leading-relaxed text-white/55 sm:text-base">
                 {siteConfig.shortBio}
               </p>
 
-              <div className="mt-10 flex flex-wrap gap-3 animate-slide-up [animation-delay:600ms]">
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
                 <Link
-                  href="/projects"
-                  className="group inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/25 hover:scale-[1.02]"
-                  data-testid="button-view-projects"
+                  href="/contact"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 hover:scale-[1.02]"
+                  data-testid="button-contact"
                 >
-                  Projects
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <Mail className="h-4 w-4" /> Get in Touch
                 </Link>
                 <Link
-                  href="/game"
-                  className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
-                  data-testid="button-play-game"
+                  href="/projects"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
+                  data-testid="button-view-projects"
                 >
-                  <Zap className="h-4 w-4 text-cyan-400 transition-all group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
-                  Hyperscale
+                  Projects <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/blog"
-                  className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/25 hover:scale-[1.02]"
                   data-testid="button-blog"
                 >
-                  Blog
+                  <BookOpen className="h-4 w-4" /> Blog
                 </Link>
               </div>
 
-              <div className="mt-10 flex items-center gap-5">
+              <div className="mt-6 flex items-center justify-center gap-5 lg:justify-start">
                 <a
                   href={siteConfig.social.instagram.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-white/40 transition-all duration-300 hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
                   data-testid="link-instagram-hero"
                 >
-                  <Instagram className="h-4 w-4" /> {siteConfig.social.instagram.handle}
+                  <Instagram className="h-3.5 w-3.5" /> {siteConfig.social.instagram.handle}
                 </a>
                 <a
                   href={siteConfig.social.github.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-white/40 transition-all duration-300 hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
                   data-testid="link-github-hero"
                 >
-                  <Github className="h-4 w-4" /> {siteConfig.social.github.handle}
+                  <Github className="h-3.5 w-3.5" /> {siteConfig.social.github.handle}
+                </a>
+                <a
+                  href={`mailto:${siteConfig.email}`}
+                  className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
+                  data-testid="link-email-hero"
+                >
+                  <Mail className="h-3.5 w-3.5" /> {siteConfig.email}
                 </a>
               </div>
-            </div>
-          </div>
-
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-            <div className="flex flex-col items-center gap-2 text-white/30">
-              <span className="text-xs uppercase tracking-widest">Scroll</span>
-              <div className="h-8 w-[1px] bg-gradient-to-b from-white/30 to-transparent" />
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative -mx-6 border-y border-border/30 bg-gradient-to-r from-card/90 via-card/60 to-card/90 backdrop-blur-lg" data-testid="section-stats">
-        <div className="mx-auto max-w-5xl px-6 py-10">
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+      {/* ── Stats Bar ───────────────────────────────────────────── */}
+      <section
+        className="relative -mx-6 border-b border-border/20 bg-card/40 backdrop-blur-sm"
+        data-testid="section-stats"
+      >
+        <div className="mx-auto max-w-5xl px-6 py-8">
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             {[
-              { end: 1, prefix: "", suffix: "%", label: "Top 1% Cyber League", icon: Shield },
-              { end: 4, prefix: "", suffix: "+", label: "4+ Years Tech Experience", icon: Terminal },
-              { end: 3500, prefix: "", suffix: "+", label: "TB Data Managed", icon: HardDrive },
+              { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
+              { end: 4, prefix: "", suffix: "+ yrs", label: "Tech Experience", icon: Terminal },
+              { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
               { end: 2029, prefix: "'", suffix: "", label: "Class of 2029", icon: Award },
-            ].map((stat, i) => (
-              <Reveal key={stat.label} stagger={i + 1}>
-                <div className="group text-center transition-all duration-500 hover:scale-110 hover:-rotate-1">
-                  <stat.icon className="mx-auto h-5 w-5 text-primary/50 mb-3 transition-all duration-300 group-hover:text-primary group-hover:animate-bounce group-hover:drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
-                  <div className="text-4xl font-black text-foreground sm:text-5xl lg:text-6xl group-hover:animate-glow leading-none transition-all duration-300 group-hover:text-primary" data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}>
-                    <AnimatedCounter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
-                  </div>
-                  <div className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors group-hover:text-primary/70">
-                    {stat.label}
-                  </div>
+            ].map((stat) => (
+              <div key={stat.label} className="group text-center" data-reveal>
+                <stat.icon className="mx-auto mb-2 h-4 w-4 text-primary/40 transition-colors group-hover:text-primary" />
+                <div
+                  className="text-3xl font-black text-foreground sm:text-4xl transition-colors group-hover:text-primary"
+                  data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}
+                >
+                  <AnimatedCounter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
                 </div>
-              </Reveal>
+                <div className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                  {stat.label}
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <div className="px-0 relative">
-        <FloatingGrid />
+      {/* ── Main Content ────────────────────────────────────────── */}
+      <div className="mx-auto max-w-5xl space-y-0">
 
-        <Reveal>
-          <section className="pb-16 pt-20" data-testid="section-about">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">About</h2>
-              <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
-            </div>
-            <div className="max-w-3xl mx-auto space-y-5 text-muted-foreground leading-relaxed text-center sm:text-lg animate-pulse-subtle">
+        {/* About */}
+        <section className="pt-16 pb-12" data-testid="section-about">
+          <SectionHeader label="About" />
+          <div className="grid gap-6 sm:grid-cols-3">
+            <div className="sm:col-span-2 space-y-4">
               {siteConfig.fullBio.map((paragraph, i) => (
-                <p key={i} className="transition-all duration-700 hover:text-foreground hover:translate-y-[-2px]">{paragraph}</p>
+                <p
+                  key={i}
+                  className="text-muted-foreground leading-relaxed sm:text-[15px]"
+                  data-reveal
+                >
+                  {paragraph}
+                </p>
               ))}
             </div>
-          </section>
-        </Reveal>
-
-        <section className="pb-16" data-testid="section-highlights">
-          <Reveal>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Expertise</h2>
-              <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
+            <div className="space-y-3" data-reveal>
+              <div className="rounded-xl border border-border/30 bg-card/40 p-5 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary/60">Quick Info</p>
+                <ul className="space-y-2.5 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/50" />
+                    Las Vegas, Nevada
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Shield className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-400/70" />
+                    South Career Technical Academy
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Award className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-400/70" />
+                    Class of 2029
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Target className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-400/70" />
+                    Top 1% National Cyber League
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Music className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-purple-400/70" />
+                    #1 Percussionist in Nevada
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/50" />
+                    <a href={`mailto:${siteConfig.email}`} className="hover:text-foreground transition-colors break-all">
+                      {siteConfig.email}
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
-          </Reveal>
+          </div>
+        </section>
+
+        {/* Expertise */}
+        <section className="pb-12" data-testid="section-highlights">
+          <SectionHeader label="Expertise" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 icon: Shield,
                 title: "Cybersecurity",
-                desc: "Top 1 percent National Cyber League. Traffic analysis, log investigation, scanning, cryptography, forensics, and incident response.",
-                color: "from-green-500/10 to-green-500/5",
+                desc: "Top 1 percent National Cyber League. Traffic analysis, log investigation, forensics, and incident response.",
+                color: "from-green-500/8 to-transparent",
                 iconColor: "text-green-400",
-                borderColor: "hover:border-green-500/30",
+                border: "hover:border-green-500/30",
               },
               {
                 icon: Network,
                 title: "Enterprise Networking",
-                desc: "Cisco and Fortinet platforms. VLANs, subnetting, routing protocols, STP, firewall policy, and real troubleshooting on production hardware.",
-                color: "from-blue-500/10 to-blue-500/5",
+                desc: "Cisco and Fortinet platforms. VLANs, routing protocols, STP, firewall policy on production hardware.",
+                color: "from-blue-500/8 to-transparent",
                 iconColor: "text-blue-400",
-                borderColor: "hover:border-blue-500/30",
+                border: "hover:border-blue-500/30",
               },
               {
                 icon: Terminal,
                 title: "Infrastructure",
-                desc: "Enterprise servers running virtualization, ZFS, network segmentation, and monitoring at scale. Real hardware, real workloads.",
-                color: "from-cyan-500/10 to-cyan-500/5",
+                desc: "Enterprise servers with virtualization, ZFS, network segmentation, and real-time monitoring at scale.",
+                color: "from-cyan-500/8 to-transparent",
                 iconColor: "text-cyan-400",
-                borderColor: "hover:border-cyan-500/30",
+                border: "hover:border-cyan-500/30",
               },
               {
                 icon: Users,
                 title: "Leadership",
-                desc: "President of multiple organizations. Blue Ribbon Commissioner. OWINN Youth Advisory Council. Building teams and driving results.",
-                color: "from-amber-500/10 to-amber-500/5",
+                desc: "President of Cyber Club and Music Club. Blue Ribbon Commissioner. OWINN Youth Advisory Council.",
+                color: "from-amber-500/8 to-transparent",
                 iconColor: "text-amber-400",
-                borderColor: "hover:border-amber-500/30",
+                border: "hover:border-amber-500/30",
               },
             ].map((item, i) => (
-              <Reveal key={item.title} stagger={i + 1}>
-                <div className={`group card-hover rounded-xl border border-border/30 bg-gradient-to-b ${item.color} p-6 ${item.borderColor} h-full transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20`}>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-background/50 p-2 ring-1 ring-border/30 transition-all duration-300 group-hover:ring-primary/50 group-hover:scale-110 group-hover:rotate-3">
-                      <item.icon className={`h-5 w-5 ${item.iconColor} transition-transform duration-500 group-hover:animate-pulse`} />
-                    </div>
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.title}</h3>
+              <div
+                key={item.title}
+                className={`group rounded-xl border border-border/30 bg-gradient-to-b ${item.color} p-5 ${item.border} h-full transition-all duration-300 hover:shadow-lg`}
+                data-reveal
+                style={{ transitionDelay: `${i * 60}ms` }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="rounded-lg bg-background/60 p-2 ring-1 ring-border/30 transition-all group-hover:scale-110">
+                    <item.icon className={`h-4 w-4 ${item.iconColor}`} />
                   </div>
-                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
-                    {item.desc}
-                  </p>
+                  <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
                 </div>
-              </Reveal>
+                <p className="text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        <section className="pb-16" data-testid="section-achievements">
-          <Reveal>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Achievements</h2>
-              <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
-            </div>
-          </Reveal>
-          <div className="grid gap-4 sm:grid-cols-2">
+        {/* Achievements */}
+        <section className="pb-12" data-testid="section-achievements">
+          <SectionHeader label="Achievements" />
+          <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
                 icon: Target,
                 title: "National Cyber League, Top 1 Percent",
-                desc: "Nationally recognized for practical cybersecurity challenges, including traffic analysis, log investigation, forensics, and real-world problem solving.",
+                desc: "Nationally recognized for practical cybersecurity challenges including traffic analysis, log investigation, forensics, and real-world problem solving.",
               },
               {
                 icon: Shield,
                 title: "Cyber Team, 7th in the Nation",
-                desc: "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity. Prep and technical discipline at scale.",
+                desc: "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity through rigorous prep and technical discipline.",
               },
               {
                 icon: Music,
                 title: "#1 Percussionist in Nevada",
-                desc: "Earned the top statewide ranking in percussion performance for two consecutive years.",
+                desc: "Earned the top statewide ranking in percussion for two consecutive years. All-State Band selection every year since 2023.",
+              },
+              {
+                icon: Users,
+                title: "Youth Coding Camp Lead",
+                desc: "Organized and instructed technical coding camps for youth across the Las Vegas Valley, developing curriculum focused on hands-on learning.",
               },
             ].map((item, i) => (
-              <Reveal key={item.title} stagger={i + 1}>
-                <div className="group card-hover flex gap-4 rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10">
-                  <div className="mt-0.5 flex-shrink-0 rounded-lg bg-primary/10 p-2 ring-1 ring-primary/20 transition-all duration-300 group-hover:bg-primary/20 group-hover:ring-primary/50 group-hover:scale-110 group-hover:-rotate-3">
-                    <item.icon className="h-4 w-4 text-primary transition-transform duration-500 group-hover:scale-125" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
-                      {item.desc}
-                    </p>
-                  </div>
+              <div
+                key={item.title}
+                className="group flex gap-4 rounded-xl border border-border/30 bg-card/30 p-5 hover:bg-card/50 transition-all duration-300"
+                data-reveal
+                style={{ transitionDelay: `${i * 60}ms` }}
+              >
+                <div className="mt-0.5 flex-shrink-0 rounded-lg bg-primary/10 p-2 ring-1 ring-primary/20 transition-all group-hover:bg-primary/20 group-hover:scale-110">
+                  <item.icon className="h-4 w-4 text-primary" />
                 </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="pb-16" data-testid="section-currently">
-          <Reveal>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Currently</h2>
-              <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
-            </div>
-          </Reveal>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {siteConfig.currently.map((section, i) => (
-              <Reveal key={section.category} stagger={i + 1}>
-                <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full transition-all duration-500 hover:shadow-lg hover:border-primary/20">
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-primary/80 group-hover:animate-pulse">
-                    {section.category}
-                  </h3>
-                  <ul className="mt-4 space-y-2.5">
-                    {section.items.map((item, j) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-2.5 text-sm text-muted-foreground transition-all duration-300 hover:text-foreground hover:translate-x-1"
-                      >
-                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/40 transition-colors group-hover:text-primary" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="pb-16" data-testid="section-skills">
-          <Reveal>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Technical Skills</h2>
-              <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
-            </div>
-          </Reveal>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {siteConfig.skillCategories.map((category, i) => (
-              <Reveal key={category.name} stagger={(i % 3) + 1}>
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 mb-3">
-                    {category.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {category.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-full border border-border/30 bg-card/40 px-3 py-1.5 text-xs font-medium text-foreground/80 transition-all duration-500 hover:border-primary/50 hover:bg-primary/10 hover:text-foreground hover:scale-110 hover:shadow-md hover:shadow-primary/10"
-                        data-testid={`badge-skill-${skill.toLowerCase().replace(/\s+/g, "-").replace(/[()\/]/g, "")}`}
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+                  <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
                 </div>
-              </Reveal>
+              </div>
             ))}
           </div>
         </section>
 
-        <section className="pb-16" data-testid="section-leadership">
-          <Reveal>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Leadership</h2>
-              <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
-            </div>
-          </Reveal>
-          <div className="grid gap-4 sm:grid-cols-2">
+        {/* Leadership */}
+        <section className="pb-12" data-testid="section-leadership">
+          <SectionHeader label="Leadership & Roles" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {siteConfig.leadership.map((role, i) => (
-              <Reveal key={role.title} stagger={(i % 2) + 1}>
-                <div className="card-hover rounded-xl border border-border/30 bg-card/30 p-6 hover:bg-card/50 h-full transition-all duration-500 hover:shadow-xl hover:border-primary/20">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{role.title}</h3>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-primary/60 group-hover:animate-pulse">
-                    {role.org}
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {role.details.map((detail, j) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-2.5 text-sm text-muted-foreground transition-all duration-300 hover:text-foreground hover:translate-x-1"
-                      >
-                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/40 group-hover:text-primary" />
-                        <span>{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
+              <div
+                key={role.title}
+                className="rounded-xl border border-border/30 bg-card/30 p-5 hover:bg-card/50 hover:border-primary/20 transition-all duration-300"
+                data-reveal
+                style={{ transitionDelay: `${i * 50}ms` }}
+              >
+                <h3 className="text-sm font-semibold text-foreground leading-snug">{role.title}</h3>
+                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary/60">{role.org}</p>
+                <ul className="mt-3 space-y-2">
+                  {role.details.map((detail, j) => (
+                    <li key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <ChevronRight className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary/40" />
+                      {detail}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
         </section>
 
+        {/* Currently */}
+        <section className="pb-12" data-testid="section-currently">
+          <SectionHeader label="Currently" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {siteConfig.currently.map((section, i) => (
+              <div
+                key={section.category}
+                className="rounded-xl border border-border/30 bg-card/30 p-5 hover:bg-card/50 transition-all duration-300"
+                data-reveal
+                style={{ transitionDelay: `${i * 50}ms` }}
+              >
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-3">
+                  {section.category}
+                </h3>
+                <ul className="space-y-2">
+                  {section.items.map((item, j) => (
+                    <li key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <ChevronRight className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary/40" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Technical Skills */}
+        <section className="pb-12" data-testid="section-skills">
+          <SectionHeader label="Technical Skills" />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {siteConfig.skillCategories.map((category, i) => (
+              <div key={category.name} data-reveal style={{ transitionDelay: `${i * 60}ms` }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                  {category.name}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {category.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="rounded-full border border-border/30 bg-card/40 px-3 py-1 text-xs font-medium text-foreground/70 transition-all hover:border-primary/40 hover:bg-primary/8 hover:text-foreground"
+                      data-testid={`badge-skill-${skill.toLowerCase().replace(/\s+/g, "-").replace(/[()\/]/g, "")}`}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Recent Posts */}
         {recentPosts.length > 0 && (
           <section className="pb-20" data-testid="section-recent-posts">
-            <Reveal>
-              <div className="flex items-center gap-3 mb-8">
-                <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Latest Posts</h2>
-                <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
+            <div className="flex items-center justify-between mb-8" data-reveal>
+              <div className="flex items-center gap-3 flex-1">
+                <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent max-w-[80px]" />
+                <h2 className="text-xs font-bold uppercase tracking-widest text-primary/80">Latest Posts</h2>
               </div>
-            </Reveal>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                View all <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
               {recentPosts.map((post, i) => (
-                <Reveal key={post.slug} stagger={i + 1}>
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="group overflow-hidden rounded-xl border border-border/30 bg-card/30 card-hover block hover:bg-card/50 h-full"
-                    data-testid={`card-post-${post.slug}`}
-                  >
-                    <div className="aspect-[2/1] overflow-hidden">
-                      <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className="p-5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground/60">
-                          {new Date(post.date).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                        {post.tags[0] && (
-                          <>
-                            <span className="text-muted-foreground/30">|</span>
-                            <span className="text-xs font-medium text-primary/60">{post.tags[0]}</span>
-                          </>
-                        )}
-                      </div>
-                      <h3 className="mt-2 font-semibold text-foreground transition-colors group-hover:text-primary">
-                        {post.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-muted-foreground/70 line-clamp-2">
-                        {post.excerpt}
-                      </p>
-                    </div>
-                  </Link>
-                </Reveal>
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group block overflow-hidden rounded-xl border border-border/30 bg-card/30 hover:bg-card/60 hover:border-primary/20 transition-all duration-300 hover:shadow-lg"
+                  data-reveal
+                  style={{ transitionDelay: `${i * 80}ms` }}
+                  data-testid={`card-post-${post.slug}`}
+                >
+                  <div className="aspect-[2/1] overflow-hidden">
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-primary/60 mb-1.5">
+                      {new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </p>
+                    <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{post.excerpt}</p>
+                  </div>
+                </Link>
               ))}
             </div>
-            <Reveal>
-              <div className="mt-8 text-center">
-                <Link
-                  href="/blog"
-                  className="group inline-flex items-center gap-2 text-sm font-medium text-primary transition-all hover:gap-3"
-                  data-testid="link-all-posts"
-                >
-                  View all posts
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </div>
-            </Reveal>
           </section>
         )}
       </div>
