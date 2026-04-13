@@ -8,22 +8,17 @@ import {
   ArrowRight,
   Instagram,
   Shield,
-  Server,
   Users,
   ChevronRight,
-  Zap,
   Award,
   Target,
   Music,
   Github,
   Terminal,
   Network,
-  HardDrive,
   MapPin,
   Mail,
-  ExternalLink,
   BookOpen,
-  Code2,
 } from "lucide-react";
 
 function useScrollReveal() {
