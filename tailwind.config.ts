@@ -24,6 +24,20 @@ export default {
           cyan: "hsl(186, 82%, 50%)",
           purple: "hsl(271, 81%, 56%)",
         },
+        brand: {
+          obsidian: "hsl(var(--brand-obsidian) / <alpha-value>)",
+          graphite: "hsl(var(--brand-graphite) / <alpha-value>)",
+          carbon: "hsl(var(--brand-carbon) / <alpha-value>)",
+          iron: "hsl(var(--brand-iron) / <alpha-value>)",
+          ash: "hsl(var(--brand-ash) / <alpha-value>)",
+          bone: "hsl(var(--brand-bone) / <alpha-value>)",
+          "bone-dim": "hsl(var(--brand-bone-dim) / <alpha-value>)",
+          signal: "hsl(var(--brand-signal) / <alpha-value>)",
+          "signal-soft": "hsl(var(--brand-signal-soft) / <alpha-value>)",
+          amber: "hsl(var(--brand-amber) / <alpha-value>)",
+          cyan: "hsl(var(--brand-cyan) / <alpha-value>)",
+          danger: "hsl(var(--brand-danger) / <alpha-value>)",
+        },
         // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
@@ -99,6 +113,8 @@ export default {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        display: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
+        techno: ["Orbitron", "Space Grotesk", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

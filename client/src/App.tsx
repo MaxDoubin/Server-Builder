@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, type ErrorInfo, type ReactNode } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Route, Switch, Router } from "wouter";
+import { Route, Switch, Router, Link } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
@@ -9,6 +9,7 @@ import { disposePooledAssets } from "@/lib/asset-pool";
 
 import { Layout } from "@/components/site/Layout";
 import { Home } from "@/pages/Home";
+import { CinematicHome } from "@/pages/cinematic/CinematicHome";
 
 const Blog = lazy(() =>
   import("@/pages/Blog").then((module) => ({ default: module.Blog })),
@@ -140,7 +141,8 @@ export default function App() {
           <Router>
             <RouteChunkBoundary>
               <Switch>
-                <Route path="/" component={Home} />
+                <Route path="/" component={CinematicHome} />
+                <Route path="/legacy" component={Home} />
                 <Route path="/blog">
                   <Suspense fallback={<RouteLoading />}>
                     <Blog />
