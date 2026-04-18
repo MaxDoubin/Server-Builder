@@ -15,36 +15,35 @@ export function HeroAct() {
   const metaRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const vignetteRef = useRef<HTMLDivElement>(null);
+  const beamLeftRef = useRef<HTMLDivElement>(null);
+  const beamRightRef = useRef<HTMLDivElement>(null);
 
-  // Scroll progress (0..1) bridged from GSAP to R3F's camera.
-  // Using useRef<number> directly — CameraChoreo reads `.current`.
   const progressRef = useRef(0);
 
   useScrollScene(
     rootRef,
     ({ gsap, timeline }) => {
       gsap.set(gridRef.current, { opacity: 0.14, scale: 1 });
-      gsap.set(vignetteRef.current, { opacity: 0.6 });
+      gsap.set(vignetteRef.current, { opacity: 0.56 });
+      gsap.set([beamLeftRef.current, beamRightRef.current], { opacity: 0.18, scaleY: 0.84 });
 
-      // Text intro
       timeline
-        .from(eyebrowRef.current, { opacity: 0, y: 16, duration: 0.15 }, 0.02)
-        .from(headlineRef.current, { opacity: 0, y: 28, duration: 0.22 }, 0.06)
-        .from(metaRef.current, { opacity: 0, y: 14, duration: 0.18 }, 0.16);
+        .from(eyebrowRef.current, { opacity: 0, y: 18, duration: 0.16 }, 0.02)
+        .from(headlineRef.current, { opacity: 0, y: 30, scale: 0.985, duration: 0.24 }, 0.06)
+        .from(metaRef.current, { opacity: 0, y: 16, duration: 0.18 }, 0.18);
 
-      // Background shifts synced to camera arc
       timeline
-        .to(gridRef.current, { opacity: 0.32, scale: 1.3, duration: 0.45 }, 0.25)
-        .to(vignetteRef.current, { opacity: 0.92, duration: 0.45 }, 0.25);
+        .to(gridRef.current, { opacity: 0.34, scale: 1.34, duration: 0.45 }, 0.22)
+        .to(vignetteRef.current, { opacity: 0.94, duration: 0.45 }, 0.22)
+        .to(beamLeftRef.current, { opacity: 0.36, scaleY: 1.2, xPercent: -4, duration: 0.42 }, 0.22)
+        .to(beamRightRef.current, { opacity: 0.3, scaleY: 1.14, xPercent: 4, duration: 0.42 }, 0.22);
 
-      // Text exits around the orbit keyframe
       timeline.to(
         [eyebrowRef.current, headlineRef.current, metaRef.current],
         { opacity: 0, y: -16, duration: 0.25, stagger: 0.05 },
-        0.55,
+        0.57,
       );
 
-      // Overall scroll progress written into progressRef for R3F
       const proxy = { p: 0 };
       timeline.to(proxy, {
         p: 1,
@@ -66,7 +65,6 @@ export function HeroAct() {
       data-testid="section-cinematic-hero"
       className="relative h-screen w-full overflow-hidden bg-[hsl(var(--brand-obsidian))]"
     >
-      {/* Grid */}
       <div
         ref={gridRef}
         aria-hidden
@@ -82,57 +80,77 @@ export function HeroAct() {
         }}
       />
 
-      {/* 3D rack canvas — fills the pinned hero */}
+      <div
+        ref={beamLeftRef}
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 w-[24vw]"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 12%, hsl(var(--brand-signal) / 0.18) 44%, transparent 82%)",
+          filter: "blur(12px)",
+        }}
+      />
+      <div
+        ref={beamRightRef}
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 w-[28vw]"
+        style={{
+          background:
+            "linear-gradient(245deg, transparent 12%, hsl(var(--brand-cyan) / 0.14) 46%, transparent 84%)",
+          filter: "blur(14px)",
+        }}
+      />
+
       <div className="absolute inset-0">
         <RackCanvas progressRef={progressRef} />
       </div>
 
-      {/* Vignette overlay */}
       <div
         ref={vignetteRef}
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 35%, hsl(var(--brand-obsidian)) 88%)",
+            "radial-gradient(ellipse at center, transparent 30%, hsl(var(--brand-obsidian)) 88%)",
         }}
       />
 
-      {/* Copy */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-6 pb-[10vh] text-center">
         <div
           ref={eyebrowRef}
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
-          style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
+          style={{ textShadow: "0 0 14px hsl(var(--brand-signal) / 0.54)" }}
         >
-          · Unit 01 · Hyperscale Craft
+          · Unit 01 · Max Doubin Signal
         </div>
         <h1
           ref={headlineRef}
-          className="mt-6 max-w-[22ch] font-display text-[clamp(2.6rem,7vw,5.4rem)] font-medium leading-[0.95] tracking-[-0.03em] text-[hsl(var(--brand-bone))]"
+          className="mt-6 max-w-[20ch] font-display text-[clamp(2.7rem,7vw,5.6rem)] font-medium leading-[0.94] tracking-[-0.035em] text-[hsl(var(--brand-bone))]"
         >
-          Racks, routed. <span className="signal-text">Built to hold.</span>
+          Max Doubin, in full signal. <span className="signal-text">Built to lead.</span>
         </h1>
         <div
           ref={metaRef}
-          className="mt-10 flex items-center gap-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
+          className="mt-10 flex flex-wrap items-center justify-center gap-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
         >
           <span>Las Vegas, NV</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Top 1% National Cyber League</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
+          <span>Blue Ribbon Commissioner</span>
+          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Scroll</span>
         </div>
       </div>
 
-      {/* Top corner HUD */}
       <div className="pointer-events-none absolute left-8 top-24 z-10 hidden flex-col gap-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] md:flex">
-        <span>// Rack 01 / 42U</span>
-        <span>// ambient · 19.4°C</span>
-        <span>// load · 0.42</span>
+        <span>// max doubin / systems + cyber</span>
+        <span>// youth mentorship · public service</span>
+        <span>// signal · live</span>
       </div>
       <div className="pointer-events-none absolute right-8 top-24 z-10 hidden flex-col items-end gap-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] md:flex">
         <span>N 36.1699° W 115.1398°</span>
+        <span>class of 2029</span>
         <span>session · live</span>
       </div>
     </section>
