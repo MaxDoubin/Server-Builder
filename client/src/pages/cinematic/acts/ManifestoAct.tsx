@@ -84,9 +84,9 @@ export function ManifestoAct() {
   );
 
   const lines = [
-    "Max Doubin turns signal into execution.",
-    "Cybersecurity, systems architecture, and public service in one profile.",
-    "Every decision intentional. Every environment tested. Every result earned.",
+    "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas.",
+    "Top 1 percent National Cyber League competitor, Blue Ribbon Commissioner, and real-world systems builder.",
+    "Focused on enterprise networking, cybersecurity, systems engineering, community leadership, mentorship, and public service.",
   ];
 
   return (
@@ -151,9 +151,9 @@ export function ManifestoAct() {
         }}
       />
 
-      <div className="mx-auto max-w-[1180px] text-center">
+      <div className="mx-auto max-w-[1260px] text-center">
         <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
-          · Unit 02 · Max Doubin Manifesto
+          · Unit 02 · Max Doubin About
         </div>
         <h2 className="mt-10 font-display text-[clamp(2rem,5.2vw,4.2rem)] font-medium leading-[1.04] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
           {lines.map((line, i) => (
@@ -174,13 +174,19 @@ export function ManifestoAct() {
           ref={metaRef}
           className="mt-12 flex flex-wrap items-center justify-center gap-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
         >
+          <span>Top 1% National Cyber League</span>
+          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Enterprise Networking</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Cybersecurity</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Systems Engineering</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
+          <span>Blue Ribbon Commissioner</span>
+          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Community Leadership</span>
+          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
+          <span>Public Service</span>
         </div>
       </div>
     </section>
