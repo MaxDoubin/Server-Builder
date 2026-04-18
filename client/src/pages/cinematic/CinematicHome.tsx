@@ -10,8 +10,8 @@ export function CinematicHome() {
     <CinematicLayout>
       <div ref={shellRef}>
         <HeroAct />
-        <ManifestoAct />
         <ChapterAct />
+        <ManifestoAct />
       </div>
     </CinematicLayout>
   );
