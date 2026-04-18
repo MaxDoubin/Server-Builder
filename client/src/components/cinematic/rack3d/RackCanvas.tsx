@@ -1,4 +1,5 @@
 import { Suspense, useRef } from "react";
+import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import { Rack } from "./Rack";
