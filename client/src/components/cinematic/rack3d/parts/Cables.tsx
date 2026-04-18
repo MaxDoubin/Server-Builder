@@ -42,6 +42,23 @@ function CableTube({ spec }: { spec: CableSpec }) {
   );
 }
 
+function CableComb({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh>
+        <boxGeometry args={[0.024, 0.036, 0.01]} />
+        <meshStandardMaterial color="#14181d" metalness={0.38} roughness={0.82} />
+      </mesh>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <mesh key={i} position={[0, -0.012 + i * 0.006, 0.004]}>
+          <boxGeometry args={[0.018, 0.0016, 0.002]} />
+          <meshStandardMaterial color="#252a31" metalness={0.54} roughness={0.46} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 /** Loose patch cables running from switch areas into the side and rear cable paths. */
 export function Cables() {
   const rightX = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.006;
@@ -89,15 +106,15 @@ export function Cables() {
     patchPanels.forEach((uIndex, patchIndex) => {
       const patchY = RACK_FEET_HEIGHT + uIndex * U;
       const switchY = patchIndex % 2 === 0 ? switchAY : switchBY;
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 10; i++) {
         arr.push({
           from: [
-            -0.19 + i * 0.018 + (patchIndex % 2) * 0.003,
+            -0.19 + i * 0.016 + (patchIndex % 2) * 0.003,
             patchY + (i % 2 === 0 ? 0.006 : -0.004),
             RACK_DEPTH / 2 - 0.012,
           ],
           to: [
-            -0.16 + ((i + patchIndex * 3) % 12) * 0.014,
+            -0.17 + ((i + patchIndex * 3) % 14) * 0.013,
             switchY + ((i % 3) - 1) * 0.005,
             RACK_DEPTH / 2 - 0.02 - (i % 4) * 0.003,
           ],
@@ -123,6 +140,24 @@ export function Cables() {
         color: "#141619",
         radius: 0.0021,
         emissive: 0.015,
+      });
+    }
+
+    for (let i = 0; i < 8; i++) {
+      arr.push({
+        from: [
+          -0.13 + i * 0.036,
+          RACK_FEET_HEIGHT + 30.5 * U,
+          RACK_DEPTH / 2 - 0.018,
+        ],
+        to: [
+          leftX + 0.016,
+          RACK_FEET_HEIGHT + (24 + i) * U,
+          RACK_DEPTH / 2 - 0.05 - (i % 2) * 0.012,
+        ],
+        color: i % 2 === 0 ? "#64e6ff" : "#c7f000",
+        radius: 0.00095,
+        emissive: 0.18,
       });
     }
 
@@ -181,6 +216,16 @@ export function Cables() {
           <boxGeometry args={[0.008, RACK_INTERNAL_HEIGHT - 0.08, 0.02]} />
           <meshStandardMaterial color="#0b0d10" metalness={0.4} roughness={0.82} />
         </mesh>
+      ))}
+
+      {[
+        [rightX - 0.02, RACK_FEET_HEIGHT + 10 * U, -RACK_DEPTH / 2 + 0.11],
+        [rightX - 0.02, RACK_FEET_HEIGHT + 18 * U, -RACK_DEPTH / 2 + 0.11],
+        [rightX - 0.02, RACK_FEET_HEIGHT + 28 * U, -RACK_DEPTH / 2 + 0.11],
+        [leftX + 0.02, RACK_FEET_HEIGHT + 22 * U, RACK_DEPTH / 2 - 0.03],
+        [leftX + 0.02, RACK_FEET_HEIGHT + 33 * U, RACK_DEPTH / 2 - 0.03],
+      ].map((position, i) => (
+        <CableComb key={i} position={position as [number, number, number]} />
       ))}
     </group>
   );
