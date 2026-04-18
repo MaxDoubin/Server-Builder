@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Cpu, Eye, Hammer, Play, Shield, Sparkles } from "lucide-react";
 import { Rack3D } from "@/components/3d/Rack3D";
 import { staticEquipmentCatalog } from "@/lib/static-equipment";
+import { siteConfig } from "@/lib/siteConfig";
 import type { Rack } from "@shared/schema";
 import * as THREE from "three";
 import { HeroAnimation } from "@/components/hero/HeroAnimation";
@@ -105,97 +106,164 @@ export function WelcomeScreen({
   return (
     <div className="fixed inset-0 z-[100] overflow-hidden bg-black">
       <HeroAnimation className="absolute inset-0" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 16% 20%, rgba(34, 211, 238, 0.18), transparent 24%), radial-gradient(circle at 82% 18%, rgba(168, 85, 247, 0.16), transparent 26%), linear-gradient(180deg, rgba(2, 6, 23, 0.16) 0%, rgba(2, 6, 23, 0.58) 54%, rgba(2, 6, 23, 0.88) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.18) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-black/45 to-black/85" />
 
-      <div className="mx-auto flex h-full max-w-6xl flex-col justify-center px-6 py-10 relative z-10 pointer-events-auto">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-cyan-300" />
-              <h1 className="text-3xl font-bold tracking-wide text-white" style={{ fontFamily: "Orbitron, sans-serif" }}>
-                HYPERSCALE
-              </h1>
-              <Badge className="bg-cyan-500/20 text-cyan-200 border border-cyan-500/30">Alpha</Badge>
+      <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-6 py-10 pointer-events-auto">
+        <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-black/35 px-3 py-1 font-mono-tight text-[10px] uppercase tracking-[0.34em] text-cyan-100/80 backdrop-blur-md">
+              <span
+                className="inline-flex h-2 w-2 rounded-full bg-cyan-300"
+                style={{ boxShadow: "0 0 10px rgba(103, 232, 249, 0.85)" }}
+              />
+              Profile Experience
             </div>
-            <p className="text-sm text-white/70">
-              Pick a mode. Build is interactive editing. Explore is cinematic flythrough.
-            </p>
-            <p className="text-xs text-cyan-200/70 uppercase tracking-[0.3em]">
-              Created by Max Doubin
-            </p>
+
+            <div className="max-w-3xl space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="border border-cyan-400/30 bg-cyan-500/12 text-cyan-100">
+                  Top 1% NCL
+                </Badge>
+                <Badge className="border border-white/15 bg-white/8 text-white/80">
+                  Blue Ribbon Commissioner
+                </Badge>
+                <Badge className="border border-amber-400/30 bg-amber-500/10 text-amber-100">
+                  #1 Percussionist in Nevada
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                <h1
+                  className="text-5xl font-black tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl"
+                  style={{ fontFamily: "Orbitron, sans-serif" }}
+                >
+                  {siteConfig.name.toUpperCase()}
+                </h1>
+                <p className="max-w-2xl text-base text-cyan-100/85 sm:text-lg">
+                  {siteConfig.tagline}
+                </p>
+                <p className="max-w-3xl text-sm leading-relaxed text-white/68 sm:text-base">
+                  {siteConfig.shortBio}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/12 bg-black/28 p-5 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="max-w-xl">
+                  <div className="text-xs uppercase tracking-[0.3em] text-cyan-200/70">
+                    Choose your entry point
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-white/65">
+                    Build opens the interactive lab. Explore runs a cinematic overview shaped around Max Doubin&apos;s systems, security, and leadership story.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={mode === "build" ? "default" : "ghost"}
+                    onClick={() => setMode("build")}
+                    className={
+                      mode === "build"
+                        ? "border border-cyan-400/30 bg-cyan-500/18 text-cyan-50"
+                        : "border border-white/10 bg-white/5 text-white/70"
+                    }
+                  >
+                    <Hammer className="mr-2 h-4 w-4" />
+                    Build
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={mode === "explore" ? "default" : "ghost"}
+                    onClick={() => setMode("explore")}
+                    className={
+                      mode === "explore"
+                        ? "border border-fuchsia-400/30 bg-fuchsia-500/18 text-fuchsia-50"
+                        : "border border-white/10 bg-white/5 text-white/70"
+                    }
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    Explore
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => onStart?.(mode)}
+                    className="border border-white/10 bg-white/12 text-white hover:bg-white/18"
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Enter
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    asChild
+                    className="border border-cyan-500/30 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20"
+                  >
+                    <Link href="/about">About</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant={mode === "build" ? "default" : "ghost"}
-              onClick={() => setMode("build")}
-              className={mode === "build" ? "bg-cyan-500/20 text-cyan-100 border border-cyan-500/30" : "text-white/70"}
-            >
-              <Hammer className="mr-2 h-4 w-4" />
-              Build
-            </Button>
-            <Button
-              type="button"
-              variant={mode === "explore" ? "default" : "ghost"}
-              onClick={() => setMode("explore")}
-              className={mode === "explore" ? "bg-purple-500/20 text-purple-100 border border-purple-500/30" : "text-white/70"}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              Explore
-            </Button>
-            <Button
-              type="button"
-              onClick={() => onStart?.(mode)}
-              className="bg-white/10 text-white hover:bg-white/15 border border-white/10"
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Start
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              asChild
-              className="text-cyan-100 border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20"
-            >
-              <Link href="/about">About</Link>
-            </Button>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <InfoCard
+              icon={<Shield className="h-4 w-4 text-cyan-200" />}
+              title="Cybersecurity"
+              body="Defensive security, forensics, log analysis, and competitive cyber work anchored by a top 1 percent National Cyber League finish."
+            />
+            <InfoCard
+              icon={<Cpu className="h-4 w-4 text-cyan-200" />}
+              title="Infrastructure"
+              body="Enterprise networking, systems engineering, servers, virtualization, and real lab environments built to test ideas under pressure."
+            />
+            <InfoCard
+              icon={<Sparkles className="h-4 w-4 text-cyan-200" />}
+              title="Leadership"
+              body="Youth coding camps, student leadership roles, and public service work across the Las Vegas Valley."
+            />
           </div>
         </div>
 
         {showPanels && (
           <>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <LiveFeed title="Cam A" subtitle="Aisle sweep" variant="a" />
-              <LiveFeed title="Cam B" subtitle="Cold side" variant="b" />
-              <LiveFeed title="Cam C" subtitle="Hot aisle" variant="c" />
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+              <LiveFeed title="Systems" subtitle="Lab environments" variant="a" />
+              <LiveFeed title="Security" subtitle="Signals and defense" variant="b" />
+              <LiveFeed title="Builds" subtitle="Engineering practice" variant="c" />
             </div>
 
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <InfoCard
+                icon={<Shield className="h-4 w-4 text-cyan-200" />}
+                title="Competitive Edge"
+                body="Top-tier cyber competition experience translates into calm, methodical technical problem solving."
+              />
+              <InfoCard
                 icon={<Cpu className="h-4 w-4 text-cyan-200" />}
-                title="Performance"
-                body="Use the Quality toggle to tune visuals. Press H to toggle the HUD."
-              />
-              <InfoCard
-                icon={<Shield className="h-4 w-4 text-cyan-200" />}
-                title="Controls"
-                body="Click racks to select. Drag to orbit. Scroll to zoom. Press T to toggle toolbars."
+                title="Builder Mindset"
+                body="Max focuses on clean systems, real infrastructure, and environments that teach through doing, not just theory."
               />
               <InfoCard
                 icon={<Sparkles className="h-4 w-4 text-cyan-200" />}
-                title="Modes"
-                body="Build mode shows editing toolbars. Explore mode can default to cinematic camera."
-              />
-              <InfoCard
-                icon={<Sparkles className="h-4 w-4 text-cyan-200" />}
-                title="How to Play"
-                body="Design your datacenter: place racks, add servers, and watch live traffic. Explore for cinematic tours."
-              />
-              <InfoCard
-                icon={<Shield className="h-4 w-4 text-cyan-200" />}
-                title="Help & Credits"
-                body="Use the Control Dock to switch modes, set rack density, and open diagnostics. Created by Max Doubin."
+                title="Community Impact"
+                body="From coding camps to civic leadership, the work extends beyond hardware into mentorship and service."
               />
             </div>
           </>
@@ -213,7 +281,7 @@ export function WelcomeScreen({
         >
           {showPanels ? "⟨" : "⟩"}
         </Button>
-        <div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-cyan-200/70 text-center">
+        <div className="mt-2 text-center text-[10px] uppercase tracking-[0.3em] text-cyan-200/70">
           Press E
         </div>
       </div>
@@ -356,7 +424,7 @@ function LiveFeed({
           <div className="text-white/90">{title}</div>
           <div className="text-white/50">{subtitle}</div>
         </div>
-        <Badge className="bg-black/50 border border-white/10 text-white/70">LIVE</Badge>
+        <Badge className="border border-white/10 bg-black/50 text-white/70">LIVE</Badge>
       </div>
 
       <div className="h-40 overflow-hidden rounded-lg border border-white/10">
@@ -594,12 +662,12 @@ function InfoCard({
   body: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+    <div className="rounded-xl border border-white/10 bg-black/40 p-4 backdrop-blur-md">
       <div className="mb-2 flex items-center gap-2">
         {icon}
         <div className="text-sm font-semibold text-white/90">{title}</div>
       </div>
-      <p className="text-xs text-white/60 leading-relaxed">{body}</p>
+      <p className="text-xs leading-relaxed text-white/60">{body}</p>
     </div>
   );
 }
