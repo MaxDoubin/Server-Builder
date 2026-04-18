@@ -153,7 +153,7 @@ export function ManifestoAct() {
 
       <div className="mx-auto max-w-[1260px] text-center">
         <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
-          · Unit 02 · Max Doubin About
+          · Unit 03 · Max Doubin About
         </div>
         <h2 className="mt-10 font-display text-[clamp(2rem,5.2vw,4.2rem)] font-medium leading-[1.04] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
           {lines.map((line, i) => (
