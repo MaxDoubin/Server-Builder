@@ -10,6 +10,7 @@ import { disposePooledAssets } from "@/lib/asset-pool";
 import { Layout } from "@/components/site/Layout";
 import { Home } from "@/pages/Home";
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
+import { SiteLoader } from "@/components/ui/site-loader";
 
 const Blog = lazy(() =>
   import("@/pages/Blog").then((module) => ({ default: module.Blog })),
@@ -33,27 +34,25 @@ const GamePage = lazy(() =>
 
 function GameLoading() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="mt-4 text-sm text-muted-foreground">Loading game...</p>
-      </div>
-    </div>
+    <SiteLoader
+      eyebrow="Max Doubin Interactive Lab"
+      title="Launching the game"
+      detail="Preparing the 3D datacenter, controls, and live systems overlays."
+      status="Loading interactive scene"
+    />
   );
 }
 
 function RouteLoading() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="mt-3 text-sm text-muted-foreground">Loading page...</p>
-      </div>
-    </div>
+    <SiteLoader
+      eyebrow="Max Doubin Profile"
+      title="Loading page"
+      detail="Bringing the next section online."
+      status="Routing"
+    />
   );
 }
-
-
 
 type RouteChunkBoundaryProps = {
   children: ReactNode;
