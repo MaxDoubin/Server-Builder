@@ -77,25 +77,25 @@ const CAMERA_KEYS: CameraKey[] = [
   },
   {
     t: 0.24,
-    pos: [1.34, RACK_TOTAL_HEIGHT * 0.66, 1.56],
+    pos: [1.4, RACK_TOTAL_HEIGHT * 0.68, 1.46],
     look: [0.04, RACK_TOTAL_HEIGHT * 0.62, 0],
     fov: 27,
   },
   {
     t: 0.5,
-    pos: [-1.22, RACK_TOTAL_HEIGHT * 0.58, 1.16],
-    look: [0, RACK_TOTAL_HEIGHT * 0.58, 0],
+    pos: [-1.26, RACK_TOTAL_HEIGHT * 0.6, 1.08],
+    look: [0, RACK_TOTAL_HEIGHT * 0.58, -0.01],
     fov: 28,
   },
   {
     t: 0.76,
-    pos: [1.08, RACK_TOTAL_HEIGHT * 0.48, -1.18],
-    look: [0, RACK_TOTAL_HEIGHT * 0.6, -0.02],
+    pos: [1.18, RACK_TOTAL_HEIGHT * 0.5, -1.02],
+    look: [0, RACK_TOTAL_HEIGHT * 0.6, -0.04],
     fov: 29,
   },
   {
     t: 1,
-    pos: [-0.92, RACK_TOTAL_HEIGHT * 0.7, 2.38],
+    pos: [-0.88, RACK_TOTAL_HEIGHT * 0.72, 2.3],
     look: [0, RACK_TOTAL_HEIGHT * 0.6, 0],
     fov: 32,
   },
@@ -133,12 +133,40 @@ function interpolate(keys: CameraKey[], t: number) {
 }
 
 function StoryBackdrop() {
+  const telemetryRows = Array.from({ length: 6 });
+  const telemetryCols = Array.from({ length: 18 });
+
   return (
     <group>
-      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -0.92]}>
-        <planeGeometry args={[2.7, RACK_TOTAL_HEIGHT * 1.18]} />
-        <meshBasicMaterial color="#070b11" transparent opacity={0.9} toneMapped={false} />
+      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -1.02]}>
+        <planeGeometry args={[3.3, RACK_TOTAL_HEIGHT * 1.22]} />
+        <meshBasicMaterial color="#05070d" transparent opacity={0.94} toneMapped={false} />
       </mesh>
+      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -0.9]}>
+        <planeGeometry args={[2.78, RACK_TOTAL_HEIGHT * 1.12]} />
+        <meshBasicMaterial color="#070b11" transparent opacity={0.86} toneMapped={false} />
+      </mesh>
+
+      {[-1.26, 1.26].map((x, i) => (
+        <group key={x} position={[x, RACK_TOTAL_HEIGHT * 0.58, -0.28]} rotation={[0, i === 0 ? 0.18 : -0.18, 0]}>
+          <mesh>
+            <planeGeometry args={[0.24, RACK_TOTAL_HEIGHT * 1.08]} />
+            <meshBasicMaterial color="#0a0f17" transparent opacity={0.7} toneMapped={false} />
+          </mesh>
+          {Array.from({ length: 11 }).map((_, lineIndex) => (
+            <mesh key={lineIndex} position={[0, -RACK_TOTAL_HEIGHT * 0.5 + lineIndex * (RACK_TOTAL_HEIGHT * 0.1), 0.002]}>
+              <boxGeometry args={[0.18, 0.004, 0.002]} />
+              <meshBasicMaterial
+                color={lineIndex % 2 === 0 ? "#64e6ff" : "#c7f000"}
+                transparent
+                opacity={0.12}
+                toneMapped={false}
+              />
+            </mesh>
+          ))}
+        </group>
+      ))}
+
       {[-0.92, -0.48, 0, 0.48, 0.92].map((x, i) => (
         <mesh key={i} position={[x, RACK_TOTAL_HEIGHT * 0.56, -0.88]}>
           <boxGeometry args={[0.02, RACK_TOTAL_HEIGHT * 1.02, 0.02]} />
@@ -150,6 +178,35 @@ function StoryBackdrop() {
           />
         </mesh>
       ))}
+
+      {telemetryRows.map((_, row) =>
+        telemetryCols.map((__, col) => (
+          <mesh
+            key={`${row}-${col}`}
+            position={[
+              -0.78 + col * 0.092,
+              RACK_TOTAL_HEIGHT * 0.24 + row * 0.17,
+              -0.86,
+            ]}
+          >
+            <boxGeometry args={[0.03, 0.003, 0.002]} />
+            <meshBasicMaterial
+              color={(row + col) % 4 === 0 ? "#c7f000" : "#64e6ff"}
+              transparent
+              opacity={(row + col) % 5 === 0 ? 0.2 : 0.1}
+              toneMapped={false}
+            />
+          </mesh>
+        )),
+      )}
+
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh key={`ceiling-${i}`} position={[-0.84 + i * 0.24, RACK_TOTAL_HEIGHT + 0.08, -0.14]}>
+          <boxGeometry args={[0.16, 0.01, 0.42]} />
+          <meshStandardMaterial color="#11151b" metalness={0.62} roughness={0.48} />
+        </mesh>
+      ))}
+
       {[-0.36, 0.36].map((x, i) => (
         <mesh key={i} position={[x, 0.002, 0.16]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[0.014, 2.1]} />
@@ -161,6 +218,54 @@ function StoryBackdrop() {
           />
         </mesh>
       ))}
+      <mesh position={[0, 0.0018, -0.08]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.38, 2.18]} />
+        <meshBasicMaterial color="#10151d" transparent opacity={0.34} toneMapped={false} />
+      </mesh>
+      {Array.from({ length: 11 }).map((_, i) => (
+        <mesh key={`cross-${i}`} position={[0, 0.0022, -0.96 + i * 0.19]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.78, 0.012]} />
+          <meshBasicMaterial
+            color={i % 2 === 0 ? "#64e6ff" : "#c7f000"}
+            transparent
+            opacity={0.11}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function StorySweepLight() {
+  const cyanRef = useRef<THREE.Mesh>(null);
+  const brandRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    const cyan = cyanRef.current;
+    const brand = brandRef.current;
+    if (!cyan || !brand) return;
+
+    const cyanMaterial = cyan.material as THREE.MeshBasicMaterial;
+    const brandMaterial = brand.material as THREE.MeshBasicMaterial;
+    const t = clock.elapsedTime;
+
+    cyan.position.y = RACK_TOTAL_HEIGHT * 0.26 + (Math.sin(t * 0.72) * 0.5 + 0.5) * (RACK_TOTAL_HEIGHT * 0.34);
+    brand.position.y = RACK_TOTAL_HEIGHT * 0.18 + (Math.cos(t * 0.64) * 0.5 + 0.5) * (RACK_TOTAL_HEIGHT * 0.4);
+    cyanMaterial.opacity = 0.05 + (Math.sin(t * 1.1) * 0.5 + 0.5) * 0.08;
+    brandMaterial.opacity = 0.04 + (Math.cos(t * 0.96) * 0.5 + 0.5) * 0.07;
+  });
+
+  return (
+    <group>
+      <mesh ref={cyanRef} position={[0, RACK_TOTAL_HEIGHT * 0.46, -0.84]}>
+        <planeGeometry args={[2.08, 0.22]} />
+        <meshBasicMaterial color="#64e6ff" transparent opacity={0.08} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh ref={brandRef} position={[0, RACK_TOTAL_HEIGHT * 0.34, -0.82]}>
+        <planeGeometry args={[1.84, 0.18]} />
+        <meshBasicMaterial color="#c7f000" transparent opacity={0.06} depthWrite={false} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
@@ -264,8 +369,10 @@ export function RackStoryCanvas({ progressRef }: { progressRef: StoryProgressRef
       <hemisphereLight args={["#2a3550", "#060812", 0.3]} />
       <pointLight position={[0, RACK_TOTAL_HEIGHT * 0.62, 0.45]} intensity={0.62} distance={1.8} color="#c7f000" />
       <pointLight position={[0, RACK_TOTAL_HEIGHT * 0.34, 0.5]} intensity={0.42} distance={1.4} color="#64e6ff" />
+      <pointLight position={[0, RACK_TOTAL_HEIGHT * 0.76, -0.72]} intensity={0.28} distance={2.4} color="#ff9a1f" />
 
       <StoryBackdrop />
+      <StorySweepLight />
 
       <Suspense fallback={null}>
         <group position={[0, 0, 0.02]}>
