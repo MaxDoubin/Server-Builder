@@ -3,6 +3,10 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { HeroAct } from "./acts/HeroAct";
 import { ChapterAct } from "./acts/ChapterAct";
 import { ManifestoAct } from "./acts/ManifestoAct";
+import { ExplodedAct } from "./acts/ExplodedAct";
+import { DatacenterAct } from "./acts/DatacenterAct";
+import { TelemetryAct } from "./acts/TelemetryAct";
+import { CTAAct } from "./acts/CTAAct";
 
 export function CinematicHome() {
   const shellRef = useRef<HTMLDivElement>(null);
@@ -11,7 +15,10 @@ export function CinematicHome() {
       <div ref={shellRef}>
         <HeroAct />
         <ChapterAct />
-        <ManifestoAct />
+        <ExplodedAct />
+        <DatacenterAct />
+        <TelemetryAct />
+        <CTAAct />
       </div>
     </CinematicLayout>
   );

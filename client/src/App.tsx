@@ -28,6 +28,30 @@ const Contact = lazy(() =>
   import("@/pages/Contact").then((module) => ({ default: module.Contact })),
 );
 
+const CinematicProjects = lazy(() =>
+  import("@/pages/cinematic/CinematicProjects").then((module) => ({
+    default: module.CinematicProjects,
+  })),
+);
+
+const CinematicBlog = lazy(() =>
+  import("@/pages/cinematic/CinematicBlog").then((module) => ({
+    default: module.CinematicBlog,
+  })),
+);
+
+const CinematicBlogPost = lazy(() =>
+  import("@/pages/cinematic/CinematicBlogPost").then((module) => ({
+    default: module.CinematicBlogPost,
+  })),
+);
+
+const CinematicContact = lazy(() =>
+  import("@/pages/cinematic/CinematicContact").then((module) => ({
+    default: module.CinematicContact,
+  })),
+);
+
 const GamePage = lazy(() =>
   import("@/pages/GamePage").then((module) => ({ default: module.GamePage })),
 );
@@ -142,24 +166,44 @@ export default function App() {
               <Switch>
                 <Route path="/" component={CinematicHome} />
                 <Route path="/legacy" component={Home} />
-                <Route path="/blog">
+                <Route path="/legacy/blog">
                   <Suspense fallback={<RouteLoading />}>
                     <Blog />
                   </Suspense>
                 </Route>
-                <Route path="/blog/:slug">
+                <Route path="/legacy/blog/:slug">
                   <Suspense fallback={<RouteLoading />}>
                     <BlogPost />
                   </Suspense>
                 </Route>
-                <Route path="/projects">
+                <Route path="/legacy/projects">
                   <Suspense fallback={<RouteLoading />}>
                     <Projects />
                   </Suspense>
                 </Route>
-                <Route path="/contact">
+                <Route path="/legacy/contact">
                   <Suspense fallback={<RouteLoading />}>
                     <Contact />
+                  </Suspense>
+                </Route>
+                <Route path="/blog">
+                  <Suspense fallback={<RouteLoading />}>
+                    <CinematicBlog />
+                  </Suspense>
+                </Route>
+                <Route path="/blog/:slug">
+                  <Suspense fallback={<RouteLoading />}>
+                    <CinematicBlogPost />
+                  </Suspense>
+                </Route>
+                <Route path="/projects">
+                  <Suspense fallback={<RouteLoading />}>
+                    <CinematicProjects />
+                  </Suspense>
+                </Route>
+                <Route path="/contact">
+                  <Suspense fallback={<RouteLoading />}>
+                    <CinematicContact />
                   </Suspense>
                 </Route>
                 <Route path="/game">
