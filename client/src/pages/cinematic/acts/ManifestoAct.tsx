@@ -5,6 +5,10 @@ export function ManifestoAct() {
   const rootRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const metaRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const scanlineRef = useRef<HTMLDivElement>(null);
+  const beaconLeftRef = useRef<HTMLDivElement>(null);
+  const beaconRightRef = useRef<HTMLDivElement>(null);
 
   useScrollReveal(
     rootRef,
@@ -35,14 +39,54 @@ export function ManifestoAct() {
           toggleActions: "play none none reverse",
         },
       });
+
+      gsap.from(fieldRef.current, {
+        opacity: 0,
+        scale: 0.96,
+        duration: 1.05,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: rootRef.current,
+          start: "top 78%",
+          end: "bottom 42%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.from(scanlineRef.current, {
+        opacity: 0,
+        yPercent: 18,
+        duration: 0.9,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: rootRef.current,
+          start: "top 74%",
+          end: "bottom 44%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.from([beaconLeftRef.current, beaconRightRef.current], {
+        opacity: 0,
+        scaleY: 0.72,
+        duration: 0.9,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: rootRef.current,
+          start: "top 72%",
+          end: "bottom 42%",
+          toggleActions: "play none none reverse",
+        },
+      });
     },
     [],
   );
 
   const lines = [
-    "Max Doubin builds with discipline.",
-    "Cybersecurity, systems, and service in one signal.",
-    "Every detail earned. Every environment tested. Every result real.",
+    "Max Doubin turns signal into execution.",
+    "Cybersecurity, systems architecture, and public service in one profile.",
+    "Every decision intentional. Every environment tested. Every result earned.",
   ];
 
   return (
@@ -55,11 +99,42 @@ export function ManifestoAct() {
       <div className="absolute inset-x-0 top-0 hairline" />
       <div className="absolute inset-x-0 bottom-0 hairline" />
       <div
+        ref={fieldRef}
         aria-hidden
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at 50% 42%, hsl(var(--brand-signal) / 0.08), transparent 30%), radial-gradient(circle at 22% 18%, hsl(var(--brand-cyan) / 0.06), transparent 26%), radial-gradient(circle at 78% 20%, hsl(var(--brand-amber) / 0.05), transparent 24%)",
+            "radial-gradient(circle at 50% 42%, hsl(var(--brand-signal) / 0.09), transparent 30%), radial-gradient(circle at 22% 18%, hsl(var(--brand-cyan) / 0.07), transparent 26%), radial-gradient(circle at 78% 20%, hsl(var(--brand-amber) / 0.06), transparent 24%), radial-gradient(circle at 50% 74%, hsl(var(--brand-cyan) / 0.05), transparent 32%)",
+        }}
+      />
+      <div
+        ref={scanlineRef}
+        aria-hidden
+        className="absolute inset-x-[12vw] top-[40%] h-[18vh]"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, hsl(var(--brand-cyan) / 0.08) 38%, hsl(var(--brand-signal) / 0.1) 50%, transparent 100%)",
+          filter: "blur(20px)",
+        }}
+      />
+      <div
+        ref={beaconLeftRef}
+        aria-hidden
+        className="absolute left-[10vw] top-[18vh] h-[48vh] w-px"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, hsl(var(--brand-cyan) / 0.5) 28%, transparent 100%)",
+          boxShadow: "0 0 30px hsl(var(--brand-cyan) / 0.3)",
+        }}
+      />
+      <div
+        ref={beaconRightRef}
+        aria-hidden
+        className="absolute right-[10vw] top-[22vh] h-[42vh] w-px"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, hsl(var(--brand-signal) / 0.42) 32%, transparent 100%)",
+          boxShadow: "0 0 30px hsl(var(--brand-signal) / 0.28)",
         }}
       />
       <div
