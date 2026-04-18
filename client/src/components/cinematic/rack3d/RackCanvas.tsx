@@ -28,10 +28,24 @@ function BackgroundArchitecture() {
         </mesh>
       ))}
 
+      {Array.from({ length: 7 }).map((_, i) => (
+        <mesh key={`rear-rib-${i}`} position={[-0.72 + i * 0.24, RACK_TOTAL_HEIGHT * 0.56, -0.525]}>
+          <boxGeometry args={[0.012, RACK_TOTAL_HEIGHT * 0.96, 0.018]} />
+          <meshStandardMaterial color="#0b1018" metalness={0.3} roughness={0.76} />
+        </mesh>
+      ))}
+
       {[-0.5, 0, 0.5].map((x, index) => (
         <mesh key={`ceiling-bar-${index}`} position={[x, RACK_TOTAL_HEIGHT + 0.1, -0.06]}>
           <boxGeometry args={[0.28, 0.01, 0.8]} />
           <meshBasicMaterial color={index === 1 ? "#c7f000" : "#64e6ff"} transparent opacity={0.14} toneMapped={false} />
+        </mesh>
+      ))}
+
+      {Array.from({ length: 6 }).map((_, i) => (
+        <mesh key={`ceiling-rib-${i}`} position={[-0.56 + i * 0.22, RACK_TOTAL_HEIGHT + 0.07, -0.06]}>
+          <boxGeometry args={[0.014, 0.028, 0.92]} />
+          <meshStandardMaterial color="#10151d" metalness={0.62} roughness={0.42} />
         </mesh>
       ))}
 
@@ -41,19 +55,92 @@ function BackgroundArchitecture() {
           <meshBasicMaterial color={index === 0 ? "#64e6ff" : "#c7f000"} transparent opacity={0.26} toneMapped={false} />
         </mesh>
       ))}
+
+      {[-1, 1].map((sx, index) => (
+        <group key={`side-panel-${sx}`} position={[sx * 0.96, RACK_TOTAL_HEIGHT * 0.56, -0.12]} rotation={[0, sx * -0.2, 0]}>
+          <mesh>
+            <planeGeometry args={[0.34, RACK_TOTAL_HEIGHT * 0.9]} />
+            <meshBasicMaterial color={index === 0 ? "#64e6ff" : "#c7f000"} transparent opacity={0.06} toneMapped={false} />
+          </mesh>
+          <mesh position={[0, 0, 0.006]}>
+            <planeGeometry args={[0.26, RACK_TOTAL_HEIGHT * 0.82]} />
+            <meshBasicMaterial color="#0b1018" transparent opacity={0.18} toneMapped={false} />
+          </mesh>
+          {Array.from({ length: 8 }).map((__, j) => (
+            <mesh key={j} position={[0, -RACK_TOTAL_HEIGHT * 0.34 + j * 0.22, 0.01]}>
+              <boxGeometry args={[0.22, 0.003, 0.003]} />
+              <meshBasicMaterial color={index === 0 ? "#64e6ff" : "#c7f000"} transparent opacity={0.12} toneMapped={false} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function TelemetryHalo() {
+  const ringRef = useRef<THREE.Group>(null);
+  const markerRef = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (ringRef.current) {
+      ringRef.current.rotation.z = clock.elapsedTime * 0.08;
+    }
+    if (markerRef.current) {
+      markerRef.current.rotation.z = -clock.elapsedTime * 0.12;
+    }
+  });
+
+  return (
+    <group position={[0, RACK_TOTAL_HEIGHT * 0.6, -0.24]}>
+      <group ref={ringRef}>
+        <mesh rotation={[0, 0, Math.PI * 0.08]}>
+          <torusGeometry args={[0.76, 0.0035, 12, 120, Math.PI * 1.16]} />
+          <meshBasicMaterial color="#64e6ff" transparent opacity={0.2} toneMapped={false} />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI * 0.72]}>
+          <torusGeometry args={[0.9, 0.003, 12, 120, Math.PI * 0.94]} />
+          <meshBasicMaterial color="#c7f000" transparent opacity={0.16} toneMapped={false} />
+        </mesh>
+      </group>
+      <group ref={markerRef}>
+        {Array.from({ length: 10 }).map((_, i) => {
+          const angle = (i / 10) * Math.PI * 2;
+          return (
+            <mesh
+              key={i}
+              position={[Math.cos(angle) * 0.82, Math.sin(angle) * 0.82, 0]}
+              rotation={[0, 0, angle]}
+            >
+              <boxGeometry args={[0.03, 0.003, 0.003]} />
+              <meshBasicMaterial color={i % 2 === 0 ? "#64e6ff" : "#c7f000"} transparent opacity={0.18} toneMapped={false} />
+            </mesh>
+          );
+        })}
+      </group>
     </group>
   );
 }
 
 function SignalSweep() {
   const beamRef = useRef<THREE.Mesh>(null);
+  const beamAltRef = useRef<THREE.Mesh>(null);
+  const sideRef = useRef<THREE.Mesh>(null);
   const pulseRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     if (beamRef.current) {
-      beamRef.current.position.y = 0.25 + ((t * 0.42) % 1.9);
+      beamRef.current.position.y = 0.24 + ((t * 0.42) % 1.92);
       (beamRef.current.material as THREE.MeshBasicMaterial).opacity = 0.08 + Math.sin(t * 1.6) * 0.03;
+    }
+    if (beamAltRef.current) {
+      beamAltRef.current.position.y = 0.3 + ((t * 0.28 + 0.6) % 1.8);
+      (beamAltRef.current.material as THREE.MeshBasicMaterial).opacity = 0.05 + Math.cos(t * 1.2) * 0.02;
+    }
+    if (sideRef.current) {
+      sideRef.current.position.x = 0.44 + Math.sin(t * 0.72) * 0.06;
+      (sideRef.current.material as THREE.MeshBasicMaterial).opacity = 0.08 + Math.sin(t * 1.1) * 0.025;
     }
     if (pulseRef.current) {
       pulseRef.current.scale.setScalar(1 + Math.sin(t * 0.9) * 0.06);
@@ -66,6 +153,14 @@ function SignalSweep() {
       <mesh ref={beamRef} position={[0, 0.4, 0.24]}>
         <planeGeometry args={[0.92, 0.2]} />
         <meshBasicMaterial color="#c7f000" transparent opacity={0.08} toneMapped={false} />
+      </mesh>
+      <mesh ref={beamAltRef} position={[0, 0.92, -0.18]}>
+        <planeGeometry args={[1.14, 0.12]} />
+        <meshBasicMaterial color="#64e6ff" transparent opacity={0.05} toneMapped={false} />
+      </mesh>
+      <mesh ref={sideRef} position={[0.44, RACK_TOTAL_HEIGHT * 0.48, 0.1]} rotation={[0, 0, Math.PI / 2]}>
+        <planeGeometry args={[0.68, 0.08]} />
+        <meshBasicMaterial color="#64e6ff" transparent opacity={0.08} toneMapped={false} />
       </mesh>
       <mesh ref={pulseRef} position={[0, 0.0015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.78, 64]} />
@@ -106,6 +201,20 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
         intensity={0.78}
         color="#64e6ff"
       />
+      <spotLight
+        position={[0, RACK_TOTAL_HEIGHT + 0.48, 0.7]}
+        intensity={1.2}
+        angle={0.36}
+        penumbra={0.8}
+        color="#c7f000"
+      />
+      <spotLight
+        position={[-1.2, RACK_TOTAL_HEIGHT * 0.4, 1.4]}
+        intensity={0.7}
+        angle={0.42}
+        penumbra={0.9}
+        color="#64e6ff"
+      />
       <hemisphereLight args={["#2a3550", "#060812", 0.36]} />
 
       <pointLight
@@ -134,6 +243,7 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
       />
 
       <BackgroundArchitecture />
+      <TelemetryHalo />
       <SignalSweep />
 
       <Suspense fallback={null}>
@@ -155,8 +265,9 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
         <meshBasicMaterial color="#0d1320" transparent opacity={0.2} toneMapped={false} />
       </mesh>
 
-      <Sparkles count={70} speed={0.22} size={1.4} scale={[2.2, 2.8, 1.8]} color="#64e6ff" />
-      <Sparkles count={28} speed={0.14} size={1.8} scale={[1.7, 2.2, 1.2]} color="#c7f000" />
+      <Sparkles count={84} speed={0.22} size={1.4} scale={[2.2, 2.8, 1.8]} color="#64e6ff" />
+      <Sparkles count={34} speed={0.14} size={1.8} scale={[1.7, 2.2, 1.2]} color="#c7f000" />
+      <Sparkles count={18} speed={0.12} size={1.6} scale={[1.5, 1.8, 1.1]} color="#ff9a1f" />
     </Canvas>
   );
 }
