@@ -133,6 +133,81 @@ function FrontDoorGlass() {
   );
 }
 
+function InnerCrossmembers() {
+  const levels = [0.16, 0.34, 0.54, 0.74, 0.9];
+  const depthPositions = [RACK_DEPTH / 2 - 0.12, -RACK_DEPTH / 2 + 0.12];
+
+  return (
+    <group>
+      {levels.map((level) => {
+        const y = RACK_FEET_HEIGHT + level * RACK_INTERNAL_HEIGHT;
+        return depthPositions.map((z, index) => (
+          <mesh key={`${level}-${index}`} position={[0, y, z]}>
+            <boxGeometry args={[RACK_INNER_WIDTH + 0.018, 0.006, 0.018]} />
+            <meshStandardMaterial color="#13171c" metalness={0.66} roughness={0.46} />
+          </mesh>
+        ));
+      })}
+    </group>
+  );
+}
+
+function RearServiceChannels() {
+  const channelH = RACK_INTERNAL_HEIGHT - 0.12;
+  const channelY = RACK_FEET_HEIGHT + RACK_INTERNAL_HEIGHT / 2;
+  const channelZ = -RACK_DEPTH / 2 + 0.08;
+
+  return (
+    <group>
+      {[-1, 1].map((sx, index) => (
+        <group key={sx} position={[sx * (RACK_INNER_WIDTH / 2 - 0.05), channelY, channelZ]}>
+          <mesh>
+            <boxGeometry args={[0.028, channelH, 0.022]} />
+            <meshStandardMaterial color="#0f1318" metalness={0.42} roughness={0.72} />
+          </mesh>
+          <mesh position={[0, 0, 0.012]}>
+            <boxGeometry args={[0.016, channelH - 0.04, 0.003]} />
+            <meshBasicMaterial color={index === 0 ? CYAN_COLOR : BRAND_COLOR} transparent opacity={0.12} toneMapped={false} />
+          </mesh>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <mesh key={i} position={[0, -channelH / 2 + 0.08 + i * 0.2, 0.015]}>
+              <boxGeometry args={[0.022, 0.004, 0.006]} />
+              <meshStandardMaterial color="#1a2026" metalness={0.62} roughness={0.36} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function TopLiftHandles() {
+  return (
+    <group position={[0, RACK_TOTAL_HEIGHT + 0.006, RACK_DEPTH / 2 - 0.12]}>
+      {[-0.14, 0.14].map((x, index) => (
+        <group key={x} position={[x, 0, 0]}>
+          <mesh position={[-0.018, 0, 0]}>
+            <boxGeometry args={[0.006, 0.03, 0.012]} />
+            <meshStandardMaterial color="#1e2329" metalness={0.78} roughness={0.28} />
+          </mesh>
+          <mesh position={[0.018, 0, 0]}>
+            <boxGeometry args={[0.006, 0.03, 0.012]} />
+            <meshStandardMaterial color="#1e2329" metalness={0.78} roughness={0.28} />
+          </mesh>
+          <mesh position={[0, 0.012, 0]}>
+            <boxGeometry args={[0.042, 0.006, 0.012]} />
+            <meshStandardMaterial color="#252b32" metalness={0.82} roughness={0.24} />
+          </mesh>
+          <mesh position={[0, 0.016, 0.005]}>
+            <boxGeometry args={[0.03, 0.002, 0.002]} />
+            <meshBasicMaterial color={index === 0 ? CYAN_COLOR : BRAND_COLOR} transparent opacity={0.18} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function TopTelemetryArray() {
   return (
     <group position={[0, RACK_TOTAL_HEIGHT - RACK_FRAME_TOP / 2 + 0.014, -0.03]}>
@@ -170,6 +245,37 @@ function LowerServiceBayGlow() {
   );
 }
 
+function FootAnchorPads() {
+  return (
+    <group>
+      {[
+        [-1, 1],
+        [1, 1],
+        [-1, -1],
+        [1, -1],
+      ].map(([sx, sz], i) => (
+        <group
+          key={i}
+          position={[
+            (sx * (RACK_TOTAL_WIDTH / 2)) - sx * 0.012,
+            0.003,
+            (sz * (RACK_DEPTH / 2)) - sz * 0.012,
+          ]}
+        >
+          <mesh>
+            <boxGeometry args={[0.06, 0.006, 0.06]} />
+            <meshStandardMaterial color="#111419" metalness={0.44} roughness={0.8} />
+          </mesh>
+          <mesh position={[0, 0.0035, 0]}>
+            <cylinderGeometry args={[0.004, 0.004, 0.002, 12]} />
+            <meshStandardMaterial color="#2b3036" metalness={0.78} roughness={0.24} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 export function RackFrame() {
   const postH = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP;
 
@@ -197,6 +303,8 @@ export function RackFrame() {
           <meshBasicMaterial color={index === 0 ? CYAN_COLOR : BRAND_COLOR} transparent opacity={0.28} toneMapped={false} />
         </mesh>
       ))}
+
+      <FootAnchorPads />
 
       {[
         [-1, 1],
@@ -282,6 +390,9 @@ export function RackFrame() {
         </mesh>
       ))}
 
+      <InnerCrossmembers />
+      <RearServiceChannels />
+      <TopLiftHandles />
       <CageNutHoles side="front" />
       <CageNutHoles side="back" />
 
