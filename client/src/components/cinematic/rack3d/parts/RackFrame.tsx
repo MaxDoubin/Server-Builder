@@ -100,35 +100,24 @@ function FrontDoorOutline() {
 }
 
 function FrontDoorGlass() {
-  const w = RACK_TOTAL_WIDTH - 0.01;
-  const h = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP - 0.038;
-  const z = RACK_DEPTH / 2 + 0.0018;
+  const w = RACK_TOTAL_WIDTH - 0.012;
+  const h = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP - 0.04;
+  const z = RACK_DEPTH / 2 + 0.0012;
   const y = RACK_FEET_HEIGHT + h / 2 + 0.004;
 
   return (
     <group>
       <mesh position={[0, y, z]}>
-        <boxGeometry args={[w, h, 0.0028]} />
-        <meshPhysicalMaterial
-          color="#0a1016"
-          transparent
-          opacity={0.08}
-          roughness={0.18}
-          metalness={0.02}
-          transmission={0.24}
-          thickness={0.02}
-          clearcoat={1}
-          clearcoatRoughness={0.16}
-          ior={1.08}
-        />
+        <planeGeometry args={[w, h]} />
+        <meshBasicMaterial color="#101820" transparent opacity={0.025} depthWrite={false} toneMapped={false} />
       </mesh>
-      <mesh position={[0, y + h * 0.14, z + 0.0008]}>
-        <planeGeometry args={[w * 0.84, h * 0.24]} />
-        <meshBasicMaterial color={CYAN_COLOR} transparent opacity={0.05} toneMapped={false} />
+      <mesh position={[0, y + h * 0.18, z + 0.0008]}>
+        <planeGeometry args={[w * 0.8, h * 0.16]} />
+        <meshBasicMaterial color={CYAN_COLOR} transparent opacity={0.035} depthWrite={false} toneMapped={false} />
       </mesh>
       <mesh position={[0, y - h * 0.22, z + 0.0008]}>
-        <planeGeometry args={[w * 0.92, h * 0.1]} />
-        <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.035} toneMapped={false} />
+        <planeGeometry args={[w * 0.88, h * 0.08]} />
+        <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.028} depthWrite={false} toneMapped={false} />
       </mesh>
       <group position={[w / 2 - 0.052, y + h * 0.08, z + 0.004]}>
         <mesh>
@@ -137,7 +126,7 @@ function FrontDoorGlass() {
         </mesh>
         <mesh position={[0, 0, 0.004]}>
           <boxGeometry args={[0.002, h * 0.26, 0.002]} />
-          <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.28} toneMapped={false} />
+          <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.2} toneMapped={false} />
         </mesh>
       </group>
     </group>
