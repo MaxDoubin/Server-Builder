@@ -6,6 +6,7 @@ import {
   RACK_INNER_WIDTH,
   RACK_INTERNAL_HEIGHT,
   RACK_POST_WIDTH,
+  U,
 } from "../rackConfig";
 
 type CableSpec = {
@@ -13,12 +14,12 @@ type CableSpec = {
   to: [number, number, number];
   color: string;
   radius?: number;
+  emissive?: number;
 };
 
 function CableTube({ spec }: { spec: CableSpec }) {
-  const { from, to, color, radius = 0.0012 } = spec;
+  const { from, to, color, radius = 0.0012, emissive = 0.06 } = spec;
 
-  // Cubic bezier with sag that drops below the midpoint
   const curve = useMemo(() => {
     const start = new THREE.Vector3(...from);
     const end = new THREE.Vector3(...to);
@@ -30,52 +31,110 @@ function CableTube({ spec }: { spec: CableSpec }) {
   }, [from, to]);
 
   const geo = useMemo(
-    () => new THREE.TubeGeometry(curve, 20, radius, 6, false),
+    () => new THREE.TubeGeometry(curve, 28, radius, 8, false),
     [curve, radius],
   );
 
   return (
     <mesh geometry={geo}>
-      <meshStandardMaterial color={color} roughness={0.85} metalness={0.05} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={emissive} roughness={0.8} metalness={0.05} />
     </mesh>
   );
 }
 
-/** Loose patch cables running from switch area down the side to the rear. */
+/** Loose patch cables running from switch areas into the side and rear cable paths. */
 export function Cables() {
   const rightX = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.006;
+  const leftX = -RACK_INNER_WIDTH / 2 - RACK_POST_WIDTH / 2 + 0.006;
 
   const bundles: CableSpec[] = useMemo(() => {
     const arr: CableSpec[] = [];
-    const colors = ["#1f3a55", "#4a1f3a", "#3a5520", "#1f553f", "#551f1f", "#37375a"];
-    // switch area at ~14U
-    const switchY = RACK_FEET_HEIGHT + 14 * 0.04445;
-    for (let i = 0; i < 10; i++) {
-      const targetU = 7 + (i * 3) % 26;
+    const mutedColors = ["#1f3a55", "#4a1f3a", "#3a5520", "#1f553f", "#551f1f", "#37375a", "#264653", "#5b6c2f"];
+    const liveColors = ["#64e6ff", "#c7f000", "#ff9a1f"];
+    const switchAY = RACK_FEET_HEIGHT + 14 * U;
+    const switchBY = RACK_FEET_HEIGHT + 15 * U;
+    const patchPanels = [16, 32, 37, 40];
+
+    for (let i = 0; i < 22; i++) {
+      const targetU = 7 + (i * 2) % 32;
       arr.push({
         from: [
           rightX - 0.005,
-          switchY + (i % 2 === 0 ? 0.01 : -0.01),
-          RACK_DEPTH / 2 - 0.02 - (i % 3) * 0.008,
+          switchAY + (i % 2 === 0 ? 0.012 : -0.012),
+          RACK_DEPTH / 2 - 0.02 - (i % 4) * 0.008,
         ],
         to: [
-          rightX - 0.005,
-          RACK_FEET_HEIGHT + targetU * 0.04445,
-          -RACK_DEPTH / 2 + 0.08 + (i % 4) * 0.01,
+          rightX - 0.006,
+          RACK_FEET_HEIGHT + targetU * U,
+          -RACK_DEPTH / 2 + 0.08 + (i % 5) * 0.012,
         ],
-        color: colors[i % colors.length],
-        radius: 0.0011,
+        color: mutedColors[i % mutedColors.length],
+        radius: 0.00115,
+        emissive: 0.08,
       });
     }
+
+    for (let i = 0; i < 14; i++) {
+      const sourceY = RACK_FEET_HEIGHT + (31 + (i % 9)) * U;
+      const targetY = RACK_FEET_HEIGHT + (18 + i) * U;
+      arr.push({
+        from: [leftX + 0.02, sourceY, RACK_DEPTH / 2 - 0.018],
+        to: [leftX + 0.02, targetY, RACK_DEPTH / 2 - 0.06 - (i % 3) * 0.01],
+        color: i % 2 === 0 ? "#64e6ff" : "#c7f000",
+        radius: 0.00105,
+        emissive: 0.18,
+      });
+    }
+
+    patchPanels.forEach((uIndex, patchIndex) => {
+      const patchY = RACK_FEET_HEIGHT + uIndex * U;
+      const switchY = patchIndex % 2 === 0 ? switchAY : switchBY;
+      for (let i = 0; i < 8; i++) {
+        arr.push({
+          from: [
+            -0.19 + i * 0.018 + (patchIndex % 2) * 0.003,
+            patchY + (i % 2 === 0 ? 0.006 : -0.004),
+            RACK_DEPTH / 2 - 0.012,
+          ],
+          to: [
+            -0.16 + ((i + patchIndex * 3) % 12) * 0.014,
+            switchY + ((i % 3) - 1) * 0.005,
+            RACK_DEPTH / 2 - 0.02 - (i % 4) * 0.003,
+          ],
+          color: liveColors[(i + patchIndex) % liveColors.length],
+          radius: 0.00092,
+          emissive: 0.22,
+        });
+      }
+    });
+
+    for (let i = 0; i < 6; i++) {
+      arr.push({
+        from: [
+          rightX - 0.016,
+          RACK_FEET_HEIGHT + 1.1 * U + i * 0.004,
+          -RACK_DEPTH / 2 + 0.12 + i * 0.012,
+        ],
+        to: [
+          rightX - 0.012,
+          RACK_FEET_HEIGHT + (17 + i * 3) * U,
+          -RACK_DEPTH / 2 + 0.08,
+        ],
+        color: "#141619",
+        radius: 0.0021,
+        emissive: 0.015,
+      });
+    }
+
     return arr;
-  }, []);
+  }, [leftX, rightX]);
 
   return (
     <group>
       {bundles.map((c, i) => (
         <CableTube key={i} spec={c} />
       ))}
-      {/* horizontal tray at top */}
+
       <mesh
         position={[
           0,
@@ -86,6 +145,43 @@ export function Cables() {
         <boxGeometry args={[RACK_INNER_WIDTH, 0.012, 0.02]} />
         <meshStandardMaterial color="#0a0c0f" metalness={0.4} roughness={0.85} />
       </mesh>
+      <mesh
+        position={[
+          0,
+          RACK_FEET_HEIGHT + RACK_INTERNAL_HEIGHT - 0.016,
+          -RACK_DEPTH / 2 + 0.105,
+        ]}
+      >
+        <boxGeometry args={[RACK_INNER_WIDTH - 0.06, 0.003, 0.003]} />
+        <meshBasicMaterial color="#64e6ff" transparent opacity={0.22} toneMapped={false} />
+      </mesh>
+
+      <mesh
+        position={[0, RACK_FEET_HEIGHT + 16 * U + 0.004, RACK_DEPTH / 2 - 0.03]}
+      >
+        <boxGeometry args={[RACK_INNER_WIDTH - 0.04, 0.008, 0.018]} />
+        <meshStandardMaterial color="#090c10" metalness={0.34} roughness={0.88} />
+      </mesh>
+      <mesh
+        position={[0, RACK_FEET_HEIGHT + 16 * U + 0.011, RACK_DEPTH / 2 - 0.018]}
+      >
+        <boxGeometry args={[RACK_INNER_WIDTH - 0.12, 0.0018, 0.0018]} />
+        <meshBasicMaterial color="#c7f000" transparent opacity={0.24} toneMapped={false} />
+      </mesh>
+
+      {[-1, 1].map((side) => (
+        <mesh
+          key={side}
+          position={[
+            side * (RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.002),
+            RACK_FEET_HEIGHT + RACK_INTERNAL_HEIGHT / 2,
+            -RACK_DEPTH / 2 + 0.12,
+          ]}
+        >
+          <boxGeometry args={[0.008, RACK_INTERNAL_HEIGHT - 0.08, 0.02]} />
+          <meshStandardMaterial color="#0b0d10" metalness={0.4} roughness={0.82} />
+        </mesh>
+      ))}
     </group>
   );
 }
