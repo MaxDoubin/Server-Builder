@@ -2,6 +2,141 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================
+ * CINEMATIC BRAND SYSTEM
+ * Obsidian + bone + signal-lime. Scoped under .cinematic so
+ * existing pages keep their current tokens.
+ * ======================================================= */
+:root {
+  --brand-obsidian: 220 12% 4%;
+  --brand-graphite: 220 10% 9%;
+  --brand-carbon: 220 8% 14%;
+  --brand-iron: 220 6% 22%;
+  --brand-ash: 220 5% 42%;
+  --brand-bone: 40 16% 92%;
+  --brand-bone-dim: 40 10% 72%;
+  --brand-signal: 72 100% 50%;
+  --brand-signal-soft: 72 80% 62%;
+  --brand-amber: 36 100% 54%;
+  --brand-cyan: 180 85% 62%;
+  --brand-danger: 358 88% 58%;
+}
+
+.cinematic {
+  --background: var(--brand-obsidian);
+  --foreground: var(--brand-bone);
+  --border: var(--brand-iron);
+  --card: var(--brand-graphite);
+  --card-foreground: var(--brand-bone);
+  --card-border: var(--brand-carbon);
+  --muted: var(--brand-carbon);
+  --muted-foreground: var(--brand-ash);
+  --primary: var(--brand-signal);
+  --primary-foreground: var(--brand-obsidian);
+  --accent: var(--brand-signal);
+  --accent-foreground: var(--brand-obsidian);
+  --ring: var(--brand-signal);
+
+  background-color: hsl(var(--brand-obsidian));
+  color: hsl(var(--brand-bone));
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+}
+
+/* Film-grain overlay for cinematic surfaces */
+.cinematic-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.font-display {
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.02em;
+}
+
+.font-techno {
+  font-family: "Orbitron", "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  font-feature-settings: "tnum";
+}
+
+.font-mono-tight {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-feature-settings: "tnum", "cv01", "cv02";
+}
+
+/* Shared motion utilities for scroll scenes */
+.cinematic [data-scroll-scene] {
+  position: relative;
+  will-change: transform, opacity;
+}
+
+.cinematic .signal-glow {
+  box-shadow: 0 0 0 1px hsl(var(--brand-signal) / 0.24),
+    0 0 40px -6px hsl(var(--brand-signal) / 0.45),
+    inset 0 0 20px hsl(var(--brand-signal) / 0.08);
+}
+
+.cinematic .signal-text {
+  color: hsl(var(--brand-signal));
+  text-shadow: 0 0 16px hsl(var(--brand-signal) / 0.45);
+}
+
+.cinematic .vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    hsl(var(--brand-obsidian) / 0.7) 100%
+  );
+}
+
+.cinematic .hairline {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--brand-iron)) 20%,
+    hsl(var(--brand-ash)) 50%,
+    hsl(var(--brand-iron)) 80%,
+    transparent
+  );
+  height: 1px;
+}
+
+.cinematic .scanline {
+  background-image: repeating-linear-gradient(
+    0deg,
+    hsl(var(--brand-bone) / 0.03) 0px,
+    hsl(var(--brand-bone) / 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Lenis smooth-scroll hooks */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0,0,0, .10);
