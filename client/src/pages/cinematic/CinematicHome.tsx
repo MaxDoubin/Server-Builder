@@ -14,7 +14,6 @@ export function CinematicHome() {
     <CinematicLayout>
       <div ref={shellRef}>
         <HeroAct />
-        <ManifestoAct />
         <ChapterAct />
         <ExplodedAct />
         <DatacenterAct />

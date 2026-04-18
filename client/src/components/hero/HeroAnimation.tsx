@@ -166,6 +166,8 @@ const RACK_SPACING = 3.2;
 const AISLE_HALF_WIDTH = 2.4;
 const DETAIL_BUDGET = 60;
 const DETAIL_RADIUS = 30;
+const RACK_FACE_OFFSET = 0.46;
+const WALL_OFFSET = 5.9;
 
 const getDeviceTier = () => {
   if (typeof navigator === "undefined") return "high" as const;
@@ -233,7 +235,7 @@ function RackLedStrips({
       meshRef.current?.setMatrixAt(index, dummy.matrix);
     });
     meshRef.current.instanceMatrix.needsUpdate = true;
-  }, [transforms]);
+  }, [transforms, instanceCount]);
 
   return instanceCount === 0 ? null : (
     <instancedMesh ref={meshRef} args={[undefined, undefined, instanceCount]}>
@@ -241,12 +243,121 @@ function RackLedStrips({
       <meshStandardMaterial
         color={color}
         emissive={color}
-        emissiveIntensity={3.0}
-        roughness={0.35}
+        emissiveIntensity={4.2}
+        roughness={0.25}
         metalness={0.2}
         toneMapped={false}
       />
     </instancedMesh>
+  );
+}
+
+function RackDetailLights({
+  lights,
+}: {
+  lights: Array<{ position: THREE.Vector3; rotation: THREE.Euler; color: THREE.Color }>;
+}) {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const instanceCount = lights.length;
+
+  useEffect(() => {
+    if (!meshRef.current || instanceCount === 0) return;
+    const dummy = new THREE.Object3D();
+    lights.forEach((light, index) => {
+      dummy.position.copy(light.position);
+      dummy.rotation.copy(light.rotation);
+      dummy.updateMatrix();
+      meshRef.current?.setMatrixAt(index, dummy.matrix);
+      meshRef.current?.setColorAt(index, light.color);
+    });
+    meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
+  }, [lights, instanceCount]);
+
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return;
+    const material = meshRef.current.material as THREE.MeshBasicMaterial;
+    material.opacity = 0.72 + Math.sin(clock.getElapsedTime() * 2.8) * 0.16;
+  });
+
+  return instanceCount === 0 ? null : (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, instanceCount]}>
+      <boxGeometry args={[0.1, 0.026, 0.014]} />
+      <meshBasicMaterial vertexColors transparent opacity={0.82} toneMapped={false} />
+    </instancedMesh>
+  );
+}
+
+function ArchitecturalBackdrop({
+  palette,
+  introMode,
+}: {
+  palette: (typeof paletteMap)[keyof typeof paletteMap];
+  introMode: boolean;
+}) {
+  const columnZPositions = useMemo(
+    () => Array.from({ length: SEGMENT_COUNT + 2 }, (_, index) => 4 - index * 9.5),
+    []
+  );
+
+  return (
+    <group>
+      <mesh position={[0, 1.6, -SEGMENT_LENGTH * SEGMENT_COUNT - 6]}>
+        <boxGeometry args={[13.5, 4.2, 0.25]} />
+        <meshStandardMaterial
+          color="#081019"
+          emissive={palette.ambient}
+          emissiveIntensity={introMode ? 0.18 : 0.1}
+          roughness={0.55}
+          metalness={0.22}
+        />
+      </mesh>
+
+      <mesh position={[0, 2.72, -SEGMENT_LENGTH * SEGMENT_COUNT * 0.5]}>
+        <boxGeometry args={[7.6, 0.04, SEGMENT_LENGTH * SEGMENT_COUNT + 26]} />
+        <meshBasicMaterial color={palette.cool} transparent opacity={introMode ? 0.09 : 0.05} toneMapped={false} />
+      </mesh>
+
+      {[-1.65, 1.65].map((x, index) => (
+        <mesh key={`aisle-edge-${index}`} position={[x, 0.02, -SEGMENT_LENGTH * SEGMENT_COUNT * 0.5]}>
+          <boxGeometry args={[0.05, 0.01, SEGMENT_LENGTH * SEGMENT_COUNT + 16]} />
+          <meshBasicMaterial color={palette.accent} transparent opacity={0.18} toneMapped={false} />
+        </mesh>
+      ))}
+
+      {columnZPositions.map((z, index) => (
+        <group key={`backdrop-column-${index}`}>
+          <mesh position={[-WALL_OFFSET, 1.55, z]}>
+            <boxGeometry args={[0.08, 2.9, 0.08]} />
+            <meshBasicMaterial
+              color={index % 2 === 0 ? palette.cool : palette.accent}
+              transparent
+              opacity={introMode ? 0.18 : 0.12}
+              toneMapped={false}
+            />
+          </mesh>
+          <mesh position={[WALL_OFFSET, 1.55, z]}>
+            <boxGeometry args={[0.08, 2.9, 0.08]} />
+            <meshBasicMaterial
+              color={index % 2 === 0 ? palette.cool : palette.warm}
+              transparent
+              opacity={introMode ? 0.18 : 0.12}
+              toneMapped={false}
+            />
+          </mesh>
+          <mesh position={[-4.95, 1.45, z]}>
+            <boxGeometry args={[0.14, 1.6, 4.2]} />
+            <meshStandardMaterial color="#0b131d" emissive={palette.ambient} emissiveIntensity={0.08} roughness={0.7} />
+          </mesh>
+          <mesh position={[4.95, 1.45, z]}>
+            <boxGeometry args={[0.14, 1.6, 4.2]} />
+            <meshStandardMaterial color="#0b131d" emissive={palette.ambient} emissiveIntensity={0.08} roughness={0.7} />
+          </mesh>
+        </group>
+      ))}
+    </group>
   );
 }
 
@@ -290,22 +401,20 @@ function DatacenterSegment({
 
   const indicatorNodes = useMemo(() => {
     const rng = createSeededRandom(seed + segmentIndex * 17);
+    const heights = [0.34, 0.78, 1.22, 1.68, 2.12, 2.48];
+    const colors = [palette.cool, palette.accent, palette.warm];
+
     return racks.flatMap((rack, index) => {
-      const colors = [palette.cool, palette.accent, palette.warm];
       const baseX = rack.position[0] > 0 ? rack.position[0] - 0.6 : rack.position[0] + 0.6;
-      const baseZ = rack.position[2] + (index % 2 === 0 ? 0.4 : -0.4);
-      return [
-        {
-          position: [baseX, 0.55, baseZ] as [number, number, number],
-          color: colors[Math.floor(rng() * colors.length)],
-          phase: rng() * Math.PI * 2,
-        },
-        {
-          position: [baseX, 1.65, baseZ] as [number, number, number],
-          color: colors[Math.floor(rng() * colors.length)],
-          phase: rng() * Math.PI * 2,
-        },
-      ];
+      return heights.flatMap((height, heightIndex) =>
+        [-0.34, 0.34]
+          .filter((_, offsetIndex) => heightIndex === 0 || (heightIndex + offsetIndex + index) % 2 === 0)
+          .map((zOffset) => ({
+            position: [baseX, height, rack.position[2] + zOffset] as [number, number, number],
+            color: colors[Math.floor(rng() * colors.length)],
+            phase: rng() * Math.PI * 2,
+          }))
+      );
     });
   }, [palette, racks, seed, segmentIndex]);
 
@@ -314,20 +423,46 @@ function DatacenterSegment({
     racks.forEach((rack) => {
       const sideOffset = rack.position[0] > 0 ? -0.55 : 0.55;
       const baseX = rack.position[0] + sideOffset;
-      const baseZ = rack.position[2] + 0.25;
-      transforms.push(
-        {
-          position: new THREE.Vector3(baseX, 0.25, baseZ),
-          rotation: new THREE.Euler(0, rack.position[0] > 0 ? Math.PI / 2 : -Math.PI / 2, 0),
-        },
-        {
-          position: new THREE.Vector3(baseX, 2.35, baseZ),
-          rotation: new THREE.Euler(0, rack.position[0] > 0 ? Math.PI / 2 : -Math.PI / 2, 0),
-        }
-      );
+      const rotation = new THREE.Euler(0, rack.position[0] > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
+      [0.22, 1.18, 2.16].forEach((y) => {
+        transforms.push(
+          {
+            position: new THREE.Vector3(baseX, y, rack.position[2] + 0.28),
+            rotation,
+          },
+          {
+            position: new THREE.Vector3(baseX, y, rack.position[2] - 0.2),
+            rotation,
+          }
+        );
+      });
     });
     return transforms;
   }, [racks]);
+
+  const detailLights = useMemo(() => {
+    const rng = createSeededRandom(seed + segmentIndex * 29);
+    const colors = [palette.cool, palette.accent, palette.warm];
+    const white = new THREE.Color("#ffffff");
+    const levels = [0.24, 0.42, 0.6, 0.78, 0.96, 1.14, 1.32, 1.5, 1.68, 1.86, 2.04, 2.22, 2.4];
+    const zOffsets = [-0.26, -0.1, 0.1, 0.26];
+
+    return racks.flatMap((rack, rackIndex) => {
+      const faceX = rack.position[0] > 0 ? rack.position[0] - RACK_FACE_OFFSET : rack.position[0] + RACK_FACE_OFFSET;
+      const rotation = new THREE.Euler(0, rack.position[0] > 0 ? Math.PI / 2 : -Math.PI / 2, 0);
+      return levels.flatMap((y, levelIndex) =>
+        zOffsets
+          .filter((_, zIndex) => (levelIndex + zIndex + rackIndex) % 2 === 0 || levelIndex % 4 === 0)
+          .map((zOffset) => ({
+            position: new THREE.Vector3(faceX, y, rack.position[2] + zOffset),
+            rotation,
+            color: colors[Math.floor(rng() * colors.length)]
+              .clone()
+              .lerp(white, 0.18 + rng() * 0.16),
+          }))
+      );
+    });
+  }, [palette, racks, seed, segmentIndex]);
 
   return (
     <group>
@@ -353,6 +488,13 @@ function DatacenterSegment({
         />
       </mesh>
 
+      {Array.from({ length: 5 }).map((_, index) => (
+        <mesh key={`ceiling-rib-${segmentIndex}-${index}`} position={[0, 2.92, -2.8 - index * 4.1]}>
+          <boxGeometry args={[8.5, 0.03, 0.22]} />
+          <meshBasicMaterial color={palette.cool} transparent opacity={0.12} toneMapped={false} />
+        </mesh>
+      ))}
+
       <mesh position={[-4.6, 1.5, -SEGMENT_LENGTH / 2]} receiveShadow>
         <boxGeometry args={[0.2, 3.1, SEGMENT_LENGTH]} />
         <meshStandardMaterial color="#10151d" metalness={0.3} roughness={0.7} />
@@ -367,21 +509,28 @@ function DatacenterSegment({
         <meshStandardMaterial
           color={palette.cool}
           emissive={palette.cool}
-          emissiveIntensity={0.4}
+          emissiveIntensity={0.5}
           roughness={0.12}
         />
       </mesh>
 
+      {[-1.1, 1.1].map((x, index) => (
+        <mesh key={`floor-trace-${segmentIndex}-${index}`} position={[x, 0.015, -SEGMENT_LENGTH / 2]}>
+          <boxGeometry args={[0.05, 0.01, SEGMENT_LENGTH - 1.2]} />
+          <meshBasicMaterial color={index === 0 ? palette.cool : palette.accent} transparent opacity={0.18} toneMapped={false} />
+        </mesh>
+      ))}
+
       <pointLight
         position={[0, 2.8, -SEGMENT_LENGTH / 2]}
-        intensity={1.0}
+        intensity={1.1}
         color={palette.cool}
         distance={11}
         decay={2}
       />
       <pointLight
         position={[0, 1.1, -SEGMENT_LENGTH / 2 + 4]}
-        intensity={0.7}
+        intensity={0.8}
         color={palette.accent}
         distance={7}
         decay={2}
@@ -413,15 +562,23 @@ function DatacenterSegment({
           position={indicator.position}
           color={indicator.color}
           phase={indicator.phase}
+          intensity={3.8}
         />
       ))}
 
       <RackLedStrips transforms={stripTransforms} color={palette.cool} />
+      <RackDetailLights lights={detailLights} />
     </group>
   );
 }
 
-function CameraRig({ motionFactor }: { motionFactor: number }) {
+function CameraRig({
+  motionFactor,
+  introMode,
+}: {
+  motionFactor: number;
+  introMode: boolean;
+}) {
   const { camera } = useThree();
   const driftTarget = useRef(new THREE.Vector3(0, 0, 0));
   const driftTime = useRef(0);
@@ -429,21 +586,21 @@ function CameraRig({ motionFactor }: { motionFactor: number }) {
   useFrame(({ clock }, delta) => {
     const t = clock.getElapsedTime();
     driftTime.current += delta;
-    if (driftTime.current > 2.4) {
+    if (driftTime.current > (introMode ? 1.8 : 2.4)) {
       driftTime.current = 0;
       driftTarget.current.set(
-        Math.sin(t * 0.35) * 0.4,
-        1.42 + Math.cos(t * 0.22) * 0.18,
-        2.8
+        Math.sin(t * 0.35) * (introMode ? 0.58 : 0.4),
+        1.42 + Math.cos(t * 0.22) * (introMode ? 0.24 : 0.18),
+        introMode ? 2.45 : 2.8
       );
     }
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, driftTarget.current.x, 0.04);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, driftTarget.current.y, 0.04);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, driftTarget.current.z, 0.04);
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, driftTarget.current.x, introMode ? 0.06 : 0.04);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, driftTarget.current.y, introMode ? 0.06 : 0.04);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, driftTarget.current.z, introMode ? 0.06 : 0.04);
 
-    const lookAhead = -4.2 - Math.sin(t * 0.15) * 1.0;
+    const lookAhead = (introMode ? -5.4 : -4.2) - Math.sin(t * 0.15) * (introMode ? 1.35 : 1.0);
     camera.lookAt(
-      THREE.MathUtils.lerp(0, Math.sin(t * 0.2) * 0.28, motionFactor),
+      THREE.MathUtils.lerp(0, Math.sin(t * 0.2) * 0.32, motionFactor),
       1.35 + Math.sin(t * 0.3) * 0.14,
       lookAhead
     );
@@ -457,11 +614,13 @@ function DatacenterScene({
   seed,
   paused,
   reducedMotion,
+  introMode,
 }: {
   palette: (typeof paletteMap)[keyof typeof paletteMap];
   seed: number;
   paused: boolean;
   reducedMotion: boolean;
+  introMode: boolean;
 }) {
   const motionFactor = reducedMotion ? 0.35 : 1;
   const equipmentMap = useMemo(
@@ -472,7 +631,7 @@ function DatacenterScene({
 
   useFrame((_, delta) => {
     if (paused) return;
-    const move = delta * 1.2 * motionFactor;
+    const move = delta * (introMode ? 1.34 : 1.2) * motionFactor;
     segmentRefs.current.forEach((segment) => {
       segment.position.z += move;
       if (segment.position.z > SEGMENT_LENGTH) {
@@ -485,12 +644,12 @@ function DatacenterScene({
     <>
       <color attach="background" args={[palette.base]} />
       <fog attach="fog" args={[palette.base, 12, 80]} />
-      <PerspectiveCamera makeDefault fov={42} position={[0, 1.55, 2.8]} />
+      <PerspectiveCamera makeDefault fov={introMode ? 40 : 42} position={[0, 1.55, introMode ? 2.45 : 2.8]} />
 
-      <ambientLight intensity={0.45} color={palette.ambient} />
+      <ambientLight intensity={introMode ? 0.52 : 0.45} color={palette.ambient} />
       <directionalLight
         position={[-6, 7.5, 5]}
-        intensity={0.9}
+        intensity={introMode ? 1.05 : 0.9}
         color={palette.cool}
         castShadow
         shadow-mapSize-width={512}
@@ -499,9 +658,12 @@ function DatacenterScene({
       />
       <directionalLight
         position={[6, 6, -4]}
-        intensity={0.35}
+        intensity={introMode ? 0.44 : 0.35}
         color={palette.warm}
       />
+      <pointLight position={[0, 2.25, 4]} intensity={introMode ? 0.85 : 0.55} color={palette.accent} distance={9} decay={2} />
+
+      <ArchitecturalBackdrop palette={palette} introMode={introMode} />
 
       <group position={[0, 0, 0]}>
         {Array.from({ length: SEGMENT_COUNT }).map((_, index) => (
@@ -522,7 +684,7 @@ function DatacenterScene({
         ))}
       </group>
 
-      <CameraRig motionFactor={motionFactor} />
+      <CameraRig motionFactor={motionFactor} introMode={introMode} />
     </>
   );
 }
@@ -540,22 +702,27 @@ export function HeroAnimation({
   const paused = !visible || !isVisible;
   const lowQuality = reducedMotion || deviceTier === "low";
   const mediumQuality = !lowQuality && deviceTier === "medium";
+  const introMode = variant === "intro";
 
   const sceneSeed = lowQuality ? seed + 31 : mediumQuality ? seed + 13 : seed;
   const dprRange: [number, number] = lowQuality
     ? [0.5, 0.75]
     : mediumQuality
-      ? [0.65, 0.9]
-      : [0.75, 1];
+      ? introMode
+        ? [0.9, 1.15]
+        : [0.65, 0.9]
+      : introMode
+        ? [1, 1.5]
+        : [0.75, 1];
 
   return (
     <div ref={containerRef} className={className}>
       <Canvas
         shadows={!lowQuality}
         dpr={dprRange}
-        gl={{ antialias: false, powerPreference: "high-performance" }}
+        gl={{ antialias: !lowQuality, powerPreference: "high-performance" }}
         frameloop={paused ? "never" : "always"}
-        performance={{ min: lowQuality ? 0.3 : 0.5 }}
+        performance={{ min: lowQuality ? 0.3 : introMode ? 0.6 : 0.5 }}
         className="h-full w-full"
       >
         <DatacenterScene
@@ -563,9 +730,26 @@ export function HeroAnimation({
           seed={sceneSeed}
           paused={paused}
           reducedMotion={reducedMotion}
+          introMode={introMode}
         />
       </Canvas>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: introMode
+            ? "radial-gradient(circle at 18% 20%, rgba(34, 211, 238, 0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(109, 124, 255, 0.14), transparent 24%), linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.26) 45%, rgba(0, 0, 0, 0.78) 100%)"
+            : "linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0.32) 45%, rgba(0, 0, 0, 0.8) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.18) 1px, transparent 1px)",
+          backgroundSize: introMode ? "84px 84px" : "120px 120px",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80" />
     </div>
   );
 }

@@ -13,29 +13,33 @@ export interface LedProps {
 
 export function Led({
   color = "#c7f000",
-  size = 0.004,
-  intensity = 1.6,
+  size = 0.0045,
+  intensity = 2.5,
   blink = false,
   seed = 0,
 }: LedProps) {
   const mat = useRef<THREE.MeshStandardMaterial>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+
   useFrame(({ clock }) => {
     if (!mat.current) return;
-    if (blink) {
-      const t = clock.elapsedTime * 4 + seed * 6.28;
-      // fast stochastic-ish blink
-      const v =
-        0.25 +
-        0.75 *
-          (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.3 + seed * 3.14));
-      mat.current.emissiveIntensity = intensity * v;
-    } else {
-      mat.current.emissiveIntensity = intensity;
+
+    const t = clock.elapsedTime * 4 + seed * 6.28;
+    const carrier = 0.58 + 0.42 * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.3 + seed * 3.14));
+    const flicker = 0.86 + 0.14 * Math.sin(clock.elapsedTime * 11 + seed * 9.7);
+    const active = blink ? carrier : 1;
+
+    mat.current.emissiveIntensity = intensity * active * flicker;
+
+    if (meshRef.current) {
+      const scale = 1 + (blink ? (carrier - 0.5) * 0.18 : 0.04);
+      meshRef.current.scale.setScalar(scale);
     }
   });
+
   return (
-    <mesh>
-      <boxGeometry args={[size, size, size * 0.6]} />
+    <mesh ref={meshRef}>
+      <boxGeometry args={[size, size, size * 0.72]} />
       <meshStandardMaterial
         ref={mat}
         color={color}
@@ -48,16 +52,15 @@ export function Led({
 }
 
 /**
- * A row of instanced LEDs with per-instance blinking driven on the CPU
- * (count usually stays under 96 so cost is negligible).
+ * A row of instanced LEDs with per-instance blinking driven on the CPU.
  */
 export function LedStrip({
   count,
   length,
   color = "#64e6ff",
-  size = 0.0035,
+  size = 0.0038,
   blink = true,
-  blinkProbability = 0.72,
+  blinkProbability = 0.84,
   seed = 1,
 }: {
   count: number;
@@ -80,7 +83,8 @@ export function LedStrip({
   );
 
   const color3 = useMemo(() => new THREE.Color(color), [color]);
-  const off = useMemo(() => new THREE.Color("#0b0d10"), []);
+  const dim = useMemo(() => color3.clone().multiplyScalar(0.12), [color3]);
+  const off = useMemo(() => new THREE.Color("#08090c"), []);
 
   useFrame(({ clock }) => {
     const m = meshRef.current;
@@ -92,12 +96,11 @@ export function LedStrip({
       m.setMatrixAt(i, dummy.matrix);
 
       if (blink && lit[i]) {
-        const t = clock.elapsedTime * 5 + phases[i] * 6.28;
-        const v = 0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.9 + phases[i] * 3.1);
-        const intensity = v < 0.3 ? 0 : 1;
-        m.setColorAt(i, intensity > 0 ? color3 : off);
+        const t = clock.elapsedTime * 5.8 + phases[i] * 6.28;
+        const v = 0.48 + 0.52 * (0.5 + 0.5 * Math.sin(t) * Math.cos(t * 1.9 + phases[i] * 3.1));
+        m.setColorAt(i, color3.clone().lerp(dim, 1 - v));
       } else {
-        m.setColorAt(i, lit[i] ? color3 : off);
+        m.setColorAt(i, lit[i] ? dim : off);
       }
     }
     m.instanceMatrix.needsUpdate = true;
@@ -110,12 +113,13 @@ export function LedStrip({
       args={[undefined, undefined, count]}
       frustumCulled={false}
     >
-      <boxGeometry args={[size, size, size * 0.55]} />
-      <meshStandardMaterial
+      <boxGeometry args={[size, size, size * 0.62]} />
+      <meshBasicMaterial
         color={color}
-        emissive={color}
-        emissiveIntensity={1.6}
+        vertexColors
         toneMapped={false}
+        transparent
+        opacity={0.98}
       />
     </instancedMesh>
   );
