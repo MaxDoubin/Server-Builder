@@ -99,6 +99,88 @@ function FrontDoorOutline() {
   );
 }
 
+function FrontDoorGlass() {
+  const w = RACK_TOTAL_WIDTH - 0.01;
+  const h = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP - 0.038;
+  const z = RACK_DEPTH / 2 + 0.0018;
+  const y = RACK_FEET_HEIGHT + h / 2 + 0.004;
+
+  return (
+    <group>
+      <mesh position={[0, y, z]}>
+        <boxGeometry args={[w, h, 0.0028]} />
+        <meshPhysicalMaterial
+          color="#0a1016"
+          transparent
+          opacity={0.08}
+          roughness={0.18}
+          metalness={0.02}
+          transmission={0.24}
+          thickness={0.02}
+          clearcoat={1}
+          clearcoatRoughness={0.16}
+          ior={1.08}
+        />
+      </mesh>
+      <mesh position={[0, y + h * 0.14, z + 0.0008]}>
+        <planeGeometry args={[w * 0.84, h * 0.24]} />
+        <meshBasicMaterial color={CYAN_COLOR} transparent opacity={0.05} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, y - h * 0.22, z + 0.0008]}>
+        <planeGeometry args={[w * 0.92, h * 0.1]} />
+        <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.035} toneMapped={false} />
+      </mesh>
+      <group position={[w / 2 - 0.052, y + h * 0.08, z + 0.004]}>
+        <mesh>
+          <boxGeometry args={[0.01, h * 0.34, 0.01]} />
+          <meshStandardMaterial color="#171b20" metalness={0.82} roughness={0.34} />
+        </mesh>
+        <mesh position={[0, 0, 0.004]}>
+          <boxGeometry args={[0.002, h * 0.26, 0.002]} />
+          <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.28} toneMapped={false} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function TopTelemetryArray() {
+  return (
+    <group position={[0, RACK_TOTAL_HEIGHT - RACK_FRAME_TOP / 2 + 0.014, -0.03]}>
+      {Array.from({ length: 7 }).map((_, i) => (
+        <mesh key={i} position={[-0.18 + i * 0.06, 0, 0]}>
+          <boxGeometry args={[0.036, 0.004, 0.34]} />
+          <meshStandardMaterial color="#101317" metalness={0.64} roughness={0.46} />
+        </mesh>
+      ))}
+      <group position={[0, 0.006, 0.2]} rotation={[0, 0, Math.PI / 2]}>
+        <LedStrip count={12} length={0.28} color={CYAN_COLOR} size={0.0022} seed={25} />
+      </group>
+      <group position={[0, 0.006, -0.18]} rotation={[0, 0, Math.PI / 2]}>
+        <LedStrip count={12} length={0.28} color={BRAND_COLOR} size={0.0022} seed={31} />
+      </group>
+    </group>
+  );
+}
+
+function LowerServiceBayGlow() {
+  return (
+    <group position={[0, RACK_FEET_HEIGHT + 0.022, RACK_DEPTH / 2 - 0.075]}>
+      <mesh>
+        <boxGeometry args={[RACK_INNER_WIDTH - 0.08, 0.022, 0.022]} />
+        <meshStandardMaterial color="#0a0d11" metalness={0.42} roughness={0.82} />
+      </mesh>
+      <mesh position={[0, 0.006, 0.012]}>
+        <boxGeometry args={[RACK_INNER_WIDTH - 0.12, 0.0028, 0.002]} />
+        <meshBasicMaterial color={CYAN_COLOR} transparent opacity={0.2} toneMapped={false} />
+      </mesh>
+      <group position={[0, -0.003, 0.012]}>
+        <LedStrip count={18} length={RACK_INNER_WIDTH - 0.16} color={BRAND_COLOR} size={0.0021} seed={17} />
+      </group>
+    </group>
+  );
+}
+
 export function RackFrame() {
   const postH = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP;
 
@@ -217,6 +299,9 @@ export function RackFrame() {
       <FrontRailAccent side={-1} color={CYAN_COLOR} seed={2} />
       <FrontRailAccent side={1} color={BRAND_COLOR} seed={9} />
       <FrontDoorOutline />
+      <FrontDoorGlass />
+      <TopTelemetryArray />
+      <LowerServiceBayGlow />
 
       <group position={[0, RACK_TOTAL_HEIGHT - RACK_FRAME_TOP / 2 + 0.001, RACK_DEPTH / 2 - 0.06]}>
         <mesh>
