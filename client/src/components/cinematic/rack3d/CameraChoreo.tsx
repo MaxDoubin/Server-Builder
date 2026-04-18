@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { RACK_TOTAL_HEIGHT } from "./rackConfig";
@@ -8,17 +8,23 @@ type Keyframe = {
   pos: [number, number, number];
   look: [number, number, number];
   fov?: number;
-  roll?: number;
 };
 
+/**
+ * Scroll-driven camera path.
+ *
+ * t=0.00 → far front-on, rack fills frame loosely
+ * t=0.20 → dolly forward, slight tilt up
+ * t=0.45 → orbit to 3/4 view, focus mid-rack (switches)
+ * t=0.70 → push close to switch ports, slight down-tilt
+ * t=1.00 → pull out, slight roll to reveal full silhouette
+ */
 const KEYS: Keyframe[] = [
-  { t: 0.0,  pos: [0, RACK_TOTAL_HEIGHT * 0.56, 2.9],   look: [0, RACK_TOTAL_HEIGHT * 0.52, 0],   fov: 34, roll: 0.0 },
-  { t: 0.16, pos: [0.05, RACK_TOTAL_HEIGHT * 0.6, 2.05], look: [0, RACK_TOTAL_HEIGHT * 0.58, 0],   fov: 31, roll: -0.02 },
-  { t: 0.32, pos: [0.9, RACK_TOTAL_HEIGHT * 0.68, 1.38], look: [0.05, RACK_TOTAL_HEIGHT * 0.66, 0], fov: 28, roll: -0.05 },
-  { t: 0.5,  pos: [0.42, RACK_TOTAL_HEIGHT * 0.73, 0.82], look: [0.05, RACK_TOTAL_HEIGHT * 0.74, 0], fov: 24, roll: 0.025 },
-  { t: 0.68, pos: [-0.28, RACK_TOTAL_HEIGHT * 0.34, 0.76], look: [0, RACK_TOTAL_HEIGHT * 0.34, 0],  fov: 23, roll: 0.04 },
-  { t: 0.84, pos: [-0.96, RACK_TOTAL_HEIGHT * 0.58, 1.34], look: [0, RACK_TOTAL_HEIGHT * 0.6, 0],  fov: 28, roll: -0.035 },
-  { t: 1.0,  pos: [-0.42, RACK_TOTAL_HEIGHT * 0.5, 2.95], look: [0, RACK_TOTAL_HEIGHT * 0.52, 0],  fov: 35, roll: 0.0 },
+  { t: 0.0,  pos: [0, RACK_TOTAL_HEIGHT * 0.55, 2.6],   look: [0, RACK_TOTAL_HEIGHT * 0.5, 0], fov: 32 },
+  { t: 0.2,  pos: [0.05, RACK_TOTAL_HEIGHT * 0.52, 1.85], look: [0, RACK_TOTAL_HEIGHT * 0.52, 0], fov: 30 },
+  { t: 0.45, pos: [1.25, RACK_TOTAL_HEIGHT * 0.62, 1.25], look: [0, RACK_TOTAL_HEIGHT * 0.62, 0], fov: 28 },
+  { t: 0.7,  pos: [0.45, RACK_TOTAL_HEIGHT * 0.55, 0.7],  look: [0, RACK_TOTAL_HEIGHT * 0.55, 0], fov: 26 },
+  { t: 1.0,  pos: [-0.6, RACK_TOTAL_HEIGHT * 0.48, 2.8],  look: [0, RACK_TOTAL_HEIGHT * 0.5, 0], fov: 34 },
 ];
 
 function smoothstep(a: number, b: number, x: number) {
@@ -47,7 +53,6 @@ function interpolate(keys: Keyframe[], t: number) {
           a.look[2] + (b.look[2] - a.look[2]) * local,
         ] as [number, number, number],
         fov: (a.fov ?? 30) + ((b.fov ?? 30) - (a.fov ?? 30)) * local,
-        roll: (a.roll ?? 0) + ((b.roll ?? 0) - (a.roll ?? 0)) * local,
       };
     }
   }
@@ -61,34 +66,27 @@ export type ProgressRef = { current: number };
 
 export function CameraChoreo({
   progressRef,
-  idleSway = 0.012,
+  idleSway = 0.008,
 }: {
   progressRef: ProgressRef;
   idleSway?: number;
 }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const targetRef = useRef(new THREE.Vector3());
-  const rig = useMemo(() => new THREE.Object3D(), []);
 
   useFrame(({ clock }) => {
     const clamped = Math.max(0, Math.min(1, progressRef.current ?? 0));
     const k = interpolate(KEYS, clamped);
 
-    const sway = Math.sin(clock.elapsedTime * 0.42) * idleSway;
-    const swayY = Math.cos(clock.elapsedTime * 0.3) * idleSway * 0.7;
-    const swayZ = Math.sin(clock.elapsedTime * 0.22) * idleSway * 0.38;
+    const sway = Math.sin(clock.elapsedTime * 0.4) * idleSway;
+    const swayY = Math.cos(clock.elapsedTime * 0.3) * idleSway * 0.6;
 
-    tmpPos.set(k.pos[0] + sway, k.pos[1] + swayY, k.pos[2] + swayZ);
+    tmpPos.set(k.pos[0] + sway, k.pos[1] + swayY, k.pos[2]);
     tmpTarget.set(k.look[0], k.look[1], k.look[2]);
 
-    camera.position.lerp(tmpPos, 0.16);
-    targetRef.current.lerp(tmpTarget, 0.2);
-
-    rig.position.copy(camera.position);
-    rig.lookAt(targetRef.current);
-    rig.rotateZ(k.roll ?? 0);
-    camera.quaternion.slerp(rig.quaternion, 0.18);
-
+    camera.position.lerp(tmpPos, 0.18);
+    targetRef.current.lerp(tmpTarget, 0.22);
+    camera.lookAt(targetRef.current);
     if (k.fov && Math.abs(camera.fov - k.fov) > 0.05) {
       camera.fov = THREE.MathUtils.lerp(camera.fov, k.fov, 0.15);
       camera.updateProjectionMatrix();
