@@ -1,13 +1,51 @@
-import { useRef } from "react";
+import { Suspense, lazy, useRef } from "react";
 import { useScrollScene } from "@/lib/motion/useScrollScene";
-import { RackCanvas } from "@/components/cinematic/rack3d/RackCanvas";
 
 /**
  * HERO — Act 1
  *
  * 300vh pinned hero. The GSAP scroll timeline writes hero-progress (0..1)
  * into a ref that drives the R3F camera choreography inside RackCanvas.
+ *
+ * RackCanvas pulls in three.js + @react-three/fiber (~550KB); we lazy-load
+ * it so the first paint ships with the hero copy + background grid and
+ * the 3D scene fades in as soon as the chunk is ready.
  */
+const RackCanvas = lazy(() =>
+  import("@/components/cinematic/rack3d/RackCanvas").then((m) => ({
+    default: m.RackCanvas,
+  })),
+);
+
+function CanvasPoster() {
+  // Pure-CSS silhouette of a rack. Same palette as the 3D scene so the
+  // cross-fade to the canvas feels like it's filling in, not popping.
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-0 flex items-center justify-center"
+    >
+      <div
+        className="relative h-[56vh] w-[220px] overflow-hidden rounded-md border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,#0a0d11_0%,#04050a_100%)]"
+        style={{
+          boxShadow: "0 60px 80px -40px rgba(0,0,0,0.9), inset 0 0 0 1px hsl(var(--brand-iron) / 0.4)",
+        }}
+      >
+        {Array.from({ length: 16 }).map((_, i) => (
+          <div
+            key={i}
+            className="my-[2px] h-2 rounded-[2px] bg-[hsl(var(--brand-graphite))]"
+            style={{
+              marginInline: "8px",
+              opacity: 0.55 - (i % 3) * 0.1,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function HeroAct() {
   const rootRef = useRef<HTMLDivElement>(null);
   const eyebrowRef = useRef<HTMLDivElement>(null);
@@ -22,6 +60,7 @@ export function HeroAct() {
   const traceBottomRef = useRef<HTMLDivElement>(null);
   const sweepRef = useRef<HTMLDivElement>(null);
 
+  // Scroll progress (0..1) bridged from GSAP to R3F's camera.
   const progressRef = useRef(0);
 
   useScrollScene(
@@ -160,8 +199,11 @@ export function HeroAct() {
         }}
       />
 
+      {/* 3D rack canvas — fills the pinned hero (lazy-loaded) */}
       <div className="absolute inset-0">
-        <RackCanvas progressRef={progressRef} />
+        <Suspense fallback={<CanvasPoster />}>
+          <RackCanvas progressRef={progressRef} />
+        </Suspense>
       </div>
 
       <div
@@ -184,13 +226,13 @@ export function HeroAct() {
         </div>
         <h1
           ref={headlineRef}
-          className="mt-6 max-w-[20ch] font-display text-[clamp(2.7rem,7vw,5.6rem)] font-medium leading-[0.94] tracking-[-0.035em] text-[hsl(var(--brand-bone))]"
+          className="mt-6 max-w-[22ch] font-display text-[clamp(2.4rem,7vw,5.4rem)] font-medium leading-[0.95] tracking-[-0.03em] text-[hsl(var(--brand-bone))]"
         >
           Max Doubin, all systems live. <span className="signal-text">Built to lead.</span>
         </h1>
         <div
           ref={metaRef}
-          className="mt-10 flex flex-wrap items-center justify-center gap-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
+          className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]"
         >
           <span>Las Vegas, NV</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />

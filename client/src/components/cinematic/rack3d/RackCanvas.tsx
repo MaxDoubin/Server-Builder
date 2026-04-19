@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { Rack } from "./Rack";
 import { CameraChoreo, type ProgressRef } from "./CameraChoreo";
 import { RACK_TOTAL_HEIGHT } from "./rackConfig";
+import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 
 interface RackCanvasProps {
   /** Mutable scroll progress (0..1) driven by the hero ScrollTrigger. */
@@ -12,13 +13,17 @@ interface RackCanvasProps {
 }
 
 export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
+  const { dpr, effects, tier } = useDeviceTier();
+  const antialias = tier !== "low";
+
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={dpr}
       shadows={false}
+      frameloop={motionless ? "demand" : "always"}
       camera={{ position: [0, RACK_TOTAL_HEIGHT * 0.55, 2.6], fov: 32, near: 0.01, far: 50 }}
       gl={{
-        antialias: true,
+        antialias,
         alpha: true,
         powerPreference: "high-performance",
       }}
@@ -39,18 +44,22 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
       />
       <hemisphereLight args={["#2a3550", "#060812", 0.28]} />
 
-      <pointLight
-        position={[0, RACK_TOTAL_HEIGHT * 0.6, 0.4]}
-        intensity={0.55}
-        distance={1.6}
-        color="#c7f000"
-      />
-      <pointLight
-        position={[0, RACK_TOTAL_HEIGHT * 0.3, 0.45]}
-        intensity={0.35}
-        distance={1.2}
-        color="#64e6ff"
-      />
+      {effects && (
+        <>
+          <pointLight
+            position={[0, RACK_TOTAL_HEIGHT * 0.6, 0.4]}
+            intensity={0.55}
+            distance={1.6}
+            color="#c7f000"
+          />
+          <pointLight
+            position={[0, RACK_TOTAL_HEIGHT * 0.3, 0.45]}
+            intensity={0.35}
+            distance={1.2}
+            color="#64e6ff"
+          />
+        </>
+      )}
 
       <Suspense fallback={null}>
         <Rack />
@@ -59,12 +68,8 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
       {!motionless && <CameraChoreo progressRef={progressRef} />}
 
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[1.8, 64]} />
-        <meshBasicMaterial
-          color="#0a0c12"
-          transparent
-          opacity={0.45}
-        />
+        <circleGeometry args={[1.8, effects ? 64 : 32]} />
+        <meshBasicMaterial color="#0a0c12" transparent opacity={0.45} />
       </mesh>
     </Canvas>
   );

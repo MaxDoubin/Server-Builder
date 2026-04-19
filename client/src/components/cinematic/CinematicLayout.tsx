@@ -8,9 +8,18 @@ interface Props {
   children: ReactNode;
   /** Suppress preloader (for nested route transitions, etc.) */
   skipPreloader?: boolean;
+  /** Omit the standard footer (for game / immersive pages). */
+  hideFooter?: boolean;
+  /** Disable Lenis smooth-scroll (useful when embedding interactive 3D). */
+  disableSmoothScroll?: boolean;
 }
 
-export function CinematicLayout({ children, skipPreloader = false }: Props) {
+export function CinematicLayout({
+  children,
+  skipPreloader = false,
+  hideFooter = false,
+  disableSmoothScroll = false,
+}: Props) {
   const [bootedOnce, setBootedOnce] = useState(false);
 
   useEffect(() => {
@@ -19,7 +28,7 @@ export function CinematicLayout({ children, skipPreloader = false }: Props) {
   }, []);
 
   return (
-    <SmoothScrollProvider>
+    <SmoothScrollProvider disabled={disableSmoothScroll}>
       <div className="cinematic cinematic-grain relative min-h-screen overflow-hidden bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone))]">
         {!skipPreloader && !bootedOnce && (
           <Preloader onDone={() => setBootedOnce(true)} />
@@ -28,7 +37,7 @@ export function CinematicLayout({ children, skipPreloader = false }: Props) {
         <main id="main-content" className="relative">
           {children}
         </main>
-        <CinematicFooter />
+        {!hideFooter && <CinematicFooter />}
       </div>
     </SmoothScrollProvider>
   );

@@ -132,7 +132,7 @@ export function DatacenterAct() {
       />
 
       {/* Top copy */}
-      <div className="pointer-events-none absolute inset-x-0 top-24 z-10 flex flex-col items-center px-6 text-center">
+      <div className="pointer-events-none absolute inset-x-0 top-24 z-10 flex flex-col items-center px-6 text-center md:top-28">
         <div
           ref={eyebrowRef}
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
@@ -142,7 +142,7 @@ export function DatacenterAct() {
         </div>
         <h2
           ref={headlineRef}
-          className="mt-6 max-w-[22ch] font-display text-[clamp(2.2rem,5.4vw,4.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
+          className="mt-6 max-w-[22ch] font-display text-[clamp(1.8rem,5.4vw,4.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
         >
           One rack is a test.
           <br />
@@ -150,7 +150,7 @@ export function DatacenterAct() {
         </h2>
         <div
           ref={captionRef}
-          className="mt-5 max-w-[48ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+          className="mt-5 max-w-[48ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm"
         >
           Patterns only emerge at scale — airflow, weight, cable length,
           blast-radius. Design one rack well, then copy-paste discipline.
@@ -160,9 +160,9 @@ export function DatacenterAct() {
       {/* Stats strip */}
       <div
         ref={statsRef}
-        className="pointer-events-none absolute inset-x-0 bottom-20 z-10 flex justify-center px-6"
+        className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex justify-center px-4 md:bottom-20 md:px-6"
       >
-        <div className="flex flex-wrap items-center justify-center gap-8 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.72)] px-8 py-5 backdrop-blur-md md:gap-14">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.72)] px-4 py-4 backdrop-blur-md sm:gap-8 sm:px-8 sm:py-5 md:gap-14">
           <Stat label="racks">
             <span ref={rackCountRef}>01</span>
           </Stat>

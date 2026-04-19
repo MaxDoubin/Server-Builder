@@ -12,9 +12,21 @@ type SceneBuilder = (
   },
 ) => void;
 
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+  );
+}
+
 /**
  * Bind a GSAP timeline to a ScrollTrigger. The timeline is scrubbed by
  * scroll position between `start` and `end`.
+ *
+ * When `prefers-reduced-motion: reduce` is active the ScrollTrigger is
+ * skipped entirely — the builder runs once on a detached timeline so
+ * onUpdate hooks (used to drive R3F rigs, counters, etc.) still fire
+ * to their final state, then the timeline is killed. No pin, no scrub.
  */
 export function useScrollScene<T extends HTMLElement>(
   target: RefObject<T | null>,
@@ -25,6 +37,20 @@ export function useScrollScene<T extends HTMLElement>(
   useEffect(() => {
     if (!target.current) return;
     const { gsap, ScrollTrigger } = ensureGsapRegistered();
+
+    if (prefersReducedMotion()) {
+      // Run the builder on a paused, non-scrolling timeline, jump to the end
+      // so final values are applied (progressRef counters, gsap.set calls, etc.),
+      // then kill it. The pinned layout is skipped so the section is readable.
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
+      try {
+        build({ gsap, timeline: tl });
+        tl.progress(1, false);
+      } finally {
+        tl.kill();
+      }
+      return;
+    }
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
@@ -50,6 +76,10 @@ export function useScrollScene<T extends HTMLElement>(
 
 /**
  * Trigger a non-scrubbed animation when a section enters the viewport.
+ *
+ * Under reduced motion the builder runs once and any `gsap.from` inside
+ * will revert to the element's natural state immediately, so content
+ * stays visible without a transition.
  */
 export function useScrollReveal<T extends HTMLElement>(
   target: RefObject<T | null>,
@@ -60,6 +90,13 @@ export function useScrollReveal<T extends HTMLElement>(
   useEffect(() => {
     if (!target.current) return;
     const { gsap } = ensureGsapRegistered();
+
+    if (prefersReducedMotion()) {
+      // Skip reveal animations entirely. Elements render in their
+      // natural (post-animation) state.
+      return;
+    }
+
     const ctx = gsap.context(() => {
       unmountRef.current = build({ gsap });
     }, target.current);

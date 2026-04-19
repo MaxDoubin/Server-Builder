@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
+import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 
 export type ExplodedProgressRef = { current: number };
 
@@ -131,15 +132,15 @@ function ExplodeTarget({ progressRef }: { progressRef: ExplodedProgressRef }) {
 }
 
 export function ExplodedScene({ progressRef }: { progressRef: ExplodedProgressRef }) {
-  // Dispose pattern: nothing special — R3F handles on canvas unmount
+  const { dpr, effects, tier } = useDeviceTier();
   useEffect(() => () => undefined, []);
 
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={dpr}
       shadows={false}
       camera={{ position: [0, 0.1, 1.4], fov: 34, near: 0.01, far: 30 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{ antialias: tier !== "low", alpha: true, powerPreference: "high-performance" }}
       style={{ background: "transparent" }}
     >
       <color attach="background" args={["#04050a"]} />
@@ -148,8 +149,12 @@ export function ExplodedScene({ progressRef }: { progressRef: ExplodedProgressRe
       <directionalLight position={[2.2, 2.8, 2.0]} intensity={2.0} color="#d7e4ff" />
       <directionalLight position={[-1.4, 0.6, 1.2]} intensity={0.35} color="#ffd1a1" />
       <hemisphereLight args={["#2a3550", "#060812", 0.28]} />
-      <pointLight position={[0.6, 0.4, 0.8]} intensity={0.5} distance={1.6} color="#c7f000" />
-      <pointLight position={[-0.5, 0.3, 0.7]} intensity={0.35} distance={1.2} color="#64e6ff" />
+      {effects && (
+        <>
+          <pointLight position={[0.6, 0.4, 0.8]} intensity={0.5} distance={1.6} color="#c7f000" />
+          <pointLight position={[-0.5, 0.3, 0.7]} intensity={0.35} distance={1.2} color="#64e6ff" />
+        </>
+      )}
 
       <Suspense fallback={null}>
         <ExplodeTarget progressRef={progressRef} />
@@ -157,7 +162,7 @@ export function ExplodedScene({ progressRef }: { progressRef: ExplodedProgressRe
       <ExplodedRig progressRef={progressRef} />
 
       <mesh position={[0, -0.55, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[1.6, 64]} />
+        <circleGeometry args={[1.6, effects ? 64 : 32]} />
         <meshBasicMaterial color="#0a0c12" transparent opacity={0.5} />
       </mesh>
     </Canvas>

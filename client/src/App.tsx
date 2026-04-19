@@ -56,6 +56,12 @@ const GamePage = lazy(() =>
   import("@/pages/GamePage").then((module) => ({ default: module.GamePage })),
 );
 
+const CinematicGame = lazy(() =>
+  import("@/pages/cinematic/CinematicGame").then((module) => ({
+    default: module.CinematicGame,
+  })),
+);
+
 function GameLoading() {
   return (
     <SiteLoader
@@ -207,6 +213,11 @@ export default function App() {
                   </Suspense>
                 </Route>
                 <Route path="/game">
+                  <Suspense fallback={<GameLoading />}>
+                    <CinematicGame />
+                  </Suspense>
+                </Route>
+                <Route path="/legacy/game">
                   <Suspense fallback={<GameLoading />}>
                     <GamePage />
                   </Suspense>

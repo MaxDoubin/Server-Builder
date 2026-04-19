@@ -96,7 +96,7 @@ export function ExplodedAct() {
       />
 
       {/* Title block, left */}
-      <div className="pointer-events-none absolute left-6 top-28 z-10 max-w-[32ch] md:left-10">
+      <div className="pointer-events-none absolute left-6 right-6 top-24 z-10 max-w-[32ch] md:left-10 md:right-auto md:top-28">
         <div
           ref={eyebrowRef}
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
@@ -106,13 +106,13 @@ export function ExplodedAct() {
         </div>
         <h2
           ref={headlineRef}
-          className="mt-4 font-display text-[clamp(2rem,4.5vw,3.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
+          className="mt-4 font-display text-[clamp(1.7rem,4.5vw,3.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
         >
           Every bay, <span className="signal-text">accounted for.</span>
         </h2>
         <div
           ref={captionRef}
-          className="mt-5 max-w-[38ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+          className="mt-5 max-w-[38ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm"
         >
           Scroll to separate the assembly. Each part I design around has a spec, a
           thermal budget, and a failure mode I've thought through.
