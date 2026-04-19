@@ -32,22 +32,18 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
       <color attach="background" args={["#04050a"]} />
       <fog attach="fog" args={["#04050a", 2.2, 6.0]} />
 
-      {/* Key light — cool rim from upper-right */}
       <directionalLight
         position={[2.5, 3.0, 2.2]}
         intensity={2.1}
         color="#d7e4ff"
       />
-      {/* Fill — warm, low, from front-left */}
       <directionalLight
         position={[-1.5, 0.6, 1.5]}
         intensity={0.35}
         color="#ffd1a1"
       />
-      {/* Low bounce */}
       <hemisphereLight args={["#2a3550", "#060812", 0.28]} />
 
-      {/* Subtle LED-colored accent lights (higher-tier only, they don't add much on low-end) */}
       {effects && (
         <>
           <pointLight
@@ -71,7 +67,6 @@ export function RackCanvas({ progressRef, motionless }: RackCanvasProps) {
 
       {!motionless && <CameraChoreo progressRef={progressRef} />}
 
-      {/* Ground plane glow */}
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.8, effects ? 64 : 32]} />
         <meshBasicMaterial color="#0a0c12" transparent opacity={0.45} />

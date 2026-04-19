@@ -59,9 +59,6 @@ function CableTube({
   radius: number;
 }) {
   const geometry = useMemo(() => {
-    // Switch port is at the front of the rack. Cable drops down,
-    // routes through the side manager, climbs to the target U,
-    // and lands back at the front.
     const start = new THREE.Vector3(laneX, fromY, frontZ);
     const dropIn = new THREE.Vector3(laneX + 0.003, fromY - U * 0.3, frontZ - 0.015);
     const managerTop = new THREE.Vector3(laneX + 0.006, Math.max(fromY, toY) + U * 0.15, backZ + 0.02);
@@ -78,14 +75,12 @@ function CableTube({
     const climbOut = new THREE.Vector3(laneX + 0.003, toY - U * 0.3, frontZ - 0.015);
     const end = new THREE.Vector3(laneX, toY, frontZ);
 
-    // Order points so the path always goes down-in → side-manager → out-up.
     const goingDown = fromY > toY;
     const points = goingDown
       ? [start, dropIn, managerTop, managerMid, managerBot, climbOut, end]
       : [start, dropIn, managerBot, managerMid, managerTop, climbOut, end];
 
     const curve = new THREE.CatmullRomCurve3(points, false, "centripetal", 0.5);
-    // Cable length roughly = bezier length; segments scale with length.
     const length = curve.getLength();
     const segments = Math.max(24, Math.min(64, Math.round(length * 80)));
     return new THREE.TubeGeometry(curve, segments, radius, 6, false);
@@ -108,12 +103,10 @@ function CableManager({ x, frontZ, backZ }: { x: number; frontZ: number; backZ: 
   const height = RACK_INTERNAL_HEIGHT - U * 0.5;
   return (
     <group position={[x + 0.006, y, (frontZ + backZ) / 2 + 0.02]}>
-      {/* Spine */}
       <mesh>
         <boxGeometry args={[0.014, height, depth]} />
         <meshStandardMaterial color="#0a0d11" metalness={0.42} roughness={0.72} />
       </mesh>
-      {/* D-rings — every 2U */}
       {Array.from({ length: 10 }).map((_, i) => {
         const ringY = -height / 2 + (i + 0.5) * (height / 10);
         return (
@@ -139,7 +132,6 @@ function OverheadTray() {
         <boxGeometry args={[RACK_INNER_WIDTH, 0.006, 0.03]} />
         <meshStandardMaterial color="#0a0c0f" metalness={0.5} roughness={0.72} />
       </mesh>
-      {/* Rails */}
       <mesh position={[0, -0.005, 0.014]}>
         <boxGeometry args={[RACK_INNER_WIDTH, 0.004, 0.002]} />
         <meshStandardMaterial color="#161a20" metalness={0.55} roughness={0.6} />
@@ -154,16 +146,12 @@ function OverheadTray() {
 
 /** Loose patch cables running from switch area down the side to the rear. */
 export function Cables() {
-  // Laneing: two sides, right side primary, left side a few runs.
   const rightLaneX = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
   const leftLaneX = -(RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004);
 
   const frontZ = RACK_DEPTH / 2 - 0.015;
   const backZ = -RACK_DEPTH / 2 + 0.12;
 
-  // Switch ports are at ~14U (ToR Catalyst) and 15U (Mgmt). Runs to
-  // compute (10U, 12U), storage (3U, 7U), GPU (17U), blade chassis (22U),
-  // core (30U), edge 1U boxes (32U..39U).
   const switchY14 = RACK_FEET_HEIGHT + 14 * U + U * 0.5;
   const switchY15 = RACK_FEET_HEIGHT + 15 * U + U * 0.5;
   const switchY30 = RACK_FEET_HEIGHT + 30 * U + U * 0.5;
@@ -185,8 +173,6 @@ export function Cables() {
     [],
   );
 
-  // Each run gets a small lateral offset inside the manager so they
-  // read as individual cables, not a single fat tube.
   const laneStep = 0.0018;
 
   return (
@@ -196,10 +182,9 @@ export function Cables() {
 
       {runs.map((run, i) => {
         const targetY = RACK_FEET_HEIGHT + run.targetU * U + U * 0.35;
-        const useLeft = run.targetU <= 9 || run.targetU === 17; // heavy gear on left manager
+        const useLeft = run.targetU <= 9 || run.targetU === 17;
         const baseX = useLeft ? leftLaneX : rightLaneX;
         const laneX = baseX + (useLeft ? -1 : 1) * (run.lane * laneStep);
-        // Two switch ports; use core switch for the core/edge runs
         const fromY = run.targetU >= 30
           ? switchY30
           : run.targetU >= 16 && run.targetU <= 22

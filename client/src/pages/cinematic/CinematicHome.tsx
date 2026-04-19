@@ -9,9 +9,6 @@ import { HeroAct } from "./acts/HeroAct";
  * DatacenterScene — is fetched in the background while the user
  * reads the hero.
  */
-const ManifestoAct = lazy(() =>
-  import("./acts/ManifestoAct").then((m) => ({ default: m.ManifestoAct })),
-);
 const ChapterAct = lazy(() =>
   import("./acts/ChapterAct").then((m) => ({ default: m.ChapterAct })),
 );
@@ -46,9 +43,6 @@ export function CinematicHome() {
     <CinematicLayout>
       <div ref={shellRef}>
         <HeroAct />
-        <Suspense fallback={<ActFallback />}>
-          <ManifestoAct />
-        </Suspense>
         <Suspense fallback={<ActFallback />}>
           <ChapterAct />
         </Suspense>

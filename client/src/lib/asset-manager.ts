@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { logError } from "@/lib/error-log";
+import { logError, logWarning } from "@/lib/error-log";
 
 interface StreamingCanvasOptions {
   lowResolution: number;
@@ -79,5 +79,9 @@ export function precompileSceneMaterials(
   scene: THREE.Scene,
   camera: THREE.Camera
 ) {
-  renderer.compile(scene, camera);
+  try {
+    renderer.compile(scene, camera);
+  } catch (error) {
+    logWarning("Scene material precompile failed. Continuing without precompilation.", error);
+  }
 }
