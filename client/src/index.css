@@ -493,6 +493,21 @@ html.lenis-smooth {
     @apply font-sans antialiased bg-background text-foreground;
     font-size: calc(16px * var(--font-scale));
   }
+
+  /* Keyboard-only focus ring. Cinematic pages get signal-green, */
+  /* other pages fall back to the primary ring. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  .cinematic :focus-visible,
+  .cinematic-active :focus-visible {
+    outline: 2px solid hsl(var(--brand-signal));
+    outline-offset: 3px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

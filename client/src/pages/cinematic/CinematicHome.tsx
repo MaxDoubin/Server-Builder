@@ -1,5 +1,6 @@
 import { Suspense, lazy, useRef } from "react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
+import { useSEO } from "@/lib/useSEO";
 import { HeroAct } from "./acts/HeroAct";
 
 /**
@@ -39,6 +40,29 @@ function ActFallback({ minHeight = "100vh" }: { minHeight?: string }) {
 
 export function CinematicHome() {
   const shellRef = useRef<HTMLDivElement>(null);
+  useSEO({
+    title: "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert",
+    description:
+      "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada. Systems live, built to lead.",
+    canonical: "https://maxdoubin.com/",
+    ogType: "profile",
+    schemaId: "home-schema",
+    schema: {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: "Max Doubin",
+      jobTitle: "Cybersecurity Specialist",
+      url: "https://maxdoubin.com/",
+      image: "https://maxdoubin.com/images/og-image.png",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Las Vegas",
+        addressRegion: "NV",
+        addressCountry: "US",
+      },
+      sameAs: [],
+    },
+  });
   return (
     <CinematicLayout>
       <div ref={shellRef}>
