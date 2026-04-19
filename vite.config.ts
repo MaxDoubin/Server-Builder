@@ -30,6 +30,27 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Raise the chunk-size warning bar: we intentionally split big
+    // deps below, and the remaining splits are each reasonable.
+    chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        // Keep the critical-path chunk tiny by pushing heavy, rarely
+        // co-used dependencies into dedicated chunks. Browsers fetch
+        // these in parallel; the route that needs them triggers the
+        // load and the rest of the shell renders immediately.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("three") && !id.includes("@react-three")) {
+            return "three";
+          }
+          if (id.includes("@react-three")) return "r3f";
+          if (id.includes("gsap") || id.includes("lenis")) return "motion";
+          if (id.includes("marked")) return "marked";
+          if (id.includes("lucide-react")) return "icons";
+        },
+      },
+    },
   },
   server: {
     fs: {
