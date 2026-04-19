@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSmoothScroll } from "@/lib/motion/SmoothScrollProvider";
 
-const RACK_UNITS = 24;
-
 interface PreloaderProps {
   /** Minimum ms the preloader stays visible so the animation is perceptible. */
   minDurationMs?: number;
@@ -10,17 +8,22 @@ interface PreloaderProps {
 }
 
 /**
- * Rack-assembly preloader.
+ * 3D rack-boot preloader.
  *
- * Fills rack-unit slots from bottom to top as load progress advances.
- * Blocks Lenis scroll until the exit animation completes.
+ * Single tilted rack silhouette rendered via CSS 3D transforms.
+ * Rack units fill bottom-up as load progress advances. Intentionally
+ * DOM-light (one transform-style:preserve-3d group, ~30 child nodes)
+ * so it stays fluid on slow devices where a busier preloader would
+ * drop frames.
  */
 export function Preloader({ minDurationMs = 1100, onDone }: PreloaderProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [hiding, setHiding] = useState(false);
   const [gone, setGone] = useState(false);
   const { stop, start } = useSmoothScroll();
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   useEffect(() => {
     stop();
@@ -40,7 +43,6 @@ export function Preloader({ minDurationMs = 1100, onDone }: PreloaderProps) {
     const tick = () => {
       const elapsed = performance.now() - mountedAt;
       const timeFraction = Math.min(1, elapsed / minDurationMs);
-      // smoothly approach the lower of load-fraction and time-fraction
       const target = Math.min(loadFraction, timeFraction);
       setProgress((prev) => prev + (target - prev) * 0.18);
 
@@ -61,162 +63,129 @@ export function Preloader({ minDurationMs = 1100, onDone }: PreloaderProps) {
 
   useEffect(() => {
     if (!hiding) return;
-    const timer = window.setTimeout(() => {
-      setGone(true);
-      start();
-      onDone?.();
-    }, 680);
+    const timer = window.setTimeout(
+      () => {
+        setGone(true);
+        start();
+        onDone?.();
+      },
+      reduceMotion ? 0 : 680,
+    );
     return () => window.clearTimeout(timer);
-  }, [hiding, start, onDone]);
+  }, [hiding, start, onDone, reduceMotion]);
 
   if (gone) return null;
 
-  const filled = Math.round(progress * RACK_UNITS);
   const pct = Math.round(progress * 100);
+  const RACK_UNITS = 16;
+  const filled = Math.max(0, Math.min(RACK_UNITS, Math.round(progress * RACK_UNITS)));
 
   return (
     <div
-      ref={rootRef}
       aria-hidden="true"
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-[hsl(var(--brand-obsidian))] transition-[opacity,transform] duration-[680ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
-        hiding ? "pointer-events-none opacity-0 -translate-y-2" : "opacity-100"
+      data-testid="preloader"
+      className={`fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[hsl(var(--brand-obsidian))] transition-opacity duration-[520ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
+        hiding ? "pointer-events-none opacity-0" : "opacity-100"
       }`}
     >
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at 18% 18%, rgba(34, 211, 238, 0.12), transparent 28%), radial-gradient(circle at 82% 14%, rgba(168, 85, 247, 0.1), transparent 24%), linear-gradient(180deg, rgba(2, 6, 23, 0.28) 0%, rgba(2, 6, 23, 0.82) 100%)",
+            "radial-gradient(circle at 50% 38%, hsl(var(--brand-signal) / 0.14), transparent 38%), radial-gradient(circle at 14% 86%, hsl(var(--brand-cyan) / 0.08), transparent 32%), linear-gradient(180deg, #06080d 0%, #02030a 100%)",
         }}
       />
       <div
-        className="absolute inset-0 opacity-[0.08]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.2) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+            "linear-gradient(hsl(var(--brand-iron)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--brand-iron)) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage:
+            "radial-gradient(ellipse at center, black 20%, transparent 78%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse at center, black 20%, transparent 78%)",
         }}
       />
-      <div className="absolute inset-0 scanline opacity-20" />
 
       <div className="relative flex flex-col items-center gap-8 px-6">
         <div className="flex items-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.38em] text-[hsl(var(--brand-bone-dim))]">
           <span
             className="inline-flex h-2 w-2 rounded-full bg-[hsl(var(--brand-signal))]"
-            style={{ boxShadow: "0 0 12px hsl(var(--brand-signal))" }}
+            style={{
+              boxShadow: "0 0 12px hsl(var(--brand-signal))",
+              animation: reduceMotion ? undefined : "preloader-pulse 1.6s ease-in-out infinite",
+            }}
           />
-          <span>Max Doubin Experience</span>
+          <span>Max Doubin · Systems Online</span>
         </div>
 
+        {/* 3D rack silhouette */}
         <div
-          className="relative overflow-hidden rounded-[22px] border border-[hsl(var(--brand-iron))] p-5 shadow-[0_40px_90px_-32px_rgba(0,0,0,0.85)]"
+          className="preloader-stage"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(2, 6, 23, 0.94) 100%)",
+            perspective: "900px",
+            width: "min(240px, 72vw)",
+            height: "min(340px, 62vh)",
           }}
         >
           <div
-            className="absolute inset-x-5 top-4 h-px"
+            className="preloader-rack"
             style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, rgba(103, 232, 249, 0.75) 50%, transparent 100%)",
+              transformStyle: "preserve-3d",
+              transform: `rotateX(6deg) rotateY(${reduceMotion ? -18 : -22}deg)`,
+              animation: reduceMotion ? undefined : "preloader-float 6s ease-in-out infinite",
             }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(circle at top, rgba(56, 189, 248, 0.08), transparent 55%)",
-            }}
-          />
-
-          <div className="relative flex w-[280px] flex-col gap-5">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-              Initializing profile systems
-            </div>
-
-            <div className="flex flex-col-reverse overflow-hidden rounded-md border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite))] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          >
+            {/* Rack body */}
+            <div className="preloader-rack-body" />
+            {/* Front bezel slots */}
+            <div className="preloader-rack-front">
               {Array.from({ length: RACK_UNITS }).map((_, i) => {
-                const active = i < filled;
-                const accent = i % 4 === 0 ? "hsl(var(--brand-amber))" : "hsl(var(--brand-cyan))";
-
+                const fromBottom = RACK_UNITS - 1 - i;
+                const isOn = fromBottom < filled;
+                const accentClass =
+                  fromBottom % 5 === 0
+                    ? "preloader-unit-signal"
+                    : fromBottom % 3 === 0
+                      ? "preloader-unit-cyan"
+                      : "preloader-unit-muted";
                 return (
                   <div
                     key={i}
-                    className="relative my-[1px] h-3 rounded-[2px] border border-[hsl(var(--brand-carbon))] transition-all duration-300 ease-out"
-                    style={{
-                      background: active
-                        ? "linear-gradient(180deg, hsl(var(--brand-carbon)) 0%, hsl(var(--brand-obsidian)) 100%)"
-                        : "hsl(var(--brand-obsidian))",
-                      boxShadow: active
-                        ? "inset 0 0 0 1px hsl(var(--brand-iron) / 0.6), inset 0 1px 0 hsl(var(--brand-bone) / 0.04)"
-                        : "none",
-                    }}
-                  >
-                    {active && (
-                      <>
-                        <span
-                          className="absolute left-2 top-1/2 h-1 w-1 -translate-y-1/2 rounded-full"
-                          style={{
-                            background: "hsl(var(--brand-signal))",
-                            boxShadow: "0 0 6px hsl(var(--brand-signal))",
-                          }}
-                        />
-                        <span
-                          className="absolute left-4 top-1/2 h-[3px] w-8 -translate-y-1/2 rounded-[1px]"
-                          style={{
-                            background:
-                              "linear-gradient(90deg, hsl(var(--brand-iron)) 0%, hsl(var(--brand-ash) / .4) 100%)",
-                          }}
-                        />
-                        <span
-                          className="absolute left-1/2 top-1/2 h-[2px] w-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                          style={{
-                            background:
-                              "linear-gradient(90deg, transparent 0%, hsl(var(--brand-cyan) / 0.65) 50%, transparent 100%)",
-                          }}
-                        />
-                        <span
-                          className="absolute right-5 top-1/2 h-1 w-1 -translate-y-1/2 rounded-full"
-                          style={{
-                            background: accent,
-                            boxShadow: `0 0 6px ${accent}`,
-                          }}
-                        />
-                        <span
-                          className="absolute right-2 top-1/2 h-1 w-1 -translate-y-1/2 rounded-full"
-                          style={{
-                            background: i % 5 === 0 ? "hsl(var(--brand-amber))" : "hsl(var(--brand-cyan))",
-                            boxShadow: `0 0 6px ${
-                              i % 5 === 0
-                                ? "hsl(var(--brand-amber))"
-                                : "hsl(var(--brand-cyan))"
-                            }`,
-                          }}
-                        />
-                      </>
-                    )}
-                  </div>
+                    className={`preloader-unit ${isOn ? `preloader-unit-on ${accentClass}` : ""}`}
+                  />
                 );
               })}
             </div>
+            {/* Side panel depth */}
+            <div className="preloader-rack-side" />
+            {/* Top cap */}
+            <div className="preloader-rack-top" />
+            {/* Floor glow */}
+            <div className="preloader-rack-floor" />
           </div>
         </div>
 
-        <div className="flex w-[280px] items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.18em] text-[hsl(var(--brand-bone-dim))]">
-          <span>Loading Profile</span>
-          <span className="signal-text">{pct.toString().padStart(3, "0")}%</span>
+        <div className="flex w-[min(280px,74vw)] items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
+          <span>Booting profile</span>
+          <span className="signal-text" data-testid="text-preloader-percent">
+            {pct.toString().padStart(3, "0")}%
+          </span>
         </div>
 
-        <div className="relative h-px w-[280px] overflow-hidden bg-[hsl(var(--brand-iron))]">
+        <div className="relative h-px w-[min(280px,74vw)] overflow-hidden bg-[hsl(var(--brand-iron))]">
           <div
-            className="absolute left-0 top-0 h-full bg-[hsl(var(--brand-signal))] transition-[width] duration-150 ease-out"
-            style={{ width: `${pct}%`, boxShadow: "0 0 10px hsl(var(--brand-signal))" }}
+            className="absolute left-0 top-0 h-full bg-[hsl(var(--brand-signal))] transition-[width] duration-100 ease-out"
+            style={{
+              width: `${pct}%`,
+              boxShadow: "0 0 10px hsl(var(--brand-signal))",
+            }}
           />
         </div>
 
         <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
-          Cybersecurity · Networking · Systems Engineering
+          Cybersecurity · Networking · Systems
         </div>
       </div>
     </div>

@@ -29,24 +29,53 @@ export interface InternalPartLayout {
   anchor: [number, number, number];
 }
 
-/** Exploded offset (meters) per-part when explode = 1. */
+/** Exploded offset (meters) per-part when that part's stage = 1. */
 const OFFSETS: Record<string, [number, number, number]> = {
-  lid:         [0, 0.42, 0],
-  motherboard: [0, 0.00, 0],
-  cpuA:        [0, 0.20, 0.04],
-  cpuB:        [0, 0.20, -0.04],
-  heatsinkA:   [0, 0.36, 0.04],
-  heatsinkB:   [0, 0.36, -0.04],
-  ramBankA:    [-0.22, 0.20, 0.05],
-  ramBankB:    [0.22, 0.20, 0.05],
-  fanWall:     [0, 0.00, 0.30],
-  psuA:        [0.24, -0.10, -0.34],
-  psuB:        [-0.24, -0.10, -0.34],
-  driveCage:   [0, -0.04, 0.58],
-  nic:         [0.30, 0.14, -0.22],
-  gpu:         [-0.30, 0.18, -0.18],
-  chassis:     [0, -0.42, 0],
+  lid:         [0, 0.56, 0],
+  motherboard: [0, -0.02, 0],
+  cpuA:        [0, 0.26, 0.04],
+  cpuB:        [0, 0.26, -0.04],
+  heatsinkA:   [0, 0.46, 0.04],
+  heatsinkB:   [0, 0.46, -0.04],
+  ramBankA:    [-0.32, 0.22, 0.05],
+  ramBankB:    [0.32, 0.22, 0.05],
+  fanWall:     [0, 0.38, 0.26],
+  psuA:        [0.30, -0.10, -0.42],
+  psuB:        [-0.30, -0.10, -0.42],
+  driveCage:   [0, -0.04, 0.68],
+  nic:         [0.38, 0.18, -0.28],
+  gpu:         [-0.38, 0.22, -0.24],
+  chassis:     [0, -0.54, 0],
 };
+
+/**
+ * Stage windows — each part's explode animates only within these
+ * progress bounds. This matches the camera-tour timing in ExplodedScene
+ * so the viewer sees each part separating *while* the camera is focused
+ * on it, instead of every part drifting in parallel.
+ */
+const STAGES: Record<string, [number, number]> = {
+  lid:         [0.00, 0.10],
+  driveCage:   [0.04, 0.14],
+  chassis:     [0.00, 0.22],
+  motherboard: [0.08, 0.24],
+  cpuA:        [0.12, 0.28],
+  cpuB:        [0.12, 0.28],
+  heatsinkA:   [0.14, 0.30],
+  heatsinkB:   [0.14, 0.30],
+  ramBankA:    [0.30, 0.46],
+  ramBankB:    [0.30, 0.46],
+  fanWall:     [0.48, 0.64],
+  psuA:        [0.66, 0.80],
+  psuB:        [0.66, 0.80],
+  nic:         [0.72, 0.86],
+  gpu:         [0.72, 0.86],
+};
+
+function smoothstep(a: number, b: number, x: number) {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
 
 function lerp3(a: [number, number, number], b: [number, number, number], t: number): [number, number, number] {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
@@ -91,10 +120,14 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
     color: "#ff9a1f", emissive: "#ff9a1f", emissiveIntensity: 1.2,
   }), []);
 
-  // Helpers to apply exploded offsets
+  // Apply stage-gated exploded offsets so each part separates during its
+  // own progress window. `t` here is the raw overall explode (0..1); each
+  // part derives its own local 0..1 from the STAGES map.
   const pos = (key: keyof typeof OFFSETS, base: [number, number, number] = [0, 0, 0]) => {
     const off = OFFSETS[key];
-    return lerp3(base, [base[0] + off[0], base[1] + off[1], base[2] + off[2]], t);
+    const stage = STAGES[key as string];
+    const local = stage ? smoothstep(stage[0], stage[1], t) : t;
+    return lerp3(base, [base[0] + off[0], base[1] + off[1], base[2] + off[2]], local);
   };
 
   // --- Motherboard ---
@@ -336,12 +369,12 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
 /** Static layout info used to position 2D labels in world-space. */
 export const INTERNAL_LABELS: InternalPartLayout[] = [
-  { id: "lid",         label: "Top Cover",     sublabel: "1.5mm Cold-Rolled Steel", anchor: [0, 0.42, 0] },
-  { id: "heatsinkA",   label: "CPU · Socket 1", sublabel: "Xeon Platinum · 350W TDP", anchor: [-0.02, 0.36, 0.04] },
-  { id: "ramBankA",    label: "DIMM Bank A",   sublabel: "16× DDR5-5600 ECC", anchor: [-0.52, 0.20, 0.05] },
-  { id: "fanWall",     label: "Hot-Swap Fans", sublabel: "6× Counter-Rotating", anchor: [0, 0.00, 0.30] },
-  { id: "psuA",        label: "PSU · Primary", sublabel: "1100W · Platinum", anchor: [0.54, -0.10, -0.34] },
-  { id: "driveCage",   label: "Drive Cage",    sublabel: "8× 3.5\" SAS/SATA", anchor: [0, -0.04, 0.58] },
-  { id: "gpu",         label: "GPU Accelerator", sublabel: "L40S · 48GB HBM3", anchor: [-0.60, 0.18, -0.18] },
-  { id: "chassis",     label: "Chassis Base",  sublabel: "2U · 19\" Rack Depth", anchor: [0, -0.42, 0] },
+  { id: "lid",         label: "Top Cover",      sublabel: "1.5mm Cold-Rolled Steel",   anchor: [0, 0.56, 0] },
+  { id: "heatsinkA",   label: "CPU · Socket 1", sublabel: "Xeon Platinum · 350W TDP",  anchor: [-0.02, 0.46, 0.04] },
+  { id: "ramBankA",    label: "DIMM Bank A",    sublabel: "16× DDR5-5600 ECC",         anchor: [-0.62, 0.22, 0.05] },
+  { id: "fanWall",     label: "Hot-Swap Fans",  sublabel: "6× Counter-Rotating N+1",   anchor: [0, 0.38, 0.26] },
+  { id: "psuA",        label: "PSU · Primary",  sublabel: "1100W · Platinum · Redundant", anchor: [0.60, -0.10, -0.42] },
+  { id: "driveCage",   label: "Drive Cage",     sublabel: "8× 3.5\" SAS/SATA Hot-Swap", anchor: [0, -0.04, 0.68] },
+  { id: "gpu",         label: "GPU Accelerator", sublabel: "L40S · 48GB HBM3",         anchor: [-0.68, 0.22, -0.24] },
+  { id: "chassis",     label: "Chassis Base",   sublabel: "2U · 19\" Rack Depth",       anchor: [0, -0.54, 0] },
 ];
