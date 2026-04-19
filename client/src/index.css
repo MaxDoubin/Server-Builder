@@ -88,6 +88,156 @@
   text-shadow: 0 0 16px hsl(var(--brand-signal) / 0.45);
 }
 
+/* -----------------------------------------------------------------
+ * 3D rack preloader. CSS-only so it stays smooth on slow devices
+ * (no R3F canvas to spin up before the rest of the site loads).
+ * ----------------------------------------------------------------- */
+.preloader-stage {
+  position: relative;
+}
+.preloader-rack {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.preloader-rack-body {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(-18px);
+  background:
+    linear-gradient(180deg, #0a0d13 0%, #04060b 100%);
+  border: 1px solid hsl(var(--brand-iron));
+  border-radius: 8px;
+  box-shadow:
+    0 40px 80px -20px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+.preloader-rack-side {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  transform: rotateY(90deg) translateZ(-9px);
+  transform-origin: right center;
+  background: linear-gradient(180deg, #070a10 0%, #02030a 100%);
+  border: 1px solid hsl(var(--brand-iron));
+  border-radius: 0 8px 8px 0;
+}
+.preloader-rack-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 18px;
+  transform: rotateX(-90deg) translateZ(-9px);
+  transform-origin: top center;
+  background: linear-gradient(90deg, #0a0e14 0%, #05070c 100%);
+  border: 1px solid hsl(var(--brand-iron));
+  border-radius: 8px 8px 0 0;
+}
+.preloader-rack-floor {
+  position: absolute;
+  left: -14%;
+  right: -14%;
+  bottom: -6%;
+  height: 22px;
+  transform: translateZ(-40px);
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--brand-signal) / 0.22) 0%,
+    transparent 68%
+  );
+  filter: blur(10px);
+}
+.preloader-rack-front {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid hsl(var(--brand-iron));
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(12, 16, 22, 0.9) 0%, rgba(3, 5, 10, 0.94) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+.preloader-unit {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 6px;
+  border-radius: 2px;
+  border: 1px solid hsl(var(--brand-carbon));
+  background: #04060b;
+  transition: background 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+}
+.preloader-unit-on {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--brand-carbon)) 0%,
+    #0e1520 60%,
+    hsl(var(--brand-carbon)) 100%
+  );
+  border-color: hsl(var(--brand-iron));
+}
+.preloader-unit-on::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+.preloader-unit-on::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 32%;
+  height: 2px;
+  border-radius: 1px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--brand-cyan) / 0.45),
+    transparent
+  );
+}
+.preloader-unit-signal::before {
+  background: hsl(var(--brand-signal));
+  box-shadow: 0 0 8px hsl(var(--brand-signal));
+}
+.preloader-unit-cyan::before {
+  background: hsl(var(--brand-cyan));
+  box-shadow: 0 0 8px hsl(var(--brand-cyan));
+}
+.preloader-unit-muted::before {
+  background: hsl(var(--brand-amber));
+  box-shadow: 0 0 6px hsl(var(--brand-amber) / 0.7);
+}
+@keyframes preloader-float {
+  0%, 100% {
+    transform: rotateX(6deg) rotateY(-22deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(5deg) rotateY(-20deg) translateY(-4px);
+  }
+}
+@keyframes preloader-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 12px hsl(var(--brand-signal));
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow: 0 0 4px hsl(var(--brand-signal));
+  }
+}
+
 .cinematic .vignette::after {
   content: "";
   position: absolute;

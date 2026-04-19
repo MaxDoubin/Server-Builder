@@ -10,6 +10,7 @@ import {
   U,
   type GearSlot,
 } from "./rackConfig";
+import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 
 export type StoryProgressRef = { current: number };
 
@@ -17,218 +18,77 @@ type StoryInsertion = {
   slot: GearSlot;
   start: number;
   end: number;
-  fromX: number;
-  fromZ: number;
-  yaw: number;
 };
 
-type CameraKey = {
-  t: number;
-  pos: [number, number, number];
-  look: [number, number, number];
-  fov: number;
-};
-
-const STORY_INSERTIONS: StoryInsertion[] = [
-  {
-    slot: RACK_LAYOUT.find((slot) => slot.u === 13)!,
-    start: 0.06,
-    end: 0.18,
-    fromX: -1.22,
-    fromZ: 0.22,
-    yaw: 0.24,
-  },
-  {
-    slot: RACK_LAYOUT.find((slot) => slot.u === 17)!,
-    start: 0.30,
-    end: 0.42,
-    fromX: 1.26,
-    fromZ: 0.12,
-    yaw: -0.22,
-  },
-  {
-    slot: RACK_LAYOUT.find((slot) => slot.u === 30)!,
-    start: 0.54,
-    end: 0.66,
-    fromX: -1.18,
-    fromZ: -0.06,
-    yaw: 0.26,
-  },
-  {
-    slot: RACK_LAYOUT.find((slot) => slot.u === 41)!,
-    start: 0.78,
-    end: 0.90,
-    fromX: 1.24,
-    fromZ: 0.18,
-    yaw: -0.2,
-  },
-];
-
-const STORY_LAYOUT = RACK_LAYOUT.filter(
-  (slot) => !STORY_INSERTIONS.some((insertion) => insertion.slot.u === slot.u),
-);
-
-const CAMERA_KEYS: CameraKey[] = [
-  {
-    t: 0,
-    pos: [0.05, RACK_TOTAL_HEIGHT * 0.57, 2.72],
-    look: [0, RACK_TOTAL_HEIGHT * 0.52, 0],
-    fov: 31,
-  },
-  {
-    t: 0.24,
-    pos: [1.4, RACK_TOTAL_HEIGHT * 0.68, 1.46],
-    look: [0.04, RACK_TOTAL_HEIGHT * 0.62, 0],
-    fov: 27,
-  },
-  {
-    t: 0.5,
-    pos: [-1.26, RACK_TOTAL_HEIGHT * 0.6, 1.08],
-    look: [0, RACK_TOTAL_HEIGHT * 0.58, -0.01],
-    fov: 28,
-  },
-  {
-    t: 0.76,
-    pos: [1.18, RACK_TOTAL_HEIGHT * 0.5, -1.02],
-    look: [0, RACK_TOTAL_HEIGHT * 0.6, -0.04],
-    fov: 29,
-  },
-  {
-    t: 1,
-    pos: [-0.88, RACK_TOTAL_HEIGHT * 0.72, 2.3],
-    look: [0, RACK_TOTAL_HEIGHT * 0.6, 0],
-    fov: 32,
-  },
-];
+/**
+ * Camera is locked. Nearly every slot in the rack is racked in over the
+ * course of the scroll — small servers first, heavy gear later — so the
+ * viewer actually sees the rack being built up unit by unit.
+ *
+ * Start/end progress values are spread across 0..0.92 so the assembly
+ * completes comfortably before the scene unpins.
+ */
+function buildInsertions(): StoryInsertion[] {
+  const ordered = [...RACK_LAYOUT].sort((a, b) => a.u - b.u);
+  const spacing = 0.92 / ordered.length;
+  const windowSize = 0.1;
+  return ordered.map((slot, i) => {
+    const start = i * spacing;
+    return {
+      slot,
+      start,
+      end: Math.min(0.96, start + windowSize),
+    };
+  });
+}
 
 function smoothstep(a: number, b: number, x: number) {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
 }
 
-function interpolate(keys: CameraKey[], t: number) {
-  if (t <= keys[0].t) return keys[0];
-  if (t >= keys[keys.length - 1].t) return keys[keys.length - 1];
-  for (let i = 0; i < keys.length - 1; i++) {
-    const a = keys[i];
-    const b = keys[i + 1];
-    if (t >= a.t && t <= b.t) {
-      const local = smoothstep(a.t, b.t, t);
-      return {
-        pos: [
-          a.pos[0] + (b.pos[0] - a.pos[0]) * local,
-          a.pos[1] + (b.pos[1] - a.pos[1]) * local,
-          a.pos[2] + (b.pos[2] - a.pos[2]) * local,
-        ] as [number, number, number],
-        look: [
-          a.look[0] + (b.look[0] - a.look[0]) * local,
-          a.look[1] + (b.look[1] - a.look[1]) * local,
-          a.look[2] + (b.look[2] - a.look[2]) * local,
-        ] as [number, number, number],
-        fov: a.fov + (b.fov - a.fov) * local,
-      };
-    }
-  }
-  return keys[0];
-}
-
 function StoryBackdrop() {
-  const telemetryRows = Array.from({ length: 6 });
-  const telemetryCols = Array.from({ length: 18 });
-
   return (
     <group>
-      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -1.02]}>
-        <planeGeometry args={[3.3, RACK_TOTAL_HEIGHT * 1.22]} />
-        <meshBasicMaterial color="#05070d" transparent opacity={0.94} toneMapped={false} />
+      {/* Deep back wall */}
+      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -1.1]}>
+        <planeGeometry args={[3.6, RACK_TOTAL_HEIGHT * 1.3]} />
+        <meshBasicMaterial color="#04060b" transparent opacity={0.96} toneMapped={false} />
       </mesh>
-      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -0.9]}>
-        <planeGeometry args={[2.78, RACK_TOTAL_HEIGHT * 1.12]} />
+      {/* Telemetry wall detail */}
+      <mesh position={[0, RACK_TOTAL_HEIGHT * 0.56, -0.98]}>
+        <planeGeometry args={[2.82, RACK_TOTAL_HEIGHT * 1.14]} />
         <meshBasicMaterial color="#070b11" transparent opacity={0.86} toneMapped={false} />
       </mesh>
-
-      {[-1.26, 1.26].map((x, i) => (
-        <group key={x} position={[x, RACK_TOTAL_HEIGHT * 0.58, -0.28]} rotation={[0, i === 0 ? 0.18 : -0.18, 0]}>
-          <mesh>
-            <planeGeometry args={[0.24, RACK_TOTAL_HEIGHT * 1.08]} />
-            <meshBasicMaterial color="#0a0f17" transparent opacity={0.7} toneMapped={false} />
-          </mesh>
-          {Array.from({ length: 11 }).map((_, lineIndex) => (
-            <mesh key={lineIndex} position={[0, -RACK_TOTAL_HEIGHT * 0.5 + lineIndex * (RACK_TOTAL_HEIGHT * 0.1), 0.002]}>
-              <boxGeometry args={[0.18, 0.004, 0.002]} />
-              <meshBasicMaterial
-                color={lineIndex % 2 === 0 ? "#64e6ff" : "#c7f000"}
-                transparent
-                opacity={0.12}
-                toneMapped={false}
-              />
-            </mesh>
-          ))}
-        </group>
-      ))}
-
+      {/* Vertical accent rails behind the rack */}
       {[-0.92, -0.48, 0, 0.48, 0.92].map((x, i) => (
-        <mesh key={i} position={[x, RACK_TOTAL_HEIGHT * 0.56, -0.88]}>
-          <boxGeometry args={[0.02, RACK_TOTAL_HEIGHT * 1.02, 0.02]} />
+        <mesh key={i} position={[x, RACK_TOTAL_HEIGHT * 0.56, -0.96]}>
+          <boxGeometry args={[0.018, RACK_TOTAL_HEIGHT * 1.02, 0.018]} />
           <meshBasicMaterial
             color={i % 2 === 0 ? "#64e6ff" : "#c7f000"}
             transparent
-            opacity={0.12}
+            opacity={0.1}
             toneMapped={false}
           />
         </mesh>
       ))}
-
-      {telemetryRows.map((_, row) =>
-        telemetryCols.map((__, col) => (
-          <mesh
-            key={`${row}-${col}`}
-            position={[
-              -0.78 + col * 0.092,
-              RACK_TOTAL_HEIGHT * 0.24 + row * 0.17,
-              -0.86,
-            ]}
-          >
-            <boxGeometry args={[0.03, 0.003, 0.002]} />
-            <meshBasicMaterial
-              color={(row + col) % 4 === 0 ? "#c7f000" : "#64e6ff"}
-              transparent
-              opacity={(row + col) % 5 === 0 ? 0.2 : 0.1}
-              toneMapped={false}
-            />
-          </mesh>
-        )),
-      )}
-
-      {Array.from({ length: 8 }).map((_, i) => (
-        <mesh key={`ceiling-${i}`} position={[-0.84 + i * 0.24, RACK_TOTAL_HEIGHT + 0.08, -0.14]}>
-          <boxGeometry args={[0.16, 0.01, 0.42]} />
-          <meshStandardMaterial color="#11151b" metalness={0.62} roughness={0.48} />
-        </mesh>
-      ))}
-
-      {[-0.36, 0.36].map((x, i) => (
-        <mesh key={i} position={[x, 0.002, 0.16]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.014, 2.1]} />
-          <meshBasicMaterial
-            color={i === 0 ? "#64e6ff" : "#c7f000"}
-            transparent
-            opacity={0.18}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.0018, -0.08]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.38, 2.18]} />
-        <meshBasicMaterial color="#10151d" transparent opacity={0.34} toneMapped={false} />
+      {/* Floor disc */}
+      <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[1.95, 72]} />
+        <meshBasicMaterial color="#0a0c12" transparent opacity={0.5} />
       </mesh>
+      {/* Floor crosshatch */}
       {Array.from({ length: 11 }).map((_, i) => (
-        <mesh key={`cross-${i}`} position={[0, 0.0022, -0.96 + i * 0.19]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.78, 0.012]} />
+        <mesh
+          key={`cross-${i}`}
+          position={[0, 0.0022, -0.96 + i * 0.19]}
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry args={[0.82, 0.01]} />
           <meshBasicMaterial
             color={i % 2 === 0 ? "#64e6ff" : "#c7f000"}
             transparent
-            opacity={0.11}
+            opacity={0.09}
             toneMapped={false}
           />
         </mesh>
@@ -237,59 +97,21 @@ function StoryBackdrop() {
   );
 }
 
-function StorySweepLight() {
-  const cyanRef = useRef<THREE.Mesh>(null);
-  const brandRef = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }) => {
-    const cyan = cyanRef.current;
-    const brand = brandRef.current;
-    if (!cyan || !brand) return;
-
-    const cyanMaterial = cyan.material as THREE.MeshBasicMaterial;
-    const brandMaterial = brand.material as THREE.MeshBasicMaterial;
-    const t = clock.elapsedTime;
-
-    cyan.position.y = RACK_TOTAL_HEIGHT * 0.26 + (Math.sin(t * 0.72) * 0.5 + 0.5) * (RACK_TOTAL_HEIGHT * 0.34);
-    brand.position.y = RACK_TOTAL_HEIGHT * 0.18 + (Math.cos(t * 0.64) * 0.5 + 0.5) * (RACK_TOTAL_HEIGHT * 0.4);
-    cyanMaterial.opacity = 0.05 + (Math.sin(t * 1.1) * 0.5 + 0.5) * 0.08;
-    brandMaterial.opacity = 0.04 + (Math.cos(t * 0.96) * 0.5 + 0.5) * 0.07;
-  });
-
-  return (
-    <group>
-      <mesh ref={cyanRef} position={[0, RACK_TOTAL_HEIGHT * 0.46, -0.84]}>
-        <planeGeometry args={[2.08, 0.22]} />
-        <meshBasicMaterial color="#64e6ff" transparent opacity={0.08} depthWrite={false} toneMapped={false} />
-      </mesh>
-      <mesh ref={brandRef} position={[0, RACK_TOTAL_HEIGHT * 0.34, -0.82]}>
-        <planeGeometry args={[1.84, 0.18]} />
-        <meshBasicMaterial color="#c7f000" transparent opacity={0.06} depthWrite={false} toneMapped={false} />
-      </mesh>
-    </group>
-  );
-}
-
-function StoryCameraRig({ progressRef }: { progressRef: StoryProgressRef }) {
+/**
+ * Camera locked dead-center front of the rack. No panning, no orbit.
+ * Holds a subtle breathe-in/out on position.y so the image still feels
+ * alive without ever losing sight of what's being racked.
+ */
+function LockedCamera() {
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera;
-  const targetRef = useRef(new THREE.Vector3());
-  const tmpPos = useMemo(() => new THREE.Vector3(), []);
-  const tmpTarget = useMemo(() => new THREE.Vector3(), []);
+  const targetRef = useRef(new THREE.Vector3(0, RACK_TOTAL_HEIGHT * 0.52, 0));
 
   useFrame(({ clock }) => {
-    const clamped = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const key = interpolate(CAMERA_KEYS, clamped);
-    const swayX = Math.sin(clock.elapsedTime * 0.32) * 0.015;
-    const swayY = Math.cos(clock.elapsedTime * 0.28) * 0.012;
-
-    tmpPos.set(key.pos[0] + swayX, key.pos[1] + swayY, key.pos[2]);
-    tmpTarget.set(key.look[0], key.look[1], key.look[2]);
-
-    camera.position.lerp(tmpPos, 0.12);
-    targetRef.current.lerp(tmpTarget, 0.16);
+    const breathe = Math.sin(clock.elapsedTime * 0.25) * 0.008;
+    camera.position.set(0, RACK_TOTAL_HEIGHT * 0.52 + breathe, 2.2);
     camera.lookAt(targetRef.current);
-    if (Math.abs(camera.fov - key.fov) > 0.05) {
-      camera.fov = THREE.MathUtils.lerp(camera.fov, key.fov, 0.14);
+    if (Math.abs(camera.fov - 34) > 0.05) {
+      camera.fov = THREE.MathUtils.lerp(camera.fov, 34, 0.2);
       camera.updateProjectionMatrix();
     }
   });
@@ -297,98 +119,146 @@ function StoryCameraRig({ progressRef }: { progressRef: StoryProgressRef }) {
   return null;
 }
 
+/**
+ * One server sliding into its rack slot from the right.
+ *
+ * Per-insertion animation:
+ *   - before `start`: hidden
+ *   - [start..end]: slides from offset -> rack center, rotation aligns to 0
+ *   - after `end`: locked in place, drive-bay LEDs in the chassis take over
+ */
 function SlidingServer({
   insertion,
   progressRef,
+  seed,
 }: {
   insertion: StoryInsertion;
   progressRef: StoryProgressRef;
+  seed: number;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const targetY =
     RACK_FEET_HEIGHT + (insertion.slot.u - 1 + insertion.slot.size / 2) * U;
+  // Slide in from the right. Large gear (blade, GPU) uses a shorter
+  // offset so it doesn't swing into the camera.
+  const fromX = insertion.slot.size >= 4 ? 0.9 : 1.2;
 
   useFrame(() => {
-    if (!groupRef.current) return;
+    const group = groupRef.current;
+    if (!group) return;
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
     const local = smoothstep(insertion.start, insertion.end, p);
-    const settle = smoothstep(insertion.end, insertion.end + 0.05, p);
-    const overshoot = Math.sin(local * Math.PI) * 0.06 * (1 - settle);
+    const settle = smoothstep(insertion.end, insertion.end + 0.04, p);
+    const lift = Math.sin(local * Math.PI) * 0.006 * (1 - settle);
 
-    const x = THREE.MathUtils.lerp(insertion.fromX, 0, local) + overshoot * Math.sign(insertion.fromX) * -1;
-    const z = THREE.MathUtils.lerp(insertion.fromZ, 0, local);
-    const y = targetY + Math.sin(local * Math.PI) * 0.01 * (1 - settle);
-    groupRef.current.position.set(x, y, z);
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(insertion.yaw, 0, local);
-    groupRef.current.visible = p >= insertion.start - 0.02;
+    group.position.x = THREE.MathUtils.lerp(fromX, 0, local);
+    group.position.y = targetY + lift;
+    group.position.z = THREE.MathUtils.lerp(0.12, 0, local);
+    // Slight yaw during travel, straightens on dock
+    group.rotation.y = THREE.MathUtils.lerp(-0.18, 0, local);
+    group.visible = p >= insertion.start - 0.01;
 
     if (glowRef.current) {
       const material = glowRef.current.material as THREE.MeshBasicMaterial;
-      material.opacity = p < insertion.start ? 0 : 0.08 + Math.sin(local * Math.PI) * 0.1;
+      // Rail glow under the chassis while it's in motion
+      material.opacity = p < insertion.start || settle >= 0.98
+        ? 0
+        : 0.18 * (1 - settle) + 0.04;
     }
   });
 
   return (
-    <group ref={groupRef}>
-      <mesh ref={glowRef} position={[0, -insertion.slot.size * U * 0.48, 0.12]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.42, 0.08]} />
-        <meshBasicMaterial color="#c7f000" transparent opacity={0} depthWrite={false} toneMapped={false} />
+    <group ref={groupRef} visible={false}>
+      <mesh
+        ref={glowRef}
+        position={[0, -insertion.slot.size * U * 0.48, 0.14]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[0.46, 0.08]} />
+        <meshBasicMaterial
+          color="#c7f000"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          toneMapped={false}
+        />
       </mesh>
       <ServerChassis
         kind={insertion.slot.kind}
         sizeU={insertion.slot.size}
         accent={insertion.slot.accent}
         label={insertion.slot.label}
-        seed={100 + insertion.slot.u}
+        seed={seed}
       />
     </group>
   );
 }
 
 export function RackStoryCanvas({ progressRef }: { progressRef: StoryProgressRef }) {
+  const { dpr, effects, tier } = useDeviceTier();
+  const insertions = useMemo(buildInsertions, []);
+
   return (
     <Canvas
-      dpr={[1, 2]}
+      dpr={dpr}
       shadows={false}
-      camera={{ position: [0, RACK_TOTAL_HEIGHT * 0.55, 2.6], fov: 31, near: 0.01, far: 50 }}
+      camera={{
+        position: [0, RACK_TOTAL_HEIGHT * 0.52, 2.2],
+        fov: 34,
+        near: 0.01,
+        far: 40,
+      }}
       gl={{
-        antialias: true,
+        antialias: tier !== "low",
         alpha: true,
         powerPreference: "high-performance",
       }}
       style={{ background: "transparent" }}
     >
       <color attach="background" args={["#04050a"]} />
-      <fog attach="fog" args={["#04050a", 2.4, 6.8]} />
+      <fog attach="fog" args={["#04050a", 2.2, 6.2]} />
 
-      <ambientLight intensity={0.22} color="#c8d4e0" />
+      <ambientLight intensity={0.24} color="#c8d4e0" />
       <directionalLight position={[2.6, 3.2, 2.4]} intensity={2.2} color="#d7e4ff" />
       <directionalLight position={[-1.8, 0.8, 1.2]} intensity={0.42} color="#ffd1a1" />
       <directionalLight position={[-1.2, 2.4, -1.6]} intensity={0.52} color="#64e6ff" />
       <hemisphereLight args={["#2a3550", "#060812", 0.3]} />
-      <pointLight position={[0, RACK_TOTAL_HEIGHT * 0.62, 0.45]} intensity={0.62} distance={1.8} color="#c7f000" />
-      <pointLight position={[0, RACK_TOTAL_HEIGHT * 0.34, 0.5]} intensity={0.42} distance={1.4} color="#64e6ff" />
-      <pointLight position={[0, RACK_TOTAL_HEIGHT * 0.76, -0.72]} intensity={0.28} distance={2.4} color="#ff9a1f" />
+      {effects && (
+        <>
+          <pointLight
+            position={[0, RACK_TOTAL_HEIGHT * 0.62, 0.45]}
+            intensity={0.6}
+            distance={1.8}
+            color="#c7f000"
+          />
+          <pointLight
+            position={[0, RACK_TOTAL_HEIGHT * 0.34, 0.5]}
+            intensity={0.42}
+            distance={1.4}
+            color="#64e6ff"
+          />
+        </>
+      )}
 
       <StoryBackdrop />
-      <StorySweepLight />
 
       <Suspense fallback={null}>
         <group position={[0, 0, 0.02]}>
-          <Rack layout={STORY_LAYOUT} />
-          {STORY_INSERTIONS.map((insertion) => (
-            <SlidingServer key={insertion.slot.u} insertion={insertion} progressRef={progressRef} />
+          {/* Empty rack with no gear — gear slides in from the side. */}
+          <Rack layout={[]} />
+          {insertions.map((insertion, i) => (
+            <SlidingServer
+              key={insertion.slot.u}
+              insertion={insertion}
+              progressRef={progressRef}
+              seed={100 + i}
+            />
           ))}
         </group>
       </Suspense>
 
-      <StoryCameraRig progressRef={progressRef} />
-
-      <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[1.95, 72]} />
-        <meshBasicMaterial color="#0a0c12" transparent opacity={0.45} />
-      </mesh>
+      <LockedCamera />
     </Canvas>
   );
 }

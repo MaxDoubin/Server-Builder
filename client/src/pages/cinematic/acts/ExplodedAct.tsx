@@ -33,11 +33,12 @@ export function ExplodedAct() {
       timeline.to(gridRef.current, { opacity: 0.28, duration: 0.4 }, 0.2);
       timeline.to(legendRef.current, { opacity: 1, duration: 0.3 }, 0.45);
 
-      // Exit text near the end so parts take center stage
+      // Fade text out by the time the camera tour begins exploring parts,
+      // so nothing competes with the labelled engineering plate.
       timeline.to(
         [eyebrowRef.current, headlineRef.current, captionRef.current],
-        { opacity: 0.25, y: -10, duration: 0.25 },
-        0.7,
+        { opacity: 0.0, y: -10, duration: 0.2 },
+        0.2,
       );
 
       const proxy = { p: 0 };
@@ -55,7 +56,7 @@ export function ExplodedAct() {
       );
     },
     [],
-    { end: "+=240%", pin: true, scrub: 1 },
+    { end: "+=320%", pin: true, scrub: 1 },
   );
 
   return (
