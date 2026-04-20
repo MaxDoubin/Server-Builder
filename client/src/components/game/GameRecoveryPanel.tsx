@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Cpu, Gauge, Layers3, RefreshCw, RotateCcw, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
 import type { GameRenderProfile, WebGLSupportState } from "@/lib/webgl-support";
@@ -121,7 +122,7 @@ function DetailCard({
   label,
   value,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
 }) {
