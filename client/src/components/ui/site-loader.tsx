@@ -6,10 +6,10 @@ type SiteLoaderProps = {
 };
 
 export function SiteLoader({
-  eyebrow = "Max Doubin Experience",
-  title = "Loading experience",
-  detail = "Preparing the next scene.",
-  status = "Booting systems",
+  eyebrow = "Max Doubin Profile",
+  title = "Loading section",
+  detail = "Preparing the next section of the site.",
+  status = "Initializing",
 }: SiteLoaderProps) {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[hsl(var(--brand-obsidian))] px-6 text-[hsl(var(--brand-bone))]">
@@ -47,6 +47,7 @@ export function SiteLoader({
           boxShadow: "0 0 28px hsl(var(--brand-signal) / 0.28)",
         }}
       />
+      <div className="pointer-events-none absolute inset-x-[18vw] top-[34vh] h-[18vh] bg-[linear-gradient(180deg,transparent,hsl(var(--brand-cyan)/0.08),hsl(var(--brand-signal)/0.08),transparent)] blur-3xl" />
 
       <div className="relative w-full max-w-[520px] overflow-hidden rounded-[28px] border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,hsl(var(--brand-graphite)/0.9),hsl(var(--brand-obsidian)/0.82))] px-6 py-7 shadow-[0_30px_120px_-40px_rgba(0,0,0,0.85)] backdrop-blur-xl md:px-8 md:py-8">
         <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,hsl(var(--brand-signal)),transparent)] opacity-80" />
@@ -90,6 +91,13 @@ export function SiteLoader({
         <div className="mt-7 flex items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
           <span>{status}</span>
           <span className="signal-text">Live</span>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[9px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]">
+          <span>Cybersecurity</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>Networking</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>Systems</span>
         </div>
       </div>
     </div>
