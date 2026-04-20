@@ -8,10 +8,10 @@ export function CinematicFooter() {
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-12 md:px-10">
         <div className="md:col-span-5">
           <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
-            Max Doubin · 15 · Las Vegas, NV
+            Max Doubin · Las Vegas, NV
           </div>
           <h3 className="mt-4 max-w-md font-display text-3xl font-medium leading-[1.05] tracking-tight text-[hsl(var(--brand-bone))] md:text-4xl">
-            Fifteen years old. Already shipping at enterprise scale.
+            Cybersecurity, enterprise networking, systems infrastructure, percussion, and community leadership.
           </h3>
           <a
             href="mailto:max@maxdoubin.com"
@@ -30,8 +30,8 @@ export function CinematicFooter() {
           <ul className="mt-4 space-y-2 font-mono-tight text-sm">
             <li><Link href="/#dossier" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-dossier">Dossier</Link></li>
             <li><Link href="/projects" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-projects">Projects</Link></li>
-            <li><Link href="/blog" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-blog">Field notes</Link></li>
-            <li><Link href="/game" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-game">Build simulator</Link></li>
+            <li><Link href="/blog" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-blog">Field Notes</Link></li>
+            <li><Link href="/game" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-game">Build Simulator</Link></li>
             <li><Link href="/contact" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-contact-2">Contact</Link></li>
           </ul>
         </div>
@@ -49,7 +49,7 @@ export function CinematicFooter() {
                 className="hover:text-[hsl(var(--brand-bone))]"
                 data-testid="link-footer-github"
               >
-                GitHub · MaxFromYT
+                GitHub · MaxFromYT/Server-Builder
               </a>
             </li>
             <li>
