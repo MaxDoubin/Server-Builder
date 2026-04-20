@@ -25,6 +25,7 @@ import type { AutosaveSnapshot, SaveSlot } from "@/lib/save-system";
 import { useBuild } from "@/lib/build-context";
 import { useLocation } from "wouter";
 import { usePrefersReducedMotion } from "@/lib/motion";
+import type { GameRenderProfile } from "@/lib/webgl-support";
 
 type CameraMode = "orbit" | "auto" | "cinematic";
 type SessionMode = "build" | "explore";
@@ -36,7 +37,11 @@ function isTypingTarget(target: EventTarget | null) {
   return tag === "input" || tag === "textarea" || el.isContentEditable;
 }
 
-export function DataCenter3D() {
+export function DataCenter3D({
+  renderProfile = "cinematic",
+}: {
+  renderProfile?: GameRenderProfile;
+}) {
   const {
     isLoading,
     racks,
@@ -98,9 +103,8 @@ export function DataCenter3D() {
   const selectedRackId = selectedIds[0] ?? null;
   const visibleRacks = isStaticMode ? racks.slice(0, rackCount) : racks;
   const selectedRack = visibleRacks?.find((r) => r.id === selectedRackId) || null;
-  const effectiveEffects = showEffects && !fastRamp && !prefersReducedMotion;
-
-
+  const effectiveEffects =
+    renderProfile !== "compatibility" && showEffects && !fastRamp && !prefersReducedMotion;
 
   const validateBuild = () => {
     const powerViolations = racks.filter((rack) => rack.currentPowerDraw > rack.powerCapacity);
@@ -125,6 +129,17 @@ export function DataCenter3D() {
     });
     return false;
   };
+
+  useEffect(() => {
+    if (renderProfile !== "compatibility") return;
+    setShowEffects(false);
+    setCameraMode("orbit");
+    setQualityMode("low");
+    setShowPerfOverlay(false);
+    setFocusMode(false);
+    setShowOverlays(true);
+    setShowToolbars(true);
+  }, [renderProfile]);
 
   useEffect(() => {
     if (isStaticMode) {
@@ -177,18 +192,18 @@ export function DataCenter3D() {
       setFocusMode(true);
       setShowOverlays(false);
       setShowToolbars(false);
-      setCameraMode("cinematic");
+      setCameraMode(renderProfile === "compatibility" ? "orbit" : "cinematic");
       setShowHUD(true);
-      setShowEffects(true);
+      setShowEffects(renderProfile !== "compatibility");
     } else {
       setFocusMode(false);
       setShowOverlays(true);
       setShowToolbars(true);
       setCameraMode("orbit");
       setShowHUD(true);
-      setShowEffects(true);
+      setShowEffects(renderProfile !== "compatibility");
     }
-  }, []);
+  }, [renderProfile]);
 
   useEffect(() => {
     if (location === "/floor") {
@@ -206,8 +221,8 @@ export function DataCenter3D() {
       if (introVisible) return;
 
       if (event.key === "1") setCameraMode("orbit");
-      if (event.key === "2") setCameraMode("auto");
-      if (event.key === "3") setCameraMode("cinematic");
+      if (event.key === "2") setCameraMode(renderProfile === "compatibility" ? "orbit" : "auto");
+      if (event.key === "3") setCameraMode(renderProfile === "compatibility" ? "orbit" : "cinematic");
 
       if (event.key.toLowerCase() === "h") setShowHUD((p) => !p);
       if (event.key.toLowerCase() === "e") setShowEffects((p) => !p);
@@ -223,13 +238,16 @@ export function DataCenter3D() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [introVisible, redo, undo]);
+  }, [introVisible, redo, renderProfile, undo]);
 
-  const sceneCameraMode: CameraMode = prefersReducedMotion
-    ? "orbit"
-    : introVisible
-      ? "cinematic"
-      : cameraMode;
+  const sceneCameraMode: CameraMode =
+    renderProfile === "compatibility"
+      ? "orbit"
+      : prefersReducedMotion
+        ? "orbit"
+        : introVisible
+          ? "cinematic"
+          : cameraMode;
   const showInstantShell = isLoading && racks.length === 0;
 
   return (
@@ -244,17 +262,18 @@ export function DataCenter3D() {
         selectedRackId={selectedRackId}
         isUnlocked={isUnlocked}
         cameraMode={sceneCameraMode}
-        showEffects={introVisible ? true : effectiveEffects}
+        showEffects={introVisible ? renderProfile !== "compatibility" : effectiveEffects}
         showHUD={introVisible ? false : showHUD}
         showPerfOverlay={showPerfOverlay}
         rackScale={rackScale}
         rackCount={rackCount}
         proceduralOptions={proceduralOptions}
         showHeatmap={showHeatmap}
-        qualityMode={qualityMode}
+        qualityMode={renderProfile === "compatibility" ? "low" : qualityMode}
         visibleRacks={visibleRacks}
-        forceSimplified={isStaticMode && fastRamp}
+        forceSimplified={renderProfile === "compatibility" || (isStaticMode && fastRamp)}
         lodResetToken={lodResetToken}
+        renderProfile={renderProfile}
         onPerfWarningChange={setPerfWarning}
         onPointerGridConfirm={(positionX, positionY) => {
           if (!placingRack) return;
