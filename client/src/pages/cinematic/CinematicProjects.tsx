@@ -10,6 +10,7 @@ const CATEGORIES = [
   { value: "networking", label: "Networking" },
   { value: "simulation", label: "Simulation" },
   { value: "web", label: "Web" },
+  { value: "art", label: "Art" },
 ];
 
 export function CinematicProjects() {
@@ -50,7 +51,6 @@ export function CinematicProjects() {
         ref={rootRef}
         className="relative min-h-screen px-6 pb-32 pt-[22vh] md:px-10"
       >
-        {/* Grid backdrop */}
         <div
           aria-hidden
           className="absolute inset-0"
@@ -81,7 +81,6 @@ export function CinematicProjects() {
             </p>
           </div>
 
-          {/* Filter strip */}
           <div
             data-testid="project-filters"
             className="mt-14 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
@@ -118,7 +117,6 @@ export function CinematicProjects() {
             </span>
           </div>
 
-          {/* Project grid */}
           <div ref={gridRef} className="mt-10 grid gap-6 md:grid-cols-2">
             {filteredProjects.map((project, idx) => (
               <article
