@@ -15,27 +15,10 @@ import {
   U,
   type GearSlot,
 } from "./rackConfig";
-import { useDeviceTier } from "@/lib/motion/useDeviceTier";
+import { useDeviceTier, type DeviceTier } from "@/lib/motion/useDeviceTier";
 
 export type ContinuousProgressRef = { current: number };
 
-/**
- * One continuous shot. Same rack, same camera, no cuts.
- *
- * Beat map (progress 0..1):
- *   0.00 – 0.14  HERO        slow arc in front of rack
- *   0.14 – 0.36  INSTALL     camera tilts/pans down the SAME rack while
- *                            a handful of empty slots get racked in
- *   0.36 – 0.54  PULL OUT    one 2U server slides forward out of its bay
- *                            (camera stays in front of the rack, never inside)
- *   0.54 – 0.72  ANATOMY     the pulled server splits into labelled parts
- *   0.72 – 0.84  REASSEMBLE  parts close up, server slides back into rack
- *   0.84 – 1.00  HALL        camera pulls way back/up; hall fades in around
- *                            the hero rack with rows of racks + tray + lights
- *
- * Camera invariant: never enters the rack. The forbidden zone is the box
- * { |x| < 0.36, 0 < y < 2.0, |z| < 0.65 }. Every keyframe stays outside.
- */
 const FOCUS_SLOT: GearSlot = {
   u: 9,
   size: 2,
@@ -44,9 +27,6 @@ const FOCUS_SLOT: GearSlot = {
   accent: "signal",
 };
 
-// Slots that "install" during Beat 2. They are removed from the static
-// layout and re-rendered as sliding insertions so the user actually
-// sees them being racked in.
 const INSTALL_TARGETS = new Set([13, 14, 15, 21, 33, 38]);
 
 const BASE_LAYOUT = RACK_LAYOUT.filter(
@@ -63,10 +43,6 @@ function easeInOut(x: number) {
   return x * x * (3 - 2 * x);
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Camera rig                                                                 */
-/* -------------------------------------------------------------------------- */
-
 type Key = {
   t: number;
   pos: [number, number, number];
@@ -76,32 +52,19 @@ type Key = {
 
 const RACK_MID_Y = RACK_TOTAL_HEIGHT * 0.5;
 
-// Every position has Z >= 1.85 OR sits well to the side. The camera never
-// enters the rack volume.
 const CAM_KEYS: Key[] = [
-  // Beat 1 — HERO: gentle 3/4 front-on
   { t: 0.00, pos: [-0.55, RACK_MID_Y + 0.18, 2.85], look: [0, RACK_MID_Y + 0.05, 0], fov: 32 },
-  { t: 0.10, pos: [ 0.40, RACK_MID_Y + 0.10, 2.70], look: [0, RACK_MID_Y + 0.05, 0], fov: 32 },
-
-  // Beat 2 — INSTALL: dolly to the right, drop the eye and tilt down the rack
-  { t: 0.18, pos: [ 1.10, RACK_MID_Y + 0.05, 2.40], look: [0, RACK_MID_Y * 0.92, 0], fov: 33 },
-  { t: 0.28, pos: [ 1.25, RACK_MID_Y * 0.62, 2.20], look: [0, RACK_MID_Y * 0.55, 0], fov: 34 },
-  { t: 0.36, pos: [ 1.05, RACK_MID_Y * 0.48, 2.10], look: [0, RACK_MID_Y * 0.50, 0], fov: 34 },
-
-  // Beat 3 — PULL OUT: arc back to front-left, eye on the focus server
+  { t: 0.10, pos: [0.40, RACK_MID_Y + 0.10, 2.70], look: [0, RACK_MID_Y + 0.05, 0], fov: 32 },
+  { t: 0.18, pos: [1.10, RACK_MID_Y + 0.05, 2.40], look: [0, RACK_MID_Y * 0.92, 0], fov: 33 },
+  { t: 0.28, pos: [1.25, RACK_MID_Y * 0.62, 2.20], look: [0, RACK_MID_Y * 0.55, 0], fov: 34 },
+  { t: 0.36, pos: [1.05, RACK_MID_Y * 0.48, 2.10], look: [0, RACK_MID_Y * 0.50, 0], fov: 34 },
   { t: 0.44, pos: [-0.40, FOCUS_SLOT.u * U + 0.20, 2.20], look: [0, FOCUS_SLOT.u * U + 0.10, 0.30], fov: 34 },
   { t: 0.54, pos: [-0.95, FOCUS_SLOT.u * U + 0.18, 2.00], look: [0, FOCUS_SLOT.u * U + 0.05, 0.65], fov: 34 },
-
-  // Beat 4 — ANATOMY: orbit around the pulled server (which sits at z ≈ 0.95)
   { t: 0.62, pos: [-1.20, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
-  { t: 0.70, pos: [ 1.10, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
-
-  // Beat 5 — REASSEMBLE: glide back to front-on as the server seals up
-  { t: 0.80, pos: [ 0.30, RACK_MID_Y * 0.65, 2.40], look: [0, RACK_MID_Y * 0.55, 0], fov: 35 },
-
-  // Beat 6 — HALL: pull WAY back and up, FOV widens
-  { t: 0.92, pos: [ 1.40, RACK_MID_Y + 1.20, 5.20], look: [0, RACK_MID_Y * 0.5, 0], fov: 42 },
-  { t: 1.00, pos: [ 2.40, RACK_MID_Y + 2.40, 8.20], look: [0, RACK_MID_Y * 0.4, 0], fov: 48 },
+  { t: 0.70, pos: [1.10, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
+  { t: 0.80, pos: [0.30, RACK_MID_Y * 0.65, 2.40], look: [0, RACK_MID_Y * 0.55, 0], fov: 35 },
+  { t: 0.92, pos: [1.40, RACK_MID_Y + 1.20, 5.20], look: [0, RACK_MID_Y * 0.5, 0], fov: 42 },
+  { t: 1.00, pos: [2.40, RACK_MID_Y + 2.40, 8.20], look: [0, RACK_MID_Y * 0.4, 0], fov: 48 },
 ];
 
 function sampleKey(t: number): Key {
@@ -142,8 +105,6 @@ function CameraRig({ progressRef }: { progressRef: ContinuousProgressRef }) {
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
     const k = sampleKey(p);
 
-    // Idle micro-drift so static frames don't feel dead. Sway shrinks
-    // toward zero during Beat 4 so the orbit reads as intentional.
     const swayScale = p > 0.54 && p < 0.74 ? 0.0025 : 0.008;
     const sway = Math.sin(clock.elapsedTime * 0.32) * swayScale;
     const swayY = Math.cos(clock.elapsedTime * 0.27) * swayScale * 0.6;
@@ -162,10 +123,6 @@ function CameraRig({ progressRef }: { progressRef: ContinuousProgressRef }) {
   });
   return null;
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Sliding installations (Beat 2)                                             */
-/* -------------------------------------------------------------------------- */
 
 type Insertion = {
   slot: GearSlot;
@@ -254,10 +211,6 @@ function SlidingServer({
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Focus server: pull-out, explode, reassemble                                */
-/* -------------------------------------------------------------------------- */
-
 const PULL_START = 0.38;
 const PULL_END = 0.52;
 const EXPLODE_START = 0.54;
@@ -284,8 +237,6 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
       slidGroup.current.position.set(0, targetY, slideZ);
     }
 
-    // Subtle yaw on the pulled server during anatomy so the side facing
-    // the camera reads naturally as the camera orbits.
     if (innerRef.current) {
       const orbitP = smoothstep(EXPLODE_START + 0.02, EXPLODE_END - 0.04, p);
       innerRef.current.rotation.y = THREE.MathUtils.lerp(
@@ -295,23 +246,18 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
       );
     }
 
-    // Crossfade chassis -> internals while the explode runs.
     const explodeP =
       smoothstep(EXPLODE_START, EXPLODE_END, p) * (1 - back);
     explodeRef.current = explodeP;
     const showInternals = p > EXPLODE_START - 0.02 && p < REASSEMBLE_END + 0.02;
 
     if (chassisGroup.current) {
-      // The shared materials are reused by other ServerChassis instances
-      // in the rack/hall, so we cannot fade by opacity. Hard cut between
-      // chassis and internals at the explode threshold instead.
       chassisGroup.current.visible = explodeP < 0.05;
     }
     if (internalsGroup.current) {
       internalsGroup.current.visible = showInternals;
     }
 
-    // Anatomy labels — only visible during the explode window.
     const labelOpacity =
       explodeP > 0.25 ? Math.min(1, (explodeP - 0.25) / 0.25) : 0;
     INTERNAL_LABELS.forEach((l) => {
@@ -400,16 +346,10 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
   );
 }
 
-/**
- * ServerInternals reads its `explode` from props, so we wrap it so the
- * frame loop can drive that value without re-rendering React.
- */
 function ExplodeBridge({ progressRef }: { progressRef: ContinuousProgressRef }) {
   const ref = useRef<THREE.Group>(null);
   const lastExplode = useRef(-1);
   const explodeNow = useRef(0);
-  // Re-render at most ~30 distinct values across the full explode range
-  // by using a state-free approach: we just swap children every change.
   const [, setBump] = useStateBump();
 
   useFrame(() => {
@@ -424,8 +364,6 @@ function ExplodeBridge({ progressRef }: { progressRef: ContinuousProgressRef }) 
     }
   });
 
-  // Scale the internals down so they match the 2U chassis footprint and
-  // sit centered on the focus slot's local origin.
   return (
     <group ref={ref} scale={[0.34, 0.46, 0.34]} position={[0, 0, 0]}>
       <ServerInternals explode={lastExplode.current === -1 ? 0 : lastExplode.current} />
@@ -433,14 +371,9 @@ function ExplodeBridge({ progressRef }: { progressRef: ContinuousProgressRef }) 
   );
 }
 
-// Tiny helper that gives us a cheap "force re-render" without holding state.
 function useStateBump() {
   return useReducer((x: number) => x + 1, 0);
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Hall reveal                                                                */
-/* -------------------------------------------------------------------------- */
 
 const HALL_START = 0.84;
 const HALL_END = 1.0;
@@ -448,7 +381,6 @@ const HALL_END = 1.0;
 const RACK_SPACING = RACK_TOTAL_WIDTH + 0.05;
 const AISLE = 1.3;
 
-/** A neighbour rack — same geometry as the hero rack, fades in for the hall. */
 function NeighbourRack({
   position,
   rotationY = 0,
@@ -468,8 +400,6 @@ function NeighbourRack({
     const local = smoothstep(HALL_START + delay, HALL_END - 0.04, p);
     groupRef.current.visible = local > 0.005;
     groupRef.current.position.y = THREE.MathUtils.lerp(-0.6, 0, local);
-    // Use scale on a child to fade-in feel; the underlying materials
-    // aren't transparent so we lean on a quick rise + scale instead.
     const s = THREE.MathUtils.lerp(0.86, 1, local);
     groupRef.current.scale.setScalar(s);
   });
@@ -539,19 +469,75 @@ function HallGrid({ progressRef }: { progressRef: ContinuousProgressRef }) {
   );
 }
 
-function HallContents({ progressRef }: { progressRef: ContinuousProgressRef }) {
-  // 2 rows of racks behind/around the hero rack. Hero rack sits at
-  // (0,0,0); we line others to the left/right of it on the same row,
-  // and a mirrored row across the cold aisle.
+function HallSignalField({ progressRef, tier }: { progressRef: ContinuousProgressRef; tier: DeviceTier }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const laneMarkers = tier === "low" ? 6 : tier === "mid" ? 10 : 14;
+  const ceilingRuns = tier === "low" ? 3 : tier === "mid" ? 5 : 7;
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+    const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
+    const local = smoothstep(HALL_START + 0.015, HALL_END, p);
+    groupRef.current.visible = local > 0.005;
+    groupRef.current.position.y = THREE.MathUtils.lerp(-0.18, 0, local);
+    const s = THREE.MathUtils.lerp(0.95, 1, local);
+    groupRef.current.scale.setScalar(s);
+  });
+
+  return (
+    <group ref={groupRef} visible={false}>
+      {[-0.34, -AISLE + 0.34].map((z, index) => (
+        <mesh key={`lane-${index}`} position={[0, 0.004, z]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[18, 0.018]} />
+          <meshBasicMaterial
+            color={index === 0 ? "#64e6ff" : "#c7f000"}
+            transparent
+            opacity={0.16}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {Array.from({ length: laneMarkers }).map((_, i) => (
+        <mesh
+          key={`marker-${i}`}
+          position={[-10.8 + i * (21.6 / Math.max(1, laneMarkers - 1)), 0.0045, -AISLE / 2]}
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry args={[0.16, 1.82]} />
+          <meshBasicMaterial color="#0e151f" transparent opacity={0.11} depthWrite={false} toneMapped={false} />
+        </mesh>
+      ))}
+      {Array.from({ length: ceilingRuns }).map((_, i) => (
+        <mesh key={`ceiling-${i}`} position={[0, 2.42, -0.28 + i * 0.10]}>
+          <boxGeometry args={[7.4, 0.008, 0.01]} />
+          <meshBasicMaterial
+            color={i % 2 === 0 ? "#64e6ff" : "#c7f000"}
+            transparent
+            opacity={0.16}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      <mesh position={[0, 1.98, -3.4]}>
+        <planeGeometry args={[10, 2.8]} />
+        <meshBasicMaterial color="#0c1117" transparent opacity={0.16} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRef; tier: DeviceTier }) {
   const racks = useMemo(() => {
     const out: Array<{ x: number; z: number; rotY: number; delay: number }> = [];
-    // Same row as hero — extend left/right
-    for (let i = 1; i <= 4; i++) {
+    const sameRowSpan = tier === "low" ? 2 : tier === "mid" ? 3 : 4;
+    const oppositeSpan = tier === "low" ? 2 : tier === "mid" ? 3 : 4;
+    for (let i = 1; i <= sameRowSpan; i++) {
       out.push({ x: i * RACK_SPACING, z: 0, rotY: 0, delay: i * 0.005 });
       out.push({ x: -i * RACK_SPACING, z: 0, rotY: 0, delay: i * 0.005 });
     }
-    // Across-the-aisle row (facing the hero)
-    for (let i = -4; i <= 4; i++) {
+    for (let i = -oppositeSpan; i <= oppositeSpan; i++) {
       out.push({
         x: i * RACK_SPACING,
         z: -AISLE,
@@ -560,12 +546,13 @@ function HallContents({ progressRef }: { progressRef: ContinuousProgressRef }) {
       });
     }
     return out;
-  }, []);
+  }, [tier]);
 
   return (
     <group>
       <HallFloor progressRef={progressRef} />
       <HallGrid progressRef={progressRef} />
+      <HallSignalField progressRef={progressRef} tier={tier} />
       {racks.map((r, i) => (
         <NeighbourRack
           key={`hall-${i}`}
@@ -578,10 +565,6 @@ function HallContents({ progressRef }: { progressRef: ContinuousProgressRef }) {
     </group>
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Hero rack (pre-populated minus the focus & install slots)                  */
-/* -------------------------------------------------------------------------- */
 
 function HeroRack() {
   return (
@@ -608,10 +591,6 @@ function HeroRack() {
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Scene                                                                      */
-/* -------------------------------------------------------------------------- */
-
 export function ContinuousRackScene({
   progressRef,
 }: {
@@ -624,6 +603,7 @@ export function ContinuousRackScene({
     <Canvas
       dpr={dpr}
       shadows={false}
+      performance={{ min: 0.6, debounce: 200 }}
       camera={{
         position: [-0.55, RACK_MID_Y + 0.18, 2.85],
         fov: 32,
@@ -634,6 +614,7 @@ export function ContinuousRackScene({
         antialias: tier !== "low",
         alpha: true,
         powerPreference: "high-performance",
+        stencil: false,
       }}
       style={{ background: "transparent" }}
     >
@@ -659,6 +640,18 @@ export function ContinuousRackScene({
             distance={1.4}
             color="#64e6ff"
           />
+          <pointLight
+            position={[0.4, RACK_TOTAL_HEIGHT * 0.92, -0.2]}
+            intensity={0.22}
+            distance={2.4}
+            color="#64e6ff"
+          />
+          <pointLight
+            position={[-0.35, RACK_TOTAL_HEIGHT * 0.12, 0.45]}
+            intensity={0.18}
+            distance={1.2}
+            color="#ff9a1f"
+          />
         </>
       )}
 
@@ -673,13 +666,11 @@ export function ContinuousRackScene({
           />
         ))}
         <FocusServer progressRef={progressRef} />
-        <HallContents progressRef={progressRef} />
+        <HallContents progressRef={progressRef} tier={tier} />
       </Suspense>
 
       <CameraRig progressRef={progressRef} />
 
-      {/* Floor disc directly under the hero rack — kept transparent until
-          the hall reveals so the hero shot stays clean. */}
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.9, effects ? 64 : 32]} />
         <meshBasicMaterial color="#0a0c12" transparent opacity={0.45} />
