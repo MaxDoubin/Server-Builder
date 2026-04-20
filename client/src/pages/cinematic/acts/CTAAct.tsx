@@ -106,32 +106,33 @@ export function CTAAct() {
           className="flex items-center justify-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]"
         >
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
-          <span className="text-[hsl(var(--brand-signal))]">· End of line ·</span>
+          <span className="text-[hsl(var(--brand-signal))]">· Open channel ·</span>
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
         </div>
         <h2
           ref={titleRef}
           className="mt-10 font-display text-[clamp(2.4rem,6.4vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.03em] text-[hsl(var(--brand-bone))]"
         >
-          Wire up something
+          Teach me something.
           <br />
-          <span className="signal-text">worth wiring.</span>
+          <span className="signal-text">Or hand me the keys.</span>
         </h2>
         <p
           ref={subRef}
-          className="mx-auto mt-8 max-w-[54ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-base"
+          className="mx-auto mt-8 max-w-[58ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-base"
         >
-          Internships, research, classrooms, homelabs, whatever it is — if there's
-          gear involved and you want it done right, I want to hear about it.
+          Research labs, SOC floors, mentors, classrooms, student groups, press —
+          if you're building something that needs a sharp fifteen-year-old in the
+          room, I want in. The long game is Caltech, then a PhD in cybersecurity.
         </p>
 
         <div
           ref={ctaRef}
           className="mt-12 flex flex-wrap items-center justify-center gap-4"
         >
-          <Link
-            href="/contact"
-            data-testid="button-cta-contact"
+          <a
+            href="mailto:max@maxdoubin.com"
+            data-testid="button-cta-email"
             className="group relative inline-flex h-12 items-center gap-3 overflow-hidden rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))] transition-transform hover:scale-[1.02]"
             style={{ boxShadow: "0 0 32px hsl(var(--brand-signal) / 0.4)" }}
           >
@@ -139,11 +140,11 @@ export function CTAAct() {
               className="h-[7px] w-[7px] rounded-full bg-[hsl(var(--brand-obsidian))]"
               style={{ boxShadow: "0 0 6px hsl(var(--brand-obsidian) / 0.8)" }}
             />
-            Open channel
+            max@maxdoubin.com
             <span className="ml-1 translate-x-0 transition-transform group-hover:translate-x-1">
               →
             </span>
-          </Link>
+          </a>
           <Link
             href="/projects"
             data-testid="button-cta-projects"
@@ -152,6 +153,16 @@ export function CTAAct() {
             Review the work
             <span>→</span>
           </Link>
+          <a
+            href="https://github.com/MaxFromYT/Server-Builder"
+            target="_blank"
+            rel="noreferrer noopener"
+            data-testid="button-cta-github"
+            className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]"
+          >
+            GitHub
+            <span>↗</span>
+          </a>
           <Link
             href="/blog"
             data-testid="button-cta-blog"
@@ -163,13 +174,33 @@ export function CTAAct() {
 
         <div
           ref={sigRef}
-          className="mt-20 flex flex-wrap items-center justify-center gap-6 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]"
+          className="mt-16 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]"
         >
           <span>Max Doubin</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Las Vegas · NV</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Class of 2029</span>
+          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
+          <a
+            href="https://instagram.com/maxdoubin"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="transition-colors hover:text-[hsl(var(--brand-bone))]"
+            data-testid="link-cta-instagram"
+          >
+            @maxdoubin
+          </a>
+          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
+          <a
+            href="https://instagram.com/percussionmax"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="transition-colors hover:text-[hsl(var(--brand-bone))]"
+            data-testid="link-cta-percussionmax"
+          >
+            @percussionmax
+          </a>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span className="text-[hsl(var(--brand-signal))]">signal · locked</span>
         </div>

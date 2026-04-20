@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 
 const NAV_LINKS = [
   { label: "Index", href: "/" },
+  { label: "Dossier", href: "/#dossier" },
   { label: "Projects", href: "/projects" },
   { label: "Field Notes", href: "/blog" },
   { label: "Build", href: "/game" },
