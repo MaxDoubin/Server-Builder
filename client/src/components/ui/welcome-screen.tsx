@@ -9,19 +9,19 @@ type StartMode = "build" | "explore";
 
 const LIVE_MODULES = [
   {
-    title: "Systems",
-    subtitle: "Infrastructure online",
-    lines: ["Rack topology", "Virtualization", "Power envelope"],
+    title: "Cybersecurity",
+    subtitle: "Competition and credentials",
+    lines: ["Top 1% NCL", "Cyber Skyline", "Security+ / Network+ / CCNA"],
   },
   {
-    title: "Security",
-    subtitle: "Defensive posture",
-    lines: ["Threat visibility", "Telemetry", "Forensics ready"],
+    title: "Infrastructure",
+    subtitle: "Home data center",
+    lines: ["Dell PowerEdge", "Cisco Catalyst", "Storage and virtualization"],
   },
   {
     title: "Leadership",
-    subtitle: "Public impact",
-    lines: ["Mentorship", "Community service", "Las Vegas, NV"],
+    subtitle: "School and community",
+    lines: ["South CTA clubs", "Henderson commission", "Youth coding camps"],
   },
 ] as const;
 
@@ -105,13 +105,13 @@ export function WelcomeScreen({
             <div className="max-w-4xl space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.12)] text-[hsl(var(--brand-bone))]">
-                  Top 1% NCL
+                  South CTA
                 </Badge>
                 <Badge className="border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-bone)/0.06)] text-[hsl(var(--brand-bone-dim))]">
-                  Blue Ribbon Commissioner
+                  Top 1% NCL
                 </Badge>
                 <Badge className="border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.12)] text-[hsl(var(--brand-bone))]">
-                  Enterprise Networking
+                  Blue Ribbon Commissioner
                 </Badge>
               </div>
 
@@ -123,8 +123,7 @@ export function WelcomeScreen({
                   {siteConfig.tagline}
                 </p>
                 <p className="max-w-3xl text-sm leading-relaxed text-[hsl(var(--brand-ash))] sm:text-base">
-                  Build opens the full datacenter lab. Explore steps through Max Doubin&apos;s systems, security, networking,
-                  and leadership profile in a focused interactive environment.
+                  Build opens the interactive data center experience. Explore presents a guided profile of Max Doubin's work in cybersecurity, enterprise networking, systems infrastructure, leadership, and music.
                 </p>
               </div>
             </div>
@@ -137,7 +136,7 @@ export function WelcomeScreen({
                     Choose your entry point
                   </div>
                   <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                    Build for the full lab workflow. Explore for a cleaner, guided experience centered on Max&apos;s profile and systems work.
+                    Build for the interactive rack and data center environment. Explore for a guided presentation of credentials, projects, leadership, and technical work.
                   </p>
                 </div>
 
@@ -193,24 +192,24 @@ export function WelcomeScreen({
             <InfoCard
               icon={<Shield className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Cybersecurity"
-              body="Defensive security, forensics, competitive cyber work, and real systems discipline shaped by a top 1 percent National Cyber League finish."
+              body="Top 1 percent National Cyber League performance, active Cyber Skyline competition work, and continuing study toward Security+, Network+, and CCNA."
             />
             <InfoCard
               icon={<Cpu className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Infrastructure"
-              body="Enterprise networking, systems engineering, servers, and labs built to test architecture in real conditions instead of abstract diagrams."
+              body="A large home data center built around Dell PowerEdge servers, MD1220 and MD1200 storage, Cisco switching, Radware ADCs, and long-running systems operations."
             />
             <InfoCard
               icon={<Sparkles className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
-              title="Leadership"
-              body="Youth coding camps, public service, and community leadership across the Las Vegas Valley alongside technical work."
+              title="Leadership & Music"
+              body="Student leadership, public service, youth instruction, and Nevada percussion performance credentials alongside technical work."
             />
           </div>
         </div>
 
         {showPanels && (
           <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {LIVE_MODULES.map((module, index) => (
+            {LIVE_MODULES.map((module) => (
               <div
                 key={module.title}
                 className="overflow-hidden rounded-2xl border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,hsl(var(--brand-graphite)/0.82),hsl(var(--brand-obsidian)/0.72))] p-4 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.8)] backdrop-blur-lg"
@@ -237,7 +236,7 @@ export function WelcomeScreen({
                       <div className="h-2 overflow-hidden rounded-full bg-[hsl(var(--brand-carbon))]">
                         <div
                           className="h-full rounded-full bg-[linear-gradient(90deg,hsl(var(--brand-cyan)),hsl(var(--brand-signal)))] animate-pulse"
-                          style={{ width: `${62 + index * 10 + lineIndex * 8}%` }}
+                          style={{ width: `${64 + lineIndex * 10}%` }}
                         />
                       </div>
                     </div>
