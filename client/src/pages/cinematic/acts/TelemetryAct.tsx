@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
-/**
- * TELEMETRY — Act 6
- *
- * NOC-style HUD overlay. Four live tiles animate sparklines + counters,
- * grouped as: Fabric · Thermal · Power · Availability.
- */
-
 interface TileConfig {
   id: string;
   label: string;
@@ -21,34 +14,34 @@ interface TileConfig {
 const TILES: TileConfig[] = [
   {
     id: "pps",
-    label: "Homelab · Fabric",
+    label: "Lab Fabric · Throughput",
     unit: "M pps",
     color: "hsl(72 100% 50%)",
-    base: 14.2,
-    variance: 2.6,
+    base: 1.42,
+    variance: 0.22,
     format: (v) => v.toFixed(2),
   },
   {
     id: "temp",
-    label: "Aisle · Cold",
+    label: "Cold Aisle · Temperature",
     unit: "°C",
     color: "hsl(195 80% 64%)",
-    base: 41.2,
-    variance: 1.4,
+    base: 19.6,
+    variance: 0.8,
     format: (v) => v.toFixed(1),
   },
   {
     id: "power",
-    label: "Rack · Draw",
+    label: "Rack · Power Draw",
     unit: "kW",
     color: "hsl(32 100% 55%)",
-    base: 28.8,
-    variance: 3.2,
+    base: 4.8,
+    variance: 0.5,
     format: (v) => v.toFixed(1),
   },
   {
     id: "uptime",
-    label: "Uptime · Days",
+    label: "Services · Uptime",
     unit: "d",
     color: "hsl(72 100% 50%)",
     base: 642,
@@ -77,7 +70,7 @@ function useSparklineSeries(length: number, base: number, variance: number) {
   return series;
 }
 
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+function Sparkline({ data, color, gradientId }: { data: number[]; color: string; gradientId: string }) {
   if (data.length === 0) return null;
   const w = 220;
   const h = 52;
@@ -96,12 +89,12 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="mt-3 h-[52px] w-full" aria-hidden>
       <defs>
-        <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.38" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill={`url(#grad-${color})`} />
+      <path d={areaPath} fill={`url(#${gradientId})`} />
       <path d={path} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" />
       <circle
         cx={w}
@@ -144,7 +137,7 @@ function TelemetryTile({ cfg }: { cfg: TileConfig }) {
           style={{ background: cfg.color, boxShadow: `0 0 8px ${cfg.color}` }}
         />
       </div>
-      <Sparkline data={series} color={cfg.color} />
+      <Sparkline data={series} color={cfg.color} gradientId={`spark-${cfg.id}`} />
       <div className="relative mt-3 flex items-center justify-between font-mono-tight text-[9px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
         <span>sample · 420ms</span>
         <span>window · 16s</span>
@@ -205,7 +198,6 @@ export function TelemetryAct() {
       data-testid="section-cinematic-telemetry"
       className="relative min-h-screen w-full overflow-hidden bg-[hsl(var(--brand-obsidian))] px-6 py-[14vh] md:px-10"
     >
-      {/* Background grid */}
       <div
         aria-hidden
         className="absolute inset-0"
@@ -224,24 +216,22 @@ export function TelemetryAct() {
 
       <div className="relative mx-auto max-w-[1200px]">
         <div className="flex items-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
-          <span>· Max · Homelab · NOC</span>
+          <span>· Max · Homelab · Operations</span>
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
           <span className="text-[hsl(var(--brand-signal))]">LIVE</span>
         </div>
         <h2
           ref={titleRef}
-          className="mt-6 max-w-[22ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
+          className="mt-6 max-w-[24ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
         >
-          My homelab <span className="signal-text">answers back.</span>
+          Live telemetry from the
+          <span className="signal-text"> home data center.</span>
         </h2>
         <div
           ref={subtitleRef}
-          className="mt-6 max-w-[60ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+          className="mt-6 max-w-[68ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
         >
-          Ten Dell PowerEdge servers, fifty-plus DAS arrays, petabytes of storage,
-          three terabytes of RAM — all of it in a 42U glass-door cabinet in my
-          house. If I can't answer how it's running at any hour, it isn't running.
-          These four tiles are where every shift starts.
+          The lab includes Dell PowerEdge compute, MD1220 and MD1200 storage, Cisco Catalyst switching, Radware application delivery control, large memory capacity, and petabyte-scale raw storage inside a 42U cabinet. This section presents a simplified operations view of that environment.
         </div>
 
         <div ref={gridRef} className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -250,7 +240,6 @@ export function TelemetryAct() {
           ))}
         </div>
 
-        {/* Incident strip */}
         <div
           ref={stripRef}
           className="mt-10 flex flex-wrap items-center gap-x-10 gap-y-3 border-y border-[hsl(var(--brand-iron))] py-4 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
@@ -260,15 +249,14 @@ export function TelemetryAct() {
               className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
               style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
             />
-            green
+            nominal
           </span>
-          <span>fabric · 14.2 M pps</span>
-          <span>l2 · 0 errors</span>
-          <span>bgp · 3 peers</span>
-          <span>zfs · 0 resilver</span>
-          <span>snmp · ok</span>
-          <span>alerts · 0 active</span>
-          <span>ncl · top 1%</span>
+          <span>compute · PowerEdge cluster</span>
+          <span>storage · MD1220 / MD1200</span>
+          <span>switching · 8 Catalyst 3650</span>
+          <span>services · 0 active alerts</span>
+          <span>credential · CompTIA Tech+</span>
+          <span>competition · top 1% NCL</span>
         </div>
       </div>
       <div className="absolute inset-x-0 bottom-0 hairline" />
