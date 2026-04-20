@@ -1,15 +1,6 @@
 import { useRef } from "react";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
-/**
- * BIOGRAPHY — Max Doubin, spelled out.
- *
- * A dossier-style editorial panel. Lives between the rack cinematic
- * (SystemsAct) and the live telemetry (TelemetryAct). Four pillars —
- * cybersecurity, certifications, leadership, music — plus a featured
- * "No Service" art piece and the Caltech pillar at the bottom.
- */
-
 interface Pillar {
   id: string;
   eyebrow: string;
@@ -22,64 +13,72 @@ const PILLARS: Pillar[] = [
   {
     id: "cyber",
     eyebrow: "· 01 · Cybersecurity",
-    title: "Top 1% nationally.",
+    title: "Competition, credentials, and applied practice.",
     accent: "signal",
     lines: [
-      "National Cyber League · top 1% individual",
-      "School placed 7th in the country",
-      "Student of the Month · South CTA Las Vegas",
-      "Red-team / blue-team, both sides of the table",
-    ],
-  },
-  {
-    id: "certs",
-    eyebrow: "· 02 · Certifications",
-    title: "Paper that matches the practice.",
-    accent: "cyan",
-    lines: [
-      "CompTIA Tech+ · FC0-U71 · sealed",
-      "CompTIA Security+ · in progress",
-      "CompTIA Network+ · in progress",
-      "Cisco CCNA · in progress",
+      "Top 1% in National Cyber League competition",
+      "Helped lead South CTA to a 7th-ranked school finish in the nation",
+      "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
+      "CompTIA Tech+ certified; Security+, Network+, and CCNA in progress",
     ],
   },
   {
     id: "leadership",
-    eyebrow: "· 03 · Leadership",
-    title: "Six chairs, one teenager.",
-    accent: "signal",
+    eyebrow: "· 02 · Leadership",
+    title: "School leadership, civic service, and instruction.",
+    accent: "cyan",
     lines: [
-      "Blue Ribbon Commissioner · City of Henderson",
-      "Big Future Ambassador · College Board",
-      "Nevada OWINN · Youth Advisory Council",
-      "President · Cyber Club & Music Club",
-      "Lead Instructor · Youth Coding Camps",
-      "Past President · NJHS Pinecrest Inspirada",
+      "President, South CTA Cyber Club",
+      "President, South CTA Music Club (2026/2027)",
+      "Blue Ribbon Commissioner, City of Henderson, Nevada",
+      "Big Future Ambassador, College Board",
+      "Youth Advisory Council Member, Nevada OWINN",
+      "Lead Instructor for youth coding camps across the Las Vegas Valley",
     ],
   },
   {
     id: "music",
-    eyebrow: "· 04 · Percussion",
-    title: "#1 in Nevada, 2024.",
+    eyebrow: "· 03 · Percussion",
+    title: "Performance credentials alongside technical work.",
+    accent: "signal",
+    lines: [
+      "Nevada All-State Band in 6th, 7th, and 9th grade",
+      "Ranked #1 percussionist in Nevada in 2024",
+      "Published arranger on MuseScore",
+      "Runs @percussionmax on Instagram",
+    ],
+  },
+  {
+    id: "academics",
+    eyebrow: "· 04 · Academics",
+    title: "Coursework in cybersecurity and computing.",
     accent: "cyan",
     lines: [
-      "Nevada All-State Band · 6th / 7th / 9th grade",
-      "#1 percussionist · State of Nevada · 2024",
-      "Published composer & arranger",
-      "President · Music Club",
+      "South Career Technical Academy, Las Vegas, Nevada",
+      "AP Computer Science Principles and AP Human Geography",
+      "CYBER.ORG coursework in Google Dorking, recon, ARP poisoning, and Wireshark or PCAP analysis",
+      "Preferred languages: Python and JavaScript",
     ],
   },
 ];
 
 const HOMELAB_SPECS: Array<{ label: string; value: string }> = [
-  { label: "Dell PowerEdge", value: "10" },
-  { label: "DAS arrays", value: "50+" },
-  { label: "Total RAM", value: "3 TB" },
-  { label: "Storage", value: "Petabytes" },
+  { label: "PowerEdge R720/R820", value: "Approx. 10" },
+  { label: "MD1220 Shelves", value: "Approx. 30" },
+  { label: "MD1200 Shelves", value: "Approx. 20" },
+  { label: "Total RAM", value: "Approx. 3 TB" },
+  { label: "Raw Storage", value: "Petabytes" },
   { label: "Cisco Catalyst 3650", value: "8" },
-  { label: "Load balancer", value: "Radware" },
-  { label: "Cabinet", value: "42U · glass door" },
-  { label: "Location", value: "Home · Las Vegas" },
+  { label: "Radware ADCs", value: "Live" },
+  { label: "Cabinet", value: "42U glass door" },
+];
+
+const OTHER_WORK = [
+  "\"No Service,\" a wall-mounted installation built from more than 200 decommissioned smartphones arranged by color in a gradient composition.",
+  "A wall-mounted collection of Apple logic boards displayed as hardware art.",
+  "An extensive collection of networking and computer science textbooks spanning classic references and certification guides.",
+  "maxdoubin.com, built from scratch in TypeScript with Vite, Tailwind CSS, and Drizzle ORM.",
+  "A custom mechanical keyboard with blue and white keycaps.",
 ];
 
 export function BiographyAct() {
@@ -154,7 +153,6 @@ export function BiographyAct() {
       data-testid="section-cinematic-biography"
       className="relative overflow-hidden bg-[hsl(var(--brand-obsidian))] px-6 py-[18vh] md:px-10"
     >
-      {/* Hairline + faint grid + vertical accents */}
       <div className="pointer-events-none absolute inset-x-0 top-0 hairline" />
       <div
         aria-hidden
@@ -189,27 +187,22 @@ export function BiographyAct() {
       />
 
       <div className="relative mx-auto max-w-[1200px]">
-        {/* Lead */}
         <div
           ref={eyebrowRef}
           className="flex items-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]"
         >
           <span>· Dossier · Max Doubin</span>
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
-          <span className="text-[hsl(var(--brand-signal))]">classified · public</span>
+          <span className="text-[hsl(var(--brand-signal))]">public profile</span>
         </div>
 
         <p
           ref={leadRef}
-          className="mt-8 max-w-[48ch] font-display text-[clamp(1.8rem,4vw,3.2rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[hsl(var(--brand-bone))]"
+          className="mt-8 max-w-[56ch] font-display text-[clamp(1.8rem,4vw,3.2rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[hsl(var(--brand-bone))]"
         >
-          Max Doubin is a nationally recognized cybersecurity competitor,
-          certified IT professional, and award-winning percussionist who has
-          built a reputation most professionals chase for decades. He is{" "}
-          <span className="signal-text">fifteen years old.</span>
+          Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.
         </p>
 
-        {/* Four pillars */}
         <div
           ref={pillarsRef}
           className="mt-20 grid gap-4 md:grid-cols-2 lg:grid-cols-4"
@@ -219,7 +212,6 @@ export function BiographyAct() {
           ))}
         </div>
 
-        {/* Homelab spec block */}
         <div
           ref={homelabRef}
           className="relative mt-24 overflow-hidden rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/.4)] backdrop-blur-md"
@@ -231,14 +223,11 @@ export function BiographyAct() {
                 · 05 · Home Data Center
               </div>
               <h3 className="mt-4 font-display text-[clamp(1.6rem,3.6vw,2.6rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[hsl(var(--brand-bone))]">
-                Most kids get a <span className="signal-text">gaming PC.</span>
+                Infrastructure built and maintained
+                <span className="signal-text"> at home.</span>
               </h3>
-              <p className="mt-5 max-w-[38ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
-                I built a production data center in my house. Ten Dell PowerEdge
-                servers, fifty-plus direct-attached storage arrays, petabytes
-                online, three terabytes of RAM, eight Cisco Catalyst 3650
-                switches, a Radware load balancer, all in one 42U glass-door
-                cabinet. It runs twenty-four hours a day, and it answers to me.
+              <p className="mt-5 max-w-[40ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
+                Max built and maintains an extensive home data center featuring Dell PowerEdge servers, MD1220 and MD1200 storage, Cisco Catalyst switching, Radware application delivery control, approximately 3 TB of RAM, petabytes of raw storage, and a 42U glass-door cabinet.
               </p>
             </div>
             <div className="p-8 md:col-span-7">
@@ -258,7 +247,6 @@ export function BiographyAct() {
           </div>
         </div>
 
-        {/* No Service art installation */}
         <div
           ref={artRef}
           className="relative mt-24 overflow-hidden rounded-lg border border-[hsl(var(--brand-iron))] bg-[linear-gradient(135deg,hsl(var(--brand-graphite)/.5)_0%,hsl(var(--brand-obsidian)/.8)_100%)]"
@@ -271,23 +259,22 @@ export function BiographyAct() {
           <div className="grid gap-0 md:grid-cols-12">
             <div className="p-10 md:col-span-7">
               <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-cyan))]">
-                · 06 · Featured Work · Art
+                · 06 · Selected Projects and Collections
               </div>
               <h3 className="mt-4 font-display text-[clamp(1.8rem,4.2vw,3rem)] font-medium leading-[1.04] tracking-[-0.02em] text-[hsl(var(--brand-bone))]">
-                "No Service."
-                <br />
-                <span style={{ color: "hsl(var(--brand-cyan))" }}>
-                  Two hundred phones,
-                </span>{" "}
-                one question.
+                Work beyond the rack.
               </h3>
               <p className="mt-5 max-w-[54ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                A mixed-media installation: two hundred decommissioned phones
-                arranged as a single sculptural wall, each screen dark, each
-                speaker silent. The piece asks what it means to be a generation
-                raised by the network, then abandoned by it. Cybersecurity is
-                the day job — this is the other half of the brain.
+                This body of work extends beyond infrastructure alone and includes installation art, hardware display pieces, independent web development, and long-term study through physical collections and technical references.
               </p>
+              <ul className="mt-6 space-y-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                {OTHER_WORK.map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <span className="mt-[0.45em] inline-block h-[4px] w-[4px] flex-shrink-0 rounded-full bg-[hsl(var(--brand-cyan))] shadow-[0_0_6px_hsl(var(--brand-cyan))]" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <div className="relative flex items-center justify-center border-t border-[hsl(var(--brand-iron))] p-10 md:col-span-5 md:border-l md:border-t-0">
               <PhoneGrid />
@@ -295,27 +282,28 @@ export function BiographyAct() {
           </div>
         </div>
 
-        {/* Caltech pillar */}
         <div
           ref={caltechRef}
           className="mt-24 flex flex-col items-center gap-6 text-center"
         >
           <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-            · 07 · Long game
+            · 07 · Academic Direction
           </div>
-          <h3 className="max-w-[20ch] font-display text-[clamp(2.2rem,6vw,4.8rem)] font-medium leading-[0.98] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
-            Caltech. <span className="signal-text">Then a PhD.</span>
+          <h3 className="max-w-[24ch] font-display text-[clamp(1.8rem,4.6vw,3rem)] font-medium leading-[1.02] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
+            Caltech is the dream school.
+            <span className="signal-text"> Long-term work points toward networking or systems engineering research.</span>
           </h3>
-          <p className="max-w-[52ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-            The plan is cybersecurity research at the doctorate level. The
-            receipts so far suggest that the plan is on schedule.
+          <p className="max-w-[56ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            Current academic work includes AP Computer Science Principles, AP Human Geography, and cybersecurity coursework through CYBER.ORG. Long-term goals include advanced research in networking or systems engineering.
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
-            <span>Class of 2029</span>
+            <span>South CTA</span>
             <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-            <span>South CTA · Las Vegas</span>
+            <span>AP Computer Science Principles</span>
             <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-            <span className="text-[hsl(var(--brand-signal))]">trajectory · locked</span>
+            <span>AP Human Geography</span>
+            <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
+            <span>CYBER.ORG</span>
           </div>
         </div>
       </div>
@@ -368,7 +356,6 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
 }
 
 function PhoneGrid() {
-  // Visual proxy for the art piece: 200 tiny dark phone rectangles in a grid.
   const cells = Array.from({ length: 200 });
   return (
     <div
