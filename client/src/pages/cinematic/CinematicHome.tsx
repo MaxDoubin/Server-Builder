@@ -8,6 +8,9 @@ import { SystemsAct } from "./acts/SystemsAct";
  * install, service-pull, anatomy, hall — followed by the editorial
  * Telemetry and CTA acts.
  */
+const BiographyAct = lazy(() =>
+  import("./acts/BiographyAct").then((m) => ({ default: m.BiographyAct })),
+);
 const TelemetryAct = lazy(() =>
   import("./acts/TelemetryAct").then((m) => ({ default: m.TelemetryAct })),
 );
@@ -28,9 +31,10 @@ function ActFallback({ minHeight = "100vh" }: { minHeight?: string }) {
 export function CinematicHome() {
   const shellRef = useRef<HTMLDivElement>(null);
   useSEO({
-    title: "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert",
+    title:
+      "Max Doubin | 15-year-old Cybersecurity Competitor, Certified IT Pro, Percussionist",
     description:
-      "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada. Systems live, built to lead.",
+      "Max Doubin is a fifteen-year-old nationally recognized cybersecurity competitor, CompTIA-certified IT professional, award-winning percussionist, and civic leader based in Las Vegas, Nevada.",
     canonical: "https://maxdoubin.com/",
     ogType: "profile",
     schemaId: "home-schema",
@@ -38,8 +42,17 @@ export function CinematicHome() {
       "@context": "https://schema.org",
       "@type": "Person",
       name: "Max Doubin",
-      jobTitle: "Cybersecurity Specialist",
+      givenName: "Max",
+      familyName: "Doubin",
+      jobTitle: [
+        "Cybersecurity Competitor",
+        "Certified IT Professional",
+        "Percussionist",
+      ],
+      description:
+        "Fifteen-year-old nationally recognized cybersecurity competitor, CompTIA-certified IT professional, award-winning percussionist, and civic leader.",
       url: "https://maxdoubin.com/",
+      email: "mailto:max@maxdoubin.com",
       image: "https://maxdoubin.com/images/og-image.png",
       address: {
         "@type": "PostalAddress",
@@ -47,13 +60,51 @@ export function CinematicHome() {
         addressRegion: "NV",
         addressCountry: "US",
       },
-      sameAs: [],
+      alumniOf: {
+        "@type": "EducationalOrganization",
+        name: "South Career & Technical Academy · Las Vegas",
+      },
+      award: [
+        "Top 1% — National Cyber League (Individual)",
+        "#1 Percussionist — State of Nevada, 2024",
+        "Nevada All-State Band (6th, 7th, 9th grade)",
+        "Student of the Month — South CTA Las Vegas",
+      ],
+      hasCredential: [
+        {
+          "@type": "EducationalOccupationalCredential",
+          name: "CompTIA Tech+ (FC0-U71)",
+          credentialCategory: "certification",
+        },
+      ],
+      memberOf: [
+        {
+          "@type": "Organization",
+          name: "City of Henderson · Blue Ribbon Commission",
+        },
+        {
+          "@type": "Organization",
+          name: "College Board Big Future Ambassadors",
+        },
+        {
+          "@type": "Organization",
+          name: "Nevada OWINN Youth Advisory Council",
+        },
+      ],
+      sameAs: [
+        "https://github.com/MaxFromYT",
+        "https://instagram.com/maxdoubin",
+        "https://instagram.com/percussionmax",
+      ],
     },
   });
   return (
     <CinematicLayout>
       <div ref={shellRef}>
         <SystemsAct />
+        <Suspense fallback={<ActFallback minHeight="120vh" />}>
+          <BiographyAct />
+        </Suspense>
         <Suspense fallback={<ActFallback minHeight="80vh" />}>
           <TelemetryAct />
         </Suspense>

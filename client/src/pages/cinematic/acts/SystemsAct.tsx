@@ -112,12 +112,13 @@ export function SystemsAct() {
       timeline.to(vignetteRef.current, { opacity: 0.4, duration: 0.16 }, 0.84);
       timeline.to(gridRef.current, { opacity: 0.06, duration: 0.16 }, 0.84);
 
-      // Hall counters animate during the hall reveal.
-      const rackTarget = { v: 1 };
+      // Hall counters animate during the hall reveal. These are Max's
+      // real numbers, not generic rack stats.
+      const rackTarget = { v: 0 };
       timeline.to(
         rackTarget,
         {
-          v: 20,
+          v: 10,
           duration: 0.14,
           onUpdate: () => {
             if (rackCountRef.current) {
@@ -129,25 +130,25 @@ export function SystemsAct() {
         },
         0.84,
       );
-      const kwTarget = { v: 3 };
+      const kwTarget = { v: 0 };
       timeline.to(
         kwTarget,
         {
-          v: 240,
+          v: 3,
           duration: 0.14,
           onUpdate: () => {
             if (kwCountRef.current) {
-              kwCountRef.current.textContent = Math.round(kwTarget.v).toString();
+              kwCountRef.current.textContent = kwTarget.v.toFixed(1);
             }
           },
         },
         0.84,
       );
-      const uTarget = { v: 42 };
+      const uTarget = { v: 0 };
       timeline.to(
         uTarget,
         {
-          v: 840,
+          v: 42,
           duration: 0.14,
           onUpdate: () => {
             if (uCountRef.current) {
@@ -172,12 +173,12 @@ export function SystemsAct() {
             progressRef.current = proxy.p;
             const p = proxy.p;
             const beat =
-              p < 0.14 ? { n: "01", l: "Front Signal" }
-              : p < 0.36 ? { n: "02", l: "Build Live" }
-              : p < 0.54 ? { n: "03", l: "Service Pull" }
-              : p < 0.72 ? { n: "04", l: "Anatomy" }
+              p < 0.14 ? { n: "01", l: "Identity" }
+              : p < 0.36 ? { n: "02", l: "Leadership" }
+              : p < 0.54 ? { n: "03", l: "Certifications" }
+              : p < 0.72 ? { n: "04", l: "Homelab" }
               : p < 0.84 ? { n: "05", l: "Reseat" }
-              : { n: "06", l: "Hall" };
+              : { n: "06", l: "Proof" };
             if (beatCounterRef.current) beatCounterRef.current.textContent = beat.n;
             if (beatLabelRef.current) beatLabelRef.current.textContent = beat.l;
             if (progressBarRef.current) {
@@ -249,11 +250,11 @@ export function SystemsAct() {
 
       <div className="pointer-events-none absolute right-6 top-24 z-20 hidden flex-col items-end gap-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] md:flex md:right-10 md:top-28">
         <span>N 36.1699° W 115.1398°</span>
-        <span>cam · live</span>
-        <span>signal · live</span>
+        <span>age · 15</span>
+        <span>signal · locked</span>
       </div>
 
-      {/* Beat 1 — HERO copy */}
+      {/* Beat 1 — HERO: who Max is, one-liner */}
       <div
         ref={heroRef}
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-6 pb-[11vh] text-center"
@@ -262,85 +263,99 @@ export function SystemsAct() {
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
           style={{ textShadow: "0 0 14px hsl(var(--brand-signal) / 0.54)" }}
         >
-          · Max Doubin Live Signal
+          · Max Doubin · 15 · Las Vegas
         </div>
-        <h1 className="mt-6 max-w-[22ch] font-display text-[clamp(2.4rem,7vw,5.4rem)] font-medium leading-[0.95] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
-          Max Doubin, all systems live. <span className="signal-text">Built to lead.</span>
+        <h1 className="mt-6 max-w-[20ch] font-display text-[clamp(2.4rem,7vw,5.4rem)] font-medium leading-[0.95] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
+          Fifteen. <span className="signal-text">Already shipping.</span>
         </h1>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
-          <span>Las Vegas, NV</span>
+          <span>Top 1% · National Cyber League</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>Top 1% National Cyber League</span>
+          <span>CompTIA Tech+ certified</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>Blue Ribbon Commissioner</span>
+          <span>#1 percussionist · NV 2024</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <span>Scroll</span>
         </div>
       </div>
 
-      {/* Beat 2 — INSTALL: copy lives off to the left so it doesn't fight
-          the new gear sliding into the rack on the right of frame */}
+      {/* Beat 2 — INSTALL reframed as LEADERSHIP: roles rack in, one by one */}
       <div
         ref={installRef}
-        className="pointer-events-none absolute inset-x-6 bottom-[14vh] z-10 max-w-[30ch] text-left md:inset-x-auto md:left-12 md:max-w-[36ch]"
+        className="pointer-events-none absolute inset-x-6 bottom-[14vh] z-10 max-w-[30ch] text-left md:inset-x-auto md:left-12 md:max-w-[38ch]"
       >
         <div
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
           style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
         >
-          · Build Live
+          · Leadership · Racked Live
         </div>
         <h2 className="mt-4 font-display text-[clamp(1.6rem,4.4vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          Same rack.
+          Roles stack up
           <br />
-          <span className="signal-text">Built up live.</span>
+          <span className="signal-text">like blade servers.</span>
         </h2>
-        <p className="mt-5 max-w-[40ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
-          Slot by slot, the rack fills in. Compute, switching, capacity — racked
-          in the order I'd actually deploy them on the floor.
+        <p className="mt-5 max-w-[42ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
+          Blue Ribbon Commissioner for the City of Henderson. Big Future Ambassador
+          for College Board. Nevada OWINN Youth Advisory Council. Cyber Club
+          president. Music Club president. Lead instructor for youth coding camps.
+          All of it, at once.
         </p>
       </div>
 
-      {/* Beat 3 — PULL OUT: copy on the right, server pulled forward */}
+      {/* Beat 3 — PULL OUT reframed as CERTIFICATIONS: one credential pulled for inspection */}
       <div
         ref={pullRef}
-        className="pointer-events-none absolute inset-x-6 bottom-[14vh] z-10 max-w-[30ch] text-left md:inset-x-auto md:right-12 md:max-w-[34ch] md:text-right"
+        className="pointer-events-none absolute inset-x-6 bottom-[14vh] z-10 max-w-[30ch] text-left md:inset-x-auto md:right-12 md:max-w-[36ch] md:text-right"
       >
         <div
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
           style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
         >
-          · Service Pull
+          · Certifications · Pulled For Review
         </div>
         <h2 className="mt-4 font-display text-[clamp(1.6rem,4.4vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          Hot-swap,
+          Credentials earn
           <br />
-          <span className="signal-text">no downtime.</span>
+          <span className="signal-text">their slot.</span>
         </h2>
-        <p className="mt-5 max-w-[40ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:ml-auto md:text-sm">
-          PVE Compute 01 slides out on its rails. Same rack, same uptime — the
-          fabric keeps running while we look inside.
+        <p className="mt-5 max-w-[42ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:ml-auto md:text-sm">
+          CompTIA Tech+ (FC0-U71) sealed. Security+, Network+, and CCNA next on
+          the rails. Top 1% nationally in the Cyber League — school placed 7th
+          in the country.
         </p>
       </div>
 
-      {/* Beat 4 — ANATOMY: copy along the top so labels around the server
-          stay readable */}
+      {/* Beat 4 — ANATOMY reframed as HOMELAB: what's actually in the rack */}
       <div
         ref={anatomyRef}
-        className="pointer-events-none absolute inset-x-0 top-[18vh] z-10 flex flex-col items-center px-6 text-center md:top-[22vh]"
+        className="pointer-events-none absolute inset-x-0 top-[16vh] z-10 flex flex-col items-center px-6 text-center md:top-[20vh]"
       >
         <div
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
           style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
         >
-          · Anatomy
+          · Homelab · Anatomy
         </div>
-        <h2 className="mt-3 max-w-[24ch] font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          Every bay, <span className="signal-text">accounted for.</span>
+        <h2 className="mt-3 max-w-[28ch] font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
+          Built the data center <span className="signal-text">I'd want to inherit.</span>
         </h2>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
+          <span>10× Dell PowerEdge</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>3 TB RAM</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>50+ DAS arrays</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>8× Cisco Catalyst 3650</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>Radware ADC</span>
+          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+          <span>42U cabinet</span>
+        </div>
       </div>
 
-      {/* Beat 6 — HALL: stats strip across the bottom */}
+      {/* Beat 6 — HALL reframed as PROOF: Max's numbers, nationally */}
       <div
         ref={hallRef}
         className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex flex-col items-center px-4 md:bottom-16"
@@ -349,25 +364,24 @@ export function SystemsAct() {
           className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
           style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
         >
-          · Hall
+          · Proof · Receipts on the floor
         </div>
-        <h2 className="mt-3 max-w-[26ch] text-center font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          One rack is a test.
-          <br />
-          <span className="signal-text">A hall is a proof.</span>
+        <h2 className="mt-3 max-w-[28ch] text-center font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
+          One kid. <br />
+          <span className="signal-text">Enterprise receipts.</span>
         </h2>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.7)] px-4 py-3 backdrop-blur-md sm:gap-8 sm:px-8 md:gap-14">
-          <Stat label="racks">
-            <span ref={rackCountRef}>01</span>
+          <Stat label="PowerEdge">
+            <span ref={rackCountRef}>00</span>
           </Stat>
-          <Stat label="kW">
-            <span ref={kwCountRef}>3</span>
+          <Stat label="TB RAM">
+            <span ref={kwCountRef}>0.0</span>
           </Stat>
-          <Stat label="U Deployed">
-            <span ref={uCountRef}>42</span>
+          <Stat label="U · glass-door">
+            <span ref={uCountRef}>0</span>
           </Stat>
-          <Stat label="Aisle · cold">
-            <span className="text-[hsl(var(--brand-signal))]">STABLE</span>
+          <Stat label="Allstate Band">
+            <span className="text-[hsl(var(--brand-signal))]">3×</span>
           </Stat>
         </div>
       </div>

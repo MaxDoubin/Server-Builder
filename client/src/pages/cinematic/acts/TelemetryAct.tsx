@@ -21,8 +21,8 @@ interface TileConfig {
 const TILES: TileConfig[] = [
   {
     id: "pps",
-    label: "Fabric · PPS",
-    unit: "M/s",
+    label: "Homelab · Fabric",
+    unit: "M pps",
     color: "hsl(72 100% 50%)",
     base: 14.2,
     variance: 2.6,
@@ -30,7 +30,7 @@ const TILES: TileConfig[] = [
   },
   {
     id: "temp",
-    label: "Thermal · Core",
+    label: "Aisle · Cold",
     unit: "°C",
     color: "hsl(195 80% 64%)",
     base: 41.2,
@@ -39,7 +39,7 @@ const TILES: TileConfig[] = [
   },
   {
     id: "power",
-    label: "Power · Draw",
+    label: "Rack · Draw",
     unit: "kW",
     color: "hsl(32 100% 55%)",
     base: 28.8,
@@ -48,7 +48,7 @@ const TILES: TileConfig[] = [
   },
   {
     id: "uptime",
-    label: "Uptime",
+    label: "Uptime · Days",
     unit: "d",
     color: "hsl(72 100% 50%)",
     base: 642,
@@ -224,23 +224,24 @@ export function TelemetryAct() {
 
       <div className="relative mx-auto max-w-[1200px]">
         <div className="flex items-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
-          <span>· Unit 06 · NOC</span>
+          <span>· Max · Homelab · NOC</span>
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
           <span className="text-[hsl(var(--brand-signal))]">LIVE</span>
         </div>
         <h2
           ref={titleRef}
-          className="mt-6 max-w-[20ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
+          className="mt-6 max-w-[22ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
         >
-          If it isn't <span className="signal-text">measured,</span> it doesn't exist.
+          My homelab <span className="signal-text">answers back.</span>
         </h2>
         <div
           ref={subtitleRef}
-          className="mt-6 max-w-[56ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+          className="mt-6 max-w-[60ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
         >
-          A rack only earns trust when you can answer, at any hour: how many packets
-          moved, how warm, how much power, how long up. These four tiles are what
-          every NOC I run starts with.
+          Ten Dell PowerEdge servers, fifty-plus DAS arrays, petabytes of storage,
+          three terabytes of RAM — all of it in a 42U glass-door cabinet in my
+          house. If I can't answer how it's running at any hour, it isn't running.
+          These four tiles are where every shift starts.
         </div>
 
         <div ref={gridRef} className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -264,9 +265,10 @@ export function TelemetryAct() {
           <span>fabric · 14.2 M pps</span>
           <span>l2 · 0 errors</span>
           <span>bgp · 3 peers</span>
-          <span>storage · 0 resilver</span>
+          <span>zfs · 0 resilver</span>
           <span>snmp · ok</span>
           <span>alerts · 0 active</span>
+          <span>ncl · top 1%</span>
         </div>
       </div>
       <div className="absolute inset-x-0 bottom-0 hairline" />
