@@ -3,11 +3,6 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { SystemsAct } from "./acts/SystemsAct";
 
-/**
- * The cinematic home is one continuous shot of the same rack — hero,
- * install, service-pull, anatomy, hall — followed by the editorial
- * Telemetry and CTA acts.
- */
 const BiographyAct = lazy(() =>
   import("./acts/BiographyAct").then((m) => ({ default: m.BiographyAct })),
 );
@@ -32,9 +27,9 @@ export function CinematicHome() {
   const shellRef = useRef<HTMLDivElement>(null);
   useSEO({
     title:
-      "Max Doubin | 15-year-old Cybersecurity Competitor, Certified IT Pro, Percussionist",
+      "Max Doubin | Cybersecurity, Networking, Systems Infrastructure, and Leadership",
     description:
-      "Max Doubin is a fifteen-year-old nationally recognized cybersecurity competitor, CompTIA-certified IT professional, award-winning percussionist, and civic leader based in Las Vegas, Nevada.",
+      "Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
     canonical: "https://maxdoubin.com/",
     ogType: "profile",
     schemaId: "home-schema",
@@ -45,12 +40,13 @@ export function CinematicHome() {
       givenName: "Max",
       familyName: "Doubin",
       jobTitle: [
-        "Cybersecurity Competitor",
-        "Certified IT Professional",
-        "Percussionist",
+        "Cybersecurity Student",
+        "Enterprise Networking Specialist",
+        "Competitive Percussionist",
+        "Community Leader",
       ],
       description:
-        "Fifteen-year-old nationally recognized cybersecurity competitor, CompTIA-certified IT professional, award-winning percussionist, and civic leader.",
+        "Ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
       url: "https://maxdoubin.com/",
       email: "mailto:max@maxdoubin.com",
       image: "https://maxdoubin.com/images/og-image.png",
@@ -62,13 +58,13 @@ export function CinematicHome() {
       },
       alumniOf: {
         "@type": "EducationalOrganization",
-        name: "South Career & Technical Academy · Las Vegas",
+        name: "South Career Technical Academy",
       },
       award: [
-        "Top 1% — National Cyber League (Individual)",
+        "Top 1% — National Cyber League",
+        "South CTA ranked 7th in the nation in National Cyber League competition",
         "#1 Percussionist — State of Nevada, 2024",
-        "Nevada All-State Band (6th, 7th, 9th grade)",
-        "Student of the Month — South CTA Las Vegas",
+        "Student of the Month — South CTA",
       ],
       hasCredential: [
         {
@@ -80,7 +76,7 @@ export function CinematicHome() {
       memberOf: [
         {
           "@type": "Organization",
-          name: "City of Henderson · Blue Ribbon Commission",
+          name: "City of Henderson Blue Ribbon Commission",
         },
         {
           "@type": "Organization",
