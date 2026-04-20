@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -21,14 +21,14 @@ const CAMERA_PRESETS: CameraPreset[] = [
 export function useCameraPresets() {
   const [currentPreset, setCurrentPreset] = useState<string>("overview");
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   const goToPreset = (presetName: string) => {
     setCurrentPreset(presetName);
     setIsTransitioning(true);
   };
-  
-  const presets = CAMERA_PRESETS.map(p => p.name);
-  
+
+  const presets = CAMERA_PRESETS.map((p) => p.name);
+
   return { currentPreset, goToPreset, presets, isTransitioning, setIsTransitioning };
 }
 
@@ -56,16 +56,18 @@ export function CameraController({
   const targetLookAt = useRef(new THREE.Vector3(0, 1, 0));
   const currentLookAt = useRef(new THREE.Vector3(0, 1, 0));
   const orbitAngle = useRef(0);
+  const targetFov = useRef(camera.fov);
 
   useEffect(() => {
-    const preset = CAMERA_PRESETS.find(p => p.name === targetPreset);
+    const preset = CAMERA_PRESETS.find((p) => p.name === targetPreset);
     if (preset) {
       targetPosition.current.set(...preset.position);
       targetLookAt.current.set(...preset.target);
+      targetFov.current = preset.fov ?? camera.fov;
     }
-  }, [targetPreset]);
+  }, [camera.fov, targetPreset]);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (autoOrbit && !isTransitioning) {
       orbitAngle.current += delta * orbitSpeed;
       const radius = 25;
@@ -73,23 +75,29 @@ export function CameraController({
       targetPosition.current.set(
         Math.cos(orbitAngle.current) * radius,
         height,
-        Math.sin(orbitAngle.current) * radius
+        Math.sin(orbitAngle.current) * radius,
       );
     }
 
-    camera.position.lerp(targetPosition.current, isTransitioning ? 0.02 : 0.05);
-    currentLookAt.current.lerp(targetLookAt.current, isTransitioning ? 0.02 : 0.05);
+    const positionLerp = 1 - Math.exp(-delta * (isTransitioning ? 2.4 : 4.5));
+    const targetLerp = 1 - Math.exp(-delta * (isTransitioning ? 2.2 : 4.8));
+    const fovLerp = 1 - Math.exp(-delta * 4.2);
+
+    camera.position.lerp(targetPosition.current, positionLerp);
+    currentLookAt.current.lerp(targetLookAt.current, targetLerp);
+    camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov.current, fovLerp);
     if (maxHeight !== undefined && camera.position.y > maxHeight) {
       camera.position.y = maxHeight;
     }
     if (minHeight !== undefined && camera.position.y < minHeight) {
       camera.position.y = minHeight;
     }
+    camera.updateProjectionMatrix();
     camera.lookAt(currentLookAt.current);
 
     if (isTransitioning) {
       const distance = camera.position.distanceTo(targetPosition.current);
-      if (distance < 0.5 && onTransitionComplete) {
+      if (distance < 0.35 && onTransitionComplete) {
         onTransitionComplete();
       }
     }
@@ -115,37 +123,44 @@ export function CinematicFlythrough({
 }) {
   const { camera } = useThree();
   const progress = useRef(0);
-  const currentWaypoint = useRef(0);
-  const currentPosition = useRef(new THREE.Vector3());
-  const nextPosition = useRef(new THREE.Vector3());
-  const currentTarget = useRef(new THREE.Vector3());
-  const nextTarget = useRef(new THREE.Vector3());
   const lookAtTarget = useRef(new THREE.Vector3());
+
+  const positionCurve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3(
+        waypoints.map((point) => new THREE.Vector3(...point.position)),
+        loop ? "centripetal" : "catmullrom",
+        0.45,
+      ),
+    [loop, waypoints],
+  );
+
+  const targetCurve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3(
+        waypoints.map((point) => new THREE.Vector3(...point.target)),
+        loop ? "centripetal" : "catmullrom",
+        0.4,
+      ),
+    [loop, waypoints],
+  );
 
   useFrame((_, delta) => {
     if (!active || waypoints.length < 2) return;
 
-    progress.current += delta * speed * 0.1;
-    
-    if (progress.current >= 1) {
-      progress.current = 0;
-      currentWaypoint.current = (currentWaypoint.current + 1) % (waypoints.length - 1);
-      if (!loop && currentWaypoint.current === 0) {
-        return;
-      }
+    progress.current += delta * speed * 0.025;
+    if (loop) {
+      progress.current = progress.current % 1;
+    } else {
+      progress.current = Math.min(1, progress.current);
     }
 
-    const current = waypoints[currentWaypoint.current];
-    const next = waypoints[(currentWaypoint.current + 1) % waypoints.length];
-    
-    const t = progress.current;
-    const smoothT = t * t * (3 - 2 * t);
+    const follow = 1 - Math.exp(-delta * 2.8);
+    const lookFollow = 1 - Math.exp(-delta * 3.4);
+    const positionPoint = positionCurve.getPointAt(progress.current);
+    const targetPoint = targetCurve.getPointAt(progress.current);
 
-    camera.position.lerpVectors(
-      currentPosition.current.set(...current.position),
-      nextPosition.current.set(...next.position),
-      smoothT
-    );
+    camera.position.lerp(positionPoint, follow);
     if (maxHeight !== undefined && camera.position.y > maxHeight) {
       camera.position.y = maxHeight;
     }
@@ -153,12 +168,8 @@ export function CinematicFlythrough({
       camera.position.y = minHeight;
     }
 
-    const lookAt = lookAtTarget.current.lerpVectors(
-      currentTarget.current.set(...current.target),
-      nextTarget.current.set(...next.target),
-      smoothT
-    );
-    camera.lookAt(lookAt);
+    lookAtTarget.current.lerp(targetPoint, lookFollow);
+    camera.lookAt(lookAtTarget.current);
   });
 
   return null;
@@ -174,11 +185,11 @@ export function ShakeEffect({
   const { camera } = useThree();
   const originalPosition = useRef(new THREE.Vector3());
 
-  useFrame((state) => {
+  useFrame(() => {
     if (!active) return;
-    
+
     originalPosition.current.copy(camera.position);
-    
+
     camera.position.x += (Math.random() - 0.5) * intensity;
     camera.position.y += (Math.random() - 0.5) * intensity;
     camera.position.z += (Math.random() - 0.5) * intensity;
