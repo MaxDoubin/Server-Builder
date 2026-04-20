@@ -2,12 +2,6 @@ import { useRef } from "react";
 import { Link } from "wouter";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
-/**
- * CTA — Act 7 / closer
- *
- * Final act that reforms the experience into a call-to-action.
- * Sits at the bottom of the cinematic home, leads into the contact page.
- */
 export function CTAAct() {
   const rootRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -70,7 +64,6 @@ export function CTAAct() {
       data-testid="section-cinematic-cta"
       className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[hsl(var(--brand-obsidian))] px-6 py-24 md:px-10"
     >
-      {/* Ambient rack silhouette grid */}
       <div
         aria-hidden
         className="absolute inset-0 opacity-60"
@@ -93,7 +86,6 @@ export function CTAAct() {
           opacity: 0.5,
         }}
       />
-      {/* Scanning signal line */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[hsl(var(--brand-signal))] to-transparent opacity-60"
@@ -106,24 +98,22 @@ export function CTAAct() {
           className="flex items-center justify-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]"
         >
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
-          <span className="text-[hsl(var(--brand-signal))]">· Open channel ·</span>
+          <span className="text-[hsl(var(--brand-signal))]">· Contact ·</span>
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
         </div>
         <h2
           ref={titleRef}
           className="mt-10 font-display text-[clamp(2.4rem,6.4vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.03em] text-[hsl(var(--brand-bone))]"
         >
-          Teach me something.
+          Connect with Max Doubin.
           <br />
-          <span className="signal-text">Or hand me the keys.</span>
+          <span className="signal-text">Projects, mentorship, speaking, and collaboration.</span>
         </h2>
         <p
           ref={subRef}
           className="mx-auto mt-8 max-w-[58ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-base"
         >
-          Research labs, SOC floors, mentors, classrooms, student groups, press —
-          if you're building something that needs a sharp fifteen-year-old in the
-          room, I want in. The long game is Caltech, then a PhD in cybersecurity.
+          For project opportunities, student technology programs, speaking, mentorship, public-interest work, or technical collaboration, reach out directly by email or review current work through the project archive and GitHub.
         </p>
 
         <div
@@ -150,7 +140,7 @@ export function CTAAct() {
             data-testid="button-cta-projects"
             className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]"
           >
-            Review the work
+            Review Projects
             <span>→</span>
           </Link>
           <a
@@ -168,7 +158,7 @@ export function CTAAct() {
             data-testid="button-cta-blog"
             className="inline-flex h-12 items-center gap-3 rounded-full border border-transparent bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
           >
-            Field notes
+            Field Notes
           </Link>
         </div>
 
@@ -178,9 +168,9 @@ export function CTAAct() {
         >
           <span>Max Doubin</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>Las Vegas · NV</span>
+          <span>South CTA · Las Vegas</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>Class of 2029</span>
+          <span>Top 1% NCL</span>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
           <a
             href="https://instagram.com/maxdoubin"
@@ -202,7 +192,7 @@ export function CTAAct() {
             @percussionmax
           </a>
           <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span className="text-[hsl(var(--brand-signal))]">signal · locked</span>
+          <span className="text-[hsl(var(--brand-signal))]">signal · open</span>
         </div>
       </div>
     </section>
