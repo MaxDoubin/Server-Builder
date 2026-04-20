@@ -10,6 +10,7 @@ const categories = [
   { value: "networking", label: "Networking" },
   { value: "simulation", label: "Simulation" },
   { value: "web", label: "Web" },
+  { value: "art", label: "Art" },
 ];
 
 export function Projects() {
