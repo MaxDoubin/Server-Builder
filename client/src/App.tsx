@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool";
+import "@/styles/cinematic-effects.css";
 
 import { Home } from "@/pages/Home";
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
