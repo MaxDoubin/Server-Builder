@@ -30,6 +30,8 @@ import type { Rack, Equipment, InstalledEquipment } from "@shared/schema";
 import * as THREE from "three";
 import { precompileSceneMaterials } from "@/lib/asset-manager";
 import { useBuild } from "@/lib/build-context";
+import { logInfo, logWarning } from "@/lib/error-log";
+import type { GameRenderProfile } from "@/lib/webgl-support";
 
 interface DatacenterSceneProps {
   onSelectRack: (rack: Rack | null) => void;
@@ -47,6 +49,7 @@ interface DatacenterSceneProps {
   visibleRacks?: Rack[];
   forceSimplified?: boolean;
   lodResetToken?: number;
+  renderProfile?: GameRenderProfile;
   onPerfWarningChange?: (warning: string | null) => void;
   onPointerGridChange?: (positionX: number, positionY: number) => void;
   onPointerGridConfirm?: (positionX: number, positionY: number) => void;
@@ -140,6 +143,48 @@ function ScenePrecompiler() {
   useEffect(() => {
     precompileSceneMaterials(gl, scene, camera);
   }, [gl, scene, camera]);
+  return null;
+}
+
+function RendererRuntime({ renderProfile }: { renderProfile: GameRenderProfile }) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    gl.domElement.style.touchAction = "none";
+
+    const previousToneMapping = gl.toneMapping;
+    const previousExposure = gl.toneMappingExposure;
+    const previousColorSpace = gl.outputColorSpace;
+
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure =
+      renderProfile === "compatibility"
+        ? 0.9
+        : renderProfile === "balanced"
+          ? 0.96
+          : 1.02;
+    gl.outputColorSpace = THREE.SRGBColorSpace;
+
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      logWarning("WebGL context lost. Waiting for restoration.");
+    };
+    const handleContextRestored = () => {
+      logInfo("WebGL context restored.");
+    };
+
+    gl.domElement.addEventListener("webglcontextlost", handleContextLost, false);
+    gl.domElement.addEventListener("webglcontextrestored", handleContextRestored, false);
+
+    return () => {
+      gl.domElement.removeEventListener("webglcontextlost", handleContextLost, false);
+      gl.domElement.removeEventListener("webglcontextrestored", handleContextRestored, false);
+      gl.toneMapping = previousToneMapping;
+      gl.toneMappingExposure = previousExposure;
+      gl.outputColorSpace = previousColorSpace;
+    };
+  }, [gl, renderProfile]);
+
   return null;
 }
 
@@ -338,25 +383,25 @@ function RackGrid({
               buildMode={buildMode}
               rackScale={rackScale}
               onDragStart={(point) => {
-              if (!canMove || buildMode !== "place") return;
-              draggingRef.current = {
-                rackId: rack.id,
-                offsetX: position[0] - point.x,
-                offsetZ: position[2] - point.z,
-                worldX: position[0],
-                worldZ: position[2],
-                snapX: rack.positionX,
-                snapY: rack.positionY,
-              };
-              setDragPreview({
-                rackId: rack.id,
-                worldX: position[0],
-                worldZ: position[2],
-                snapX: rack.positionX,
-                snapY: rack.positionY,
-              });
-            }}
-          />
+                if (!canMove || buildMode !== "place") return;
+                draggingRef.current = {
+                  rackId: rack.id,
+                  offsetX: position[0] - point.x,
+                  offsetZ: position[2] - point.z,
+                  worldX: position[0],
+                  worldZ: position[2],
+                  snapX: rack.positionX,
+                  snapY: rack.positionY,
+                };
+                setDragPreview({
+                  rackId: rack.id,
+                  worldX: position[0],
+                  worldZ: position[2],
+                  snapX: rack.positionX,
+                  snapY: rack.positionY,
+                });
+              }}
+            />
           )}
 
           {/* FIX: shimmer Z uses position[2], not position[1] */}
@@ -445,12 +490,12 @@ function AtmosphericLayer({ size, intensity = 1 }: { size: number; intensity?: n
     <group>
       <DustMotes count={Math.floor(300 * intensity)} size={size} />
 
-      <VolumetricLight position={[0, 13, 0]} color="#4488ff" intensity={0.5} />
-      <VolumetricLight position={[-8, 13, 0]} color="#4488ff" intensity={0.3} />
-      <VolumetricLight position={[8, 13, 0]} color="#4488ff" intensity={0.3} />
+      <VolumetricLight position={[0, 13, 0]} color="#4488ff" intensity={0.5 * intensity} />
+      <VolumetricLight position={[-8, 13, 0]} color="#4488ff" intensity={0.3 * intensity} />
+      <VolumetricLight position={[8, 13, 0]} color="#4488ff" intensity={0.3 * intensity} />
 
-      <AirflowParticles start={[-size * 0.7, 0.5, 0]} end={[0, 0.5, 0]} count={30} color="#00aaff" />
-      <AirflowParticles start={[size * 0.7, 0.5, 0]} end={[0, 0.5, 0]} count={30} color="#00aaff" />
+      <AirflowParticles start={[-size * 0.7, 0.5, 0]} end={[0, 0.5, 0]} count={Math.floor(30 * intensity)} color="#00aaff" />
+      <AirflowParticles start={[size * 0.7, 0.5, 0]} end={[0, 0.5, 0]} count={Math.floor(30 * intensity)} color="#00aaff" />
     </group>
   );
 }
@@ -555,6 +600,7 @@ export function DatacenterScene({
   visibleRacks,
   forceSimplified = false,
   lodResetToken = 0,
+  renderProfile = "cinematic",
   onPerfWarningChange,
   onPointerGridChange,
   onPointerGridConfirm,
@@ -575,6 +621,9 @@ export function DatacenterScene({
   const ceilingHeight = 36;
   const minCameraHeight = 0.6;
   const isLight = theme === "light";
+  const compatibilityMode = renderProfile === "compatibility";
+  const balancedMode = renderProfile === "balanced";
+  const effectiveQualityMode = compatibilityMode ? "low" : qualityMode;
 
   const equipmentMap = useMemo(() => {
     const map = new Map<string, Equipment>();
@@ -594,7 +643,16 @@ export function DatacenterScene({
   const maxRow = Math.max(...displayRacks.map((r) => r.positionY), 2);
   const floorSize = Math.max(maxCol * 2.8 + 30, maxRow * 5.2 + 30, 60);
 
-  const useLowEffects = performanceMode || qualityMode === "low" || displayRacks.length > 200;
+  const useLowEffects =
+    compatibilityMode ||
+    performanceMode ||
+    effectiveQualityMode === "low" ||
+    displayRacks.length > (balancedMode ? 140 : 200);
+  const allowEnvironmentDetails = !useLowEffects && renderProfile === "cinematic" && displayRacks.length < 160;
+  const allowAtmosphere = showEffects && !useLowEffects;
+  const allowScenePrecompile = renderProfile === "cinematic" && !useLowEffects;
+  const allowAssetPreload = renderProfile !== "compatibility";
+  const canvasDpr = compatibilityMode ? 1 : balancedMode || performanceMode ? [1, 1.5] : [1, 2];
 
   const cinematicWaypoints = useMemo(
     () => [
@@ -650,8 +708,16 @@ export function DatacenterScene({
       return;
     }
 
-    const initial = Math.min(12, total);
-    const batch = Math.min(40, Math.max(8, Math.ceil(total * 0.04)));
+    const initial = compatibilityMode
+      ? Math.min(4, total)
+      : balancedMode
+        ? Math.min(8, total)
+        : Math.min(12, total);
+    const batch = compatibilityMode
+      ? Math.min(12, Math.max(4, Math.ceil(total * 0.02)))
+      : balancedMode
+        ? Math.min(24, Math.max(6, Math.ceil(total * 0.03)))
+        : Math.min(40, Math.max(8, Math.ceil(total * 0.04)));
 
     setDetailBudget(initial);
 
@@ -672,7 +738,7 @@ export function DatacenterScene({
         detailRampRef.current = null;
       }
     };
-  }, [displayRacks.length, forceSimplified, lodResetToken, useLowEffects]);
+  }, [balancedMode, compatibilityMode, displayRacks.length, forceSimplified, lodResetToken, useLowEffects]);
 
   const handleOrbitControlsChange = useCallback(() => {
     const controls = controlsRef.current;
@@ -694,8 +760,8 @@ export function DatacenterScene({
   return (
     <div className="w-full h-full relative" data-testid="datacenter-scene-3d">
       <Canvas
-        shadows={!performanceMode}
-        dpr={performanceMode ? 1 : [1, 2]}
+        shadows={renderProfile === "cinematic" && !useLowEffects}
+        dpr={canvasDpr}
         raycaster={{
           params: {
             Line: { threshold: 0.03 },
@@ -703,18 +769,18 @@ export function DatacenterScene({
           },
         }}
         gl={{
-          antialias: !performanceMode,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.0,
-          powerPreference: "high-performance",
+          antialias: !compatibilityMode && !performanceMode,
+          alpha: false,
+          depth: true,
+          stencil: false,
+          powerPreference: compatibilityMode ? "low-power" : balancedMode ? "default" : "high-performance",
+          failIfMajorPerformanceCaveat: false,
+          preserveDrawingBuffer: false,
         }}
         style={{
           background: isLight
             ? "linear-gradient(180deg, #edf4ff 0%, #e5ebf7 40%, #d7dfea 100%)"
             : "linear-gradient(180deg, #050508 0%, #0a0c12 30%, #0d1117 70%, #101520 100%)",
-        }}
-        onCreated={({ gl }) => {
-          gl.domElement.style.touchAction = "none";
         }}
         onPointerMissed={handlePointerMissed}
         onPointerDown={(event) => {
@@ -736,9 +802,10 @@ export function DatacenterScene({
           }
         }}
       >
+        <RendererRuntime renderProfile={renderProfile} />
         <fog attach="fog" args={[isLight ? "#dfe7f2" : "#080a10", 20, 120]} />
 
-        <PerspectiveCamera makeDefault position={[25, 18, 25]} fov={50} near={0.1} far={500} />
+        <PerspectiveCamera makeDefault position={[25, 18, 25]} fov={balancedMode ? 54 : 50} near={0.1} far={500} />
 
         {cameraMode === "orbit" && (
           <OrbitControls
@@ -774,7 +841,7 @@ export function DatacenterScene({
         {cameraMode === "cinematic" && (
           <CinematicFlythrough
             waypoints={cinematicWaypoints}
-            speed={0.5}
+            speed={balancedMode ? 0.42 : 0.5}
             loop
             active
             maxHeight={ceilingHeight - 0.5}
@@ -783,10 +850,18 @@ export function DatacenterScene({
         )}
 
         <Suspense fallback={<LoadingFallback />}>
-          <AdvancedLights performanceMode={useLowEffects} theme={theme} />
+          <AdvancedLights performanceMode={useLowEffects || balancedMode} theme={theme} />
 
-          {!useLowEffects && (
-            <Stars radius={200} depth={100} count={1000} factor={2} saturation={0.5} fade speed={0.5} />
+          {!compatibilityMode && (
+            <Stars
+              radius={200}
+              depth={100}
+              count={balancedMode ? 520 : 1000}
+              factor={balancedMode ? 1.4 : 2}
+              saturation={0.5}
+              fade
+              speed={balancedMode ? 0.35 : 0.5}
+            />
           )}
 
           <RaisedFloor size={floorSize} showHeatmap={showHeatmap} theme={theme} />
@@ -800,7 +875,7 @@ export function DatacenterScene({
               showHeatShimmer={showEffects && !useLowEffects}
               showNetworkMesh={!useLowEffects}
               heatmapMode={showHeatmap}
-              forceSimplified={forceSimplified || qualityMode === "low"}
+              forceSimplified={forceSimplified || effectiveQualityMode === "low" || compatibilityMode}
               detailBudget={detailBudget}
               buildMode={buildMode}
               canMove={isUnlocked}
@@ -817,24 +892,29 @@ export function DatacenterScene({
             />
           )}
 
-          {preloadQueue.length > 0 && <AssetPreloadQueue equipment={preloadQueue} equipmentCatalog={equipmentMap} />}
+          {allowAssetPreload && preloadQueue.length > 0 && (
+            <AssetPreloadQueue equipment={preloadQueue} equipmentCatalog={equipmentMap} />
+          )}
 
-          {!useLowEffects && <EnvironmentalDetails size={floorSize} />}
+          {allowEnvironmentDetails && <EnvironmentalDetails size={floorSize} />}
 
-          {showEffects && !useLowEffects && (
-            <AtmosphericLayer size={floorSize} intensity={displayRacks.length > 50 ? 0.5 : 1} />
+          {allowAtmosphere && (
+            <AtmosphericLayer
+              size={floorSize}
+              intensity={balancedMode ? 0.6 : displayRacks.length > 50 ? 0.5 : 1}
+            />
           )}
 
           {showHUD && <HolographicHUD position={[0, 10, -floorSize * 0.7]} visible />}
 
           <PerformanceOverlay
             visible={showPerfOverlay}
-            qualityMode={qualityMode}
+            qualityMode={effectiveQualityMode}
             onWarningChange={onPerfWarningChange}
           />
 
-          <ScenePrecompiler />
-          <Preload all />
+          {allowScenePrecompile && <ScenePrecompiler />}
+          {allowScenePrecompile && <Preload all />}
         </Suspense>
       </Canvas>
 
