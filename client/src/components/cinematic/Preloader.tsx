@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useSmoothScroll } from "@/lib/motion/SmoothScrollProvider";
 
 interface PreloaderProps {
@@ -7,13 +7,6 @@ interface PreloaderProps {
   onDone?: () => void;
 }
 
-/**
- * 3D rack-boot preloader.
- *
- * The visual is a real R3F mini-rack (LoaderScene) — same palette as the
- * cinematic, racked units light up in step with load progress, scanner
- * beam sweeps, accent ring orbits.
- */
 const LoaderScene = lazy(() =>
   import("./LoaderScene").then((m) => ({ default: m.LoaderScene })),
 );
@@ -27,9 +20,6 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  // Lightweight CSS rack used as a Suspense fallback while three.js loads.
-  // Keeps the layout stable and gives the user something to watch even
-  // if the GL chunk takes a tick to come over the wire.
   const fallback = (
     <div className="flex h-full w-full items-center justify-center">
       <div
@@ -41,9 +31,6 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
     </div>
   );
 
-  // Drive a smooth progress value off both the document load event and a
-  // floor-time so the boot animation always plays out for at least
-  // minDurationMs. Once both reach 1, we trigger the fade-out.
   useEffect(() => {
     stop();
     const mountedAt = performance.now();
@@ -105,7 +92,6 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
         hiding ? "pointer-events-none opacity-0" : "opacity-100"
       }`}
     >
-      {/* Atmospheric backdrop — same palette as the cinematic */}
       <div
         className="absolute inset-0"
         style={{
@@ -125,7 +111,6 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
             "radial-gradient(ellipse at center, black 20%, transparent 78%)",
         }}
       />
-      {/* Vertical accent traces */}
       <div
         aria-hidden
         className="absolute left-[12vw] top-[16vh] h-[44vh] w-px"
@@ -156,10 +141,9 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
                 : "preloader-pulse 1.6s ease-in-out infinite",
             }}
           />
-          <span>Max Doubin · Systems Online</span>
+          <span>Max Doubin · Profile Loading</span>
         </div>
 
-        {/* The 3D loader rack — replaces the old CSS preserve-3d silhouette */}
         <div
           style={{
             width: "min(360px, 78vw)",
@@ -172,7 +156,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
         </div>
 
         <div className="flex w-[min(320px,78vw)] items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
-          <span>Booting profile</span>
+          <span>Loading site</span>
           <span className="signal-text" data-testid="text-preloader-percent">
             {pct.toString().padStart(3, "0")}%
           </span>
@@ -189,7 +173,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
         </div>
 
         <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
-          Cybersecurity · Networking · Systems
+          Cybersecurity · Networking · Leadership
         </div>
       </div>
     </div>
