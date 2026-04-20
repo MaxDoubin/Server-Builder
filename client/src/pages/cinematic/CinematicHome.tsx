@@ -1,24 +1,13 @@
 import { Suspense, lazy, useRef } from "react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
-import { HeroAct } from "./acts/HeroAct";
+import { SystemsAct } from "./acts/SystemsAct";
 
 /**
- * Below-the-fold acts are code-split. HeroAct stays eager so the
- * first paint ships with the hero copy + canvas, but the rest of
- * the scroll narrative — including the heavy ExplodedScene and
- * DatacenterScene — is fetched in the background while the user
- * reads the hero.
+ * The cinematic home is one continuous shot of the same rack — hero,
+ * install, service-pull, anatomy, hall — followed by the editorial
+ * Telemetry and CTA acts.
  */
-const ChapterAct = lazy(() =>
-  import("./acts/ChapterAct").then((m) => ({ default: m.ChapterAct })),
-);
-const ExplodedAct = lazy(() =>
-  import("./acts/ExplodedAct").then((m) => ({ default: m.ExplodedAct })),
-);
-const DatacenterAct = lazy(() =>
-  import("./acts/DatacenterAct").then((m) => ({ default: m.DatacenterAct })),
-);
 const TelemetryAct = lazy(() =>
   import("./acts/TelemetryAct").then((m) => ({ default: m.TelemetryAct })),
 );
@@ -26,8 +15,6 @@ const CTAAct = lazy(() =>
   import("./acts/CTAAct").then((m) => ({ default: m.CTAAct })),
 );
 
-// Visual placeholder preserves vertical rhythm while a chunk loads
-// so the Lenis smooth-scroll engine doesn't snap back up.
 function ActFallback({ minHeight = "100vh" }: { minHeight?: string }) {
   return (
     <div
@@ -66,16 +53,7 @@ export function CinematicHome() {
   return (
     <CinematicLayout>
       <div ref={shellRef}>
-        <HeroAct />
-        <Suspense fallback={<ActFallback />}>
-          <ChapterAct />
-        </Suspense>
-        <Suspense fallback={<ActFallback />}>
-          <ExplodedAct />
-        </Suspense>
-        <Suspense fallback={<ActFallback />}>
-          <DatacenterAct />
-        </Suspense>
+        <SystemsAct />
         <Suspense fallback={<ActFallback minHeight="80vh" />}>
           <TelemetryAct />
         </Suspense>
