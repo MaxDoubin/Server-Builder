@@ -82,18 +82,18 @@ export function SystemsAct() {
       fadeOut(pullRef.current, 0.54);
       fadeIn(anatomyRef.current, 0.58);
 
-      fadeOut(anatomyRef.current, 0.78);
-      fadeIn(hallRef.current, 0.84);
+      fadeOut(anatomyRef.current, 0.80);
+      fadeIn(hallRef.current, 0.90);
 
-      timeline.to(vignetteRef.current, { opacity: 0.4, duration: 0.16 }, 0.84);
-      timeline.to(gridRef.current, { opacity: 0.06, duration: 0.16 }, 0.84);
+      timeline.to(vignetteRef.current, { opacity: 0.4, duration: 0.1 }, 0.90);
+      timeline.to(gridRef.current, { opacity: 0.06, duration: 0.1 }, 0.90);
 
       const rackTarget = { v: 0 };
       timeline.to(
         rackTarget,
         {
           v: 10,
-          duration: 0.14,
+          duration: 0.1,
           onUpdate: () => {
             if (rackCountRef.current) {
               rackCountRef.current.textContent = Math.round(rackTarget.v)
@@ -102,35 +102,35 @@ export function SystemsAct() {
             }
           },
         },
-        0.84,
+        0.90,
       );
       const ramTarget = { v: 0 };
       timeline.to(
         ramTarget,
         {
           v: 3,
-          duration: 0.14,
+          duration: 0.1,
           onUpdate: () => {
             if (ramCountRef.current) {
               ramCountRef.current.textContent = ramTarget.v.toFixed(1);
             }
           },
         },
-        0.84,
+        0.90,
       );
       const uTarget = { v: 0 };
       timeline.to(
         uTarget,
         {
           v: 42,
-          duration: 0.14,
+          duration: 0.1,
           onUpdate: () => {
             if (uCountRef.current) {
               uCountRef.current.textContent = Math.round(uTarget.v).toString();
             }
           },
         },
-        0.84,
+        0.90,
       );
 
       const proxy = { p: 0 };
@@ -145,10 +145,10 @@ export function SystemsAct() {
             const p = proxy.p;
             const beat =
               p < 0.14 ? { n: "01", l: "Profile" }
-              : p < 0.36 ? { n: "02", l: "Leadership" }
-              : p < 0.54 ? { n: "03", l: "Cybersecurity" }
-              : p < 0.72 ? { n: "04", l: "Infrastructure" }
-              : p < 0.84 ? { n: "05", l: "Reseat" }
+              : p < 0.38 ? { n: "02", l: "Leadership" }
+              : p < 0.58 ? { n: "03", l: "Cybersecurity" }
+              : p < 0.80 ? { n: "04", l: "Infrastructure" }
+              : p < 0.90 ? { n: "05", l: "Hardware" }
               : { n: "06", l: "Highlights" };
             if (beatCounterRef.current) beatCounterRef.current.textContent = beat.n;
             if (beatLabelRef.current) beatLabelRef.current.textContent = beat.l;
@@ -161,7 +161,7 @@ export function SystemsAct() {
       );
     },
     [],
-    { end: "+=1500%", pin: true, scrub: 1 },
+    { end: "+=900%", pin: true, scrub: 0.85 },
   );
 
   return (
