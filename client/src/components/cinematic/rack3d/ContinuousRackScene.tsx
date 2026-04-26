@@ -62,9 +62,10 @@ const CAM_KEYS: Key[] = [
   { t: 0.54, pos: [-0.95, FOCUS_SLOT.u * U + 0.18, 2.00], look: [0, FOCUS_SLOT.u * U + 0.05, 0.65], fov: 34 },
   { t: 0.62, pos: [-1.20, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
   { t: 0.70, pos: [1.10, FOCUS_SLOT.u * U + 0.55, 1.85], look: [0, FOCUS_SLOT.u * U + 0.20, 0.60], fov: 36 },
-  { t: 0.80, pos: [0.30, RACK_MID_Y * 0.65, 2.40], look: [0, RACK_MID_Y * 0.55, 0], fov: 35 },
-  { t: 0.92, pos: [1.40, RACK_MID_Y + 1.20, 5.20], look: [0, RACK_MID_Y * 0.5, 0], fov: 42 },
-  { t: 1.00, pos: [2.40, RACK_MID_Y + 2.40, 8.20], look: [0, RACK_MID_Y * 0.4, 0], fov: 48 },
+  { t: 0.80, pos: [0.15, RACK_MID_Y * 0.72, 2.32], look: [0, RACK_MID_Y * 0.56, 0.06], fov: 34 },
+  { t: 0.90, pos: [0.62, RACK_MID_Y * 0.92, 2.95], look: [0.02, RACK_MID_Y * 0.58, -0.02], fov: 36 },
+  { t: 0.96, pos: [1.10, RACK_MID_Y + 0.62, 3.72], look: [0.04, RACK_MID_Y * 0.56, -0.12], fov: 38 },
+  { t: 1.00, pos: [1.48, RACK_MID_Y + 0.96, 4.48], look: [0.08, RACK_MID_Y * 0.54, -0.22], fov: 40 },
 ];
 
 function sampleKey(t: number): Key {
@@ -105,7 +106,7 @@ function CameraRig({ progressRef }: { progressRef: ContinuousProgressRef }) {
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
     const k = sampleKey(p);
 
-    const swayScale = p > 0.54 && p < 0.74 ? 0.0025 : 0.008;
+    const swayScale = p > 0.54 && p < 0.74 ? 0.0025 : 0.007;
     const sway = Math.sin(clock.elapsedTime * 0.32) * swayScale;
     const swayY = Math.cos(clock.elapsedTime * 0.27) * swayScale * 0.6;
 
@@ -375,8 +376,8 @@ function useStateBump() {
   return useReducer((x: number) => x + 1, 0);
 }
 
-const HALL_START = 0.84;
-const HALL_END = 1.0;
+const HALL_START = 0.90;
+const HALL_END = 0.995;
 
 const RACK_SPACING = RACK_TOTAL_WIDTH + 0.05;
 const AISLE = 1.3;
@@ -397,7 +398,7 @@ function NeighbourRack({
   useFrame(() => {
     if (!groupRef.current) return;
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const local = smoothstep(HALL_START + delay, HALL_END - 0.04, p);
+    const local = smoothstep(HALL_START + delay, HALL_END - 0.015, p);
     groupRef.current.visible = local > 0.005;
     groupRef.current.position.y = THREE.MathUtils.lerp(-0.6, 0, local);
     const s = THREE.MathUtils.lerp(0.86, 1, local);
@@ -432,9 +433,9 @@ function HallFloor({ progressRef }: { progressRef: ContinuousProgressRef }) {
   useFrame(() => {
     if (!ref.current) return;
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const local = smoothstep(HALL_START - 0.05, HALL_END, p);
+    const local = smoothstep(HALL_START - 0.02, HALL_END, p);
     const m = ref.current.material as THREE.MeshBasicMaterial;
-    m.opacity = 0.0 + local * 0.55;
+    m.opacity = local * 0.55;
     ref.current.visible = local > 0.001;
   });
   return (
@@ -477,7 +478,7 @@ function HallSignalField({ progressRef, tier }: { progressRef: ContinuousProgres
   useFrame(() => {
     if (!groupRef.current) return;
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const local = smoothstep(HALL_START + 0.015, HALL_END, p);
+    const local = smoothstep(HALL_START + 0.01, HALL_END, p);
     groupRef.current.visible = local > 0.005;
     groupRef.current.position.y = THREE.MathUtils.lerp(-0.18, 0, local);
     const s = THREE.MathUtils.lerp(0.95, 1, local);
