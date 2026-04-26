@@ -1,103 +1,172 @@
 import { Link } from "wouter";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import {
+  ScrollReveal,
+  StaggerGroup,
+  StaggerItem,
+  fadeUp,
+  fadeLeft,
+  fadeRight,
+  DrawLine,
+  Magnetic,
+  AnimatedGradientText,
+  Breathing,
+  FloatingParticles,
+} from "@/lib/framer-animations";
+
+const footerLinkVariants = {
+  hidden: { opacity: 0, x: -16 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 export function CinematicFooter() {
   const year = new Date().getFullYear();
+  const footerRef = useRef<HTMLElement>(null);
+  const isInView = useInView(footerRef, { once: true, amount: 0.15 });
+
   return (
-    <footer className="relative border-t border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone-dim))]">
+    <footer
+      ref={footerRef}
+      className="relative border-t border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone-dim))] overflow-hidden"
+    >
+      <FloatingParticles count={12} color="hsl(72 100% 50% / 0.3)" maxSize={2} />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px hairline" />
+      <DrawLine color="hsl(72 100% 50%)" className="relative z-10" delay={0.3} />
+
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-12 md:px-10">
         <div className="md:col-span-5">
-          <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
-            Max Doubin · Las Vegas, NV
-          </div>
-          <h3 className="mt-4 max-w-md font-display text-3xl font-medium leading-[1.05] tracking-tight text-[hsl(var(--brand-bone))] md:text-4xl">
-            Cybersecurity, enterprise networking, systems infrastructure, percussion, and community leadership.
-          </h3>
-          <a
-            href="mailto:max@maxdoubin.com"
-            data-testid="link-footer-email"
-            className="mt-6 inline-flex items-center gap-3 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
-          >
-            <span>max@maxdoubin.com</span>
-            <span aria-hidden className="inline-block h-px w-8 bg-[hsl(var(--brand-signal))]" />
-          </a>
+          <ScrollReveal variants={fadeLeft} delay={0.1}>
+            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              Max Doubin · Las Vegas, NV
+            </div>
+          </ScrollReveal>
+          <ScrollReveal variants={fadeUp} delay={0.2}>
+            <h3 className="mt-4 max-w-md font-display text-3xl font-medium leading-[1.05] tracking-tight text-[hsl(var(--brand-bone))] md:text-4xl">
+              Cybersecurity, enterprise networking, systems infrastructure, percussion, and community leadership.
+            </h3>
+          </ScrollReveal>
+          <ScrollReveal variants={fadeUp} delay={0.35}>
+            <Magnetic strength={0.15} radius={120}>
+              <motion.a
+                href="mailto:max@maxdoubin.com"
+                data-testid="link-footer-email"
+                className="mt-6 inline-flex items-center gap-3 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
+                whileHover={{ x: 6, color: "hsl(72 100% 50%)" }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                <span>max@maxdoubin.com</span>
+                <motion.span
+                  aria-hidden
+                  className="inline-block h-px w-8 bg-[hsl(var(--brand-signal))]"
+                  animate={{ width: [32, 48, 32] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </motion.a>
+            </Magnetic>
+          </ScrollReveal>
         </div>
 
         <div className="md:col-span-3">
-          <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
-            Navigate
-          </div>
-          <ul className="mt-4 space-y-2 font-mono-tight text-sm">
-            <li><Link href="/#dossier" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-dossier">Dossier</Link></li>
-            <li><Link href="/projects" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-projects">Projects</Link></li>
-            <li><Link href="/blog" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-blog">Field Notes</Link></li>
-            <li><Link href="/game" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-game">Build Simulator</Link></li>
-            <li><Link href="/contact" className="hover:text-[hsl(var(--brand-bone))]" data-testid="link-footer-contact-2">Contact</Link></li>
-          </ul>
+          <ScrollReveal variants={fadeUp} delay={0.25}>
+            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              Navigate
+            </div>
+          </ScrollReveal>
+          <StaggerGroup className="mt-4 space-y-2 font-mono-tight text-sm" staggerDelay={0.06} delayChildren={0.3}>
+            {[
+              { href: "/#dossier", label: "Dossier", testId: "link-footer-dossier" },
+              { href: "/projects", label: "Projects", testId: "link-footer-projects" },
+              { href: "/blog", label: "Field Notes", testId: "link-footer-blog" },
+              { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
+              { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },
+            ].map((item) => (
+              <StaggerItem key={item.href} variants={footerLinkVariants}>
+                <Magnetic strength={0.1} radius={60}>
+                  <motion.div
+                    whileHover={{ x: 8, color: "hsl(var(--brand-bone))" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <Link href={item.href} className="inline-block hover:text-[hsl(var(--brand-bone))]" data-testid={item.testId}>
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                </Magnetic>
+              </StaggerItem>
+            ))}
+          </StaggerGroup>
         </div>
 
         <div className="md:col-span-4">
-          <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
-            Elsewhere
-          </div>
-          <ul className="mt-4 grid grid-cols-1 gap-2 font-mono-tight text-sm">
-            <li>
-              <a
-                href="https://github.com/MaxFromYT/Server-Builder"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="hover:text-[hsl(var(--brand-bone))]"
-                data-testid="link-footer-github"
-              >
-                GitHub · MaxFromYT/Server-Builder
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://instagram.com/maxdoubin"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="hover:text-[hsl(var(--brand-bone))]"
-                data-testid="link-footer-instagram"
-              >
-                Instagram · @maxdoubin
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://instagram.com/percussionmax"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="hover:text-[hsl(var(--brand-bone))]"
-                data-testid="link-footer-percussionmax"
-              >
-                Instagram · @percussionmax
-              </a>
-            </li>
-            <li>
-              <a
-                href="mailto:max@maxdoubin.com"
-                className="hover:text-[hsl(var(--brand-bone))]"
-                data-testid="link-footer-email-2"
-              >
-                max@maxdoubin.com
-              </a>
-            </li>
-          </ul>
+          <ScrollReveal variants={fadeRight} delay={0.3}>
+            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              Elsewhere
+            </div>
+          </ScrollReveal>
+          <StaggerGroup className="mt-4 grid grid-cols-1 gap-2 font-mono-tight text-sm" staggerDelay={0.08} delayChildren={0.35}>
+            {[
+              { href: "https://github.com/MaxFromYT/Server-Builder", label: "GitHub · MaxFromYT/Server-Builder", testId: "link-footer-github" },
+              { href: "https://instagram.com/maxdoubin", label: "Instagram · @maxdoubin", testId: "link-footer-instagram" },
+              { href: "https://instagram.com/percussionmax", label: "Instagram · @percussionmax", testId: "link-footer-percussionmax" },
+              { href: "mailto:max@maxdoubin.com", label: "max@maxdoubin.com", testId: "link-footer-email-2" },
+            ].map((item) => (
+              <StaggerItem key={item.testId} variants={footerLinkVariants}>
+                <Magnetic strength={0.1} radius={60}>
+                  <motion.div
+                    whileHover={{ x: 8, color: "hsl(var(--brand-bone))" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <a
+                      href={item.href}
+                      target={item.href.startsWith("http") ? "_blank" : undefined}
+                      rel={item.href.startsWith("http") ? "noreferrer noopener" : undefined}
+                      className="inline-block hover:text-[hsl(var(--brand-bone))]"
+                      data-testid={item.testId}
+                    >
+                      {item.label}
+                    </a>
+                  </motion.div>
+                </Magnetic>
+              </StaggerItem>
+            ))}
+          </StaggerGroup>
         </div>
       </div>
-      <div className="border-t border-[hsl(var(--brand-iron)/.6)]">
+
+      <motion.div
+        className="border-t border-[hsl(var(--brand-iron)/.6)]"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.6, delay: 0.6 }}
+      >
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] md:px-10">
-          <span>© {year} Max Doubin</span>
-          <span className="flex items-center gap-2">
-            <span
-              className="h-[5px] w-[5px] rounded-full bg-[hsl(var(--brand-signal))]"
-              style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
-            />
-            All systems operational
-          </span>
+          <motion.span
+            initial={{ opacity: 0, x: -20 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ delay: 0.7, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            © {year} Max Doubin
+          </motion.span>
+          <motion.span
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, x: 20 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ delay: 0.8, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Breathing intensity={2}>
+              <span
+                className="h-[5px] w-[5px] rounded-full bg-[hsl(var(--brand-signal))]"
+                style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
+              />
+            </Breathing>
+            <AnimatedGradientText>All systems operational</AnimatedGradientText>
+          </motion.span>
         </div>
-      </div>
+      </motion.div>
     </footer>
   );
 }
