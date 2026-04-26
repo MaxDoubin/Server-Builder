@@ -9,22 +9,6 @@ import {
   U,
 } from "../rackConfig";
 
-/**
- * Realistic cable management.
- *
- * Real rack cables don't "sag" in the middle like fairy lights — they're
- * routed through vertical cable managers on the side of the rack, or
- * through horizontal combs, and the only sag is a small service loop
- * right where they enter/exit a port.
- *
- * Geometry approach:
- *   start (switch port) → small service loop down → vertical drop in
- *   the cable manager → small service loop up → target (device port)
- *
- * This uses a 4-point Catmull-Rom spline so the curve is smooth
- * everywhere but stays tight to the manager channel. No cables cross.
- */
-
 type Accent = "signal" | "amber" | "cyan" | "copper" | "dark";
 
 const ACCENT_COLORS: Record<Accent, string> = {
@@ -93,10 +77,6 @@ function CableTube({
   );
 }
 
-/**
- * Vertical cable manager — a D-ring raceway on the side of the rack
- * where patch cables live. Gives the cables a clear home.
- */
 function CableManager({ x, frontZ, backZ }: { x: number; frontZ: number; backZ: number }) {
   const depth = frontZ - backZ - 0.04;
   const y = RACK_FEET_HEIGHT + RACK_INTERNAL_HEIGHT / 2;
@@ -120,9 +100,6 @@ function CableManager({ x, frontZ, backZ }: { x: number; frontZ: number; backZ: 
   );
 }
 
-/**
- * Horizontal overhead cable tray with rails and organizing combs.
- */
 function OverheadTray() {
   const y = RACK_FEET_HEIGHT + RACK_INTERNAL_HEIGHT - 0.002;
   const z = -RACK_DEPTH / 2 + 0.1;
@@ -140,11 +117,50 @@ function OverheadTray() {
         <boxGeometry args={[RACK_INNER_WIDTH, 0.004, 0.002]} />
         <meshStandardMaterial color="#161a20" metalness={0.55} roughness={0.6} />
       </mesh>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh key={i} position={[-0.2 + i * 0.057, 0.006, 0]}>
+          <boxGeometry args={[0.003, 0.016, 0.024]} />
+          <meshStandardMaterial color="#1a1f24" metalness={0.48} roughness={0.54} />
+        </mesh>
+      ))}
     </group>
   );
 }
 
-/** Loose patch cables running from switch area down the side to the rear. */
+function HorizontalBrushPanel({ x, y, z }: { x: number; y: number; z: number }) {
+  return (
+    <group position={[x, y, z]}>
+      <mesh>
+        <boxGeometry args={[0.018, 0.022, 0.028]} />
+        <meshStandardMaterial color="#0d1014" metalness={0.34} roughness={0.82} />
+      </mesh>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <mesh key={i} position={[0, -0.008 + i * 0.004, 0.014]}>
+          <boxGeometry args={[0.016, 0.0012, 0.002]} />
+          <meshBasicMaterial color="#64e6ff" transparent opacity={0.12} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function RearTrunkBundle({ x, color, height }: { x: number; color: string; height: number }) {
+  return (
+    <group position={[x, RACK_FEET_HEIGHT + height / 2 + 0.06, -RACK_DEPTH / 2 + 0.06]}>
+      <mesh>
+        <cylinderGeometry args={[0.007, 0.007, height, 10]} />
+        <meshStandardMaterial color={color} roughness={0.82} metalness={0.08} />
+      </mesh>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <mesh key={i} position={[0.009, -height / 2 + 0.12 + i * 0.22, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.008, 0.0012, 5, 10, Math.PI * 1.2]} />
+          <meshStandardMaterial color="#182029" metalness={0.38} roughness={0.64} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 export function Cables() {
   const rightLaneX = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
   const leftLaneX = -(RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004);
@@ -155,20 +171,26 @@ export function Cables() {
   const switchY14 = RACK_FEET_HEIGHT + 14 * U + U * 0.5;
   const switchY15 = RACK_FEET_HEIGHT + 15 * U + U * 0.5;
   const switchY30 = RACK_FEET_HEIGHT + 30 * U + U * 0.5;
+  const switchY35 = RACK_FEET_HEIGHT + 35 * U + U * 0.5;
 
   const runs: CableRun[] = useMemo(
     () => [
       { targetU: 3, accent: "cyan", lane: 0 },
-      { targetU: 7, accent: "signal", lane: 1 },
-      { targetU: 10, accent: "signal", lane: 2 },
-      { targetU: 12, accent: "signal", lane: 3 },
-      { targetU: 17, accent: "copper", lane: 4 },
-      { targetU: 22, accent: "cyan", lane: 5 },
-      { targetU: 32, accent: "amber", lane: 6 },
-      { targetU: 33, accent: "signal", lane: 7 },
-      { targetU: 34, accent: "signal", lane: 8 },
-      { targetU: 38, accent: "dark", lane: 9 },
-      { targetU: 39, accent: "cyan", lane: 10 },
+      { targetU: 4, accent: "signal", lane: 1 },
+      { targetU: 7, accent: "signal", lane: 2 },
+      { targetU: 9, accent: "copper", lane: 3 },
+      { targetU: 10, accent: "signal", lane: 4 },
+      { targetU: 12, accent: "signal", lane: 5 },
+      { targetU: 17, accent: "copper", lane: 6 },
+      { targetU: 18, accent: "dark", lane: 7 },
+      { targetU: 21, accent: "cyan", lane: 8 },
+      { targetU: 22, accent: "cyan", lane: 9 },
+      { targetU: 32, accent: "amber", lane: 10 },
+      { targetU: 33, accent: "signal", lane: 11 },
+      { targetU: 34, accent: "signal", lane: 12 },
+      { targetU: 38, accent: "dark", lane: 13 },
+      { targetU: 39, accent: "cyan", lane: 14 },
+      { targetU: 40, accent: "signal", lane: 15 },
     ],
     [],
   );
@@ -180,16 +202,23 @@ export function Cables() {
       <CableManager x={rightLaneX} frontZ={frontZ} backZ={backZ} />
       <CableManager x={leftLaneX} frontZ={frontZ} backZ={backZ} />
 
+      <HorizontalBrushPanel x={rightLaneX + 0.008} y={switchY14} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={rightLaneX + 0.008} y={switchY30} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY15} z={backZ + 0.02} />
+      <HorizontalBrushPanel x={leftLaneX - 0.008} y={switchY35} z={backZ + 0.02} />
+
       {runs.map((run, i) => {
         const targetY = RACK_FEET_HEIGHT + run.targetU * U + U * 0.35;
-        const useLeft = run.targetU <= 9 || run.targetU === 17;
+        const useLeft = run.targetU <= 9 || run.targetU === 17 || run.targetU === 18;
         const baseX = useLeft ? leftLaneX : rightLaneX;
-        const laneX = baseX + (useLeft ? -1 : 1) * (run.lane * laneStep);
-        const fromY = run.targetU >= 30
-          ? switchY30
-          : run.targetU >= 16 && run.targetU <= 22
-            ? switchY15
-            : switchY14;
+        const laneX = baseX + (useLeft ? -1 : 1) * (run.lane * laneStep * 0.55);
+        const fromY = run.targetU >= 35
+          ? switchY35
+          : run.targetU >= 30
+            ? switchY30
+            : run.targetU >= 16 && run.targetU <= 22
+              ? switchY15
+              : switchY14;
 
         return (
           <CableTube
@@ -204,6 +233,10 @@ export function Cables() {
           />
         );
       })}
+
+      <RearTrunkBundle x={-0.14} color="#18202a" height={RACK_INTERNAL_HEIGHT * 0.86} />
+      <RearTrunkBundle x={0.02} color="#1f4a6a" height={RACK_INTERNAL_HEIGHT * 0.72} />
+      <RearTrunkBundle x={0.16} color="#3a5a20" height={RACK_INTERNAL_HEIGHT * 0.9} />
 
       <OverheadTray />
     </group>

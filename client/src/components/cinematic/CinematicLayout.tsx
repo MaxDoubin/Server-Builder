@@ -30,6 +30,12 @@ export function CinematicLayout({
   return (
     <SmoothScrollProvider disabled={disableSmoothScroll}>
       <div className="cinematic cinematic-grain relative min-h-screen overflow-hidden bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone))]">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute left-[-8vw] top-[-10vh] h-[34rem] w-[34rem] rounded-full bg-[hsl(var(--brand-cyan)/0.08)] blur-3xl animate-aurora-drift" />
+          <div className="absolute right-[-6vw] top-[14vh] h-[30rem] w-[30rem] rounded-full bg-[hsl(var(--brand-signal)/0.07)] blur-3xl animate-panel-float" />
+          <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(148,163,184,0.24)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.18)_1px,transparent_1px)] [background-size:72px_72px] animate-telemetry-drift" />
+          <div className="absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_top,hsl(var(--brand-cyan)/0.08),transparent_62%)]" />
+        </div>
         <a
           href="#main-content"
           data-testid="link-skip-to-content"

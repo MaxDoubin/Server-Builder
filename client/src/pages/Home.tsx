@@ -107,7 +107,6 @@ export function Home() {
 
   return (
     <Layout>
-      {/* ── Hero / Profile Header ───────────────────────────────── */}
       <section
         className="relative -mx-6 -mt-4 overflow-hidden border-b border-border/20"
         data-testid="section-hero"
@@ -127,8 +126,6 @@ export function Home() {
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 sm:py-28">
           <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
-
-            {/* Avatar */}
             <div className="flex-shrink-0 flex justify-center lg:justify-start">
               <div className="relative">
                 <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-2xl bg-gradient-to-br from-primary/20 via-blue-600/20 to-indigo-600/20 ring-1 ring-primary/20 flex items-center justify-center shadow-2xl shadow-primary/10">
@@ -144,9 +141,8 @@ export function Home() {
               </div>
             </div>
 
-            {/* Identity */}
             <div className="flex-1 text-center lg:text-left">
-              <p className="text-xs font-semibold uppercase tracking-widest text-primary/60 mb-2">About Me</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary/60 mb-2">Profile</p>
               <h1
                 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl"
                 data-testid="text-hero-name"
@@ -157,10 +153,10 @@ export function Home() {
               <div className="mt-3 h-7" data-testid="text-hero-tagline">
                 <TypeWriter
                   words={[
-                    "Cybersecurity Specialist",
+                    "Cybersecurity",
                     "Enterprise Networking",
-                    "Infrastructure Engineer",
-                    "Systems Architect",
+                    "Systems Infrastructure",
+                    "Community Leadership",
                   ]}
                   className="font-mono text-base font-medium text-blue-400 sm:text-lg"
                 />
@@ -176,7 +172,7 @@ export function Home() {
                 </span>
                 <span className="hidden sm:inline text-white/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Award className="h-3.5 w-3.5 text-amber-400/70" /> Class of 2029
+                  <Award className="h-3.5 w-3.5 text-amber-400/70" /> CompTIA Tech+
                 </span>
               </div>
 
@@ -240,7 +236,6 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── Stats Bar ───────────────────────────────────────────── */}
       <section
         className="relative -mx-6 border-b border-border/20 bg-card/40 backdrop-blur-sm"
         data-testid="section-stats"
@@ -248,10 +243,10 @@ export function Home() {
         <div className="mx-auto max-w-5xl px-6 py-8">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             {[
-              { end: 1, prefix: "Top ", suffix: "%", label: "Cyber League", icon: Shield },
-              { end: 4, prefix: "", suffix: "+ yrs", label: "Tech Experience", icon: Terminal },
-              { end: 7, prefix: "#", suffix: "", label: "Nationally, Team", icon: Target },
-              { end: 2029, prefix: "'", suffix: "", label: "Class of 2029", icon: Award },
+              { end: 1, prefix: "Top ", suffix: "%", label: "NCL Finish", icon: Shield },
+              { end: 7, prefix: "#", suffix: "", label: "School Rank", icon: Target },
+              { end: 10, prefix: "", suffix: "", label: "PowerEdge Servers", icon: Terminal },
+              { end: 42, prefix: "", suffix: "U", label: "Rack Cabinet", icon: Award },
             ].map((stat) => (
               <div key={stat.label} className="group text-center" data-reveal>
                 <stat.icon className="mx-auto mb-2 h-4 w-4 text-primary/40 transition-colors group-hover:text-primary" />
@@ -270,10 +265,7 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── Main Content ────────────────────────────────────────── */}
       <div className="mx-auto max-w-5xl space-y-0">
-
-        {/* About */}
         <section className="pt-16 pb-12" data-testid="section-about">
           <SectionHeader label="About" />
           <div className="grid gap-6 sm:grid-cols-3">
@@ -302,7 +294,7 @@ export function Home() {
                   </li>
                   <li className="flex items-start gap-2">
                     <Award className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-400/70" />
-                    Class of 2029
+                    CompTIA Tech+ (FC0-U71)
                   </li>
                   <li className="flex items-start gap-2">
                     <Target className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-green-400/70" />
@@ -310,7 +302,7 @@ export function Home() {
                   </li>
                   <li className="flex items-start gap-2">
                     <Music className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-purple-400/70" />
-                    #1 Percussionist in Nevada
+                    #1 Percussionist in Nevada (2024)
                   </li>
                   <li className="flex items-start gap-2">
                     <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/50" />
@@ -324,7 +316,6 @@ export function Home() {
           </div>
         </section>
 
-        {/* Expertise */}
         <section className="pb-12" data-testid="section-highlights">
           <SectionHeader label="Expertise" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -332,7 +323,7 @@ export function Home() {
               {
                 icon: Shield,
                 title: "Cybersecurity",
-                desc: "Top 1 percent National Cyber League. Traffic analysis, log investigation, forensics, and incident response.",
+                desc: "Competitive cybersecurity work across National Cyber League and Cyber Skyline, including OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.",
                 color: "from-green-500/8 to-transparent",
                 iconColor: "text-green-400",
                 border: "hover:border-green-500/30",
@@ -340,15 +331,15 @@ export function Home() {
               {
                 icon: Network,
                 title: "Enterprise Networking",
-                desc: "Cisco and Fortinet platforms. VLANs, routing protocols, STP, firewall policy on production hardware.",
+                desc: "Hands-on networking work across Cisco switching, rack connectivity, segmentation, monitoring, and infrastructure planning.",
                 color: "from-blue-500/8 to-transparent",
                 iconColor: "text-blue-400",
                 border: "hover:border-blue-500/30",
               },
               {
                 icon: Terminal,
-                title: "Infrastructure",
-                desc: "Enterprise servers with virtualization, ZFS, network segmentation, and real-time monitoring at scale.",
+                title: "Systems Infrastructure",
+                desc: "Built and maintains a large home data center with Dell PowerEdge servers, MD1220 and MD1200 storage, Radware ADCs, virtualization, and large-scale storage operations.",
                 color: "from-cyan-500/8 to-transparent",
                 iconColor: "text-cyan-400",
                 border: "hover:border-cyan-500/30",
@@ -356,7 +347,7 @@ export function Home() {
               {
                 icon: Users,
                 title: "Leadership",
-                desc: "President of Cyber Club and Music Club. Blue Ribbon Commissioner. OWINN Youth Advisory Council.",
+                desc: "President of South CTA Cyber Club and Music Club, Blue Ribbon Commissioner, Big Future Ambassador, OWINN Youth Advisory Council member, and youth coding camp instructor.",
                 color: "from-amber-500/8 to-transparent",
                 iconColor: "text-amber-400",
                 border: "hover:border-amber-500/30",
@@ -380,30 +371,29 @@ export function Home() {
           </div>
         </section>
 
-        {/* Achievements */}
         <section className="pb-12" data-testid="section-achievements">
-          <SectionHeader label="Achievements" />
+          <SectionHeader label="Highlights" />
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               {
                 icon: Target,
-                title: "National Cyber League, Top 1 Percent",
-                desc: "Nationally recognized for practical cybersecurity challenges including traffic analysis, log investigation, forensics, and real-world problem solving.",
+                title: "Top 1% National Cyber League",
+                desc: "Placed in the top 1 percent of all National Cyber League competitors through practical cybersecurity challenge work.",
               },
               {
                 icon: Shield,
-                title: "Cyber Team, 7th in the Nation",
-                desc: "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity through rigorous prep and technical discipline.",
+                title: "South CTA Ranked 7th in the Nation",
+                desc: "Helped lead South Career Technical Academy to a 7th-place national school finish in National Cyber League competition.",
               },
               {
                 icon: Music,
-                title: "#1 Percussionist in Nevada",
-                desc: "Earned the top statewide ranking in percussion for two consecutive years. All-State Band selection every year since 2023.",
+                title: "Nevada Music Honors",
+                desc: "Selected for Nevada All-State Band in 6th, 7th, and 9th grade and ranked #1 percussionist in Nevada in 2024.",
               },
               {
                 icon: Users,
-                title: "Youth Coding Camp Lead",
-                desc: "Organized and instructed technical coding camps for youth across the Las Vegas Valley, developing curriculum focused on hands-on learning.",
+                title: "Leadership and Instruction",
+                desc: "Leads student organizations, serves in civic and state advisory roles, and teaches youth coding camps across the Las Vegas Valley.",
               },
             ].map((item, i) => (
               <div
@@ -424,13 +414,12 @@ export function Home() {
           </div>
         </section>
 
-        {/* Leadership */}
         <section className="pb-12" data-testid="section-leadership">
-          <SectionHeader label="Leadership & Roles" />
+          <SectionHeader label="Leadership & Community" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {siteConfig.leadership.map((role, i) => (
               <div
-                key={role.title}
+                key={role.title + role.org}
                 className="rounded-xl border border-border/30 bg-card/30 p-5 hover:bg-card/50 hover:border-primary/20 transition-all duration-300"
                 data-reveal
                 style={{ transitionDelay: `${i * 50}ms` }}
@@ -450,9 +439,8 @@ export function Home() {
           </div>
         </section>
 
-        {/* Currently */}
         <section className="pb-12" data-testid="section-currently">
-          <SectionHeader label="Currently" />
+          <SectionHeader label="Current Focus" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {siteConfig.currently.map((section, i) => (
               <div
@@ -477,9 +465,8 @@ export function Home() {
           </div>
         </section>
 
-        {/* Technical Skills */}
         <section className="pb-12" data-testid="section-skills">
-          <SectionHeader label="Technical Skills" />
+          <SectionHeader label="Skills & Coursework" />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {siteConfig.skillCategories.map((category, i) => (
               <div key={category.name} data-reveal style={{ transitionDelay: `${i * 60}ms` }}>
@@ -491,7 +478,7 @@ export function Home() {
                     <span
                       key={skill}
                       className="rounded-full border border-border/30 bg-card/40 px-3 py-1 text-xs font-medium text-foreground/70 transition-all hover:border-primary/40 hover:bg-primary/8 hover:text-foreground"
-                      data-testid={`badge-skill-${skill.toLowerCase().replace(/\s+/g, "-").replace(/[()\/]/g, "")}`}
+                      data-testid={`badge-skill-${skill.toLowerCase().replace(/\s+/g, "-").replace(/[()\/+.]/g, "")}`}
                     >
                       {skill}
                     </span>
@@ -502,7 +489,6 @@ export function Home() {
           </div>
         </section>
 
-        {/* Recent Posts */}
         {recentPosts.length > 0 && (
           <section className="pb-20" data-testid="section-recent-posts">
             <div className="flex items-center justify-between mb-8" data-reveal>

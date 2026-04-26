@@ -1,23 +1,10 @@
 import { Suspense, lazy, useRef } from "react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
-import { HeroAct } from "./acts/HeroAct";
+import { SystemsAct } from "./acts/SystemsAct";
 
-/**
- * Below-the-fold acts are code-split. HeroAct stays eager so the
- * first paint ships with the hero copy + canvas, but the rest of
- * the scroll narrative — including the heavy ExplodedScene and
- * DatacenterScene — is fetched in the background while the user
- * reads the hero.
- */
-const ChapterAct = lazy(() =>
-  import("./acts/ChapterAct").then((m) => ({ default: m.ChapterAct })),
-);
-const ExplodedAct = lazy(() =>
-  import("./acts/ExplodedAct").then((m) => ({ default: m.ExplodedAct })),
-);
-const DatacenterAct = lazy(() =>
-  import("./acts/DatacenterAct").then((m) => ({ default: m.DatacenterAct })),
+const BiographyAct = lazy(() =>
+  import("./acts/BiographyAct").then((m) => ({ default: m.BiographyAct })),
 );
 const TelemetryAct = lazy(() =>
   import("./acts/TelemetryAct").then((m) => ({ default: m.TelemetryAct })),
@@ -26,8 +13,6 @@ const CTAAct = lazy(() =>
   import("./acts/CTAAct").then((m) => ({ default: m.CTAAct })),
 );
 
-// Visual placeholder preserves vertical rhythm while a chunk loads
-// so the Lenis smooth-scroll engine doesn't snap back up.
 function ActFallback({ minHeight = "100vh" }: { minHeight?: string }) {
   return (
     <div
@@ -41,9 +26,10 @@ function ActFallback({ minHeight = "100vh" }: { minHeight?: string }) {
 export function CinematicHome() {
   const shellRef = useRef<HTMLDivElement>(null);
   useSEO({
-    title: "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert",
+    title:
+      "Max Doubin | Cybersecurity, Networking, Systems Infrastructure, and Leadership",
     description:
-      "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada. Systems live, built to lead.",
+      "Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
     canonical: "https://maxdoubin.com/",
     ogType: "profile",
     schemaId: "home-schema",
@@ -51,8 +37,18 @@ export function CinematicHome() {
       "@context": "https://schema.org",
       "@type": "Person",
       name: "Max Doubin",
-      jobTitle: "Cybersecurity Specialist",
+      givenName: "Max",
+      familyName: "Doubin",
+      jobTitle: [
+        "Cybersecurity Student",
+        "Enterprise Networking Specialist",
+        "Competitive Percussionist",
+        "Community Leader",
+      ],
+      description:
+        "Ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
       url: "https://maxdoubin.com/",
+      email: "mailto:max@maxdoubin.com",
       image: "https://maxdoubin.com/images/og-image.png",
       address: {
         "@type": "PostalAddress",
@@ -60,21 +56,50 @@ export function CinematicHome() {
         addressRegion: "NV",
         addressCountry: "US",
       },
-      sameAs: [],
+      alumniOf: {
+        "@type": "EducationalOrganization",
+        name: "South Career Technical Academy",
+      },
+      award: [
+        "Top 1% — National Cyber League",
+        "South CTA ranked 7th in the nation in National Cyber League competition",
+        "#1 Percussionist — State of Nevada, 2024",
+        "Student of the Month — South CTA",
+      ],
+      hasCredential: [
+        {
+          "@type": "EducationalOccupationalCredential",
+          name: "CompTIA Tech+ (FC0-U71)",
+          credentialCategory: "certification",
+        },
+      ],
+      memberOf: [
+        {
+          "@type": "Organization",
+          name: "City of Henderson Blue Ribbon Commission",
+        },
+        {
+          "@type": "Organization",
+          name: "College Board Big Future Ambassadors",
+        },
+        {
+          "@type": "Organization",
+          name: "Nevada OWINN Youth Advisory Council",
+        },
+      ],
+      sameAs: [
+        "https://github.com/MaxFromYT",
+        "https://instagram.com/maxdoubin",
+        "https://instagram.com/percussionmax",
+      ],
     },
   });
   return (
     <CinematicLayout>
       <div ref={shellRef}>
-        <HeroAct />
-        <Suspense fallback={<ActFallback />}>
-          <ChapterAct />
-        </Suspense>
-        <Suspense fallback={<ActFallback />}>
-          <ExplodedAct />
-        </Suspense>
-        <Suspense fallback={<ActFallback />}>
-          <DatacenterAct />
+        <SystemsAct />
+        <Suspense fallback={<ActFallback minHeight="120vh" />}>
+          <BiographyAct />
         </Suspense>
         <Suspense fallback={<ActFallback minHeight="80vh" />}>
           <TelemetryAct />

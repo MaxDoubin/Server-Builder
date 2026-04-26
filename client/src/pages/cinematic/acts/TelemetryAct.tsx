@@ -45,34 +45,34 @@ interface TileConfig {
 const TILES: TileConfig[] = [
   {
     id: "pps",
-    label: "Fabric · PPS",
-    unit: "M/s",
+    label: "Lab Fabric · Throughput",
+    unit: "M pps",
     color: "hsl(72 100% 50%)",
-    base: 14.2,
-    variance: 2.6,
+    base: 1.42,
+    variance: 0.22,
     format: (v) => v.toFixed(2),
   },
   {
     id: "temp",
-    label: "Thermal · Core",
+    label: "Cold Aisle · Temperature",
     unit: "°C",
     color: "hsl(195 80% 64%)",
-    base: 41.2,
-    variance: 1.4,
+    base: 19.6,
+    variance: 0.8,
     format: (v) => v.toFixed(1),
   },
   {
     id: "power",
-    label: "Power · Draw",
+    label: "Rack · Power Draw",
     unit: "kW",
     color: "hsl(32 100% 55%)",
-    base: 28.8,
-    variance: 3.2,
+    base: 4.8,
+    variance: 0.5,
     format: (v) => v.toFixed(1),
   },
   {
     id: "uptime",
-    label: "Uptime",
+    label: "Services · Uptime",
     unit: "d",
     color: "hsl(72 100% 50%)",
     base: 642,
@@ -101,7 +101,7 @@ function useSparklineSeries(length: number, base: number, variance: number) {
   return series;
 }
 
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+function Sparkline({ data, color, gradientId }: { data: number[]; color: string; gradientId: string }) {
   if (data.length === 0) return null;
   const w = 220;
   const h = 52;
@@ -129,12 +129,12 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
     >
       <defs>
-        <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.38" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill={`url(#grad-${color})`} />
+      <path d={areaPath} fill={`url(#${gradientId})`} />
       <path d={path} fill="none" stroke={color} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" />
       {/* Pulsing endpoint dot wrapped in Breathing via foreignObject */}
       <motion.circle
@@ -345,7 +345,7 @@ export function TelemetryAct() {
         {/* Title with WordReveal + AnimatedGradientText on signal-text span */}
         <h2
           ref={titleRef}
-          className="mt-6 max-w-[20ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
+          className="mt-6 max-w-[24ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
         >
           <WordReveal
             text="If it isn't"
@@ -374,7 +374,7 @@ export function TelemetryAct() {
 
         <div
           ref={subtitleRef}
-          className="mt-6 max-w-[56ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+          className="mt-6 max-w-[68ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]"
         >
           <ScrollReveal variants={fadeUp} transition={{ duration: 0.8, delay: 0.2 }}>
             A rack only earns trust when you can answer, at any hour: how many packets

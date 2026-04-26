@@ -99,6 +99,36 @@ function FrontDoorOutline() {
   );
 }
 
+function RearDoorOutline() {
+  const w = RACK_TOTAL_WIDTH + 0.006;
+  const h = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP - 0.03;
+  const z = -RACK_DEPTH / 2 - 0.0015;
+  const y = RACK_FEET_HEIGHT + h / 2;
+
+  return (
+    <group>
+      <mesh position={[0, y + h / 2 - 0.006, z]}>
+        <boxGeometry args={[w, 0.003, 0.003]} />
+        <meshBasicMaterial color={CYAN_COLOR} transparent opacity={0.18} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, RACK_FEET_HEIGHT + 0.008, z]}>
+        <boxGeometry args={[w, 0.003, 0.003]} />
+        <meshBasicMaterial color={BRAND_COLOR} transparent opacity={0.2} toneMapped={false} />
+      </mesh>
+      {[-1, 1].map((sx) => (
+        <mesh key={sx} position={[sx * (w / 2 - 0.002), y, z]}>
+          <boxGeometry args={[0.003, h, 0.003]} />
+          <meshBasicMaterial color={sx < 0 ? BRAND_COLOR : CYAN_COLOR} transparent opacity={0.18} toneMapped={false} />
+        </mesh>
+      ))}
+      <mesh position={[w / 2 - 0.04, y + h * 0.04, z - 0.003]}>
+        <boxGeometry args={[0.008, h * 0.28, 0.008]} />
+        <meshStandardMaterial color="#1b2026" metalness={0.82} roughness={0.28} />
+      </mesh>
+    </group>
+  );
+}
+
 function FrontDoorGlass() {
   const w = RACK_TOTAL_WIDTH - 0.012;
   const h = RACK_INTERNAL_HEIGHT + RACK_FRAME_TOP - 0.04;
@@ -181,6 +211,34 @@ function RearServiceChannels() {
   );
 }
 
+function SideTelemetryPanels() {
+  const levels = [0.2, 0.38, 0.56, 0.74, 0.9];
+  return (
+    <group>
+      {[-1, 1].map((sx) => (
+        <group key={sx} position={[sx * (RACK_TOTAL_WIDTH / 2 + 0.002), 0, 0]}>
+          {levels.map((level, index) => {
+            const y = RACK_FEET_HEIGHT + level * RACK_INTERNAL_HEIGHT;
+            const color = index % 2 === 0 ? CYAN_COLOR : BRAND_COLOR;
+            return (
+              <group key={level} position={[0, y, 0]}>
+                <mesh rotation={[0, sx > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
+                  <planeGeometry args={[0.12, 0.018]} />
+                  <meshBasicMaterial color={color} transparent opacity={0.08} depthWrite={false} toneMapped={false} />
+                </mesh>
+                <mesh position={[sx * 0.0015, 0, sx * 0.06]}>
+                  <boxGeometry args={[0.003, 0.0025, 0.09]} />
+                  <meshBasicMaterial color={color} transparent opacity={0.18} toneMapped={false} />
+                </mesh>
+              </group>
+            );
+          })}
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function TopLiftHandles() {
   return (
     <group position={[0, RACK_TOTAL_HEIGHT + 0.006, RACK_DEPTH / 2 - 0.12]}>
@@ -204,6 +262,27 @@ function TopLiftHandles() {
           </mesh>
         </group>
       ))}
+    </group>
+  );
+}
+
+function OverheadCableBridge() {
+  return (
+    <group position={[0, RACK_TOTAL_HEIGHT + 0.02, -RACK_DEPTH * 0.12]}>
+      <mesh>
+        <boxGeometry args={[RACK_TOTAL_WIDTH * 0.86, 0.006, 0.028]} />
+        <meshStandardMaterial color="#13171c" metalness={0.64} roughness={0.4} />
+      </mesh>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <mesh key={i} position={[-0.17 + i * 0.068, 0.005, 0]}>
+          <boxGeometry args={[0.004, 0.016, 0.024]} />
+          <meshStandardMaterial color="#1d2228" metalness={0.58} roughness={0.5} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.008, 0.016]}>
+        <boxGeometry args={[RACK_TOTAL_WIDTH * 0.72, 0.002, 0.002]} />
+        <meshBasicMaterial color={CYAN_COLOR} transparent opacity={0.16} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
@@ -392,13 +471,16 @@ export function RackFrame() {
 
       <InnerCrossmembers />
       <RearServiceChannels />
+      <SideTelemetryPanels />
       <TopLiftHandles />
+      <OverheadCableBridge />
       <CageNutHoles side="front" />
       <CageNutHoles side="back" />
 
       <FrontRailAccent side={-1} color={CYAN_COLOR} seed={2} />
       <FrontRailAccent side={1} color={BRAND_COLOR} seed={9} />
       <FrontDoorOutline />
+      <RearDoorOutline />
       <FrontDoorGlass />
       <TopTelemetryArray />
       <LowerServiceBayGlow />

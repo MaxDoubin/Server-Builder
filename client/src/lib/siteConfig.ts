@@ -1,12 +1,12 @@
 export const siteConfig = {
   name: "Max Doubin",
-  tagline: "Enterprise Networking, Cybersecurity, and Systems Engineering",
+  tagline: "Cybersecurity, Enterprise Networking, Systems Infrastructure, and Community Leadership",
   shortBio:
-    "Nationally recognized cybersecurity specialist and enterprise networking expert. Technical intern with 4+ years of hands-on experience in infrastructure and defense. Class of 2029.",
+    "Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
   fullBio: [
-    "I build infrastructure that works. My focus is enterprise networking, cybersecurity, and systems engineering, with an emphasis on doing things the right way: clean architecture, good segmentation, strong authentication, predictable performance, and real monitoring so you can prove what is happening instead of guessing.",
-    "I run enterprise servers, manage complex network environments, and work hands-on with the kind of hardware you find in real datacenters. Everything from rack deployment and power planning to virtualization, storage architecture, and network segmentation.",
-    "Beyond technical operations, I am committed to community engagement through technology. I have hosted several coding camps for youth across the Las Vegas Valley, teaching the fundamentals of systems and software to the next generation of builders.",
+    "Max Doubin studies Cybersecurity at South Career Technical Academy in Las Vegas, Nevada. He is a systems enthusiast with hands-on experience in networking, server infrastructure, and cybersecurity competition, supported by formal coursework and independent lab work.",
+    "His technical work includes operating an extensive home data center with Dell PowerEdge servers, MD1220 and MD1200 disk shelves, Cisco Catalyst switching, Radware application delivery control, large-scale storage, and virtualization infrastructure inside a 42U glass-door cabinet.",
+    "Alongside technical work, Max is active in public service, student leadership, music, and youth instruction. He leads student organizations, serves in civic and state advisory roles, teaches coding camps across the Las Vegas Valley, and performs as a competitive percussionist.",
   ],
   email: "max@maxdoubin.com",
   social: {
@@ -14,188 +14,213 @@ export const siteConfig = {
       handle: "@maxdoubin",
       url: "https://instagram.com/maxdoubin",
     },
+    percussion: {
+      handle: "@percussionmax",
+      url: "https://instagram.com/percussionmax",
+    },
     github: {
-      handle: "maxdoubin",
-      url: "https://github.com/maxdoubin",
+      handle: "MaxFromYT",
+      url: "https://github.com/MaxFromYT",
     },
   },
   siteUrl: "https://maxdoubin.com",
 
   currently: [
     {
-      category: "Infrastructure",
+      category: "Cybersecurity & Competition",
       items: [
-        "Operating a multi-server enterprise homelab environment",
-        "Assisted in installing enterprise network systems and hardware",
-        "Experimenting with architecture, testing designs, and refining troubleshooting methodology",
+        "Ranked in the top 1 percent of National Cyber League competitors",
+        "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
+        "Currently pursuing CompTIA Security+, CompTIA Network+, and Cisco CCNA",
       ],
     },
     {
-      category: "Cybersecurity",
+      category: "Leadership & Community",
       items: [
-        "National Cyber League competitor, top 1 percent",
-        "Regular hands-on practice through challenge-style labs and technical problem solving",
-        "Focused on traffic analysis, forensics, and defensive security",
+        "President of the South CTA Cyber Club",
+        "President of the South CTA Music Club for the 2026/2027 school year",
+        "Blue Ribbon Commissioner for the City of Henderson, Nevada",
+        "Youth Advisory Council Member for Nevada OWINN and Big Future Ambassador for College Board",
       ],
     },
     {
-      category: "Networking",
+      category: "Music & Performance",
       items: [
-        "Deepening enterprise networking skills across Cisco and Fortinet platforms",
-        "Building complex multi-segment environments for testing and validation",
-        "Studying for industry certifications",
+        "Nevada All-State Band selection in 6th, 7th, and 9th grade",
+        "Ranked #1 percussionist in the state of Nevada in 2024",
+        "Published arranger on MuseScore and creator behind @percussionmax",
       ],
     },
     {
-      category: "Community",
+      category: "Home Data Center",
       items: [
-        "Hosting coding camps for youth around the Las Vegas Valley",
-        "Developing curriculum for introductory systems and networking",
-        "Mentoring students in cybersecurity and technical problem solving",
+        "Approximately 10 Dell PowerEdge R720 and R820 servers",
+        "Approximately 30 MD1220 shelves and 20 MD1200 shelves",
+        "Approximately 3 TB of RAM, petabytes of raw storage, and 8 Cisco Catalyst 3650 switches",
+        "Radware application delivery controllers inside a 42U glass-door server cabinet",
       ],
     },
     {
-      category: "Music",
+      category: "Academics & Coursework",
       items: [
-        "Ranked #1 percussionist in Nevada for 2024 and 2025",
-        "All-State Band selection every year since 2023",
+        "AP Computer Science Principles and AP Human Geography",
+        "CYBER.ORG coursework including Google Dorking, WHOIS/nslookup recon, ARP poisoning, and Wireshark or PCAP analysis",
+        "Preferred languages: Python and JavaScript",
       ],
     },
   ],
 
   skillCategories: [
     {
-      name: "Enterprise Networking",
+      name: "Cybersecurity",
       skills: [
-        "Cisco Switching and Routing",
-        "Fortinet / FortiGate",
-        "VLANs and Segmentation",
-        "Subnetting / CIDR / VLSM",
-        "Routing Protocols",
-        "STP and L2 Troubleshooting",
-        "Network Design and Documentation",
+        "National Cyber League",
+        "Cyber Skyline",
+        "OSINT",
+        "Cryptography",
+        "Log Analysis",
+        "Hash Cracking",
+        "Network Forensics",
+        "Web Exploitation",
       ],
     },
     {
-      name: "Security and Defense",
+      name: "Networking",
       skills: [
-        "Firewall Policy Design",
-        "ACLs and Secure Access",
-        "Packet Analysis (Wireshark)",
-        "VPN Concepts",
-        "Network Security Fundamentals",
-        "Threat Analysis",
-        "Incident Response",
+        "Cisco Catalyst 3650",
+        "Enterprise Switching",
+        "Routing Fundamentals",
+        "Segmentation",
+        "Cabling and Patch Fields",
+        "Telemetry and Monitoring",
+        "Application Delivery Control",
       ],
     },
     {
-      name: "Systems and Operations",
+      name: "Systems Infrastructure",
       skills: [
-        "Linux Administration",
-        "Windows Server",
-        "Active Directory",
-        "Dell Enterprise Hardware",
-        "Apple Mac Pro / Xserve",
-        "Server Rack Deployment",
-        "Virtualization (Proxmox / ESXi)",
-        "ZFS / Storage Architecture",
+        "Dell PowerEdge R720 and R820",
+        "MD1220 and MD1200 Storage",
+        "Virtualization",
+        "Rack Design",
+        "Storage Planning",
+        "Power and Cooling Awareness",
+        "Home Lab Operations",
       ],
     },
     {
-      name: "Automation and Tooling",
+      name: "Development & Tooling",
       skills: [
-        "Logging and Telemetry",
-        "Data Organization and Analysis",
-        "Documentation and Runbooks",
-        "Python Scripting",
-        "Bash Scripting",
-        "Git Version Control",
-        "Monitoring and Alerting",
+        "Python",
+        "JavaScript",
+        "TypeScript",
+        "Vite",
+        "Tailwind CSS",
+        "Drizzle ORM",
+        "GitHub",
+        "Technical Documentation",
       ],
     },
     {
-      name: "Hardware and Infrastructure",
+      name: "Academics & Certifications",
       skills: [
-        "Rack and Stack",
-        "Power Distribution",
-        "Thermal Management",
-        "Cable Management",
-        "UPS and Power Planning",
-        "10GbE / SFP+ Networking",
+        "CompTIA Tech+",
+        "CompTIA Security+ (in progress)",
+        "CompTIA Network+ (in progress)",
+        "Cisco CCNA (in progress)",
+        "AP Computer Science Principles",
+        "AP Human Geography",
+        "CYBER.ORG Coursework",
       ],
     },
   ],
 
   leadership: [
     {
-      title: "Lead Instructor, Youth Coding Camps",
-      org: "Las Vegas Valley",
+      title: "President",
+      org: "South CTA Cyber Club",
       details: [
-        "Organize and host technical camps for youth across the valley",
-        "Teach core concepts in software development, systems, and networking",
-        "Built a curriculum focused on hands-on learning and problem solving",
+        "Leads cybersecurity preparation, training, and student engagement",
+        "Helped guide South CTA to a 7th-ranked school finish in the nation in National Cyber League competition",
       ],
     },
     {
-      title: "President, Cyber Club",
-      org: "South CTA",
+      title: "President",
+      org: "South CTA Music Club",
       details: [
-        "Lead cybersecurity training, practice sessions, and competition preparation",
-        "Built the team to a top-ten national ranking",
-      ],
-    },
-    {
-      title: "President, Music Club",
-      org: "South CTA",
-      details: [
-        "Coordinate activities for musicians and lead member engagement",
-      ],
-    },
-    {
-      title: "Varsity Quiz Team",
-      org: "Clark County School District",
-      details: [
-        "Competed as part of the varsity academic quiz team",
-        "Advanced to the finals on PBS",
+        "Leads club activities, coordination, and student participation for the 2026/2027 school year",
       ],
     },
     {
       title: "Blue Ribbon Commissioner",
-      org: "Blue Ribbon Commission on Youth, City of Henderson, Nevada",
+      org: "City of Henderson, Nevada",
       details: [
-        "Appointed commissioner on the City of Henderson's youth civic leadership body",
-        "Provide input on local priorities, education, and community engagement",
+        "Serves on the City of Henderson's Blue Ribbon Commission",
+        "Contributes student perspective to civic and community discussions",
       ],
     },
     {
-      title: "Youth Advisory Council",
-      org: "Nevada Governor's Office of Workforce Innovation (OWINN)",
+      title: "Big Future Ambassador",
+      org: "College Board",
       details: [
-        "Provide perspective on workforce development and education initiatives",
-        "Participate in advisory discussions on career readiness and workforce opportunities",
+        "Represents student perspective and outreach through College Board programs",
+      ],
+    },
+    {
+      title: "Youth Advisory Council Member",
+      org: "OWINN, State of Nevada",
+      details: [
+        "Participates in Nevada's Office of Workforce Innovation youth advisory work",
+        "Supports discussion around workforce readiness and opportunity",
+      ],
+    },
+    {
+      title: "Lead Instructor",
+      org: "Youth Coding Camps Across the Las Vegas Valley",
+      details: [
+        "Teaches coding and technical fundamentals to younger students",
+        "Builds hands-on learning experiences across multiple camps",
+      ],
+    },
+    {
+      title: "Former President",
+      org: "NJHS at Pinecrest Inspirada",
+      details: [
+        "Previously served as chapter president before attending South CTA",
       ],
     },
   ],
 
-   achievements: [
+  achievements: [
     {
-      title: "National Cyber League, Top 1 Percent",
+      title: "Top 1% National Cyber League",
       description:
-        "Nationally recognized for practical cybersecurity excellence, ranking in the top 1 percent across challenges in traffic analysis, forensics, and technical problem solving.",
+        "Scored in the top 1 percent of National Cyber League competitors through challenge work across multiple cybersecurity disciplines.",
     },
     {
-      title: "Cyber Team, 7th in the Nation",
+      title: "7th-Ranked School in the Nation",
       description:
-        "Helped build and lead a team to a top-ten national ranking in competitive cybersecurity.",
+        "Helped lead South CTA to a 7th-place national school finish in National Cyber League competition.",
+    },
+    {
+      title: "CompTIA Tech+ Certified",
+      description:
+        "Earned the CompTIA Tech+ certification while continuing work toward Security+, Network+, and Cisco CCNA.",
     },
     {
       title: "#1 Percussionist in Nevada",
       description:
-        "Earned statewide top ranking in percussion performance for 2024 and 2025.",
+        "Ranked #1 percussionist in the state of Nevada in 2024 and selected for Nevada All-State Band in 6th, 7th, and 9th grade.",
     },
     {
-      title: "Youth Coding Camp Lead",
-      description: "Organized and hosted technical training for youth in the Las Vegas Valley.",
+      title: "Student of the Month",
+      description:
+        "Recognized as Student of the Month in October at South Career Technical Academy.",
+    },
+    {
+      title: "Youth Coding Camp Instructor",
+      description:
+        "Leads coding camps for students across the Las Vegas Valley as part of ongoing community technology education work.",
     },
   ],
 
@@ -204,7 +229,7 @@ export const siteConfig = {
       id: "hyperscale",
       title: "Hyperscale: Data Center Architect",
       description:
-        "An immersive 3D datacenter simulation where you design, build, and operate realistic server infrastructure. Features procedural generation of up to 500 racks, real-time thermal and power simulation, multiple camera modes, and a full build system.",
+        "An interactive 3D data center experience that explores rack systems, infrastructure design, and cinematic hardware storytelling.",
       tech: ["React", "Three.js", "TypeScript", "React Three Fiber"],
       category: "simulation",
       link: "/game",
@@ -213,16 +238,26 @@ export const siteConfig = {
     },
     {
       id: "homelab",
-      title: "Enterprise Homelab",
+      title: "Home Data Center",
       description:
-        "A large-scale lab environment running multiple Dell enterprise servers. Used for testing network designs, practicing deployment workflows, running virtualization workloads, and building real troubleshooting skills.",
+        "A large-scale home lab built around Dell PowerEdge servers, MD1220 and MD1200 storage, Cisco switching, Radware application delivery control, and petabyte-scale storage planning.",
       tech: [
-        "Dell Enterprise Hardware",
-        "Linux",
+        "Dell PowerEdge",
+        "Cisco Catalyst",
+        "Storage Infrastructure",
         "Virtualization",
-        "Network Segmentation",
       ],
       category: "networking",
+      link: "",
+      coverImage: "/images/blog-cover-default.png",
+    },
+    {
+      id: "no-service",
+      title: "No Service",
+      description:
+        "A wall-mounted installation built from more than 200 decommissioned smartphones arranged by color in a large gradient composition.",
+      tech: ["Mixed Media", "Installation Art", "Found Hardware"],
+      category: "art",
       link: "",
       coverImage: "/images/blog-cover-default.png",
     },
@@ -230,8 +265,8 @@ export const siteConfig = {
       id: "portfolio",
       title: "Personal Website",
       description:
-        "This site, built with React and Tailwind CSS. Features a static blog system, dark mode, responsive design, and the Hyperscale game integrated as its own section.",
-      tech: ["React", "TypeScript", "Tailwind CSS", "Vite"],
+        "maxdoubin.com, built from scratch in TypeScript with Vite, Tailwind CSS, and Drizzle ORM.",
+      tech: ["TypeScript", "Vite", "Tailwind CSS", "Drizzle ORM"],
       category: "web",
       link: "/",
       coverImage: "/images/blog-cover-webdev.png",

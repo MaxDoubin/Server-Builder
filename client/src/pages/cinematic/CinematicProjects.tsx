@@ -33,6 +33,7 @@ const CATEGORIES = [
   { value: "networking", label: "Networking" },
   { value: "simulation", label: "Simulation" },
   { value: "web", label: "Web" },
+  { value: "art", label: "Art" },
 ];
 
 export function CinematicProjects() {
