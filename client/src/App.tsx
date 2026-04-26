@@ -10,11 +10,13 @@ import {
 } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Route, Switch, Router } from "wouter";
+import { Route, Switch, Router, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool";
+import { AnimatePresence, motion } from "framer-motion";
+import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { Home } from "@/pages/Home";
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
@@ -250,72 +252,108 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark" storageKey="hyperscale-theme">
+          <ScrollProgressBar color="hsl(72 100% 50%)" />
+          <CursorGlow color="hsl(72 100% 50% / 0.06)" size={400} />
           <Router>
             <RouteChunkBoundary>
-              <Switch>
-                <Route path="/" component={CinematicHome} />
-                <Route path="/legacy" component={Home} />
-                <Route path="/legacy/blog">
-                  <Suspense fallback={<RouteLoading />}>
-                    <Blog />
-                  </Suspense>
-                </Route>
-                <Route path="/legacy/blog/:slug">
-                  <Suspense fallback={<RouteLoading />}>
-                    <BlogPost />
-                  </Suspense>
-                </Route>
-                <Route path="/legacy/projects">
-                  <Suspense fallback={<RouteLoading />}>
-                    <Projects />
-                  </Suspense>
-                </Route>
-                <Route path="/legacy/contact">
-                  <Suspense fallback={<RouteLoading />}>
-                    <Contact />
-                  </Suspense>
-                </Route>
-                <Route path="/blog">
-                  <Suspense fallback={<RouteLoading />}>
-                    <CinematicBlog />
-                  </Suspense>
-                </Route>
-                <Route path="/blog/:slug">
-                  <Suspense fallback={<RouteLoading />}>
-                    <CinematicBlogPost />
-                  </Suspense>
-                </Route>
-                <Route path="/projects">
-                  <Suspense fallback={<RouteLoading />}>
-                    <CinematicProjects />
-                  </Suspense>
-                </Route>
-                <Route path="/contact">
-                  <Suspense fallback={<RouteLoading />}>
-                    <CinematicContact />
-                  </Suspense>
-                </Route>
-                <Route path="/game">
-                  <Suspense fallback={<GameLoading />}>
-                    <CinematicGame />
-                  </Suspense>
-                </Route>
-                <Route path="/legacy/game">
-                  <Suspense fallback={<GameLoading />}>
-                    <GamePage />
-                  </Suspense>
-                </Route>
-                <Route>
-                  <Suspense fallback={<RouteLoading />}>
-                    <CinematicNotFound />
-                  </Suspense>
-                </Route>
-              </Switch>
+              <AnimatedRoutes />
             </RouteChunkBoundary>
           </Router>
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+const pageTransition = {
+  initial: { opacity: 0, y: 12, filter: "blur(6px)" },
+  animate: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    filter: "blur(3px)",
+    transition: { duration: 0.3, ease: [0.65, 0, 0.35, 1] },
+  },
+};
+
+function AnimatedRoutes() {
+  const [location] = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={pageTransition}
+      >
+        <Switch>
+          <Route path="/" component={CinematicHome} />
+          <Route path="/legacy" component={Home} />
+          <Route path="/legacy/blog">
+            <Suspense fallback={<RouteLoading />}>
+              <Blog />
+            </Suspense>
+          </Route>
+          <Route path="/legacy/blog/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <BlogPost />
+            </Suspense>
+          </Route>
+          <Route path="/legacy/projects">
+            <Suspense fallback={<RouteLoading />}>
+              <Projects />
+            </Suspense>
+          </Route>
+          <Route path="/legacy/contact">
+            <Suspense fallback={<RouteLoading />}>
+              <Contact />
+            </Suspense>
+          </Route>
+          <Route path="/blog">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicBlog />
+            </Suspense>
+          </Route>
+          <Route path="/blog/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicBlogPost />
+            </Suspense>
+          </Route>
+          <Route path="/projects">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicProjects />
+            </Suspense>
+          </Route>
+          <Route path="/contact">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicContact />
+            </Suspense>
+          </Route>
+          <Route path="/game">
+            <Suspense fallback={<GameLoading />}>
+              <CinematicGame />
+            </Suspense>
+          </Route>
+          <Route path="/legacy/game">
+            <Suspense fallback={<GameLoading />}>
+              <GamePage />
+            </Suspense>
+          </Route>
+          <Route>
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicNotFound />
+            </Suspense>
+          </Route>
+        </Switch>
+      </motion.div>
+    </AnimatePresence>
   );
 }
