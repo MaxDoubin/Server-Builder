@@ -10,7 +10,7 @@ import { ScenarioPanel } from "@/components/3d/ScenarioPanel";
 import { LayoutManager } from "@/components/3d/LayoutManager";
 import { AchievementNotice, AchievementsPanel } from "@/components/3d/AchievementsPanel";
 import { ShortcutsDialog } from "@/components/3d/ShortcutsDialog";
-import { GuidedTour, hasSeenTour, markTourSeen } from "@/components/3d/GuidedTour";
+import { GuidedTour, hasSeenTour } from "@/components/3d/GuidedTour";
 import { InstantShell } from "@/components/ui/instant-shell";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
 import { Button } from "@/components/ui/button";
@@ -637,7 +637,13 @@ export function DataCenter3D({
               </div>
 
               <div className="mt-4 space-y-3">
-                <div>
+                {/*
+                  The shared Slider puts its props on the Radix root rather
+                  than the thumb, so an aria-label on it would not reach the
+                  control. A labelled group is what is available without
+                  changing a component the whole site uses.
+                */}
+                <div role="group" aria-label={`Rack density, ${sliderValue} racks`}>
                   <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-white/60">
                     <span>Rack density</span>
                     <span className="text-cyan-200">{sliderValue}</span>
@@ -799,7 +805,7 @@ export function DataCenter3D({
                       role="tab"
                       id={`dock-tab-${tab.id}`}
                       aria-selected={activeTab === tab.id}
-                      aria-controls={`dock-panel-${tab.id}`}
+                      aria-controls="dock-panel"
                       data-tour={tab.tour}
                       onClick={() => setActiveTab(tab.id)}
                       className={`min-h-[28px] rounded-full px-2.5 text-[10px] uppercase tracking-widest transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 ${
@@ -816,7 +822,7 @@ export function DataCenter3D({
                 <div
                   className="mt-3"
                   role="tabpanel"
-                  id={`dock-panel-${activeTab}`}
+                  id="dock-panel"
                   aria-labelledby={`dock-tab-${activeTab}`}
                 >
                   {activeTab === "scenarios" && (
@@ -829,7 +835,12 @@ export function DataCenter3D({
                       elapsedSeconds={scenarioRun.elapsedSeconds}
                       onStart={handleStartScenario}
                       onAbort={scenarioRun.abort}
-                      onRestart={scenarioRun.restart}
+                      onRestart={() => {
+                        // Re-measure against the floor as it stands now. A
+                        // retry that scored against the original baseline
+                        // would count work already done.
+                        if (scenarioRun.scenario) handleStartScenario(scenarioRun.scenario);
+                      }}
                     />
                   )}
                   {activeTab === "cost" && <CostSummary estimate={costEstimate} />}
@@ -903,7 +914,12 @@ export function DataCenter3D({
       )}
 
       {chromeVisible && selectedRack && showOverlays && !focusMode && (
-        <RackDetailPanel rack={selectedRack} onClose={clearSelection} isUnlocked={isUnlocked} />
+        <RackDetailPanel
+          rack={selectedRack}
+          onClose={clearSelection}
+          isUnlocked={isUnlocked}
+          capacity={capacity}
+        />
       )}
 
       {chromeVisible && (
@@ -914,10 +930,7 @@ export function DataCenter3D({
         <GuidedTour
           open={tourOpen}
           containerRef={sceneRef}
-          onFinish={() => {
-            markTourSeen();
-            setTourOpen(false);
-          }}
+          onFinish={() => setTourOpen(false)}
           onStepChange={handleTourStep}
         />
       )}

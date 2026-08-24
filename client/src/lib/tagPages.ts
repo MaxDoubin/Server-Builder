@@ -138,9 +138,11 @@ export const TAG_PAGES: TagPage[] = [
   },
   {
     tag: "tools",
-    title: "Tools",
+    // Not "Tools": that is the title of the /tools section index, and two
+    // pages competing for the same title is a page competing with itself.
+    title: "Tools of the trade",
     description:
-      "The software worth being fluent in: packet analysis, scanning, benchmarking, and the utilities that make debugging faster.",
+      "Writing about the software worth being fluent in: packet analysis, scanning, benchmarking, and the utilities that make debugging faster.",
     intro:
       "Being fast with a tool is a real skill and it compounds. Packet analysis, scanning, benchmarking and the small utilities that turn a long debugging session into a short one.",
   },

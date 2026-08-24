@@ -15,7 +15,6 @@ import {
 import { heatLevelColor } from "@/lib/capacity";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Thermometer, Zap } from "lucide-react";
 import { logWarning } from "@/lib/error-log";
 
@@ -357,11 +356,14 @@ export function Rack3D({
   const [isDetailedView, setIsDetailedView] = useState(true);
   const allowDetailed = !forceSimplified && (detailBudget === undefined || lodIndex < detailBudget);
 
-  // Force re-render when rack._lastUpdate changes
+  // Force re-render when the game context stamps a rack as changed.
+  // _lastUpdate is written by the equipment add path and is not part of the
+  // Rack schema, so it has to be read through a widened type.
+  const lastUpdate = (rack as Rack & { _lastUpdate?: number })._lastUpdate;
   const [, forceUpdate] = useState({});
   useEffect(() => {
     forceUpdate({});
-  }, [rack._lastUpdate]);
+  }, [lastUpdate]);
 
   useFrame((state, delta) => {
     if (groupRef.current) {
@@ -527,11 +529,23 @@ export function Rack3D({
                     <span>Power Usage</span>
                     <span>{Math.round((rack.currentPowerDraw / rack.powerCapacity) * 100)}%</span>
                   </div>
-                  <Progress
-                    value={(rack.currentPowerDraw / rack.powerCapacity) * 100}
-                    className="h-1 bg-white/10"
-                    indicatorClassName="bg-cyan-500 shadow-[0_0_5px_rgba(0,255,255,0.5)]"
-                  />
+                  {/*
+                    The shared Progress has no indicatorClassName, so the prop
+                    that was here never coloured anything and React forwarded
+                    it to the DOM as an unknown attribute. The bar is two divs;
+                    it does not need a component.
+                  */}
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-cyan-500 shadow-[0_0_5px_rgba(0,255,255,0.5)]"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.max(0, (rack.currentPowerDraw / Math.max(1, rack.powerCapacity)) * 100),
+                        )}%`,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </Card>

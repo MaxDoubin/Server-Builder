@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useGame } from "@/lib/game-context";
 import { useToast } from "@/hooks/use-toast";
+import { formatWatts, placementWarning, type FacilityCapacity } from "@/lib/capacity";
 import type { Equipment, Rack } from "@shared/schema";
 import type { EquipmentCatalogItem } from "@/lib/static-equipment";
 
@@ -17,6 +18,12 @@ interface EquipmentPickerProps {
   selectedSlot: number;
   onClose: () => void;
   onSuccess: () => void;
+  /**
+   * Budget position of the floor. When present the picker says what is left
+   * before you install anything, and says so in words when an item would
+   * take the build past the feed or the cooling plant.
+   */
+  capacity?: FacilityCapacity;
 }
 
 const categoryConfig: Record<string, { label: string; icon: typeof Server; types: string[] }> = {
@@ -139,13 +146,20 @@ function VirtualizedList({ items, emptyMessage, renderItem }: VirtualizedListPro
   );
 }
 
-export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: EquipmentPickerProps) {
+export function EquipmentPicker({
+  rack,
+  selectedSlot,
+  onClose,
+  onSuccess,
+  capacity,
+}: EquipmentPickerProps) {
   const [selectedCategory, setSelectedCategory] = useState("servers");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [capacityWarning, setCapacityWarning] = useState<string | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getStoredIds(FAVORITES_STORAGE_KEY));
   const [recentIds, setRecentIds] = useState<string[]>(() => getStoredIds(RECENTS_STORAGE_KEY));
   const { equipmentCatalog, isStaticMode, addEquipmentToRack } = useGame();
@@ -238,6 +252,15 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
   }, []);
 
   const handleAddEquipment = useCallback((equipment: Equipment) => {
+    /*
+      The facility budget is a warning, not a veto. Refusing the install
+      would hide the interesting part: a data hall that is over its feed is a
+      real state you have to notice and then fix, so the placement goes
+      through and says plainly what it just did.
+    */
+    const budgetWarning = capacity ? placementWarning(capacity, equipment.powerDraw) : null;
+    setCapacityWarning(budgetWarning);
+
     // FORCE SUCCESS: We always add to rack regardless of what the context says
     // But we use the context to actually perform the state update
     if (isStaticMode) {
@@ -248,10 +271,18 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
       // The context method itself handles the logic of placement
       addEquipmentToRack(rack.id, equipment.id, selectedSlot);
       
-      toast({
-        title: "Equipment added",
-        description: `${equipment.name} installed in ${rack.name}.`,
-      });
+      if (budgetWarning) {
+        toast({
+          title: "Installed, and now over budget",
+          description: budgetWarning,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Equipment added",
+          description: `${equipment.name} installed in ${rack.name}.`,
+        });
+      }
       registerRecent(equipment.id);
       setIsSaving(false);
       onSuccess();
@@ -268,7 +299,17 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
         },
       }
     );
-  }, [addEquipmentMutation, isStaticMode, rack, selectedSlot, registerRecent, toast, addEquipmentToRack, onSuccess]);
+  }, [
+    addEquipmentMutation,
+    capacity,
+    isStaticMode,
+    rack,
+    selectedSlot,
+    registerRecent,
+    toast,
+    addEquipmentToRack,
+    onSuccess,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -305,13 +346,38 @@ export function EquipmentPicker({ rack, selectedSlot, onClose, onSuccess }: Equi
             <p className="text-sm text-muted-foreground">
               {rack.name} - Starting at U{selectedSlot}
             </p>
+            {capacity && (
+              <p
+                className={`mt-1 font-mono text-xs ${
+                  capacity.powerHeadroomW <= 0 ? "text-destructive" : "text-muted-foreground"
+                }`}
+              >
+                {capacity.powerHeadroomW > 0
+                  ? `Facility headroom: ${formatWatts(capacity.powerHeadroomW)} of power, ${formatWatts(
+                      capacity.coolingHeadroomW,
+                    )} of cooling`
+                  : `No power headroom left: the floor is ${formatWatts(
+                      -capacity.powerHeadroomW,
+                    )} over the feed`}
+              </p>
+            )}
           </div>
           <Button size="icon" variant="ghost" onClick={onClose} data-testid="button-close-picker">
             <X className="w-5 h-5" />
           </Button>
         </div>
 
-        <div 
+        {capacityWarning && (
+          <p
+            role="alert"
+            className="border-b border-destructive/40 bg-destructive/10 px-4 py-2 text-xs leading-relaxed text-destructive"
+            data-testid="picker-capacity-warning"
+          >
+            {capacityWarning}
+          </p>
+        )}
+
+        <div
           className="px-4 py-3 border-b border-border space-y-3"
           onPointerDown={(e) => e.stopPropagation()}
         >

@@ -91,9 +91,12 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "low-pue",
     title: "Under 1.2",
     description:
-      "Power usage effectiveness below 1.2. Every watt not spent on cooling is a watt sold as compute.",
-    requirement: "Hold facility PUE under 1.20",
-    check: (ctx) => ctx.pue > 0 && ctx.pue < 1.2,
+      "Power usage effectiveness below 1.2 on a floor worth measuring. Every watt not spent on cooling is a watt sold as compute.",
+    // The ten rack floor is the point. PUE in this model improves as the
+    // floor shrinks, so without a size the trophy would be handed out for
+    // an empty room on first load.
+    requirement: "Hold PUE under 1.20 with at least 10 racks running",
+    check: (ctx) => ctx.rackCount >= 10 && ctx.pue > 0 && ctx.pue < 1.2,
     progress: (ctx) => ({ value: ctx.pue > 0 ? Math.min(1.2, ctx.pue) : 0, target: 1.2 }),
   },
   {

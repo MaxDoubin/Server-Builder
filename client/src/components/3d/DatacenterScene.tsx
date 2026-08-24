@@ -219,8 +219,14 @@ function RendererRuntime({ renderProfile }: { renderProfile: GameRenderProfile }
   return null;
 }
 
+interface SceneBridgeState {
+  camera: THREE.Camera;
+  canvas: HTMLCanvasElement;
+}
+
 /**
- * Hands the page a function that renders one frame and returns it as a PNG.
+ * Hands the page a function that renders one frame and returns it as a PNG,
+ * and publishes the live camera to code outside the Canvas.
  *
  * The explicit gl.render before toBlob is not optional. React Three Fiber
  * renders on its own schedule, and the drawing buffer is only guaranteed to
@@ -228,25 +234,35 @@ function RendererRuntime({ renderProfile }: { renderProfile: GameRenderProfile }
  * preserveDrawingBuffer. Rendering immediately before the read removes any
  * question about which frame you get.
  */
-function CaptureBridge({ captureRef }: { captureRef?: React.MutableRefObject<SceneCapture | null> }) {
+function CaptureBridge({
+  captureRef,
+  stateRef,
+}: {
+  captureRef?: React.MutableRefObject<SceneCapture | null>;
+  /** Lets DOM level handlers outside the Canvas reach the live camera. */
+  stateRef: React.MutableRefObject<SceneBridgeState | null>;
+}) {
   const { gl, scene, camera } = useThree();
 
   useEffect(() => {
-    if (!captureRef) return;
-    captureRef.current = () =>
-      new Promise<Blob | null>((resolve) => {
-        try {
-          gl.render(scene, camera);
-          gl.domElement.toBlob((blob) => resolve(blob), "image/png");
-        } catch (error) {
-          logWarning("Could not read the canvas for photo mode.", error);
-          resolve(null);
-        }
-      });
+    stateRef.current = { camera, canvas: gl.domElement };
+    if (captureRef) {
+      captureRef.current = () =>
+        new Promise<Blob | null>((resolve) => {
+          try {
+            gl.render(scene, camera);
+            gl.domElement.toBlob((blob) => resolve(blob), "image/png");
+          } catch (error) {
+            logWarning("Could not read the canvas for photo mode.", error);
+            resolve(null);
+          }
+        });
+    }
     return () => {
-      captureRef.current = null;
+      stateRef.current = null;
+      if (captureRef) captureRef.current = null;
     };
-  }, [camera, captureRef, gl, scene]);
+  }, [camera, captureRef, gl, scene, stateRef]);
 
   return null;
 }
@@ -729,6 +745,11 @@ export function DatacenterScene({
   const { theme } = useTheme();
 
   const controlsRef = useRef<any>(null);
+  const sceneStateRef = useRef<SceneBridgeState | null>(null);
+  const pointerNdc = useRef(new THREE.Vector2());
+  const pickPoint = useRef(new THREE.Vector3());
+  const pickRaycaster = useRef(new THREE.Raycaster());
+  const groundPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
 
   // NEW: UI lock disables OrbitControls while clicking UI
   const [uiLock, setUiLock] = useState(false);
@@ -771,7 +792,11 @@ export function DatacenterScene({
   const allowAtmosphere = showEffects && !useLowEffects;
   const allowScenePrecompile = renderProfile === "cinematic" && !useLowEffects;
   const allowAssetPreload = renderProfile !== "compatibility";
-  const canvasDpr = compatibilityMode ? 1 : balancedMode || performanceMode ? [1, 1.5] : [1, 2];
+  const canvasDpr: number | [number, number] = compatibilityMode
+    ? 1
+    : balancedMode || performanceMode
+      ? [1, 1.5]
+      : [1, 2];
 
   const cinematicWaypoints = useMemo(
     () => [
@@ -859,6 +884,50 @@ export function DatacenterScene({
     };
   }, [balancedMode, compatibilityMode, displayRacks.length, forceSimplified, lodResetToken, useLowEffects]);
 
+  /**
+   * Grid position of a click on the floor, for drop mode.
+   *
+   * This used to read camera, raycaster and pointer straight off the event.
+   * Canvas spreads unknown props onto the wrapping div, so the handler was
+   * receiving a plain React pointer event and those three were undefined:
+   * every pointer down in the scene threw. The camera comes from the bridge
+   * inside the Canvas instead, and the pointer is converted from client
+   * coordinates against the canvas box.
+   *
+   * The vectors, the plane and the raycaster are all held in refs. This runs
+   * on every pointer down and allocating four objects each time is exactly
+   * the kind of garbage a 500 rack scene cannot afford.
+   */
+  const handleCanvasPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!onPointerGridConfirm) return;
+      const state = sceneStateRef.current;
+      if (!state) return;
+      const rect = state.canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      pointerNdc.current.set(
+        ((event.clientX - rect.left) / rect.width) * 2 - 1,
+        -((event.clientY - rect.top) / rect.height) * 2 + 1,
+      );
+      pickRaycaster.current.setFromCamera(pointerNdc.current, state.camera);
+      const intersection = pickPoint.current;
+      if (!pickRaycaster.current.ray.intersectPlane(groundPlane.current, intersection)) return;
+
+      const rackSpacing = 2.8;
+      const aisleSpacing = 5.2;
+      const maxCol = Math.max(...displayRacks.map((r) => r.positionX), 2);
+      const maxRow = Math.max(...displayRacks.map((r) => r.positionY), 2);
+      const centerX = (maxCol * rackSpacing) / 2;
+      const centerZ = (maxRow * aisleSpacing) / 2;
+      onPointerGridConfirm(
+        Math.round((intersection.x + centerX) / rackSpacing),
+        Math.round((intersection.z + centerZ) / aisleSpacing),
+      );
+    },
+    [displayRacks, onPointerGridConfirm],
+  );
+
   const handleOrbitControlsChange = useCallback(() => {
     const controls = controlsRef.current;
     if (!controls) return;
@@ -882,7 +951,12 @@ export function DatacenterScene({
         shadows={renderProfile === "cinematic" && !useLowEffects}
         dpr={canvasDpr}
         raycaster={{
+          // Mesh, LOD and Sprite are spelled out because three types
+          // RaycasterParameters with every key required.
           params: {
+            Mesh: {},
+            LOD: {},
+            Sprite: {},
             Line: { threshold: 0.03 },
             Points: { threshold: 0.04 },
           },
@@ -910,27 +984,10 @@ export function DatacenterScene({
               : "linear-gradient(180deg, #050508 0%, #0a0c12 30%, #0d1117 70%, #101520 100%)",
         }}
         onPointerMissed={handlePointerMissed}
-        onPointerDown={(event) => {
-          if (!onPointerGridConfirm) return;
-          const { camera, raycaster } = event;
-          raycaster.setFromCamera(event.pointer, camera);
-          const intersection = new THREE.Vector3();
-          const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-          if (raycaster.ray.intersectPlane(plane, intersection)) {
-            const rackSpacing = 2.8;
-            const aisleSpacing = 5.2;
-            const maxCol = Math.max(...displayRacks.map((r) => r.positionX), 2);
-            const maxRow = Math.max(...displayRacks.map((r) => r.positionY), 2);
-            const centerX = (maxCol * rackSpacing) / 2;
-            const centerZ = (maxRow * aisleSpacing) / 2;
-            const positionX = Math.round((intersection.x + centerX) / rackSpacing);
-            const positionY = Math.round((intersection.z + centerZ) / aisleSpacing);
-            onPointerGridConfirm(positionX, positionY);
-          }
-        }}
+        onPointerDown={handleCanvasPointerDown}
       >
         <RendererRuntime renderProfile={renderProfile} />
-        <CaptureBridge captureRef={captureRef} />
+        <CaptureBridge captureRef={captureRef} stateRef={sceneStateRef} />
         <PhotoFraming active={photoFraming} floorSize={floorSize} />
         <fog
           attach="fog"

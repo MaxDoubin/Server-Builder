@@ -12,12 +12,19 @@ import { EquipmentPicker } from "./EquipmentPicker";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useGame } from "@/lib/game-context";
 import { useToast } from "@/hooks/use-toast";
+import type { FacilityCapacity } from "@/lib/capacity";
 import type { Rack, Equipment, InstalledEquipment } from "@shared/schema";
 
 interface RackDetailPanelProps {
   rack: Rack;
   onClose: () => void;
   isUnlocked: boolean;
+  /**
+   * Budget position of the floor, passed through to the picker so it can say
+   * before you install something whether the facility has room for it.
+   * Optional: the panel still works without it.
+   */
+  capacity?: FacilityCapacity;
 }
 
 function getStatusColor(value: number, thresholds: { good: number; warning: number }) {
@@ -26,7 +33,7 @@ function getStatusColor(value: number, thresholds: { good: number; warning: numb
   return "text-noc-red";
 }
 
-export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelProps) {
+export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDetailPanelProps) {
   const [showPicker, setShowPicker] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<number>(1);
 
@@ -366,6 +373,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelPr
         <EquipmentPicker
           rack={rack}
           selectedSlot={selectedSlot}
+          capacity={capacity}
           onClose={() => setShowPicker(false)}
           onSuccess={() => setShowPicker(false)}
         />

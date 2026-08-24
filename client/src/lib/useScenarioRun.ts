@@ -100,9 +100,13 @@ export interface ScenarioRunState {
   context: ScenarioContext | null;
   completedIds: string[];
   overrides: CapacityOverrides;
+  /**
+   * Begin a scenario. The baseline is the capacity of the floor the scenario
+   * is about to create, which only the caller can work out: it knows the rack
+   * pool and the density the setup is going to ask for.
+   */
   start: (scenario: Scenario, baseline: FacilityCapacity) => void;
   abort: () => void;
-  restart: () => void;
   elapsedSeconds: number;
 }
 
@@ -116,7 +120,6 @@ export function useScenarioRun({
 }: UseScenarioRunArgs): ScenarioRunState {
   const [run, setRun] = useState<ScenarioRun | null>(null);
   const [completedIds, setCompletedIds] = useState<string[]>(() => readCompleted());
-  const lastBaselineRef = useRef<FacilityCapacity | null>(null);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
@@ -163,7 +166,6 @@ export function useScenarioRun({
 
   const start = useCallback(
     (next: Scenario, baselineCapacity: FacilityCapacity) => {
-      lastBaselineRef.current = baselineCapacity;
       const baseline = baselineFromCapacity(baselineCapacity);
       setRun({
         scenarioId: next.id,
@@ -179,13 +181,6 @@ export function useScenarioRun({
 
   const abort = useCallback(() => setRun(null), []);
 
-  const restart = useCallback(() => {
-    if (!scenario) return;
-    const baseline = lastBaselineRef.current;
-    if (!baseline) return;
-    start(scenario, baseline);
-  }, [scenario, start]);
-
   return {
     capacity,
     run,
@@ -196,7 +191,6 @@ export function useScenarioRun({
     overrides,
     start,
     abort,
-    restart,
     elapsedSeconds,
   };
 }

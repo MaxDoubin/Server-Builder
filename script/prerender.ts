@@ -21,6 +21,7 @@ import { Marked } from "marked";
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
+const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -100,6 +101,8 @@ interface PageMeta {
   ogImageAlt?: string;
   schema?: string;
   rootContent?: string;
+  /** Keep a page out of the index. For interactive pages with little prose. */
+  noindex?: boolean;
 }
 
 function buildPageHtml(base: string, meta: PageMeta): string {
@@ -113,6 +116,7 @@ function buildPageHtml(base: string, meta: PageMeta): string {
     ogImageAlt = "Max Doubin",
     schema,
     rootContent,
+    noindex = false,
   } = meta;
 
   html = replaceTitle(html, title);
@@ -138,6 +142,13 @@ function buildPageHtml(base: string, meta: PageMeta): string {
   html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${ogImage}$2`);
   html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${esc(ogImageAlt)}$2`);
   html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${canonical}$2`);
+
+  if (noindex) {
+    html = html.replace(
+      /(<meta name="robots" content=")[^"]*(")/,
+      "$1noindex, follow$2",
+    );
+  }
 
   if (schema) html = injectBeforeHead(html, schema);
   if (rootContent) html = injectRootContent(html, rootContent);
@@ -377,6 +388,240 @@ ${JSON.stringify({
     canonical: `${SITE_URL}/contact`,
   });
 
+  /*
+    Standalone pages.
+
+    Every one of these is a real page in the router, so every one needs a
+    static document. Without it a crawler following a link gets the SPA
+    fallback: the home page's title, the home page's canonical, and no
+    indication the target exists. Descriptions are per page and unique,
+    which check-meta enforces.
+  */
+  const STANDALONE: Array<PageMeta & { dir: string }> = [
+    {
+      dir: "archive",
+      title: "Archive | Max Doubin",
+      description:
+        "Every field note on maxdoubin.com in one chronological list, grouped by year and month, with tags and read times.",
+      canonical: `${SITE_URL}/archive`,
+    },
+    {
+      dir: "paths",
+      title: "Reading paths | Max Doubin",
+      description:
+        "Four curated routes through the archive: networking from scratch, security fundamentals, AI meets infrastructure, and homelab operations.",
+      canonical: `${SITE_URL}/paths`,
+    },
+    {
+      dir: "now",
+      title: "Now | Max Doubin",
+      description:
+        "What Max Doubin is focused on this month: certification study, what he is building, what he is reading, and what the South CTA Cyber Club is working on.",
+      canonical: `${SITE_URL}/now`,
+    },
+    {
+      dir: "uses",
+      title: "Uses | Max Doubin",
+      description:
+        "The software Max Doubin actually uses: terminal and analysis tools, languages, virtualization, monitoring, and this site's own stack, with why for each.",
+      canonical: `${SITE_URL}/uses`,
+    },
+    {
+      dir: "resume",
+      title: "Resume | Max Doubin",
+      description:
+        "Resume for Max Doubin: cybersecurity study at South Career Technical Academy, National Cyber League results, leadership roles, projects, and skills.",
+      canonical: `${SITE_URL}/resume`,
+    },
+    {
+      dir: "timeline",
+      title: "Timeline | Max Doubin",
+      description:
+        "Competitions, awards, and milestones for Max Doubin, from National Cyber League results and certifications to leadership roles and press coverage.",
+      canonical: `${SITE_URL}/timeline`,
+    },
+    {
+      dir: "cyber-club",
+      title: "South CTA Cyber Club | Max Doubin",
+      description:
+        "Join the Cyber Club at South Career Technical Academy in Las Vegas: capture the flag practice, a lab built to be broken, and no experience required.",
+      canonical: `${SITE_URL}/cyber-club`,
+    },
+    {
+      dir: "coding-camps",
+      title: "Youth Coding Camps | Max Doubin",
+      description:
+        "Youth coding camps across the Las Vegas Valley taught by Max Doubin: what they cover, what a session looks like, and what a beginner takes home.",
+      canonical: `${SITE_URL}/coding-camps`,
+    },
+    {
+      dir: "colophon",
+      title: "Colophon | Max Doubin",
+      description:
+        "How maxdoubin.com is built: React and TypeScript, Vite with manual chunk splitting, static prerendering so crawlers read full articles, no backend.",
+      canonical: `${SITE_URL}/colophon`,
+    },
+    {
+      dir: "faq",
+      title: "Frequently Asked Questions | Max Doubin",
+      description:
+        "Answers about Max Doubin: what he studies, his National Cyber League placement, the South CTA Cyber Club, what he builds and teaches, and how to reach him.",
+      canonical: `${SITE_URL}/faq`,
+    },
+    {
+      dir: "links",
+      title: "Links | Max Doubin",
+      description:
+        "Free and freemium resources Max Doubin recommends for learning networking and security: fundamentals, capture the flag practice, and certification prep.",
+      canonical: `${SITE_URL}/links`,
+    },
+    {
+      dir: "subscribe",
+      title: "Subscribe | Max Doubin",
+      description:
+        "Follow the field notes by RSS. What a feed actually is, why it beats an algorithm, five readers worth trying, and the feed URL for maxdoubin.com.",
+      canonical: `${SITE_URL}/subscribe`,
+    },
+    {
+      dir: "study-timer",
+      title: "Study timer | Max Doubin",
+      description:
+        "A pomodoro study timer that keeps correct time in a background tab, with configurable work and break lengths, a session counter and an optional chime.",
+      canonical: `${SITE_URL}/study-timer`,
+    },
+    {
+      dir: "ask",
+      title: "Ask | Max Doubin",
+      description:
+        "Ask about networking, security, homelabs or competition. The page composes your question for email or GitHub and shows the text before anything is sent.",
+      canonical: `${SITE_URL}/ask`,
+    },
+    {
+      dir: "changelog",
+      title: "Changelog | Max Doubin",
+      description:
+        "A plain-language history of what has changed on maxdoubin.com: speed work, accessibility fixes, new writing and new tools, dated and grouped by month.",
+      canonical: `${SITE_URL}/changelog`,
+    },
+    {
+      dir: "ncl",
+      title: "National Cyber League Study Guide | Max Doubin",
+      description:
+        "What the National Cyber League is, how scoring works, how to prepare, and guides to all seven challenge categories, from a top 1 percent competitor.",
+      canonical: `${SITE_URL}/ncl`,
+    },
+    {
+      dir: "certifications",
+      title: "Certifications | Max Doubin",
+      description:
+        "An honest status board: CompTIA Tech+ earned, with Security+, Network+, and CCNA in progress, plus each exam's official domains and resources.",
+      canonical: `${SITE_URL}/certifications`,
+    },
+    {
+      // A trainer, not an article. Indexing it would put a page of controls
+      // into results alongside the writing.
+      dir: "flashcards",
+      title: "Flashcards | Max Doubin",
+      description:
+        "A spaced-repetition flashcard trainer for networking, ports, security, Linux, and cryptography, with an SM-2 scheduler that plans each card's next review.",
+      canonical: `${SITE_URL}/flashcards`,
+      noindex: true,
+    },
+  ];
+
+  for (const page of STANDALONE) {
+    const { dir, ...meta } = page;
+    await writePage(dir, base, meta);
+  }
+
+  // ── National Cyber League category guides ──
+  const NCL_GUIDES: Array<[string, string, string]> = [
+    ["open-source-intelligence", "Open Source Intelligence", "How the NCL Open Source Intelligence category works: pivoting from a clue, metadata and GPS extraction, DNS and certificate recon, and a worked example."],
+    ["cryptography", "Cryptography", "How the NCL Cryptography category works: telling encodings from ciphers, classical cipher methods, RSA weaknesses, and a worked example."],
+    ["password-cracking", "Password Cracking", "How the NCL Password Cracking category works: identifying hash types, hashcat and John modes, wordlists, rules and masks, plus a worked MD5 example."],
+    ["log-analysis", "Log Analysis", "How the NCL Log Analysis category works: reading web and auth log formats, grep and awk aggregation, spotting brute force, and a worked example."],
+    ["network-traffic-analysis", "Network Traffic Analysis", "How the NCL Network Traffic Analysis category works: reading pcaps in Wireshark, display versus capture filters, following streams, and an example."],
+    ["forensics", "Forensics", "How the NCL Forensics category works: file signatures and magic bytes, strings and binwalk, steganography, metadata, memory analysis, and a worked example."],
+    ["web-application-exploitation", "Web Application Exploitation", "How the NCL Web Application Exploitation category works: recon and enumeration, SQL injection, XSS, OWASP references, and a worked example."],
+  ];
+  for (const [slug, name, description] of NCL_GUIDES) {
+    const url = `${SITE_URL}/ncl/${slug}`;
+    await writePage(`ncl/${slug}`, base, {
+      title: `${name} | NCL Guide | Max Doubin`,
+      description,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "National Cyber League", item: `${SITE_URL}/ncl` },
+    { "@type": "ListItem", position: 3, name, item: url },
+  ],
+})}
+</script>`,
+    });
+  }
+
+  // ── tools ──
+  await writePage("tools", base, {
+    title: "Tools | Max Doubin",
+    description:
+      "Free browser-based tools for networking and security study: subnetting, packet headers, cron, regex, encoding, and classical ciphers.",
+    canonical: `${SITE_URL}/tools`,
+    rootContent: `
+<main>
+  <h1>Tools</h1>
+  <ul>
+${TOOLS.map(
+  (t) =>
+    `    <li><a href="${SITE_URL}/tools/${t.slug}">${esc(t.name)}</a> <span>${esc(t.blurb)}</span></li>`,
+).join("\n")}
+  </ul>
+</main>`,
+  });
+
+  for (const tool of TOOLS) {
+    const url = `${SITE_URL}/tools/${tool.slug}`;
+    await writePage(`tools/${tool.slug}`, base, {
+      title: `${tool.name} | Max Doubin`,
+      description: tool.blurb,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: tool.name,
+  description: tool.blurb,
+  url,
+  applicationCategory: "UtilitiesApplication",
+  operatingSystem: "Any",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>
+<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Tools", item: `${SITE_URL}/tools` },
+    { "@type": "ListItem", position: 3, name: tool.name, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <nav><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/tools">Tools</a></nav>
+  <h1>${esc(tool.name)}</h1>
+  <p>${esc(tool.blurb)}</p>
+  <p>Runs in your browser. Nothing is uploaded.</p>
+</main>`,
+    });
+  }
+
   // ── topic hubs ──
   /*
     One page per subject, with real editorial copy and the full post list
@@ -505,8 +750,54 @@ async function writeSitemap(
     { loc: `${SITE_URL}/contact`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/game`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/topics`, lastmod: today, changefreq: "weekly", priority: "0.8" },
+    { loc: `${SITE_URL}/archive`, lastmod: today, changefreq: "weekly", priority: "0.8" },
+    { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/tools`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/uses`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/timeline`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/cyber-club`, lastmod: today, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/coding-camps`, lastmod: today, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/certifications`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },
+    { loc: `${SITE_URL}/colophon`, lastmod: today, changefreq: "monthly", priority: "0.5" },
+    { loc: `${SITE_URL}/subscribe`, lastmod: today, changefreq: "monthly", priority: "0.5" },
+    { loc: `${SITE_URL}/changelog`, lastmod: today, changefreq: "weekly", priority: "0.4" },
+    { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
+    { loc: `${SITE_URL}/study-timer`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/roadmap`, lastmod: today, changefreq: "weekly", priority: "0.4" },
   ];
+
+  // Tools and the competition guides. /flashcards is deliberately absent:
+  // it is noindex, and a sitemap should never advertise a page that tells
+  // crawlers to go away.
+  for (const tool of TOOLS) {
+    urls.push({
+      loc: `${SITE_URL}/tools/${tool.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const slug of [
+    "open-source-intelligence",
+    "cryptography",
+    "password-cracking",
+    "log-analysis",
+    "network-traffic-analysis",
+    "forensics",
+    "web-application-exploitation",
+  ]) {
+    urls.push({
+      loc: `${SITE_URL}/ncl/${slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
 
   // Topic hubs. Only those that actually have posts, so the sitemap never
   // advertises a page the prerenderer skipped.
