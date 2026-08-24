@@ -25,7 +25,7 @@ export function ModeSwitcher() {
   const [location, setLocation] = useLocation();
 
   return (
-    <div className="flex gap-1" data-testid="mode-switcher">
+    <div className="flex shrink-0 gap-1" data-testid="mode-switcher">
       {modes.map((mode) => {
         const Icon = mode.icon;
         const isActive = location === modeRoutes[mode.id];

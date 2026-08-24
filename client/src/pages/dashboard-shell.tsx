@@ -15,7 +15,7 @@ export function DashboardShell({
       <div className="fixed top-0 left-0 right-0 z-40">
         <GameHeader />
       </div>
-      <div className="pt-20 px-6 pb-10">
+      <div className="px-6 pb-10 pt-36 lg:pt-24">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-white">{title}</h1>
           <p className="text-sm text-white/60">{subtitle}</p>

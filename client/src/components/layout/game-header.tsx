@@ -20,7 +20,17 @@ export function GameHeader() {
   const unacknowledgedCount = alerts.filter((a) => !a.acknowledged).length;
 
   return (
-    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 gap-4" data-testid="game-header">
+    <header
+      /*
+        Below lg the row cannot hold the brand, the exit, five mode tabs and
+        the status readouts at once: the tabs ran past the viewport edge and
+        the last two sat underneath the status bar, unreachable by tap. The
+        header wraps to a second line instead, and the tab strip scrolls
+        within it.
+      */
+      className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border bg-card/80 px-4 py-2 backdrop-blur-sm lg:h-16 lg:flex-nowrap lg:py-0"
+      data-testid="game-header"
+    >
       <div className="flex items-center gap-4">
         {/*
           The only route out of the game. Once the briefing unmounts, its
@@ -64,8 +74,10 @@ export function GameHeader() {
         the 404 page. The dashboards they were written for existed the whole
         time; they just had no route. Both halves are connected now.
       */}
-      <div className="hidden flex-1 justify-center lg:flex">
-        <ModeSwitcher />
+      <div className="order-last w-full min-w-0 overflow-x-auto lg:order-none lg:w-auto lg:flex-1 lg:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex justify-start lg:justify-center">
+          <ModeSwitcher />
+        </div>
       </div>
 
       <div className="flex items-center gap-4">
