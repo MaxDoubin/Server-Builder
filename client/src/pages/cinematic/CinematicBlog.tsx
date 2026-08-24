@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { getAllPosts, getAllTags } from "@/lib/blogPosts";
@@ -69,6 +69,20 @@ export function CinematicBlog() {
   const filteredPosts = activeTag
     ? allPosts.filter((post) => post.tags.includes(activeTag))
     : allPosts;
+
+  /**
+   * The archive is a post per day, so it grows without bound. Rendering all
+   * of it mounted a card, a cover image and a layout-animated motion tree per
+   * post, which is a large DOM and a lot of image bytes for a visitor who
+   * mostly wants the newest few. Render a page at a time instead.
+   */
+  const PAGE = 24;
+  const [visible, setVisible] = useState(PAGE);
+  useEffect(() => {
+    setVisible(PAGE);
+  }, [activeTag]);
+  const shownPosts = filteredPosts.slice(0, visible);
+  const remaining = filteredPosts.length - shownPosts.length;
 
   useScrollReveal(
     rootRef,
@@ -217,7 +231,7 @@ export function CinematicBlog() {
           {/* Post list with AnimatePresence + StaggerGroup */}
           <StaggerGroup className="mt-10 space-y-4" staggerDelay={0.1} delayChildren={0.15}>
             <AnimatePresence mode="popLayout">
-              {filteredPosts.map((post, i) => (
+              {shownPosts.map((post, i) => (
                 <StaggerItem key={post.slug} variants={fadeUp}>
                   <motion.div
                     layout
@@ -302,6 +316,25 @@ export function CinematicBlog() {
               ))}
             </AnimatePresence>
           </StaggerGroup>
+
+          {remaining > 0 && (
+            <div className="mt-12 flex flex-col items-center gap-3">
+              <button
+                type="button"
+                data-testid="button-load-more-posts"
+                onClick={() => setVisible((v) => v + PAGE)}
+                className="group inline-flex items-center gap-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.6)] px-8 py-3 font-mono-tight text-[11px] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone-dim))] backdrop-blur-md transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"
+              >
+                Load more
+                <span className="text-[hsl(var(--brand-signal))]">
+                  {remaining.toString().padStart(2, "0")}
+                </span>
+              </button>
+              <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                Showing {shownPosts.length} of {filteredPosts.length}
+              </div>
+            </div>
+          )}
 
           {filteredPosts.length === 0 && (
             <ScrollReveal variants={blurIn} delay={0.1}>
