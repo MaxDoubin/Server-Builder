@@ -8,6 +8,9 @@ export function CinematicNotFound() {
     description: "The page you're looking for isn't on the wire. Head back to the home signal.",
     canonical: "https://maxdoubin.com/404",
     ogType: "website",
+    // Every mistyped URL renders this page. Indexing it would put an error
+    // page in the results for arbitrary paths.
+    noindex: true,
   });
 
   return (
