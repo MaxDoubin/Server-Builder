@@ -15,7 +15,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool";
-import { AnimatePresence, motion } from "framer-motion";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { Home } from "@/pages/Home";
@@ -285,30 +284,28 @@ export default function App() {
  * Opacity does not create a containing block, so it is safe. Do not
  * add `y`, `scale`, `blur`, or `will-change` to these variants.
  */
-const pageTransition = {
-  initial: { opacity: 0 },
-  animate: {
-    opacity: 1,
-    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-  },
-  exit: {
-    opacity: 0,
-    transition: { duration: 0.25, ease: [0.65, 0, 0.35, 1] },
-  },
-};
-
+/**
+ * The route fade is CSS, not JavaScript, and that is deliberate.
+ *
+ * This used to be a Framer `motion.div` animating `initial: {opacity: 0}` to
+ * `animate: {opacity: 1}`. Every route except `/` is a `React.lazy` chunk
+ * behind Suspense, and Suspense sits *inside* the animating element. Framer
+ * wrote the initial `opacity: 0` to the DOM, the child then suspended, and
+ * the enter animation never started. It never recovered either: the wrapper
+ * held `opacity: 0` indefinitely, so the page rendered, laid out, and was
+ * completely invisible. Clicking any nav link gave a blank screen.
+ *
+ * A keyframe cannot fail that way. It is owned by the compositor, not by a
+ * React lifecycle, and `opacity: 1` is the element's natural state, so the
+ * worst case for the animation not running is that the page simply appears.
+ * A page transition is decoration; it must never be the thing that decides
+ * whether the site is visible.
+ */
 function AnimatedRoutes() {
   const [location] = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        variants={pageTransition}
-      >
+    <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
           <Route path="/legacy" component={Home} />
@@ -368,7 +365,6 @@ function AnimatedRoutes() {
             </Suspense>
           </Route>
         </Switch>
-      </motion.div>
-    </AnimatePresence>
+    </div>
   );
 }

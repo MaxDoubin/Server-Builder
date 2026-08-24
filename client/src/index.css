@@ -1113,3 +1113,19 @@ html.lenis-smooth {
     inset: -1px;
   }
 }
+
+/* Route transition.
+   `both` fill keeps the settled state after the run, and opacity 1 is the
+   element's natural value, so a page is visible whether or not this plays. */
+.route-fade {
+  animation: route-fade-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes route-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-fade { animation: none; }
+}

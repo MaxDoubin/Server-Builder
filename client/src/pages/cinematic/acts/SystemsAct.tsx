@@ -254,6 +254,37 @@ export function SystemsAct() {
   const vignetteRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Push a 0..1 story position into everything the scene shows: the R3F rig,
+   * the beat readout, and the progress bar.
+   *
+   * This lives outside the timeline on purpose. When it was only a tween's
+   * onUpdate, a ScrollTrigger refresh (fired by the resize observer, a font
+   * load, or a lazy section landing) could leave the timeline re-measured
+   * without the callback having run, freezing the camera and the readout at
+   * whatever the last scrubbed value happened to be. The trigger now calls
+   * this on refresh too, so the scene always matches the scroll position.
+   */
+  const applyProgress = (raw: number) => {
+    // onRefresh hands us whatever the trigger currently computes, which is
+    // taken over distances the pin spacer is itself changing. Clamp rather
+    // than trust it: everything downstream indexes beats off this number.
+    const p = Math.max(0, Math.min(1, raw));
+    progressRef.current = p;
+    const beat =
+      p < 0.14 ? { n: "01", l: "Profile" }
+      : p < 0.38 ? { n: "02", l: "Leadership" }
+      : p < 0.58 ? { n: "03", l: "Cybersecurity" }
+      : p < 0.80 ? { n: "04", l: "Infrastructure" }
+      : p < 0.90 ? { n: "05", l: "Hardware" }
+      : { n: "06", l: "Highlights" };
+    if (beatCounterRef.current) beatCounterRef.current.textContent = beat.n;
+    if (beatLabelRef.current) beatLabelRef.current.textContent = beat.l;
+    if (progressBarRef.current) {
+      progressBarRef.current.style.transform = `scaleX(${p})`;
+    }
+  };
+
   useScrollScene(
     rootRef,
     ({ gsap, timeline }) => {
@@ -324,28 +355,18 @@ export function SystemsAct() {
           p: 1,
           duration: 1,
           ease: "none",
-          onUpdate: () => {
-            progressRef.current = proxy.p;
-            const p = proxy.p;
-            const beat =
-              p < 0.14 ? { n: "01", l: "Profile" }
-              : p < 0.38 ? { n: "02", l: "Leadership" }
-              : p < 0.58 ? { n: "03", l: "Cybersecurity" }
-              : p < 0.80 ? { n: "04", l: "Infrastructure" }
-              : p < 0.90 ? { n: "05", l: "Hardware" }
-              : { n: "06", l: "Highlights" };
-            if (beatCounterRef.current) beatCounterRef.current.textContent = beat.n;
-            if (beatLabelRef.current) beatLabelRef.current.textContent = beat.l;
-            if (progressBarRef.current) {
-              progressBarRef.current.style.transform = `scaleX(${p})`;
-            }
-          },
+          onUpdate: () => applyProgress(proxy.p),
         },
         0,
       );
     },
     [reducedMotion],
-    { end: "+=900%", pin: true, scrub: 0.85 },
+    {
+      end: "+=900%",
+      pin: true,
+      scrub: 0.85,
+      onRefresh: (self: { progress: number }) => applyProgress(self.progress),
+    },
   );
 
   if (reducedMotion) return <SystemsActStatic />;

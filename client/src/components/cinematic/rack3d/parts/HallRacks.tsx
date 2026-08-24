@@ -201,6 +201,10 @@ export function HallRacks({
   const lastLocal = useRef<Float32Array>(new Float32Array(0));
   if (lastLocal.current.length !== rackCount) {
     lastLocal.current = new Float32Array(rackCount).fill(-1);
+    // A changed rack count changes every <instancedMesh args>, so R3F builds
+    // new meshes and the instanceColor buffers we seeded go with the old
+    // ones. Seed again or the whole hall renders in the bare material colour.
+    seeded.current = false;
   }
 
   useFrame(({ clock }) => {
@@ -258,9 +262,13 @@ export function HallRacks({
     // ---- rise / settle transforms --------------------------------------
     let dirty = false;
 
+    const rampEnd = end - 0.015;
     for (let r = 0; r < rackCount; r++) {
       const place = placements[r];
-      const local = smoothstep(start + place.delay, end - 0.015, p);
+      // smoothstep inverts when its start passes its end, which would show a
+      // rack at full size the instant the reveal begins and then hide it.
+      const rampStart = Math.min(start + place.delay, rampEnd - 0.008);
+      const local = smoothstep(rampStart, rampEnd, p);
 
       // A settled rack costs nothing to hold.
       if (Math.abs(local - lastLocal.current[r]) < 0.0015) continue;
