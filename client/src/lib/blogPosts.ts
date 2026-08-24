@@ -30,6 +30,3157 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "snmp-versus-streaming-telemetry",
+    title: "SNMP Polling Versus Streaming Telemetry",
+    date: "2026-05-09",
+    tags: ["networking", "monitoring", "automation"],
+    excerpt:
+      "Polling asks the same question forever and hopes the answer arrives. Streaming telemetry flips who talks first, and that changes what you can see.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The model everyone starts with
+
+Every monitoring system I have built started the same way: a collector, a list of devices, a community string, and a loop. SNMP is a request and response protocol. The collector sends a GET or a GETBULK for an object identifier, the agent on the device walks its MIB, and a value comes back. Repeat every thirty seconds, forever.
+
+That model has real virtues. It is on every switch, router, printer, PDU, and UPS you will ever plug in. The data model is standardized enough that an interface counter is in the same place on gear from three vendors. You can debug it from a shell in one line.
+
+\`\`\`bash
+# Walk the interface table on a switch, SNMPv3, no shortcuts
+snmpwalk -v3 -l authPriv -u monitor \\
+  -a SHA -A "$SNMP_AUTH_PASS" \\
+  -x AES -X "$SNMP_PRIV_PASS" \\
+  10.20.0.2 IF-MIB::ifHCInOctets
+\`\`\`
+
+Note the HC in that object name. The 32 bit counters in the original IF-MIB wrap in under four seconds on a saturated 10G link, which is the first thing that surprises people building a graph. The 64 bit versions exist because polling could not keep up with the hardware.
+
+## What polling actually costs
+
+The cost is not bandwidth. It is resolution and CPU on the device.
+
+Resolution first. If you poll every 30 seconds, you cannot see anything shorter than 30 seconds. A microburst that fills a buffer and drops frames for 200 milliseconds shows up as nothing at all, because the counter difference across the interval averages it into invisibility. I have chased packet loss that never appeared on a single graph, because the graph had no way to hold it.
+
+CPU second. A GETBULK across a big interface table is not free on a control plane processor that was sized for routing, not for answering questions. Poll a chassis with hundreds of logical interfaces hard enough and the management plane starts to matter. That is why the standard advice is to poll less often, which makes the resolution problem worse. The two costs pull against each other.
+
+There is also the walk problem. SNMP indexes tables by row, and rows move. Interface index numbers can renumber across a reboot on some platforms, which quietly re-points your graphs at the wrong port.
+
+## What streaming telemetry changes
+
+Streaming telemetry inverts the direction. Instead of the collector asking, the device pushes. You subscribe once to a set of data paths, and the device sends updates on a timer or on change. gNMI is the interface most vendors converged on: gRPC transport, protocol buffers on the wire, and YANG models describing the data.
+
+\`\`\`bash
+# Subscribe to interface counters, sampled once per second
+gnmic -a 10.20.0.2:57400 -u monitor --password "$GNMI_PASS" \\
+  --skip-verify subscribe \\
+  --path "/interfaces/interface[name=*]/state/counters" \\
+  --stream-mode sample --sample-interval 1s
+\`\`\`
+
+Three things follow from the inversion. Sub second sampling becomes practical because the device is serializing state it already has instead of servicing a query. On-change subscriptions become possible, so an interface going down is an event that arrives immediately rather than a difference you notice on the next poll. And the data is structured and self describing, so you get a path like \`/interfaces/interface[name=Ethernet1]/state/oper-status\` instead of a numeric OID you have to translate through a MIB file.
+
+The YANG modelling is the part people underestimate. OpenConfig models aim for vendor neutrality, but every vendor also ships native models, and the native ones usually carry the fields you actually want. You end up writing per platform path lists anyway. It is better than per platform MIB hunting, but it is not free.
+
+## Where SNMP still wins
+
+I am not ripping SNMP out of anything, and neither should you.
+
+It wins on coverage. The UPS, the environmental sensor, the older access switch in a closet, the appliance whose vendor never shipped a gRPC daemon: these speak SNMP and nothing else. Traps also remain the lowest common denominator for asynchronous notification, even if trap delivery over UDP is best effort and you should never build alerting that depends only on receiving one.
+
+It wins on operational simplicity. There is no certificate to expire, no gRPC channel to keep open through a firewall that closes idle flows, no collector that has to be up when the event happens. A polling collector that misses a cycle recovers on the next one. A streaming collector that is down misses the window entirely, unless the device buffers, and most do not buffer much.
+
+## How I run both
+
+The split I use is by question type, not by device class.
+
+Slow moving inventory and environmental data stays on SNMP: chassis serial, power supply state, temperature, PDU outlet draw. Poll it every minute or five. Nobody needs sub second fan speed.
+
+Fast moving or event shaped data goes to streaming where the platform supports it: interface counters, queue depth and drops, BGP neighbor state, optic light levels. That is where resolution changes conclusions.
+
+Then normalize both into the same time series store with the same label scheme, so a dashboard does not care which transport delivered the sample. If a device name and interface name mean the same thing in both pipelines, you can migrate one platform at a time without rewriting a single panel. That normalization layer is the actual project. The protocol choice is easy by comparison.
+
+One security note that applies to both. SNMPv1 and v2c send a community string in cleartext and are a read primitive for anyone on the management network, which is a good argument for v3 with authPriv and a better argument for keeping management traffic on its own segment. gNMI over TLS is better by default, but only if you actually verify the certificate instead of passing the skip flag I used above for a lab example.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc1157
+- https://www.rfc-editor.org/rfc/rfc3411
+- https://www.rfc-editor.org/rfc/rfc7950
+- https://www.rfc-editor.org/rfc/rfc6241
+- https://www.openconfig.net/
+- https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol
+`,
+  },
+  {
+    slug: "netfilter-hook-order",
+    title: "Netfilter Hooks And The Order Your Rules Really Run In",
+    date: "2026-06-23",
+    tags: ["linux", "networking", "security"],
+    excerpt:
+      "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The packet path is a pipeline, not a list
+
+When people picture a Linux firewall they picture a list of rules read top to bottom. That is half right. Inside a chain, evaluation is top to bottom. But the chains themselves hang off fixed points in the kernel network stack, and which point you attached to decides what the packet even looks like when your rule sees it.
+
+Netfilter defines five hooks for IP traffic:
+
+- \`prerouting\`: every packet that arrives, before the routing decision.
+- \`input\`: packets the routing decision said are for this host.
+- \`forward\`: packets routed through this host to somewhere else.
+- \`output\`: packets generated locally, before routing them out.
+- \`postrouting\`: everything on its way out the door, after routing.
+
+Two facts follow immediately. A packet destined for a container or a VM behind this box never touches \`input\`, so an input rule will never block it. And a packet leaving the box does not pass \`forward\` if this box created it, so a forward rule will never see your own health check traffic. Half the "my rule does nothing" reports I have looked at are one of those two.
+
+## Priorities decide who goes first
+
+Multiple base chains can register on the same hook. nftables resolves the tie with a signed priority number, lower runs first. The named constants map to the classic behaviour:
+
+| Name | Value | Typical use |
+| --- | --- | --- |
+| raw | -300 | notrack, before connection tracking |
+| mangle | -150 | packet mark, TTL, DSCP |
+| dstnat | -100 | destination NAT, prerouting |
+| filter | 0 | accept and drop decisions |
+| srcnat | 100 | source NAT and masquerade, postrouting |
+
+The consequence that bites people: destination NAT happens at priority -100 in prerouting, before the routing decision and before your filter chain. So by the time a forwarded packet reaches your filter rules, the destination address is already the internal one. You write your allow rule against \`10.10.5.20:8080\`, not against the public address you published. Source NAT is the mirror image: it happens in postrouting after filtering, so filter rules still see the original internal source address.
+
+## A ruleset that says what it means
+
+\`\`\`nft
+table inet fw {
+  chain prerouting {
+    type nat hook prerouting priority dstnat; policy accept;
+    iifname "wan0" tcp dport 443 dnat ip to 10.10.5.20:8443
+  }
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    ct state established,related accept
+    ct state invalid drop
+    iifname "lo" accept
+
+    ip protocol icmp icmp type { echo-request, destination-unreachable, time-exceeded } accept
+    iifname "mgmt0" tcp dport 22 accept
+
+    limit rate 5/minute log prefix "fw-input-drop: "
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+
+    ct state established,related accept
+    iifname "lan0" oifname "wan0" accept
+    iifname "wan0" oifname "lan0" ip daddr 10.10.5.20 tcp dport 8443 accept
+  }
+
+  chain postrouting {
+    type nat hook postrouting priority srcnat; policy accept;
+    oifname "wan0" masquerade
+  }
+}
+\`\`\`
+
+Read the forward chain against the prerouting chain. The DNAT rule rewrote the destination to \`10.10.5.20:8443\`, and the forward rule matches that rewritten value. Writing \`tcp dport 443\` there would silently never match.
+
+Notice also that the nat hooks have \`policy accept\`. A nat chain is not a filtering chain. Under the modern nf_tables NAT implementation only the first packet of a connection traverses the nat chain at all, and the rest of the flow is translated by connection tracking. Putting a drop policy on a nat chain is a way to break traffic in a way that is very hard to read from the ruleset.
+
+## Connection tracking runs earlier than you think
+
+\`ct state\` is available in your filter rules because conntrack registered its own hooks at a much lower priority, ahead of everything above. That has two operational consequences.
+
+First, the \`raw\` priority exists so you can opt traffic out of tracking with \`notrack\` before the tracker sees it. On a box forwarding a large volume of short lived flows, the conntrack table is a finite resource and entries have timeouts measured in minutes for established TCP. When it fills, new flows are dropped and the kernel logs a table full message. Checking \`nf_conntrack_count\` against \`nf_conntrack_max\` is the first thing I do on a router that "randomly" refuses new connections.
+
+Second, the \`invalid\` state is not noise. It usually means the tracker saw a packet that does not fit any flow it knows about, which happens with asymmetric routing, after a conntrack flush, or with out of window TCP segments. Dropping invalid early is right, but if you are dropping a lot of it, the interesting question is why the path is asymmetric.
+
+## Debugging without guessing
+
+Two commands answer most questions. \`nft monitor trace\` shows a packet walking the ruleset, rule by rule, once you flag the traffic:
+
+\`\`\`bash
+nft add rule inet fw prerouting meta nftrace set 1 ip saddr 10.10.5.77
+nft monitor trace
+\`\`\`
+
+And counters tell you whether a rule is dead code:
+
+\`\`\`bash
+nft --handle list ruleset | grep -n "counter packets 0"
+\`\`\`
+
+A rule with zero packets after a day of traffic is either wrong or unnecessary, and both are worth knowing. I would rather delete a rule than keep a line that has never matched anything, because every line in a ruleset is something a future me has to reason about at two in the morning.
+
+## References
+
+- https://www.netfilter.org/
+- https://wiki.nftables.org/wiki-nftables/index.php/Netfilter_hooks
+- https://wiki.nftables.org/wiki-nftables/index.php/Main_Page
+- https://man7.org/linux/man-pages/man8/nft.8.html
+- https://www.kernel.org/doc/html/latest/networking/nf_conntrack-sysctl.html
+`,
+  },
+  {
+    slug: "oom-killer-and-swap-sizing",
+    title: "Who Gets Killed When The Server Runs Out Of Memory",
+    date: "2026-07-03",
+    tags: ["linux", "servers", "operations"],
+    excerpt:
+      "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Allocation is a promise, not a delivery
+
+Linux hands out memory it does not have. When a process calls \`malloc\` and the kernel returns an address, nothing has been committed except an entry in the page tables saying this range is valid. Physical pages arrive later, on the first write to each page, through a page fault. This is overcommit, and it is on by default because most programs reserve far more than they touch.
+
+That design is why "out of memory" is a runtime surprise rather than a failed allocation. The allocation succeeded. The write is what fails, and a write cannot return an error to a program that is just storing a value in a struct. So the kernel has to resolve the shortfall some other way, and its last resort is to kill something.
+
+You can change this policy:
+
+\`\`\`bash
+# 0 = heuristic (default), 1 = always overcommit, 2 = strict accounting
+sysctl vm.overcommit_memory
+sysctl -w vm.overcommit_memory=2
+sysctl -w vm.overcommit_ratio=80
+\`\`\`
+
+Mode 2 refuses allocations beyond swap plus a percentage of RAM, so \`malloc\` returns NULL instead of the kernel killing a process later. It sounds appealing and it is right for some workloads, but plenty of software handles a NULL from \`malloc\` by crashing anyway, and JVMs and databases that reserve huge virtual arenas will refuse to start. I have only used it on single purpose boxes where I controlled everything running.
+
+## How the kernel picks a victim
+
+When reclaim fails, the OOM killer scans processes and scores them. The score is dominated by resident set size: memory the process actually has in RAM, plus swap and page table overhead, expressed roughly as a fraction of available memory. Then it is adjusted by \`oom_score_adj\`, a per process knob from -1000 to 1000. A value of -1000 makes a process ineligible entirely.
+
+You can read both:
+
+\`\`\`bash
+for p in $(pgrep -d' ' -f .); do
+  printf "%7s %5s %5s %s\\n" "$p" \\
+    "$(cat /proc/$p/oom_score 2>/dev/null)" \\
+    "$(cat /proc/$p/oom_score_adj 2>/dev/null)" \\
+    "$(tr -d '\\0' < /proc/$p/comm 2>/dev/null)"
+done | sort -k2 -rn | head
+\`\`\`
+
+The important consequence is that the biggest process usually dies, and on most servers the biggest process is the one doing the actual work. The database gets killed, not the leaky agent that caused the pressure. If you have a process that must survive, bias it explicitly:
+
+\`\`\`bash
+echo -800 > /proc/$(pidof postgres)/oom_score_adj
+\`\`\`
+
+and if you have something you would rather lose first, bias it the other way with a positive number. Do not set -1000 on more than one thing. If nothing is eligible, the kernel panics instead.
+
+The kill is always logged. \`dmesg\` gives you the full picture: the invoking process, the memory breakdown, a table of candidates with their scores, and the final "Out of memory: Killed process" line. That table is the most useful forensic artifact you will get, because it shows what memory looked like at the moment of the decision rather than after the fact.
+
+## Swap is reclaim headroom, not spare RAM
+
+The persistent myth is that swap exists so you can run more than you have. On a server, that is not what it is for. Swap gives the reclaim path somewhere to put anonymous pages that are not being used, so that RAM can hold the things that are.
+
+Without swap, the kernel can only reclaim file backed pages: page cache, mapped executables, shared libraries. Anonymous memory is unreclaimable. So a memory hungry process with a large idle heap forces the kernel to evict cache it needs, and you get a machine that thrashes on disk reads while gigabytes of never touched heap sit in RAM. Zero swap does not prevent memory pressure, it just removes one of the kernel's options and makes the OOM kill arrive more abruptly.
+
+\`vm.swappiness\` sets the balance between reclaiming anonymous pages and file pages. It is a ratio, not a percentage of memory, and the default of 60 leans toward keeping cache. On a box with fast NVMe swap, higher values are defensible. On a box whose working set must never touch disk, 10 is a reasonable floor. I do not set it to 0 because that is close to telling the kernel to never swap anonymous pages, which puts you back in the no swap situation.
+
+For sizing, the honest answer is that it depends on what you want swap to do. A few gigabytes is enough to let reclaim breathe on a general purpose server. Sizing swap to hold your entire working set means the machine will survive pressure by becoming unusably slow, which is often worse than a fast failure. Hibernation is the one case that genuinely needs swap at least the size of RAM, and servers do not hibernate.
+
+## Watch pressure, not free memory
+
+\`free -m\` is close to useless as an alarm signal, because a healthy Linux box shows very little free memory by design. Cache is doing its job. The number worth watching is pressure stall information, which reports the percentage of time tasks were stalled waiting on memory:
+
+\`\`\`bash
+cat /proc/pressure/memory
+# some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+# full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+\`\`\`
+
+\`some\` rising means at least one task is waiting on reclaim. \`full\` rising means everything is. A \`some avg60\` that climbs past a few percent is a machine in trouble well before any kill happens, and it is the metric I alert on. Free memory tells you what the kernel is holding. Pressure tells you whether the kernel is struggling to hold it.
+
+## References
+
+- https://docs.kernel.org/admin-guide/sysctl/vm.html
+- https://www.kernel.org/doc/html/latest/admin-guide/mm/concepts.html
+- https://docs.kernel.org/accounting/psi.html
+- https://man7.org/linux/man-pages/man5/proc.5.html
+- https://man7.org/linux/man-pages/man8/swapon.8.html
+- https://en.wikipedia.org/wiki/Out_of_memory
+`,
+  },
+  {
+    slug: "ebpf-observability-basics",
+    title: "eBPF Is How I Ask The Kernel Questions",
+    date: "2026-07-04",
+    tags: ["linux", "monitoring", "tools"],
+    excerpt:
+      "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The gap between a metric and an answer
+
+A dashboard tells me disk latency went up. It does not tell me which process, which file, or which syscall path. The classic way to close that gap is to add logging to the application, which means a code change, a deploy, and a guess about where to put the log line. eBPF closes it from the other direction: attach a probe to the kernel function that already knows the answer, and read it out on a running system with nothing recompiled.
+
+The mental model I use: eBPF is a small virtual machine inside the kernel. You load a program written against a restricted instruction set, the kernel verifies it, attaches it to a hook, and runs it every time that hook fires. The program can read arguments, do arithmetic, and write results into a map. It cannot loop forever, cannot dereference a pointer without a bounds check, and cannot call arbitrary kernel functions. The verifier rejects anything it cannot prove terminates and stays in bounds. That is the whole reason this is allowed in production at all.
+
+## What you can attach to
+
+The hook types matter more than the language:
+
+- **kprobes and kretprobes**: any exported kernel function, on entry or return. Powerful and unstable, because kernel function names change between versions.
+- **tracepoints**: static instrumentation points the kernel maintainers commit to keeping. Fewer of them, but stable across upgrades. Prefer these.
+- **uprobes**: user space functions in a binary or library. Useful for tracing a runtime you do not control.
+- **USDT probes**: statically defined tracepoints compiled into user programs.
+- **perf events**: sampling on a timer or a hardware counter, which is how profiling works.
+- **XDP and tc**: packet processing at the driver and queueing layers.
+
+For observability work, tracepoints plus perf events cover most of what I need.
+
+## Starting with bpftrace one liners
+
+Writing raw eBPF is C plus a verifier argument. bpftrace gives you an awk shaped language over the same machinery, and for ad hoc investigation it is what I reach for.
+
+\`\`\`bash
+# Which processes are opening files, and what files
+bpftrace -e 'tracepoint:syscalls:sys_enter_openat {
+  printf("%-16s %s\\n", comm, str(args->filename));
+}'
+
+# Histogram of block IO latency, in microseconds
+bpftrace -e 'tracepoint:block:block_rq_issue { @start[args->dev, args->sector] = nsecs; }
+  tracepoint:block:block_rq_complete /@start[args->dev, args->sector]/ {
+    @usecs = hist((nsecs - @start[args->dev, args->sector]) / 1000);
+    delete(@start[args->dev, args->sector]);
+  }'
+
+# Count TCP retransmits by process
+bpftrace -e 'kprobe:tcp_retransmit_skb { @[comm] = count(); }'
+\`\`\`
+
+The histogram one is the pattern worth internalizing. Store a timestamp in a map keyed by something that identifies the request, look it up on the completion event, subtract, and bucket the result. That shape answers "how long does X take" for almost any pair of start and end events in the kernel, and a log scale histogram tells you about the tail, which an average never will.
+
+## A script that answers a real question
+
+Here is one I keep around for the case where a service is slow and I do not know if it is blocking on disk or on the network. It counts time spent off CPU by reason, per process name:
+
+\`\`\`bash
+#!/usr/bin/env bpftrace
+// Off-CPU time per process, bucketed in microseconds
+tracepoint:sched:sched_switch
+{
+  @off[args->prev_pid] = nsecs;
+  if (@off[args->next_pid]) {
+    @us[comm] = hist((nsecs - @off[args->next_pid]) / 1000);
+    delete(@off[args->next_pid]);
+  }
+}
+
+interval:s:30 { exit(); }
+\`\`\`
+
+Run it for thirty seconds during the slowdown and you get a distribution per process. A pile of samples in the millisecond buckets is disk. A pile in the tens of milliseconds with network activity alongside is a remote call. A process that is barely off CPU at all is CPU bound, and you go profile it instead.
+
+## The cost, and the honest limits
+
+eBPF is cheap but not free. Every probe fire runs your program, so attaching to a high frequency function like \`sys_enter_read\` on a busy box adds real overhead. Aggregate in kernel with maps rather than printing per event, because pushing every event to user space through the ring buffer is what actually hurts. If you must print, filter hard in the predicate.
+
+The limits worth knowing before you commit:
+
+- You need root or \`CAP_BPF\` plus \`CAP_PERFMON\`. This is a privileged tool, and anyone who can load eBPF can read a lot.
+- Kprobe based scripts break on kernel upgrades. CO-RE and BTF exist to fix portability for compiled programs, and your kernel needs BTF enabled for that to work.
+- The verifier will reject programs for reasons that are correct but opaque. Reading the rejection log is a skill.
+- Stack traces for interpreted or JIT runtimes need extra work to symbolize.
+
+None of that changes the basic value. Before eBPF, answering "which process is causing these writes" meant either a kernel module you had to trust or a lot of inference from indirect metrics. Now it is a one liner, and the answer is the kernel's own data rather than my theory about it.
+
+## References
+
+- https://ebpf.io/
+- https://docs.kernel.org/bpf/index.html
+- https://man7.org/linux/man-pages/man2/bpf.2.html
+- https://man7.org/linux/man-pages/man7/bpf-helpers.7.html
+- https://docs.kernel.org/trace/tracepoints.html
+`,
+  },
+  {
+    slug: "raid-rebuild-risk-math",
+    title: "The Arithmetic Of A RAID Rebuild",
+    date: "2026-07-05",
+    tags: ["storage", "hardware", "operations"],
+    excerpt:
+      "A degraded array is a race between a rebuild and a second failure. The interesting part is how long that race actually lasts.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The window is the whole problem
+
+Redundancy does not mean a disk failure is a non event. It means a disk failure starts a clock. Until the array is rebuilt, you are running with less redundancy than you designed for, and for single parity that means no redundancy at all. Everything about rebuild risk comes down to how long that window is and what can happen inside it.
+
+Start with the length of the window. A rebuild has to write the entire capacity of the replacement drive, and to do that it has to read the corresponding data from every surviving member. The rebuild rate is bounded by the slowest of: the write speed of the new drive, the aggregate read speed of the survivors, and whatever share of the drives your array is willing to spend while still serving production traffic.
+
+\`\`\`python
+def rebuild_hours(capacity_tb, sustained_mb_s, foreground_share=0.5):
+    # Time to write one full replacement drive, given a share of throughput
+    bytes_total = capacity_tb * 1_000_000_000_000
+    effective = sustained_mb_s * 1_000_000 * (1 - foreground_share)
+    return bytes_total / effective / 3600
+
+for cap in (4, 8, 16, 20):
+    print(f"{cap:>3} TB  idle {rebuild_hours(cap, 180, 0):5.1f} h"
+          f"   busy {rebuild_hours(cap, 180, 0.7):6.1f} h")
+\`\`\`
+
+Run that and the shape is obvious. Drive capacity has grown far faster than sustained sequential throughput on spinning media, so rebuild time scales roughly with capacity. A large modern drive in a busy array is not a one hour job. It can be a multi day job, and it is a multi day job during which the array is degraded and every surviving drive is being read end to end at full rate.
+
+## Why the second failure is not independent
+
+The textbook calculation multiplies annualized failure rates as if drives fail independently. They do not.
+
+Drives in the same array were usually bought at the same time, from the same production run, and have spun the same hours in the same chassis at the same temperature with the same vibration. Failure rates follow a bathtub curve: elevated in the first weeks, low through the middle of life, rising at the end. Members of one array move along that curve together. When one reaches the rising part, its siblings are close behind.
+
+Then there is the rebuild itself. A rebuild is the heaviest sequential read workload the array will ever see, applied to every surviving drive at once, for hours or days. If a marginal drive is going to fail, this is when. The rebuild is not a neutral observer of the second failure, it is a contributing cause.
+
+## Unrecoverable read errors, honestly
+
+The other failure mode is not a dead drive but a single bad sector. Consumer drive specifications commonly quote an unrecoverable read error rate on the order of one sector per 10^14 bits read, with enterprise drives typically an order of magnitude better. During a single parity rebuild, one URE on a surviving drive means that stripe cannot be reconstructed.
+
+The naive math says: read 10^14 bits, which is around 12.5 TB, and you expect a URE. Since a rebuild reads the full capacity of every surviving member, large single parity arrays look doomed.
+
+That naive math is wrong in ways worth understanding. The specification is a conservative upper bound rather than an observed rate, real drives generally do better, and errors are not uniformly distributed. But the directional conclusion survives the correction: single parity across many large drives is a bet that gets worse as capacity grows, and the failure it exposes is not always fatal for the whole array. Modern implementations often lose one stripe and log it rather than aborting the rebuild, which is a much better outcome, and one reason filesystem level checksums matter. Knowing which file is damaged is far better than knowing something somewhere is.
+
+## What I actually do about it
+
+Five practices, in order of how much they buy you.
+
+**Scrub on a schedule.** A scrub reads every block and verifies parity or checksums while the array is healthy and redundant. It finds the latent bad sector months before a rebuild would find it, and it can repair it while there is still parity to repair from. Monthly is a reasonable cadence. An array that is never scrubbed is an array where all the errors are saved up for the worst possible moment.
+
+**Use double parity or mirrors for large drives.** With RAID 6 or equivalent, a URE during a rebuild is recoverable because there is a second parity block. Mirrored pairs rebuild by copying one drive rather than reading all of them, which shortens the window and reduces the load, at the cost of half your raw capacity.
+
+**Keep a hot spare, and mind the shelf spare.** A hot spare removes human latency from the front of the window. It does nothing about the rebuild itself, but the time between failure and someone noticing is often longer than the rebuild.
+
+**Do not buy the whole array from one batch.** Mixing purchase dates or vendors decorrelates the failure curve a little. It complicates procurement, and it is still worth it.
+
+**Remember what RAID is for.** Erasure coding and replication both protect against device failure. Neither protects against deletion, corruption written through the filesystem, or a controller that scribbles. An array is availability, not backup. The number of people who learn that distinction during a rebuild is higher than it should be.
+
+## The comparison that matters
+
+Replication and erasure coding solve the same problem with different arithmetic. Three way replication stores 3x the data and rebuilds by copying, which is fast and simple, and any two failures are survivable. Erasure coding with, say, 8 data and 3 parity fragments stores about 1.4x and survives three failures, but reconstruction requires reading eight fragments, possibly across a network, for every degraded object.
+
+That trade is the real design question in any distributed storage system, and it is the same question as RAID 6 versus mirrors, scaled up. Cheap capacity, expensive recovery, or expensive capacity, cheap recovery. Pick deliberately, and size the rebuild window before you commit.
+
+## References
+
+- https://en.wikipedia.org/wiki/Standard_RAID_levels
+- https://en.wikipedia.org/wiki/RAID
+- https://en.wikipedia.org/wiki/Erasure_code
+- https://raid.wiki.kernel.org/index.php/Linux_Raid
+- https://man7.org/linux/man-pages/man8/mdadm.8.html
+- https://man7.org/linux/man-pages/man4/md.4.html
+`,
+  },
+  {
+    slug: "gpu-driver-stack-linux",
+    title: "The Layers Between Your Model And The Silicon",
+    date: "2026-07-06",
+    tags: ["ai", "linux", "operations"],
+    excerpt:
+      "Most accelerator problems are not compute problems. They are version mismatches between four layers that all have to agree.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Four layers, all of which must agree
+
+When a framework fails to see an accelerator, people debug it as an AI problem. It is almost never an AI problem. It is a stack problem, and the stack has four layers:
+
+1. **The kernel driver.** A module loaded into the running kernel that owns the PCIe device, maps its registers, and exposes device nodes under \`/dev\`.
+2. **The userspace driver library.** The shared object your process links against, which turns API calls into ioctls on those device nodes. It must match the kernel module closely, often exactly.
+3. **The compute runtime and math libraries.** The toolkit layer that provides kernels for linear algebra, convolution, and collective operations.
+4. **The framework.** PyTorch, or whatever is above it, compiled against a specific runtime version.
+
+Every one of those can be installed by a different mechanism: the kernel module by DKMS or a distro package, the userspace library by the same vendor package, the runtime by a toolkit installer or a container image, and the framework by pip. Four package managers, four upgrade cadences, one requirement that they all line up. That is the entire failure mode.
+
+## Read the stack from the bottom
+
+When something is broken, I check in order, because a failure at any layer makes everything above it lie.
+
+\`\`\`bash
+# 1. Is the device on the bus at all?
+lspci -nn | grep -Ei '3d|vga|accel'
+
+# 2. Is a kernel module bound to it?
+lspci -k -s 01:00.0
+lsmod | grep -E 'nvidia|amdgpu|nouveau'
+
+# 3. Do the device nodes exist, and can this user open them?
+ls -l /dev/nvidia* /dev/dri/ 2>/dev/null
+
+# 4. Does the userspace library agree with the module?
+cat /proc/driver/nvidia/version 2>/dev/null
+nvidia-smi
+
+# 5. Does the framework see it?
+python3 -c "import torch; print(torch.cuda.is_available(), torch.version.cuda)"
+\`\`\`
+
+The classic signature is step 4 failing with a message about the driver and library being mismatched. That means the kernel module in memory is from a different release than the \`.so\` your process just loaded, which happens constantly: you upgrade the driver package, the new module is on disk, but the old one is still running because nothing reloaded it. A reboot fixes it, and so does unloading and reloading the module if nothing has the device open.
+
+Step 2 failing with a different module bound is the other classic. The open source \`nouveau\` driver claiming the card means the vendor module did not load, usually because Secure Boot rejected an unsigned out of tree module. \`dmesg | grep -i taint\` and a look at \`mokutil --sb-state\` will tell you. Either sign the module against a machine owner key or turn Secure Boot off, and be deliberate about which tradeoff you are making.
+
+## Containers make it worse and then better
+
+A container has its own userspace but shares the host kernel. So the kernel module is always the host's, and the userspace library inside the image must match that host module. Build an image with one driver library, run it on a host with an older kernel module, and it breaks in exactly the mismatch above.
+
+The container runtime integrations exist to solve this by injecting the host's driver libraries and device nodes into the container at start time, rather than baking them into the image. That is why the image ships the toolkit and framework but not the driver.
+
+\`\`\`bash
+# Device nodes and host driver libraries injected by the runtime
+docker run --rm --gpus all my-inference-image nvidia-smi
+
+# The equivalent shape in a compose file
+services:
+  inference:
+    image: my-inference-image
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+\`\`\`
+
+The rule that falls out: pin the toolkit and framework in your image, do not pin the driver, and treat the host driver version as a floor that the image requires rather than something the image controls. Write that floor down in the image documentation. Otherwise the first host that has not been updated becomes a mystery.
+
+## What to record so the next failure is boring
+
+I keep a tiny script that dumps the whole stack into one text blob and stores it with the deployment record. When a node misbehaves, comparing that blob against a working node finds the difference in seconds.
+
+\`\`\`bash
+#!/usr/bin/env bash
+set -u
+{
+  echo "== host =="; uname -r; cat /etc/os-release | head -2
+  echo "== pci =="; lspci -nnk | grep -A3 -Ei '3d|vga|accel'
+  echo "== modules =="; lsmod | grep -E 'nvidia|amdgpu|drm'
+  echo "== driver =="; nvidia-smi --query-gpu=name,driver_version,memory.total \\
+      --format=csv,noheader 2>/dev/null || echo "no vendor tool"
+  echo "== python =="; python3 - <<'PY'
+import importlib
+for mod in ("torch", "transformers"):
+    try:
+        m = importlib.import_module(mod)
+        print(mod, getattr(m, "__version__", "?"))
+    except Exception as e:
+        print(mod, "MISSING", e)
+PY
+} > "/var/log/accel-stack-$(hostname)-$(date +%F).txt"
+\`\`\`
+
+Two habits go with it. Upgrade the driver and reboot as one operation, never as two separate maintenance windows, because a loaded old module with new libraries on disk is a landmine waiting for the next process start. And keep the framework version in the same lockfile as the rest of the application, so the layer you change most often is the layer under version control.
+
+None of this is glamorous. It is the same discipline as any other dependency management, applied to a dependency chain that happens to cross the kernel boundary. But knowing the four layers and the order to check them turns a whole category of confusing failures into a two minute diagnosis.
+
+## References
+
+- https://docs.kernel.org/gpu/index.html
+- https://www.kernel.org/doc/html/latest/gpu/drm-uapi.html
+- https://dri.freedesktop.org/wiki/
+- https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+- https://pytorch.org/docs/stable/notes/cuda.html
+- https://en.wikipedia.org/wiki/Direct_Rendering_Manager
+`,
+  },
+  {
+    slug: "buying-used-enterprise-gear",
+    title: "How I Evaluate Used Enterprise Gear",
+    date: "2026-07-07",
+    tags: ["hardware", "homelab", "career"],
+    excerpt:
+      "Decommissioned enterprise equipment is the cheapest way into real infrastructure, as long as you know which cheap things are actually expensive.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The reason this market exists
+
+Large operators replace equipment on a schedule, not on failure. Gear leaves a data center because a depreciation cycle ended or a platform standard changed, not because it stopped working. That is why a machine that cost a serious amount new can be had for a small fraction a few years later, still with plenty of service life in it.
+
+Learning on that gear is genuinely different from learning on a virtual machine. Out of band management, redundant power, hot swap backplanes, real switching silicon with a real CLI: none of that has a good simulator. If you want to understand infrastructure, touching it matters. The trick is not overpaying in ways that do not show up on the price tag.
+
+## What actually fails, in order
+
+After enough acquisitions you learn that failures cluster in a predictable set of parts.
+
+**Fans and bearings.** They have run continuously for years. A fan that whines on spin up is on its way out, and a failed fan in a chassis with aggressive thermal policy will ramp every other fan to maximum and make the machine unlivable.
+
+**Power supply capacitors.** Electrolytics age with heat and hours. Visible bulging is the obvious sign, but the common failure is a supply that works until asked for a load step and then drops the rail.
+
+**Batteries.** RAID controller cache batteries, CMOS cells, and the battery in a UPS are all consumables that were probably at end of life when the unit was retired. A controller with a dead cache battery drops back to write through mode, and the machine gets mysteriously slow rather than obviously broken.
+
+**Drives.** Always assume the drives are the oldest part. Enterprise drives are rated for continuous duty and often have very high power on hours, and the drive is the one component whose failure loses data rather than availability.
+
+**Thermal interface material.** Old paste turns to chalk. On a machine that will run under load, replacing it is an hour of work that changes the thermal behaviour completely.
+
+Notice what is not on that list: the parts most people worry about. Processors and memory rarely wear out. Motherboards mostly work or do not.
+
+## The things that are expensive to discover later
+
+Some costs are not repairs, they are structural.
+
+**Licensing and firmware behind support contracts.** Some vendors put firmware updates, and sometimes management features, behind an active support entitlement tied to the serial number. Buying secondhand can mean buying a machine you cannot patch. Check the vendor's policy for that product line before you buy, not after.
+
+**Proprietary consumables.** Drive caddies, rail kits, and riser cards that exist only as vendor parts can cost a meaningful fraction of the price of the machine, and rail kits in particular are chassis specific.
+
+**Power and noise.** An older platform doing the same work as a newer one for twice the wattage is not a bargain if it runs continuously. Do the arithmetic in your local cost per kilowatt hour before you buy, because a machine can easily cost more per year to run than it cost to acquire. Noise is the same category of mistake. Data center airflow designs assume nobody is in the room.
+
+**Locked management controllers.** A BMC still bound to the previous owner's directory, or a switch with a configuration you cannot clear without console access, is a machine you do not fully own yet. Ask whether it has been reset to defaults, and get the console cable.
+
+## The receiving checklist
+
+Everything I take in gets the same first day treatment before it is trusted with anything.
+
+\`\`\`bash
+# 1. Inventory and health from the service processor
+ipmitool fru print
+ipmitool sel list            # event log from the previous owner
+ipmitool sensor list | grep -Ei 'fan|temp|volt'
+ipmitool sel clear           # only after you have read it
+
+# 2. Every drive, full SMART picture
+for d in /dev/sd? /dev/nvme?n1; do
+  echo "=== $d ==="
+  smartctl -i -A -H "$d" 2>/dev/null | \\
+    grep -Ei 'model|serial|power_on|reallocated|pending|percentage used|health'
+done
+
+# 3. Long self test on every drive, then check results tomorrow
+for d in /dev/sd?; do smartctl -t long "$d"; done
+
+# 4. Memory, overnight, before anything real runs on it
+memtester 8G 3        # per-process check while the OS runs
+# or boot memtest86+ from USB for a full pass over all installed memory
+
+# 5. Load and thermals together
+stress-ng --cpu $(nproc) --matrix 0 --timeout 30m --metrics-brief
+watch -n5 'sensors; ipmitool sensor list | grep -i fan'
+\`\`\`
+
+The system event log is the most underrated item there. It is a written record of what the machine complained about at its previous job: correctable memory errors, PSU dropouts, thermal events. Read it before you clear it.
+
+Infant mortality is real. Components that survive their first weeks of duty tend to keep going, so a burn in period is not paranoia, it is sampling the part of the curve where failures cluster. I run new arrivals hard for several days on nothing important, and only then give them a real job.
+
+## When used is the wrong answer
+
+Buy new, or do not buy at all, when the workload is latency sensitive enough that a generational gap matters, when the machine will run continuously and the power delta pays for a new one within a couple of years, when the gear lives somewhere people sleep, or when you would need vendor support to sleep at night.
+
+And be honest about the hidden cost that never shows up in the price: your time. A cheap machine that needs three weekends of parts hunting cost more than the difference. The best value in this market is boring, well documented, high volume platforms with a large secondhand parts supply, because that is what turns a failure into a twenty dollar replacement instead of a project.
+
+## References
+
+- https://man7.org/linux/man-pages/man8/smartctl.8.html
+- https://en.wikipedia.org/wiki/Self-Monitoring,_Analysis_and_Reporting_Technology
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://en.wikipedia.org/wiki/Bathtub_curve
+- https://www.memtest.org/
+`,
+  },
+  {
+    slug: "lora-adapters-operations",
+    title: "LoRA Adapters From The Operations Side",
+    date: "2026-07-08",
+    tags: ["ai", "ml", "operations"],
+    excerpt:
+      "Low rank adapters turn fine tuning from a storage problem into a config problem, which changes how you version, deploy, and roll back a model.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The arithmetic that makes adapters interesting
+
+A full fine tune updates every weight in the model and produces a complete new set of weights. If the base model is tens of gigabytes, every fine tune is tens of gigabytes, and every experiment is a new artifact of that size. That is a storage and distribution problem before it is a machine learning problem.
+
+Low rank adaptation takes a different approach. Freeze the original weight matrix \`W\` of shape \`(d_out, d_in)\`, and learn a small update expressed as the product of two thin matrices: \`B\` of shape \`(d_out, r)\` and \`A\` of shape \`(r, d_in)\`, with \`r\` much smaller than either dimension. At inference the effective weight is \`W + (alpha / r) * B @ A\`. Only \`A\` and \`B\` are trained.
+
+The parameter count tells the whole story:
+
+\`\`\`python
+def lora_params(d_in, d_out, rank):
+    return rank * (d_in + d_out)
+
+def full_params(d_in, d_out):
+    return d_in * d_out
+
+d_in = d_out = 4096
+for r in (4, 8, 16, 32, 64):
+    lp = lora_params(d_in, d_out, r)
+    fp = full_params(d_in, d_out)
+    print(f"rank {r:>3}: {lp:>10,} params  =  {100 * lp / fp:6.3f}% of the full matrix")
+\`\`\`
+
+A rank 16 adapter on a 4096 by 4096 matrix is around 131,000 parameters against roughly 16.8 million. Applied across the attention projections of a whole model, an adapter is typically a file measured in megabytes rather than gigabytes. That is the operational unlock: a fine tune becomes something you can store hundreds of, diff, and ship in a container layer.
+
+## The two knobs, and what they mean
+
+\`r\` is the rank, and it bounds how much the adapter can change. Low rank means the update is constrained to a small subspace. That is a feature for style, format, and domain vocabulary adaptation, and a limitation if you are trying to teach genuinely new capability. Higher rank means more capacity and a bigger file, with more risk of overfitting a small dataset.
+
+\`alpha\` is a scaling factor, and the effective scale of the update is \`alpha / r\`. This trips people up: raising the rank while keeping alpha fixed lowers the per unit contribution. Many setups keep \`alpha\` at some multiple of \`r\` so the scale stays stable across rank sweeps. Whatever convention you pick, write it down, because a comparison between two adapters trained with different conventions is not a comparison.
+
+Which modules get adapters is the third decision. Attention projections are the common default. Adding the feed forward layers increases capacity and file size. There is no universal right answer, which is exactly why the configuration belongs in version control:
+
+\`\`\`python
+from peft import LoraConfig, get_peft_model
+
+config = LoraConfig(
+    r=16,
+    lora_alpha=32,
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM",
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+)
+
+model = get_peft_model(base_model, config)
+model.print_trainable_parameters()
+\`\`\`
+
+## Serving: merged or not
+
+At inference you have two options, and the choice is an infrastructure decision.
+
+**Merged.** Fold \`(alpha / r) * B @ A\` into \`W\` once, save the result, and serve it as an ordinary model. There is zero runtime overhead because the arithmetic happened offline. The cost is that you are back to a full sized artifact per variant, and you lose the ability to switch behaviour without loading a different model.
+
+**Unmerged.** Keep the adapter separate and apply it during the forward pass. Now one copy of the base model in memory can serve several adapters, and swapping which one applies is cheap. The cost is a small amount of extra computation per layer and more complexity in the serving path.
+
+The rule I use: merge when a variant is the only thing a deployment serves and latency is the priority. Keep adapters separate when one deployment serves several variants, or when you expect to iterate quickly, because being able to roll back by pointing at a previous adapter file is worth a great deal.
+
+## Treat adapters like build artifacts
+
+The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different quantization of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
+
+So every adapter I would consider deploying carries a manifest next to it:
+
+\`\`\`json
+{
+  "adapter_id": "support-tone-2026-07-08",
+  "base_model": "org/base-model-name",
+  "base_model_sha256": "6f1c...",
+  "rank": 16,
+  "alpha": 32,
+  "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj"],
+  "dataset_ref": "internal/support-threads@v4",
+  "dataset_rows": 3821,
+  "train_config_ref": "configs/lora-support.yaml",
+  "eval_suite": "evals/support-v2",
+  "notes": "Format and tone only. Not intended to add product knowledge."
+}
+\`\`\`
+
+The base model hash is the field that saves you. Everything else is documentation, but that one is a correctness check the loader can enforce.
+
+## What can go wrong
+
+Adapters are cheap to make, which means it is cheap to make a lot of bad ones. Three failure patterns show up repeatedly.
+
+Catastrophic narrowing: a model fine tuned hard on one narrow format gets worse at everything else. The adapter did what you asked. You have to check the things you did not ask about, which means keeping a general evaluation set alongside your task specific one and running both.
+
+Silent base drift: the base model gets updated, deployments pick up the new one, and the adapter is now sitting on top of weights it was never trained against. Pin the base explicitly.
+
+Stacking: applying multiple adapters at once sometimes works and sometimes produces nonsense, because nothing guarantees two low rank updates compose cleanly. If you plan to stack, test that specific combination rather than assuming it.
+
+None of these are exotic. They are the same configuration management and regression testing problems as any other deployed artifact. Adapters just made it cheap enough to have hundreds of them, which means the discipline has to arrive earlier than it used to.
+
+## References
+
+- https://huggingface.co/docs/peft/index
+- https://huggingface.co/docs/transformers/index
+- https://pytorch.org/docs/stable/index.html
+- https://en.wikipedia.org/wiki/Fine-tuning_(deep_learning)
+- https://en.wikipedia.org/wiki/Low-rank_approximation
+`,
+  },
+  {
+    slug: "spf-dkim-dmarc",
+    title: "SPF, DKIM, And DMARC Without The Mystery",
+    date: "2026-07-09",
+    tags: ["security", "networking", "operations"],
+    excerpt:
+      "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## SMTP has no idea who you are
+
+The original mail protocol lets any host connect to any other host and claim to be anyone. There is no authentication in the envelope and none in the message headers. Everything built since is a bolt on that tries to answer the question SMTP never asked: is this sender allowed to send as this domain?
+
+Three mechanisms answer three different versions of that question, and confusing them is the source of most misconfiguration.
+
+## SPF answers: is this IP allowed to send for this domain
+
+SPF is a DNS TXT record listing the hosts permitted to send mail for a domain. The receiver takes the domain from the SMTP envelope sender, the \`MAIL FROM\` address, looks up the record, and checks whether the connecting IP is in the list.
+
+\`\`\`dns
+example.org.  IN  TXT  "v=spf1 mx include:_spf.provider.example ip4:203.0.113.10 -all"
+\`\`\`
+
+The mechanisms evaluate left to right, first match wins. \`-all\` is a hard fail for anything else, \`~all\` is a soft fail meaning treat as suspicious. Publishing \`~all\` forever is common and mostly pointless: it tells receivers you are not confident in your own record.
+
+Two limits matter. SPF has a hard limit of ten DNS lookups during evaluation, and mechanisms like \`include\` and \`mx\` each consume from that budget. Chain a few provider includes and you exceed it, at which point evaluation returns permerror and the whole thing fails in a way nobody notices until deliverability drops. Check your lookup count when you add an include.
+
+The second limit is fundamental: SPF validates the envelope sender, which is not what the recipient sees. The \`From:\` header can say anything. And SPF breaks on forwarding, because a forwarding server relays the message from its own IP, which is not in your record.
+
+## DKIM answers: was this message modified in transit
+
+DKIM signs the message. The sending server computes a signature over selected headers and the body using a private key, and attaches it as a header. The public key lives in DNS under a selector.
+
+\`\`\`dns
+mail2026._domainkey.example.org.  IN  TXT  "v=DKIM1; k=rsa; p=MIIBIjANBgkq..."
+\`\`\`
+
+\`\`\`
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=example.org;
+ s=mail2026; h=from:to:subject:date:message-id; bh=...; b=...
+\`\`\`
+
+The \`d=\` tag is the signing domain and the \`h=\` tag lists which headers are covered. A receiver fetches \`s=\` plus \`_domainkey\` plus \`d=\` from DNS, verifies, and gets a cryptographic statement that this message body and those headers came from someone holding that domain's key.
+
+DKIM survives forwarding, which SPF does not, as long as nothing rewrites the signed content. Mailing lists that append a footer or rewrite the subject break the signature, which is a real and common problem rather than an edge case.
+
+Use a selector with a date or version in it so you can rotate keys by publishing a new selector, signing with it, and removing the old one after the last signed message has aged out.
+
+## DMARC answers: what should I do, and tell me about it
+
+DMARC is where the two combine into something enforceable. It does two things nothing else does.
+
+First, **alignment**. DMARC requires that the domain validated by SPF or DKIM matches the domain in the \`From:\` header that a human actually sees. That is the gap the other two leave open. A message can pass SPF for \`bounces.spammer.example\` while displaying \`From: billing@yourbank.example\`, and without alignment nobody catches it. DMARC passes only if at least one mechanism both passes and aligns.
+
+Second, **policy and reporting**.
+
+\`\`\`dns
+_dmarc.example.org.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.org; fo=1; adkim=s; aspf=r; pct=100"
+\`\`\`
+
+- \`p=\` is the policy: \`none\`, \`quarantine\`, or \`reject\`.
+- \`rua=\` is where aggregate reports go, and this is the part people skip.
+- \`adkim\` and \`aspf\` set alignment strictness. Relaxed allows a subdomain to align with the organizational domain, strict requires an exact match.
+
+## Rolling it out without losing mail
+
+The order matters, and rushing it is how you drop legitimate mail from a system nobody remembered.
+
+1. **Publish SPF and DKIM first.** Sign everything, from every system that sends: the mail server, the ticketing system, the monitoring alerts, the thing in the closet that emails a nightly report.
+2. **Publish \`p=none\` with \`rua=\`.** This changes nothing about delivery. It asks the world to send you daily aggregate reports in XML listing every IP that sent mail claiming your domain, and whether it passed.
+3. **Read the reports for several weeks.** This is the entire value of the exercise. You will find senders you forgot about. Everybody does.
+4. **Move to \`p=quarantine\`,** optionally with \`pct=\` to ramp gradually.
+5. **Move to \`p=reject\`** once the reports are clean.
+
+Then the forwarding problem. Legitimate forwarders and mailing lists break SPF and sometimes DKIM, and under \`p=reject\` that mail is refused. ARC exists to address this by letting intermediaries record the authentication results they saw, so a downstream receiver can choose to trust that chain. Support is uneven, so the practical answer is still to know which forwarding paths your users depend on before you enforce.
+
+One last point, because it is the reason to do any of this: these records do not protect your inbox. They protect everyone else's inbox from mail that claims to be you. Publishing a strict DMARC policy is how you stop your domain from being a convenient return address for someone else's phishing, and it is one of the few security controls where the work is a handful of DNS records and some patience.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc7208
+- https://www.rfc-editor.org/rfc/rfc6376
+- https://www.rfc-editor.org/rfc/rfc7489
+- https://www.rfc-editor.org/rfc/rfc8617
+- https://www.rfc-editor.org/rfc/rfc5321
+- https://en.wikipedia.org/wiki/DMARC
+`,
+  },
+  {
+    slug: "flash-caching-tiers",
+    title: "Putting Flash In Front Of Spinning Disks",
+    date: "2026-07-10",
+    tags: ["storage", "linux", "hardware"],
+    excerpt:
+      "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The thing a cache tier actually fixes
+
+Spinning disks are not slow at everything. A modern 7200 RPM drive streams sequential data at a respectable rate. What it cannot do is seek. Average rotational latency plus head movement puts a random read in the several millisecond range, which caps a single drive at a couple hundred random IOPS no matter what you attach it to. Flash does the same operation in tens of microseconds and does not care where the block is.
+
+So the question a cache tier answers is narrow: does your workload do a lot of random access to a subset of the data that would fit on a smaller fast device? If yes, a tier is transformative. Virtual machine images, database files, container layers, and metadata heavy filesystems all fit that shape.
+
+If your workload streams large files end to end, a cache tier does nothing useful. The bulk array was already fast at that, and you have added a layer that has to decide, on every access, whether to promote a block it will never see again. Some implementations detect sequential access and bypass the cache for exactly this reason.
+
+## dm-cache and bcache, briefly
+
+Linux gives you two mature options at the block layer.
+
+**dm-cache** is a device mapper target, usually driven through LVM as \`lvmcache\`. It composes a fast device and a slow device into one logical volume, with a separate metadata volume tracking which blocks live where. Because it is LVM, it fits into a stack you probably already have, and you can add or remove the cache from an existing volume without recreating it.
+
+**bcache** is a standalone caching layer with its own on disk format. Both the backing device and the cache device are formatted with \`make-bcache\`, and a new \`/dev/bcacheN\` appears. It has good sequential detection and a well developed writeback implementation, at the cost of needing to be planned before you put a filesystem down, since formatting the backing device is a destructive step.
+
+I default to \`lvmcache\` when the storage is already LVM, which is most of the time, because attaching a cache is reversible.
+
+\`\`\`bash
+# Assume vg0 holds a large slow LV called "data" on spinning disks,
+# and /dev/nvme0n1 has been added to vg0 as a fast PV.
+
+# Cache data volume plus its metadata, sized at roughly 1000:1
+lvcreate -L 200G  -n data_cache     vg0 /dev/nvme0n1
+lvcreate -L 200M  -n data_cache_meta vg0 /dev/nvme0n1
+
+# Combine them into a cache pool
+lvconvert --type cache-pool \\
+  --poolmetadata vg0/data_cache_meta \\
+  --cachemode writethrough \\
+  vg0/data_cache
+
+# Attach the pool to the slow volume
+lvconvert --type cache --cachepool vg0/data_cache vg0/data
+
+# Inspect
+lvs -o +cache_mode,chunk_size,cache_total_blocks,cache_used_blocks,cache_read_hits,cache_read_misses vg0
+\`\`\`
+
+Detaching is a single \`lvconvert --uncache vg0/data\`, which flushes dirty blocks back and returns the volume to its original state. That reversibility is worth a lot when you are not sure a cache will help.
+
+## Writeback is a durability decision
+
+This is the part to get right before anything else.
+
+In **writethrough** mode, a write is acknowledged only after it has reached the slow device. The cache holds a copy so subsequent reads are fast, but the fast device holds nothing the backing device does not already have. Lose the cache device entirely and you lose nothing but performance.
+
+In **writeback** mode, a write is acknowledged as soon as it lands on the fast device, and it is flushed to the backing device later. Write latency drops enormously. It also means that at any given moment there is data that exists only on the cache device. Lose that device and you have lost writes the application was told were durable, and worse, you have lost them from arbitrary points across the volume, which means filesystem corruption rather than a few missing files.
+
+So the honest rule: writeback requires the cache device to be as reliable as the array it is fronting. In practice that means mirrored fast devices, and it means power loss protection on those devices, since a consumer SSD that acknowledges a flush before the data leaves its volatile buffer defeats the whole chain. If you cannot commit to both, run writethrough and take the read benefit only.
+
+## Sizing and endurance
+
+Size the cache to the working set, not to the array. The working set is the data actually touched in a window that matters, and it is usually far smaller than total capacity. A cache holding ten percent of a volume can serve the large majority of requests if access is skewed, and access is almost always skewed. Doubling a cache that already hits 95 percent of the time buys you very little.
+
+The way to find out is to measure. \`lvs\` exposes hit and miss counters for a cache pool, and the ratio over a representative day tells you whether to grow it. Start smaller than you think and grow, because growing is easy and the counters will tell you when.
+
+Endurance is the constraint people forget. Every promotion into the cache is a write to the flash device, and on a workload with poor locality the tier can churn constantly, writing far more to the SSD than the application ever wrote. Check the drive's endurance rating in drive writes per day, then check what you are actually doing to it:
+
+\`\`\`bash
+smartctl -A /dev/nvme0n1 | grep -Ei 'percentage_used|data_units_written|media_errors'
+\`\`\`
+
+If percentage used is climbing noticeably in the first months, the cache is thrashing and either the cache is too small or the workload is not cacheable.
+
+## When to skip the tier
+
+Two cases. If the fast device is large enough to hold everything you care about, just put the data on it and use the spinning disks for bulk and backup. A tier is a compromise for when you cannot afford all flash, and every compromise has a management cost.
+
+And if your slow tier is already fast enough for the workload, adding a cache is complexity that buys nothing while introducing a new failure domain and a new thing to explain to whoever inherits the system. Measure the actual latency profile first. A cache tier should be the answer to a number you can point at, not a default.
+
+## References
+
+- https://docs.kernel.org/admin-guide/device-mapper/cache.html
+- https://docs.kernel.org/admin-guide/bcache.html
+- https://man7.org/linux/man-pages/man7/lvmcache.7.html
+- https://man7.org/linux/man-pages/man8/lvconvert.8.html
+- https://en.wikipedia.org/wiki/Bcache
+`,
+  },
+  {
+    slug: "policy-based-routing-linux",
+    title: "Routing By Policy, Not Just Destination",
+    date: "2026-07-11",
+    tags: ["networking", "routing", "linux"],
+    excerpt:
+      "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## One lookup, one field
+
+Standard IP forwarding is a longest prefix match on the destination address. That is it. Every other property of the packet, where it came from, what interface it arrived on, what port it is headed to, is invisible to the decision.
+
+That works until you have two ways out. The moment a host has two uplinks, or a management interface that must be reachable independently of the default route, or a tunnel that only some traffic should use, destination alone cannot express what you want.
+
+Linux has had the answer for a long time, and most people never turn it on. The kernel does not have one routing table, it has many, and a policy database decides which one to consult. Every lookup walks a list of rules in priority order until one matches and the selected table returns a route.
+
+\`\`\`bash
+ip rule show
+# 0:      from all lookup local
+# 32766:  from all lookup main
+# 32767:  from all lookup default
+\`\`\`
+
+Rule 0 handles addresses belonging to this host. Rule 32766 is the ordinary table everyone knows. Rules you add sit between them, and lower numbers are evaluated first. That is the whole mechanism.
+
+## The dual uplink case
+
+Here is the problem that sends people looking for this feature. A host has two uplinks on two providers. It has a default route out the first. A request arrives on the second interface, the reply is generated with that interface's source address, but routing sends it out the first interface because that is where the default route points. The reply leaves with a source address that does not belong to the link it left from, and it gets dropped by reverse path filtering somewhere upstream, or it arrives and the client rejects it.
+
+The fix is a table per uplink, plus a rule that selects the table by source address.
+
+\`\`\`bash
+# Name the tables so the config is readable
+echo "101 wan_a" >> /etc/iproute2/rt_tables
+echo "102 wan_b" >> /etc/iproute2/rt_tables
+
+# Each table knows only how to leave via its own link
+ip route add 198.51.100.0/24 dev eth0 src 198.51.100.20 table wan_a
+ip route add default via 198.51.100.1 dev eth0 table wan_a
+
+ip route add 203.0.113.0/24 dev eth1 src 203.0.113.40 table wan_b
+ip route add default via 203.0.113.1 dev eth1 table wan_b
+
+# Select the table by the source address the reply will carry
+ip rule add from 198.51.100.20 lookup wan_a priority 1000
+ip rule add from 203.0.113.40  lookup wan_b priority 1001
+\`\`\`
+
+Now a reply sourced from the second address leaves through the second link, regardless of what the main table's default route says. The main table still handles locally originated traffic that has not chosen a source yet.
+
+## Selecting on a mark
+
+Source address is only one selector. The more flexible one is the firewall mark, because it lets your firewall classify traffic on anything it can match and hand the routing decision the result.
+
+\`\`\`nft
+table inet mangle {
+  chain prerouting {
+    type filter hook prerouting priority mangle; policy accept;
+
+    # Send lab subnet web traffic out the second uplink
+    ip saddr 10.10.40.0/24 tcp dport { 80, 443 } meta mark set 0x2
+
+    # Keep backup traffic off the primary link entirely
+    ip saddr 10.10.50.0/24 tcp dport 873 meta mark set 0x2
+  }
+}
+\`\`\`
+
+\`\`\`bash
+ip rule add fwmark 0x2 lookup wan_b priority 900
+\`\`\`
+
+The division of labour here is the appealing part. The firewall decides classification, which is what firewalls are good at, and routing decides paths, which is what routing is good at. Neither has to grow a hacky version of the other's job.
+
+Other selectors worth knowing: \`iif\` matches the incoming interface, \`to\` matches the destination like an ordinary route but lets you send it to a different table, \`ipproto\` and \`dport\` exist in newer kernels, and \`suppress_prefixlength\` can skip a table's default route while still using its more specific entries, which is the standard trick for VPN split routing.
+
+## The reverse path filter trap
+
+Once you have asymmetric paths, \`rp_filter\` becomes the thing that breaks you. Strict mode drops a packet if the reply to its source address would not go back out the interface it arrived on. That is a sensible anti spoofing default and it is exactly wrong for a policy routed host, because the whole point is that the return path depends on more than the destination.
+
+\`\`\`bash
+sysctl net.ipv4.conf.all.rp_filter        # 0 off, 1 strict, 2 loose
+sysctl -w net.ipv4.conf.all.rp_filter=2
+sysctl -w net.ipv4.conf.eth1.rp_filter=2
+\`\`\`
+
+Loose mode still drops packets from source addresses with no route at all, which keeps most of the anti spoofing value, while allowing asymmetry. Note that the effective value is the maximum of the \`all\` setting and the per interface setting, so setting the interface to 2 while \`all\` is 1 does nothing.
+
+## Debugging: ask the kernel, do not read the tables
+
+Reading four tables and a rule list and simulating the lookup in your head is a good way to be confidently wrong. The kernel will just tell you:
+
+\`\`\`bash
+# Which route does the kernel pick for this exact packet
+ip route get 8.8.8.8 from 203.0.113.40 iif eth1
+ip route get 8.8.8.8 mark 0x2
+
+# Show every table at once
+ip route show table all | head -40
+\`\`\`
+
+\`ip route get\` runs the real lookup, rules included, and prints the answer with the table it came from. It is the single most useful command in this whole area, and it turns a theory about your configuration into a fact.
+
+Two habits keep this maintainable. Give tables names in \`rt_tables\`, because \`lookup wan_b\` reads and \`lookup 102\` does not. And leave gaps in your rule priorities, so inserting a rule later does not mean renumbering everything. Policy routing configurations are not complicated, but they are stateful and easy to accumulate, and a rule someone added two years ago that nothing matches is the kind of thing that turns into a very confusing afternoon.
+
+## References
+
+- https://man7.org/linux/man-pages/man8/ip-rule.8.html
+- https://man7.org/linux/man-pages/man8/ip-route.8.html
+- https://docs.kernel.org/networking/ip-sysctl.html
+- https://www.rfc-editor.org/rfc/rfc1812
+- https://en.wikipedia.org/wiki/Policy-based_routing
+`,
+  },
+  {
+    slug: "inference-determinism",
+    title: "Why The Same Prompt Gives Two Different Answers",
+    date: "2026-07-12",
+    tags: ["ai", "ml", "operations"],
+    excerpt:
+      "Sampling is the obvious reason. Floating point addition not being associative is the reason that survives after you set temperature to zero.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Two different questions
+
+When output changes between runs, people jump to one explanation and stop. There are actually two independent sources of variation, and they need separate fixes.
+
+The first is deliberate. The model produces a probability distribution over the next token, and the sampler picks from it. Temperature, top_p, top_k, and repetition penalties all shape that draw, and unless the draw is seeded, it is different every time. This is by design, and turning it off is a configuration change.
+
+The second is not deliberate. Even with sampling disabled, the numbers going into that distribution can differ slightly between runs, and if two candidate tokens have nearly equal probability, a difference far below any threshold you would call meaningful can flip which one wins. That is a numerical property of how the computation is executed, and no sampling parameter turns it off.
+
+## Turning off the deliberate part
+
+Greedy decoding, meaning always take the highest probability token, removes the sampler entirely. If you keep sampling, seed everything that draws random numbers.
+
+\`\`\`python
+import os, random
+import numpy as np
+import torch
+
+def pin_randomness(seed: int = 1337) -> None:
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    # Ask the framework to refuse nondeterministic kernels rather than
+    # silently pick one. This raises if no deterministic version exists.
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.benchmark = False
+\`\`\`
+
+Two things in there are worth calling out. \`cudnn.benchmark\` normally lets the library try several algorithm implementations and keep the fastest for a given shape, which means the algorithm chosen can depend on what else the machine was doing at the time. Turning it off costs a little performance and removes that variable. And \`use_deterministic_algorithms\` is the honest setting: rather than quietly substituting a nondeterministic kernel, it raises an error so you know the guarantee is not available.
+
+## The part that survives seeding
+
+Floating point addition is not associative. \`(a + b) + c\` and \`a + (b + c)\` can give different results, because each intermediate is rounded to the nearest representable value.
+
+\`\`\`python
+import numpy as np
+
+x = np.array([1.0, 1e16, -1e16, 1.0], dtype=np.float64)
+print(x[0] + x[1] + x[2] + x[3])          # 2.0 or 0.0 depending on order
+print(((x[0] + x[1]) + x[2]) + x[3])      # 0.0
+print(x[0] + (x[1] + x[2]) + x[3])        # 2.0
+\`\`\`
+
+That example is exaggerated to make the rounding visible, but the effect exists at every scale, and it matters enormously for what a GPU does. A matrix multiplication is a very large number of sums, and a parallel implementation splits those sums across thousands of threads and combines partial results in whatever order the threads finish. Change the number of threads, the tile size, the reduction tree, or the algorithm chosen for a given shape, and the order changes, and the last bits of the result change with it.
+
+Now stack the places that can change between two runs:
+
+- A different batch composition, because the shape changed which kernel was selected.
+- A different accelerator model, or a different driver or math library version.
+- A different level of parallelism, because thread or stream counts were tuned to the machine.
+- Reduced precision accumulation, where fewer mantissa bits make the rounding coarser and the divergence larger.
+
+None of these are bugs. They are the cost of running a very large reduction in parallel as fast as possible. Bit exact reproducibility and maximum throughput are in genuine tension, and every serving stack chooses throughput.
+
+## Where the difference becomes visible
+
+A difference in the tenth decimal place of a logit almost never changes anything. It changes the output only when two tokens are nearly tied, and then the greedy pick flips, and because generation is autoregressive, that one different token conditions everything after it. A single flip early in a response can produce a completely different paragraph.
+
+Which explains a pattern that confuses people: most of the time output is identical, and occasionally it diverges completely. That is not a system behaving intermittently. That is a system that is stable except at the ties, where a tiny perturbation gets amplified by the sequential structure of generation.
+
+## What to actually do
+
+I do not chase bit exactness in production. It is expensive, it constrains the serving stack, and it is not what most systems need. What I do instead is control determinism where it changes decisions.
+
+**For evaluation runs, pin everything and record it.** An eval that cannot be re-run is not a measurement. Pin the model artifact by hash, the runtime and library versions, the decoding parameters, the seed, and the batch size, and record all of it with the results. Then a difference between two eval runs means a real change rather than a mystery.
+
+\`\`\`yaml
+eval_run:
+  model_sha256: "6f1c9b2e..."
+  runtime: "vendor-runtime 1.2.3"
+  framework: "torch 2.x"
+  decoding:
+    temperature: 0.0
+    top_p: 1.0
+    max_tokens: 512
+    seed: 1337
+  batch_size: 1
+  hardware: "single accelerator, exclusive"
+\`\`\`
+
+Batch size of one and exclusive access matter more than they look. Sharing a device with other work changes scheduling and can change results.
+
+**For tests, do not assert on exact strings.** Assert on properties: the JSON parses, the required fields exist, the value falls in a range, the classification is correct. A test that compares output to a stored string will fail on the next library upgrade for reasons that have nothing to do with quality.
+
+**For production, log enough to explain a difference.** Model hash, runtime version, decoding parameters, and seed on every request. When someone reports that the same input gave a different answer yesterday, you want to answer that in one query rather than one week.
+
+The underlying idea is not specific to machine learning. Any system built on parallel floating point arithmetic has this property, and numerical computing has known it for decades. What is new is that the output is text a person reads, so the difference is visible in a way a slightly different residual in a simulation never was.
+
+## References
+
+- https://pytorch.org/docs/stable/notes/randomness.html
+- https://en.wikipedia.org/wiki/IEEE_754
+- https://en.wikipedia.org/wiki/Floating-point_arithmetic
+- https://numpy.org/doc/stable/reference/random/index.html
+- https://docs.python.org/3/library/random.html
+`,
+  },
+  {
+    slug: "postmortems-team-of-one",
+    title: "Writing A Postmortem When You Are The Whole Team",
+    date: "2026-07-13",
+    tags: ["operations", "learning", "career"],
+    excerpt:
+      "A postmortem for an audience of one is still worth writing, because the person you are protecting from the next outage does not remember this one.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The objection, and why it is wrong
+
+Writing an incident report when nobody else will read it feels like paperwork for its own sake. I know what broke. I fixed it. Why write it down?
+
+Because I do not know what broke, I know what I concluded at two in the morning while I was tired and wanted it to be over. Those are different things, and the distance between them is where the next outage lives.
+
+The second reason is memory. Six months from now the same symptom appears and I will half remember something similar. Half remembering is worse than not remembering, because it sends me down the path that worked last time on a problem that only looks the same. A written record turns half memory into a lookup.
+
+The third reason is that writing forces sequencing. Reconstructing a timeline in order surfaces gaps you did not notice while you were inside it: the twenty minutes you spent on the wrong subsystem, the alert that fired before you noticed, the fix you applied without knowing why it worked.
+
+## Blameless still applies when you are the only name
+
+"Blameless" sounds like a policy for protecting other people's feelings. It is not. It is an epistemics rule.
+
+The moment a writeup identifies a person as the cause, the analysis stops. "I made a mistake" is not a finding, it is a full stop. The useful question is why the mistake was available: why the system let a single command with no confirmation delete production data, why the config with a typo passed validation, why nothing caught it for four hours.
+
+When you are the only operator, blaming yourself is easy and comfortable, and it is exactly as useless as blaming a colleague. The discipline is the same: every time you write "I forgot" or "I should have been more careful", treat it as an unfinished sentence. Finish it with what would have made forgetting harmless.
+
+## The timeline is the artifact
+
+Everything else in a postmortem is opinion. The timeline is evidence, and I write it first, from logs and command history rather than from memory.
+
+\`\`\`bash
+# Reconstruct what I actually ran, with timestamps
+HISTTIMEFORMAT="%F %T " history | tail -100
+
+# What the machine thought was happening
+journalctl --since "2026-07-11 21:00" --until "2026-07-12 01:00" -p warning
+
+# When did monitoring first know
+# (pull the alert firing time from your alerting system, not your memory)
+\`\`\`
+
+Two columns: what the system did, and what I did. Absolute timestamps, not relative. Include the boring rows, especially the gaps, because a forty minute gap between the first alert and the first human action is itself a finding about how alerts reach you.
+
+Mark three moments explicitly: when it started, when someone knew, and when it was resolved. Time to detection and time to recovery are the two numbers worth tracking across incidents, and they point at different fixes. Slow detection is a monitoring problem. Slow recovery is a runbook or tooling problem.
+
+## The template I use
+
+\`\`\`text
+## INC-2026-07-11: Lab DNS resolution failed for 3h12m
+
+**Impact.** Internal name resolution failed for all lab hosts from 21:14
+to 00:26. Anything with a hardcoded IP kept working. No data loss.
+Detection: 47 minutes after onset, by me noticing, not by an alert.
+
+### Timeline
+| Time  | System | Me |
+| ----- | ------ | -- |
+| 21:14 | Resolver container exits, restart loop begins | |
+| 21:14 | No alert fires | |
+| 22:01 | | Notice a name failing to resolve, start looking |
+| 22:20 | | Restart the container, it exits again |
+| 23:05 | | Find the config parse error in the logs |
+| 00:26 | Resolution restored | Revert the config change |
+
+### What happened
+A zone file edit introduced a syntax error. The service validated
+config only at startup, so the error was not caught at write time.
+It crash looped, and nothing was watching for that.
+
+### Contributing factors
+- No pre-commit validation on zone files.
+- No alert on container restart count.
+- Only one resolver, so a single failure was total.
+- The change was made without a rollback plan, at night.
+
+### What I am changing
+| Action | Type | By |
+| ------ | ---- | -- |
+| Add zone syntax check to the deploy script | prevent | 2026-07-14 |
+| Alert on restart count above 3 in 10 minutes | detect | 2026-07-14 |
+| Stand up a second resolver, different host | mitigate | 2026-07-27 |
+
+### What went right
+Reverting was clean because the config was in version control.
+\`\`\`
+
+The "what went right" section is not decoration. If you only ever record failures, you stop noticing which of your habits are load bearing, and eventually you drop one.
+
+## Action items are where postmortems die
+
+Almost every postmortem I have read, mine included, ends with a list of ambitious improvements that never happen. The pattern is predictable: the items are too large, they have no date, and there is no mechanism to revisit them.
+
+Three rules fix most of it.
+
+**Classify each item as prevent, detect, or mitigate.** A list that is all prevention means you believe you can eliminate failure, which you cannot. Detection and mitigation items are usually smaller and pay off across incidents you have not had yet.
+
+**Make each item small enough to do in one sitting.** "Improve monitoring" never happens. "Add an alert on container restart count" happens on Tuesday.
+
+**Give it a date and put it somewhere you will see it.** An action item that lives only in the postmortem document is a wish.
+
+Then reread your old postmortems on a schedule. Quarterly is enough. What you are looking for is repetition: the same contributing factor showing up in three writeups is a much stronger signal than it was in any one of them, and it usually points at something structural you have been routing around instead of fixing.
+
+That is the real payoff of doing this alone. Nobody is going to notice the pattern across your incidents for you. The document is the only thing standing between you and solving the same problem four times.
+
+## References
+
+- https://sre.google/sre-book/postmortem-culture/
+- https://csrc.nist.gov/pubs/sp/800/61/r2/final
+- https://en.wikipedia.org/wiki/Root_cause_analysis
+- https://en.wikipedia.org/wiki/Five_whys
+- https://en.wikipedia.org/wiki/Just_culture
+- https://man7.org/linux/man-pages/man1/journalctl.1.html
+`,
+  },
+  {
+    slug: "spf-dkim-dmarc-email-auth",
+    title: "SPF, DKIM, and DMARC: Making Your Domain Hard to Forge",
+    date: "2026-07-14",
+    tags: ["security", "networking", "operations"],
+    excerpt:
+      "SMTP never proved who sent a message. Three DNS records fix that, and they only work when you understand what each one actually checks.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The hole SMTP left open
+
+SMTP does not authenticate senders. RFC 5321 gives a message an envelope with
+a MAIL FROM address, RFC 5322 gives the message its own From: header, and
+nothing in either specification proves the connecting host has any right to
+use either domain. Any machine that can open port 25 can claim to be you.
+
+SPF, DKIM, and DMARC are three separate DNS-published mechanisms bolted on
+afterwards. People treat them as one thing called "email security." They are
+not one thing. Each checks a different field, and knowing which field is the
+whole game when you are debugging a rejection.
+
+## SPF authorizes hosts for the envelope sender
+
+SPF publishes a TXT record listing which IP addresses may send mail for a
+domain. The receiver looks at the envelope MAIL FROM domain, fetches that
+domain's SPF record, and compares the connecting IP to the mechanisms in the
+record.
+
+\`\`\`
+example.org.  IN TXT "v=spf1 mx ip4:198.51.100.20 include:_spf.provider.example -all"
+\`\`\`
+
+Two things trip people up. First, SPF checks the envelope sender, not the
+From: header the user sees, so a message can pass SPF while showing a
+completely different display address. Second, SPF has a hard limit of ten DNS
+lookups per evaluation. Every \`include\`, \`a\`, \`mx\`, \`ptr\`, and \`exists\`
+mechanism costs against that budget, and nested includes count too. Blow the
+limit and the result is permerror, which most receivers treat as a failure.
+If you use several hosted senders, flatten or consolidate rather than chaining
+includes forever.
+
+The final mechanism matters. \`-all\` means "reject anything else," \`~all\` means
+softfail, and \`?all\` means you have published nothing useful. SPF also breaks
+on plain forwarding, because the forwarder becomes the connecting host while
+the envelope sender stays yours.
+
+## DKIM signs the message itself
+
+DKIM takes a different approach: the sending server signs selected headers
+and the body with a private key and attaches a DKIM-Signature header. The
+public key lives in DNS under a selector.
+
+\`\`\`
+mail2026._domainkey.example.org. IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkq..."
+\`\`\`
+
+The signature names the domain (\`d=\`), the selector (\`s=\`), the signed header
+list (\`h=\`), and a body hash (\`bh=\`). A receiver fetches the key, recomputes
+the hashes, and verifies. Because the proof travels inside the message, DKIM
+survives forwarding as long as nothing rewrites a signed header or modifies
+the body. Mailing lists that append footers break it, which is exactly why
+they usually re-sign as themselves.
+
+Selectors exist so you can rotate. Publish a new selector, start signing with
+it, leave the old key in DNS until nothing in flight still needs it, then
+remove the old record. Sign the headers that matter for identity: From,
+Subject, Date, To, Message-ID, and Reply-To. Signing headers that intermediate
+systems legitimately rewrite is a good way to generate mystery failures.
+
+## DMARC ties them to the visible From
+
+Neither SPF nor DKIM says anything about the address a human reads. DMARC
+adds that link. It publishes a policy on the organizational domain and
+requires alignment: the domain in the From: header must match the SPF-checked
+envelope domain, or match the DKIM \`d=\` domain. Either one passing with
+alignment is enough.
+
+\`\`\`
+_dmarc.example.org. IN TXT "v=DMARC1; p=none; rua=mailto:dmarc@example.org; adkim=s; aspf=r; pct=100"
+\`\`\`
+
+\`p=\` is the request to receivers: none, quarantine, or reject. \`adkim\` and
+\`aspf\` set strict or relaxed alignment, where relaxed allows a subdomain to
+align with its organizational domain. \`rua\` is where aggregate XML reports
+get sent, and those reports are the actual point of starting at \`p=none\`.
+
+## How I would roll it out
+
+This is the sequence I use on domains I control, and I would not skip a step
+to move faster.
+
+Publish SPF and DKIM first and let them run. Then publish DMARC at \`p=none\`
+with an \`rua\` address and read reports for a few weeks. Aggregate reports tell
+you which source IPs are sending as your domain and whether they align. You
+will almost always find a forgotten sender: a ticketing system, a monitoring
+box, a form handler on a web host.
+
+Fix or authorize each legitimate source. Then move to \`p=quarantine\`, watch
+again, then \`p=reject\`. The \`pct\` tag lets you apply a policy to a fraction of
+mail during the transition. Going straight to reject on a domain with real
+mail flow is how you discover your invoicing system was never signing
+anything.
+
+Do not forget parked domains. A domain you own and never send from should
+publish \`v=spf1 -all\`, a wildcard DKIM record set to revoked, and a DMARC
+record at \`p=reject\`. Unused domains are the easiest ones to spoof because
+nobody is watching them.
+
+## What this does not do
+
+None of this proves the content is honest. A spammer who owns
+\`totally-legit-invoices.example\` can publish perfect SPF, DKIM, and DMARC and
+pass every check. Authentication proves the domain is really the domain. It
+does nothing about lookalike domains, display-name spoofing where the address
+is a free webmail account, or a genuinely compromised account sending from
+your own infrastructure.
+
+That is still worth doing. Once your domain is hard to forge, the attacker has
+to use a different domain, and a different domain is something a receiving
+filter, a mail rule, or an alert user can actually notice.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc7208
+- https://www.rfc-editor.org/rfc/rfc6376
+- https://www.rfc-editor.org/rfc/rfc7489
+- https://www.rfc-editor.org/rfc/rfc5321
+- https://csrc.nist.gov/publications/detail/sp/800-177/rev-1/final
+`,
+  },
+  {
+    slug: "gpu-memory-fragmentation",
+    title: "Why the GPU Says Out of Memory With Memory Free",
+    date: "2026-07-15",
+    tags: ["ai", "ml", "hardware"],
+    excerpt:
+      "An allocation fails while the card reports gigabytes unused. That is fragmentation, and it is a property of how the allocator works, not a bug.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The confusing failure
+
+You get an out of memory error asking for a few hundred megabytes. You check
+the card and it says a couple of gigabytes are free. Both statements are true
+at the same time, and understanding why is the difference between guessing at
+batch sizes forever and actually fixing the workload.
+
+The short version: device memory allocations need contiguous address ranges,
+and the free space on your card is not one range. It is a lot of small ranges
+with live tensors sitting between them.
+
+## What the caching allocator is doing
+
+Asking the driver for memory is slow and synchronizing. So every serious
+framework puts a caching allocator in front of it. The allocator grabs large
+segments from the driver, carves blocks out of them for your tensors, and when
+you free a tensor the block goes back to the allocator's own free list rather
+than to the driver.
+
+That is why two numbers exist and why they disagree:
+
+\`\`\`python
+import torch
+
+alloc = torch.cuda.memory_allocated() / 1024**3
+resv = torch.cuda.memory_reserved() / 1024**3
+print(f"allocated by tensors: {alloc:.2f} GiB")
+print(f"reserved from driver: {resv:.2f} GiB")
+print(torch.cuda.memory_summary(abbreviated=True))
+\`\`\`
+
+\`memory_allocated\` is what your live tensors occupy. \`memory_reserved\` is what
+the process has taken from the driver and is holding in its pools. The tool
+that reads the driver sees only the reserved number, which is why external
+monitoring shows a process pinning most of the card while the framework
+insists it has room.
+
+Reuse is size-sensitive. A freed 512 MiB block satisfies a later 512 MiB
+request instantly. It does not help a request for 600 MiB unless it happens to
+sit next to enough adjacent free space in the same segment. Blocks are split
+to serve smaller requests, and the leftover slivers are what accumulate.
+
+## Where the holes come from
+
+Fragmentation is created by variety, not by volume. A workload that allocates
+the same shapes over and over reaches a steady state after a few iterations
+and then never touches the driver again. A workload with changing shapes keeps
+asking for sizes that do not match anything on the free list.
+
+The usual sources:
+
+- Variable sequence lengths. Every distinct padded length is a distinct
+  allocation size.
+- Variable batch sizes, especially a serving path that batches whatever
+  arrived in the last window.
+- A long-lived allocation made in the middle of a run, which lands in the
+  middle of a segment and permanently splits it.
+- Mixing a large one-off operation, such as loading or converting weights,
+  into the same pool as steady-state activations.
+- Repeated grow-then-shrink patterns during evaluation between training steps.
+
+Time matters as much as size. A tiny tensor that lives for the entire run and
+happens to sit at the midpoint of a big segment is worse than a large tensor
+that is freed immediately.
+
+## Things that actually help
+
+Reduce shape variety. Bucket sequence lengths to a small set of fixed values
+and pad to the bucket. Eight buckets that repeat forever fragment far less
+than a continuous distribution of lengths, even though bucketing wastes a
+little compute on padding. This is the single highest-return change in most
+serving code.
+
+Allocate the big, long-lived things first. Load weights, build persistent
+buffers, and reserve any workspace before the run starts churning. Anything
+permanent that gets created late is a permanent hole.
+
+Warm up with the worst case. Run one iteration at your maximum shape before
+serving traffic. If it fits then, the allocator has already carved out
+segments large enough, and later smaller requests fit inside them. If it does
+not fit then, you would rather find out at startup than at hour six.
+
+Do not scatter empty-cache calls through the hot path. Releasing cached
+segments back to the driver does defragment the pool, but it also throws away
+the cache you built and forces synchronization, and calling it every iteration
+is a well-known way to make a job slower and no more stable. Use it once
+between distinct phases, such as after loading and before serving.
+
+Keep one process per device where you can. Two processes on one card each keep
+their own pool and neither can use the other's free blocks, so the effective
+capacity is lower than the sticker says.
+
+## How I approach it
+
+When a job dies on memory, I do not immediately cut the batch size. Cutting
+batch size hides a fragmentation problem and costs throughput permanently. I
+check the allocated versus reserved gap first. A small gap means the workload
+genuinely needs more memory than exists, and then shrinking shapes or
+offloading is the honest fix. A large gap means the memory is there and the
+layout is wrong, which is a code problem I can solve without giving up
+performance.
+
+Then I look at when the failure happens. Failing on iteration one is a sizing
+problem. Failing on iteration four hundred, after hours of clean running, is
+almost always fragmentation, and the fix lives in the shapes the code
+requests, not in the size of the card.
+
+## References
+
+- https://pytorch.org/docs/stable/notes/cuda.html
+- https://docs.nvidia.com/cuda/cuda-c-programming-guide/
+- https://en.wikipedia.org/wiki/Fragmentation_(computing)
+- https://en.wikipedia.org/wiki/Memory_pool
+- https://en.wikipedia.org/wiki/Buddy_memory_allocation
+`,
+  },
+  {
+    slug: "database-connection-pooling",
+    title: "Connection Pooling Is Not Just a Performance Trick",
+    date: "2026-07-16",
+    tags: ["operations", "servers", "tools"],
+    excerpt:
+      "A connection pool is a hard limit on database concurrency. Sized by guesswork it either wastes the server or takes it down under load.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## What a connection actually costs
+
+On PostgreSQL every client connection is a separate backend process. Forking
+it costs time, and it carries per-backend memory that is not shared: sort and
+hash workspace, catalog caches, prepared statement plans. Add a TLS handshake
+and authentication on top and a fresh connection is far more expensive than
+the query you wanted to run.
+
+So applications keep connections open and hand them out. That is the pool. The
+part people skip is that the pool is also a concurrency limit, and it is
+usually the only one in the system. Whatever number you put in the config is
+the maximum number of statements your database will ever run at once from that
+application.
+
+## Sizing is about the server, not the users
+
+The instinct is to size the pool by expected users. That is backwards. Beyond
+a certain point, more concurrent queries do not increase throughput, they just
+divide the same CPU and disk into thinner slices while adding lock contention
+and context switching. Latency rises for everyone and total work done stays
+flat or drops.
+
+Size instead from what the database machine can genuinely do at once: its
+CPU cores and its storage parallelism. A pool a small multiple of core count
+is a sane starting point for a workload that is mostly CPU-bound in the
+database. Workloads dominated by waiting on disk can support somewhat more,
+since a waiting backend is not using a core. Then measure.
+
+The number that tells you whether the pool is right is not utilization, it is
+how long clients wait to get a connection. If wait time is near zero and the
+database is busy, the pool is fine. If wait time is climbing while the
+database CPU is nowhere near saturated, something is holding connections
+without using them, and the fix is in the application, not the pool size.
+
+Also remember that pools multiply. Ten application instances with a pool of
+twenty each is two hundred backends, and the database only sees the total.
+Adding replicas of your app quietly raises database concurrency unless you put
+an external pooler in the middle.
+
+## An external pooler and its modes
+
+PgBouncer sits between the application and the server and multiplexes many
+client connections onto few server connections. The mode matters more than any
+other setting.
+
+\`\`\`ini
+[databases]
+appdb = host=10.20.0.11 port=5432 dbname=appdb
+
+[pgbouncer]
+listen_addr = 10.20.0.5
+listen_port = 6432
+auth_type = scram-sha-256
+auth_file = /etc/pgbouncer/userlist.txt
+pool_mode = transaction
+default_pool_size = 20
+max_client_conn = 2000
+reserve_pool_size = 5
+server_idle_timeout = 300
+query_wait_timeout = 10
+\`\`\`
+
+Session mode assigns a server connection for the whole client session, which
+is safe but saves you almost nothing beyond avoiding reconnect cost.
+Transaction mode returns the server connection at COMMIT, which is where the
+real multiplexing happens: two thousand mostly idle clients can share twenty
+backends.
+
+Transaction mode has rules. Anything that carries state across transactions
+breaks: session-level \`SET\` that you expect to persist, \`LISTEN\` and \`NOTIFY\`,
+advisory locks held outside a transaction, temporary tables, and server-side
+prepared statements unless the pooler and driver support tracking them. Read
+your driver's documentation before switching, because these failures are
+intermittent and look like data bugs rather than pool bugs.
+
+## The failure mode to expect
+
+Pool exhaustion almost never comes from too much traffic. It comes from
+connections held longer than they should be.
+
+The classic version: a request opens a transaction, then makes an HTTP call to
+another service inside it, then commits. Under normal conditions this is
+invisible. When the other service slows to a few seconds, every in-flight
+request holds a database connection while doing nothing, the pool empties,
+and every unrelated query starts queueing behind it. The database looks
+perfectly healthy the entire time.
+
+The rules I hold to:
+
+- No network calls inside a transaction, ever.
+- Set a statement timeout on the server side, not just in the client, so a
+  runaway query cannot hold a backend indefinitely.
+- Set an acquisition timeout on the pool, so a request fails fast rather than
+  piling up.
+- Keep transactions short enough that you would be comfortable seeing them in
+  a log.
+
+## Watching it
+
+The database has the answers. This shows what backends are doing and how long
+they have been doing it:
+
+\`\`\`sql
+SELECT state,
+       count(*) AS conns,
+       max(now() - state_change) AS longest
+FROM pg_stat_activity
+WHERE datname = 'appdb'
+GROUP BY state
+ORDER BY conns DESC;
+\`\`\`
+
+A large \`idle in transaction\` count with a growing age is the exhaustion
+pattern above, caught before it becomes an outage. A large plain \`idle\` count
+just means your pool is bigger than it needs to be, which wastes memory but
+does not hurt much.
+
+Graph three things over time: connections in use, client wait time to acquire,
+and the count of idle-in-transaction backends. Those three make almost every
+pool problem obvious, and none of them are visible from the application's
+error log.
+
+## References
+
+- https://www.postgresql.org/docs/current/runtime-config-connection.html
+- https://www.postgresql.org/docs/current/monitoring-stats.html
+- https://www.pgbouncer.org/config.html
+- https://www.pgbouncer.org/usage.html
+- https://en.wikipedia.org/wiki/Connection_pool
+`,
+  },
+  {
+    slug: "ssh-certificate-authority",
+    title: "SSH Certificate Authorities Beat authorized_keys Sprawl",
+    date: "2026-07-17",
+    tags: ["security", "linux", "operations"],
+    excerpt:
+      "Copying public keys to every host does not scale and cannot revoke. OpenSSH has had a certificate model for years and almost nobody uses it.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The sprawl problem
+
+The standard way to grant SSH access is to append a public key to
+\`~/.ssh/authorized_keys\` on every host the person needs. It works, and it
+falls apart at exactly the point you need it not to.
+
+Access is now scattered across every machine. Nobody can answer "who can log
+into this box" without reading files on the box. Nobody can answer "what can
+this person reach" without reading files on every box. And revocation means
+finding and removing a key everywhere it was ever copied, including the host
+somebody built last month from an old image.
+
+The other half of the problem is host identity. The first time you connect,
+SSH shows a fingerprint and asks if you trust it. Almost everyone types yes
+without checking, so the protection is theoretical. Rebuild the host and
+everyone gets a scary warning they are trained to ignore.
+
+OpenSSH solves both with certificates, and it has for a long time.
+
+## How SSH certificates work
+
+An SSH certificate is a public key plus signed metadata: a validity window, a
+key ID, a list of principals, and a set of permitted extensions. It is signed
+by a CA key, which is just an ordinary SSH keypair you decided to treat as
+authoritative. This is not X.509 and there is no chain: one signature, one CA.
+
+There are two independent certificate types, and using only one is a common
+half-measure.
+
+User certificates let a host verify a person without holding their key. Host
+certificates let a person verify a host without trust on first use.
+
+Create the CAs, keeping them separate so you can rotate one without the other:
+
+\`\`\`bash
+ssh-keygen -t ed25519 -f /root/ca/user_ca -C "user CA" -N ""
+ssh-keygen -t ed25519 -f /root/ca/host_ca -C "host CA" -N ""
+\`\`\`
+
+Sign a user key. The \`-n\` list is principals, \`-V\` is validity, \`-I\` is the
+key ID that will appear in the server's auth log:
+
+\`\`\`bash
+ssh-keygen -s /root/ca/user_ca \\
+  -I "max@lab-2026-07-17" \\
+  -n admin,deploy \\
+  -V +8h \\
+  -O clear -O permit-pty -O source-address=10.20.0.0/24 \\
+  max_ed25519.pub
+\`\`\`
+
+That writes \`max_ed25519-cert.pub\` next to the key. The client sends it
+automatically when the cert file sits beside the private key.
+
+Sign a host key on each server:
+
+\`\`\`bash
+ssh-keygen -s /root/ca/host_ca \\
+  -I "web01" -h \\
+  -n web01.lab.internal,10.20.0.31 \\
+  -V +52w \\
+  /etc/ssh/ssh_host_ed25519_key.pub
+\`\`\`
+
+## Configuring both ends
+
+On the server, trust the user CA and present the host certificate:
+
+\`\`\`
+# /etc/ssh/sshd_config
+TrustedUserCAKeys /etc/ssh/user_ca.pub
+HostCertificate /etc/ssh/ssh_host_ed25519_key-cert.pub
+HostKey /etc/ssh/ssh_host_ed25519_key
+RevokedKeys /etc/ssh/revoked_keys.krl
+AuthorizedPrincipalsFile /etc/ssh/auth_principals/%u
+PasswordAuthentication no
+\`\`\`
+
+\`AuthorizedPrincipalsFile\` is the piece that makes this a real authorization
+model. A file at \`/etc/ssh/auth_principals/root\` containing \`admin\` means only
+certificates carrying the \`admin\` principal may log in as root on that host.
+Principals are roles, and they are decided by the CA at signing time, not by
+the username the person types.
+
+On the client, trust the host CA in \`known_hosts\`:
+
+\`\`\`
+@cert-authority *.lab.internal ssh-ed25519 AAAAC3NzaC1lZDI1... host CA
+\`\`\`
+
+Now every host signed by that CA verifies silently, forever, including hosts
+that do not exist yet and hosts you rebuild.
+
+## Short lifetimes instead of revocation
+
+Certificates can be revoked with a key revocation list, and you should
+maintain one for the emergency case. But the real answer is not revoking, it
+is expiring.
+
+Issue user certificates with a lifetime measured in hours. Someone
+authenticates to the signing service in the morning, gets a certificate good
+for the workday, and it stops working on its own. A stolen laptop is a
+problem for the rest of the day, not forever. There is no fleet-wide cleanup
+because there was never anything to clean up on the hosts.
+
+Host certificates get long lifetimes since rotating them means touching
+servers, but keep them well short of infinite so that a forgotten
+decommissioned host eventually stops being able to prove it is you.
+
+## What this buys and what it costs
+
+You get one place that decides access, an auth log that records the key ID and
+principals for every login, host verification that actually works, and
+revocation that mostly happens by itself.
+
+The cost is honest. The CA private key is now the crown jewel, and it belongs
+offline or in hardware, not on the jump box. You need something to sign
+certificates on demand, even if that is a small script behind an
+authentication check. And you need a break-glass path, because a signing
+service outage otherwise locks you out of everything at once. Keep one
+emergency key in \`authorized_keys\` on critical hosts, in a sealed envelope
+somewhere, and audit for its use.
+
+## References
+
+- https://man.openbsd.org/ssh-keygen
+- https://man.openbsd.org/sshd_config
+- https://man7.org/linux/man-pages/man1/ssh-keygen.1.html
+- https://www.openssh.com/manual.html
+- https://en.wikipedia.org/wiki/OpenSSH
+`,
+  },
+  {
+    slug: "speculative-decoding-explained",
+    title: "Speculative Decoding: Two Models, One Output Stream",
+    date: "2026-07-18",
+    tags: ["ai", "ml", "servers"],
+    excerpt:
+      "A small model guesses ahead, a large model checks the guesses in one pass. The output is identical and the wall clock is shorter.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Why generation is slow in an annoying way
+
+Text generation is sequential by construction. Each token depends on every
+token before it, so a model produces one token, appends it, and runs again.
+The frustrating part is that a single forward pass for one token barely
+exercises the hardware. Nearly all of the time goes into moving weights from
+memory into the compute units, and then a tiny amount of arithmetic happens
+before the next pass starts the same movement again.
+
+That means a single-stream generation is limited by memory movement, not by
+arithmetic capacity. The accelerator is mostly waiting. If you could give it
+several tokens of work per weight load, you would get more output for the same
+memory traffic.
+
+Speculative decoding is a way to do exactly that without changing the answer.
+
+## The draft and verify loop
+
+Use two models. A small fast one, the draft model, and the real one, the
+target model. The draft proposes several tokens ahead. The target then
+evaluates all of the proposed positions in one forward pass and decides how
+many to keep.
+
+The key insight is that checking a proposed sequence costs one pass, not one
+pass per token. The target model can score positions in parallel because it
+already has the candidate tokens sitting in front of it. Producing tokens is
+sequential. Verifying tokens is not.
+
+\`\`\`python
+def speculative_step(target, draft, prefix, k=4):
+    # 1. draft proposes k tokens, one at a time, cheaply
+    proposal = []
+    ctx = list(prefix)
+    for _ in range(k):
+        t = draft.sample_next(ctx)
+        proposal.append(t)
+        ctx.append(t)
+
+    # 2. target scores all k+1 positions in a single forward pass
+    target_dists = target.forward_positions(prefix, proposal)
+
+    # 3. accept the longest prefix of the proposal the target agrees with
+    accepted = []
+    for i, tok in enumerate(proposal):
+        if target_accepts(target_dists[i], tok):
+            accepted.append(tok)
+        else:
+            # replace the first rejected token with the target's own choice
+            accepted.append(sample_from(corrected(target_dists[i])))
+            return prefix + accepted
+    # everything accepted: take a free bonus token from the extra position
+    accepted.append(sample_from(target_dists[k]))
+    return prefix + accepted
+\`\`\`
+
+Notice the last two branches. On a rejection you do not throw the whole round
+away, you keep everything up to the disagreement and take the target's token
+at that position. On full acceptance you get one extra token free, because the
+verification pass already computed a distribution for the position after the
+last proposed token.
+
+The acceptance test is what makes this exact rather than approximate. Done
+correctly, with the right rejection and correction rule, the tokens coming out
+follow the same distribution the target model would have produced on its own.
+This is not a quality tradeoff. It is the same output, arrived at faster.
+
+## The arithmetic that decides whether it helps
+
+Let k be how many tokens you propose per round and a be the average number
+accepted. Each round costs one target pass plus k draft passes. If the draft
+model costs a fraction c of a target pass, the cost per round is roughly
+\`1 + k*c\` target passes and produces about \`a + 1\` tokens.
+
+So the speedup is about \`(a + 1) / (1 + k*c)\`.
+
+Three things fall out of that expression:
+
+- Acceptance rate dominates. If the draft agrees with the target most of the
+  time, you win big. If it agrees rarely, you paid for the draft passes and
+  got almost nothing.
+- The draft must be genuinely cheap. A draft that costs a third of the target
+  eats the gain before acceptance even matters.
+- k has an optimum. Larger k means more potential tokens per round but also
+  more wasted draft work when an early rejection throws away the tail. Past
+  the point where acceptance typically stops, extra k is pure cost.
+
+Acceptance is workload dependent. Predictable text with lots of boilerplate,
+repeated structure, or long shared vocabulary accepts well. Dense reasoning
+where the target keeps making choices the draft would not accepts poorly. The
+same pair of models can behave very differently on two prompt distributions.
+
+## When I would not bother
+
+Speculative decoding buys back idle hardware. If your hardware is not idle,
+there is nothing to buy back.
+
+A server already running many concurrent requests is doing plenty of
+arithmetic per weight load, because it is amortizing the same weights across
+many sequences. Adding speculation there competes for the same compute and
+can make aggregate throughput worse even while individual responses look
+faster. The classic win case is the opposite: one user, one stream, latency
+that a person is sitting there waiting on.
+
+There is also a memory cost. The draft model occupies device memory that the
+target model is not using, and on a card that was already tight that tradeoff
+is not obviously good.
+
+## How I would evaluate it
+
+This is my own approach, not a rule handed down. I would fix a prompt set that
+looks like real traffic and measure three numbers on it: average tokens
+accepted per round, end-to-end latency per request, and total tokens per
+second across the whole server under the concurrency I actually run.
+
+Then I would check that the outputs are distributionally the same as the
+target alone, because an implementation bug in the acceptance rule shows up as
+subtly worse text rather than as an error. Same prompts, same seed, compare.
+
+If accepted tokens per round is low, the answer is a better draft, not a
+larger k. A draft trained or distilled from the same family usually agrees far
+more often than an unrelated small model of similar size, and agreement is the
+entire economics of the technique.
+
+## References
+
+- https://en.wikipedia.org/wiki/Speculative_execution
+- https://en.wikipedia.org/wiki/Autoregressive_model
+- https://huggingface.co/docs/transformers/generation_strategies
+- https://docs.vllm.ai/en/latest/
+- https://en.wikipedia.org/wiki/Large_language_model
+`,
+  },
+  {
+    slug: "http-caching-headers-etags",
+    title: "Cache-Control and ETags: Telling the Truth About Freshness",
+    date: "2026-07-19",
+    tags: ["networking", "operations", "tools"],
+    excerpt:
+      "HTTP caching is two separate mechanisms, freshness and validation. Most caching bugs come from configuring one and expecting the other.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Two mechanisms, not one
+
+HTTP caching has exactly two moving parts and people constantly conflate them.
+
+Freshness lets a cache serve a response without asking anyone. The origin
+states a lifetime, the cache counts down, and while the response is fresh no
+request leaves the cache at all. This is where the speed comes from.
+
+Validation lets a cache ask "is this still good?" cheaply. The cache holds a
+stale copy plus a token, sends the token, and the origin answers 304 Not
+Modified with no body if nothing changed. This saves bandwidth but still costs
+a full round trip.
+
+If you configure validators and no freshness lifetime, every request still
+goes to the origin. It will be small and fast, but it is still a round trip
+per object, and people are surprised their cache "is not working."
+
+## Cache-Control directives that matter
+
+The response directives worth knowing, from RFC 9111:
+
+- \`max-age=N\` seconds of freshness for any cache.
+- \`s-maxage=N\` overrides \`max-age\` for shared caches only. This is how you
+  cache aggressively at your reverse proxy while keeping browsers
+  conservative.
+- \`no-cache\` does not mean do not store. It means store it, but revalidate
+  before every reuse. This is the directive people mean when they reach for
+  \`no-store\`.
+- \`no-store\` means do not write it down anywhere. Use it for genuinely
+  sensitive responses, not as a general safety blanket.
+- \`private\` means a browser may cache it but a shared cache must not. Get this
+  wrong on a personalized page and one user sees another user's data.
+- \`immutable\` promises the body will never change for this URL, so a client
+  should not revalidate even on a reload.
+- \`stale-while-revalidate=N\` from RFC 5861 lets a cache serve a stale copy
+  immediately and refresh in the background. It smooths out the latency
+  spike every time an object expires.
+
+A response with no explicit lifetime is not automatically uncacheable.
+Heuristic freshness lets a cache invent a lifetime from \`Last-Modified\`. If
+you have never thought about caching, intermediaries may already be caching
+your responses for durations you did not choose. Being explicit is the point.
+
+## Validators and the 304 flow
+
+An \`ETag\` is an opaque token for a specific representation. A strong ETag
+promises byte-for-byte identity. A weak one, written \`W/"..."\`, promises only
+semantic equivalence, which is what you want if your server gzips at varying
+compression levels or reorders equivalent content.
+
+\`\`\`
+HTTP/1.1 200 OK
+ETag: "9f2c4a1e"
+Last-Modified: Wed, 15 Jul 2026 09:11:04 GMT
+Cache-Control: public, max-age=60, stale-while-revalidate=300
+\`\`\`
+
+The client comes back with \`If-None-Match: "9f2c4a1e"\` and gets a 304 with no
+body if the tag still matches. \`Last-Modified\` and \`If-Modified-Since\` do the
+same job with one-second resolution, which is too coarse for anything that
+changes often. Send both when you can, prefer the ETag, and never generate an
+ETag from something unstable across your own servers. A tag derived from an
+inode number will differ between two load-balanced backends serving identical
+files, and every request will miss.
+
+Range requests use validators too. \`If-Range\` lets a client resume a partial
+download only if the resource has not changed underneath it.
+
+## The cache key and Vary
+
+A cache stores responses under a key. By default that key is the method and
+the URL, and nothing else. \`Vary\` adds request headers to the key.
+
+\`\`\`
+Vary: Accept-Encoding
+\`\`\`
+
+That is almost always correct and almost always necessary if you compress.
+Without it a cache may hand a gzipped body to a client that did not ask for
+one.
+
+\`Vary: Cookie\` is technically correct for personalized responses and
+practically useless, because it splits the cache into one entry per distinct
+cookie value, which is one entry per user. If a response depends on identity,
+mark it \`private\` and stop trying to cache it in a shared tier.
+\`Vary: User-Agent\` has the same problem multiplied by the number of browser
+build strings in the world.
+
+## Making it concrete at the proxy
+
+\`\`\`nginx
+location /static/ {
+    # content-hashed filenames: safe to cache forever
+    add_header Cache-Control "public, max-age=31536000, immutable";
+    etag on;
+}
+
+location /api/ {
+    proxy_pass http://app_backend;
+    proxy_cache api_zone;
+    proxy_cache_key "$request_method$scheme$host$request_uri";
+    proxy_cache_valid 200 30s;
+    proxy_cache_use_stale updating error timeout;
+    proxy_cache_background_update on;
+    proxy_cache_lock on;
+    add_header X-Cache-Status $upstream_cache_status;
+}
+\`\`\`
+
+\`proxy_cache_lock\` is the one people leave off. Without it, an expired hot
+object lets every concurrent request through to the backend at the same
+moment. With it, one request refreshes and the rest wait.
+
+The \`X-Cache-Status\` header is how you debug any of this. Ask for the same
+object twice and read it:
+
+\`\`\`bash
+curl -sSI https://example.org/api/items | grep -Ei 'x-cache|cache-control|etag|age'
+\`\`\`
+
+\`Age\` tells you how long the shared cache has held the response. If \`Age\`
+never grows, nothing is being reused and your lifetime is not being applied.
+
+## The pattern I default to
+
+Content-addressed assets, meaning filenames containing a hash of the content,
+get a one-year \`max-age\` plus \`immutable\`. Changing the content changes the
+URL, so there is no invalidation problem to solve.
+
+HTML and API responses get a short \`s-maxage\`, a real ETag, and
+\`stale-while-revalidate\` so an expiry does not become a latency spike.
+Anything user-specific gets \`private\` and never enters the shared tier. That
+covers most of what a normal service serves, and it fails safe: the worst
+outcome is a few seconds of staleness on a shared object, not one account
+seeing another account's page.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc9111
+- https://www.rfc-editor.org/rfc/rfc9110
+- https://www.rfc-editor.org/rfc/rfc5861
+- https://nginx.org/en/docs/http/ngx_http_proxy_module.html
+- https://en.wikipedia.org/wiki/HTTP_ETag
+`,
+  },
+  {
+    slug: "luks-at-rest-encryption",
+    title: "LUKS and What At-Rest Encryption Actually Protects",
+    date: "2026-07-20",
+    tags: ["security", "storage", "linux"],
+    excerpt:
+      "Full disk encryption defends against a drive leaving the building. It does nothing about a running machine, and confusing the two is the real risk.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Get the threat model right first
+
+LUKS protects data on a powered-off device, or on a device that has been
+removed from a running system without its key. That is the whole scope.
+
+It defends against a stolen drive, a drive returned under warranty with your
+data still on it, a decommissioned server sold with the platters intact, and a
+laptop left in a car. Those are real and common, and they are the reason to
+turn it on.
+
+It does not defend against anything that happens on a booted machine. Once the
+volume is unlocked, the master key is in kernel memory and every read and
+write is transparently decrypted. An attacker with a shell on a running host
+sees plaintext files. Ransomware on a running host encrypts your already
+encrypted disk quite happily. Full disk encryption and access control solve
+different problems, and treating one as coverage for the other is the mistake
+worth avoiding.
+
+## How LUKS is put together
+
+The clever part of LUKS is indirection. The data on the disk is encrypted with
+a randomly generated master key, and the master key never leaves the header.
+Your passphrase does not encrypt the data. It unlocks a keyslot that contains
+a wrapped copy of the master key.
+
+That indirection is why you can have several passphrases for one volume, add a
+new one without rewriting a single sector, and remove a compromised one
+instantly. It is also why the header is precious: destroy it and the master
+key is gone, and the data is unrecoverable no matter how good your passphrase
+was.
+
+LUKS2 stores that header in JSON with a binary keyslot area, supports Argon2
+as the key derivation function, and keeps a secondary copy of the header for
+resilience. Argon2 matters: it is memory-hard, so it resists the parallel
+brute force that a plain iterated hash does not. The derivation cost is tuned
+at format time based on the machine doing the formatting, which is worth
+remembering if you format on a fast box and unlock on a small one.
+
+The actual sector encryption is done by dm-crypt, a device mapper target in
+the kernel. \`aes-xts-plain64\` is the standard choice, with a key size of 512
+bits meaning two 256-bit keys because XTS uses two.
+
+## Setting one up
+
+\`\`\`bash
+# format the partition as LUKS2
+cryptsetup luksFormat --type luks2 \\
+  --cipher aes-xts-plain64 --key-size 512 \\
+  --pbkdf argon2id --hash sha256 \\
+  /dev/sdb1
+
+# open it, creating /dev/mapper/vault
+cryptsetup open /dev/sdb1 vault
+
+mkfs.ext4 /dev/mapper/vault
+mount /dev/mapper/vault /srv/vault
+
+# inspect what you built
+cryptsetup luksDump /dev/sdb1
+\`\`\`
+
+\`luksDump\` shows the keyslots in use, the derivation parameters, and the
+cipher. Read it once on every volume you create, because it is the only way to
+confirm you got what you thought you asked for.
+
+Back up the header immediately, and store the backup somewhere that is not the
+encrypted volume:
+
+\`\`\`bash
+cryptsetup luksHeaderBackup /dev/sdb1 \\
+  --header-backup-file /secure/offline/sdb1-luks-header.img
+\`\`\`
+
+Treat that file as equivalent to the disk itself. Anyone holding the header
+backup plus one valid passphrase can decrypt the data, and a header backup
+taken before you removed a keyslot still contains that removed keyslot.
+
+## Unlocking a headless machine
+
+A server in a rack has nobody to type a passphrase after a power event. There
+are three honest options and each has a tradeoff worth stating plainly.
+
+A keyfile on unencrypted storage means the machine unlocks itself, and anyone
+who takes both the drive and the boot media gets everything. That is fine when
+the encrypted volume is a removable data disk and the boot disk stays bolted
+into the chassis, and useless when someone carries off the whole server.
+
+Network-bound unlock has the machine fetch a key from a server on the local
+network at boot. Steal the drive, take it home, and it does not unlock because
+the key service is not reachable. This preserves most of the value of
+encryption for the theft case, at the cost of running one more service that
+must be up before your storage is.
+
+TPM-sealed keys bind the key to the boot measurements of that specific
+machine. The drive alone is useless and no network is required. The cost is
+that legitimate firmware or bootloader changes alter the measurements and lock
+you out, so you need a recovery passphrase and the discipline to keep it.
+
+For a persistent mapping, \`/etc/crypttab\` describes it:
+
+\`\`\`
+# name   source device                              key file     options
+vault    UUID=6f1a4d9c-1c22-4c0b-9a1b-7c3f5b21e8aa  none         luks,discard,timeout=60
+\`\`\`
+
+Use the UUID, never \`/dev/sdb1\`. Device names move around between boots and
+the failure that causes is confusing out of proportion to how easy it is to
+avoid.
+
+## Operational details people skip
+
+\`discard\` passes TRIM through to the underlying SSD. It helps the drive
+maintain performance and it leaks which sectors are unused, which reveals a
+rough shape of your data. On a general purpose server I take the tradeoff. On
+a volume whose usage pattern is itself sensitive, I do not.
+
+Rotate passphrases with \`luksAddKey\` followed by \`luksKillSlot\`, in that
+order, verifying the new one unlocks before you kill the old one. Never run
+\`luksChangeKey\` on a volume you cannot afford to lose access to during the
+operation.
+
+And when you decommission a drive, remember what you get for free: destroying
+the header, with \`cryptsetup luksErase\` or by overwriting the first few
+megabytes, renders the whole volume unrecoverable in seconds. That is far
+faster than overwriting the entire device, and for encrypted media it is the
+sanitization step that actually matters.
+
+## References
+
+- https://man7.org/linux/man-pages/man8/cryptsetup.8.html
+- https://man7.org/linux/man-pages/man5/crypttab.5.html
+- https://docs.kernel.org/admin-guide/device-mapper/dm-crypt.html
+- https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
+- https://csrc.nist.gov/publications/detail/sp/800-111/final
+`,
+  },
+  {
+    slug: "gpu-sharing-time-slicing",
+    title: "Sharing One Accelerator Between Several Workloads",
+    date: "2026-07-25",
+    tags: ["ai", "virtualization", "hardware"],
+    excerpt:
+      "Three different mechanisms get called GPU sharing and they behave nothing alike. The difference that matters is what happens to memory.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## One card, several tenants
+
+An accelerator sitting idle between jobs is expensive. So the obvious move is
+to let more than one workload use it. The word people use for that is
+"sharing," and it hides at least three mechanisms with completely different
+isolation properties.
+
+The way I keep them straight: ask what happens to memory. Compute can be
+interleaved in time. Memory cannot. That single asymmetry explains most of the
+behavior you will see.
+
+## Time slicing
+
+The simplest form. The scheduler runs one context, switches, runs the next,
+switches back. Each process believes it has the card.
+
+Time slicing is a compute-sharing mechanism only. Every context keeps its own
+allocations resident the entire time, because there is no swapping of device
+memory out to make room. Four processes each holding a quarter of the card's
+memory works. Four processes each wanting three quarters does not, and the
+failure is an allocation error, not a slowdown.
+
+The other property to internalize is that context switching is not free and
+not instantaneous. A workload gets the whole device for its slice, so a long
+kernel from one tenant delays everyone. Latency becomes bursty and unpredictable
+in a way that averages hide. Two batch training jobs sharing a card by time
+slicing is reasonable. An interactive endpoint sharing with a batch job is
+usually not, because the interactive one inherits the batch job's tail.
+
+There is also no memory protection between time-sliced contexts beyond what
+the driver enforces. It is a fairness mechanism, not a security boundary.
+
+## Multi-process service
+
+The second mechanism lets kernels from several processes run concurrently
+rather than taking turns. Instead of interleaving contexts in time, the work
+from multiple clients is funnelled through a single server context and can
+occupy the device simultaneously.
+
+This is the right tool when each individual workload is too small to fill the
+card. Many inference processes each launching narrow kernels will leave most
+of the compute units idle under time slicing, because only one context runs at
+a time and that context cannot fill the machine. Running them concurrently
+fills the gaps.
+
+The cost is isolation. Sharing one context means a fault in one client can
+affect others, and there is no hard partition of resources unless you
+configure per-client limits. Memory is still not overcommitted: everybody's
+allocations coexist and the total is bounded by the physical capacity.
+
+\`\`\`bash
+# start the control daemon, then launch clients normally
+export CUDA_VISIBLE_DEVICES=0
+nvidia-cuda-mps-control -d
+
+# optional: cap one client to a fraction of the compute units
+export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=25
+python serve_small_model.py
+
+# tear it down
+echo quit | nvidia-cuda-mps-control
+\`\`\`
+
+## Hardware partitioning
+
+The third mechanism splits the physical device into smaller independent
+instances, each with its own slice of memory, its own compute units, and its
+own path to memory bandwidth and cache. Multi-Instance GPU is the well-known
+implementation of this idea.
+
+This is the only one of the three that gives you real isolation. A partition
+has a fixed memory capacity, and a noisy tenant in one partition cannot take
+bandwidth from another because they are not sharing the same hardware paths.
+Predictable latency comes from the partitioning, not from a scheduler policy.
+
+The tradeoffs are equally real. Partitions come in fixed, supported
+geometries, not in arbitrary sizes. Reconfiguring the layout usually requires
+draining every workload on the device. And a partition is a smaller device in
+every respect, so a model that needed the full card's memory now does not fit
+anywhere. You have traded flexibility for predictability.
+
+## Choosing between them
+
+The question I ask, in order:
+
+Does the workload need the whole card's memory? Then it does not share, full
+stop. Nothing here overcommits memory.
+
+Do tenants need to be isolated from each other for latency or for trust
+reasons? Then hardware partitioning, if the device supports it, and separate
+devices if it does not.
+
+Are the workloads individually too small to fill the device, and mutually
+trusted? Then concurrent execution through a multi-process service, which is
+the case where sharing actually increases total throughput rather than just
+dividing it.
+
+Are they batch jobs that only need to eventually finish? Time slicing is fine
+and it is the least work to set up.
+
+Full device passthrough to a virtual machine sits outside this list. It gives
+one tenant the entire device with the strongest isolation available, and by
+definition it is not sharing.
+
+## Making it visible to a scheduler
+
+If an orchestrator hands out devices, it needs to be told a device is
+shareable. Kubernetes exposes accelerators through device plugins, and the
+plugin advertises capacity. A time-slicing configuration typically looks like
+advertising more units than physically exist:
+
+\`\`\`yaml
+version: v1
+sharing:
+  timeSlicing:
+    resources:
+      - name: nvidia.com/gpu
+        replicas: 4
+\`\`\`
+
+Understand exactly what that says. It advertises four schedulable units on one
+physical device. It does not create four gigabytes-worth of anything. Four
+pods land on the card, all four allocate memory from the same pool, and the
+fourth one fails if the first three were greedy. The scheduler is counting
+tokens, not enforcing capacity.
+
+That is the recurring theme of accelerator sharing. The scheduling layer is
+happy to overcommit compute and will let you believe it can overcommit memory
+too. Set per-workload memory expectations yourself, and size the number of
+tenants from memory first, then check whether the compute split makes sense.
+
+## References
+
+- https://docs.nvidia.com/datacenter/tesla/mig-user-guide/
+- https://docs.nvidia.com/deploy/mps/
+- https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/
+- https://en.wikipedia.org/wiki/Time-sharing
+- https://en.wikipedia.org/wiki/Context_switch
+`,
+  },
+  {
+    slug: "wal-point-in-time-recovery",
+    title: "Write-Ahead Logs and Recovering to a Point in Time",
+    date: "2026-07-27",
+    tags: ["storage", "operations", "servers"],
+    excerpt:
+      "A write-ahead log exists so a crash cannot corrupt the database. The same log lets you rewind to any second before someone ran the bad DELETE.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Why the log exists at all
+
+A database page is larger than the unit the storage layer promises to write
+atomically. If the machine loses power halfway through writing a page, you get
+a page that is half old and half new, which is worse than either.
+
+The write-ahead rule fixes this: before any change touches a data page, a
+record describing that change is durably written to a sequential log. Recovery
+then has a script. Replay the log from the last known-good point, redo
+anything that was committed but not yet applied to the data files, and discard
+anything that was not committed.
+
+Two properties fall out of this and both are useful. Sequential writes are
+much friendlier to storage than scattered page writes, so the log costs less
+than you would guess. And a commit only has to make the log durable, not the
+data pages, so commit latency depends on the log device rather than on the
+whole working set.
+
+## From crash recovery to time travel
+
+Here is the part that people miss. The same log that lets you recover from a
+crash lets you recover to a moment of your choosing, because the log is an
+ordered record of every change the database ever made.
+
+Take a copy of the data files at some point, keep every log segment produced
+after that copy, and you can reconstruct the database as it existed at any
+instant covered by the log. That is point in time recovery, and it is
+qualitatively different from a nightly dump. A dump gives you last night. PITR
+gives you one second before the mistake.
+
+The three ingredients are a base backup, an unbroken chain of archived log
+segments from that backup forward, and a recovery target.
+
+## Setting up the archive
+
+In PostgreSQL, the log is the WAL and it lives in 16 MiB segments. Archiving
+copies each completed segment somewhere durable before the server recycles it.
+
+\`\`\`ini
+# postgresql.conf
+wal_level = replica
+archive_mode = on
+archive_command = 'test ! -f /srv/wal/%f && cp %p /srv/wal/%f'
+archive_timeout = 300
+max_wal_size = 4GB
+\`\`\`
+
+The \`test ! -f\` guard is not decoration. \`archive_command\` must never
+overwrite an existing file and must return non-zero on any failure. If it
+returns success without actually persisting the segment, the server recycles
+the original and your chain has a hole in it, which you will discover during
+a recovery and not before.
+
+\`archive_timeout\` forces a segment switch on a quiet database so your
+recovery window does not silently stretch to hours just because nothing is
+being written.
+
+Take the base backup with the tool built for it:
+
+\`\`\`bash
+pg_basebackup -h db01 -U replicator \\
+  -D /srv/backups/base-2026-07-27 \\
+  --wal-method=stream --checkpoint=fast --progress
+\`\`\`
+
+\`--wal-method=stream\` pulls the WAL generated during the backup alongside the
+files, so the backup is self-consistent even if archiving hiccups while it
+runs.
+
+## Recovering to a target
+
+Recovery is: put the base backup in place, tell the server where the archived
+segments are, tell it when to stop.
+
+\`\`\`ini
+# postgresql.conf on the recovery instance
+restore_command = 'cp /srv/wal/%f %p'
+recovery_target_time = '2026-07-27 14:22:00-07'
+recovery_target_action = 'pause'
+\`\`\`
+
+\`recovery_target_action = 'pause'\` is the setting I would never leave out. The
+server replays to the target and then stops, still in recovery, waiting. You
+connect, look around, and confirm this is really the state you wanted. If you
+overshot, you stop the server, adjust the target, and replay again from the
+base backup. If you had let it promote automatically, it would have started
+writing a new timeline and going back would be a bigger job.
+
+Targets are not only timestamps. You can recover to a named restore point you
+created before a risky migration, to a specific transaction ID, or to the
+earliest point at which the backup is merely consistent. The named restore
+point is underrated: \`SELECT pg_create_restore_point('pre-migration')\` costs
+nothing and gives you an exact, unambiguous place to rewind to.
+
+Timelines are worth understanding before you need them. When a recovered
+server is promoted, it starts a new timeline so that WAL written after the
+promotion cannot be confused with WAL from the original history. That is what
+makes it safe to recover repeatedly to different targets from one base backup.
+
+## What breaks this
+
+The chain is the fragile part, and it fails quietly.
+
+A failed \`archive_command\` that the monitoring never noticed means every
+recovery target after that point is unreachable. Watch the archiver: PostgreSQL
+exposes \`pg_stat_archiver\` with a count of failures and the name of the last
+failed segment. Alert on failures increasing and on the age of the last
+successful archive, not just on disk space.
+
+A base backup older than your archive retention is not a backup. If you keep
+30 days of WAL and your newest base backup is 40 days old, you have nothing.
+Take base backups on a schedule tied to retention, and verify the two windows
+overlap with room to spare.
+
+Replay time is also not free. Recovering across two weeks of WAL on a busy
+system means replaying two weeks of changes, single-threaded, from a target
+you cannot skip ahead in. If your recovery objective is measured in minutes,
+take base backups often enough that the replay span is short. That tradeoff,
+backup frequency against replay time, is the actual design decision in a PITR
+setup, and it is worth doing the arithmetic on your own write volume rather
+than copying someone else's schedule.
+
+## References
+
+- https://www.postgresql.org/docs/current/wal-intro.html
+- https://www.postgresql.org/docs/current/continuous-archiving.html
+- https://www.postgresql.org/docs/current/app-pgbasebackup.html
+- https://en.wikipedia.org/wiki/Write-ahead_logging
+- https://www.sqlite.org/wal.html
+`,
+  },
+  {
+    slug: "dataset-versioning-for-ml",
+    title: "Versioning Datasets Like You Version Code",
+    date: "2026-07-30",
+    tags: ["ml", "ai", "operations"],
+    excerpt:
+      "You can pin the code, the weights, and the library versions and still not reproduce a result, because the data moved and nobody recorded it.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The gap in reproducibility
+
+Say a model behaves differently than it did last month. You check out the
+commit, install the pinned dependencies, and run the same script. It still
+does not match. The usual reason is that the one input nobody versioned is the
+one that changed: the data.
+
+Data drifts in ways code does not. Files get appended to a directory. A
+labeling pass corrects entries in place. Someone regenerates a preprocessing
+output with a slightly different script. A source system backfills records
+with earlier timestamps. None of it produces a diff anyone reviews, and all of
+it changes the model.
+
+A dataset version is not a folder name with a date on it. It is a
+cryptographic statement about exactly which bytes were used.
+
+## Content addressing is the whole idea
+
+Name data by the hash of its contents rather than by a path. Two files with
+the same hash are the same file, anywhere, forever. A file whose hash changed
+is a different file even if the name did not move.
+
+That single property gives you a lot. Deduplication is automatic. Integrity
+checking is automatic. And a manifest listing hashes is a complete, verifiable
+description of a dataset that fits in your code repository even when the data
+itself is terabytes.
+
+\`\`\`python
+import hashlib, json, os
+from pathlib import Path
+
+def file_digest(path, chunk=1 << 20):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(chunk), b""):
+            h.update(block)
+    return h.hexdigest()
+
+def build_manifest(root):
+    root = Path(root)
+    entries = []
+    for p in sorted(root.rglob("*")):
+        if p.is_file():
+            entries.append({
+                "path": str(p.relative_to(root)),
+                "bytes": p.stat().st_size,
+                "sha256": file_digest(p),
+            })
+    body = json.dumps(entries, sort_keys=True, separators=(",", ":"))
+    return {
+        "dataset_id": hashlib.sha256(body.encode()).hexdigest()[:16],
+        "file_count": len(entries),
+        "total_bytes": sum(e["bytes"] for e in entries),
+        "files": entries,
+    }
+
+if __name__ == "__main__":
+    m = build_manifest("data/raw/support-tickets")
+    Path("manifests/support-tickets.json").write_text(json.dumps(m, indent=2))
+    print(m["dataset_id"], m["file_count"], m["total_bytes"])
+\`\`\`
+
+Sorting the paths and using stable JSON separators matters. If the manifest
+serialization is not deterministic, the dataset id changes for reasons that
+have nothing to do with the data, and the whole scheme stops meaning anything.
+
+Commit the manifest. Do not commit the data. The manifest is small, diffable,
+and reviewable, and it names exactly what a training run consumed.
+
+## Append-only storage, immutable versions
+
+Store the actual bytes in a content-addressed layout, keyed by digest, and
+never modify a stored object. Corrections do not overwrite: they create a new
+object and a new manifest that points at it. The old version stays resolvable
+because some model out there was trained on it and you will eventually need to
+explain that model.
+
+This is where a lot of well-intentioned setups fail. Someone fixes bad labels
+in place because it feels like an obvious improvement. Now every earlier
+manifest referencing that path is a lie, and there is no way to detect it
+except by verifying hashes, which is exactly why you should verify hashes as a
+routine step before training rather than only when investigating a problem.
+
+Store derived artifacts the same way. If a training run reads a tokenized or
+preprocessed form, that form gets its own manifest and its own id, plus a
+record of which raw dataset id and which processing code version produced it.
+Otherwise you can reproduce the raw input but not what the model actually saw.
+
+## Splits are part of the version
+
+Train, validation, and test membership belongs in the version, not in a random
+seed at runtime. Two reasons.
+
+Leakage. If splits are recomputed each run and the dataset grew, a record that
+was in test last time can be in train this time, and your evaluation number
+quietly becomes optimistic. This is one of the easiest ways to fool yourself
+and one of the hardest to notice, because the metric moves in the direction
+you were hoping for.
+
+Comparability. Comparing two models is only meaningful if they were evaluated
+on the same held-out records. Freezing the test set membership as an explicit
+list of record identifiers, stored and hashed alongside the data, is what
+makes a leaderboard mean anything.
+
+Prefer deterministic assignment over a shuffle: hash a stable record
+identifier and bucket on the result. New records land in a split without
+disturbing where existing records already went.
+
+## The record that ties it together
+
+Every trained model should carry a small provenance record, and it should be
+machine-readable rather than a note in a document:
+
+\`\`\`json
+{
+  "model_id": "ticket-classifier-2026-07-30-a",
+  "code_commit": "4c1f9ab",
+  "raw_dataset_id": "b7d2f10c9e441a53",
+  "processed_dataset_id": "1e8a34cc70b9f2d6",
+  "split_manifest_sha256": "9c0b...",
+  "framework": "torch 2.4.1",
+  "seed": 20260730
+}
+\`\`\`
+
+Written at training time, stored next to the weights, and never edited. When
+someone asks in six months why two models disagree, this turns an
+archaeological dig into a diff of two JSON files.
+
+The habit I try to hold: if I cannot name the exact bytes a result came from,
+I do not really have a result. I have an anecdote about one afternoon.
+
+## References
+
+- https://en.wikipedia.org/wiki/Content-addressable_storage
+- https://en.wikipedia.org/wiki/SHA-2
+- https://man7.org/linux/man-pages/man1/sha256sum.1.html
+- https://huggingface.co/docs/datasets/index
+- https://parquet.apache.org/docs/
+`,
+  },
+  {
+    slug: "read-replicas-replication-lag",
+    title: "Read Replicas and the Lag You Have to Design Around",
+    date: "2026-08-14",
+    tags: ["operations", "servers", "monitoring"],
+    excerpt:
+      "Adding a read replica moves load off the primary and adds a new class of bug: reads that return the state of the world a moment ago.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## What a replica really is
+
+A read replica is a second database that continuously applies the primary's
+write-ahead log. It is not a copy job and it is not a periodic sync. It is a
+server permanently stuck in recovery, replaying a stream of changes as they
+arrive, and serving read-only queries from whatever state it has reached.
+
+That framing explains everything else. The replica is always behind, by some
+amount, because the change has to be generated, shipped, received, and
+replayed before it is visible. Usually that amount is milliseconds. The
+engineering problem is what happens when it is not.
+
+## Where lag comes from
+
+Four places, and they fail differently.
+
+Generation and shipping. A burst of writes produces log faster than the
+network moves it. This is the benign case: lag rises with the burst and drains
+afterward.
+
+Apply throughput. The primary generates changes using many concurrent
+backends. The replica replays them with far less parallelism. A write pattern
+that the primary handles comfortably can outrun the replica's ability to apply
+it, and this lag does not drain, it grows for as long as the load lasts.
+
+Conflicting queries. A long-running read on the replica needs rows that the
+replay wants to remove. The replica must either pause replay or cancel the
+query. Both are configurable and both are unpleasant: pausing means lag grows,
+cancelling means analytics jobs die at random. If you set a long grace period
+so reports finish, you have chosen unbounded lag.
+
+Storage. The replica is often cheaper hardware than the primary, on the theory
+that it only serves reads. Replay is a write workload, and a replica that
+cannot sustain the primary's write rate will never catch up.
+
+## Measuring it correctly
+
+The number most dashboards show is a time delta, and it lies in both
+directions.
+
+On an idle database, time-based lag can read as growing simply because the
+last replayed transaction gets older while nothing new arrives. On a busy
+database, a small time delta can hide a large backlog if the replica is
+applying quickly but receiving faster.
+
+Look at byte positions and at the stages separately:
+
+\`\`\`sql
+SELECT client_addr,
+       state,
+       sent_lsn,
+       write_lsn,
+       flush_lsn,
+       replay_lsn,
+       pg_wal_lsn_diff(sent_lsn, replay_lsn) AS replay_bytes_behind,
+       write_lag, flush_lag, replay_lag
+FROM pg_stat_replication;
+\`\`\`
+
+The three stages tell you which failure you have. A gap between \`sent_lsn\` and
+\`write_lsn\` is network or receiver. A gap between \`flush_lsn\` and \`replay_lsn\`
+is apply throughput or a replay conflict, and that is the one that does not
+fix itself. Alert on \`replay_bytes_behind\` with a threshold in bytes, and
+separately on lag duration, and require both to be sane.
+
+Also watch replication slots. A slot guarantees the primary keeps WAL until
+the replica consumes it, which is exactly what you want until a replica goes
+away and the primary fills its disk holding segments for a consumer that is
+never coming back. Bound it with \`max_slot_wal_keep_size\` and alert on slot
+size.
+
+## The bug this creates
+
+A user updates their profile, the write goes to the primary, the redirect
+issues a read, the read is routed to a replica that has not applied the change
+yet, and the user sees their old data. They hit refresh, get a different
+replica, and see the new data. This is read-your-writes violation and it is
+the single most common consequence of adding replicas.
+
+Options, roughly in order of how much I like them:
+
+Route by intent, not by query type. Sessions that just wrote read from the
+primary for a short window. Simple, cheap, and it covers the case people
+actually notice.
+
+Carry a position token. After a write, capture the log position and require
+any subsequent read to run on a replica that has replayed at least that far,
+falling back to the primary otherwise. This is precise and it is more
+plumbing.
+
+\`\`\`python
+def read_conn(pool, min_lsn=None):
+    if min_lsn is None:
+        return pool.replica()
+    r = pool.replica()
+    if r.scalar("SELECT pg_last_wal_replay_lsn() >= %s", (min_lsn,)):
+        return r
+    return pool.primary()
+\`\`\`
+
+Use synchronous commit for the transactions that need it. The primary waits
+for a replica to confirm before returning. This eliminates the window for
+those writes and adds a network round trip to every one of them, so apply it
+per transaction, never globally.
+
+Send only genuinely lag-tolerant work to replicas: reports, exports, search
+indexing, dashboards. Anything a user will look at immediately after acting
+stays on the primary. Deciding this per query, deliberately, is more reliable
+than any automatic router.
+
+## Failover is a separate problem
+
+A replica that can serve reads is not automatically a safe failover target. If
+replication is asynchronous, promoting a replica that was 500 milliseconds
+behind discards 500 milliseconds of committed transactions. The clients that
+made those writes were told they succeeded.
+
+Decide in advance whether you can accept that. If you cannot, you need at
+least one synchronous replica and you need to accept the commit latency that
+comes with it. If you can, write down how much loss is acceptable and alert
+when lag exceeds it, because that alert threshold is your real recovery point
+objective whether you called it that or not.
+
+The other half is fencing. Two servers both believing they are primary will
+happily accept conflicting writes, and merging that afterwards is not a
+procedure, it is a negotiation. Whatever promotes a replica must be certain
+the old primary is gone.
+
+## References
+
+- https://www.postgresql.org/docs/current/warm-standby.html
+- https://www.postgresql.org/docs/current/monitoring-stats.html
+- https://www.postgresql.org/docs/current/runtime-config-replication.html
+- https://dev.mysql.com/doc/refman/8.0/en/replication.html
+- https://en.wikipedia.org/wiki/Replication_(computing)
+`,
+  },
+  {
+    slug: "guardrail-classifier-layers",
+    title: "Guardrails Are a Classifier Layer, Not a Prompt",
+    date: "2026-08-18",
+    tags: ["ai", "security", "operations"],
+    excerpt:
+      "Policy instructions inside a prompt are advice. A real guardrail is a separate classifier with a threshold, a latency budget, and a failure mode you chose.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The difference that matters
+
+Adding "never discuss X" to a system prompt is not a control. It is a request
+made to the same component you are trying to constrain, evaluated by the same
+process, with no separate record of whether it worked. When it fails there is
+nothing to alert on because nothing observed the failure.
+
+A guardrail, in the operational sense, is a distinct component that inspects
+input or output and returns a decision. It has a score, a threshold, a
+latency, a failure mode, and a log line. Those five properties are what make
+it something you can run, measure, and tune, rather than something you hope
+about.
+
+The model doing the classifying can be small. It usually should be. The point
+is that it is separate.
+
+## Precision, recall, and the threshold you have to pick
+
+Any classifier makes two kinds of mistake. It flags something benign, a false
+positive, or it misses something it should have caught, a false negative. You
+cannot minimize both at once by tuning; you can only choose where on the
+tradeoff to sit.
+
+That choice belongs to the category, not to the system as a whole. A category
+where a miss is severe and a false alarm is a minor annoyance gets an
+aggressive threshold. A category where false positives block ordinary
+legitimate work gets a conservative one and probably a review path rather than
+a hard block.
+
+The failure I would watch for is a guardrail tuned to a threshold that makes
+the metrics look good on an evaluation set built out of obvious examples.
+Obvious examples are not the hard part. Build the evaluation set from real
+traffic, including the near-miss cases that live right at the boundary, and
+report performance separately on the easy and hard slices. A number averaged
+over both hides exactly the behavior you need to see.
+
+Base rates matter too. If the thing you are catching is genuinely rare, even a
+classifier with strong-looking accuracy produces a flagged pile that is mostly
+false positives, simply because there are so many more negatives to draw them
+from. Whoever reviews the flagged pile needs to know that going in, or they
+will learn to dismiss everything.
+
+## Where to put it
+
+Three positions, and they catch different things.
+
+On the input, before the model runs. Cheapest, because you can reject without
+paying for generation. Only sees what the user sent.
+
+On the output, before it reaches the user. Catches problems regardless of how
+they arose, which is the point, but you have already paid for generation and
+you may have to discard a response you streamed part of.
+
+On tool calls and retrieved content, between the model and anything with side
+effects. This is the position I think is most undervalued. The model asking to
+call a tool with particular arguments is a decision you can evaluate against
+policy before anything happens, and unlike text, tool calls are structured and
+easy to check exactly.
+
+Streaming complicates output checks. If tokens leave as they are produced, a
+check that runs on the complete response runs too late. The options are to
+buffer, to check incrementally on sentence boundaries, or to accept that a
+partial bad output may reach the client and be retracted. Pick one on purpose
+instead of discovering the answer in production.
+
+## The middleware shape
+
+\`\`\`python
+from dataclasses import dataclass
+
+@dataclass
+class Verdict:
+    allow: bool
+    category: str | None
+    score: float
+    latency_ms: float
+    degraded: bool = False
+
+def check(classifier, text, thresholds, budget_ms=250, fail_closed=True):
+    try:
+        scores, elapsed = classifier.score(text, timeout_ms=budget_ms)
+    except (TimeoutError, ConnectionError):
+        # the guardrail itself is unavailable
+        return Verdict(allow=not fail_closed, category="guardrail_unavailable",
+                       score=0.0, latency_ms=budget_ms, degraded=True)
+
+    worst, worst_score = None, 0.0
+    for category, score in scores.items():
+        if score >= thresholds[category] and score > worst_score:
+            worst, worst_score = category, score
+
+    return Verdict(allow=worst is None, category=worst,
+                   score=worst_score, latency_ms=elapsed)
+\`\`\`
+
+Two details in there are the ones that get skipped. The per-category threshold
+dictionary, rather than one global number, because the categories genuinely
+have different costs. And the explicit behavior when the classifier is down,
+which is a decision about whether an outage of your safety layer becomes an
+outage of your product or a silent removal of your safety layer.
+
+Fail closed on the categories where a miss is unacceptable. Fail open on the
+ones where it is not, but emit a loud signal so that "the guardrail has been
+off for three days" is impossible to miss. Never leave the choice implicit,
+because the implicit answer is always fail open.
+
+## Budget and observability
+
+Every guardrail sits in the request path and adds latency. Two input checks
+and two output checks at a couple hundred milliseconds each is most of a
+second before the real work is counted. Set a total budget for the safety
+layer, hold it, and run independent checks concurrently rather than in
+sequence.
+
+Then log enough to tune. For every request: which checks ran, each score, the
+threshold in force, the decision, and the latency. Scores, not just decisions.
+A log of decisions alone cannot answer whether moving a threshold from 0.8 to
+0.7 would have caught last week's incident, and that is precisely the question
+you will be asked.
+
+Track the block rate per category as a time series. A sudden change is
+information either way. A spike usually means either a new pattern in traffic
+or a deployment that changed behavior. A drop to zero almost always means
+something broke, and without the time series it looks exactly like everything
+being fine.
+
+## The honest limitation
+
+A classifier layer is defense in depth, not a proof. It has a measurable error
+rate and it will be wrong on some inputs, including inputs someone constructed
+specifically to be wrong on. It reduces how often bad output escapes and
+gives you a record of what it caught. It does not make the underlying system
+incapable of producing bad output.
+
+Which means the guardrail is not a substitute for the boring controls: least
+privilege on anything the model can invoke, hard limits on what actions are
+reachable at all, and treating model output as untrusted input to whatever
+consumes it next. Those hold even when the classifier is wrong.
+
+## References
+
+- https://owasp.org/www-project-top-10-for-large-language-model-applications/
+- https://www.nist.gov/itl/ai-risk-management-framework
+- https://en.wikipedia.org/wiki/Precision_and_recall
+- https://en.wikipedia.org/wiki/Confusion_matrix
+- https://en.wikipedia.org/wiki/Defense_in_depth_(computing)
+`,
+  },
+  {
+    slug: "blue-green-canary-deploys",
+    title: "Blue-Green and Canary: Two Ways to Not Break Everything",
+    date: "2026-08-21",
+    tags: ["operations", "automation", "servers"],
+    excerpt:
+      "One swaps the whole fleet at once and rolls back instantly. The other exposes a slice of traffic and watches. They fail differently, so pick deliberately.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Two strategies, one goal
+
+Both techniques exist to separate two events that a naive deploy welds
+together: putting new code on machines, and sending users to it. Once those
+are separate you can undo the second without redoing the first, and undoing is
+what you need at three in the morning.
+
+Blue-green runs two complete environments. Blue is live, green gets the new
+version, you verify green in isolation, then you move all traffic at once.
+Rollback is moving it back, and it takes as long as a config reload.
+
+Canary keeps one environment and shifts traffic gradually. A small percentage
+goes to the new version, you watch, you increase, or you abort. The exposure
+during a bad release is bounded by the percentage rather than by how fast
+someone notices.
+
+## What blue-green buys and costs
+
+The appeal is the rollback. The old version is not deprovisioned, not scaled
+down, and not partially upgraded. It is sitting there fully warmed with its
+caches and connections intact, and going back is a routing change.
+
+The cost is double capacity for the duration, which is cheap on elastic
+infrastructure and expensive on hardware you own. The subtler cost is that a
+cutover is all or nothing. If the new version has a defect that only appears
+under real production traffic, every user meets it simultaneously. You find
+out fast, but everyone found out with you.
+
+Blue-green is the right choice when the change is hard to evaluate on a slice,
+when you need a clean cutover for correctness reasons, or when you cannot
+tolerate two versions writing to the same data at once.
+
+\`\`\`nginx
+upstream app_blue  { server 10.20.0.41:8080; server 10.20.0.42:8080; }
+upstream app_green { server 10.20.0.51:8080; server 10.20.0.52:8080; }
+
+# flip this one line and reload
+upstream app_live  { server 10.20.0.41:8080; server 10.20.0.42:8080; }
+
+server {
+    listen 443 ssl;
+    location / { proxy_pass http://app_live; }
+
+    # verification path, not routed to real users
+    location /__green/ { proxy_pass http://app_green/; allow 10.20.0.0/24; deny all; }
+}
+\`\`\`
+
+The staging path that points at the idle environment is the part worth
+copying. It lets you run the real health and smoke checks against the real
+deployment, in the real network, before anyone touches it.
+
+## What canary buys and costs
+
+Canary limits blast radius. Send two percent of traffic to the new version,
+and a serious defect affects two percent of requests for the length of the
+observation window rather than one hundred percent until someone reacts.
+
+It also gives you a controlled comparison. Both versions serve real traffic at
+the same moment under the same conditions, so you can compare their error
+rates and latencies directly rather than against yesterday's numbers under
+yesterday's load.
+
+The cost is time and discipline. A canary that advances on a timer without
+looking at anything is a slow deploy, not a safe one. You need metrics with
+enough volume to be meaningful at the canary percentage, and abort criteria
+written down before the deploy starts.
+
+\`\`\`bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+for pct in 2 10 25 50 100; do
+  ./set-canary-weight.sh "$pct"
+  echo "canary at \${pct}%, observing"
+  sleep 300
+
+  err=$(./query-metric.sh 'canary_error_ratio')
+  p99=$(./query-metric.sh 'canary_latency_p99_ms')
+
+  if (( $(echo "$err > 0.01" | bc -l) )) || (( $(echo "$p99 > 800" | bc -l) )); then
+    echo "abort: err=\${err} p99=\${p99}"
+    ./set-canary-weight.sh 0
+    exit 1
+  fi
+done
+echo "promoted"
+\`\`\`
+
+Note the thresholds are named as constants in one place and the abort is
+automatic. A human deciding "that looks a bit high" at each step will approve
+a bad release eventually, usually late in the day.
+
+## The database is where both strategies break
+
+Neither technique helps you if the two versions cannot coexist against one
+schema. During any gradual rollout, and during the rollback window of a
+blue-green cutover, old and new code are both live against the same data.
+
+The discipline is expand then contract, across at least three deploys:
+
+Expand. Add the new column as nullable, add the new table, add the new enum
+value. Deploy the schema change alone. Old code ignores it entirely.
+
+Migrate and dual write. New code writes both the old and new shape and reads
+whichever is authoritative. Backfill existing rows in batches. Both versions
+work against this schema, which is the property that makes rollback safe.
+
+Contract. Only after the old version is genuinely gone and you are confident
+you will not roll back to it, stop writing the old shape and drop it. This is
+a separate deploy, usually days later.
+
+The rule I hold to: a schema change must never be in the same deploy as the
+code that requires it. Breaking that rule is how a rollback becomes an
+incident, because the code went back and the data did not.
+
+Two other things that must be backward compatible during any overlap: message
+formats on queues, since a canary may produce messages the old consumers read,
+and cached values, since two versions sharing a cache with different
+serialization will read each other's entries.
+
+## How I would choose
+
+Small, frequent, behavior-affecting changes to a service with real traffic
+volume: canary. The whole value is catching what testing did not, on a slice,
+with automatic abort.
+
+Infrastructure-level changes, runtime or dependency upgrades, anything where
+running two versions simultaneously is itself the risk: blue-green, with a
+thorough verification pass against the idle environment first.
+
+Low traffic services: blue-green, because a two percent canary on low volume
+produces too few requests to detect anything, and you have a rollback rather
+than a statistically meaningless observation window.
+
+And in every case, the deploy is not done when the code is live. It is done
+when someone has confirmed the thing works and the rollback path has been
+tested at least once on purpose, at a time of your choosing, rather than for
+the first time during an outage.
+
+## References
+
+- https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+- https://nginx.org/en/docs/http/ngx_http_upstream_module.html
+- https://en.wikipedia.org/wiki/Blue-green_deployment
+- https://en.wikipedia.org/wiki/Continuous_delivery
+- https://en.wikipedia.org/wiki/Feature_toggle
+`,
+  },
+  {
     slug: "slaac-vs-dhcpv6",
     title: "SLAAC, DHCPv6, And How A Host Really Gets Its Address",
     date: "2026-04-10",
