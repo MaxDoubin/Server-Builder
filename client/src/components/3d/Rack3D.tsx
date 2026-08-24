@@ -1,5 +1,5 @@
 import { Html, Instances, Instance } from "@react-three/drei";
-import { useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Rack, Equipment } from "@shared/schema";
