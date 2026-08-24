@@ -30,6 +30,3516 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "running-llms-locally-hardware",
+    title: "What Running a Model Locally Asks of Your Hardware",
+    date: "2026-05-14",
+    tags: ["ai", "hardware", "homelab"],
+    excerpt:
+      "Local inference is not a mystery box. It comes down to memory capacity, memory bandwidth, and compute, and one of those three is almost always your bottleneck.",
+    coverImage: "/images/blog/running-llms-locally-hardware.jpg",
+    coverCredit: {
+      author: "viagallery.com",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/15932083@N05/3594287535",
+    },
+    content: `
+## Why run a model on your own gear
+
+I run models locally for the same reason I run my own DNS and my own hypervisor: I learn more when I own the failure. A hosted endpoint hides the interesting part. When the tokens come out slowly on my own box, I can go find out exactly why, and that answer turns out to be a hardware lesson, not a machine learning lesson.
+
+This post is the mental model I use before I try to run anything. It is deliberately vendor neutral, because the arithmetic does not care whose logo is on the card.
+
+## The three numbers that decide everything
+
+Every local inference question reduces to three quantities.
+
+**Memory capacity** decides whether the model runs at all. Weights have to live somewhere the accelerator can reach. If they do not fit, you either spill to system RAM or you do not run.
+
+**Memory bandwidth** decides how fast a single stream of tokens comes out. This is the one people miss. Generating one token requires reading essentially the whole active weight set once. So the ceiling on tokens per second is bandwidth divided by the bytes you have to read, not the raw FLOPs on the spec sheet.
+
+**Compute throughput** decides prefill speed and batch throughput. Processing a long prompt is a big matrix multiply and it is genuinely compute bound. Generating token 1,001 is not.
+
+That split is why a machine can chew through a 20,000 token prompt quickly and then dribble out the response. Two different bottlenecks, one after the other.
+
+## Doing the arithmetic before you buy anything
+
+Here is the estimate I run first. It is rough on purpose, but it gets you inside a factor of two, which is enough to reject bad plans.
+
+\`\`\`python
+GIB = 1024 ** 3
+
+def weight_bytes(params_billions, bits):
+    # Bytes of weights at a given quantization level.
+    return params_billions * 1e9 * (bits / 8)
+
+def decode_ceiling(params_billions, bits, bandwidth_gb_s, efficiency=0.7):
+    # Upper bound on single-stream tokens/sec. Memory bound, not FLOP bound.
+    gb_read_per_token = weight_bytes(params_billions, bits) / 1e9
+    return (bandwidth_gb_s * efficiency) / gb_read_per_token
+
+for bits in (16, 8, 4):
+    size = weight_bytes(8, bits) / GIB
+    for bw in (100, 400, 900):
+        print(f"8B @ {bits:2d}-bit  {size:5.1f} GiB  "
+              f"{bw:3d} GB/s -> ~{decode_ceiling(8, bits, bw):5.1f} tok/s")
+\`\`\`
+
+Two things fall out of this immediately. First, a system with lots of slow memory will load a big model and then generate at a speed you will hate. Second, halving the bit width roughly doubles your ceiling, because you halved the bytes read per token.
+
+## Quantization is a memory trick first
+
+People talk about quantization as a quality tradeoff, which it is, but operationally it is a bandwidth trick. Going from 16 bit to 8 bit weights halves the footprint and halves the bytes read per token. Going to 4 bit halves it again.
+
+The quality cost is not linear and it is not uniform across models. Some layers tolerate aggressive quantization and some do not, which is why modern quantization schemes keep certain tensors at higher precision and why calibration data matters. My rule: quantize until the outputs stop being useful for my actual task, measured on my own prompts, not on somebody else's leaderboard.
+
+Note that the KV cache is separate from the weights and often is not quantized by default. On long contexts it can rival the weights for memory. That deserves its own post.
+
+## CPU, accelerator, and the unified memory middle
+
+Three shapes of machine, three profiles.
+
+A CPU with several memory channels gives you a lot of capacity for very little money and comparatively little bandwidth. It will run large models. It will run them slowly, and adding cores past a point does nothing because you are waiting on DRAM, not on arithmetic.
+
+A discrete accelerator gives you an order of magnitude more bandwidth in a much smaller capacity envelope. This is the right shape for interactive use, right up until the model does not fit, at which point the offloaded layers drag the whole thing down to system memory speed.
+
+Unified memory designs sit in between: capacity closer to a CPU, bandwidth well above DDR but below a high end discrete card. They are genuinely useful for large models at modest speeds.
+
+## The checks I run, and what they change
+
+Before I blame software, I confirm what the hardware is doing.
+
+\`\`\`bash
+# Memory geometry: channels, speed, and populated slots drive bandwidth
+sudo dmidecode -t memory | grep -E 'Size:|Speed:|Locator:' | grep -v 'No Module'
+
+# CPU cache and core topology
+lscpu | grep -E 'Model name|Socket|Core|Thread|NUMA'
+
+# Free system memory, minus the cache lie
+free -g
+
+# If there is an accelerator, confirm it is on the bus at full width
+sudo lspci -vv | grep -A2 -E 'VGA|3D controller' | grep -E 'LnkSta|LnkCap'
+\`\`\`
+
+That last one has caught me more than once. A card negotiating a narrower link than it advertises turns a bandwidth problem into a mystery until you look.
+
+All of which changes how I plan. I stopped asking "can I run this model" and started asking "at what precision, at what context length, and at what tokens per second do I stop caring." Those three answers pick the hardware for you. Everything else is tuning.
+
+## References
+
+- [PyTorch CUDA semantics](https://pytorch.org/docs/stable/notes/cuda.html)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [llama.cpp](https://github.com/ggerganov/llama.cpp)
+- [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
+- [NVIDIA CUDA documentation](https://docs.nvidia.com/cuda/)
+`,
+  },
+  {
+    slug: "pcie-lanes-bandwidth-servers",
+    title: "PCIe Lanes Are the Budget Nobody Checks",
+    date: "2026-05-15",
+    tags: ["hardware", "servers", "homelab"],
+    excerpt:
+      "Slots are physical, lanes are a budget, and the two do not always match. How to figure out what your cards actually negotiated and why it matters.",
+    coverImage: "/images/blog/pcie-lanes-bandwidth-servers.jpg",
+    coverCredit: {
+      author: "instaSHINOBI",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/21050065@N06/6114414289",
+    },
+    content: `
+## The mistake I keep seeing
+
+Someone buys a fast NIC and a fast NVMe drive, installs both, and gets maybe half the throughput they expected. The cards are fine. The cables are fine. What went wrong is that a server has a finite number of PCI Express lanes, they come from specific places, and a slot that is physically x16 is not necessarily wired x16 or fed x16.
+
+Lanes are a budget. Nobody checks the budget.
+
+## What a lane is worth
+
+A PCIe lane is a differential pair in each direction. Per lane, per direction, the approximate usable bandwidth is:
+
+- Gen 3: about 1 GB/s
+- Gen 4: about 2 GB/s
+- Gen 5: about 4 GB/s
+
+Multiply by the negotiated width. A Gen 3 x8 link is roughly 8 GB/s each way. A Gen 4 x4 link is also roughly 8 GB/s each way. Same bandwidth, half the lanes, which is exactly why newer generations let you do more with less physical wiring.
+
+Now convert to the units the rest of your stack uses. A 100 gigabit NIC needs about 12.5 GB/s each way at line rate. That does not fit in Gen 3 x8. It fits in Gen 3 x16 or Gen 4 x8. If you put that NIC in a Gen 3 x8 slot it will link up, it will pass traffic, and it will quietly cap out well below line rate.
+
+## Where lanes come from
+
+Two sources, and they are not equal.
+
+**CPU lanes** come straight off the processor's root complex. These are the good ones: direct, uncontended, full bandwidth to memory.
+
+**Chipset lanes** hang off a southbridge or platform controller that itself connects to the CPU over a single uplink. Every device behind the chipset shares that uplink. Three NVMe drives on chipset lanes can saturate the uplink and starve each other, and nothing in the topology tells you that unless you go looking.
+
+**Switch chips** on carrier boards and some server backplanes fan a small number of upstream lanes into many downstream ports. That is oversubscription, same idea as a network access switch. Fine for drives with bursty access, bad for anything that wants sustained line rate simultaneously.
+
+## Bifurcation
+
+Bifurcation is the firmware splitting one x16 slot into independent links, typically x8/x8 or x4/x4/x4/x4. Passive carrier cards that hold multiple NVMe drives depend on it entirely: without bifurcation support in firmware, only the first drive appears. Carrier cards with an onboard switch chip do not need bifurcation but add cost, heat, and a shared upstream link.
+
+Before buying a multi drive carrier, check the board's manual for the bifurcation options per slot. It is a firmware capability, not something you can add later.
+
+## Reading the truth on Linux
+
+The device tells you what it can do and what it actually got. Compare \`LnkCap\` against \`LnkSta\`.
+
+\`\`\`bash
+#!/usr/bin/env bash
+# Compare PCIe link capability against negotiated status for every device.
+lspci -D | awk '{print $1}' | while read -r dev; do
+  vv=$(sudo lspci -s "$dev" -vv 2>/dev/null)
+  cap=$(printf '%s\\n' "$vv" | grep -m1 'LnkCap:' \\
+        | sed -n 's/.*Speed \\([^,]*\\), Width \\(x[0-9]*\\).*/\\1 \\2/p')
+  sta=$(printf '%s\\n' "$vv" | grep -m1 'LnkSta:' \\
+        | sed -n 's/.*Speed \\([^,]*\\), Width \\(x[0-9]*\\).*/\\1 \\2/p')
+  [ -z "$cap" ] && continue
+  name=$(lspci -s "$dev" | cut -d' ' -f2-)
+  if [ "$cap" != "$sta" ]; then
+    printf 'DOWNGRADED %s  cap=%-14s sta=%-14s %s\\n' "$dev" "$cap" "$sta" "$name"
+  fi
+done
+\`\`\`
+
+Anything printed by that script is a device running below its own capability. Sometimes that is correct and intentional, for example a Gen 4 card in a Gen 3 slot. Sometimes it is a card that is not seated properly, a riser that is only wired for half the lanes, or aggressive link power management downshifting the link at idle.
+
+To see the topology, including what sits behind which bridge:
+
+\`\`\`bash
+lspci -tvPP
+\`\`\`
+
+That tree view is how you spot three drives sharing one upstream port.
+
+## The rules I follow
+
+Plan lanes before you plan cards. Write down every device, the width and generation it wants, and where those lanes come from. If the total exceeds what the CPU provides, decide deliberately what goes behind the chipset rather than discovering it later.
+
+Put the bandwidth hungry, latency sensitive devices on CPU lanes. That is usually the primary NIC and the storage that backs your VMs. Put the management NIC, the boot device, and anything bursty behind the chipset.
+
+Check the slot table in the board manual, not the physical connector. Open ended and mechanically x16 slots that are electrically x4 are common and completely legitimate.
+
+Re-verify after every hardware change. A reseat, a firmware update, or a new riser can silently change a negotiated width, and the symptom is always "it got slower and nobody knows why."
+
+## References
+
+- [PCI Express on Wikipedia](https://en.wikipedia.org/wiki/PCI_Express)
+- [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
+- [PCI-SIG specifications](https://pcisig.com/specifications)
+- [NVM Express specifications](https://nvmexpress.org/specifications/)
+`,
+  },
+  {
+    slug: "gpu-memory-math-inference",
+    title: "Doing the VRAM Math Before You Buy the Accelerator",
+    date: "2026-05-16",
+    tags: ["ai", "hardware", "ml"],
+    excerpt:
+      "Weights are the part everyone budgets for. The KV cache is the part that blows the budget. Here is the arithmetic I do first.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Three consumers, not one
+
+Accelerator memory during inference gets eaten by three things, and only one of them is on the model card.
+
+1. **Weights.** Parameter count times bytes per parameter. Predictable, static, easy.
+2. **The KV cache.** Grows with context length and with concurrency. This is the one that surprises people.
+3. **Everything else.** Runtime context, activation buffers for the current forward pass, workspace for the attention kernels, and allocator fragmentation. Budget headroom for it rather than trying to compute it exactly.
+
+If you only budget for item one, you will build a machine that loads the model and then falls over the first time somebody pastes in a long document.
+
+## The KV cache formula
+
+During generation, the model caches the key and value projections for every token it has already seen, for every layer, so it does not have to recompute them. That cache is linear in sequence length and linear in batch size.
+
+\`\`\`python
+def kv_cache_bytes(layers, kv_heads, head_dim, seq_len, batch=1, dtype_bytes=2):
+    # Two tensors (K and V) per layer, per KV head, per token.
+    # kv_heads is the number of key/value heads, which under grouped-query
+    # attention is smaller than the number of query heads.
+    return 2 * layers * kv_heads * head_dim * seq_len * batch * dtype_bytes
+
+
+def report(name, layers, kv_heads, head_dim, params_b, weight_bits):
+    gib = 1024 ** 3
+    weights = params_b * 1e9 * weight_bits / 8 / gib
+    print(f"{name}: weights {weights:.1f} GiB @ {weight_bits}-bit")
+    for ctx in (4096, 16384, 65536):
+        for batch in (1, 8, 32):
+            kv = kv_cache_bytes(layers, kv_heads, head_dim, ctx, batch) / gib
+            print(f"   ctx={ctx:6d} batch={batch:3d}  KV {kv:8.2f} GiB  "
+                  f"total ~{weights + kv:8.2f} GiB")
+
+# Hypothetical mid-size model: 32 layers, 8 KV heads, head_dim 128
+report("example-8B", layers=32, kv_heads=8, head_dim=128,
+       params_b=8, weight_bits=4)
+\`\`\`
+
+Run that and watch what happens. The weights stay put. The KV cache goes from a rounding error at short context and batch one to larger than the weights themselves at long context with real concurrency.
+
+Grouped-query attention is the reason modern models are tolerable here. Sharing key and value heads across multiple query heads cuts the cache by the grouping factor directly. When you are comparing two models of similar size, the KV head count is a more important operational number than the parameter count.
+
+## Concurrency is a memory decision
+
+This is the part that trips up people coming from web services. In a normal API you scale concurrency with CPU and connection limits. In an inference server, each concurrent request holds its own KV cache for as long as it is generating. Concurrency is bought with memory.
+
+That means your maximum batch size is not a throughput tuning parameter you can set freely. It is bounded by:
+
+\`\`\`
+usable_memory - weights - runtime_overhead >= batch * per_request_kv
+\`\`\`
+
+And per request KV depends on how long that request's context gets. A serving stack that assumes worst case context for every slot will admit far fewer requests than one that allocates cache in pages as the sequence grows, which is exactly why paged attention style allocators matter: they cut the waste from over provisioning, they do not change the underlying arithmetic.
+
+## The order I turn the knobs
+
+When a configuration does not fit, I work through these in order, cheapest quality cost first.
+
+**Cap the context length.** Most workloads do not need the maximum the model supports. Setting a realistic ceiling is free and it is the single biggest lever.
+
+**Quantize the KV cache.** Going from 16 bit to 8 bit cache halves the biggest variable term. Quality impact is usually smaller than quantizing the weights by the same amount.
+
+**Lower the batch ceiling.** Costs throughput, not quality. Fine if your workload is latency sensitive and low concurrency anyway.
+
+**Quantize the weights.** Real quality tradeoff, measure it on your own prompts.
+
+**Shard across devices.** Tensor parallelism splits weights and cache across accelerators but adds interconnect traffic on every layer, so it wants a fast link between them.
+
+**Offload layers to system memory.** Last resort. It works, and it drops you to system memory bandwidth for the offloaded portion, which you will feel on every single token.
+
+## Leave headroom on purpose
+
+I plan to about 85 percent of physical memory, not 100. Allocator fragmentation is real, kernel workspaces vary with sequence length, and an out of memory error mid generation takes down the request that triggered it plus, depending on the server, the ones sharing the batch. The last 15 percent buys you a service that degrades instead of crashing.
+
+Measure the real thing once it is running. Steady state memory after a load test tells you more than any formula, and the formula's job is only to stop you from buying the wrong hardware.
+
+## References
+
+- [vLLM documentation](https://docs.vllm.ai/en/latest/)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [PyTorch CUDA semantics](https://pytorch.org/docs/stable/notes/cuda.html)
+- [NVIDIA CUDA documentation](https://docs.nvidia.com/cuda/)
+`,
+  },
+  {
+    slug: "jumbo-frames-path-mtu",
+    title: "Jumbo Frames, MTU, and the Ping That Tells the Truth",
+    date: "2026-05-17",
+    tags: ["networking", "storage", "operations"],
+    excerpt:
+      "Jumbo frames are easy to enable and easy to half enable. One device left at the default turns a performance tweak into an intermittent outage.",
+    coverImage: "/images/blog/jumbo-frames-path-mtu.jpg",
+    coverCredit: {
+      author: "sampsyo",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/48889110751@N01/8271860",
+    },
+    content: `
+## MTU in one paragraph
+
+The maximum transmission unit is the largest payload a link will carry in a single frame. Classic Ethernet is 1500 bytes. Anything larger has to be fragmented by the sender, or dropped with a notification, or dropped silently. Which of those three happens is the entire subject of this post.
+
+Jumbo frames raise that number, commonly to 9000 bytes. The benefit is fewer frames for the same bytes: fewer interrupts, fewer header overheads, less per packet processing. For bulk transfer paths like storage replication and backups, it is a real if modest win. For general user traffic it is close to noise.
+
+## Why it goes wrong
+
+Enabling jumbo frames means every device in the path has to agree. Every switch, every router hop inside the segment, both hosts, and both virtual switches if hypervisors are involved. Miss one and you get the worst possible failure mode: small packets work perfectly, so ping succeeds, SSH succeeds, the web UI loads, and then any large transfer stalls.
+
+That asymmetry is what makes it maddening. Every basic test passes. The thing that fails is a bulk copy that hangs at a random percentage.
+
+## Proving it with ping
+
+The test is a ping with the do-not-fragment bit set and an explicit payload size. On Linux:
+
+\`\`\`bash
+# 8972 payload + 8 ICMP header + 20 IPv4 header = 9000 byte frame payload
+ping -M do -s 8972 -c 3 10.20.30.40
+
+# Confirm the standard size works, to prove the host is reachable at all
+ping -M do -s 1472 -c 3 10.20.30.40
+
+# Binary search the actual usable size when the above fails
+for size in 1472 2972 4472 5972 7972 8972; do
+  if ping -M do -s "$size" -c 1 -W 1 10.20.30.40 >/dev/null 2>&1; then
+    echo "OK    payload=$size  frame=$((size + 28))"
+  else
+    echo "FAIL  payload=$size  frame=$((size + 28))"
+  fi
+done
+\`\`\`
+
+The largest size that succeeds, plus 28, is your real path MTU for IPv4. Remember the arithmetic: the \`-s\` value is the ICMP payload, and you add 8 bytes of ICMP header and 20 bytes of IPv4 header to get the IP packet size.
+
+Check the interface side too:
+
+\`\`\`bash
+ip -br link show          # MTU column per interface
+ip route get 10.20.30.40  # route-specific MTU, if one is pinned
+ethtool eth0 | grep -i speed
+\`\`\`
+
+## Path MTU discovery and the ICMP you must not block
+
+When a router receives a packet too large for the next hop with the do-not-fragment bit set, it is supposed to drop the packet and return an ICMP message: destination unreachable, fragmentation needed. The sender learns the smaller MTU and adjusts.
+
+That mechanism only works if the ICMP message gets back. A firewall that blocks ICMP wholesale creates a path MTU discovery black hole. The sender never learns, keeps retransmitting oversized packets, and the connection hangs rather than failing cleanly.
+
+If you take one operational rule from this post: do not blanket block ICMP. Filter deliberately, and always permit fragmentation needed messages inbound. The IPv6 equivalent matters even more, because IPv6 routers do not fragment at all and rely entirely on the packet too big message.
+
+There is also a packetization layer approach that probes for the working size at the transport layer instead of trusting ICMP, which is what saves you on networks you do not control. Good to know it exists, not a reason to keep blocking ICMP on networks you do.
+
+## MSS clamping for tunnels
+
+Any encapsulation, a VPN, a GRE tunnel, an overlay, eats bytes from the payload. Hosts inside do not know. The standard fix is to rewrite the TCP maximum segment size during the handshake so both ends negotiate something that actually fits:
+
+\`\`\`bash
+# On the tunnel endpoint, clamp MSS to whatever the path can carry
+iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \\
+  -j TCPMSS --clamp-mss-to-pmtu
+\`\`\`
+
+This only helps TCP. UDP based protocols have to handle it themselves, which is one reason modern UDP transports do their own path probing.
+
+## How I decide whether to bother
+
+I enable jumbo frames on segments where I control every device and the traffic is bulk: storage networks, backup targets, replication links, hypervisor migration networks. Those are isolated VLANs with a known device list, so the "every device must agree" requirement is actually checkable.
+
+I leave general purpose and client VLANs at 1500. The gain is small, the blast radius of one misconfigured device is large, and client devices come and go without asking me.
+
+And whatever I choose, I document the MTU in the VLAN table next to the subnet and the gateway. An undocumented MTU is a trap you set for yourself six months out.
+
+## References
+
+- [RFC 1191: Path MTU Discovery](https://www.rfc-editor.org/rfc/rfc1191.html)
+- [RFC 8201: Path MTU Discovery for IPv6](https://www.rfc-editor.org/rfc/rfc8201.html)
+- [RFC 4821: Packetization Layer Path MTU Discovery](https://www.rfc-editor.org/rfc/rfc4821.html)
+- [ping(8) manual page](https://man7.org/linux/man-pages/man8/ping.8.html)
+- [Maximum transmission unit on Wikipedia](https://en.wikipedia.org/wiki/Maximum_transmission_unit)
+`,
+  },
+  {
+    slug: "training-vs-inference-profiles",
+    title: "Training and Inference Want Different Machines",
+    date: "2026-05-18",
+    tags: ["ai", "ml", "servers"],
+    excerpt:
+      "The same model has two completely different infrastructure profiles depending on whether you are teaching it or asking it. Memory, interconnect, and storage all change.",
+    coverImage: "/images/blog/training-vs-inference-profiles.jpg",
+    coverCredit: {
+      author: "NeoSpire",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/39131599@N06/3594831417",
+    },
+    content: `
+## Same model, two different problems
+
+People say "AI hardware" as if it is one category. It is two. A machine built to train a model and a machine built to serve one have different memory profiles, different network requirements, different storage patterns, and different failure modes. Buying one when you need the other is an expensive mistake.
+
+Here is how I separate them.
+
+## What training holds in memory
+
+Inference needs the weights. Training needs the weights plus everything required to compute and apply an update.
+
+- The parameters themselves.
+- A gradient for every parameter.
+- Optimizer state. Adam style optimizers keep two running moments per parameter.
+- Saved activations from the forward pass, because the backward pass needs them.
+- Often a higher precision master copy of the weights for the update step.
+
+\`\`\`python
+GIB = 1024 ** 3
+
+def training_state_gib(params_b, param_bytes=2, grad_bytes=2,
+                       master_bytes=4, moment_bytes=8):
+    # A common mixed-precision layout: bf16 params and grads, fp32 master
+    # weights, fp32 first and second moments. Exact numbers vary by
+    # optimizer and framework, so treat this as an order-of-magnitude tool.
+    per_param = param_bytes + grad_bytes + master_bytes + moment_bytes
+    return params_b * 1e9 * per_param / GIB
+
+def inference_gib(params_b, weight_bits=16):
+    return params_b * 1e9 * weight_bits / 8 / GIB
+
+for p in (1, 7, 13, 70):
+    print(f"{p:3d}B params: inference(16-bit) {inference_gib(p):7.1f} GiB   "
+          f"training state {training_state_gib(p):7.1f} GiB")
+\`\`\`
+
+The ratio is the point. Before you have stored a single activation, training state is several times the inference footprint. Add activations, which scale with batch size and sequence length, and the gap widens further. Activation checkpointing trades compute for memory to claw some of it back, and that tradeoff is one of the main tuning dials in training.
+
+## Interconnect is where they truly diverge
+
+This is the difference that costs money.
+
+Data parallel training synchronizes gradients across all workers every step. That is an all-reduce over a tensor the size of the model, at every step, for the entire run. The interconnect is in the critical path of every iteration, so a slow link does not just reduce throughput a little, it can dominate the step time entirely. This is why training clusters use specialized high bandwidth fabrics between accelerators and why topology and placement matter so much.
+
+Inference replicas, by contrast, are usually independent. Each one holds the full model and answers requests on its own. They talk to a load balancer, not to each other. Ordinary datacenter networking is completely adequate.
+
+The exception is a model too large for one device, where tensor parallelism splits each layer across accelerators. Now there is a collective operation inside every forward pass and the interconnect matters again, though the volume is smaller than a gradient all-reduce.
+
+Practical rule: independent inference replicas run fine on a normal network. Anything that shards a single model, training or serving, wants the fastest link you can put between those devices.
+
+## Storage and the data pipeline
+
+Training is read heavy and sustained. It wants high throughput sequential reads, and it wants them shuffled, which is exactly the access pattern that punishes naive storage layouts. Storing a dataset as millions of individual small files makes the filesystem the bottleneck. Packing into large sharded archives read sequentially with a shuffle buffer fixes it. Training also writes checkpoints periodically, which is a large bursty write that can stall the whole job if the storage cannot absorb it.
+
+Inference reads the model once at startup and then essentially nothing. The storage question becomes cold start time: how fast can a new replica load weights and become ready. That matters for autoscaling and for rolling restarts, and it is a completely different requirement than dataset throughput.
+
+## Utilization and thermals
+
+A training run is a long, steady, near constant load. Every accelerator is busy, drawing near peak power, for hours or days. That is a sustained thermal and power problem, and the practical consequence is that your cooling and your power delivery need to handle the steady state, not the average.
+
+Inference is spiky and latency sensitive. You provision headroom you deliberately do not use, because using it would blow your tail latency. A serving fleet running at 90 percent utilization is a serving fleet about to miss its latency target.
+
+Also: training tolerates interruption if you checkpoint. Inference does not tolerate interruption at all, because there is a user waiting. That single difference reshapes how you do maintenance on each.
+
+## How I would size each
+
+For a training box, I would prioritize accelerator memory capacity first, interconnect between accelerators second, and dataset read throughput third. Core count on the host CPU matters mostly for data loading and preprocessing, which is a real bottleneck people underestimate.
+
+For a serving box, I would prioritize memory bandwidth first, memory capacity second (enough for weights plus your worst case KV cache), and then boring reliability: redundant power, health checks, and the ability to drain a node without dropping requests.
+
+Most homelabs and most small teams are doing inference, occasionally fine tuning something small. Build for that, and rent the training machine on the rare occasions you genuinely need one.
+
+## References
+
+- [PyTorch documentation](https://pytorch.org/docs/stable/index.html)
+- [PyTorch distributed overview](https://pytorch.org/docs/stable/distributed.html)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [NVIDIA CUDA documentation](https://docs.nvidia.com/cuda/)
+`,
+  },
+  {
+    slug: "threat-modeling-a-project",
+    title: "Threat Modeling Without a Whiteboard Full of Buzzwords",
+    date: "2026-05-19",
+    tags: ["security", "cybersecurity", "learning"],
+    excerpt:
+      "Threat modeling is four questions and a drawing. Here is the lightweight version I run on my own projects before I write the first line of code.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Four questions
+
+Every threat modeling framework I have read boils down to the same four questions:
+
+1. What are we building?
+2. What can go wrong?
+3. What are we going to do about it?
+4. Did we do a good job?
+
+Everything else is scaffolding to help you answer those honestly. You do not need a tool, a license, or a two day workshop. You need a drawing and about an hour.
+
+## Question one: draw the data flow
+
+Not an architecture diagram. A data flow diagram. The difference matters: an architecture diagram shows boxes you own, a data flow diagram shows data moving between them, and attacks happen to data in motion and at rest.
+
+Draw four kinds of thing:
+
+- **External entities**: users, third party APIs, anything you do not control.
+- **Processes**: your services, your scripts, your jobs.
+- **Data stores**: databases, object storage, log files, that config file with the token in it.
+- **Data flows**: arrows, labeled with what is actually traveling and over what protocol.
+
+If you cannot label an arrow, you do not understand your own system yet. That discovery alone justifies the exercise.
+
+## Question two: trust boundaries and the STRIDE prompt list
+
+A trust boundary is any line where data crosses from something you trust less to something you trust more. Browser to server. Internet to DMZ. DMZ to internal VLAN. Unprivileged process to privileged daemon. Third party API response into your parser.
+
+Draw those boundaries on the diagram as dashed lines. Now here is the useful part: almost every interesting vulnerability lives on a boundary crossing. If you are short on time, ignore everything else and interrogate the crossings.
+
+For each crossing ask: what does the receiving side assume about this data, and what happens if that assumption is false?
+
+Then walk the crossing through STRIDE, which is a mnemonic for six categories of thing that go wrong. I use it as a checklist against each element of the diagram, not as a taxonomy to argue about.
+
+- **Spoofing**: can someone claim to be someone else? (authentication)
+- **Tampering**: can data be modified in flight or at rest? (integrity)
+- **Repudiation**: can someone deny doing it? (logging)
+- **Information disclosure**: can data leak? (confidentiality)
+- **Denial of service**: can someone make it unavailable? (availability)
+- **Elevation of privilege**: can someone do more than they should? (authorization)
+
+Walk each box and arrow and ask all six. Most will not apply. The ones that do will surprise you, and it takes ten minutes.
+
+## Question three: rank by loss, not by cleverness
+
+New security students, myself very much included at the start, rank threats by how cool the attack is. That is backwards. Rank by what you actually lose.
+
+I score two axes crudely: impact if it happens, and how hard it is to pull off. High impact and easy gets fixed now. High impact and hard gets a documented mitigation and a note. Low impact and easy gets fixed if it is cheap. Low impact and hard gets written down and explicitly accepted.
+
+That last category matters. Writing "we accept this risk, here is why" is a legitimate outcome. Silently ignoring it is not.
+
+## Write it down where it will be read
+
+I keep the model in the repo, next to the code, in version control. It changes when the code changes, and the diff shows up in review.
+
+\`\`\`yaml
+# threat-model.yml
+system: internal metrics dashboard
+last_reviewed: 2026-05-19
+
+boundaries:
+  - name: internet-to-dmz
+    from: untrusted browser
+    to: reverse proxy
+  - name: app-to-db
+    from: dashboard service
+    to: metrics database
+
+threats:
+  - id: T-001
+    boundary: internet-to-dmz
+    category: spoofing
+    description: >
+      Session cookie is accepted without binding to any client property,
+      so a stolen cookie is a full account takeover.
+    impact: high
+    difficulty: low
+    status: mitigated
+    mitigation: >
+      Short session lifetime, Secure and HttpOnly and SameSite=Lax flags,
+      rotation on privilege change.
+
+  - id: T-002
+    boundary: app-to-db
+    category: elevation_of_privilege
+    description: >
+      Dashboard service connects with a database account that can write
+      and drop tables, but the dashboard only ever reads.
+    impact: high
+    difficulty: medium
+    status: mitigated
+    mitigation: read-only database role, verified in CI
+
+  - id: T-003
+    boundary: internet-to-dmz
+    category: denial_of_service
+    description: Expensive aggregate query reachable with no rate limit.
+    impact: medium
+    difficulty: low
+    status: accepted
+    rationale: >
+      Internal-only exposure behind VPN, query timeout capped at 5s.
+      Revisit if this is ever published externally.
+\`\`\`
+
+## Question four: did we do a good job?
+
+Check two things later. Did the mitigations actually get built, and do they actually work? A mitigation listed in a YAML file and never implemented is worse than no mitigation, because it stops you from worrying about a threat that is still live.
+
+The version I run on a school project takes under an hour and it consistently finds one thing I would otherwise have shipped. That is a good return on an hour.
+
+## References
+
+- [OWASP Threat Modeling](https://owasp.org/www-community/Threat_Modeling)
+- [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html)
+- [Threat model on Wikipedia](https://en.wikipedia.org/wiki/Threat_model)
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
+`,
+  },
+  {
+    slug: "vector-databases-infrastructure",
+    title: "Vector Databases From the Operations Side",
+    date: "2026-05-20",
+    tags: ["ai", "storage", "ml"],
+    excerpt:
+      "Forget the marketing. A vector database is an index with a memory footprint, a build cost, and a recall dial you have to measure yourself.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## What is actually being stored
+
+Strip away the branding and a vector database holds a big array of fixed length float arrays, plus an index structure that lets you find the nearest ones to a query vector without comparing against all of them, plus usually some metadata you want to filter on.
+
+That is it. Every operational property follows from those three parts: the raw vectors are your baseline memory cost, the index is your speed and your overhead, and the metadata filtering is where most real world designs get complicated.
+
+## Three index families and their profiles
+
+**Flat, or brute force.** Compare the query against every vector. Exact results, zero index build time, memory is just the vectors. Latency grows linearly with collection size. This is genuinely the right answer below roughly a hundred thousand vectors, and people skip past it far too fast.
+
+**Inverted file, or IVF.** Cluster the vectors, then search only the clusters nearest the query. One knob controls how many clusters you probe, trading recall for speed. Modest memory overhead. Needs a training step on a representative sample, and the clustering degrades if your data distribution shifts substantially after training.
+
+**Graph based, typically HNSW.** Build a navigable graph where each vector links to neighbors, then greedily walk it. Excellent latency and recall, which is why it is the default nearly everywhere. The costs: significant memory overhead for the graph edges, slow to build, and deletion is awkward because removing a node damages connectivity. Most implementations tombstone deletes and reclaim on a rebuild.
+
+## Sizing memory honestly
+
+\`\`\`python
+GIB = 1024 ** 3
+
+def index_gib(n_vectors, dim, dtype_bytes=4, graph_neighbors=None):
+    raw = n_vectors * dim * dtype_bytes
+    overhead = 0
+    if graph_neighbors:
+        # Each node stores neighbor ids (4 bytes each) per layer; the
+        # base layer dominates and holds roughly 2x the configured M.
+        overhead = n_vectors * graph_neighbors * 2 * 4
+    return (raw + overhead) / GIB
+
+for n in (100_000, 1_000_000, 10_000_000):
+    flat = index_gib(n, 768)
+    hnsw = index_gib(n, 768, graph_neighbors=32)
+    half = index_gib(n, 768, dtype_bytes=2, graph_neighbors=32)
+    print(f"{n:>10,} x 768d   flat {flat:6.2f} GiB   "
+          f"hnsw {hnsw:6.2f} GiB   hnsw+fp16 {half:6.2f} GiB")
+\`\`\`
+
+Two levers jump out. Dimensionality is a direct multiplier, so a model producing shorter embeddings can halve your footprint before you tune anything. And storing vectors at reduced precision cuts the dominant term, usually with negligible recall impact, because approximate search is already approximate.
+
+## Recall is a number you have to measure
+
+This is the part I see skipped constantly. Approximate nearest neighbor search is approximate. You do not know how approximate until you measure it on your own data.
+
+The method is simple: take a sample of real queries, compute exact nearest neighbors with brute force to get ground truth, then measure what fraction of the true top k your configured index returns. Sweep the speed knob and plot recall against latency. Pick a point deliberately.
+
+Do this once per collection and again whenever the data distribution changes meaningfully. A recall number from someone else's benchmark on someone else's data tells you nothing about yours.
+
+## The operational parts nobody writes about
+
+**Rebuild time.** Know how long a full index rebuild takes before you need one at 2am. For graph indexes at scale this can be hours, and it is CPU bound.
+
+**Deletes and updates.** An update is usually a delete plus an insert. Tombstoned deletes accumulate, memory does not come back, and recall drifts as the graph fills with dead nodes. Plan a periodic compaction and monitor the tombstone ratio.
+
+**Persistence and restart.** Some engines memory map from disk and start fast. Others rebuild in memory on startup, which turns a routine restart into a long outage. Find out which yours does before you find out the hard way.
+
+**Backups.** The embeddings are derived data. You can always regenerate them from source documents, but regenerating ten million embeddings costs real time and, if you use a hosted embedding API, real money. Back up the index, and separately keep the source documents plus a record of exactly which embedding model version produced the vectors. Mixing vectors from two model versions in one index silently ruins your results.
+
+**Filtering.** This is the real architecture decision. Filtering before the search shrinks the candidate set but breaks the index structure. Filtering after the search is easy but can return almost nothing when the filter is selective. How your engine handles combined filter plus vector queries should drive your choice of engine more than any raw benchmark.
+
+## Do you even need a separate system
+
+If your vectors already live next to relational data you filter on, a vector extension in your existing database is often the better engineering decision. One system to back up, one to monitor, transactional consistency between the metadata and the vectors, and joins that work.
+
+I would reach for a dedicated vector engine when the collection outgrows what the general purpose database handles comfortably, or when I need index features it does not offer. Not before. The operational cost of a second stateful system is real and it is paid every week.
+
+## References
+
+- [pgvector](https://github.com/pgvector/pgvector)
+- [FAISS](https://github.com/facebookresearch/faiss)
+- [FAISS wiki: guidelines to choose an index](https://github.com/facebookresearch/faiss/wiki)
+- [Nearest neighbor search on Wikipedia](https://en.wikipedia.org/wiki/Nearest_neighbor_search)
+- [PostgreSQL documentation](https://www.postgresql.org/docs/current/)
+`,
+  },
+  {
+    slug: "linux-page-cache-and-io",
+    title: "The Page Cache Is Doing More Than You Think",
+    date: "2026-05-21",
+    tags: ["linux", "storage", "servers"],
+    excerpt:
+      "Half the performance mysteries I have chased on Linux servers came down to misreading memory, dirty page writeback, or double caching. Here is the model.",
+    coverImage: "/images/blog/linux-page-cache-and-io.jpg",
+    coverCredit: {
+      author: "barnoid",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/50359335@N00/151529520",
+    },
+    content: `
+## The output everyone misreads
+
+Someone runs \`free -h\` on a server, sees almost no free memory, and panics. Then they add RAM, or worse, they start killing services.
+
+The page cache is not wasted memory. Linux keeps recently read file data in RAM because unused RAM does nothing for you. That cache is instantly reclaimable when a process actually needs the memory. The column that answers "how much can I still allocate" is \`available\`, not \`free\`.
+
+\`\`\`bash
+free -h
+#               total   used   free   shared  buff/cache   available
+# Mem:           125Gi   38Gi  1.2Gi    1.1Gi        86Gi        84Gi
+\`\`\`
+
+Read that as: 38 GiB genuinely in use, 86 GiB holding cached file data, and about 84 GiB obtainable right now by a process that asks. A server in that state is healthy. A server with high \`used\` and low \`available\` is the one to worry about.
+
+## The read path
+
+When a process reads a file, the kernel checks the page cache first. Hit, and the data is a memcpy away. Miss, and it goes to the block device, stores the result in the cache, and hands it over.
+
+The kernel also reads ahead: on a detected sequential pattern it pulls in more than you asked for, betting you will want the next chunk. This is why a sequential read of a large file is dramatically faster than random reads of the same total volume, even on flash.
+
+You can see readahead and change it per device:
+
+\`\`\`bash
+blockdev --getra /dev/sda        # sectors of readahead
+blockdev --setra 256 /dev/sda    # 128 KiB
+\`\`\`
+
+Raising it helps large sequential workloads like backups and media. Lowering it helps random small read workloads, where aggressive readahead is pure waste. Databases usually want it low, since they do their own caching and their own prefetching.
+
+## The write path is where surprises live
+
+Writes go into the page cache and are marked dirty. The write syscall returns as soon as it lands in memory. The kernel flushes dirty pages to the device later, in the background.
+
+That is fast and it is a lie about durability, which is fine as long as you know it. The moment you actually need the data on stable storage, you call \`fsync\`, and that is where the real cost appears.
+
+Two sets of knobs govern the flushing:
+
+\`\`\`bash
+# Percentages of available memory
+sysctl vm.dirty_background_ratio   # start flushing in the background
+sysctl vm.dirty_ratio              # block writers until flushed
+
+# Or absolute byte thresholds, better on large-memory machines
+sysctl vm.dirty_background_bytes
+sysctl vm.dirty_bytes
+
+sysctl vm.dirty_expire_centisecs   # age at which a page must be written
+\`\`\`
+
+The classic pathology: on a machine with a lot of RAM, the default ratio based thresholds allow an enormous pool of dirty pages to accumulate. Everything is fast, then the threshold is hit and every writer stalls at once while gigabytes flush to a device that cannot absorb them quickly. The symptom is periodic, seconds long, whole system freezes with no obvious trigger.
+
+The fix is to set the byte based limits to something the storage can actually flush in a couple of seconds, so writeback is continuous rather than catastrophic.
+
+## Watching it happen
+
+\`\`\`bash
+# Dirty and in-flight bytes, right now
+grep -E '^(Dirty|Writeback|MemAvailable):' /proc/meminfo
+
+# Blocks in and out per second, plus io wait
+vmstat 1 10
+
+# Per-device queue depth, utilization, and await
+iostat -x 2
+
+# Who is doing the writing
+sudo iotop -oPa
+\`\`\`
+
+The number I watch first is \`Dirty\` in \`/proc/meminfo\` during the problem. If it climbs into the gigabytes before collapsing, you have found your stall. If \`iostat\` shows \`%util\` pinned at 100 with a large \`aqu-sz\` and rising \`await\`, the device is simply saturated and no amount of tuning fixes it.
+
+## Direct I/O and double caching
+
+Databases and some storage systems open files with \`O_DIRECT\` to bypass the page cache entirely. They do this because they maintain their own buffer pool and know their access patterns better than the kernel does. Caching the same data twice wastes memory and adds a copy.
+
+The same argument applies one level up. ZFS keeps its own ARC, which is separate from the page cache, so on a ZFS system you are budgeting two caches and you need to cap the ARC deliberately rather than letting it and the page cache fight over the same RAM. Virtual machines create the same shape of problem: the guest caches, the host caches, and the same block sits in memory twice. Hypervisor cache mode settings exist exactly to control which layer is allowed to cache.
+
+## The rules I follow
+
+Do not tune anything until you have a measurement showing which path is the problem. Read stalls and write stalls have different fixes and identical complaints from users.
+
+Set dirty limits in bytes, not percentages, on any machine with a lot of memory. Size them to roughly one or two seconds of your storage's real write throughput.
+
+Pick one caching layer per data path and turn the others down. Double caching is invisible until you are short on memory, and then it is the whole problem.
+
+And leave the page cache alone otherwise. Dropping caches to make \`free\` look nicer is a way to make your server slower for the next several minutes and learn nothing.
+
+## References
+
+- [Linux kernel: virtual memory sysctl documentation](https://docs.kernel.org/admin-guide/sysctl/vm.html)
+- [proc(5) manual page](https://man7.org/linux/man-pages/man5/proc.5.html)
+- [open(2) manual page, including O_DIRECT](https://man7.org/linux/man-pages/man2/open.2.html)
+- [vmstat(8) manual page](https://man7.org/linux/man-pages/man8/vmstat.8.html)
+- [Page cache on Wikipedia](https://en.wikipedia.org/wiki/Page_cache)
+`,
+  },
+  {
+    slug: "rag-pipeline-plumbing",
+    title: "RAG Is Mostly Plumbing",
+    date: "2026-05-22",
+    tags: ["ai", "ml", "tools"],
+    excerpt:
+      "Retrieval augmented generation is a search system with a language model on the end. Almost every failure I have debugged was in the search half.",
+    coverImage: "/images/blog/rag-pipeline-plumbing.jpg",
+    coverCredit: {
+      author: "Me in ME",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/12357841@N02/49215624152",
+    },
+    content: `
+## The uncomfortable summary
+
+Retrieval augmented generation gets discussed as a model technique. Operationally it is a search pipeline with a text generator bolted on at the end, and when it produces bad answers the model is usually not the reason. The retriever handed it the wrong passages, or the right passages got truncated out of the prompt, or the chunking destroyed the context the answer needed.
+
+Debug it like a data pipeline, because that is what it is.
+
+## Stage one: ingestion and chunking
+
+Documents come in, text comes out, text gets split. Both halves are underestimated.
+
+Extraction is where the silent damage happens. PDFs with two column layouts get read across the columns. Tables collapse into word soup. Headers and footers repeat on every page and pollute every chunk. Before tuning anything downstream, dump a hundred random extracted documents and read them. I have found more retrieval bugs there than anywhere else.
+
+Chunking is a tradeoff with no universally right answer. Small chunks retrieve precisely but lose surrounding context. Large chunks carry context but dilute the embedding, so a chunk about ten topics matches none of them strongly. My defaults: split on structure first (headings, sections, paragraphs) rather than a fixed character count, keep chunks in the few hundred token range, overlap slightly so a sentence spanning a boundary survives, and always attach metadata: source document, section heading, position, and a stable identifier.
+
+That metadata is not optional. It is how you cite, how you filter, and how you debug.
+
+## Stage two: embedding is a batch job
+
+Embedding is the least interesting stage and the easiest to get operationally wrong. Treat it as an ETL job: batched, resumable, idempotent, with the model version recorded alongside every vector.
+
+That last point deserves emphasis. If you re-embed part of a collection with a different model version, you now have two incompatible geometries in one index and your similarity scores are meaningless across them. Store the model identifier with each vector and refuse to query across mismatches.
+
+## Stage three: retrieval and reranking
+
+Dense vector search is good at meaning and bad at exact tokens. Ask it for an error code, a part number, a specific function name, or a rare proper noun, and it will happily return semantically similar passages that do not contain the thing you asked for.
+
+Keyword search has the opposite profile. So run both and fuse the results. Reciprocal rank fusion is the standard approach and it is about ten lines of code:
+
+\`\`\`python
+from collections import defaultdict
+
+def reciprocal_rank_fusion(result_lists, k=60, top_n=20):
+    # result_lists: list of ranked lists of chunk ids, best first.
+    # k dampens the contribution of low-ranked items.
+    scores = defaultdict(float)
+    for ranked in result_lists:
+        for rank, chunk_id in enumerate(ranked, start=1):
+            scores[chunk_id] += 1.0 / (k + rank)
+    return sorted(scores, key=scores.get, reverse=True)[:top_n]
+
+
+dense = vector_index.search(query_embedding, top_k=50)   # list of ids
+sparse = keyword_index.search(query_text, top_k=50)      # list of ids
+candidates = reciprocal_rank_fusion([dense, sparse])
+\`\`\`
+
+It needs no score normalization between the two systems, which is exactly why it is so widely used.
+
+Retrieval optimizes for recall over a large candidate set. Reranking optimizes for precision over a small one. A cross encoder that scores each query and passage pair jointly is far more accurate than comparing independent embeddings, and far too slow to run over a whole collection. So you retrieve fifty candidates cheaply and rerank them expensively down to five.
+
+If your pipeline gets the right passage into the top fifty but not the top five, reranking is the single highest leverage addition you can make.
+
+## Stage four: prompt assembly and the token budget
+
+The final stage is a budget allocation problem, and it should be explicit code rather than string concatenation and hope.
+
+\`\`\`python
+def assemble(system_prompt, question, passages, budget_tokens, count_tokens):
+    fixed = count_tokens(system_prompt) + count_tokens(question)
+    remaining = budget_tokens - fixed - 512  # reserve room for the answer
+
+    included, dropped = [], []
+    for p in passages:                      # already reranked, best first
+        cost = count_tokens(p.text) + 32    # citation header overhead
+        if cost <= remaining:
+            included.append(p)
+            remaining -= cost
+        else:
+            dropped.append(p.id)
+
+    context = "\\n\\n".join(
+        f"[{i + 1}] source={p.source} section={p.section}\\n{p.text}"
+        for i, p in enumerate(included)
+    )
+    return context, [p.id for p in included], dropped
+\`\`\`
+
+Log \`dropped\` every time. Silent truncation is the most common cause of "it knew this yesterday" reports, and without that log you will never see it.
+
+## What to instrument
+
+Log the query, the retrieved ids with scores at each stage, what survived assembly, what got dropped, and the token counts. When someone reports a bad answer, you should be able to replay exactly what the model was shown without guessing.
+
+Then evaluate the retriever separately from the generator. Build a small set of questions with known correct source passages and measure whether retrieval found them at all. If recall at ten is poor, no amount of prompt engineering will save the answer, and you have saved yourself a week of tuning the wrong stage.
+
+## References
+
+- [pgvector](https://github.com/pgvector/pgvector)
+- [FAISS](https://github.com/facebookresearch/faiss)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [Apache Lucene documentation](https://lucene.apache.org/core/documentation.html)
+`,
+  },
+  {
+    slug: "systemd-units-that-behave",
+    title: "Writing systemd Units That Behave",
+    date: "2026-05-23",
+    tags: ["linux", "operations", "automation"],
+    excerpt:
+      "A service that restarts forever, starts before the network, and runs as root is three unit file directives away from being fixed.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The unit file is a contract
+
+Most self hosted services I see are wrapped in a systemd unit that was copied from a forum post, has \`Type=simple\`, \`Restart=always\`, runs as root, and orders itself after \`network.target\`. Every one of those four choices is probably wrong, and each has a real consequence.
+
+A unit file is a contract with the init system: here is how to start me, here is how to know I am ready, here is what to do when I die, here is what I am allowed to touch. Fill it in properly once and you stop babysitting the service.
+
+## Type= and Restart=, the two that matter most
+
+\`Type=\` tells systemd when to consider the service started, which is what everything ordered after it waits on.
+
+- \`simple\`: considered started the instant the process is forked. Almost always wrong for anything else that depends on it, because the process has not bound its socket yet.
+- \`exec\`: started once the binary has actually been executed successfully. A strictly better default than \`simple\`.
+- \`forking\`: for daemons that background themselves. Needs \`PIDFile=\`. Avoid writing new services this way.
+- \`notify\`: the service tells systemd when it is ready via the notify socket. This is the correct answer if your software supports it.
+- \`oneshot\`: runs to completion. Pair with \`RemainAfterExit=yes\` for setup tasks.
+
+If a dependent service intermittently fails at boot but works fine when you start it by hand, this directive is where to look.
+
+The other high value directive is the restart policy. \`Restart=always\` on a service with a config error gives you an infinite crash loop that fills the journal. Use \`on-failure\`, and set rate limits so systemd gives up and tells you instead of hammering forever.
+
+\`\`\`ini
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+\`\`\`
+
+That means: five failures in five minutes and the unit goes into a failed state and stays there. Which is what you want, because a service flapping silently is worse than a service that is clearly down.
+
+## Ordering versus requirement
+
+These are two independent things and conflating them causes most boot ordering bugs.
+
+- \`After=\` and \`Before=\` control **order only**. They do not pull anything in.
+- \`Wants=\` pulls a unit in but does not fail if it fails. The soft dependency.
+- \`Requires=\` pulls it in and fails your unit if it fails. Note this still says nothing about order, so you nearly always want \`Requires=\` plus \`After=\` together.
+- \`BindsTo=\` is \`Requires=\` plus: your unit stops if the other one stops later.
+
+On networking specifically, \`network.target\` means "the network stack is being brought up", not "you have an IP address". If your service binds to a specific address at startup, you want \`network-online.target\`, and that target only works if the corresponding wait service is enabled.
+
+## A unit I would actually ship
+
+\`\`\`ini
+# /etc/systemd/system/metrics-collector.service
+[Unit]
+Description=Metrics collector
+Documentation=https://example.internal/runbooks/metrics-collector
+Wants=network-online.target
+After=network-online.target
+Requires=postgresql.service
+After=postgresql.service
+
+[Service]
+Type=exec
+User=metrics
+Group=metrics
+WorkingDirectory=/opt/metrics-collector
+EnvironmentFile=/etc/metrics-collector/env
+ExecStart=/opt/metrics-collector/bin/collector --config /etc/metrics-collector/config.yml
+ExecReload=/bin/kill -HUP $MAINPID
+
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+TimeoutStopSec=30
+
+# Sandboxing: cheap, effective, and almost nobody sets it
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ReadWritePaths=/var/lib/metrics-collector
+
+# Resource ceilings so one service cannot take the host down
+MemoryMax=2G
+TasksMax=256
+
+[Install]
+WantedBy=multi-user.target
+\`\`\`
+
+Those sandboxing directives are free security. \`ProtectSystem=strict\` makes the entire filesystem read only except what you list in \`ReadWritePaths=\`. \`SystemCallFilter=@system-service\` blocks whole categories of syscalls a normal daemon never needs.
+
+Grade your work:
+
+\`\`\`bash
+systemd-analyze security metrics-collector.service
+\`\`\`
+
+It scores each unit and lists exactly which directive would improve it. It is the fastest security win available on a Linux box.
+
+## Timers instead of cron
+
+For anything scheduled that matters, timers beat cron: they log to the journal, they inherit all the sandboxing above, they can catch up on missed runs, and they will not stampede.
+
+\`\`\`ini
+# /etc/systemd/system/backup-verify.timer
+[Unit]
+Description=Verify backup integrity nightly
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=900
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target
+\`\`\`
+
+\`Persistent=true\` runs the job on next boot if the machine was off at the scheduled time. \`RandomizedDelaySec\` spreads load so twenty machines do not all hit the backup target at 03:30:00 exactly.
+
+Check schedules with \`systemctl list-timers --all\`, and test a calendar expression before trusting it with \`systemd-analyze calendar "*-*-* 03:30:00"\`.
+
+## The habits that stick
+
+Put a \`Documentation=\` line pointing at the runbook in every unit. Future you, at 3am, will follow that link.
+
+Use drop ins rather than editing packaged units: \`systemctl edit foo.service\` creates an override that survives package upgrades.
+
+Always run \`systemd-analyze verify\` on a new unit before enabling it, and always \`systemctl daemon-reload\` after editing. Half of "my change did nothing" is a forgotten reload.
+
+## References
+
+- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
+- [systemd.exec(5), sandboxing directives](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.unit(5), dependencies and ordering](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html)
+- [systemd.timer(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
+- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
+`,
+  },
+  {
+    slug: "llm-application-attack-surface",
+    title: "The Attack Surface of an LLM Application",
+    date: "2026-05-24",
+    tags: ["security", "ai", "cybersecurity"],
+    excerpt:
+      "The model is not a security boundary. Once you accept that, the rest of securing an LLM app looks like ordinary input validation and least privilege.",
+    coverImage: "/images/blog/llm-application-attack-surface.jpg",
+    coverCredit: {
+      author: "Visual Content",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/143601516@N03/29723649810",
+    },
+    content: `
+## Start from the right premise
+
+Here is the sentence that makes the rest of this straightforward: **the model is not a security boundary.**
+
+A language model takes text and produces text. It cannot reliably distinguish instructions you wrote from instructions embedded in data it was handed, because at the token level there is no distinction. Any control that depends on the model choosing to obey your system prompt over attacker supplied text is a control you cannot rely on.
+
+That is not a defeatist position. It just relocates the security work to where it belongs: the boundaries around the model.
+
+## Prompt injection is a data flow problem
+
+Direct prompt injection is a user typing "ignore your instructions". That is the boring case, and it mostly only harms the user themselves.
+
+Indirect prompt injection is the real one. Your application retrieves a document, fetches a web page, reads an email, or parses a support ticket, and that content contains instructions. The model has no way to know that text is data rather than direction. Now attacker text is influencing an application that is authenticated as your user.
+
+Draw the data flow. Every arrow that brings text from somewhere you do not control into the prompt is an injection vector. In most real systems there are more of these than people expect: file uploads, scraped pages, third party API responses, tool outputs, even the model's own prior turns after it has been influenced once.
+
+## Tools turn text into actions
+
+A model that only emits text into a chat window has limited blast radius. The moment you give it tools, generated text becomes function calls, and every tool is a capability an attacker may be able to reach by getting text into the context.
+
+So treat the tool layer like an authorization layer, because it is one.
+
+\`\`\`python
+ALLOWED_TOOLS = {
+    "search_docs":   {"side_effects": False, "confirm": False},
+    "read_ticket":   {"side_effects": False, "confirm": False},
+    "post_comment":  {"side_effects": True,  "confirm": True},
+    "close_ticket":  {"side_effects": True,  "confirm": True},
+}
+
+def authorize(call, user, session):
+    spec = ALLOWED_TOOLS.get(call.name)
+    if spec is None:
+        raise PermissionError(f"tool not in allowlist: {call.name}")
+
+    # Authorization is checked against the human, never against the model.
+    if not user.can(call.name, call.args.get("resource_id")):
+        raise PermissionError(f"{user.id} lacks permission for {call.name}")
+
+    # Anything with side effects gets an explicit human confirmation,
+    # and the confirmation shows the resolved arguments, not the intent.
+    if spec["side_effects"] and not session.confirmed(call.fingerprint()):
+        raise ConfirmationRequired(call)
+
+    audit.log(user=user.id, tool=call.name, args=call.args,
+              session=session.id, source="model")
+    return call
+\`\`\`
+
+Three rules encoded there. Tools are an explicit allowlist, never a dynamic dispatch on whatever name the model produced. Permission is evaluated against the authenticated human, never inherited from the service account. Side effecting actions require a human to see the actual resolved arguments and approve them.
+
+## Trust the output like you trust user input
+
+Model output is untrusted input to whatever consumes it next. This gets forgotten constantly because the output feels like it came from your own system.
+
+If you render it as HTML or markdown, you have a cross site scripting sink. Sanitize it, and remember that markdown images and links can carry an attacker controlled URL, which is a quiet exfiltration channel: the model is convinced to embed sensitive text into a URL, the client renders the image, the data leaves.
+
+If it becomes a database query, parameterize it. If it becomes a shell command, do not. If it becomes a URL your backend fetches, you have built a server side request forgery primitive that an attacker can point at cloud metadata endpoints and internal services, so restrict outbound requests to an allowlist and block internal address ranges.
+
+## Retrieval is an exfiltration path
+
+In a multi tenant retrieval system, the access control decision must happen in the query, as a filter the search engine enforces, not as an instruction in the prompt telling the model which documents it may use.
+
+I have seen "only answer using documents belonging to the current customer" written in a system prompt, with the retriever returning everything. That is not access control. That is a request.
+
+Filter at retrieval time on an identity derived from the authenticated session, and verify the filter in tests with a user who should see nothing.
+
+## Cost, availability, and the controls that help
+
+Two things static apps do not have to think about. Inference is expensive per request, so an unauthenticated or unmetered endpoint is a direct financial denial of service. And a long context request with a large generation can occupy a serving slot for a long time, so a handful of them can starve everyone else.
+
+Rate limit per authenticated user, cap max tokens in and out, cap tool call iterations per request so an agent loop cannot run forever, and set a hard wall clock timeout.
+
+Putting it together, the controls I would actually build are these. Least privilege on every credential the application holds, scoped to the human on whose behalf it is acting. Egress filtering, so a compromised prompt cannot reach arbitrary destinations. An allowlist of tools with confirmation on anything destructive. Output sanitization at every rendering point. Retrieval filtered by identity at query time. Full audit logging of prompts, retrieved context, tool calls, and results, so an incident is investigable. And limits on tokens, iterations, and time.
+
+Notice how little of that is AI specific. It is input validation, least privilege, output encoding, and logging. The novel part is only that the untrusted input can arrive through a channel that looks like your own configuration.
+
+## References
+
+- [OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
+- [MITRE ATLAS](https://atlas.mitre.org/)
+`,
+  },
+  {
+    slug: "load-balancing-l4-vs-l7",
+    title: "Layer 4 and Layer 7 Load Balancing",
+    date: "2026-05-25",
+    tags: ["networking", "operations", "tools"],
+    excerpt:
+      "One forwards connections, the other understands requests. That single difference determines your health checks, your TLS design, and your failure behavior.",
+    coverImage: "/images/blog/load-balancing-l4-vs-l7.jpg",
+    coverCredit: {
+      author: "dmitrybarsky",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/84816487@N00/2262194756",
+    },
+    content: `
+## The distinction in one line
+
+A layer 4 load balancer forwards connections. A layer 7 load balancer understands requests.
+
+Everything else follows from that. What it can route on, how well it can health check, whether it can retry, what it does to TLS, and how much it costs you in latency and CPU.
+
+## What each layer sees
+
+At layer 4 the balancer picks a backend based on the connection's five tuple: source address and port, destination address and port, protocol. It then forwards packets. It does not parse the payload, and for most designs it does not need to.
+
+Consequences:
+
+- Very fast and cheap, since there is no parsing and often no re-assembly.
+- Protocol agnostic. It will balance anything over TCP or UDP, not just HTTP.
+- Once a connection is established it is pinned to one backend for its lifetime. A long lived connection cannot be rebalanced.
+- Health checks can only be shallow. "Does the port accept a connection" is not the same question as "is the application working", and a backend that accepts connections while returning errors will keep getting traffic.
+- No retries. If a backend fails mid connection, the client sees the failure.
+
+At layer 7 the balancer terminates the client connection, parses the request, and makes a routing decision with full knowledge of it. For HTTP that means path, host header, method, cookies, and headers.
+
+Consequences:
+
+- Routing by content: send \`/api/\` to one pool and \`/static/\` to another.
+- Real health checks: request a specific endpoint, check the status code and optionally the body.
+- Retries and failover on a per request basis, so a single backend failure can be invisible to the client.
+- Per request load balancing, which matters enormously for multiplexed protocols where one connection carries many requests. At layer 4, ten requests over one connection all land on the same backend.
+- Header manipulation, compression, rate limiting, and request logging with real detail.
+- Cost: it terminates and re-establishes connections, parses everything, and uses meaningfully more CPU.
+
+## Health checks are the actual product
+
+I would argue the health check is the most important thing a load balancer does, more than the balancing algorithm. Round robin versus least connections rarely decides an outage. Sending traffic to a broken backend always does.
+
+Three levels, and pick deliberately:
+
+- **Port check**: the socket accepts. Detects a dead process. Misses everything else.
+- **Application check**: an HTTP endpoint returns 200. Detects a process that is up but broken.
+- **Deep check**: the endpoint verifies the backend's own dependencies, database connectivity and so on, before answering.
+
+Deep checks have a trap. If every backend deep checks the same shared database and that database has a blip, every backend fails its check simultaneously and the load balancer removes the entire pool. Now a degraded system is a completely dead system. I keep the load balancer check shallow enough that it never removes everything, and I separate "should I get traffic" from "am I fully healthy" into two different endpoints.
+
+## Both modes, one config
+
+HAProxy makes the difference explicit, since \`mode tcp\` and \`mode http\` are the same software behaving as either kind of balancer.
+
+\`\`\`
+global
+    log stdout format raw local0 info
+    maxconn 20000
+
+defaults
+    log     global
+    timeout connect 5s
+    timeout client  60s
+    timeout server  60s
+    retries 3
+
+# Layer 4: pass an arbitrary TCP protocol through, TLS untouched.
+frontend pg_read
+    bind 10.10.0.5:5432
+    mode tcp
+    option tcplog
+    default_backend pg_replicas
+
+backend pg_replicas
+    mode tcp
+    balance leastconn
+    option tcp-check
+    server pg1 10.10.1.11:5432 check inter 3s fall 3 rise 2
+    server pg2 10.10.1.12:5432 check inter 3s fall 3 rise 2
+
+# Layer 7: terminate TLS, route by path, retry idempotent requests.
+frontend web
+    bind 10.10.0.5:443 ssl crt /etc/haproxy/certs/site.pem alpn h2,http/1.1
+    mode http
+    option httplog
+    http-request set-header X-Forwarded-Proto https
+    http-request set-header X-Forwarded-For %[src]
+    acl is_api path_beg /api/
+    use_backend api_pool if is_api
+    default_backend web_pool
+
+backend api_pool
+    mode http
+    balance leastconn
+    option httpchk GET /healthz
+    http-check expect status 200
+    retry-on all-retryable-errors
+    server api1 10.10.2.21:8080 check inter 2s fall 3 rise 2
+    server api2 10.10.2.22:8080 check inter 2s fall 3 rise 2
+
+backend web_pool
+    mode http
+    balance roundrobin
+    option httpchk GET /healthz
+    http-check expect status 200
+    server web1 10.10.2.31:8080 check inter 2s fall 3 rise 2
+    server web2 10.10.2.32:8080 check inter 2s fall 3 rise 2
+\`\`\`
+
+Note \`fall 3 rise 2\`: three consecutive failures to remove a backend, two successes to bring it back. Asymmetric on purpose. Slow to eject on a transient blip, and cautious about returning a backend that just came back.
+
+## TLS: terminate, re-encrypt, or pass through
+
+**Terminate** at the balancer. Simplest, gives you full layer 7 features, centralizes certificates, and leaves traffic in the clear behind the balancer.
+
+**Re-encrypt**: terminate, inspect, then open a new TLS connection to the backend. Full features plus encryption on the internal hop. Costs double the crypto work.
+
+**Pass through**: forward the encrypted stream untouched at layer 4. End to end encryption and backends see real client certificates, but you get no layer 7 features at all, because you cannot read what you are forwarding.
+
+You cannot have both content routing and untouched end to end TLS. That is not a product limitation, it is arithmetic.
+
+## How I choose
+
+If it speaks HTTP and I want observability, retries, and path routing, layer 7. If it is a database protocol, a game server, or anything where I need raw throughput and end to end encryption, layer 4. Plenty of real deployments run both, with a fast layer 4 tier in front distributing to layer 7 proxies behind it.
+
+## References
+
+- [HAProxy documentation](https://docs.haproxy.org/)
+- [nginx stream module documentation](https://nginx.org/en/docs/stream/ngx_stream_core_module.html)
+- [nginx upstream module documentation](https://nginx.org/en/docs/http/ngx_http_upstream_module.html)
+- [Load balancing on Wikipedia](https://en.wikipedia.org/wiki/Load_balancing_(computing))
+`,
+  },
+  {
+    slug: "how-to-read-an-rfc",
+    title: "How I Read an RFC",
+    date: "2026-05-26",
+    tags: ["learning", "networking", "tools"],
+    excerpt:
+      "RFCs are the actual source of truth for how the internet works, and they are far more readable than their reputation suggests once you know the structure.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Why go to the source
+
+Most of what people know about protocols comes from tutorials, and tutorials are lossy. They tell you what usually happens. The RFC tells you what is required, what is optional, what happens in the cases the tutorial skipped, and, critically, why the design is the way it is.
+
+When I got serious about networking, reading the actual documents was the single biggest jump in my understanding. Nothing else was close. They are also free, permanently available, and unusually well written for technical specifications.
+
+## What an RFC is and is not
+
+The biggest misconception: an RFC is not automatically a standard. The series includes proposed standards, internet standards, best current practice documents, informational notes, experimental protocols, historic documents, and the occasional April Fools joke that people have unfortunately cited in earnest.
+
+So read the metadata block before the content. At the top of every document you get:
+
+- **Category** or status. Standards Track, Informational, Experimental, Best Current Practice.
+- **Obsoletes** and **Updates**. This document replaces or amends earlier ones.
+- **Obsoleted by** and **Updated by**, added later. This is the important one: it tells you that you are reading something superseded.
+
+If a document says it has been obsoleted, stop and go read the replacement. People quote outdated RFCs constantly because they found them first in a search engine.
+
+Also note that many protocols are not one document. They are a base specification plus a decade of extensions. Modern TCP, for example, is a consolidated core document plus separate documents for extensions and congestion control. The consolidated versions that fold years of amendments into one document are a genuine gift and worth seeking out.
+
+## The reading order I use
+
+I do not read front to back. I read:
+
+1. **The abstract.** Thirty seconds, tells me if this is even the right document.
+2. **The introduction.** Usually contains the motivation, which is the part tutorials never explain.
+3. **The terminology section.** Non negotiable. These documents define words precisely and often not the way you use them casually.
+4. **The specific section I came for.** Use the table of contents.
+5. **Security considerations.** Mandatory in every RFC, and frequently the most interesting section. It is where the authors admit what the protocol does not protect against.
+6. **IANA considerations.** Boring until you need to know which registry holds the code points, and then essential.
+7. **Examples and appendices.** Many RFCs include worked message exchanges that make the abstract text click instantly.
+
+## The notation: keywords and ABNF
+
+The capitalized words are defined terms, not emphasis. MUST is an absolute requirement. MUST NOT is an absolute prohibition. SHOULD means there may be valid reasons to deviate but you had better understand them. MAY is truly optional.
+
+This is defined in RFC 2119, later clarified so that the keywords only carry that meaning when they appear in capitals. When you are implementing something, the MUST statements are your test suite. I have literally built checklists by grepping a document for them.
+
+Message formats themselves are usually specified in Augmented Backus-Naur Form. It looks intimidating for about ten minutes and then it is just notation:
+
+\`\`\`abnf
+; A small example in the style used throughout the RFC series
+message      = start-line CRLF *( header CRLF ) CRLF [ body ]
+start-line   = method SP request-target SP version
+header       = field-name ":" OWS field-value OWS
+field-name   = 1*token-char
+OWS          = *( SP / HTAB )   ; optional whitespace
+CRLF         = %x0D.0A
+\`\`\`
+
+The pieces: \`*\` means zero or more, \`1*\` means one or more, \`[ ]\` means optional, \`/\` is alternation, \`%x\` is a hex literal, and \`;\` starts a comment. That is nearly all of it. Learn those six things and every message format specification opens up.
+
+## Pair it with a packet capture
+
+This is the trick that made it stick for me. Read a section of the specification, then capture the real protocol and match the bytes to the text.
+
+\`\`\`bash
+# Capture a small sample of the protocol you are studying
+sudo tcpdump -i any -c 200 -w /tmp/study.pcap 'tcp port 853 or udp port 53'
+
+# Then walk fields with tshark and compare against the spec
+tshark -r /tmp/study.pcap -V -c 5
+
+# Or pull specific fields to see how a header is actually populated
+tshark -r /tmp/study.pcap -T fields \\
+  -e frame.number -e ip.src -e ip.dst -e dns.flags -e dns.qry.name
+\`\`\`
+
+Seeing a flag you just read about set to 1 in a real packet is worth an hour of reading on its own.
+
+## Errata, and where to start
+
+Published RFCs are immutable. They are never edited. Corrections are filed as errata against the document, and verified errata are things the authors got wrong. Before implementing anything closely, check whether errata exist. It is a short list and it will save you from faithfully implementing a typo.
+
+As for where to begin: pick a protocol you already use and read its specification. DNS, ARP, ICMP, and HTTP are all approachable. The ARP document is famously short and readable, and finishing an actual internet standard in one sitting is a good confidence builder.
+
+Then read one security considerations section a week from any document that interests you. It is the highest density source of practical security thinking I have found, and it is written by the people who designed the thing.
+
+## References
+
+- [RFC Editor](https://www.rfc-editor.org/)
+- [RFC 2119: Key words for use in RFCs](https://www.rfc-editor.org/rfc/rfc2119.html)
+- [RFC 8174: Ambiguity of uppercase vs lowercase in RFC 2119 key words](https://www.rfc-editor.org/rfc/rfc8174.html)
+- [RFC 5234: Augmented BNF for Syntax Specifications](https://www.rfc-editor.org/rfc/rfc5234.html)
+- [RFC 826: An Ethernet Address Resolution Protocol](https://www.rfc-editor.org/rfc/rfc826.html)
+- [tshark manual page](https://www.wireshark.org/docs/man-pages/tshark.html)
+`,
+  },
+  {
+    slug: "smart-data-drive-failure",
+    title: "Reading SMART Data Before the Drive Reads You Its Last Rites",
+    date: "2026-05-27",
+    tags: ["storage", "monitoring", "hardware"],
+    excerpt:
+      "SMART will not reliably tell you a drive is about to die, but a few specific attributes are worth acting on immediately. Here is which ones and why.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## What SMART is good for
+
+Self-Monitoring, Analysis and Reporting Technology is a set of counters and thresholds a drive maintains about itself. Every modern drive exposes it. It is genuinely useful and it is genuinely oversold.
+
+The honest summary: a large fraction of drives fail with no prior SMART warning at all, so a clean SMART report is weak evidence of health. But when specific attributes start moving, that is strong evidence of trouble. SMART is a smoke detector, not a crystal ball. Asymmetric information is still information.
+
+## The attributes that matter on spinning disks
+
+Ignore most of the list. These are the ones I act on:
+
+- **Reallocated Sector Count (5).** Sectors that failed and were remapped to spares. Any nonzero value means the drive has already had unrecoverable media problems. A stable small number is tolerable. A number that is climbing is a drive on its way out.
+- **Current Pending Sector Count (197).** Sectors that failed to read and are waiting to be reallocated on the next write. This is the one I care about most. Pending sectors are data you may not be able to read back.
+- **Offline Uncorrectable (198).** Sectors the drive could not correct during its own offline scan.
+- **Reported Uncorrectable Errors (187).** Errors the drive could not fix with error correction.
+- **Command Timeout (188).** Commands that did not complete in time. Often cabling, backplane, or power rather than the drive, so check the physical path before condemning the disk.
+- **Spin Retry Count (10).** The motor struggling to spin up. Mechanical, and rarely improves.
+
+Raw values are vendor specific and the normalized values are frequently useless. Watch the direction of travel, not the absolute number. A drive going from 0 to 8 pending sectors in a week matters far more than a drive that has sat at 24 reallocated sectors for two years.
+
+## Flash speaks a different language
+
+For SSDs and NVMe the vocabulary changes entirely:
+
+- **Percentage Used** or media wearout indicator. An estimate of consumed write endurance. Crossing 100 does not mean immediate death, it means the drive is past its rated endurance.
+- **Available Spare** and its threshold. The pool of replacement blocks. Falling toward the threshold is a genuine warning.
+- **Media and Data Integrity Errors.** Uncorrectable errors reported to the host. Should be zero. Any nonzero value is worth investigating.
+- **Unsafe Shutdowns.** High counts point at a power problem, not a drive problem, and power problems eat data.
+- **Data Units Written.** Use it to compute your actual write rate and project when endurance runs out.
+
+## The commands
+
+\`\`\`bash
+# Full report, human readable. -x is the everything view.
+sudo smartctl -x /dev/sda
+
+# NVMe health log, which is where the flash counters live
+sudo smartctl -a /dev/nvme0
+sudo nvme smart-log /dev/nvme0
+
+# Kick off tests: short is a couple of minutes, long reads the whole surface
+sudo smartctl -t short /dev/sda
+sudo smartctl -t long  /dev/sda
+
+# Results of past self tests, newest first
+sudo smartctl -l selftest /dev/sda
+
+# Drives behind a RAID controller need the device type specified
+sudo smartctl -a -d megaraid,0 /dev/sda
+\`\`\`
+
+That last one catches people out. A hardware RAID controller hides the physical drives, and without the right \`-d\` flag you get nothing useful. Check what your controller needs.
+
+## Automate it or it will not happen
+
+Nobody remembers to run \`smartctl\` by hand. Let the daemon do it.
+
+\`\`\`ini
+# /etc/smartd.conf
+# -a           all standard checks
+# -o on        enable automatic offline testing
+# -S on        enable attribute autosave
+# -s (S/../.././02|L/../../6/03)  short test daily at 02:00,
+#              long test Saturday at 03:00
+# -W 4,45,55   report temp change of 4C, warn at 45C, critical at 55C
+# -m           where to send warnings
+# -M exec      run a script on any warning
+
+/dev/sda -a -o on -S on -s (S/../.././02|L/../../6/03) -W 4,45,55 \\
+  -m root -M exec /usr/local/sbin/smart-alert.sh
+
+DEVICESCAN -a -o on -S on -s (S/../.././02|L/../../6/03) -W 4,45,55 \\
+  -m root -M exec /usr/local/sbin/smart-alert.sh
+\`\`\`
+
+Better still, export the values into your existing metrics system so you get history and can see the slope. A single reading tells you a number. A graph tells you whether it is moving, and moving is the whole signal.
+
+\`\`\`bash
+#!/usr/bin/env bash
+# Emit key attributes as Prometheus textfile metrics
+out=/var/lib/node_exporter/textfile_collector/smart.prom
+: > "$out.tmp"
+for d in /dev/sd?; do
+  n=$(basename "$d")
+  sudo smartctl -A "$d" | awk -v dev="$n" '
+    $1 == 5   { printf "smart_reallocated_sectors{device=\\"%s\\"} %d\\n", dev, $10 }
+    $1 == 197 { printf "smart_pending_sectors{device=\\"%s\\"} %d\\n",     dev, $10 }
+    $1 == 198 { printf "smart_offline_uncorrectable{device=\\"%s\\"} %d\\n", dev, $10 }
+  ' >> "$out.tmp"
+done
+mv "$out.tmp" "$out"
+\`\`\`
+
+## What I do with a suspect drive
+
+First, check the physical path. Timeouts and reset storms are often a cable, a backplane slot, or marginal power. Reseat and swap the cable before ordering a replacement.
+
+Second, verify redundancy right now. Confirm the array is healthy and the backup is current before touching anything. The most dangerous moment in a drive's life is the rebuild after a sibling failed, because that is when every remaining drive gets read end to end and latent bad sectors surface all at once.
+
+Third, act on pending sectors. Rising pending sectors on a drive holding data I care about means it gets replaced. The cost of a drive is trivially less than the cost of a rebuild that fails halfway.
+
+Fourth, scrub regularly. A monthly scrub or patrol read finds latent errors while you still have redundancy to repair them from, instead of during a rebuild when you do not. This is the single highest value habit on the list, and it is the one most people skip.
+
+And keep believing your backups more than your SMART data. SMART is one signal. Redundancy plus tested restores is the actual plan.
+
+## References
+
+- [smartmontools](https://www.smartmontools.org/)
+- [S.M.A.R.T. on Wikipedia](https://en.wikipedia.org/wiki/S.M.A.R.T.)
+- [NVM Express specifications](https://nvmexpress.org/specifications/)
+- [Prometheus node exporter](https://github.com/prometheus/node_exporter)
+`,
+  },
+  {
+    slug: "ai-in-network-operations",
+    title: "Where I Think AI Actually Helps Network Operations",
+    date: "2026-05-28",
+    tags: ["ai", "networking", "operations", "monitoring"],
+    excerpt:
+      "My opinion, clearly labeled: language models are useful in the ops loop as a reading and drafting tool, and a bad idea anywhere near an unsupervised config push.",
+    coverImage: "/images/blog/ai-in-network-operations.jpg",
+    coverCredit: {
+      author: "USDAgov",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://www.flickr.com/photos/41284017@N08/49392119033",
+    },
+    content: `
+## This is an opinion piece
+
+Everything below is how I currently think about this, not a report on what anyone has shipped. I am a student running a lab, not an operator of a production network at scale, and I would rather be clear about that than pretend otherwise. Take it as a framework for evaluating claims, including my own.
+
+## The unglamorous prerequisite
+
+Before any of this is worth discussing: if your inventory is a spreadsheet somebody last updated in the fall, your device naming is inconsistent, your configs are not in version control, and your logs are not centralized, then adding a model to your operation changes nothing. It will produce confident output derived from bad data.
+
+Every genuinely useful application I can think of depends on structured, current, machine readable knowledge of the network. Which means the boring work, source of truth inventory, config in git, centralized logging with consistent fields, is the prerequisite and also the part that delivers most of the value on its own.
+
+That is not a dodge. It is the actual finding. The data plumbing is the project.
+
+## Where I think it fits
+
+**Log and alert triage.** A model summarizing three hundred correlated syslog lines into "these forty messages are one interface flapping, here is the interface" is doing something genuinely hard for a human at 3am and easy for a language model. It is a reading comprehension task over text, which is exactly the shape of the problem these models are good at.
+
+**Explaining a config diff.** A diff of two device configurations is precise and unreadable. "This change adds VLAN 40 to the trunk on ports 1 through 8 and removes the storm control threshold" is a summary a reviewer can act on. The diff remains the source of truth. The summary is a reading aid.
+
+**First drafts of runbooks and documentation.** Documentation does not get written because writing it is tedious. A generated first draft that a human corrects is much more likely to exist than a blank page. The correction step is not optional.
+
+**Querying inventory in plain language.** Translating "which access switches are still running the old firmware and have uplinks to the distribution layer" into a query against a structured source of truth. Notice this is a translation task producing a query that runs deterministically. The model does not answer the question, it writes the lookup.
+
+**Baselining and anomaly surfacing.** Worth separating: most of the good anomaly detection in network operations is classical statistics and time series work, not language models. Where a model helps is at the end, turning a flagged anomaly into a readable explanation with context attached.
+
+## Where I would not put it
+
+**Autonomous configuration change.** Not because the model cannot generate valid configuration, it usually can, but because the failure mode is unbounded. A bad access control entry or a routing change can partition a network from the very management plane you would use to fix it. Generation, yes. Review and approval by a human, always.
+
+**As the only thing looking at an alert.** Deterministic thresholds and rules should still exist. A model summarizing on top of them is an improvement. A model replacing them means your monitoring is now nondeterministic, and you cannot write a test for it.
+
+**Anywhere a precise audit trail is required.** Change control wants to know exactly what was done and why. "The assistant suggested it" is not an answer that survives a post incident review.
+
+**Anything involving secrets in the prompt.** Device configs are full of credentials, community strings, and keys. If they go into a prompt, know exactly where that prompt goes and who retains it. Strip secrets during collection, not later.
+
+## Guardrails I would insist on
+
+If I were putting an assistant anywhere near a network, I would write the policy before the code.
+
+\`\`\`yaml
+# ops-assistant-policy.yml
+identity:
+  # The assistant never has its own standing privileges.
+  credentials: per-operator, short-lived, no shared service account
+
+capabilities:
+  read:
+    allowed: [inventory, config_repo, syslog_index, metrics]
+    redact: [passwords, snmp_communities, psk, api_keys, certificates]
+  write:
+    allowed: []          # nothing writes directly to a device
+    proposal_only: true  # output is a pull request, never a push
+
+change_flow:
+  - assistant generates candidate config as a diff
+  - diff runs through the existing linter and policy checks
+  - diff applied in a lab or dry-run mode first
+  - named human approves in the normal change process
+  - deployment executed by the existing automation, not the assistant
+
+limits:
+  max_tool_calls_per_request: 12
+  wall_clock_timeout_seconds: 120
+  blast_radius: single device per proposal
+
+audit:
+  log: [prompt, retrieved_context, tool_calls, output, approver]
+  retention_days: 400
+  egress: allowlist only, no arbitrary outbound requests
+\`\`\`
+
+The core idea in that file: the assistant proposes, the existing pipeline disposes. Everything already built for safe change, linting, staging, review, rollback, stays in the path. You are adding a drafting step at the front, not replacing the machinery.
+
+## How I would evaluate a claim, and where I land
+
+When something promises AI powered network operations, these are the questions I would ask.
+
+What is the false positive rate, measured on a network like mine? What happens when it is wrong, and who notices? Does it need write credentials, and can it work read only? Where does my configuration data go, and is it retained or used for training? Can I reproduce a given output later for a post incident review? What does it do when the data it depends on is stale, and does it say so or does it guess?
+
+If the answers are vague, the product is probably a wrapper around a prompt, and I can write that myself with better guardrails.
+
+So the honest position. I think the reading, summarizing, and drafting applications are real and available to anyone with clean data. I think autonomous operation is a bad trade for the foreseeable future, because the value is convenience and the risk is a network partition. And I think most of the benefit people attribute to the model actually comes from the data hygiene they had to do first.
+
+## References
+
+- [Prometheus documentation](https://prometheus.io/docs/)
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
+- [NetBox documentation](https://netboxlabs.com/docs/netbox/)
+- [Ansible documentation](https://docs.ansible.com/)
+- [OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+`,
+  },
+  {
+    slug: "live-migration-internals",
+    title: "How Live Migration Actually Moves a Running VM",
+    date: "2026-05-29",
+    tags: ["virtualization", "servers", "operations"],
+    excerpt:
+      "Moving a running virtual machine between hosts with milliseconds of downtime is a neat trick built on dirty page tracking and a race you can lose.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The problem statement
+
+You want to move a running virtual machine from host A to host B without the workload noticing. The VM's state is its memory, its CPU registers, its device state, and its storage. Memory is the hard part, because it is large and because the guest keeps changing it while you copy.
+
+That last clause is the whole engineering problem. Copying a static several gigabyte memory image is trivial. Copying it while a guest actively dirties pages is a race.
+
+## Pre-copy, the default approach
+
+Nearly every hypervisor defaults to pre-copy migration, which works in three phases.
+
+**Phase one: setup.** The destination allocates memory and prepares an identical virtual machine shell. The two hosts negotiate capabilities and confirm the guest CPU model is satisfiable on the destination.
+
+**Phase two: iterative copy.** The source enables dirty page tracking, typically by write protecting guest memory so the hypervisor gets a fault and can mark the page dirty. Then it copies all memory to the destination while the VM keeps running. Some of those pages get modified during the copy, so the source does another pass, sending only the pages dirtied since the last one. Then another. Each pass should be smaller than the last.
+
+**Phase three: stop and copy.** When the remaining dirty set is small enough to transfer within the downtime target, the source pauses the VM, sends the last dirty pages plus CPU and device state, and the destination resumes. Total guest visible downtime is the length of this final step, ideally tens of milliseconds.
+
+## Dirty rate is the whole game
+
+Convergence happens only if the guest dirties memory more slowly than you can send it. If the guest writes 2 GB per second and your link moves 1 GB per second, the dirty set never shrinks and the migration iterates forever.
+
+Three ways out, in increasing order of aggression:
+
+**More bandwidth.** Raise the migration bandwidth cap or use a dedicated, faster migration network. Often the cap is set conservatively and simply raising it fixes everything.
+
+**Auto convergence.** The hypervisor deliberately throttles the guest's vCPUs, slowing the rate at which it can dirty pages until the copy catches up. The guest gets slower during migration but the migration finishes. This is usually the right trade.
+
+**Post-copy.** Change the algorithm. Pause the VM early, send the minimum state, and resume it on the destination immediately. Pages that have not arrived yet are fetched on demand when the guest touches them, causing a fault across the network.
+
+Post-copy converges in bounded time regardless of dirty rate, which is its entire appeal. The cost is real: during the fetch phase the guest runs with degraded memory latency, and if the network fails midway, the VM's memory is split across two hosts and the VM is unrecoverable. Pre-copy failure just means the migration aborts and the VM keeps running happily on the source. That asymmetry is why pre-copy is the default and post-copy is the escape hatch.
+
+A common hybrid: start with pre-copy, and if it fails to converge after a set number of iterations, switch to post-copy.
+
+## Storage and the network handoff
+
+If both hosts see the same shared storage, the disk does not move and there is nothing to do. This is why shared storage is effectively a prerequisite for casual live migration.
+
+Without it, you migrate the disk too, usually by mirroring writes to both copies while a background copy runs, then cutting over. This works and it multiplies the data volume and duration substantially.
+
+The network handoff is delightfully low tech. When the VM resumes on the destination, its MAC address is suddenly behind a different physical port. The switch does not know that. So the destination host emits a gratuitous ARP or RARP announcement on behalf of the guest, the switches update their MAC address tables, and traffic follows. If you have ever seen a migrated VM unreachable for a second or two, this is usually why, and the culprit is often port security, a MAC move policy, or a slow spanning tree convergence on the destination port.
+
+## Why migrations fail
+
+**CPU model mismatch.** The guest was booted seeing a set of CPU features. If the destination lacks one, the guest could execute an illegal instruction after resuming, so the hypervisor refuses upfront. The fix is to define a common baseline CPU model across the cluster rather than exposing host passthrough. You give up a little performance and gain the ability to move anything anywhere.
+
+**Passthrough devices.** A VM with a physical device assigned to it generally cannot migrate, because that device's state lives in hardware the destination does not have.
+
+**Non convergence.** Covered above. A busy in memory database is the classic offender.
+
+**Version skew.** The destination hypervisor being older than the source frequently blocks migration, which is why rolling upgrades go in a specific direction.
+
+**Huge pages and memory backing** mismatches between hosts.
+
+## Practical settings and pre-flight checks
+
+\`\`\`bash
+# libvirt: migrate with a bandwidth cap, auto-convergence, compression,
+# and post-copy available as a fallback.
+virsh migrate --live --auto-converge --postcopy \\
+  --persistent --undefinesource \\
+  --bandwidth 5000 \\
+  --timeout 300 --timeout-postcopy \\
+  app-vm-01 qemu+ssh://host-b.internal/system
+
+# Watch progress: remaining, processed, and the current dirty rate
+watch -n1 'virsh domjobinfo app-vm-01'
+
+# If it is clearly never converging, force the switch
+virsh migrate-postcopy app-vm-01
+
+# Or give up cleanly. Pre-copy abort is safe: the VM stays on the source.
+virsh domjobabort app-vm-01
+\`\`\`
+
+\`--timeout 300 --timeout-postcopy\` is the hybrid: try pre-copy for five minutes, then switch rather than iterating forever.
+
+Before a real maintenance window, I test the migration path with a low value VM first, on the same network and storage the real ones will use. Confirm the cluster CPU baseline is uniform. Put migration traffic on its own VLAN so a large transfer does not compete with production. And know the abort command before you need it, because a stuck migration during a maintenance window is a much calmer event when you know that aborting a pre-copy is completely safe.
+
+## References
+
+- [libvirt migration documentation](https://libvirt.org/migration.html)
+- [QEMU documentation](https://www.qemu.org/docs/master/)
+- [Live migration on Wikipedia](https://en.wikipedia.org/wiki/Live_migration)
+- [Proxmox VE wiki](https://pve.proxmox.com/wiki/Main_Page)
+- [KVM project](https://www.linux-kvm.org/page/Main_Page)
+`,
+  },
+  {
+    slug: "certifications-vs-projects",
+    title: "Certs, Projects, and What I Actually Learn From Each",
+    date: "2026-05-30",
+    tags: ["career", "learning", "cybersecurity"],
+    excerpt:
+      "The question I get asked most by other students: should I study for a certification or build something? They teach different things, and the order matters.",
+    coverImage: "/images/blog/certifications-vs-projects.jpg",
+    coverCredit: {
+      author: "wyldvision",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/126767021@N06/15882717591",
+    },
+    content: `
+## The question
+
+Every few weeks another student asks me some version of this. Should I grind a certification, or should I build a lab and put projects on my resume?
+
+The framing is wrong, because they teach genuinely different skills and neither substitutes for the other. Here is what each one actually gave me.
+
+## What the certification gave me
+
+I hold CompTIA Tech+, and studying for it did three things that building alone would not have.
+
+**Vocabulary.** Before, I knew how things worked in the specific way I had encountered them. After, I knew what those things were called. That sounds trivial and it is not: the correct term is the key that unlocks documentation, error message searches, and conversations with people who know more than you. You cannot look up a concept you cannot name.
+
+**Coverage of things I would have skipped.** Left alone, I build what interests me. An exam objectives list does not care what interests me. It made me learn areas I had been quietly routing around, and a few of those turned out to matter a lot.
+
+**A deadline.** Self directed learning has no forcing function. A scheduled exam does. That is a boring benefit and it is real.
+
+What it did not give me: any ability to fix something that is broken in a way the exam did not anticipate. Multiple choice questions have a correct answer that exists. Broken infrastructure often does not, at least not until you go find it.
+
+## What the lab gave me
+
+Running actual infrastructure taught me the thing no exam tests: what to do when it does not work and nobody has written down why.
+
+Nothing in a study guide prepares you for a service that works fine for a week and fails every Tuesday. Nothing teaches you to check physical layer before protocol layer except having wasted three hours on a routing config when the real problem was a cable. Nothing teaches you to change one variable at a time except having changed four and lost the thread completely.
+
+The lab also taught me the operational habits that separate a hobby from a practice. Document as you go, because you will not remember in six months. Change one thing at a time. Have a rollback before you have a change. Monitor the thing before you need the monitoring. Every one of those I learned by getting burned.
+
+And it taught me that most of the job is not the interesting part. It is labeling, backups, patching, and writing down what you did. Certifications do not test that because you cannot test it in ninety minutes.
+
+## What competition gave me
+
+Competing in the National Cyber League has been the third leg, and it teaches something both of the others miss: speed under pressure with incomplete information.
+
+Placing in the top 1 percent individually and seventh nationally as a team was not about knowing more than everyone else. It was about tool fluency, reading a problem quickly enough to decide whether it is worth your remaining time, and not rabbit holing. In a timed event, recognizing "I cannot solve this in the time I have" and moving on is worth more than any single technique.
+
+That skill transfers directly to incident response, which is also a timed event with incomplete information and a cost to going down the wrong path.
+
+## The sequence I would recommend
+
+If I were starting over, I would interleave rather than pick.
+
+Start with a small project, something that works end to end, however basic. You need something concrete to attach vocabulary to, or the terms stay abstract and slide out of your head.
+
+Then take a foundational certification. Now the terminology has hooks to hang on, and studying goes several times faster because you are naming things you have already touched.
+
+Then build something harder, deliberately using the areas the exam covered that you had been avoiding. This is where the coverage benefit pays off.
+
+Then compete, or contribute, or teach. Something with an external standard, where you find out whether you actually know it or only think you do.
+
+Then repeat with a deeper certification.
+
+The order matters because each stage makes the next one cheaper. Certifications before any hands on work is the expensive path: you memorize terms with nothing underneath them and forget most of it.
+
+## Teaching and writing are the accelerators
+
+Running the Cyber Club and teaching youth coding camps has taught me more per hour than anything else on this list.
+
+Explaining subnetting to someone who has never seen it forces you to discover which parts you understood and which parts you had memorized. Every gap in your model becomes visible the instant a beginner asks the obvious question you had never thought to ask. I have rebuilt my understanding of several fundamentals purely because a middle schooler asked why.
+
+You do not need a club. Write a post, answer a question in a forum, walk a friend through something. The mechanism is the same.
+
+The written form of the same habit is the highest return thing I do: write down what I built and why, while I am building it.
+
+It compounds in three directions. It makes the work reusable, because six months later I can rebuild it without re-deriving everything. It makes the work legible, because a hiring manager or a teacher can see what you did rather than taking your word for it. And the act of writing it forces you to find the parts you cannot explain, which are exactly the parts you did not really understand.
+
+An undocumented lab is a hobby. A documented one is a portfolio, and the difference is a few hours of writing.
+
+The format barely matters as long as it is consistent. I keep one small record per project, in the repo, in a shape I can grep later:
+
+\`\`\`yaml
+# projects/vlan-segmentation/record.yml
+project: lab network segmentation
+started: 2026-02-03
+status: running
+
+goal: >
+  Separate management, storage, and untrusted client traffic so a
+  compromised client device cannot reach a hypervisor management port.
+
+skills_practiced:
+  - vlan design and trunk configuration
+  - firewall policy between zones
+  - documenting a working state before changing it
+
+what_broke:
+  - description: management access lost after tagging the uplink
+    cause: native vlan mismatch between switch and firewall
+    fix: set the native vlan explicitly on both ends, then re-test
+    lesson: always keep one out-of-band path before touching a trunk
+
+verify:
+  - command: ping -c1 10.20.0.1
+    expect: reachable only from the management vlan
+  - command: nmap -Pn -p 22,443 10.30.0.10
+    expect: filtered from the client vlan
+
+next: add 802.1X so port assignment is identity driven, not static
+\`\`\`
+
+The \`what_broke\` section is the one I reread. It is a record of my own mistakes, and it is worth more than the rest of the file combined.
+
+To sum it up: certifications teach you the map. Projects teach you the terrain. Competition teaches you to move fast on unfamiliar ground. Teaching shows you which parts of the map you were only pretending to read.
+
+Do all four, in that order, on a loop.
+
+## References
+
+- [CompTIA](https://www.comptia.org/)
+- [National Cyber League](https://nationalcyberleague.org/)
+- [NIST NICE Cybersecurity Workforce Framework](https://www.nist.gov/itl/applied-cybersecurity/nice/nice-framework-resources)
+- [CISA cybersecurity education and career development](https://www.cisa.gov/cybersecurity-training-exercises)
+`,
+  },
+  {
+    slug: "local-llm-memory-math",
+    title: "Local LLM Memory Math: Will This Model Actually Fit?",
+    date: "2026-05-31",
+    tags: ["ai", "ml", "hardware", "homelab"],
+    excerpt:
+      "Parameter count is only the first term. Here is the arithmetic I run before I try to load a model on hardware I already have.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The question everyone asks wrong
+
+The first thing people ask about running a model locally is "how many parameters." That number tells you almost nothing on its own. What you actually need is bytes of memory in three buckets: the weights, the key/value cache, and the runtime slop around both. If you can do that arithmetic on paper, you stop guessing and you stop downloading twenty gigabytes to find out it will not load.
+
+I do this math before I touch a download, because it also tells me the second thing I care about: how fast the thing will be. Memory capacity decides whether it runs. Memory bandwidth decides whether it is usable.
+
+## Bucket one: weights
+
+Weight memory is parameters times bytes per parameter. That is the whole formula.
+
+At 16-bit precision each parameter is two bytes, so a 7 billion parameter model wants roughly 14 GB just to sit in memory. At 8-bit it is roughly 7 GB. At 4-bit it is roughly 3.5 GB, plus a bit of overhead because quantized formats store scale and zero point metadata per block of weights. Call it 10 to 20 percent above the naive number and you will not be surprised.
+
+Quantization is not free. Reducing precision loses information, and how much that hurts depends on the format and on what you are asking the model to do. My rule is that 8-bit is close to invisible for most tasks, 4-bit is usually fine for chat and summarizing, and anything below 4-bit is a science experiment I would not put behind a service.
+
+## Bucket two: the KV cache
+
+This is the bucket that surprises people, because it grows with usage rather than sitting still.
+
+During generation, the model caches a key and a value vector for every token, in every layer, for every attention head that has its own key/value projection. The size is:
+
+    2 * layers * kv_heads * head_dim * bytes_per_element * sequence_length * batch_size
+
+The leading 2 is because you store both K and V. Models using grouped query attention share key/value projections across several query heads, which is why \`kv_heads\` is often much smaller than the total attention head count, and why the cache is far cheaper on those models than it used to be.
+
+The important property is that this term is linear in context length and linear in concurrent requests. A long context feature is a memory feature, not just a config flag.
+
+## Bucket three: everything else
+
+Then there is the slop: the framework's CUDA or Metal context, activation buffers for the forward pass, the allocator's fragmentation, and whatever the serving layer reserves up front. I budget 1 to 2 GB of headroom on a dedicated accelerator and more if I am also driving a display from the same device. If you fill memory to 99 percent you will get an allocation failure on a long prompt at 2 in the morning instead of at your desk.
+
+Putting all three buckets in one function makes the trade offs visible:
+
+\`\`\`python
+def model_memory_gb(params_b, bits, layers, kv_heads, head_dim,
+                    ctx=8192, batch=1, kv_bits=16, overhead_gb=1.5):
+    gib = 1024 ** 3
+    weights = params_b * 1e9 * (bits / 8) * 1.10        # +10% for quant metadata
+    kv = 2 * layers * kv_heads * head_dim * (kv_bits / 8) * ctx * batch
+    return {
+        "weights_gb": round(weights / gib, 2),
+        "kv_cache_gb": round(kv / gib, 2),
+        "total_gb": round((weights + kv) / gib + overhead_gb, 2),
+    }
+
+# a 7B-class model, 32 layers, 8 KV heads, head_dim 128, 8k context
+print(model_memory_gb(7, 4, 32, 8, 128))
+\`\`\`
+
+Change \`ctx\` to 32768 and watch the second number move while the first one does not. That is the whole lesson.
+
+## Speed follows from the same numbers
+
+Single stream token generation is memory bandwidth bound, not compute bound. To produce one token the hardware has to read essentially every weight once. So the ceiling on tokens per second is roughly memory bandwidth divided by the size of the weights in memory. A 4 GB quantized model on a device with a few hundred GB/s of bandwidth has a theoretical ceiling in the tens of tokens per second, and real systems land meaningfully below the ceiling because of cache behavior and kernel overhead.
+
+Two consequences I rely on. First, quantizing does not just help you fit, it makes generation faster, because there are fewer bytes to stream. Second, offloading layers to system RAM is a cliff, not a slope: the moment part of the model lives behind a PCIe link that is an order of magnitude slower than local memory, that part dominates and the whole thing crawls.
+
+## How I decide what to run
+
+I want weights plus KV cache at my target context to fit in device memory with headroom left over. If it does not fit, I try one step more aggressive on quantization before I try offloading, because offloading trades a capacity problem for a bandwidth problem and bandwidth problems feel worse. If it still does not fit, I pick a smaller model. A smaller model that answers in two seconds beats a bigger one that answers in ninety.
+
+## References
+
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- [GQA: Training Generalized Multi-Query Transformer Models](https://arxiv.org/abs/2305.13245)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [Roofline model](https://en.wikipedia.org/wiki/Roofline_model)
+- [Quantization (signal processing)](https://en.wikipedia.org/wiki/Quantization_(signal_processing))
+`,
+  },
+  {
+    slug: "gpu-basics-for-infrastructure",
+    title: "GPU Fundamentals For Infrastructure People",
+    date: "2026-06-01",
+    tags: ["ai", "hardware", "servers"],
+    excerpt:
+      "If you already know servers, most of what you need to know about accelerators is memory, bus, power, and drivers. Here is the mental model I use.",
+    coverImage: "/images/blog/gpu-basics-for-infrastructure.jpg",
+    coverCredit: {
+      author: "viagallery.com",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/15932083@N05/3594287535",
+    },
+    content: `
+## A wide, hungry coprocessor
+
+If you are comfortable with servers but accelerators feel like a different planet, the mental model is simpler than the marketing suggests. A GPU is a coprocessor with its own memory, its own scheduler, and thousands of small execution units that are good at doing the same arithmetic to a lot of data at once. It cannot do anything on its own. The CPU stages data, hands off work, and collects results.
+
+Everything that goes wrong in practice comes from four places: memory, the bus, power and cooling, and drivers. Not from the math.
+
+## Memory is the spec that matters
+
+Two numbers describe accelerator memory: capacity and bandwidth.
+
+Capacity is a hard wall. Either your working set fits or the job fails to allocate. There is no swapping to system RAM that keeps performance intact, and the "unified memory" designs that share one pool with the CPU trade the wall for a bandwidth question instead.
+
+Bandwidth is what actually sets throughput for most inference work. A device with plenty of capacity but modest bandwidth will feel sluggish on anything that has to stream large tensors, and no amount of compute headroom fixes that. When I compare two options I look at bandwidth before I look at claimed peak arithmetic throughput, because peak numbers assume a workload that keeps every unit fed and almost nothing does.
+
+## The bus, and when it matters
+
+The accelerator talks to the host over PCIe. What matters is the negotiated link width and generation, not what the slot is physically shaped like. A card in a slot that is mechanically x16 but electrically x4 will work and will quietly be slow at anything transfer heavy.
+
+Check what you actually got:
+
+\`\`\`bash
+# what the device is capable of vs what it negotiated
+sudo lspci -vv -s 01:00.0 | grep -E 'LnkCap|LnkSta'
+
+# quick view of every device and its link
+sudo lspci -PP -vv 2>/dev/null | grep -E '^[0-9a-f]|LnkSta:' | head -40
+\`\`\`
+
+\`LnkCap\` is the capability, \`LnkSta\` is reality. If they disagree, look at slot wiring, bifurcation settings in firmware, riser cables, or a link that dropped to a lower generation because of signal integrity.
+
+The bus matters a lot for training and for multi device work where tensors move between cards. It matters much less for single card inference, where you load the weights once and then mostly leave them there. Do not spend money solving a bus problem you do not have.
+
+## Power and cooling are the real constraints at home
+
+Accelerators are dense loads. Three things bite people:
+
+Connector and supply headroom. High draw cards want dedicated supply rails and the right connectors, not adapters chained off one cable. Transient spikes above the steady state rating are normal, and a supply sized exactly to the average will trip.
+
+Airflow direction. Server chassis are designed around front to back airflow with high static pressure. Consumer cards that dump heat sideways into the case behave badly inside that design, and passively cooled server cards do nothing at all without the chassis fans they expect.
+
+Thermal throttling looks like a software problem. If throughput degrades after a few minutes of load, check clocks and temperature before you rewrite anything.
+
+\`\`\`bash
+# steady state view while a job runs
+nvidia-smi --query-gpu=timestamp,name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw,clocks.sm \\
+  --format=csv -l 5
+\`\`\`
+
+## Drivers and containers, where the boring failures live
+
+The stack is kernel driver, user space runtime libraries, and framework. All three have to agree. Most "it worked yesterday" incidents are a kernel update that rebuilt without the out of tree driver module, or a framework built against a runtime version that is not installed.
+
+Two habits save me time. Pin the driver and hold it across unattended upgrades, so kernel updates never surprise the module. And run the workload in a container with the vendor container runtime so the framework and runtime libraries travel together while the kernel driver stays on the host.
+
+\`\`\`bash
+# smoke test that the container runtime can see the device
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+\`\`\`
+
+If that prints the device table, your plumbing is correct and any remaining failure is in your code. If it does not, stop debugging Python.
+
+## What I check before recommending a card
+
+In order: does the working set fit in device memory, what is the memory bandwidth, will the slot give it a full electrical link, can the chassis actually cool it in its intended airflow direction, does the supply have real headroom for transients, and is the driver supported on the distribution I am running. Compute throughput is last on that list, which sounds wrong and is not. The arithmetic is rarely the bottleneck. Feeding it is.
+
+## References
+
+- [PCI Express](https://en.wikipedia.org/wiki/PCI_Express)
+- [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
+- [NVIDIA System Management Interface](https://developer.nvidia.com/nvidia-system-management-interface)
+- [NVIDIA Container Toolkit documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/index.html)
+- [Roofline model](https://en.wikipedia.org/wiki/Roofline_model)
+`,
+  },
+  {
+    slug: "numa-and-cpu-pinning",
+    title: "NUMA, CPU Pinning, And Why Your VM Feels Slow",
+    date: "2026-06-02",
+    tags: ["virtualization", "servers", "hardware"],
+    excerpt:
+      "A guest with plenty of allocated cores and RAM can still crawl if it straddles memory nodes. How NUMA works and when pinning is worth the loss of flexibility.",
+    coverImage: "/images/blog/numa-and-cpu-pinning.jpg",
+    coverCredit: {
+      author: "shokai",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/51753258@N00/7222512264",
+    },
+    content: `
+## Memory is not equidistant
+
+On a multi socket server, and on plenty of modern single socket parts, memory is not one flat pool. Each socket or die has memory controllers attached directly to some of the DIMM slots. Access to that local memory is fast. Access to memory attached to another socket has to cross the interconnect, which costs latency and has less bandwidth than the local path.
+
+That is NUMA: non uniform memory access. The hardware presents it as one address space and the operating system quietly hides it, which is exactly why it bites you. A guest can have plenty of vCPUs and plenty of RAM and still feel slow because half its memory is on the far side of a link.
+
+## Look at your topology first
+
+Never guess. Two commands tell you everything.
+
+\`\`\`bash
+lscpu | grep -i numa
+numactl --hardware
+\`\`\`
+
+\`numactl --hardware\` gives you nodes, which CPUs belong to each node, free memory per node, and a distance matrix. The matrix is relative: 10 means local, and higher numbers mean more expensive. A two node box typically shows something like local 10 and remote 21, which is your rough penalty factor for getting it wrong.
+
+Also check where a device lives, because a network card or accelerator is attached to a specific node too:
+
+\`\`\`bash
+cat /sys/class/net/eth0/device/numa_node
+\`\`\`
+
+An interface on node 0 being serviced by an interrupt handler on node 1 is a real and very common performance bug.
+
+## The three ways a guest lands wrong
+
+Split memory. The guest is bigger than one node, so the hypervisor allocates pages from both. Roughly half of memory accesses now cross the interconnect.
+
+Split vCPUs. The guest fits in one node's worth of RAM, but the scheduler places its vCPU threads on both sockets. Threads on the far socket pay the remote penalty for every access.
+
+Wandering threads. Nothing is pinned, so the host scheduler migrates vCPU threads between nodes under load. Memory does not follow, so the penalty appears and disappears and your benchmark looks like noise.
+
+The tell for all three is the same: performance that varies run to run for no visible reason, with system time higher than you expect.
+
+## Sizing beats pinning
+
+Before you pin anything, size the guest so it fits. If a node has a given amount of memory and a given core count, a guest that stays inside both will usually be placed well by the host on its own. Most of the NUMA problems I have seen were created by someone allocating a guest slightly larger than a node because the round number looked nice.
+
+If the workload genuinely needs more than one node, do not pretend otherwise. Expose the topology to the guest so its own scheduler can make good decisions, rather than lying to it about a flat memory space.
+
+## Pinning in practice
+
+With libvirt, pin vCPUs to physical CPUs and bind memory to the matching node:
+
+\`\`\`xml
+<vcpu placement='static' cpuset='0-7'>8</vcpu>
+<cputune>
+  <vcpupin vcpu='0' cpuset='0'/>
+  <vcpupin vcpu='1' cpuset='1'/>
+  <vcpupin vcpu='2' cpuset='2'/>
+  <vcpupin vcpu='3' cpuset='3'/>
+</cputune>
+<numatune>
+  <memory mode='strict' nodeset='0'/>
+</numatune>
+\`\`\`
+
+\`mode='strict'\` is the important part. Preferred will silently fall back to remote memory under pressure, which gets you the slow behavior you were trying to avoid, without the error message that would have told you.
+
+For a plain process rather than a VM, \`numactl\` does the same job in one line:
+
+\`\`\`bash
+numactl --cpunodebind=0 --membind=0 ./my-service
+\`\`\`
+
+And to check what a running process actually got:
+
+\`\`\`bash
+numastat -p $(pgrep -f my-service)
+\`\`\`
+
+Non zero counts in the remote columns are your answer.
+
+## When not to pin
+
+Pinning trades flexibility for predictability, and the trade is not always good.
+
+On a consolidation host running many small, bursty guests, pinning wastes capacity: pinned cores sit idle while other guests queue. Let the scheduler work. On a host you live migrate frequently, pinning to specific physical CPU numbers assumes a topology that the destination may not share. And if you overcommit CPU heavily, pinning concentrates contention onto exactly the cores you chose.
+
+I pin when a guest is latency sensitive, has a stable footprint, and owns its host. I do not pin general purpose guests, and I never pin as a first response to a performance complaint. Measure, look at the topology, size correctly, and only then reach for \`numatune\`.
+
+## References
+
+- [Non-uniform memory access](https://en.wikipedia.org/wiki/Non-uniform_memory_access)
+- [numactl(8) manual page](https://man7.org/linux/man-pages/man8/numactl.8.html)
+- [Linux NUMA memory policy documentation](https://docs.kernel.org/admin-guide/mm/numa_memory_policy.html)
+- [libvirt domain XML format](https://libvirt.org/formatdomain.html)
+- [taskset(1) manual page](https://man7.org/linux/man-pages/man1/taskset.1.html)
+`,
+  },
+  {
+    slug: "inference-vs-training-workloads",
+    title: "Inference And Training Are Not The Same Workload",
+    date: "2026-06-03",
+    tags: ["ai", "ml", "servers"],
+    excerpt:
+      "Training and inference stress completely different parts of a machine. Confusing the two is how people buy the wrong hardware and size the wrong network.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Same model, opposite resource profile
+
+People talk about "AI infrastructure" as if it were one thing. It is at least two, and they want opposite things from a machine. If you are planning capacity, the single most useful question is which side of this line you are on.
+
+Training consumes a fixed dataset over a long run to produce weights. Inference takes finished weights and serves requests. That difference in shape changes memory, network, storage, and failure behavior.
+
+## Memory: weights versus weights plus baggage
+
+Inference needs the weights, a working buffer, and a cache for the tokens it has generated so far. That is roughly it.
+
+Training needs the weights, plus gradients the same size as the weights, plus optimizer state that is commonly two additional values per parameter, plus activations saved from the forward pass so the backward pass can use them. The classic rule of thumb for a mixed precision run with a momentum based optimizer is that model state alone lands somewhere near four to six times the size of the weights before you count activations, and activations scale with batch size and sequence length.
+
+That is why a model you can serve comfortably on a single device can be untrainable on the same device. It is not a compute limit. It is bookkeeping.
+
+## Compute: two different bottlenecks, even within inference
+
+Training is throughput work. You want every unit busy, you can pick your batch size freely, and nobody is waiting on an individual example. It is compute bound almost by construction.
+
+Inference splits in two. Prefill, where the model processes the prompt, is compute bound: lots of tokens, all available at once, big efficient matrix multiplications. Decode, where it emits one token at a time, is memory bandwidth bound: the arithmetic per token is small but the whole weight set has to be read to produce it.
+
+This is why a long prompt and a long answer stress different parts of the same box, and why "tokens per second" without saying which phase you measured is a meaningless number.
+
+## Networking: a fabric versus a load balancer
+
+Distributed training synchronizes gradients between workers on every step. That is a lot of traffic in a tight pattern with everyone waiting on the slowest participant, which is why serious training clusters spend real money on low latency, high bandwidth, non blocking fabrics. Latency spikes there do not slow one job, they stall all of it.
+
+Inference has no such pattern. Requests are independent. What you need is ordinary front end networking, a load balancer, and enough bandwidth to move prompts and responses, which are small. If a vendor is selling you a training fabric for an inference deployment, that is a signal.
+
+## Storage and the data path
+
+Training is a streaming read problem. You read a large dataset repeatedly, shuffled, and if the pipeline cannot keep the accelerators fed you burn expensive hardware waiting on disk. Sequential throughput and enough parallel readers matter; you also want checkpoint writes to be fast, because a checkpoint is a large synchronous write that pauses everything.
+
+Inference is a load once problem. You read the weights at startup and then storage goes nearly idle. The one thing worth optimizing is cold start: if your service restarts and takes minutes to read weights off slow storage, that is your outage length during a rolling deploy.
+
+## What this means for planning
+
+\`\`\`text
+                 Training                      Inference
+Memory           weights x4-6 + activations    weights + KV cache
+Compute          throughput bound              prefill compute, decode bandwidth
+Network          synchronized, latency critic  independent requests
+Storage          sustained streaming reads     one big read at startup
+Scaling unit     the whole job                 one replica
+Failure          restart from checkpoint       drop one replica, retry
+Utilization      near 100% by design           bursty, follows users
+\`\`\`
+
+The failure row is the one people miss. A training job is a single long lived unit of work: lose a node and you restart from the last checkpoint, so checkpoint frequency is a real design decision. An inference deployment is a fleet of interchangeable replicas: lose one, health checks pull it out, requests retry. Those need completely different operational treatment, and treating a training run like a web service is how you lose a week of compute to a node reboot.
+
+So the practical advice splits the same way. If you are building to serve models, buy memory capacity and bandwidth, keep the network boring, and put your effort into batching, queueing, and cold start time.
+
+If you are building to train, the accelerator interconnect and the data pipeline will decide whether you get value out of the hardware, and checkpointing discipline will decide whether you keep it.
+
+If you are learning, do inference first. It is cheaper, it fits on hardware you can actually get, and every concept you learn about memory and bandwidth transfers directly to the training side later.
+
+## References
+
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [vLLM documentation](https://docs.vllm.ai/en/latest/)
+- [Roofline model](https://en.wikipedia.org/wiki/Roofline_model)
+`,
+  },
+  {
+    slug: "mtu-jumbo-frames-pmtud",
+    title: "MTU, Jumbo Frames, And The Black Hole In The Middle",
+    date: "2026-06-04",
+    tags: ["networking", "switching", "operations"],
+    excerpt:
+      "Small packets work, large ones vanish, and ping says everything is fine. That is an MTU problem, and here is how to find and fix it.",
+    coverImage: "/images/blog/mtu-jumbo-frames-pmtud.jpg",
+    coverCredit: {
+      author: "@felixtriller",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/21480682@N03/2226679393",
+    },
+    content: `
+## What MTU actually is
+
+The maximum transmission unit is the largest payload a link will carry in one frame. On classic Ethernet that is 1500 bytes of IP packet, which becomes 1518 bytes on the wire once you add the Ethernet header and frame check sequence.
+
+Two things about MTU cause most of the confusion. It is a property of a link, not of a network, so every hop can have a different one. And it is enforced by dropping, not by asking: a device that receives a frame too large for the next link either fragments it or discards it.
+
+## Jumbo frames, and the condition attached
+
+Jumbo frames raise the IP MTU to something like 9000 bytes. The benefit is fewer packets for the same data, which means fewer interrupts, less per packet header overhead, and lower CPU cost per gigabit. For storage traffic, backups, and replication on a dedicated segment it is a genuine win.
+
+The condition is that every device in the path has to agree. Every host, every switch, every router interface. One access port left at 1500 in the middle of a jumbo enabled VLAN produces the worst possible symptom: small packets pass, large ones disappear, and nothing logs an error you will find.
+
+Because of that, I only enable jumbo frames on segments I fully control end to end, typically a dedicated storage or backup VLAN. I leave general purpose and internet facing paths at 1500. The performance difference on mixed traffic is not worth the debugging.
+
+Note also that switch vendors count differently. Some MTU settings refer to the IP payload, others to the whole frame including headers. Always set the switch value higher than the host value if you are unsure.
+
+## Path MTU discovery, and how it breaks
+
+IPv4 hosts set the Don't Fragment bit and rely on routers to report a problem. When a router cannot forward a packet because it is too big for the next link, it drops it and sends back an ICMP "fragmentation needed" message carrying the correct MTU. The sender caches that and shrinks. IPv6 removed router fragmentation entirely, so this mechanism is not optional there.
+
+The break is that some networks block all ICMP. Now the oversized packet is dropped and the message that would have explained it never arrives. The connection completes its handshake, because SYN packets are small, and then hangs the moment real data flows. That is a PMTU black hole, and it is why "ping works but the transfer stalls" is a classic.
+
+If you administer a firewall, do not block ICMP wholesale. Permit type 3 code 4 on IPv4 and packet too big on IPv6. Blocking them breaks the protocol on purpose.
+
+## Finding the real MTU
+
+Send progressively larger packets with fragmentation disabled and find where they stop getting through:
+
+\`\`\`bash
+# 1472 payload + 8 ICMP header + 20 IP header = 1500
+ping -M do -s 1472 -c 2 10.20.0.10
+
+# too big for a 1500 path, should fail cleanly
+ping -M do -s 1473 -c 2 10.20.0.10
+
+# jumbo check on a segment you configured for 9000
+ping -M do -s 8972 -c 2 10.20.0.10
+\`\`\`
+
+Add 28 to the \`-s\` value to get the IP MTU. If 1472 succeeds and 1473 gives you "message too long" locally, your own interface is the limit. If 1473 just times out with no error, something upstream is dropping silently and you are in black hole territory.
+
+\`tracepath\` walks the path and reports where the MTU changes, which is faster than bisecting by hand.
+
+Set an interface MTU on Linux with:
+
+\`\`\`bash
+sudo ip link set dev eth1 mtu 9000
+ip link show eth1 | head -1
+\`\`\`
+
+## Clamping MSS for tunnels
+
+Any tunnel adds encapsulation overhead, so the usable MTU inside it is smaller than the underlying link. If PMTU discovery is unreliable across that path, and it usually is, clamp the TCP maximum segment size on the router so endpoints negotiate a size that fits:
+
+\`\`\`bash
+sudo iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \\
+  -j TCPMSS --clamp-mss-to-pmtu
+\`\`\`
+
+This rewrites the MSS option in the handshake so both sides agree on segments that will fit. It only helps TCP, but TCP is where the visible pain usually is.
+
+## A short checklist
+
+When something works small and fails big: confirm the interface MTU on both endpoints, walk the path with \`tracepath\`, check every switch port in the VLAN rather than assuming the VLAN has one value, verify ICMP unreachables are permitted through every firewall in the path, and clamp MSS if a tunnel is involved. In my experience it is almost always one forgotten port or one overly enthusiastic ICMP deny rule.
+
+## References
+
+- [RFC 1191: Path MTU Discovery](https://www.rfc-editor.org/rfc/rfc1191.html)
+- [RFC 8201: Path MTU Discovery for IPv6](https://www.rfc-editor.org/rfc/rfc8201.html)
+- [RFC 4821: Packetization Layer Path MTU Discovery](https://www.rfc-editor.org/rfc/rfc4821.html)
+- [tracepath(8) manual page](https://man7.org/linux/man-pages/man8/tracepath.8.html)
+- [iptables-extensions(8) manual page](https://man7.org/linux/man-pages/man8/iptables-extensions.8.html)
+- [Jumbo frame](https://en.wikipedia.org/wiki/Jumbo_frame)
+`,
+  },
+  {
+    slug: "vector-databases-explained",
+    title: "How Vector Databases Actually Work",
+    date: "2026-06-05",
+    tags: ["ai", "ml", "storage"],
+    excerpt:
+      "Embeddings, distance metrics, and approximate nearest neighbour indexes, explained without the hand waving. Plus the honest answer to whether you need a dedicated database.",
+    coverImage: "/images/blog/vector-databases-explained.jpg",
+    coverCredit: {
+      author: "Eric Fischer",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/24431382@N03/6276642489",
+    },
+    content: `
+## Embeddings are coordinates
+
+An embedding model turns a piece of text into a fixed length list of numbers. A few hundred to a few thousand floats, always the same length for a given model. That list is a point in a high dimensional space, and the model is trained so that things with similar meaning land near each other.
+
+That is the whole trick. Once text is coordinates, "find related documents" becomes "find nearby points," which is a geometry problem with decades of prior work behind it. A vector database is a system for storing those points and answering nearest neighbour queries quickly.
+
+Two things worth internalizing early. The coordinates are only meaningful within one model: vectors from two different embedding models are not comparable, ever. And re embedding your corpus is the cost you pay whenever you change models, so pick deliberately.
+
+## Distance metrics
+
+Three metrics cover almost everything.
+
+Cosine similarity measures the angle between two vectors and ignores their length. Euclidean distance measures straight line distance and does care about length. Dot product measures both at once.
+
+For text embeddings, cosine is the usual choice, because the direction carries the meaning and the magnitude often carries something incidental like document length. There is a useful shortcut: if you normalize every vector to unit length when you store it, cosine similarity and dot product become the same computation, and Euclidean distance becomes a monotonic function of both. Normalize on write, use dot product on read, and stop thinking about it.
+
+\`\`\`python
+import numpy as np
+
+def normalize(v):
+    return v / np.linalg.norm(v, axis=-1, keepdims=True)
+
+docs = normalize(np.random.randn(10000, 768).astype("float32"))
+query = normalize(np.random.randn(768).astype("float32"))
+
+scores = docs @ query          # cosine, because everything is unit length
+top = np.argpartition(-scores, 5)[:5]
+print(sorted(top, key=lambda i: -scores[i]))
+\`\`\`
+
+That is a complete exact search engine in six lines. Keep it in mind before you deploy anything.
+
+## Exact search is fine until it is not
+
+Brute force compares the query to every stored vector. It is exact, trivially correct, and its cost is linear in the number of vectors times the dimension count. Ten thousand documents at 768 dimensions is a few million floating point operations, which is nothing.
+
+At a million vectors it is still workable if you batch it. Somewhere past that, latency and memory push you toward an index. The threshold is much higher than most people assume, and I have watched people stand up a whole database service for a corpus that would fit in a numpy array.
+
+## Approximate indexes in plain terms
+
+Approximate nearest neighbour indexes trade a small amount of recall for a large amount of speed. Two families dominate.
+
+HNSW builds a layered graph. Every vector is a node connected to its near neighbours, with sparse long range links in upper layers. A search starts at the top, greedily walks toward the query, drops a layer, and repeats. It is fast, gives high recall, and supports incremental inserts. The costs are memory, because you store the graph as well as the vectors, and build time.
+
+IVF partitions the space into clusters, usually with k means, and stores which vectors belong to which cluster. A query finds the nearest few cluster centroids and only searches inside those. It is cheaper on memory and faster to build, but recall depends on how many clusters you probe, and vectors near a cluster boundary can be missed.
+
+Both expose a knob that trades recall for latency: \`ef_search\` for HNSW, \`nprobe\` for IVF. Tune it against a real query set and measure recall, because the default is a guess about someone else's data. Product quantization compresses the stored vectors on top of either, saving a lot of memory at some further accuracy cost.
+
+## The filtering trap
+
+Real queries are rarely pure similarity. You want the nearest documents that also belong to a tenant, or are not archived, or are newer than a date.
+
+The naive implementation retrieves the top k by similarity and then filters. If the filter is selective, you can easily get zero results back from a query that had thousands of valid matches, because all your top k belonged to the wrong tenant. This is the single most common bug I see in retrieval systems, and it presents as "the search is bad" rather than as an error.
+
+You want filtering pushed into the search, either by applying the predicate during graph traversal or by partitioning the index so each tenant has its own. Any serious vector store supports one of these. Check which one yours does before you rely on it.
+
+## Do you actually need one?
+
+Honest answer: often not, at first.
+
+Under a few hundred thousand vectors, a Postgres table with \`pgvector\` is usually the right call. You get similarity search plus real transactions, joins to your existing metadata, backups you already run, and one system to operate instead of two. Add an HNSW index when sequential scans get slow.
+
+If everything fits in memory in one process and the corpus is static, a library index in memory is even simpler.
+
+Reach for a dedicated vector database when you have tens of millions of vectors, need horizontal scaling, or need index features your existing database does not have. Those are real reasons. "It is what people use for this" is not.
+
+## References
+
+- [Nearest neighbor search](https://en.wikipedia.org/wiki/Nearest_neighbor_search)
+- [Hierarchical navigable small world](https://en.wikipedia.org/wiki/Hierarchical_navigable_small_world)
+- [Efficient and robust approximate nearest neighbor search using HNSW graphs](https://arxiv.org/abs/1603.09320)
+- [Cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity)
+- [PostgreSQL documentation](https://www.postgresql.org/docs/current/)
+`,
+  },
+  {
+    slug: "storage-benchmarking-fio",
+    title: "Benchmarking Storage With fio Without Fooling Yourself",
+    date: "2026-06-06",
+    tags: ["storage", "linux", "operations"],
+    excerpt:
+      "Most storage benchmarks measure the page cache, a drive's write buffer, or nothing useful at all. Here is how I set up fio so the numbers mean something.",
+    coverImage: "/images/blog/storage-benchmarking-fio.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/w/index.php?curid=46899252",
+    },
+    content: `
+## Four numbers, not one
+
+"How fast is this disk" is not a question with one answer. There are four, and a device can be excellent at one and terrible at another.
+
+Sequential throughput in MB/s, which matters for backups, media, and bulk copies. Random IOPS at small block sizes, which matters for databases, VM images, and anything with a lot of small files. Latency, usually at a stated percentile, which is what users actually feel. And consistency, meaning what happens to all three after the device has been busy for a while.
+
+Vendor sheets quote the first two under ideal conditions. Your workload cares more about the last two.
+
+## Why your first benchmark was wrong
+
+There are four classic ways to measure nothing.
+
+The page cache. Linux caches file data in RAM. A read test on a file that fits in memory measures RAM, and you get numbers that no storage device could produce. The fix is direct IO, or a working set several times larger than system memory, or both.
+
+Short runs. Consumer SSDs write incoming data to a fast buffer region and flush it later. A thirty second write test may never leave that buffer. Run long enough to exhaust it and you see the real sustained rate, which can be dramatically lower.
+
+Wrong queue depth. A single threaded, queue depth one test measures latency, not throughput. Flash devices need many outstanding requests to reach their rated IOPS. Testing a database workload at queue depth 64 is equally wrong in the other direction.
+
+Fresh drive. A never used device performs better than one that has been filled and rewritten, because garbage collection has nothing to do yet. Precondition it if you care about steady state.
+
+## A job file I trust
+
+I keep this and edit the top section per run:
+
+\`\`\`ini
+[global]
+ioengine=libaio
+direct=1
+filename=/mnt/test/fio.dat
+size=16G
+runtime=300
+time_based=1
+ramp_time=30
+group_reporting=1
+percentile_list=50:95:99:99.9
+
+[seq-read]
+rw=read
+bs=1M
+iodepth=32
+numjobs=1
+stonewall
+
+[seq-write]
+rw=write
+bs=1M
+iodepth=32
+numjobs=1
+stonewall
+
+[rand-read-4k]
+rw=randread
+bs=4k
+iodepth=32
+numjobs=4
+stonewall
+
+[rand-write-4k]
+rw=randwrite
+bs=4k
+iodepth=32
+numjobs=4
+stonewall
+
+[latency-qd1]
+rw=randread
+bs=4k
+iodepth=1
+numjobs=1
+stonewall
+\`\`\`
+
+The parts that matter: \`direct=1\` bypasses the page cache, \`ramp_time\` discards the warm up, \`time_based\` with a long \`runtime\` gets past write buffers, \`stonewall\` runs the sections in sequence rather than all at once, and \`percentile_list\` gives you tail latency rather than just an average.
+
+Run it and keep the output:
+
+\`\`\`bash
+sudo fio storage.fio --output-format=json --output=results-$(date +%F).json
+\`\`\`
+
+## Reading the output
+
+For the sequential jobs, read bandwidth. For the random jobs, read IOPS. For the queue depth one job, read the completion latency percentiles and ignore bandwidth entirely.
+
+The number I look at hardest is \`clat\` at the 99.9th percentile. Averages hide the behavior that causes complaints. A device with a good average and a 99.9th percentile in the hundreds of milliseconds will produce a system that feels randomly broken, and nobody will be able to reproduce it on demand.
+
+Also watch for a bandwidth number that starts high and collapses partway through the run. \`fio\` prints periodic status; if throughput drops off a cliff at minute two, you found the write buffer boundary and everything before it was fiction.
+
+## Comparing fairly
+
+If you are comparing two devices or two configurations, change exactly one thing. Same block sizes, same queue depths, same runtime, same filesystem, same fill level, same test file size. Write the parameters down next to the results, because in a month you will not remember whether the good number came from a queue depth of 32 or 1.
+
+Two more habits. Benchmark through the layer you will actually use: if the workload runs on a VM on a filesystem on a RAID set, testing the raw device tells you about the device, not about your stack. And never point a write test at a filename on a device that holds data, because \`fio\` will happily create and overwrite exactly what you told it to.
+
+## The honest limitation
+
+Synthetic benchmarks tell you the shape of a device's performance. They do not tell you how your application will behave, because real workloads mix reads and writes, have locality, and come in bursts. Use \`fio\` to compare hardware and to sanity check a configuration change. Use production metrics to decide whether the storage is actually your problem. I have replaced a drive that benchmarked poorly and changed nothing about the symptom, because the bottleneck was somewhere else entirely.
+
+## References
+
+- [fio documentation](https://fio.readthedocs.io/en/latest/fio_doc.html)
+- [Linux kernel administration guide](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+- [PostgreSQL documentation](https://www.postgresql.org/docs/current/)
+`,
+  },
+  {
+    slug: "rag-chunking-and-evaluation",
+    title: "Chunking And Evaluation Decide Your RAG Quality",
+    date: "2026-06-07",
+    tags: ["ai", "ml", "tools"],
+    excerpt:
+      "Retrieval augmented generation is mostly parsing, chunking, and evaluation. The model is the easy part, and it is not where your quality problems come from.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## The one paragraph version
+
+Retrieval augmented generation means: before you ask the model a question, go find relevant text and paste it into the prompt. That is it. There is no special model architecture involved. You are building a search engine whose results happen to be consumed by a language model instead of a human.
+
+Which means the quality of a RAG system is mostly the quality of the search. When people say their RAG deployment gives bad answers, the retrieval is wrong roughly every time and the generation is fine.
+
+## Ingestion, where the actual work is
+
+Parsing is the least discussed and most expensive part. Real corpora are PDFs with two column layouts, scanned documents, spreadsheets, wiki pages with tables, and slide decks where the meaning is in the arrangement.
+
+Getting clean text out of those is a grind. Bad extraction shows up downstream as chunks that read like word salad, and no amount of clever retrieval recovers from that. Before I build anything else, I dump a random sample of extracted text and read it. If a human cannot follow it, the pipeline is broken and nothing after this point matters.
+
+Keep metadata while you are here: source, title, section heading, page, modified date, and whatever access control identifier applies. You will need every one of those later for filtering and for citations.
+
+## Chunking is a retrieval decision
+
+Chunking is where most quality is won or lost, and people treat it as a formatting step.
+
+The tension is simple. Small chunks retrieve precisely but lose context, so the model gets a fragment that answers nothing. Large chunks carry context but dilute the embedding, because one vector now has to represent several unrelated ideas, and it ends up near nothing in particular.
+
+What works for me: split on structure first, meaning headings, sections, and paragraph boundaries, and only fall back to a fixed size window when a section is too long. Overlap consecutive chunks slightly so a sentence that straddles a boundary appears in both. Prepend the document title and section heading to the chunk text before embedding, so an isolated paragraph still carries what it is about.
+
+\`\`\`python
+def chunk(text, title, heading, max_chars=1200, overlap=150):
+    paras = [p.strip() for p in text.split("\\n\\n") if p.strip()]
+    out, buf = [], ""
+    for p in paras:
+        if len(buf) + len(p) + 2 > max_chars and buf:
+            out.append(buf)
+            buf = buf[-overlap:] + "\\n\\n" + p
+        else:
+            buf = (buf + "\\n\\n" + p).strip()
+    if buf:
+        out.append(buf)
+    prefix = f"{title} > {heading}\\n\\n"
+    return [prefix + c for c in out]
+\`\`\`
+
+Character counts are a rough proxy for tokens. If you are near a hard context limit, count tokens with the tokenizer your model actually uses.
+
+## Embedding and indexing
+
+Pick one embedding model and stay on it, because changing it means re embedding everything. Normalize vectors on write so similarity is a dot product. Store the chunk text, the vector, and all that metadata together so a retrieval result is immediately usable.
+
+Batch your embedding calls. Embedding a large corpus one chunk at a time is the difference between minutes and hours, and the API or local model will happily take a hundred at once.
+
+Make ingestion idempotent and content addressed. Hash the source document, and skip re embedding anything whose hash has not changed. You will re run this pipeline more times than you expect.
+
+## Retrieval, reranking, and the context budget
+
+Pure vector search misses exact terms. Someone searching for an error code or a product identifier wants a literal match, and embeddings are bad at those. Run keyword search alongside vector search and merge the results. Hybrid retrieval is a bigger quality improvement than almost anything else you can do.
+
+Then rerank. Retrieve more candidates than you need, say twenty, run a cross encoder or a cheap scoring pass over them, and keep the best handful. Reranking is more accurate than the first stage because it looks at query and document together instead of comparing two independent vectors.
+
+Finally, respect the context budget. Filling the prompt with everything you found is worse than sending three good chunks. Send the text, the source, and a clear instruction to answer only from the provided material and to say so when the material does not contain the answer.
+
+## Evaluate retrieval separately
+
+This is the discipline that separates a system that improves from one that just changes.
+
+Build a small evaluation set: real questions with the chunk or document that should be retrieved. Fifty is enough to be useful. Then measure recall at k, meaning how often the right material appears in the top k results, and do it as a plain number you can track.
+
+Now you can tune. Change chunk size, measure. Add hybrid search, measure. Add reranking, measure. If retrieval recall is high and answers are still bad, only then is it a prompting or model problem. Without this split you are guessing, and guessing at two coupled systems at once never converges.
+
+## References
+
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [pgvector and PostgreSQL documentation](https://www.postgresql.org/docs/current/)
+- [Nearest neighbor search](https://en.wikipedia.org/wiki/Nearest_neighbor_search)
+- [Word embedding](https://en.wikipedia.org/wiki/Word_embedding)
+- [OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+`,
+  },
+  {
+    slug: "cgroups-v2-resource-limits",
+    title: "Cgroups v2: Actually Limiting What A Service Can Take",
+    date: "2026-06-08",
+    tags: ["linux", "virtualization", "operations"],
+    excerpt:
+      "One runaway process should not take down a host. Cgroups v2 gives you CPU, memory, and IO limits, and systemd exposes all of it in three lines.",
+    coverImage: "/images/blog/cgroups-v2-resource-limits.jpg",
+    coverCredit: {
+      author: "barnoid",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/50359335@N00/151529520",
+    },
+    content: `
+## The problem
+
+A host runs a dozen services. One of them has a memory leak, or spawns a build that eats every core, or starts a backup that saturates the disk. Everything else on the box gets slow or dies, and the thing that actually gets killed by the out of memory handler is frequently not the guilty process.
+
+Control groups fix this by putting resource accounting and limits on groups of processes rather than trusting them to behave. Version 2 replaced the older split hierarchy with a single unified tree, and it is what current distributions use by default.
+
+## The unified hierarchy
+
+Everything lives under one mount, normally \`/sys/fs/cgroup\`. Each directory is a cgroup, nesting is real containment, and processes are members of exactly one group.
+
+\`\`\`bash
+# where is this process?
+cat /proc/$(pgrep -f my-service)/cgroup
+
+# what controllers are available here?
+cat /sys/fs/cgroup/cgroup.controllers
+
+# live view by group
+systemd-cgls
+systemd-cgtop
+\`\`\`
+
+There is one rule that confuses everyone the first time: the no internal process constraint. A cgroup that has child cgroups cannot itself hold processes when controllers are enabled. Processes live in leaves. If you try to structure things otherwise the kernel will refuse and the error is not obvious.
+
+## CPU: weight versus max
+
+Two different knobs, for two different intentions.
+
+\`cpu.weight\` is proportional share. Default 100, range 1 to 10000. It only matters under contention: a group with weight 200 gets twice the CPU time of one with weight 100 when both want more than is available. When the machine is idle, a low weight group can still use everything. This is what you want for prioritization.
+
+\`cpu.max\` is a hard ceiling, written as quota and period in microseconds. \`200000 100000\` means at most two cores worth of time per 100 ms period, even on an idle machine. This is what you want for predictability and for stopping a runaway.
+
+Use weight by default. Use max when you genuinely need a cap, and know that a hard cap causes throttling that can look like latency spikes in a request serving process.
+
+## Memory: high, max, and who dies
+
+\`memory.max\` is the hard limit. Exceed it and the kernel invokes the out of memory killer inside that group, so the process that overran is the one that dies, not some unrelated victim elsewhere on the host. That alone is worth configuring.
+
+\`memory.high\` is the throttle. Above it the kernel puts heavy reclaim pressure on the group and slows its allocations, but does not kill anything. It is a much kinder first line of defense.
+
+\`memory.min\` and \`memory.low\` protect memory from reclaim, which is how you keep an important service's working set resident while something else is churning.
+
+I set \`high\` somewhat below \`max\` on anything I do not fully trust. The service degrades before it dies, and the degradation is visible in metrics, which gives you time to react.
+
+## IO, the one people forget
+
+CPU and memory limits are useless if a single backup job makes the disk unusable. \`io.weight\` does proportional sharing, and \`io.max\` sets hard limits per device in bytes and operations per second:
+
+\`\`\`bash
+# 8:0 is the device major:minor from lsblk
+echo "8:0 rbps=52428800 wbps=52428800 riops=2000 wiops=2000" \\
+  | sudo tee /sys/fs/cgroup/system.slice/backup.service/io.max
+\`\`\`
+
+Note that IO limits interact badly with buffered writes, because the writeback happens later and in a different context. \`io.latency\` and the writeback integration handle a lot of this, but if you need strict guarantees, direct IO in the application is more reliable than any cgroup setting.
+
+## Do it through systemd
+
+Writing to \`/sys/fs/cgroup\` by hand does not survive a reboot and is not how you should manage this. Every knob above has a unit file directive, and systemd creates the cgroup for you.
+
+\`\`\`bash
+sudo systemctl edit backup.service
+\`\`\`
+
+\`\`\`ini
+[Service]
+CPUWeight=20
+CPUQuota=150%
+MemoryHigh=2G
+MemoryMax=3G
+MemorySwapMax=0
+IOWeight=20
+TasksMax=512
+\`\`\`
+
+Then check what actually applied, which is the step people skip:
+
+\`\`\`bash
+systemctl show backup.service -p CPUQuotaPerSecUSec -p MemoryMax -p IOWeight
+systemctl status backup.service | grep -i memory
+\`\`\`
+
+\`systemctl show\` reads the effective value. If it says \`infinity\` where you expected a number, the controller is not enabled on the parent slice or your drop in is not where you think it is.
+
+The way I apply all of this is deliberately unambitious. Every service I write a unit for gets \`MemoryMax\` at roughly double its observed steady state, and \`TasksMax\` to bound fork bombs. Anything batch flavored, backups, indexing, media processing, gets a low \`CPUWeight\` and a low \`IOWeight\` so interactive services win under contention. I only add \`CPUQuota\` when a hard ceiling is genuinely required, because throttling has its own costs.
+
+The goal is not to squeeze the machine. It is that a single bad process degrades itself first and the host last.
+
+## References
+
+- [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+- [systemd.service manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
+- [systemd.exec manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [Linux kernel documentation](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html)
+`,
+  },
+  {
+    slug: "llm-app-attack-surface",
+    title: "The Attack Surface Of An LLM Application",
+    date: "2026-06-09",
+    tags: ["security", "ai", "cybersecurity"],
+    excerpt:
+      "A model that reads untrusted text and can call tools is a confused deputy waiting to happen. Where the real trust boundaries are and how I would defend them.",
+    coverImage: "/images/blog/llm-app-attack-surface.jpg",
+    coverCredit: {
+      author: "Visual Content",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/143601516@N03/29723649810",
+    },
+    content: `
+## Draw the boundaries first
+
+Before anything else, draw the system and mark where trust changes. In a typical assistant that is: the user's input, whatever documents get retrieved, the model itself, any tools the model can invoke, and wherever the output ends up rendered.
+
+Once it is drawn, one fact dominates everything else. The model receives instructions and data in the same channel, as text, with no reliable way to distinguish them. Every other problem on this list is a consequence of that.
+
+## Prompt injection is not a filtering problem
+
+Prompt injection is when text the model reads causes it to do something the operator did not intend. Direct injection is a user typing "ignore your instructions." That one is mostly a nuisance, because the user is only attacking their own session.
+
+Indirect injection is the serious one. The model reads a web page, a support ticket, a code comment, a PDF, or a calendar invite that contains instructions, and it follows them. The attacker never touches your application. They just leave text where your system will pick it up.
+
+People try to solve this with a blocklist of phrases. It does not work, and it is worth understanding why: there are unlimited paraphrases, the content can be in another language, encoded, or split across documents, and you are trying to filter natural language with pattern matching. Treat mitigation as reducing blast radius, not as prevention.
+
+The system prompt is not a security control either. It is a suggestion with good odds, and odds are not a boundary.
+
+## Tool calling turns text into actions
+
+A model that only produces text has limited consequences. A model that can call functions is now an authenticated actor in your system, and the classic confused deputy problem applies directly: it holds privileges the person or document influencing it should not have.
+
+The rules I would hold to:
+
+The model's tools run with the requesting user's permissions, never with a service account that can see everything. If the user cannot read that record, neither can the model on their behalf.
+
+Anything destructive or externally visible requires human confirmation, and the confirmation must show what will actually happen, not a model generated summary of it. Sending, deleting, paying, merging, and posting all qualify.
+
+Tool inputs are validated like any other untrusted input, because that is what they are. The model is a very fluent user of your API and it will produce arguments no human would.
+
+\`\`\`python
+ALLOWED = {"search_docs", "get_ticket", "list_files"}   # read only by default
+CONFIRM = {"send_email", "delete_file", "create_pr"}
+
+def dispatch(call, ctx):
+    if call.name not in ALLOWED | CONFIRM:
+        raise PermissionError(f"tool not permitted: {call.name}")
+    args = SCHEMAS[call.name].validate(call.args)      # reject, do not coerce
+    if not ctx.user.can(call.name, args):              # user's rights, not the app's
+        raise PermissionError("caller lacks permission")
+    if call.name in CONFIRM:
+        return ctx.request_human_approval(call.name, args)
+    return TOOLS[call.name](**args, as_user=ctx.user)
+\`\`\`
+
+The important detail is \`as_user\`. If your tools run as the application, an injected instruction has the application's full reach.
+
+## Output is an untrusted string
+
+Model output is attacker influenceable text, so handle it the way you handle any attacker influenceable text.
+
+Rendering it as HTML without sanitizing gives you cross site scripting. Passing it to a shell gives you command injection. Concatenating it into SQL gives you SQL injection. Emitting a markdown image whose URL contains conversation content exfiltrates data the moment the client fetches it, with no click required.
+
+None of these are new vulnerability classes. They are the old ones with a new source, which is good news, because the existing defenses work: escape on output, parameterize queries, never build shell strings, and restrict which hosts rendered content may load from.
+
+## The retrieval layer leaks
+
+If your assistant retrieves from a shared corpus, access control has to be enforced in the retrieval query, not by asking the model to be discreet. Filter by the caller's permissions in the search itself, and re check on the way out.
+
+Two subtler leaks. Documents get indexed once with the permissions they had at the time, so revocations need to propagate into the index. And an attacker who can add content to the corpus can plant injected instructions for other users to retrieve later, which makes "who can write to the knowledge base" a security question.
+
+## What I would actually build
+
+Least privilege on every tool, scoped to the requesting user. Read only by default, with an explicit allowlist for anything else. Human confirmation on irreversible actions, showing real parameters. Output treated as untrusted at every sink. Access control enforced in retrieval. Rate limits and spend caps, because an injected loop is also a billing incident. And full logging of prompts, retrieved sources, tool calls, and arguments, because without that you cannot investigate anything.
+
+None of that stops injection. It means a successful injection reads a document it should not have rather than emptying an account, and that is the realistic goal today.
+
+## References
+
+- [OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
+- [MITRE ATT&CK](https://attack.mitre.org/)
+- [OWASP Threat Modeling](https://owasp.org/www-community/Threat_Modeling)
+`,
+  },
+  {
+    slug: "systemd-units-homelab",
+    title: "Writing systemd Units That Behave",
+    date: "2026-06-10",
+    tags: ["linux", "operations", "homelab"],
+    excerpt:
+      "Stop running services in a terminal multiplexer. A good unit file gives you restarts, logging, dependency ordering, and sandboxing for about fifteen lines of config.",
+    coverImage: "/images/blog/systemd-units-homelab.jpg",
+    coverCredit: {
+      author: "barnoid",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/50359335@N00/151529520",
+    },
+    content: `
+## Why I stopped using screen and cron
+
+For a long time my self written services ran inside a terminal multiplexer, started by hand, with output going to a log file I redirected myself. It works right up until the machine reboots at 4 in the morning and nothing comes back, or until the process dies and nobody notices for a week.
+
+systemd solves all of that, and the cost is one text file. You get automatic start at boot, restart on failure, dependency ordering, structured logging, resource limits, and a sandbox, without writing any of it yourself.
+
+## The minimum viable unit
+
+Put this at \`/etc/systemd/system/metrics-collector.service\`:
+
+\`\`\`ini
+[Unit]
+Description=Metrics collector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=metrics
+Group=metrics
+WorkingDirectory=/opt/metrics
+ExecStart=/opt/metrics/venv/bin/python -u collector.py
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+\`\`\`
+
+\`\`\`bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now metrics-collector
+journalctl -u metrics-collector -f
+\`\`\`
+
+Two details worth calling out. \`After=network-online.target\` with the matching \`Wants=\` is what you need when the service must reach the network at startup; plain \`network.target\` only means the networking stack has been configured, not that an address exists. And \`-u\` on Python, or the equivalent for your runtime, disables output buffering so logs appear in the journal immediately instead of in 4 KB bursts.
+
+Never run a service as root because it was easier. Create a system user with no shell and no home directory.
+
+## Restart policy, and not making things worse
+
+\`Restart=on-failure\` restarts on a non zero exit or a signal, but not on a clean exit. \`Restart=always\` restarts even on success, which is right for a daemon that should never exit and wrong for anything that legitimately finishes.
+
+The failure mode people hit is a service that crashes instantly because a dependency is down, restarts, crashes, and hammers that dependency hundreds of times a minute. Rate limiting is built in:
+
+\`\`\`ini
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+\`\`\`
+
+Five failures in five minutes and systemd stops trying and leaves the unit in a failed state, which is exactly what you want, because a unit sitting in \`failed\` is visible and a unit in a crash loop looks like it is running.
+
+## Sandboxing you get for free
+
+This is the part I wish I had used sooner. A handful of directives dramatically reduce what a compromised service can reach:
+
+\`\`\`ini
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/metrics
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+\`\`\`
+
+\`ProtectSystem=strict\` makes the entire filesystem read only except \`/dev\`, \`/proc\`, \`/sys\`, and whatever you list in \`ReadWritePaths\`. That single line stops a lot of bad outcomes.
+
+Grade your work:
+
+\`\`\`bash
+systemd-analyze security metrics-collector.service
+\`\`\`
+
+It scores each unit and lists what you left open. Do not chase a perfect score, but going from wide open to reasonably locked down is usually ten minutes of work. Add directives one at a time and restart between each, because \`SystemCallFilter\` in particular will break runtimes that need something you did not anticipate.
+
+## Timers instead of cron
+
+For periodic work, timers beat cron: the same logging, the same dependency handling, the same sandboxing, plus the ability to catch up on missed runs after downtime.
+
+A oneshot service:
+
+\`\`\`ini
+[Unit]
+Description=Nightly config backup
+
+[Service]
+Type=oneshot
+User=backup
+ExecStart=/usr/local/bin/backup-configs.sh
+\`\`\`
+
+And its timer, at \`backup-configs.timer\`:
+
+\`\`\`ini
+[Unit]
+Description=Run config backup nightly
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=900
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+\`\`\`
+
+\`Persistent=true\` runs a missed job after the machine comes back up. \`RandomizedDelaySec\` staggers things so twelve hosts do not all hit the same target at once. Enable the timer, not the service.
+
+\`\`\`bash
+systemctl list-timers --all
+\`\`\`
+
+## Debugging
+
+\`systemctl status\` for the current state and the last few log lines. \`journalctl -u name -b\` for this boot, \`-p err\` to filter by priority, \`--since "10 min ago"\` to narrow. \`systemd-analyze verify unit.service\` catches syntax and dependency mistakes before you deploy them, which is worth running in CI if you keep unit files in a repository.
+
+Two failure patterns cover most of what I hit. When a unit refuses to start and the logs say nothing useful, comment out the sandboxing directives and add them back one by one; that is the answer perhaps four times out of five. And when a unit starts fine by hand but fails at boot, it is an ordering problem: something it needs, usually the network or a mounted filesystem, was not ready yet, and the fix is a correct \`After=\` and \`Requires=\` rather than a sleep in the start script.
+
+## References
+
+- [systemd.service manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
+- [systemd.timer manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
+- [systemd.exec manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd-analyze manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+`,
+  },
+  {
+    slug: "serving-models-batching-kv-cache",
+    title: "Serving A Model: Batching, KV Cache, And Concurrency",
+    date: "2026-06-11",
+    tags: ["ai", "servers", "operations"],
+    excerpt:
+      "One request at a time is not a benchmark. What actually determines how many people a single inference host can serve, and which metrics tell you the truth.",
+    coverImage: "/images/blog/serving-models-batching-kv-cache.jpg",
+    coverCredit: {
+      author: "letavua",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/42845968@N06/5171684817",
+    },
+    content: `
+## One request is a bad benchmark
+
+Almost every "how fast is this model" number you see was measured with a single request and no other load. That tells you the best case latency for one lucky user and nothing about capacity.
+
+Serving is a queueing problem. What you actually need to know is how many concurrent users a host can carry before latency crosses the line where the product feels broken. Getting there means understanding three things: the two phases of generation, how batching exploits them, and why the key/value cache is your real capacity limit.
+
+## Two phases, two bottlenecks
+
+Prefill processes the whole prompt at once. Every token is available, so the work is large dense matrix multiplication and the hardware runs near its compute limit. Prefill cost grows with prompt length and it determines time to first token.
+
+Decode produces one token at a time, each depending on the last. The arithmetic per token is small, but producing it requires reading essentially all of the model weights out of memory. So decode is bandwidth bound, and it determines the inter token latency that a user perceives as typing speed.
+
+Those two facts drive everything else. A long prompt with a short answer is a prefill problem. A short prompt with a long answer is a bandwidth problem. Tuning for one does not help the other.
+
+## Why batching works
+
+Here is the key insight: during decode, the weights get read from memory regardless of how many sequences you are processing. Serving one user reads the whole model to produce one token. Serving sixteen users reads the whole model once to produce sixteen tokens.
+
+So aggregate throughput rises almost linearly with batch size until you run out of memory or hit the compute limit, while per user speed barely changes. Batching is close to free throughput, which is why nobody serious serves requests one at a time.
+
+Naive static batching wastes most of that, because it collects a fixed group, runs it to completion, and makes short requests wait for the longest one. Continuous batching, which every modern serving stack implements, keeps a running set of sequences and swaps a finished one out for a queued one at each decode step. Utilization goes way up and queue time goes way down.
+
+## The KV cache is your capacity limit
+
+Every active sequence holds a key/value cache proportional to its length. Total KV memory is what is left after the weights, and it is a fixed budget:
+
+\`\`\`python
+def concurrency(total_gb, weight_gb, layers, kv_heads, head_dim,
+                avg_tokens=2048, kv_bits=16, reserve_gb=2.0):
+    gib = 1024 ** 3
+    budget = (total_gb - weight_gb - reserve_gb) * gib
+    per_token = 2 * layers * kv_heads * head_dim * (kv_bits / 8)
+    per_seq = per_token * avg_tokens
+    return int(budget // per_seq)
+
+print(concurrency(24, 4.2, 32, 8, 128, avg_tokens=2048))
+\`\`\`
+
+Change \`avg_tokens\` from 2048 to 8192 and watch capacity divide by four. That is the single most important operational fact about serving: allowing longer contexts reduces how many users you can serve, proportionally, and it does it silently until you hit the wall.
+
+Two mitigations worth knowing. Paged attention stores the cache in fixed size blocks instead of contiguous per sequence reservations, which removes most of the fragmentation waste and is why modern servers fit far more concurrent sequences than naive math predicts. And prefix caching reuses the cache for a shared prompt prefix across requests, which is a large win when every request starts with the same long system prompt.
+
+## Queueing, timeouts, backpressure
+
+When the batch is full, new requests queue. If arrivals exceed capacity, the queue grows without bound and everyone gets a terrible experience instead of some people getting a good one.
+
+Set a maximum queue depth and reject beyond it with a clear retry signal. Set a request timeout and a maximum generation length so one pathological request cannot hold a slot forever. Cap the output tokens per request, because an unbounded generation is an unbounded resource commitment.
+
+Rejecting load is not failure. It is the behavior that keeps the accepted load fast.
+
+## What I measure
+
+Four metrics, always at percentiles, never as averages: time to first token, which is prefill plus queue wait; inter token latency, which is decode speed; end to end request latency; and total output tokens per second across the host.
+
+Then a small load generator that ramps concurrency and records all four, so I get a curve instead of a point. The curve has a knee. Below it, throughput rises and latency is flat. Above it, throughput plateaus and latency climbs while requests sit in queue. Your operating limit is just below the knee, and no amount of reading spec sheets will tell you where it is on your hardware with your prompts.
+
+## References
+
+- [vLLM documentation](https://docs.vllm.ai/en/latest/)
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- [GQA: Training Generalized Multi-Query Transformer Models](https://arxiv.org/abs/2305.13245)
+- [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
+- [Prometheus documentation](https://prometheus.io/docs/introduction/overview/)
+`,
+  },
+  {
+    slug: "object-storage-on-prem",
+    title: "Running S3 Compatible Object Storage On Your Own Hardware",
+    date: "2026-06-12",
+    tags: ["storage", "servers", "homelab"],
+    excerpt:
+      "Object storage is not a file share with a different name. What the API buys you, how durability really works, and where it is the wrong tool.",
+    coverImage: "/images/blog/object-storage-on-prem.jpg",
+    coverCredit: {
+      author: "blakespot",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/35448539@N00/2378337709",
+    },
+    content: `
+## Why not just use a file share
+
+A file share gives you a hierarchy, partial writes, locking, and POSIX semantics. That is a lot of machinery, and it is the reason file shares are hard to scale and unpleasant to use across a network you do not control.
+
+Object storage throws most of it away. An object has a key, some bytes, and metadata. You put the whole thing or you get the whole thing. There is no directory tree, only keys that contain slashes and a listing API that pretends. There is no partial update, no locking, no rename.
+
+Losing those features is the point. Without them a system can spread objects across many machines, replicate them, and serve them over plain HTTP without coordination. If your workload is "write a file once, read it many times, never modify it in place," object storage fits it exactly. Backups, artifacts, media, logs, dataset snapshots, and model weights are all that shape.
+
+## The API is the product
+
+The reason to run something S3 compatible rather than inventing your own is that the S3 API is effectively the interface every tool already speaks. Backup software, container registries, log shippers, database dump tools, CI systems, and every cloud SDK can point at an endpoint and a set of credentials.
+
+That is real leverage. You configure a backup tool to write to your own hardware today, and the same configuration points at a cloud provider tomorrow with a URL change.
+
+\`\`\`bash
+aws --endpoint-url https://s3.lab.example.net s3 mb s3://backups
+aws --endpoint-url https://s3.lab.example.net s3 cp ./dump.sql.zst s3://backups/db/
+aws --endpoint-url https://s3.lab.example.net s3api put-bucket-versioning \\
+  --bucket backups --versioning-configuration Status=Enabled
+\`\`\`
+
+Note the moving parts: an endpoint, a bucket, a key, and a credential pair. That is the whole model.
+
+## Durability: replication versus erasure coding
+
+Two ways to survive a failed disk.
+
+Replication stores N full copies. Simple, fast to read, fast to repair, and it costs N times the raw capacity. Three copies means you use three terabytes to store one.
+
+Erasure coding splits an object into K data fragments plus M parity fragments and spreads all of them across devices. Any K of the K+M fragments reconstruct the object, so you survive M failures. The overhead is (K+M)/K, so an 8+4 scheme survives four failures at 1.5x the raw capacity instead of the 5x that five replicas would cost.
+
+Erasure coding is the better deal on space and the worse deal on CPU, small object efficiency, and repair time. Reconstructing an object requires reading fragments from many devices, so rebuilds are IO heavy. Small objects fragment poorly, since fragment count is fixed regardless of size.
+
+The thing to understand clearly: neither is a backup. Both protect against device failure inside one system. Neither protects against a mistaken delete, a bad script, ransomware, or the building. Cross site replication and versioning do that.
+
+## Buckets, policies, and keys
+
+Access is a bucket policy plus an access key and secret. The mistakes are always the same two: one credential pair used everywhere, and a policy that grants more than the client needs.
+
+Give every consumer its own credential, scoped to its own bucket or key prefix, with only the actions it uses. A backup agent needs to put objects and probably list them. It does not need to delete them, and denying delete is a meaningful defense against a compromised host wiping its own backups.
+
+\`\`\`json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::backups",
+        "arn:aws:s3:::backups/host-a/*"
+      ]
+    }
+  ]
+}
+\`\`\`
+
+Note that \`ListBucket\` applies to the bucket resource while object actions apply to the key pattern. Getting that split wrong is the most common reason a policy silently does not work.
+
+## Versioning, object lock, and lifecycle
+
+Versioning keeps old copies when an object is overwritten or deleted, which turns "someone deleted the backups" from an incident into an inconvenience. Object lock goes further and makes objects immutable for a retention period, so even an administrator credential cannot remove them until it expires. For backups exposed to any machine that could be compromised, that is the control worth having.
+
+The obvious catch is that versions and locked objects consume space forever unless you manage them. Lifecycle rules expire noncurrent versions after a set number of days, and they are not optional at any real scale. Set them at the same time you turn versioning on, not later, because later is after the disks fill.
+
+## Where it does not fit
+
+Object storage is a bad database, a bad home directory, and a bad place for anything that needs in place modification, byte range writes, or file locking. Do not put a VM disk image on it and expect it to behave. Do not use it for a working directory where files change constantly, because every change writes a whole new object.
+
+It is also not automatically fast for small objects. Each operation is an HTTP request with its own round trip and authentication, so a workload that writes ten thousand tiny files will be dominated by per request overhead. Batch small things into archives before uploading.
+
+Used for what it is good at, it is one of the most useful services you can run on your own hardware, mostly because of how much software already knows how to talk to it.
+
+## References
+
+- [Amazon S3 API reference](https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html)
+- [MinIO documentation](https://min.io/docs/minio/linux/index.html)
+- [Object storage](https://en.wikipedia.org/wiki/Object_storage)
+- [Erasure code](https://en.wikipedia.org/wiki/Erasure_code)
+`,
+  },
+  {
+    slug: "ai-in-security-operations",
+    title: "How I Would Evaluate AI In Security Operations",
+    date: "2026-06-13",
+    tags: ["ai", "security", "monitoring"],
+    excerpt:
+      "My own take on where language models plausibly help a security team, where I would not let them near, and the questions I would ask any vendor making claims.",
+    coverImage: "/images/blog/ai-in-security-operations.jpg",
+    coverCredit: {
+      author: "ResoluteSupportMedia",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/29456680@N06/4902364107",
+    },
+    content: `
+## An opinion piece, clearly labelled
+
+Everything below is my analysis, not reporting. I am not describing any specific product or claiming what any vendor has shipped. I am writing down the framework I would use to judge a claim, because the marketing in this space runs well ahead of the evidence and I would rather have a checklist than a vibe.
+
+## Start with what the work actually is
+
+Before evaluating a tool, be honest about where the hours go. In most security operations the time sinks are: triaging a large volume of alerts that are mostly not incidents, gathering context that lives in five different systems, writing up what happened, keeping detection content current, and chasing the same misconfiguration across many hosts.
+
+Notice that very little of that is "detect the attack nobody has seen." Most of it is retrieval, correlation, and writing. That matters, because retrieval, correlation, and writing are exactly what language models are good at, and detection of novel attacks is exactly what they are not obviously good at.
+
+It is also worth remembering that machine learning has been in security tooling for a long time and the successes are unglamorous: spam classification, malware family clustering, anomaly detection on numeric telemetry, user behaviour baselines. Those work because they operate on large volumes of labelled or structured data with a clear signal.
+
+If a problem can be solved with a threshold, a rule, or a well understood classifier, use that. It is cheaper, faster, deterministic, explainable, and testable. Reaching for a language model when a \`WHERE\` clause would do is a common and expensive mistake.
+
+## Three jobs I would plausibly hand a model
+
+Context assembly. Given an alert, pull the asset owner, recent changes, the user's normal behaviour, related tickets, and relevant threat intel into one summary. This is retrieval and formatting, the output is checkable against sources, and being wrong is annoying rather than dangerous.
+
+Translation between representations. Turning a plain description into a query in your SIEM's language, converting a detection rule between formats, explaining a piece of obfuscated script, summarizing what a config change does. The analyst still reads and runs the result, so there is a human check built in.
+
+First draft writing. Incident timelines, post incident reports, ticket summaries, customer notifications. The facts come from the analyst, the model handles the structure and the prose. This is where I think the honest time savings are, and it is boring, which is why nobody advertises it.
+
+## Three jobs I would not hand a model
+
+Autonomous response. Isolating a host, disabling an account, or blocking a range based on a model's judgement with nobody in the loop. The failure mode is a self inflicted outage, and prompt injection through attacker controlled log content makes it worse: an attacker who can write text into your logs can potentially influence a system that reads them.
+
+Being the detection itself. If the model decides what is malicious, you cannot explain a decision to an auditor, you cannot unit test it, its behaviour changes when the model changes, and you cannot reason about what it will miss. Deterministic detections with a model assisting the analyst is a much better division of labour.
+
+Anything where a confident wrong answer is expensive and unverifiable. If a human cannot cheaply check the output, the output has no business being trusted.
+
+## The questions I would ask
+
+What is the baseline, measured how? "Reduces triage time" against what starting point, on whose alerts?
+
+What is the false negative rate, not just the false positive rate? Anything that suppresses alerts is a filter, and a filter's dangerous error is the one it hides.
+
+Can I see the evidence for each conclusion, linked to the source records? If it cannot cite, an analyst has to redo the work anyway.
+
+What happens when the model is wrong, and who notices? Is there a review path, or does the output flow straight into a ticket nobody re reads?
+
+Where does my data go, what is retained, and for how long? Security telemetry is among the most sensitive data an organization has.
+
+Can I evaluate it on my own data before buying? A demo on curated examples proves nothing.
+
+I keep those as a literal scorecard, one file per tool under evaluation, so the comparison is written down rather than remembered:
+
+\`\`\`yaml
+tool: alert-triage-assistant
+evaluated_on: our own alert sample, 200 alerts, 2 weeks
+baseline: median analyst triage time, measured before rollout
+questions:
+  false_negative_rate: unknown           # blocker, must be measured
+  cites_evidence: yes, links to source events
+  human_in_loop_for_actions: yes, read only integration
+  data_retention: 30 days, vendor side   # needs review
+  offline_eval_possible: yes
+decision: pilot on low severity queue only, re-evaluate in 60 days
+\`\`\`
+
+If the important rows come back as "unknown" and the vendor cannot fill them in, that is the answer.
+
+## The part nobody markets
+
+Whatever you deploy becomes infrastructure you have to run. It needs monitoring, an on call story, version pinning, a rollback plan, and a way to tell whether its output quality has drifted. It becomes a dependency during an incident, which means it needs to work when other things are broken.
+
+And it is a new attack surface: a system that ingests attacker influenced text and has access to your security data is a target worth attacking. I would threat model it exactly as carefully as I would threat model the SIEM itself.
+
+My overall position, held loosely: this is a genuine productivity tool for the writing and retrieval parts of the job, an obvious risk in the decision making parts, and the deciding factor for any specific claim is whether the vendor can show you evidence on your own data rather than on theirs.
+
+## References
+
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
+- [NIST SP 800-61 Rev. 2: Computer Security Incident Handling Guide](https://csrc.nist.gov/pubs/sp/800/61/r2/final)
+- [MITRE ATT&CK](https://attack.mitre.org/)
+- [OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+`,
+  },
+  {
+    slug: "internal-pki-private-ca",
+    title: "Running An Internal CA Without Regretting It",
+    date: "2026-06-14",
+    tags: ["security", "tools", "operations"],
+    excerpt:
+      "Self signed certificates everywhere is not a plan. A two tier internal CA, short lifetimes, and automated issuance, with the design decisions that matter most.",
+    coverImage: "/images/blog/internal-pki-private-ca.jpg",
+    coverCredit: {
+      author: "Ashley Basil",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/28438417@N08/31172894922",
+    },
+    content: `
+## The self signed trap
+
+Everyone starts the same way. A service needs TLS, you generate a self signed certificate, you click through the browser warning, and you move on. Then you have twenty services, twenty warnings, and you have trained yourself to ignore certificate errors, which is the exact instinct that gets people compromised.
+
+An internal certificate authority fixes this properly. You install one root certificate on your machines, every internal service gets a certificate that chains to it, and warnings mean something again.
+
+The catch is that a CA is a long lived piece of infrastructure with a key that can impersonate every service you own. Set it up carelessly and you will either rebuild it in a year or hand an attacker something very useful.
+
+## Two tiers, and why
+
+Do not issue certificates directly from your root.
+
+The root's job is to sign one thing: an intermediate CA certificate. Then the root key goes offline, encrypted, on media that is not attached to a running machine, ideally with a copy somewhere physically separate. The intermediate does the day to day issuing.
+
+The reason is recovery. If the issuing key is compromised, you revoke the intermediate, bring the root out, sign a new intermediate, and reissue. Painful but survivable, and the root certificate distributed to every client stays valid. If the root key itself is compromised, you have to reinstall trust on every device you own, which in practice means the CA is finished.
+
+Give the root a long life, ten to twenty years, since replacing it means touching every client. Give the intermediate something much shorter, a few years, since rotating it is comparatively cheap.
+
+\`\`\`bash
+# root, kept offline afterwards
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 \\
+  -keyout root.key -out root.crt -days 7300 -subj "/CN=Lab Root CA"
+
+# intermediate CSR, signed by the root
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:P-256 \\
+  -keyout inter.key -out inter.csr -subj "/CN=Lab Issuing CA 1"
+\`\`\`
+
+## Naming and SANs, decided up front
+
+Get this right before you issue anything, because changing it means reissuing everything.
+
+Modern clients ignore the common name entirely and validate against the subject alternative name extension. A certificate without a SAN will be rejected no matter how correct the CN looks. Every certificate needs SAN entries for every name and address clients will actually use.
+
+Use real DNS names from a domain you control, including internally. Reserve a subdomain for internal use. Do not invent a fake top level domain, because the collision risk is real and some resolvers and browsers treat unknown suffixes strangely.
+
+Include IP addresses in the SAN only when something genuinely connects by address, and prefer fixing the client to use a name.
+
+\`\`\`ini
+# csr.cnf
+[req]
+distinguished_name = dn
+req_extensions     = ext
+prompt             = no
+
+[dn]
+CN = metrics.lab.example.net
+
+[ext]
+subjectAltName = @alt
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+
+[alt]
+DNS.1 = metrics.lab.example.net
+DNS.2 = metrics
+IP.1  = 10.20.5.14
+\`\`\`
+
+\`\`\`bash
+openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:P-256 \\
+  -nodes -keyout metrics.key -out metrics.csr -config csr.cnf
+\`\`\`
+
+## Short lifetimes beat revocation
+
+Revocation on internal networks barely works. Certificate revocation lists need to be published, fetched, and honoured, and clients are inconsistent about all three. OCSP needs a responder that is reachable and available, which is another service to run and another thing to break.
+
+The practical alternative is short lived certificates issued automatically. If a leaf certificate lives for weeks rather than years, a compromised key expires on its own before revocation would have propagated anyway.
+
+That only works if issuance is automated, which is the real argument for running ACME internally instead of signing CSRs by hand. Set up an ACME capable CA, point your services at it, and renewal becomes something that happens without you. Manual issuance always ends in an expired certificate on a Sunday.
+
+## Distributing trust
+
+The root certificate has to land in every trust store that matters, and there are more of them than you expect: the OS store, the browser store on some platforms, Java's own store, Python's certifi bundle, Node's bundle, and every container image you build.
+
+\`\`\`bash
+sudo cp root.crt /usr/local/share/ca-certificates/lab-root.crt
+sudo update-ca-certificates
+\`\`\`
+
+Push it with configuration management rather than by hand, and add it to your base container images. Distribute the root only, never the intermediate alone, and never the private key of either.
+
+## Rules I hold to
+
+The root key stays offline and encrypted, with a tested recovery copy. Leaf certificates are short lived and issued automatically. Every certificate has correct SANs. Keys are generated on the machine that will use them and never emailed or copied around. Certificate expiry is monitored and alerts before it matters, because monitoring is what turns a certificate outage into a ticket.
+
+That last one is the difference between a CA that helps and a CA that becomes the thing that breaks everything twice a year.
+
+## References
+
+- [RFC 5280: X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280.html)
+- [RFC 8555: Automatic Certificate Management Environment (ACME)](https://www.rfc-editor.org/rfc/rfc8555.html)
+- [RFC 6960: Online Certificate Status Protocol](https://www.rfc-editor.org/rfc/rfc6960.html)
+- [NIST SP 800-52 Rev. 2: Guidelines for TLS Implementations](https://csrc.nist.gov/pubs/sp/800/52/r2/final)
+- [OpenSSL documentation](https://docs.openssl.org/master/man1/openssl-req/)
+- [step-ca documentation](https://smallstep.com/docs/step-ca/)
+`,
+  },
+  {
+    slug: "reading-rfcs-practically",
+    title: "How To Actually Read An RFC",
+    date: "2026-06-15",
+    tags: ["learning", "networking", "career"],
+    excerpt:
+      "Specifications are the primary source for everything on the network. They are also long and dry. Here is the reading order and the vocabulary that make them usable.",
+    coverImage: "/images/blog/reading-rfcs-practically.jpg",
+    coverCredit: {
+      author: "Jordanhill School D&T Dept",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/42042252@N02/5039920492",
+    },
+    content: `
+## Why bother
+
+Almost every tutorial you find about a protocol is someone's summary of a specification, filtered through what they happened to need that day. The specification is the actual answer, and it is free, permanent, and usually more readable than its reputation suggests.
+
+I started reading them because vendor documentation kept disagreeing with what I saw on the wire. The specification settles those arguments. It also teaches you something more durable than any product: how the protocol is supposed to behave, which is what lets you recognize when an implementation is wrong.
+
+## What an RFC is, and is not
+
+An RFC is a numbered document published by the RFC Editor. The number is permanent and the content never changes after publication. If something needs fixing, a new RFC is published that updates or obsoletes the old one.
+
+That last point is the single most important thing to check, and the thing beginners get wrong most often. You can easily land on a document from decades ago that has been fully replaced. The header block at the top of the page tells you: it will say "Obsoletes: 1234" or, on the old document, "Obsoleted by: 9999." Always look before you invest an hour.
+
+Also check the category. Standards Track documents are the ones defining what implementations should do. Informational documents describe something without standardizing it. Experimental means what it says. Best Current Practice describes recommended operational behaviour rather than protocol format. And not every RFC is serious, since the ones published on the first of April are jokes, some of them very good ones.
+
+## The reading order I use
+
+I do not read them front to back. That is how you bounce off.
+
+First, the abstract and the status header. Thirty seconds to learn what it covers and whether it is still current.
+
+Second, the table of contents. Specifications are structured predictably: terminology, overview, message formats, procedures, security considerations, IANA considerations. Knowing the shape means you can jump.
+
+Third, the terminology section. Never skip this. Specifications define words precisely and often differently from casual usage, and misreading one defined term will make the whole document seem contradictory.
+
+Fourth, whatever specific section I came for.
+
+Fifth, the security considerations section, which is genuinely the most interesting part of most documents and the part most people never open. It is where the authors write down what they know can go wrong.
+
+I read the introduction last, if at all. It is usually history and motivation, which is worth reading once you already know the protocol and useless before.
+
+## RFC 2119 keywords are the whole game
+
+When a document says it uses the keywords from RFC 2119, those words in capitals have exact meanings and the entire specification hangs on them.
+
+MUST is an absolute requirement. MUST NOT is an absolute prohibition. SHOULD means there may be valid reasons to do otherwise, but understand them fully first. MAY is genuinely optional.
+
+The practical consequence is interoperability. If your implementation depends on the other side doing something the specification only marks SHOULD, you have a bug waiting for a peer that made the other choice. When I read a specification looking for why two things do not interoperate, I search for the capitalized keywords first, because the answer is almost always at a SHOULD or a MAY where two implementers chose differently.
+
+## Reading a packet format diagram
+
+Older documents draw headers in ASCII, in rows of 32 bits, numbered left to right starting at zero. Once you can read one you can read them all, and you can turn it directly into parsing code.
+
+\`\`\`python
+import struct
+
+# IPv4 header, first 20 bytes: version/IHL, DSCP/ECN, total length,
+# identification, flags/fragment offset, TTL, protocol, checksum, src, dst
+def parse_ipv4(buf):
+    (vihl, tos, total_len, ident, flags_frag,
+     ttl, proto, csum, src, dst) = struct.unpack("!BBHHHBBH4s4s", buf[:20])
+    return {
+        "version": vihl >> 4,
+        "ihl_bytes": (vihl & 0x0F) * 4,
+        "total_length": total_len,
+        "ttl": ttl,
+        "protocol": proto,
+        "flags": flags_frag >> 13,
+        "frag_offset": (flags_frag & 0x1FFF) * 8,
+    }
+\`\`\`
+
+Writing that from the diagram, then checking it against a real capture, is the fastest way I know to make a specification stop being abstract. The bit manipulation for fields smaller than a byte is where the diagram earns its keep.
+
+## Turn it into a lab
+
+Reading alone does not stick. Pick something small, read the relevant section, then go verify it.
+
+Capture the traffic and find the fields you just read about. Deliberately violate a MUST and observe what the other end does. Write a minimal parser or a minimal client. Compare two implementations and find where they differ at a SHOULD.
+
+That loop, read a section then prove it on the wire, has taught me more than any course. And the habit generalizes: once you are comfortable reading a protocol specification, kernel documentation, hardware datasheets, and API references all stop looking intimidating, because they are the same kind of document.
+
+## References
+
+- [RFC 2119: Key words for use in RFCs](https://www.rfc-editor.org/rfc/rfc2119.html)
+- [RFC 8174: Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words](https://www.rfc-editor.org/rfc/rfc8174.html)
+- [RFC 2026: The Internet Standards Process](https://www.rfc-editor.org/rfc/rfc2026.html)
+- [RFC 791: Internet Protocol](https://www.rfc-editor.org/rfc/rfc791.html)
+- [Official Internet Protocol Standards](https://www.rfc-editor.org/standards)
+- [Python struct module documentation](https://docs.python.org/3/library/struct.html)
+`,
+  },
+  {
+    slug: "threat-modeling-your-own-builds",
+    title: "Threat Modeling Something You Built Yourself",
+    date: "2026-06-16",
+    tags: ["security", "homelab", "learning"],
+    excerpt:
+      "Four questions, one honest diagram, and a written record. Threat modeling your own projects is the highest value security work you can do for free.",
+    coverImage: "/images/blog-cover-default.png",
+    content: `
+## Four questions
+
+Threat modeling has a reputation as a heavyweight enterprise process with special software and a two day workshop. It is not. It is four questions, and you can answer them for a personal project in an afternoon.
+
+What are we building? What can go wrong? What are we going to do about it? Did we do a good job?
+
+That is the whole method. Everything else, every framework and diagram notation, is scaffolding to help you answer question two without missing something obvious.
+
+## Draw the thing, honestly
+
+Start with a diagram. Not an architecture diagram for a presentation, a working sketch that shows what actually exists.
+
+Put on it: every process, every place data is stored, every flow between them, and every external entity that touches the system. Then draw trust boundaries as lines wherever the level of trust changes. Across the internet edge. Between an authenticated user and an anonymous one. Between a VLAN with your workstations and one with untrusted devices. Between a container and its host.
+
+The boundaries are where the interesting problems live, because a boundary is a place where something is checked or, more usefully, a place where you forgot to check.
+
+Two rules for the diagram. It must reflect reality, including the temporary thing you set up six months ago and never removed. And it must include the management and monitoring paths, because those are frequently the least protected and the most powerful.
+
+## Finding threats without a framework fetish
+
+For each element and each flow, ask what an attacker could do. STRIDE is a useful prompt list, not a religion:
+
+Spoofing, meaning pretending to be someone else. Tampering, meaning modifying data in transit or at rest. Repudiation, meaning doing something without a trace. Information disclosure, meaning reading what you should not. Denial of service. Elevation of privilege.
+
+Walk each flow and each store, and for each one ask the six. Most will not apply. The value is in the ones that make you pause.
+
+For personal infrastructure I add a seventh that no framework lists: what happens when I am the threat. Fat fingered command, forgotten firewall rule left open during testing, a credential in a repository, a backup that has never been restored. Realistically, self inflicted incidents outnumber attacks for anything not exposed to the internet, and the mitigations are cheap.
+
+## Rank by what you would actually do
+
+Do not build a risk matrix with numeric scores you invented. Sort into three buckets instead.
+
+Fix now: the threat is realistic, the impact is serious, and the fix is something you can do this week. Management interface reachable from an untrusted network. Default credential still in place. Backups that have never been test restored.
+
+Fix later, written down: real but lower impact, or expensive to address. This bucket exists so the item is a decision rather than an oversight.
+
+Accept, with a reason: you thought about it and chose not to act. Write the reason. "Physical access to the building is out of scope for my home network" is a legitimate position; forgetting to consider it is not.
+
+## Write it down so it survives
+
+The output is not the diagram, it is a short document you will actually reread. I keep it in the repository next to the thing it describes.
+
+\`\`\`yaml
+system: internal metrics stack
+reviewed: 2026-06-16
+assets:
+  - name: metrics database
+    why_it_matters: contains host inventory and traffic patterns
+  - name: dashboard credentials
+    why_it_matters: reused elsewhere if leaked, so rotate on any suspicion
+trust_boundaries:
+  - untrusted VLAN to management VLAN
+  - browser to dashboard (authentication)
+  - collector to database (service credential)
+threats:
+  - id: T1
+    description: collector credential grants write access to all metrics
+    boundary: collector to database
+    stride: elevation of privilege
+    decision: fix now
+    mitigation: per collector credentials scoped to their own tables
+  - id: T2
+    description: dashboard reachable from untrusted VLAN
+    boundary: untrusted VLAN to management VLAN
+    stride: information disclosure
+    decision: fix now
+    mitigation: firewall rule, deny by default, allow management VLAN only
+  - id: T3
+    description: no audit log of dashboard queries
+    stride: repudiation
+    decision: accept
+    reason: single operator, low value, revisit if others get access
+\`\`\`
+
+Structured text beats a diagram in a screenshot, because you can diff it. When the design changes, the change shows up in review.
+
+## Redo it when the design changes
+
+A threat model is only accurate at the moment you wrote it. Adding a new service, opening a port, granting someone access, or connecting a new network invalidates parts of it.
+
+I re read mine whenever I add something that crosses a boundary, and completely whenever I change the network layout. It takes twenty minutes when the document already exists. Compare that to the time cost of discovering, months later, that a service you exposed for one afternoon of testing has been reachable ever since.
+
+## References
+
+- [OWASP Threat Modeling](https://owasp.org/www-community/Threat_Modeling)
+- [Microsoft Threat Modeling Tool threat categories (STRIDE)](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
+- [NIST SP 800-30 Rev. 1: Guide for Conducting Risk Assessments](https://csrc.nist.gov/pubs/sp/800/30/r1/final)
+- [Threat model](https://en.wikipedia.org/wiki/Threat_model)
+- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)
+`,
+  },
+  {
     slug: "building-hyperscale",
     title: "Building Hyperscale: A 3D Datacenter Simulator",
     date: "2026-02-20",
