@@ -1,3 +1,20 @@
+/**
+ * Press coverage, verified against the published article.
+ *
+ * Lives here rather than in an act component because the footer (main
+ * bundle) and the biography act (lazy chunk) both need it, and importing
+ * across that boundary would pull the lazy chunk into the entry bundle.
+ */
+export const PRESS = {
+  outlet: "Las Vegas Weekly",
+  headline:
+    "CCSD magnet programs and schools help prepare students for careers",
+  author: "Shannon Miller",
+  isoDate: "2026-07-30",
+  displayDate: "July 30, 2026",
+  url: "https://lasvegasweekly.com/news/2026/jul/30/ccsd-magnet-programs-and-schools-prepare-students/",
+} as const;
+
 export const siteConfig = {
   name: "Max Doubin",
   tagline: "Cybersecurity, Enterprise Networking, Systems Infrastructure, and Community Leadership",

@@ -1,5 +1,6 @@
-import { Suspense, lazy, useRef } from "react";
+import { Suspense, lazy, useRef, type ReactNode, type RefObject } from "react";
 import { useScrollScene } from "@/lib/motion/useScrollScene";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 const ContinuousRackScene = lazy(() =>
   import("@/components/cinematic/rack3d/ContinuousRackScene").then((m) => ({
@@ -32,7 +33,207 @@ function ScenePoster() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Beat copy                                                           */
+/*                                                                     */
+/* Shared by the scrubbed scene and the static fallback so the two     */
+/* layouts can never drift apart on wording.                           */
+/* ------------------------------------------------------------------ */
+
+const EYEBROW_CLASS =
+  "font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]";
+const EYEBROW_STYLE = { textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" };
+const BODY_CLASS =
+  "font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm";
+const RULE_CLASS = "h-px w-8 bg-[hsl(var(--brand-iron))]";
+
+function Eyebrow({ children }: { children: ReactNode }) {
+  return (
+    <div className={EYEBROW_CLASS} style={EYEBROW_STYLE}>
+      {children}
+    </div>
+  );
+}
+
+function HeroCopy() {
+  return (
+    <>
+      <div
+        className={EYEBROW_CLASS}
+        style={{ textShadow: "0 0 14px hsl(var(--brand-signal) / 0.54)" }}
+      >
+        · Max Doubin · South CTA · Las Vegas
+      </div>
+      <h1 className="mt-6 max-w-[20ch] font-display text-[clamp(2.4rem,7vw,5.4rem)] font-medium leading-[0.95] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
+        Max Doubin.
+        <br />
+        <span className="signal-text">Cybersecurity, networking, and systems.</span>
+      </h1>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
+        <span>Top 1% · National Cyber League</span>
+        <span className={RULE_CLASS} />
+        <span>CompTIA Tech+ certified</span>
+        <span className={RULE_CLASS} />
+        <span>#1 percussionist · Nevada 2024</span>
+        <span className={RULE_CLASS} />
+        <span>Continue</span>
+      </div>
+    </>
+  );
+}
+
+function LeadershipCopy() {
+  return (
+    <>
+      <Eyebrow>· Leadership · Community</Eyebrow>
+      <h2 className="mt-4 font-display text-[clamp(1.6rem,4.4vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
+        Leadership across school,
+        <br />
+        <span className="signal-text">civic, and technical spaces.</span>
+      </h2>
+      <p className={`mt-5 max-w-[42ch] ${BODY_CLASS}`}>
+        President of the South CTA Cyber Club and South CTA Music Club, Blue Ribbon Commissioner for the City of Henderson, Big Future Ambassador for College Board, OWINN Youth Advisory Council member, and lead instructor for youth coding camps across the Las Vegas Valley.
+      </p>
+    </>
+  );
+}
+
+function CredentialsCopy({ alignRight = false }: { alignRight?: boolean }) {
+  return (
+    <>
+      <Eyebrow>· Cybersecurity · Credentials</Eyebrow>
+      <h2 className="mt-4 font-display text-[clamp(1.6rem,4.4vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
+        Credentials supported by
+        <br />
+        <span className="signal-text">competition and practice.</span>
+      </h2>
+      <p
+        className={`mt-5 max-w-[42ch] ${BODY_CLASS}${alignRight ? " md:ml-auto" : ""}`}
+      >
+        CompTIA Tech+ is complete. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
+      </p>
+    </>
+  );
+}
+
+function InfrastructureCopy() {
+  return (
+    <>
+      <Eyebrow>· Home Data Center · Infrastructure</Eyebrow>
+      <h2 className="mt-3 max-w-[28ch] font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
+        A large-scale home data center
+        <span className="signal-text"> built for serious systems work.</span>
+      </h2>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
+        <span>Approx. 10 PowerEdge servers</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+        <span>Approx. 30 MD1220 shelves</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+        <span>Approx. 20 MD1200 shelves</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+        <span>3 TB RAM</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+        <span>8× Cisco Catalyst 3650</span>
+        <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+        <span>42U glass-door cabinet</span>
+      </div>
+    </>
+  );
+}
+
+type CounterRefs = {
+  rack: RefObject<HTMLSpanElement>;
+  ram: RefObject<HTMLSpanElement>;
+  u: RefObject<HTMLSpanElement>;
+};
+
+/**
+ * The closing stat row. When the scroll scene drives it the numbers count
+ * up from zero through the refs; the static fallback has nothing to drive
+ * them, so it renders the settled values directly.
+ */
+function HighlightsCopy({ counters }: { counters?: CounterRefs }) {
+  return (
+    <>
+      <Eyebrow>· Highlights · Verified</Eyebrow>
+      <h2 className="mt-3 max-w-[28ch] text-center font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
+        Technical work,
+        <br />
+        <span className="signal-text">music, and public leadership.</span>
+      </h2>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.7)] px-4 py-3 backdrop-blur-md sm:gap-8 sm:px-8 md:gap-14">
+        <Stat label="PowerEdge Servers">
+          <span ref={counters?.rack}>{counters ? "00" : "10"}</span>
+        </Stat>
+        <Stat label="TB RAM">
+          <span ref={counters?.ram}>{counters ? "0.0" : "3.0"}</span>
+        </Stat>
+        <Stat label="Cabinet">
+          <span ref={counters?.u}>{counters ? "0" : "42"}</span>U
+        </Stat>
+        <Stat label="All-State Band">
+          <span className="text-[hsl(var(--brand-signal))]">3×</span>
+        </Stat>
+      </div>
+    </>
+  );
+}
+
+/**
+ * Static, top-to-bottom rendering of the same five beats.
+ *
+ * The scrubbed version stacks every beat in one pinned viewport and
+ * cross-fades between them on scroll. Under `prefers-reduced-motion` there
+ * is no scrub to run, so that layout collapses to whichever beat the
+ * timeline was left on and the other four -- the page's `h1` among them --
+ * stay at `opacity: 0` with no way to reach them. This renders them as
+ * ordinary flowed sections instead.
+ */
+function SystemsActStatic() {
+  return (
+    <section
+      data-scroll-scene="systems"
+      data-testid="section-cinematic-systems"
+      className="relative w-full bg-[hsl(var(--brand-obsidian))]"
+    >
+      <div className="relative h-[62vh] w-full overflow-hidden">
+        <Suspense fallback={<ScenePoster />}>
+          <ContinuousRackScene progressRef={{ current: 0 }} />
+        </Suspense>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 34%, hsl(var(--brand-obsidian)) 92%)",
+          }}
+        />
+      </div>
+
+      <div className="mx-auto flex max-w-[70ch] flex-col gap-[12vh] px-6 py-[12vh] md:px-10">
+        <div className="flex flex-col items-center text-center">
+          <HeroCopy />
+        </div>
+        <div className="text-left">
+          <LeadershipCopy />
+        </div>
+        <div className="text-left">
+          <CredentialsCopy />
+        </div>
+        <div className="flex flex-col items-center text-center">
+          <InfrastructureCopy />
+        </div>
+        <div className="flex flex-col items-center">
+          <HighlightsCopy />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function SystemsAct() {
+  const reducedMotion = useReducedMotion();
+
   const rootRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
 
@@ -46,9 +247,9 @@ export function SystemsAct() {
   const beatLabelRef = useRef<HTMLSpanElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
 
-  const rackCountRef = useRef<HTMLSpanElement>(null);
-  const ramCountRef = useRef<HTMLSpanElement>(null);
-  const uCountRef = useRef<HTMLSpanElement>(null);
+  const rackCountRef = useRef<HTMLSpanElement>(null!);
+  const ramCountRef = useRef<HTMLSpanElement>(null!);
+  const uCountRef = useRef<HTMLSpanElement>(null!);
 
   const vignetteRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -56,6 +257,10 @@ export function SystemsAct() {
   useScrollScene(
     rootRef,
     ({ gsap, timeline }) => {
+      // The static layout already shows every beat; running the builder
+      // here would re-apply the cross-fade opacities and hide them again.
+      if (reducedMotion) return;
+
       gsap.set([installRef.current, pullRef.current, anatomyRef.current, hallRef.current], {
         opacity: 0,
         y: 18,
@@ -160,9 +365,11 @@ export function SystemsAct() {
         0,
       );
     },
-    [],
+    [reducedMotion],
     { end: "+=900%", pin: true, scrub: 0.85 },
   );
+
+  if (reducedMotion) return <SystemsActStatic />;
 
   return (
     <section
@@ -225,126 +432,37 @@ export function SystemsAct() {
         ref={heroRef}
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-6 pb-[11vh] text-center"
       >
-        <div
-          className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
-          style={{ textShadow: "0 0 14px hsl(var(--brand-signal) / 0.54)" }}
-        >
-          · Max Doubin · South CTA · Las Vegas
-        </div>
-        <h1 className="mt-6 max-w-[20ch] font-display text-[clamp(2.4rem,7vw,5.4rem)] font-medium leading-[0.95] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
-          Max Doubin.
-          <br />
-          <span className="signal-text">Cybersecurity, networking, and systems.</span>
-        </h1>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
-          <span>Top 1% · National Cyber League</span>
-          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>CompTIA Tech+ certified</span>
-          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>#1 percussionist · Nevada 2024</span>
-          <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
-          <span>Continue</span>
-        </div>
+        <HeroCopy />
       </div>
 
       <div
         ref={installRef}
         className="pointer-events-none absolute inset-x-6 bottom-[14vh] z-10 max-w-[30ch] text-left md:inset-x-auto md:left-12 md:max-w-[38ch]"
       >
-        <div
-          className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
-          style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
-        >
-          · Leadership · Community
-        </div>
-        <h2 className="mt-4 font-display text-[clamp(1.6rem,4.4vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          Leadership across school,
-          <br />
-          <span className="signal-text">civic, and technical spaces.</span>
-        </h2>
-        <p className="mt-5 max-w-[42ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
-          President of the South CTA Cyber Club and South CTA Music Club, Blue Ribbon Commissioner for the City of Henderson, Big Future Ambassador for College Board, OWINN Youth Advisory Council member, and lead instructor for youth coding camps across the Las Vegas Valley.
-        </p>
+        <LeadershipCopy />
       </div>
 
       <div
         ref={pullRef}
         className="pointer-events-none absolute inset-x-6 bottom-[14vh] z-10 max-w-[30ch] text-left md:inset-x-auto md:right-12 md:max-w-[38ch] md:text-right"
       >
-        <div
-          className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
-          style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
-        >
-          · Cybersecurity · Credentials
-        </div>
-        <h2 className="mt-4 font-display text-[clamp(1.6rem,4.4vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          Credentials supported by
-          <br />
-          <span className="signal-text">competition and practice.</span>
-        </h2>
-        <p className="mt-5 max-w-[42ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:ml-auto md:text-sm">
-          CompTIA Tech+ is complete. Security+, Network+, and Cisco CCNA are in progress. Competition work includes National Cyber League and Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation.
-        </p>
+        <CredentialsCopy alignRight />
       </div>
 
       <div
         ref={anatomyRef}
         className="pointer-events-none absolute inset-x-0 top-[16vh] z-10 flex flex-col items-center px-6 text-center md:top-[20vh]"
       >
-        <div
-          className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
-          style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
-        >
-          · Home Data Center · Infrastructure
-        </div>
-        <h2 className="mt-3 max-w-[28ch] font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          A large-scale home data center
-          <span className="signal-text"> built for serious systems work.</span>
-        </h2>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
-          <span>Approx. 10 PowerEdge servers</span>
-          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-          <span>Approx. 30 MD1220 shelves</span>
-          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-          <span>Approx. 20 MD1200 shelves</span>
-          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-          <span>3 TB RAM</span>
-          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-          <span>8× Cisco Catalyst 3650</span>
-          <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-          <span>42U glass-door cabinet</span>
-        </div>
+        <InfrastructureCopy />
       </div>
 
       <div
         ref={hallRef}
         className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex flex-col items-center px-4 md:bottom-16"
       >
-        <div
-          className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
-          style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
-        >
-          · Highlights · Verified
-        </div>
-        <h2 className="mt-3 max-w-[28ch] text-center font-display text-[clamp(1.6rem,4.2vw,3.2rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]">
-          Technical work,
-          <br />
-          <span className="signal-text">music, and public leadership.</span>
-        </h2>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.7)] px-4 py-3 backdrop-blur-md sm:gap-8 sm:px-8 md:gap-14">
-          <Stat label="PowerEdge Servers">
-            <span ref={rackCountRef}>00</span>
-          </Stat>
-          <Stat label="TB RAM">
-            <span ref={ramCountRef}>0.0</span>
-          </Stat>
-          <Stat label="Cabinet">
-            <span ref={uCountRef}>0</span>U
-          </Stat>
-          <Stat label="All-State Band">
-            <span className="text-[hsl(var(--brand-signal))]">3×</span>
-          </Stat>
-        </div>
+        <HighlightsCopy
+          counters={{ rack: rackCountRef, ram: ramCountRef, u: uCountRef }}
+        />
       </div>
 
       <div className="pointer-events-none absolute inset-x-6 bottom-3 z-10 h-px bg-[hsl(var(--brand-iron))] md:inset-x-10">

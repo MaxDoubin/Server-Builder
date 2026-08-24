@@ -183,6 +183,29 @@ export function CinematicBlogPost() {
             }}
           />
 
+          {post.coverCredit && (
+            <p className="absolute bottom-2 right-3 z-10 max-w-[70vw] truncate font-mono-tight text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:text-[10px]">
+              Photo{" "}
+              <a
+                href={post.coverCredit.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer license"
+                className="underline decoration-[hsl(var(--brand-iron))] underline-offset-2 transition-colors hover:text-[hsl(var(--brand-bone))]"
+              >
+                {post.coverCredit.author}
+              </a>{" "}
+              ·{" "}
+              <a
+                href={post.coverCredit.licenseUrl}
+                target="_blank"
+                rel="noopener noreferrer license"
+                className="underline decoration-[hsl(var(--brand-iron))] underline-offset-2 transition-colors hover:text-[hsl(var(--brand-bone))]"
+              >
+                {post.coverCredit.license}
+              </a>
+            </p>
+          )}
+
           <div className="absolute inset-x-0 bottom-0 px-6 pb-16 md:px-10">
             <div ref={heroRef} className="mx-auto max-w-[860px]">
               <Link

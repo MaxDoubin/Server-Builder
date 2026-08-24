@@ -787,8 +787,20 @@ export function ParallaxFloat({
   const val = useTransform(scrollYProgress, [0, 1], [range * sign, -range * sign]);
   const springVal = useSpring(val, { stiffness: 100, damping: 30 });
 
-  const styleObj =
-    axis === "y" ? { y: springVal } : { x: springVal };
+  /**
+   * `useScroll` with a `target` measures against the offset parent, and
+   * warns (and mismeasures) when the element is statically positioned.
+   * Callers that already position this wrapper keep their own value —
+   * an inline `position` would beat their Tailwind class and move them.
+   */
+  const isPositioned = /(^|\s)(absolute|fixed|relative|sticky)(\s|$)/.test(
+    className ?? "",
+  );
+
+  const styleObj = {
+    ...(axis === "y" ? { y: springVal } : { x: springVal }),
+    ...(isPositioned ? null : { position: "relative" as const }),
+  };
 
   return (
     <motion.div ref={ref} style={styleObj} className={className}>

@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
+import { PRESS } from "@/lib/siteConfig";
 
 interface Pillar {
   id: string;
@@ -89,6 +90,7 @@ export function BiographyAct() {
   const homelabRef = useRef<HTMLDivElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
   const caltechRef = useRef<HTMLDivElement>(null);
+  const pressRef = useRef<HTMLDivElement>(null);
 
   useScrollReveal(
     rootRef,
@@ -140,6 +142,13 @@ export function BiographyAct() {
         duration: 0.9,
         ease: "power3.out",
         scrollTrigger: { trigger: caltechRef.current, start: "top 85%", toggleActions: "play none none reverse" },
+      });
+      gsap.from(pressRef.current, {
+        opacity: 0,
+        y: 26,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: { trigger: pressRef.current, start: "top 88%", toggleActions: "play none none reverse" },
       });
     },
     [],
@@ -305,6 +314,54 @@ export function BiographyAct() {
             <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
             <span>CYBER.ORG</span>
           </div>
+        </div>
+
+        <div ref={pressRef} className="mt-24">
+          <div className="text-center font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            · 08 · Press
+          </div>
+          <a
+            href={PRESS.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="link-press-las-vegas-weekly"
+            className="group mx-auto mt-6 block max-w-[64ch] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.6)] p-6 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/.55)] focus:outline-none focus-visible:border-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] md:p-8"
+          >
+            <div className="flex flex-wrap items-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <span className="text-[hsl(var(--brand-signal))]">{PRESS.outlet}</span>
+              <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+              <time dateTime={PRESS.isoDate}>{PRESS.displayDate}</time>
+              <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
+              <span>By {PRESS.author}</span>
+            </div>
+
+            <h3 className="mt-4 font-display text-[clamp(1.4rem,3.2vw,2.2rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[hsl(var(--brand-bone))]">
+              {PRESS.headline}
+            </h3>
+
+            <blockquote className="mt-5 border-l border-[hsl(var(--brand-signal)/.5)] pl-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              “Most people don’t know what they want to do for work until their
+              20s or 30s. South Career and Technical Academy student Max Doubin
+              is an exception.”
+            </blockquote>
+
+            <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
+              The Weekly’s back-to-school feature on CCSD career and technical
+              academies opens on South CTA’s cybersecurity track, and notes
+              leading the team to seventh in the nation at the National Cyber
+              League in 2025.
+            </p>
+
+            <span className="mt-6 inline-flex items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+              Read at lasvegasweekly.com
+              <span
+                aria-hidden
+                className="transition-transform duration-300 group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </span>
+          </a>
         </div>
       </div>
 

@@ -1,3 +1,21 @@
+/**
+ * Attribution for a cover image sourced from someone else.
+ *
+ * Every licence we accept for third-party covers (CC BY, CC BY-SA) requires
+ * credit and a link to the licence, so this travels with the post and is
+ * rendered next to the image. Posts using original artwork omit it.
+ */
+export interface CoverCredit {
+  /** Author as named by the source, plain text. */
+  author: string;
+  /** Human-readable licence, e.g. "CC BY-SA 4.0". */
+  license: string;
+  /** Canonical licence deed. */
+  licenseUrl: string;
+  /** The file's description page at the source. */
+  sourceUrl: string;
+}
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -5,6 +23,7 @@ export interface BlogPost {
   tags: string[];
   excerpt: string;
   coverImage: string;
+  coverCredit?: CoverCredit;
   draft?: boolean;
   content: string;
 }

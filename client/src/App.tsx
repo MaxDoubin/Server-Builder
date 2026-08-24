@@ -266,19 +266,34 @@ export default function App() {
   );
 }
 
+/**
+ * Route transition — opacity only, deliberately.
+ *
+ * This wrapper is an ancestor of every page, including the pinned
+ * scroll scenes (SystemsAct pins for ~900vh). GSAP pins by setting
+ * `position: fixed` on the section, and a fixed element resolves
+ * against its nearest ancestor that establishes a containing block.
+ * `transform`, `filter`, `backdrop-filter`, `perspective`, `contain`
+ * and `will-change` on any of those properties all create one.
+ *
+ * Framer Motion leaves the animated property on the element after the
+ * transition finishes, so a `filter: blur(0px)` here silently turns
+ * this div into the containing block for the whole app. The pinned
+ * hero then scrolls away with the page instead of staying put, and the
+ * scroll story plays out off-screen.
+ *
+ * Opacity does not create a containing block, so it is safe. Do not
+ * add `y`, `scale`, `blur`, or `will-change` to these variants.
+ */
 const pageTransition = {
-  initial: { opacity: 0, y: 12, filter: "blur(6px)" },
+  initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
   },
   exit: {
     opacity: 0,
-    y: -8,
-    filter: "blur(3px)",
-    transition: { duration: 0.3, ease: [0.65, 0, 0.35, 1] },
+    transition: { duration: 0.25, ease: [0.65, 0, 0.35, 1] },
   },
 };
 

@@ -2,6 +2,7 @@ import { Suspense, lazy, useRef } from "react";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { SystemsAct } from "./acts/SystemsAct";
+import { PRESS } from "@/lib/siteConfig";
 
 const BiographyAct = lazy(() =>
   import("./acts/BiographyAct").then((m) => ({ default: m.BiographyAct })),
@@ -92,6 +93,14 @@ export function CinematicHome() {
         "https://instagram.com/maxdoubin",
         "https://instagram.com/percussionmax",
       ],
+      subjectOf: {
+        "@type": "NewsArticle",
+        headline: PRESS.headline,
+        url: PRESS.url,
+        datePublished: PRESS.isoDate,
+        author: { "@type": "Person", name: PRESS.author },
+        publisher: { "@type": "Organization", name: PRESS.outlet },
+      },
     },
   });
   return (

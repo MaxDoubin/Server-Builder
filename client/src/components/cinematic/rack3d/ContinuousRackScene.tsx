@@ -7,6 +7,7 @@ import { ServerChassis } from "./parts/ServerChassis";
 import { PDU } from "./parts/PDU";
 import { Cables } from "./parts/Cables";
 import { ServerInternals, INTERNAL_LABELS } from "./parts/ServerInternals";
+import { HallRacks, type HallRackPlacement } from "./parts/HallRacks";
 import {
   RACK_FEET_HEIGHT,
   RACK_LAYOUT,
@@ -382,52 +383,6 @@ const HALL_END = 0.995;
 const RACK_SPACING = RACK_TOTAL_WIDTH + 0.05;
 const AISLE = 1.3;
 
-function NeighbourRack({
-  position,
-  rotationY = 0,
-  progressRef,
-  delay = 0,
-}: {
-  position: [number, number, number];
-  rotationY?: number;
-  progressRef: ContinuousProgressRef;
-  delay?: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const local = smoothstep(HALL_START + delay, HALL_END - 0.015, p);
-    groupRef.current.visible = local > 0.005;
-    groupRef.current.position.y = THREE.MathUtils.lerp(-0.6, 0, local);
-    const s = THREE.MathUtils.lerp(0.86, 1, local);
-    groupRef.current.scale.setScalar(s);
-  });
-
-  return (
-    <group ref={groupRef} position={position} rotation={[0, rotationY, 0]} visible={false}>
-      <RackFrame />
-      {RACK_LAYOUT.map((slot, i) => {
-        const centerY = RACK_FEET_HEIGHT + (slot.u - 1 + slot.size / 2) * U;
-        return (
-          <group key={`${slot.u}-${i}`} position={[0, centerY, 0]}>
-            <ServerChassis
-              kind={slot.kind}
-              sizeU={slot.size}
-              accent={slot.accent}
-              label={slot.label}
-              seed={i + 100}
-            />
-          </group>
-        );
-      })}
-      <PDU side="right" />
-      <PDU side="left" />
-    </group>
-  );
-}
-
 function HallFloor({ progressRef }: { progressRef: ContinuousProgressRef }) {
   const ref = useRef<THREE.Mesh>(null);
   useFrame(() => {
@@ -529,22 +484,94 @@ function HallSignalField({ progressRef, tier }: { progressRef: ContinuousProgres
   );
 }
 
+/**
+ * Aisle lighting for the hall reveal.
+ *
+ * Every other light in this scene is parked on the hero rack with a
+ * `distance` of 1.2-2.4m, which is correct for the close-up beats but
+ * leaves the hall unlit when the camera pulls back. These fade in with
+ * the reveal so the rows read as a room rather than a black field, and
+ * fade back out so they never wash out the earlier close-ups.
+ */
+function HallLighting({ progressRef }: { progressRef: ContinuousProgressRef }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const lightRefs = useRef<Array<THREE.PointLight | null>>([]);
+  const ambientRef = useRef<THREE.HemisphereLight>(null);
+
+  const rig = useMemo(
+    () => [
+      { position: [0, 2.6, 0.9] as [number, number, number], color: "#cfe0ff", intensity: 2.6, distance: 9 },
+      { position: [-3.4, 2.5, 0.4] as [number, number, number], color: "#9fd8ff", intensity: 2.0, distance: 8 },
+      { position: [3.4, 2.5, 0.4] as [number, number, number], color: "#9fd8ff", intensity: 2.0, distance: 8 },
+      { position: [0, 2.3, -2.6] as [number, number, number], color: "#c7f000", intensity: 1.1, distance: 7 },
+    ],
+    [],
+  );
+
+  useFrame(() => {
+    const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
+    const local = smoothstep(HALL_START - 0.03, HALL_END, p);
+    const on = local > 0.002;
+    if (groupRef.current) groupRef.current.visible = on;
+    if (!on) return;
+    rig.forEach((cfg, i) => {
+      const light = lightRefs.current[i];
+      if (light) light.intensity = cfg.intensity * local;
+    });
+    if (ambientRef.current) ambientRef.current.intensity = 0.5 * local;
+  });
+
+  return (
+    <group ref={groupRef} visible={false}>
+      <hemisphereLight ref={ambientRef} args={["#4a5b7d", "#070910", 0]} />
+      {rig.map((cfg, i) => (
+        <pointLight
+          key={i}
+          ref={(el) => {
+            lightRefs.current[i] = el;
+          }}
+          position={cfg.position}
+          color={cfg.color}
+          intensity={0}
+          distance={cfg.distance}
+          decay={1.6}
+        />
+      ))}
+    </group>
+  );
+}
+
 function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRef; tier: DeviceTier }) {
-  const racks = useMemo(() => {
-    const out: Array<{ x: number; z: number; rotY: number; delay: number }> = [];
-    const sameRowSpan = tier === "low" ? 2 : tier === "mid" ? 3 : 4;
-    const oppositeSpan = tier === "low" ? 2 : tier === "mid" ? 3 : 4;
-    for (let i = 1; i <= sameRowSpan; i++) {
-      out.push({ x: i * RACK_SPACING, z: 0, rotY: 0, delay: i * 0.005 });
-      out.push({ x: -i * RACK_SPACING, z: 0, rotY: 0, delay: i * 0.005 });
-    }
-    for (let i = -oppositeSpan; i <= oppositeSpan; i++) {
-      out.push({
-        x: i * RACK_SPACING,
-        z: -AISLE,
-        rotY: Math.PI,
-        delay: 0.03 + Math.abs(i) * 0.005,
-      });
+  /**
+   * Rack placements for the hall reveal.
+   *
+   * Every rack here is drawn by the shared `HallRacks` instancer, so the
+   * whole hall is a fixed ~11 draw calls regardless of how many racks are
+   * placed. That is what lets the aisle run deep enough to read as a real
+   * datacenter instead of a token row of three.
+   */
+  const racks = useMemo<HallRackPlacement[]>(() => {
+    const out: HallRackPlacement[] = [];
+    const rowSpan = tier === "low" ? 5 : tier === "mid" ? 7 : 9;
+    // Rows behind the aisle recede into the fog, so they can be deeper.
+    const rows: Array<{ z: number; rotY: number; base: number }> = [
+      { z: 0, rotY: 0, base: 0 },
+      { z: -AISLE, rotY: Math.PI, base: 0.022 },
+      { z: -AISLE - 2.15, rotY: 0, base: 0.04 },
+      { z: -AISLE * 2 - 2.15, rotY: Math.PI, base: 0.052 },
+    ];
+
+    for (const row of rows) {
+      for (let i = -rowSpan; i <= rowSpan; i++) {
+        // The hero rack already occupies the origin.
+        if (row.z === 0 && i === 0) continue;
+        out.push({
+          x: i * RACK_SPACING,
+          z: row.z,
+          rotY: row.rotY,
+          delay: row.base + Math.abs(i) * 0.004,
+        });
+      }
     }
     return out;
   }, [tier]);
@@ -554,15 +581,13 @@ function HallContents({ progressRef, tier }: { progressRef: ContinuousProgressRe
       <HallFloor progressRef={progressRef} />
       <HallGrid progressRef={progressRef} />
       <HallSignalField progressRef={progressRef} tier={tier} />
-      {racks.map((r, i) => (
-        <NeighbourRack
-          key={`hall-${i}`}
-          position={[r.x, 0, r.z]}
-          rotationY={r.rotY}
-          progressRef={progressRef}
-          delay={r.delay}
-        />
-      ))}
+      <HallLighting progressRef={progressRef} />
+      <HallRacks
+        placements={racks}
+        progressRef={progressRef}
+        start={HALL_START}
+        end={HALL_END}
+      />
     </group>
   );
 }
