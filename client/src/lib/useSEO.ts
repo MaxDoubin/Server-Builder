@@ -5,7 +5,7 @@ const DEFAULT_TITLE =
   "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
 const DEFAULT_DESC =
   "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.";
-const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.jpg`;
 const DEFAULT_CANONICAL = SITE_URL;
 const DEFAULT_OG_TYPE = "profile";
 

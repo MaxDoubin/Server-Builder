@@ -249,7 +249,7 @@ export const siteConfig = {
       category: "simulation",
       link: "/game",
       isGame: true,
-      coverImage: "/images/blog-cover-datacenter.png",
+      coverImage: "/images/projects/hyperscale.jpg",
     },
     {
       id: "homelab",

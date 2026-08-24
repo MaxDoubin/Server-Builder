@@ -50,7 +50,7 @@ export function CinematicHome() {
         "10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
       url: "https://maxdoubin.com/",
       email: "mailto:max@maxdoubin.com",
-      image: "https://maxdoubin.com/images/og-image.png",
+      image: "https://maxdoubin.com/images/og-image.jpg",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Las Vegas",

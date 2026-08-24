@@ -108,7 +108,7 @@ function buildPageHtml(base: string, meta: PageMeta): string {
     description,
     canonical,
     ogType = "website",
-    ogImage = `${SITE_URL}/images/og-image.png`,
+    ogImage = `${SITE_URL}/images/og-image.jpg`,
     ogImageAlt = "Max Doubin",
     schema,
     rootContent,
