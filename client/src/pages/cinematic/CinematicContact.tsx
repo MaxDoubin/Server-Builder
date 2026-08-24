@@ -519,6 +519,14 @@ function Field({
   multiline?: boolean;
 }) {
   const [isFocused, setIsFocused] = useState(false);
+  // A screen reader announces the error, but without these the field itself
+  // is never reported as invalid and the message is not associated with it,
+  // so someone tabbing back through the form cannot tell which input failed.
+  const errorId = `${id}-error`;
+  const a11y = {
+    "aria-invalid": error ? (true as const) : undefined,
+    "aria-describedby": error ? errorId : undefined,
+  };
 
   const baseClasses = `mt-2 w-full rounded-md border bg-[hsl(var(--brand-obsidian)/.55)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:outline-none focus:ring-1 focus:ring-[hsl(var(--brand-signal))] transition-colors ${
     error ? "border-[hsl(var(--brand-danger))]" : "border-[hsl(var(--brand-iron))]"
@@ -559,6 +567,7 @@ function Field({
             placeholder={placeholder}
             data-testid={testId}
             className={baseClasses}
+            {...a11y}
           />
         ) : (
           <input
@@ -571,12 +580,14 @@ function Field({
             placeholder={placeholder}
             data-testid={testId}
             className={baseClasses}
+            {...a11y}
           />
         )}
       </motion.div>
       <AnimatePresence>
         {error && (
           <motion.p
+            id={errorId}
             role="alert"
             initial={{ opacity: 0, height: 0, y: -5 }}
             animate={{ opacity: 1, height: "auto", y: 0 }}

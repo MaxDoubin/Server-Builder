@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
 import { getAllPosts, getAllTags } from "@/lib/blogPosts";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSEO } from "@/lib/useSEO";
 
 const SITE_URL = "https://maxdoubin.com";
@@ -34,6 +34,15 @@ export function Blog() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
+
+  /**
+   * The archive grows by a post a day. Rendering all of it made this page
+   * 42,000px tall with a card and cover per post, the same problem the
+   * cinematic index had.
+   */
+  const PAGE = 24;
+  const [visible, setVisible] = useState(PAGE);
+  useEffect(() => setVisible(PAGE), [activeTag]);
 
   useSEO({
     title: "Blog | Max Doubin",
@@ -90,7 +99,7 @@ export function Blog() {
         </div>
 
         <div className="mt-8 space-y-6">
-          {filteredPosts.map((post) => (
+          {filteredPosts.slice(0, visible).map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
@@ -142,6 +151,19 @@ export function Blog() {
             </Link>
           ))}
         </div>
+
+        {filteredPosts.length > visible && (
+          <div className="mt-10 flex justify-center">
+            <button
+              type="button"
+              data-testid="button-load-more-legacy"
+              onClick={() => setVisible((v) => v + PAGE)}
+              className="rounded-lg border border-border px-6 py-2.5 text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Load more ({filteredPosts.length - visible})
+            </button>
+          </div>
+        )}
 
         {filteredPosts.length === 0 && (
           <div

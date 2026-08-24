@@ -141,6 +141,10 @@ function Sparkline({ data, color, gradientId }: { data: number[]; color: string;
         cy={lastY}
         r={2.4}
         fill={color}
+        /* Without an explicit initial, framer can emit a frame where the r
+           attribute is undefined, which the SVG parser rejects with
+           "attribute r: Expected length". */
+        initial={{ r: 2.4 }}
         animate={{
           r: [2.4, 3.6, 2.4],
           opacity: [1, 0.7, 1],
@@ -155,10 +159,11 @@ function Sparkline({ data, color, gradientId }: { data: number[]; color: string;
       <motion.circle
         cx={w}
         cy={lastY}
-        r={2.4}
+        r={4}
         fill="none"
         stroke={color}
         strokeWidth={0.8}
+        initial={{ r: 4 }}
         animate={{
           r: [4, 8, 4],
           opacity: [0.5, 0, 0.5],
