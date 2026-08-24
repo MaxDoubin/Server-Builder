@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { PRESS } from "@/lib/siteConfig";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import {
@@ -112,6 +113,7 @@ export function CinematicFooter() {
               { href: "https://github.com/MaxFromYT/Server-Builder", label: "GitHub · MaxFromYT/Server-Builder", testId: "link-footer-github" },
               { href: "https://instagram.com/maxdoubin", label: "Instagram · @maxdoubin", testId: "link-footer-instagram" },
               { href: "https://instagram.com/percussionmax", label: "Instagram · @percussionmax", testId: "link-footer-percussionmax" },
+              { href: PRESS.url, label: `${PRESS.outlet} · Press feature`, testId: "link-footer-press" },
               { href: "mailto:max@maxdoubin.com", label: "max@maxdoubin.com", testId: "link-footer-email-2" },
             ].map((item) => (
               <StaggerItem key={item.testId} variants={footerLinkVariants}>
