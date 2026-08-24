@@ -30,7 +30,7 @@ export function CinematicHome() {
     title:
       "Max Doubin | Cybersecurity, Networking, Systems Infrastructure, and Leadership",
     description:
-      "Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
+      "Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
     canonical: "https://maxdoubin.com/",
     ogType: "profile",
     schemaId: "home-schema",
@@ -47,7 +47,7 @@ export function CinematicHome() {
         "Community Leader",
       ],
       description:
-        "Ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
+        "10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
       url: "https://maxdoubin.com/",
       email: "mailto:max@maxdoubin.com",
       image: "https://maxdoubin.com/images/og-image.png",

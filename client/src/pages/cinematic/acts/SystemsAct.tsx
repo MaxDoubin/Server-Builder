@@ -125,17 +125,17 @@ function InfrastructureCopy() {
         <span className="signal-text"> built for serious systems work.</span>
       </h2>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
-        <span>Approx. 10 PowerEdge servers</span>
+        <span>Enterprise switching</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>Approx. 30 MD1220 shelves</span>
+        <span>VLAN segmentation</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>Approx. 20 MD1200 shelves</span>
+        <span>Virtualization</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>3 TB RAM</span>
+        <span>Large-scale storage</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>8× Cisco Catalyst 3650</span>
+        <span>Application delivery</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
-        <span>42U glass-door cabinet</span>
+        <span>Power and cooling</span>
       </div>
     </>
   );
@@ -162,14 +162,14 @@ function HighlightsCopy({ counters }: { counters?: CounterRefs }) {
         <span className="signal-text">music, and public leadership.</span>
       </h2>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.7)] px-4 py-3 backdrop-blur-md sm:gap-8 sm:px-8 md:gap-14">
-        <Stat label="PowerEdge Servers">
-          <span ref={counters?.rack}>{counters ? "00" : "10"}</span>
+        <Stat label="National Cyber League">
+          Top <span ref={counters?.rack}>{counters ? "0" : "1"}</span>%
         </Stat>
-        <Stat label="TB RAM">
-          <span ref={counters?.ram}>{counters ? "0.0" : "3.0"}</span>
+        <Stat label="Team Rank · Nationally">
+          #<span ref={counters?.ram}>{counters ? "0" : "7"}</span>
         </Stat>
-        <Stat label="Cabinet">
-          <span ref={counters?.u}>{counters ? "0" : "42"}</span>U
+        <Stat label="Percussionist · Nevada">
+          #<span ref={counters?.u}>{counters ? "0" : "1"}</span>
         </Stat>
         <Stat label="All-State Band">
           <span className="text-[hsl(var(--brand-signal))]">3×</span>
@@ -293,50 +293,29 @@ export function SystemsAct() {
       timeline.to(vignetteRef.current, { opacity: 0.4, duration: 0.1 }, 0.90);
       timeline.to(gridRef.current, { opacity: 0.06, duration: 0.1 }, 0.90);
 
-      const rackTarget = { v: 0 };
-      timeline.to(
-        rackTarget,
-        {
-          v: 10,
-          duration: 0.1,
-          onUpdate: () => {
-            if (rackCountRef.current) {
-              rackCountRef.current.textContent = Math.round(rackTarget.v)
-                .toString()
-                .padStart(2, "0");
-            }
+      // Counts up to the settled values shown in HighlightsCopy.
+      const countUp = (
+        to: number,
+        ref: React.RefObject<HTMLSpanElement>,
+      ) => {
+        const target = { v: 0 };
+        timeline.to(
+          target,
+          {
+            v: to,
+            duration: 0.1,
+            onUpdate: () => {
+              if (ref.current) {
+                ref.current.textContent = Math.round(target.v).toString();
+              }
+            },
           },
-        },
-        0.90,
-      );
-      const ramTarget = { v: 0 };
-      timeline.to(
-        ramTarget,
-        {
-          v: 3,
-          duration: 0.1,
-          onUpdate: () => {
-            if (ramCountRef.current) {
-              ramCountRef.current.textContent = ramTarget.v.toFixed(1);
-            }
-          },
-        },
-        0.90,
-      );
-      const uTarget = { v: 0 };
-      timeline.to(
-        uTarget,
-        {
-          v: 42,
-          duration: 0.1,
-          onUpdate: () => {
-            if (uCountRef.current) {
-              uCountRef.current.textContent = Math.round(uTarget.v).toString();
-            }
-          },
-        },
-        0.90,
-      );
+          0.90,
+        );
+      };
+      countUp(1, rackCountRef);
+      countUp(7, ramCountRef);
+      countUp(1, uCountRef);
 
       const proxy = { p: 0 };
       timeline.to(

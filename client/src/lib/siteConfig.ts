@@ -19,10 +19,10 @@ export const siteConfig = {
   name: "Max Doubin",
   tagline: "Cybersecurity, Enterprise Networking, Systems Infrastructure, and Community Leadership",
   shortBio:
-    "Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
+    "Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
   fullBio: [
     "Max Doubin studies Cybersecurity at South Career Technical Academy in Las Vegas, Nevada. He is a systems enthusiast with hands-on experience in networking, server infrastructure, and cybersecurity competition, supported by formal coursework and independent lab work.",
-    "His technical work includes operating an extensive home data center with Dell PowerEdge servers, MD1220 and MD1200 disk shelves, Cisco Catalyst switching, Radware application delivery control, large-scale storage, and virtualization infrastructure inside a 42U glass-door cabinet.",
+    "His technical work centers on a large home data center that he designed, built, and operates: enterprise switching and segmentation, virtualization, large-scale storage, and the power, cooling, and cabling planning that keeps it running.",
     "Alongside technical work, Max is active in public service, student leadership, music, and youth instruction. He leads student organizations, serves in civic and state advisory roles, teaches coding camps across the Las Vegas Valley, and performs as a competitive percussionist.",
   ],
   email: "max@maxdoubin.com",
@@ -65,16 +65,15 @@ export const siteConfig = {
       items: [
         "Nevada All-State Band selection in 6th, 7th, and 9th grade",
         "Ranked #1 percussionist in the state of Nevada in 2024",
-        "Published arranger on MuseScore and creator behind @percussionmax",
       ],
     },
     {
       category: "Home Data Center",
       items: [
-        "Approximately 10 Dell PowerEdge R720 and R820 servers",
-        "Approximately 30 MD1220 shelves and 20 MD1200 shelves",
-        "Approximately 3 TB of RAM, petabytes of raw storage, and 8 Cisco Catalyst 3650 switches",
-        "Radware application delivery controllers inside a 42U glass-door server cabinet",
+        "Designed, built, and operates a large home data center",
+        "Enterprise switching, VLAN segmentation, and application delivery",
+        "Virtualization, large-scale storage, and backup strategy",
+        "Power, cooling, and structured cabling planning",
       ],
     },
     {
@@ -104,7 +103,6 @@ export const siteConfig = {
     {
       name: "Networking",
       skills: [
-        "Cisco Catalyst 3650",
         "Enterprise Switching",
         "Routing Fundamentals",
         "Segmentation",
@@ -116,8 +114,8 @@ export const siteConfig = {
     {
       name: "Systems Infrastructure",
       skills: [
-        "Dell PowerEdge R720 and R820",
-        "MD1220 and MD1200 Storage",
+        "Server Hardware",
+        "Storage Systems",
         "Virtualization",
         "Rack Design",
         "Storage Planning",
@@ -257,36 +255,15 @@ export const siteConfig = {
       id: "homelab",
       title: "Home Data Center",
       description:
-        "A large-scale home lab built around Dell PowerEdge servers, MD1220 and MD1200 storage, Cisco switching, Radware application delivery control, and petabyte-scale storage planning.",
+        "A large home data center designed, built, and operated end to end: enterprise switching and segmentation, virtualization, large-scale storage, and power and cooling planning.",
       tech: [
-        "Dell PowerEdge",
-        "Cisco Catalyst",
+        "Enterprise Networking",
         "Storage Infrastructure",
         "Virtualization",
       ],
       category: "networking",
       link: "",
       coverImage: "/images/blog-cover-default.png",
-    },
-    {
-      id: "no-service",
-      title: "No Service",
-      description:
-        "A wall-mounted installation built from more than 200 decommissioned smartphones arranged by color in a large gradient composition.",
-      tech: ["Mixed Media", "Installation Art", "Found Hardware"],
-      category: "art",
-      link: "",
-      coverImage: "/images/blog-cover-default.png",
-    },
-    {
-      id: "portfolio",
-      title: "Personal Website",
-      description:
-        "maxdoubin.com, built from scratch in TypeScript with Vite, Tailwind CSS, and Drizzle ORM.",
-      tech: ["TypeScript", "Vite", "Tailwind CSS", "Drizzle ORM"],
-      category: "web",
-      link: "/",
-      coverImage: "/images/blog-cover-webdev.png",
     },
   ],
 };
