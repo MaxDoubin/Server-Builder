@@ -905,7 +905,17 @@ export function DatacenterScene({
             />
           )}
 
-          {showHUD && <HolographicHUD position={[0, 10, -floorSize * 0.7]} visible />}
+          {/*
+            Sits low and off to one side. At y=10 dead centre it landed
+            right where the build toolbar floats, so the two read as one
+            cluttered strip at the default camera.
+          */}
+          {showHUD && (
+            <HolographicHUD
+              position={[floorSize * 0.22, 5.5, -floorSize * 0.7]}
+              visible
+            />
+          )}
 
           <PerformanceOverlay
             visible={showPerfOverlay}
@@ -920,7 +930,7 @@ export function DatacenterScene({
 
       {isUnlocked && (
         <div
-          className="fixed top-4 left-4 pointer-events-none select-none bg-black/60 backdrop-blur-md rounded-md px-3 py-2 border border-cyan-500/30"
+          className="absolute top-4 left-4 pointer-events-none select-none bg-black/60 backdrop-blur-md rounded-md px-3 py-2 border border-cyan-500/30"
           data-ui="true"
         >
           <div className="text-cyan-400 text-xs font-mono flex items-center gap-2">

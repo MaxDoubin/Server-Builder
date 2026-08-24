@@ -219,7 +219,7 @@ export function GamePage() {
           </div>
         </div>
 
-        <div className="h-[70vh] min-h-[500px] bg-black">
+        <div className="relative h-[70vh] min-h-[500px] bg-black">
           <GameProvider>
             <BuildProvider>{sceneShell}</BuildProvider>
           </GameProvider>

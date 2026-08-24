@@ -166,7 +166,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked }: RackDetailPanelPr
 
   return (
     <>
-      <div className="fixed right-0 top-0 h-full w-[420px] bg-gradient-to-b from-slate-950/95 via-black/95 to-slate-950/95 backdrop-blur-md border-l border-cyan-500/20 shadow-[-20px_0_40px_rgba(0,0,0,0.35)] z-50 flex flex-col" data-testid="rack-detail-panel">
+      <div className="absolute right-0 top-0 h-full w-[420px] bg-gradient-to-b from-slate-950/95 via-black/95 to-slate-950/95 backdrop-blur-md border-l border-cyan-500/20 shadow-[-20px_0_40px_rgba(0,0,0,0.35)] z-50 flex flex-col" data-testid="rack-detail-panel">
         <div className="flex items-center justify-between p-4 border-b border-cyan-500/10">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-noc-blue/20">

@@ -251,7 +251,7 @@ export function DataCenter3D({
   const showInstantShell = isLoading && racks.length === 0;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-transparent">
+    <div className="relative w-full h-full min-h-[520px] overflow-hidden bg-transparent">
       {showInstantShell && (
         <div className="absolute inset-0 z-20 pointer-events-none">
           <InstantShell className="pointer-events-none" />
@@ -284,12 +284,12 @@ export function DataCenter3D({
 
       {!introVisible && (
         <>
-          <div className="fixed top-0 left-0 right-0 z-40">
+          <div className="absolute top-0 left-0 right-0 z-40">
             <GameHeader />
           </div>
           <div
             data-ui="true"
-            className={`fixed top-20 left-4 z-50 w-[320px] rounded-2xl border border-cyan-500/30 bg-black/60 p-4 shadow-[0_0_24px_rgba(34,211,238,0.2)] backdrop-blur-lg transition-transform ${
+            className={`absolute top-20 left-4 z-50 w-[320px] rounded-2xl border border-cyan-500/30 bg-black/85 p-4 shadow-[0_0_24px_rgba(34,211,238,0.2)] backdrop-blur-lg transition-transform ${
               controlDockOpen ? "translate-x-0" : "-translate-x-[110%]"
             }`}
           >
@@ -415,7 +415,7 @@ export function DataCenter3D({
           </div>
 
           {showDiagnostics && (
-            <div className="fixed top-20 right-4 z-50 w-[260px]">
+            <div className="absolute top-20 right-4 z-50 w-[260px]">
               <button
                 type="button"
                 className="absolute -left-6 top-6 h-8 w-8 rounded-full border border-cyan-500/30 bg-black/70 text-cyan-200 shadow-md"
@@ -453,7 +453,7 @@ export function DataCenter3D({
       )}
 
       {showDiagnostics && perfWarning && (
-        <div className="fixed bottom-28 right-4 rounded-md border border-orange-400/30 bg-orange-500/10 p-2 text-[10px] text-orange-200">
+        <div className="absolute bottom-28 right-4 rounded-md border border-orange-400/30 bg-orange-500/10 p-2 text-[10px] text-orange-200">
           {perfWarning}
         </div>
       )}

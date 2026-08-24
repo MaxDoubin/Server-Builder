@@ -17,7 +17,7 @@ export const GameHUD: FC<GameHUDProps> = ({
   return (
     <>
       {showUnlock && !isUnlocked && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
           <Button
             type="button"
             onClick={onUnlock}
@@ -29,8 +29,8 @@ export const GameHUD: FC<GameHUDProps> = ({
       )}
 
       {!hideBottomBar && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none select-none">
-          <div className="rounded-full border border-cyan-500/30 bg-black/60 px-3 py-2 text-[10px] font-mono text-white/70 backdrop-blur-md">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none select-none">
+          <div className="rounded-full border border-cyan-500/30 bg-black/85 px-3 py-2 text-[10px] font-mono text-white/70 backdrop-blur-md">
             Drag to rotate • Scroll to zoom • Click rack to inspect
           </div>
         </div>

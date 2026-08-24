@@ -54,7 +54,14 @@ export function WelcomeScreen({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone))]">
+    /*
+      Absolute, not fixed. This is the lab's entry gate and belongs to the
+      scene box. Pinned to the viewport it covered the whole page including
+      the briefing above it, so /game presented two competing entry screens
+      and the briefing was never seen. In fullscreen the scene box is the
+      viewport anyway, so that case is unchanged.
+    */
+    <div className="absolute inset-0 z-[100] overflow-hidden bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone))]">
       <div
         className="absolute inset-0"
         style={{
