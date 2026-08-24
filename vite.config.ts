@@ -24,6 +24,9 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      // Browser shim so server/storage.ts (imported by the in-browser API) can
+      // resolve Node's "crypto" module in the client build.
+      crypto: path.resolve(import.meta.dirname, "client", "src", "lib", "crypto-shim.ts"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
