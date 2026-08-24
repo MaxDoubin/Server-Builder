@@ -282,7 +282,23 @@ export function CinematicBlog() {
                           <div className="relative aspect-[3/2] overflow-hidden sm:aspect-auto">
                             <ParallaxFloat speed={0.15} direction="up">
                               <img
-                                src={post.coverImage}
+                                /*
+                                  The card renders at 220px wide. Loading the
+                                  1600px hero for it made a 24-card page fetch
+                                  3.4 MB of imagery; the 480px thumbnail brings
+                                  that to 413 KB. Falls back to the hero if a
+                                  thumbnail is somehow missing.
+                                */
+                                src={post.coverImage.replace(
+                                  "/images/blog/",
+                                  "/images/blog/thumb/",
+                                )}
+                                onError={(e) => {
+                                  const img = e.currentTarget;
+                                  if (img.src !== post.coverImage) {
+                                    img.src = post.coverImage;
+                                  }
+                                }}
                                 alt={post.title}
                                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 loading="lazy"
