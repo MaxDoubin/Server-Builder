@@ -16,7 +16,7 @@ const LIVE_MODULES = [
   {
     title: "Infrastructure",
     subtitle: "Home data center",
-    lines: ["Dell PowerEdge", "Cisco Catalyst", "Storage and virtualization"],
+    lines: ["Enterprise networking", "Virtualization", "Large-scale storage"],
   },
   {
     title: "Leadership",
@@ -197,7 +197,7 @@ export function WelcomeScreen({
             <InfoCard
               icon={<Cpu className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Infrastructure"
-              body="A large home data center built around Dell PowerEdge servers, MD1220 and MD1200 storage, Cisco switching, Radware ADCs, and long-running systems operations."
+              body="A large home data center designed, built, and operated end to end: enterprise switching, virtualization, storage, and long-running systems operations."
             />
             <InfoCard
               icon={<Sparkles className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}

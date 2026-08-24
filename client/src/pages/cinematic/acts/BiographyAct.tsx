@@ -10,6 +10,13 @@ interface Pillar {
   accent: "signal" | "cyan";
 }
 
+const HOMELAB_DISCIPLINES: Array<{ label: string; value: string }> = [
+  { value: "Networking", label: "Switching · VLANs · Routing" },
+  { value: "Virtualization", label: "Hypervisors · Clustering" },
+  { value: "Storage", label: "Arrays · Redundancy · Backup" },
+  { value: "Operations", label: "Power · Cooling · Cabling" },
+];
+
 const PILLARS: Pillar[] = [
   {
     id: "cyber",
@@ -45,8 +52,6 @@ const PILLARS: Pillar[] = [
     lines: [
       "Nevada All-State Band in 6th, 7th, and 9th grade",
       "Ranked #1 percussionist in Nevada in 2024",
-      "Published arranger on MuseScore",
-      "Runs @percussionmax on Instagram",
     ],
   },
   {
@@ -63,32 +68,12 @@ const PILLARS: Pillar[] = [
   },
 ];
 
-const HOMELAB_SPECS: Array<{ label: string; value: string }> = [
-  { label: "PowerEdge R720/R820", value: "Approx. 10" },
-  { label: "MD1220 Shelves", value: "Approx. 30" },
-  { label: "MD1200 Shelves", value: "Approx. 20" },
-  { label: "Total RAM", value: "Approx. 3 TB" },
-  { label: "Raw Storage", value: "Petabytes" },
-  { label: "Cisco Catalyst 3650", value: "8" },
-  { label: "Radware ADCs", value: "Live" },
-  { label: "Cabinet", value: "42U glass door" },
-];
-
-const OTHER_WORK = [
-  "\"No Service,\" a wall-mounted installation built from more than 200 decommissioned smartphones arranged by color in a gradient composition.",
-  "A wall-mounted collection of Apple logic boards displayed as hardware art.",
-  "An extensive collection of networking and computer science textbooks spanning classic references and certification guides.",
-  "maxdoubin.com, built from scratch in TypeScript with Vite, Tailwind CSS, and Drizzle ORM.",
-  "A custom mechanical keyboard with blue and white keycaps.",
-];
-
 export function BiographyAct() {
   const rootRef = useRef<HTMLElement>(null);
   const eyebrowRef = useRef<HTMLDivElement>(null);
   const leadRef = useRef<HTMLParagraphElement>(null);
   const pillarsRef = useRef<HTMLDivElement>(null);
   const homelabRef = useRef<HTMLDivElement>(null);
-  const artRef = useRef<HTMLDivElement>(null);
   const caltechRef = useRef<HTMLDivElement>(null);
   const pressRef = useRef<HTMLDivElement>(null);
 
@@ -128,13 +113,6 @@ export function BiographyAct() {
         stagger: 0.05,
         ease: "power3.out",
         scrollTrigger: { trigger: homelabRef.current, start: "top 85%", toggleActions: "play none none reverse" },
-      });
-      gsap.from(artRef.current, {
-        opacity: 0,
-        y: 40,
-        duration: 1,
-        ease: "power3.out",
-        scrollTrigger: { trigger: artRef.current, start: "top 80%", toggleActions: "play none none reverse" },
       });
       gsap.from(caltechRef.current, {
         opacity: 0,
@@ -209,7 +187,7 @@ export function BiographyAct() {
           ref={leadRef}
           className="mt-8 max-w-[56ch] font-display text-[clamp(1.8rem,4vw,3.2rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[hsl(var(--brand-bone))]"
         >
-          Max Doubin is a ninth-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.
+          Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.
         </p>
 
         <div
@@ -236,57 +214,22 @@ export function BiographyAct() {
                 <span className="signal-text"> at home.</span>
               </h3>
               <p className="mt-5 max-w-[40ch] font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
-                Max built and maintains an extensive home data center featuring Dell PowerEdge servers, MD1220 and MD1200 storage, Cisco Catalyst switching, Radware application delivery control, approximately 3 TB of RAM, petabytes of raw storage, and a 42U glass-door cabinet.
+                Max designed, built, and operates a large home data center. The work covers enterprise switching and segmentation, virtualization, large-scale storage, application delivery, and the power, cooling, and structured cabling planning that keeps it all running.
               </p>
             </div>
             <div className="p-8 md:col-span-7">
               <div className="grid grid-cols-2 gap-y-6 gap-x-8 md:grid-cols-2">
-                {HOMELAB_SPECS.map((spec) => (
-                  <div key={spec.label} data-spec className="flex flex-col gap-1">
-                    <div className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-[2rem]">
+                {HOMELAB_DISCIPLINES.map((spec) => (
+                  <div key={spec.value} data-spec className="flex flex-col gap-1">
+                    <div className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-[1.75rem]">
                       {spec.value}
                     </div>
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       {spec.label}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          ref={artRef}
-          className="relative mt-24 overflow-hidden rounded-lg border border-[hsl(var(--brand-iron))] bg-[linear-gradient(135deg,hsl(var(--brand-graphite)/.5)_0%,hsl(var(--brand-obsidian)/.8)_100%)]"
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[hsl(var(--brand-signal)/.6)] to-transparent"
-            style={{ boxShadow: "0 0 12px hsl(var(--brand-signal) / 0.7)" }}
-          />
-          <div className="grid gap-0 md:grid-cols-12">
-            <div className="p-10 md:col-span-7">
-              <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-cyan))]">
-                · 06 · Selected Projects and Collections
-              </div>
-              <h3 className="mt-4 font-display text-[clamp(1.8rem,4.2vw,3rem)] font-medium leading-[1.04] tracking-[-0.02em] text-[hsl(var(--brand-bone))]">
-                Work beyond the rack.
-              </h3>
-              <p className="mt-5 max-w-[54ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                This body of work extends beyond infrastructure alone and includes installation art, hardware display pieces, independent web development, and long-term study through physical collections and technical references.
-              </p>
-              <ul className="mt-6 space-y-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                {OTHER_WORK.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <span className="mt-[0.45em] inline-block h-[4px] w-[4px] flex-shrink-0 rounded-full bg-[hsl(var(--brand-cyan))] shadow-[0_0_6px_hsl(var(--brand-cyan))]" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="relative flex items-center justify-center border-t border-[hsl(var(--brand-iron))] p-10 md:col-span-5 md:border-l md:border-t-0">
-              <PhoneGrid />
             </div>
           </div>
         </div>
@@ -412,26 +355,3 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
   );
 }
 
-function PhoneGrid() {
-  const cells = Array.from({ length: 200 });
-  return (
-    <div
-      aria-hidden
-      className="grid aspect-[4/5] w-full max-w-[260px] gap-[2px]"
-      style={{ gridTemplateColumns: "repeat(10, minmax(0, 1fr))" }}
-    >
-      {cells.map((_, i) => (
-        <div
-          key={i}
-          className="rounded-[2px] border border-[hsl(var(--brand-iron)/.6)] bg-[hsl(var(--brand-obsidian))]"
-          style={{
-            boxShadow:
-              i % 47 === 3
-                ? "inset 0 0 4px hsl(var(--brand-cyan) / 0.5)"
-                : "inset 0 0 2px rgba(0,0,0,0.6)",
-          }}
-        />
-      ))}
-    </div>
-  );
-}

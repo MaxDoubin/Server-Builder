@@ -245,7 +245,7 @@ export function Home() {
             {[
               { end: 1, prefix: "Top ", suffix: "%", label: "NCL Finish", icon: Shield },
               { end: 7, prefix: "#", suffix: "", label: "School Rank", icon: Target },
-              { end: 10, prefix: "", suffix: "", label: "PowerEdge Servers", icon: Terminal },
+              { end: 1, prefix: "Top ", suffix: "%", label: "National Cyber League", icon: Terminal },
               { end: 42, prefix: "", suffix: "U", label: "Rack Cabinet", icon: Award },
             ].map((stat) => (
               <div key={stat.label} className="group text-center" data-reveal>
@@ -339,7 +339,7 @@ export function Home() {
               {
                 icon: Terminal,
                 title: "Systems Infrastructure",
-                desc: "Built and maintains a large home data center with Dell PowerEdge servers, MD1220 and MD1200 storage, Radware ADCs, virtualization, and large-scale storage operations.",
+                desc: "Designed, built, and operates a large home data center covering enterprise switching, virtualization, large-scale storage, and power and cooling planning.",
                 color: "from-cyan-500/8 to-transparent",
                 iconColor: "text-cyan-400",
                 border: "hover:border-cyan-500/30",
