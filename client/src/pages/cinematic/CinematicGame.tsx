@@ -169,7 +169,7 @@ export function CinematicGame() {
   }
 
   return (
-    <CinematicLayout disableSmoothScroll hideFooter>
+    <CinematicLayout disableSmoothScroll hideFooter hideNav>
       <GameBriefing
         support={support}
         profile={profile}
