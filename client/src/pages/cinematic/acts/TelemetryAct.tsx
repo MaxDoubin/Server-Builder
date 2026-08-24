@@ -14,7 +14,6 @@ import {
   MorphingBlob,
   ParallaxFloat,
   WordReveal,
-  AnimatedGradientText,
   AnimatedCounter,
   Breathing,
   PulseGlow,
@@ -342,7 +341,6 @@ export function TelemetryAct() {
           </div>
         </ScrollReveal>
 
-        {/* Title with WordReveal + AnimatedGradientText on signal-text span */}
         <h2
           ref={titleRef}
           className="mt-6 max-w-[24ch] font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em] text-[hsl(var(--brand-bone))]"
@@ -354,7 +352,7 @@ export function TelemetryAct() {
             delay={0}
             staggerDelay={0.07}
           />{" "}
-          <AnimatedGradientText className="signal-text font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em]">
+          <span className="signal-text font-display text-[clamp(2.2rem,5.4vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.025em]">
             <WordReveal
               text="measured,"
               as="span"
@@ -362,7 +360,7 @@ export function TelemetryAct() {
               delay={0.35}
               staggerDelay={0.07}
             />
-          </AnimatedGradientText>{" "}
+          </span>{" "}
           <WordReveal
             text="it doesn't exist."
             as="span"

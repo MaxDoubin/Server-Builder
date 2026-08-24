@@ -1488,6 +1488,16 @@ export function HoverScale({
 // ANIMATED GRADIENT TEXT
 // ─────────────────────────────────────────────────────────
 
+/**
+ * Sweeping gradient fill for a short run of text.
+ *
+ * Children must be PLAIN TEXT. This paints a gradient on its own background
+ * box and clips it to glyphs with `background-clip: text`, so any child that
+ * establishes its own box (an inline-block, anything from WordReveal) draws
+ * its glyphs outside that box, inherits `color: transparent`, and renders as
+ * a washed-out ghost. Wrap the gradient in the reveal if you need both, never
+ * the reveal in the gradient.
+ */
 export function AnimatedGradientText({
   children,
   className,

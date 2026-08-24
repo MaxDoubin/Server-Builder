@@ -16,7 +16,6 @@ import {
   FloatingParticles,
   MorphingBlob,
   OrbitingParticles,
-  AnimatedGradientText,
   PulseGlow,
   Breathing,
   ParallaxFloat,
@@ -111,9 +110,7 @@ export function CTAAct() {
             <WordReveal text="Connect with Max Doubin." delay={0.2} staggerDelay={0.05} />
             <br />
             <span className="signal-text">
-              <AnimatedGradientText>
-                <WordReveal text="Projects, mentorship, speaking, and collaboration." delay={0.6} staggerDelay={0.04} />
-              </AnimatedGradientText>
+              <WordReveal text="Projects, mentorship, speaking, and collaboration." delay={0.6} staggerDelay={0.04} />
             </span>
           </h2>
         </div>
