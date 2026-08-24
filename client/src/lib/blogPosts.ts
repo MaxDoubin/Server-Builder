@@ -16494,7 +16494,7 @@ None of that stops injection. It means a successful injection reads a document i
   },
   {
     slug: "systemd-units-homelab",
-    title: "Writing systemd Units That Behave",
+    title: "Stop Running Services In A Terminal Multiplexer",
     date: "2026-06-10",
     tags: ["linux", "operations", "homelab"],
     excerpt:
