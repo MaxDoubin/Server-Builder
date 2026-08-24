@@ -5,6 +5,11 @@ import { generateProceduralRacks } from "@/components/3d/ProceduralRacks";
 import { staticEquipmentCatalog, enhanceEquipmentCatalogItem, type EquipmentCatalogItem } from "@/lib/static-equipment";
 import { addAutosaveSnapshot, loadAutosaveSnapshots, sanitizeRacks } from "@/lib/save-system";
 import { logError, logWarning } from "@/lib/error-log";
+import {
+  buildAlerts,
+  buildIncidents,
+  buildNetwork,
+} from "@/lib/static-facility";
 import type { 
   GameMode, 
   GameState, 
@@ -111,6 +116,45 @@ const defaultMetrics: FacilityMetrics = {
   storageCapacity: 0,
   storageUsed: 0,
 };
+
+/**
+ * Facility metrics computed from the racks actually on the floor.
+ *
+ * The site deploys as static files, so the /api/init query is disabled and
+ * `data` is undefined. facilityMetrics fell back to defaultMetrics, which is
+ * all zeroes, and every dashboard KPI read zero: uptime 0.00%, no power, no
+ * PUE. StatusBar masked it with `metric || derived` fallbacks of its own,
+ * which is why the top strip looked right while the NOC card directly under
+ * it read 0.00%. Deriving here gives every consumer the same real numbers.
+ */
+function deriveMetrics(racks: Rack[], alerts: Alert[]): FacilityMetrics {
+  const rackCount = racks.length;
+  const serverCount = racks.reduce(
+    (sum, rack) => sum + rack.installedEquipment.length,
+    0,
+  );
+  const itLoad = Math.max(1800, serverCount * 45 + rackCount * 120);
+  const pue = 1.12 + Math.min(0.28, rackCount / 400);
+  const storageCapacity = Math.max(100, serverCount * 4);
+  const unacknowledged = alerts.filter((alert) => !alert.acknowledged);
+  return {
+    totalPower: Math.round(itLoad * pue),
+    itLoad,
+    pue: Number(pue.toFixed(3)),
+    coolingCapacity: Math.round(itLoad * 1.35),
+    coolingLoad: Math.round(itLoad * 0.86),
+    uptime: 99.98,
+    activeAlerts: unacknowledged.length,
+    criticalAlerts: unacknowledged.filter((a) => a.severity === "critical").length,
+    serverCount,
+    rackCount,
+    networkDevices: Math.max(2, Math.round(rackCount * 2.5)),
+    storageCapacity,
+    storageUsed: Math.round(
+      storageCapacity * Math.min(0.92, 0.42 + (serverCount % 30) / 100),
+    ),
+  };
+}
 
 const defaultInventory = {
   cpus: [],
@@ -539,6 +583,45 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     };
   }, [staticRacksState, useStaticData]);
 
+  const resolvedRacks = useStaticData
+    ? staticRacksState
+    : racksData ?? data?.racks ?? [];
+
+  /**
+   * The rest of the facility, for the static build.
+   *
+   * useStaticData disables the API queries, so alerts, incidents and the
+   * network topology all arrived empty. The ops dashboards then described a
+   * 500 rack site with no network, no alerts and no open incidents. These
+   * derive from the racks that exist and are deterministic, so the numbers
+   * hold still between navigations.
+   *
+   * The timestamps are relative to first render rather than to now, which is
+   * why the clock is read once here instead of inside the builders.
+   */
+  const staticClock = useRef(Date.now());
+  const staticAlerts = useMemo(
+    () => (useStaticData ? buildAlerts(resolvedRacks, staticClock.current) : []),
+    [useStaticData, resolvedRacks],
+  );
+  const staticIncidents = useMemo(
+    () => (useStaticData ? buildIncidents(staticClock.current) : []),
+    [useStaticData],
+  );
+  const staticNetwork = useMemo(
+    () =>
+      useStaticData
+        ? buildNetwork(resolvedRacks.length)
+        : { nodes: [], links: [] },
+    [useStaticData, resolvedRacks.length],
+  );
+
+  const resolvedAlerts = data?.alerts ?? staticAlerts;
+  const derivedMetrics = useMemo(
+    () => deriveMetrics(resolvedRacks, resolvedAlerts),
+    [resolvedRacks, resolvedAlerts],
+  );
+
   const contextValue: GameContextType = {
     isLoading,
     isStaticMode: useStaticData,
@@ -547,13 +630,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       currentMode: localGameMode,
     },
     setGameMode,
-    racks: useStaticData ? staticRacksState : racksData ?? data?.racks ?? [],
+    racks: resolvedRacks,
     servers: data?.servers ?? [],
-    alerts: data?.alerts ?? [],
-    incidents: data?.incidents ?? [],
-    networkNodes: data?.networkNodes ?? [],
-    networkLinks: data?.networkLinks ?? [],
-    facilityMetrics: data?.facilityMetrics ?? defaultMetrics,
+    alerts: resolvedAlerts,
+    incidents: data?.incidents ?? staticIncidents,
+    networkNodes: data?.networkNodes ?? staticNetwork.nodes,
+    networkLinks: data?.networkLinks ?? staticNetwork.links,
+    facilityMetrics: data?.facilityMetrics ?? derivedMetrics,
     equipmentCatalog: useMemo(() => {
       if (useStaticData) {
         return staticEquipmentCatalog;

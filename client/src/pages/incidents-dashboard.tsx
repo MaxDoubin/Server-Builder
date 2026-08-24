@@ -45,7 +45,13 @@ export function IncidentsDashboard() {
     >
       <div className="grid gap-4 md:grid-cols-4">
         <KpiCard label="Open Incidents" value={incidents.length.toString()} icon={<AlertTriangle className="h-4 w-4 text-cyan-300" />} />
-        <KpiCard label="Critical" value="3" icon={<Siren className="h-4 w-4 text-cyan-300" />} />
+        <KpiCard
+          label="Critical"
+          value={incidents
+            .filter((incident) => incident.severity === "P1" || incident.severity === "P2")
+            .length.toString()}
+          icon={<Siren className="h-4 w-4 text-cyan-300" />}
+        />
         <KpiCard label="Runbooks" value="18" icon={<ClipboardList className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Median MTTR" value="11m" icon={<Timer className="h-4 w-4 text-cyan-300" />} />
       </div>

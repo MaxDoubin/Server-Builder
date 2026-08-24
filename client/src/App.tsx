@@ -14,8 +14,6 @@ import { Route, Switch, Router, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
-import { GameProvider } from "@/lib/game-context";
-import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool-dispose";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
@@ -409,6 +407,21 @@ function scrollToHash() {
 }
 
 /** Dashboards read live game state, so they need the same providers the game mounts. */
+/**
+ * The simulator's state providers, loaded with the routes that need them.
+ *
+ * These were static imports. game-context reaches save-system, which imports
+ * a runtime zod schema, so the whole of zod (151KB) sat in the entry chunk
+ * and every reader of the blog downloaded the save system for a simulator
+ * they never opened. Only the five ops dashboards mount these.
+ */
+const GameProvider = lazyWithRetry(() =>
+  import("@/lib/game-context").then((m) => ({ default: m.GameProvider })),
+);
+const BuildProvider = lazyWithRetry(() =>
+  import("@/lib/build-context").then((m) => ({ default: m.BuildProvider })),
+);
+
 function OpsRoute({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<GameLoading />}>

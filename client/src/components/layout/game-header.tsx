@@ -27,11 +27,17 @@ export function GameHeader() {
         the last two sat underneath the status bar, unreachable by tap. The
         header wraps to a second line instead, and the tab strip scrolls
         within it.
+
+        That holds up to 2xl, not lg. At 1280 everything technically fitted
+        on one row only by clipping the tab strip mid-word, and before that
+        the tabs overflowed their box entirely and drew over the brand and
+        the power readout. One row is only used where the whole thing
+        genuinely fits.
       */
-      className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border bg-card/80 px-4 py-2 backdrop-blur-sm lg:h-16 lg:flex-nowrap lg:py-0"
+      className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border bg-card/80 px-4 py-2 backdrop-blur-sm 2xl:h-16 2xl:flex-nowrap 2xl:py-0"
       data-testid="game-header"
     >
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 shrink items-center gap-4">
         {/*
           The only route out of the game. Once the briefing unmounts, its
           "back to portfolio" link goes with it, and every other control in
@@ -74,13 +80,13 @@ export function GameHeader() {
         the 404 page. The dashboards they were written for existed the whole
         time; they just had no route. Both halves are connected now.
       */}
-      <div className="order-last w-full min-w-0 overflow-x-auto lg:order-none lg:w-auto lg:flex-1 lg:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="order-last w-full min-w-0 overflow-x-auto 2xl:order-none 2xl:w-auto 2xl:flex-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex justify-start lg:justify-center">
           <ModeSwitcher />
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex min-w-0 shrink items-center gap-4">
         <StatusBar />
         
         <div className="h-6 w-px bg-border hidden lg:block" />
