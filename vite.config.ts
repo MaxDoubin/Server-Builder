@@ -43,6 +43,10 @@ export default defineConfig({
         // these in parallel; the route that needs them triggers the
         // load and the rest of the shell renders immediately.
         manualChunks(id) {
+          // The post archive is over a megabyte of markdown shared by four
+          // routes. Give it its own chunk so those routes reference one copy
+          // and nothing else has to carry it.
+          if (id.includes("lib/blogPosts")) return "posts";
           if (!id.includes("node_modules")) return;
           if (id.includes("three") && !id.includes("@react-three")) {
             return "three";

@@ -17,7 +17,6 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
-import { Home } from "@/pages/Home";
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
 import { SiteLoader } from "@/components/ui/site-loader";
 
@@ -50,6 +49,17 @@ function lazyWithRetry<T extends ComponentType<any>>(
     throw lastError;
   });
 }
+
+/**
+ * The legacy profile page. Lazy like every other legacy route.
+ *
+ * It was a static import, and it imports blogPosts, so the full text of the
+ * whole archive was linked into the entry chunk. Every visitor downloaded
+ * every post before the landing page could run.
+ */
+const Home = lazyWithRetry(() =>
+  import("@/pages/Home").then((module) => ({ default: module.Home })),
+);
 
 const Blog = lazyWithRetry(() =>
   import("@/pages/Blog").then((module) => ({ default: module.Blog })),
@@ -308,7 +318,11 @@ function AnimatedRoutes() {
     <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
-          <Route path="/legacy" component={Home} />
+          <Route path="/legacy">
+            <Suspense fallback={<RouteLoading />}>
+              <Home />
+            </Suspense>
+          </Route>
           <Route path="/legacy/blog">
             <Suspense fallback={<RouteLoading />}>
               <Blog />
