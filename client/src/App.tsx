@@ -137,6 +137,28 @@ const BuildDashboard = lazyWithRetry(() =>
   import("@/pages/build-dashboard").then((m) => ({ default: m.BuildDashboard })),
 );
 
+/**
+ * Topic hubs and the roadmap.
+ *
+ * /topics/:tag rather than /blog/tag/:tag, so a topic can never be
+ * mistaken for a post slug by the router.
+ */
+const CinematicTopics = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicTopics").then((m) => ({
+    default: m.CinematicTopics,
+  })),
+);
+const CinematicTag = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicTag").then((m) => ({
+    default: m.CinematicTag,
+  })),
+);
+const CinematicRoadmap = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicRoadmap").then((m) => ({
+    default: m.CinematicRoadmap,
+  })),
+);
+
 const CinematicNotFound = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNotFound").then((module) => ({
     default: module.CinematicNotFound,
@@ -473,6 +495,21 @@ function AnimatedRoutes() {
           <Route path="/blog/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicBlogPost />
+            </Suspense>
+          </Route>
+          <Route path="/topics">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicTopics />
+            </Suspense>
+          </Route>
+          <Route path="/topics/:tag">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicTag />
+            </Suspense>
+          </Route>
+          <Route path="/roadmap">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicRoadmap />
             </Suspense>
           </Route>
           <Route path="/projects">

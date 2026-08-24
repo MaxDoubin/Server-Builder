@@ -20,6 +20,7 @@ import { Marked } from "marked";
 // cleanly here. lib/blogPosts.ts cannot: it reaches for the bodies through
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
+const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -376,6 +377,104 @@ ${JSON.stringify({
     canonical: `${SITE_URL}/contact`,
   });
 
+  // ── topic hubs ──
+  /*
+    One page per subject, with real editorial copy and the full post list
+    rendered into the static HTML. These exist so a crawler has a route
+    into the archive by subject as well as by date, and so a reader can
+    land on "networking" rather than on post 214 of 236.
+
+    Only tags in lib/tagPages get a page. A tag with two posts stays a
+    filter on the index: a page for it would be thin, would compete with
+    the index, and would add nothing.
+  */
+  for (const topic of TAG_PAGES) {
+    const tagged = posts.filter((p) => p.tags.includes(topic.tag));
+    if (tagged.length === 0) continue;
+    const url = `${SITE_URL}/topics/${topic.tag}`;
+    const list = tagged
+      .map(
+        (p) =>
+          `      <li><a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a> ` +
+          `<time datetime="${p.date}">${p.date}</time> <span>${esc(p.excerpt)}</span></li>`,
+      )
+      .join("\n");
+    await writePage(`topics/${topic.tag}`, base, {
+      title: `${topic.title} | Max Doubin`,
+      description: topic.description,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: topic.title,
+  description: topic.description,
+  url,
+  isPartOf: { "@type": "Blog", "@id": `${SITE_URL}/#blog` },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: tagged.length,
+    itemListElement: tagged.slice(0, 25).map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${SITE_URL}/blog/${p.slug}`,
+      name: p.title,
+    })),
+  },
+})}
+</script>
+<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Topics", item: `${SITE_URL}/topics` },
+    { "@type": "ListItem", position: 3, name: topic.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <nav><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/topics">Topics</a></nav>
+  <article>
+    <h1>${esc(topic.title)}</h1>
+    <p>${esc(topic.intro)}</p>
+    <p>${tagged.length} posts.</p>
+    <ul>
+${list}
+    </ul>
+  </article>
+</main>`,
+    });
+  }
+
+  // ── topics index ──
+  await writePage("topics", base, {
+    title: "Topics | Max Doubin",
+    description:
+      "Browse writing on networking, servers, security, Linux, storage, AI infrastructure and more, organised by subject rather than by date.",
+    canonical: `${SITE_URL}/topics`,
+    rootContent: `
+<main>
+  <h1>Topics</h1>
+  <ul>
+${TAG_PAGES.map(
+  (t) =>
+    `    <li><a href="${SITE_URL}/topics/${t.tag}">${esc(t.title)}</a> <span>${esc(t.description)}</span></li>`,
+).join("\n")}
+  </ul>
+</main>`,
+  });
+
+  // ── roadmap ──
+  await writePage("roadmap", base, {
+    title: "Roadmap | Max Doubin",
+    description:
+      "What is planned, in progress, done and blocked on maxdoubin.com, tracked in public across 100 improvements.",
+    canonical: `${SITE_URL}/roadmap`,
+  });
+
   // ── sitemap ──
   // Generated here rather than hand-maintained. The checked-in sitemap had
   // gone stale, listing 105 URLs with a lastmod months behind the newest
@@ -392,7 +491,9 @@ ${JSON.stringify({
  * lastmod comes from each post's own date, so a crawler can tell what
  * actually changed instead of re-reading the whole archive.
  */
-async function writeSitemap(posts: Array<{ slug: string; date: string; draft?: boolean }>) {
+async function writeSitemap(
+  posts: Array<{ slug: string; date: string; tags: string[]; draft?: boolean }>,
+) {
   const live = posts.filter((p) => !p.draft);
   const newest = live.reduce((a, p) => (p.date > a ? p.date : a), "1970-01-01");
   const today = newest;
@@ -403,7 +504,24 @@ async function writeSitemap(posts: Array<{ slug: string; date: string; draft?: b
     { loc: `${SITE_URL}/projects`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/contact`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/game`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/topics`, lastmod: today, changefreq: "weekly", priority: "0.8" },
+    { loc: `${SITE_URL}/roadmap`, lastmod: today, changefreq: "weekly", priority: "0.4" },
   ];
+
+  // Topic hubs. Only those that actually have posts, so the sitemap never
+  // advertises a page the prerenderer skipped.
+  for (const topic of TAG_PAGES) {
+    const newestTagged = live
+      .filter((p) => p.tags.includes(topic.tag))
+      .reduce((a, p) => (p.date > a ? p.date : a), "");
+    if (!newestTagged) continue;
+    urls.push({
+      loc: `${SITE_URL}/topics/${topic.tag}`,
+      lastmod: newestTagged,
+      changefreq: "weekly",
+      priority: "0.7",
+    });
+  }
   for (const post of live) {
     urls.push({
       loc: `${SITE_URL}/blog/${post.slug}`,
