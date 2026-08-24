@@ -9,6 +9,7 @@ import { DifficultyBadge } from "@/components/blog/DifficultyBadge";
 import { DIFFICULTIES, postDifficulty, type Difficulty } from "@/lib/postDifficulty";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
+import { formatPostDate } from "@/lib/formatDate";
 import {
   ScrollReveal,
   StaggerGroup,
@@ -468,11 +469,7 @@ export function CinematicBlog() {
                           <div className="flex flex-col justify-center p-6">
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                               <time dateTime={post.date}>
-                                {new Date(post.date).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
+                                {formatPostDate(post.date)}
                               </time>
                               <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
                               <span>

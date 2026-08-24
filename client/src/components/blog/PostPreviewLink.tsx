@@ -20,6 +20,7 @@ import type { PostMeta } from "@/lib/postIndex";
 import { readMinutes } from "@/lib/blogPosts";
 import { postDifficulty } from "@/lib/postDifficulty";
 import { DifficultyBadge } from "./DifficultyBadge";
+import { formatPostDate } from "@/lib/formatDate";
 
 /** Long enough that skimming across a list does not flash cards. */
 const OPEN_DELAY_MS = 170;
@@ -137,11 +138,7 @@ export function PostPreviewLink({
         >
           <div className="flex flex-wrap items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
             <time dateTime={post.date}>
-              {new Date(post.date).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
+              {formatPostDate(post.date)}
             </time>
             <span aria-hidden className="h-px w-3 bg-[hsl(var(--brand-iron))]" />
             <span>{readMinutes(post)} min</span>

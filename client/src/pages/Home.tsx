@@ -5,6 +5,7 @@ import { Layout } from "@/components/site/Layout";
 import { getAllPosts } from "@/lib/blogPosts";
 import { useSEO } from "@/lib/useSEO";
 import { AnimatedCounter } from "@/components/site/AnimatedCounter";
+import { formatPostDate } from "@/lib/formatDate";
 import {
   ArrowRight,
   Instagram,
@@ -541,7 +542,7 @@ export function Home() {
                   </div>
                   <div className="p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-primary/60 mb-1.5">
-                      {new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {formatPostDate(post.date)}
                     </p>
                     <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
                       {post.title}

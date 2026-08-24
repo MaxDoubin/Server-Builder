@@ -18,6 +18,7 @@ import { postDifficulty } from "@/lib/postDifficulty";
 import { recordProgress } from "@/lib/readingHistory";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
+import { formatPostDate } from "@/lib/formatDate";
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -407,11 +408,7 @@ export function CinematicBlogPost() {
                   style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
                 />
                 <time dateTime={post.date}>
-                  {new Date(post.date).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {formatPostDate(post.date)}
                 </time>
                 <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
                 <span>{readMins} min read</span>

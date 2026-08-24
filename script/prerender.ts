@@ -22,6 +22,7 @@ import { Marked } from "marked";
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
+const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -229,9 +230,16 @@ ${JSON.stringify({
 
   // Full article HTML. Google reads this on the first HTML crawl
   const contentHtml = await Promise.resolve(marked.parse(body));
-  const dateStr = new Date(post.date).toLocaleDateString("en-US", {
-    year: "numeric", month: "long", day: "numeric",
-  });
+  /*
+    Formatted from the string parts, not through a Date.
+
+    `new Date("2026-05-09")` is UTC midnight, and toLocaleDateString then
+    renders it in whatever zone the machine is in. On a build runner set to
+    anything west of Greenwich that prints the day before, so the static
+    HTML would disagree with what the browser shows. A post date is a
+    calendar date, not an instant, and should never touch a timezone.
+  */
+  const dateStr = formatPostDate(post.date);
   const readMins = Math.max(1, Math.ceil(post.wordCount / 200));
   const tagLinks = post.tags
     .map((t) => `<a href="${SITE_URL}/blog">${esc(t)}</a>`)

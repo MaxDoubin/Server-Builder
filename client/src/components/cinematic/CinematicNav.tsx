@@ -7,6 +7,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { Magnetic, GlitchText } from "@/lib/framer-animations";
+import { prefetchHandlers } from "@/lib/prefetchOnHover";
 
 const NAV_LINKS = [
   { label: "Index", href: "/" },
@@ -176,6 +177,7 @@ export function CinematicNav() {
                   <Magnetic strength={0.12} radius={80}>
                     <Link
                       href={link.href}
+                    {...prefetchHandlers(link.href)}
                       data-testid={`link-nav-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
                       className={`relative px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.22em] transition-colors ${
                         active
@@ -315,6 +317,7 @@ export function CinematicNav() {
                     >
                       <Link
                         href={link.href}
+                    {...prefetchHandlers(link.href)}
                         data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
                         className={`flex items-center justify-between rounded-md border border-transparent px-4 py-3 font-mono-tight text-[13px] uppercase tracking-[0.22em] transition-colors ${
                           active

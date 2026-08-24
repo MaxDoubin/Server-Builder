@@ -10,6 +10,7 @@ import { useMemo, useEffect, useState } from "react";
 import { marked } from "marked";
 import { ArrowLeft } from "lucide-react";
 import { useSEO } from "@/lib/useSEO";
+import { formatPostDate } from "@/lib/formatDate";
 
 marked.setOptions({
   gfm: true,
@@ -152,11 +153,7 @@ export function BlogPost() {
         <header className="mt-8">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <time dateTime={post.date}>
-              {new Date(post.date).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {formatPostDate(post.date)}
             </time>
             <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
             <span>{readMinutes(post)} min read</span>
