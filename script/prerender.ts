@@ -153,6 +153,7 @@ async function writePage(
 async function prerenderPost(
   base: string,
   post: (typeof blogPosts)[number],
+  all: (typeof blogPosts)[number][] = [],
 ): Promise<void> {
   const url = `${SITE_URL}/blog/${post.slug}`;
   const ogImage = `${SITE_URL}${post.coverImage}`;
@@ -188,6 +189,49 @@ ${JSON.stringify({
     .map((t) => `<a href="${SITE_URL}/blog">${esc(t)}</a>`)
     .join(" ");
 
+  /*
+    Onward links in the static HTML.
+
+    The React page renders neighbours and related posts, but a crawler that
+    does not execute JavaScript only ever saw a link back to the index, so
+    every one of 236 posts was a dead end on the first pass. These mirror
+    what the page shows.
+  */
+  const idx = all.findIndex((p) => p.slug === post.slug);
+  const newer = idx > 0 ? all[idx - 1] : undefined;
+  const older = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : undefined;
+
+  const tagCounts = new Map<string, number>();
+  all.forEach((p) => p.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)));
+  const related = all
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => ({
+      p,
+      score: p.tags
+        .filter((t) => post.tags.includes(t))
+        .reduce((sum, t) => sum + 1 / (tagCounts.get(t) ?? 1), 0),
+    }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || (a.p.date < b.p.date ? 1 : -1))
+    .slice(0, 3)
+    .map((x) => x.p);
+
+  const link = (p: (typeof blogPosts)[number]) =>
+    `<a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a>`;
+
+  const neighbourNav =
+    older || newer
+      ? `<nav aria-label="Adjacent posts">${
+          older ? `<span>Previous: ${link(older)}</span>` : ""
+        }${newer ? `<span>Next: ${link(newer)}</span>` : ""}</nav>`
+      : "";
+
+  const relatedNav = related.length
+    ? `<aside aria-label="Related posts"><h2>Related</h2><ul>${related
+        .map((r) => `<li>${link(r)}</li>`)
+        .join("")}</ul></aside>`
+    : "";
+
   const rootContent = `
 <main>
   <a href="${SITE_URL}/blog">← Back to Blog</a>
@@ -199,6 +243,8 @@ ${JSON.stringify({
     <nav>${tagLinks}</nav>
     ${contentHtml}
   </article>
+  ${neighbourNav}
+  ${relatedNav}
 </main>`;
 
   await writePage(`blog/${post.slug}`, base, {
@@ -228,7 +274,7 @@ async function main(): Promise<void> {
   console.log(`Prerendering ${posts.length} blog posts...`);
   for (let i = 0; i < posts.length; i += BATCH) {
     const batch = posts.slice(i, i + BATCH);
-    await Promise.all(batch.map((p) => prerenderPost(base, p)));
+    await Promise.all(batch.map((p) => prerenderPost(base, p, posts)));
     process.stdout.write(`  ${Math.min(i + BATCH, posts.length)}/${posts.length}\r`);
   }
   console.log(`  ${posts.length}/${posts.length} done          `);
