@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useReducer, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -17,6 +17,7 @@ import {
   type GearSlot,
 } from "./rackConfig";
 import { useDeviceTier, type DeviceTier } from "@/lib/motion/useDeviceTier";
+import { useReducedMotion } from "@/lib/motion/useReducedMotion";
 
 export type ContinuousProgressRef = { current: number };
 
@@ -99,7 +100,13 @@ function sampleKey(t: number): Key {
 const tmpPos = new THREE.Vector3();
 const tmpLook = new THREE.Vector3();
 
-function CameraRig({ progressRef }: { progressRef: ContinuousProgressRef }) {
+function CameraRig({
+  progressRef,
+  reducedMotion,
+}: {
+  progressRef: ContinuousProgressRef;
+  reducedMotion: boolean;
+}) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const lookRef = useRef(new THREE.Vector3(0, RACK_MID_Y, 0));
 
@@ -107,7 +114,10 @@ function CameraRig({ progressRef }: { progressRef: ContinuousProgressRef }) {
     const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
     const k = sampleKey(p);
 
-    const swayScale = p > 0.54 && p < 0.74 ? 0.0025 : 0.007;
+    // Idle drift is the one motion here that runs with no input at all, so it
+    // is the one a reduced-motion visitor most needs gone: the static layout
+    // still shows this rack, and it would otherwise float forever.
+    const swayScale = reducedMotion ? 0 : p > 0.54 && p < 0.74 ? 0.0025 : 0.007;
     const sway = Math.sin(clock.elapsedTime * 0.32) * swayScale;
     const swayY = Math.cos(clock.elapsedTime * 0.27) * swayScale * 0.6;
 
@@ -213,6 +223,23 @@ function SlidingServer({
   );
 }
 
+/**
+ * When each internal caption is on screen, as [fadeInStart, fadeInEnd,
+ * fadeOutStart, fadeOutEnd] in explode progress. These trail the STAGES
+ * windows in ServerInternals so a caption appears just as its part finishes
+ * pulling clear of the chassis.
+ */
+const LABEL_WINDOWS: Record<string, [number, number, number, number]> = {
+  lid:       [0.06, 0.11, 0.20, 0.26],
+  driveCage: [0.10, 0.15, 0.24, 0.30],
+  chassis:   [0.18, 0.23, 0.32, 0.38],
+  heatsinkA: [0.26, 0.31, 0.40, 0.46],
+  ramBankA:  [0.42, 0.47, 0.55, 0.61],
+  fanWall:   [0.60, 0.65, 0.72, 0.78],
+  psuA:      [0.76, 0.81, 0.86, 0.92],
+  gpu:       [0.82, 0.87, 0.94, 1.00],
+};
+
 const PULL_START = 0.38;
 const PULL_END = 0.52;
 const EXPLODE_START = 0.54;
@@ -251,21 +278,34 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
     const explodeP =
       smoothstep(EXPLODE_START, EXPLODE_END, p) * (1 - back);
     explodeRef.current = explodeP;
-    const showInternals = p > EXPLODE_START - 0.02 && p < REASSEMBLE_END + 0.02;
 
+    // Hand over from the solid chassis to the internals at the very start of
+    // the explode, while the two still look identical. Swapping later (the
+    // old threshold was 0.05, by which point the lid had already travelled
+    // half its distance) made the closed chassis pop away mid-motion.
+    const showInternals = explodeP >= 0.004;
     if (chassisGroup.current) {
-      chassisGroup.current.visible = explodeP < 0.05;
+      chassisGroup.current.visible = !showInternals;
     }
     if (internalsGroup.current) {
       internalsGroup.current.visible = showInternals;
     }
 
-    const labelOpacity =
-      explodeP > 0.25 ? Math.min(1, (explodeP - 0.25) / 0.25) : 0;
+    // Every caption used to fade in together at explodeP > 0.25, so eight of
+    // them stacked on top of each other and on the section copy. Each one now
+    // rides its own part's separation window: it arrives as that part pulls
+    // clear and leaves before the next part's caption lands.
     INTERNAL_LABELS.forEach((l) => {
       const el = labelRefs.current[l.id];
       if (!el) return;
-      el.style.opacity = String(labelOpacity);
+      const win = LABEL_WINDOWS[l.id];
+      if (!win) {
+        el.style.opacity = "0";
+        return;
+      }
+      const inP = smoothstep(win[0], win[1], explodeP);
+      const outP = smoothstep(win[2], win[3], explodeP);
+      el.style.opacity = String(inP * (1 - outP));
     });
   });
 
@@ -282,12 +322,13 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
           />
         </group>
         <group ref={internalsGroup} visible={false}>
-          <ExplodeBridge progressRef={progressRef} />
-          {INTERNAL_LABELS.map((l) => (
+          <group scale={[0.34, 0.46, 0.34]}>
+            <ServerInternals explodeRef={explodeRef} />
+            {INTERNAL_LABELS.map((l) => (
             <Html
               key={l.id}
               position={l.anchor}
-              distanceFactor={1.6}
+              distanceFactor={0.85}
               style={{ pointerEvents: "none" }}
               wrapperClass="cinematic-label"
             >
@@ -341,41 +382,14 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
                 </span>
               </div>
             </Html>
-          ))}
+            ))}
+          </group>
         </group>
       </group>
     </group>
   );
 }
 
-function ExplodeBridge({ progressRef }: { progressRef: ContinuousProgressRef }) {
-  const ref = useRef<THREE.Group>(null);
-  const lastExplode = useRef(-1);
-  const explodeNow = useRef(0);
-  const [, setBump] = useStateBump();
-
-  useFrame(() => {
-    const p = Math.max(0, Math.min(1, progressRef.current ?? 0));
-    const back = smoothstep(EXPLODE_END, REASSEMBLE_END, p);
-    const e = smoothstep(EXPLODE_START, EXPLODE_END, p) * (1 - back);
-    explodeNow.current = e;
-    const quantized = Math.round(e * 32) / 32;
-    if (quantized !== lastExplode.current) {
-      lastExplode.current = quantized;
-      setBump();
-    }
-  });
-
-  return (
-    <group ref={ref} scale={[0.34, 0.46, 0.34]} position={[0, 0, 0]}>
-      <ServerInternals explode={lastExplode.current === -1 ? 0 : lastExplode.current} />
-    </group>
-  );
-}
-
-function useStateBump() {
-  return useReducer((x: number) => x + 1, 0);
-}
 
 const HALL_START = 0.90;
 const HALL_END = 0.995;
@@ -623,6 +637,7 @@ export function ContinuousRackScene({
   progressRef: ContinuousProgressRef;
 }) {
   const { dpr, effects, tier } = useDeviceTier();
+  const reducedMotion = useReducedMotion();
   const insertions = useMemo(buildInsertions, []);
 
   return (
@@ -695,7 +710,7 @@ export function ContinuousRackScene({
         <HallContents progressRef={progressRef} tier={tier} />
       </Suspense>
 
-      <CameraRig progressRef={progressRef} />
+      <CameraRig progressRef={progressRef} reducedMotion={reducedMotion} />
 
       <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.9, effects ? 64 : 32]} />

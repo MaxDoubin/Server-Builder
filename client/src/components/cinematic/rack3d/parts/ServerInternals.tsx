@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
 
 /**
  * High-detail 2U server internals, positioned relative to (0,0,0) at the
@@ -15,8 +16,18 @@ import * as THREE from "three";
 export interface ServerInternalsProps {
   /** Outer shell box (width, height, depth) in meters. */
   size?: [number, number, number];
-  /** 0 = assembled, 1 = fully exploded. */
-  explode?: number;
+  /**
+   * Live 0..1 explode amount, read every frame.
+   *
+   * This is a ref rather than a number on purpose. Positioning the parts
+   * during render meant the only way to animate them was to re-render, and
+   * the caller did that by quantising the progress to 32 steps and forcing
+   * a React update at each one. The result was an explode that moved in 32
+   * visible jumps while reconciling several hundred meshes per step. The
+   * parts are now placed in useFrame, so the motion is continuous and React
+   * does no work at all while it plays.
+   */
+  explodeRef?: { current: number };
   /** Emit labels that the 2D overlay can target. */
   onLayout?: (layout: InternalPartLayout[]) => void;
 }
@@ -77,13 +88,45 @@ function smoothstep(a: number, b: number, x: number) {
   return t * t * (3 - 2 * t);
 }
 
-function lerp3(a: [number, number, number], b: [number, number, number], t: number): [number, number, number] {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-}
+const ZERO_REF = { current: 0 };
 
-export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: ServerInternalsProps) {
+export function ServerInternals({
+  size = [0.56, 0.12, 0.78],
+  explodeRef = ZERO_REF,
+}: ServerInternalsProps) {
   const [w, h, d] = size;
-  const t = Math.max(0, Math.min(1, explode));
+
+  /** Animated part groups, keyed by their OFFSETS/STAGES name. */
+  const parts = useRef(
+    new Map<string, { group: THREE.Group; base: THREE.Vector3 }>(),
+  );
+
+  const reg =
+    (key: string, base: [number, number, number]) =>
+    (el: THREE.Group | null) => {
+      if (el) {
+        parts.current.set(key, { group: el, base: new THREE.Vector3(...base) });
+      } else {
+        parts.current.delete(key);
+      }
+    };
+
+  useFrame(() => {
+    const t = Math.max(0, Math.min(1, explodeRef.current ?? 0));
+    parts.current.forEach(({ group, base }, key) => {
+      const off = OFFSETS[key];
+      if (!off) return;
+      const stage = STAGES[key];
+      // Each part separates only inside its own window, so the teardown
+      // reads as a sequence rather than everything drifting at once.
+      const local = stage ? smoothstep(stage[0], stage[1], t) : t;
+      group.position.set(
+        base.x + off[0] * local,
+        base.y + off[1] * local,
+        base.z + off[2] * local,
+      );
+    });
+  });
 
   // Chassis material shared
   const steel = useMemo(() => new THREE.MeshStandardMaterial({
@@ -120,19 +163,9 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
     color: "#ff9a1f", emissive: "#ff9a1f", emissiveIntensity: 1.2,
   }), []);
 
-  // Apply stage-gated exploded offsets so each part separates during its
-  // own progress window. `t` here is the raw overall explode (0..1); each
-  // part derives its own local 0..1 from the STAGES map.
-  const pos = (key: keyof typeof OFFSETS, base: [number, number, number] = [0, 0, 0]) => {
-    const off = OFFSETS[key];
-    const stage = STAGES[key as string];
-    const local = stage ? smoothstep(stage[0], stage[1], t) : t;
-    return lerp3(base, [base[0] + off[0], base[1] + off[1], base[2] + off[2]], local);
-  };
-
   // --- Motherboard ---
   const mobo = (
-    <group position={pos("motherboard", [0, -h * 0.25, -d * 0.08])}>
+    <group position={[0, -h * 0.25, -d * 0.08]} ref={reg("motherboard", [0, -h * 0.25, -d * 0.08])}>
       <mesh material={pcbGreen}>
         <boxGeometry args={[w * 0.86, 0.008, d * 0.72]} />
       </mesh>
@@ -149,7 +182,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- CPU sockets (LGA-ish pattern + retention mech) ---
   const cpuSocket = (key: "cpuA" | "cpuB", x: number, z: number) => (
-    <group key={key} position={pos(key, [x, -h * 0.18, z])}>
+    <group key={key} position={[x, -h * 0.18, z]} ref={reg(key, [x, -h * 0.18, z])}>
       <mesh material={plasticBlk}>
         <boxGeometry args={[0.07, 0.008, 0.07]} />
       </mesh>
@@ -166,7 +199,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- Tower heatsinks w/ copper heatpipes ---
   const heatsink = (key: "heatsinkA" | "heatsinkB", x: number, z: number) => (
-    <group key={key} position={pos(key, [x, -h * 0.10, z])}>
+    <group key={key} position={[x, -h * 0.10, z]} ref={reg(key, [x, -h * 0.10, z])}>
       {/* Fin stack */}
       {Array.from({ length: 22 }).map((_, i) => (
         <mesh key={i} position={[0, 0, -0.035 + (i * 0.003)]} material={heatsinkMat}>
@@ -184,7 +217,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- RAM banks (8 sticks per bank × 2) ---
   const ramBank = (key: "ramBankA" | "ramBankB", x: number) => (
-    <group key={key} position={pos(key, [x, -h * 0.12, -d * 0.02])}>
+    <group key={key} position={[x, -h * 0.12, -d * 0.02]} ref={reg(key, [x, -h * 0.12, -d * 0.02])}>
       {Array.from({ length: 8 }).map((_, i) => (
         <group key={i} position={[0, 0, -0.08 + i * 0.024]}>
           <mesh material={ramMat}>
@@ -205,7 +238,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- Fan wall (6 counter-rotating fans) ---
   const fanWall = (
-    <group position={pos("fanWall", [0, -h * 0.1, d * 0.08])}>
+    <group position={[0, -h * 0.1, d * 0.08]} ref={reg("fanWall", [0, -h * 0.1, d * 0.08])}>
       {Array.from({ length: 6 }).map((_, i) => {
         const x = -w * 0.35 + (i * (w * 0.7) / 5);
         return (
@@ -236,7 +269,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- PSU pair (rear) ---
   const psu = (key: "psuA" | "psuB", x: number) => (
-    <group key={key} position={pos(key, [x, -h * 0.2, -d * 0.32])}>
+    <group key={key} position={[x, -h * 0.2, -d * 0.32]} ref={reg(key, [x, -h * 0.2, -d * 0.32])}>
       <mesh material={psuBody}>
         <boxGeometry args={[0.14, 0.085, 0.18]} />
       </mesh>
@@ -257,7 +290,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- Front drive cage (8 × 3.5" bays) ---
   const driveCage = (
-    <group position={pos("driveCage", [0, -h * 0.15, d * 0.3])}>
+    <group position={[0, -h * 0.15, d * 0.3]} ref={reg("driveCage", [0, -h * 0.15, d * 0.3])}>
       <mesh material={steel}>
         <boxGeometry args={[w * 0.92, h * 0.85, 0.12]} />
       </mesh>
@@ -288,7 +321,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
   // --- Expansion cards (NIC + GPU bracket) ---
   const expansionCards = (
     <>
-      <group position={pos("nic", [w * 0.22, -h * 0.12, -d * 0.22])}>
+      <group position={[w * 0.22, -h * 0.12, -d * 0.22]} ref={reg("nic", [w * 0.22, -h * 0.12, -d * 0.22])}>
         <mesh material={pcbGreen}>
           <boxGeometry args={[0.14, 0.06, 0.008]} />
         </mesh>
@@ -299,7 +332,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
           </mesh>
         ))}
       </group>
-      <group position={pos("gpu", [-w * 0.22, -h * 0.10, -d * 0.18])}>
+      <group position={[-w * 0.22, -h * 0.10, -d * 0.18]} ref={reg("gpu", [-w * 0.22, -h * 0.10, -d * 0.18])}>
         <mesh material={plasticBlk}>
           <boxGeometry args={[0.22, 0.08, 0.03]} />
         </mesh>
@@ -313,7 +346,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- Lid (slides up on explode) ---
   const lid = (
-    <group position={pos("lid", [0, h * 0.5, 0])}>
+    <group position={[0, h * 0.5, 0]} ref={reg("lid", [0, h * 0.5, 0])}>
       <mesh material={steel}>
         <boxGeometry args={[w, 0.004, d]} />
       </mesh>
@@ -328,7 +361,7 @@ export function ServerInternals({ size = [0.56, 0.12, 0.78], explode = 0 }: Serv
 
   // --- Chassis base (drops on explode) ---
   const chassisBase = (
-    <group position={pos("chassis", [0, -h * 0.5, 0])}>
+    <group position={[0, -h * 0.5, 0]} ref={reg("chassis", [0, -h * 0.5, 0])}>
       <mesh material={steel}>
         <boxGeometry args={[w, 0.006, d]} />
       </mesh>

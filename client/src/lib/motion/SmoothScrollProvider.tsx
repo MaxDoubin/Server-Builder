@@ -116,7 +116,13 @@ export function SmoothScrollProvider({ children, disabled = false }: Props) {
     let refreshTimer = 0;
     const scheduleRefresh = () => {
       window.clearTimeout(refreshTimer);
-      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 120);
+      // refresh(true) is the "safe" form: it routes through GSAP's resize
+      // path, which defers to scrollEnd when a gesture is in flight and
+      // debounces bursts. The bare refresh() is forced and skips both, so a
+      // lazy chunk landing mid-fling would re-measure the pin underneath the
+      // user, and the resulting body-height change can re-enter this very
+      // observer.
+      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(true), 120);
     };
 
     const resizeObserver = new ResizeObserver(scheduleRefresh);
@@ -132,6 +138,9 @@ export function SmoothScrollProvider({ children, disabled = false }: Props) {
     setReady(true);
 
     return () => {
+      // Restore GSAP's stock lag smoothing. Turning it off is right only
+      // while Lenis owns the clock; the ticker outlives this provider.
+      gsap.ticker.lagSmoothing(500, 33);
       window.clearTimeout(refreshTimer);
       resizeObserver.disconnect();
       window.removeEventListener("load", scheduleRefresh);
