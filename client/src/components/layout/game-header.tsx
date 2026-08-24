@@ -1,5 +1,4 @@
 import { useGame } from "@/lib/game-context";
-import { ModeSwitcher } from "@/components/ui/mode-switcher";
 import { StatusBar } from "@/components/ui/status-bar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -42,9 +41,16 @@ export function GameHeader() {
         )}
       </div>
 
-      <div className="flex-1 flex justify-center">
-        <ModeSwitcher />
-      </div>
+      {/*
+        The mode tabs that used to sit here (Build, Floor, Network, NOC,
+        Incidents, About) navigated to /build, /floor, /network, /noc,
+        /incidents and /about. None of those routes exist, so every one of
+        them landed the player on the 404 page, and nothing in the current
+        game reads the mode they set. They are removed rather than pointed
+        at stub pages. Mode is switched from the Datacenter Command panel,
+        which works.
+      */}
+      <div className="flex-1" />
 
       <div className="flex items-center gap-4">
         <StatusBar />
