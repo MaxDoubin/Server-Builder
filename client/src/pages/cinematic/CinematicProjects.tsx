@@ -28,12 +28,22 @@ import {
   useInView,
 } from "@/lib/framer-animations";
 
+/**
+ * Filters, derived from the projects that actually exist.
+ *
+ * This list used to be hardcoded, so it drifted: it offered Web and Art
+ * after both of those projects were removed, and offered nothing for the
+ * categories added since. A filter that returns an empty page is worse
+ * than no filter.
+ */
 const CATEGORIES = [
   { value: "all", label: "All" },
-  { value: "networking", label: "Networking" },
-  { value: "simulation", label: "Simulation" },
-  { value: "web", label: "Web" },
-  { value: "art", label: "Art" },
+  ...Array.from(new Set(siteConfig.projects.map((p) => p.category)))
+    .sort()
+    .map((value) => ({
+      value,
+      label: value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, " "),
+    })),
 ];
 
 export function CinematicProjects() {

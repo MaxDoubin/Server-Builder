@@ -263,7 +263,47 @@ export const siteConfig = {
       ],
       category: "networking",
       link: "",
-      coverImage: "/images/blog-cover-default.png",
+      coverImage: "/images/projects/homelab.jpg",
+    },
+    {
+      id: "youth-coding-camps",
+      title: "Youth Coding Camps",
+      description:
+        "Lead instructor for youth coding camps across the Las Vegas Valley, teaching programming and computing fundamentals to students beginning in technology.",
+      tech: ["Teaching", "Curriculum", "Python", "Community"],
+      category: "education",
+      link: "",
+      coverImage: "/images/projects/youth-coding-camps.jpg",
+    },
+    {
+      id: "cyber-club",
+      title: "South CTA Cyber Club",
+      description:
+        "President of the school cybersecurity club: running practice sessions, building a lab that resets between meetings, and preparing members for competition.",
+      tech: ["Leadership", "Cybersecurity", "Lab Design"],
+      category: "leadership",
+      link: "",
+      coverImage: "/images/projects/cyber-club.jpg",
+    },
+    {
+      id: "competition",
+      title: "Competitive Cybersecurity",
+      description:
+        "National Cyber League and Cyber Skyline competition across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation. Top 1 percent individually, with a team placing 7th nationally.",
+      tech: ["OSINT", "Cryptography", "Forensics", "Web Exploitation"],
+      category: "security",
+      link: "",
+      coverImage: "/images/projects/competition.jpg",
+    },
+    {
+      id: "field-notes",
+      title: "Field Notes",
+      description:
+        "A daily technical journal on networking, cybersecurity, storage, virtualization, and the operational side of running infrastructure.",
+      tech: ["Technical Writing", "Documentation"],
+      category: "writing",
+      link: "/blog",
+      coverImage: "/images/projects/field-notes.jpg",
     },
   ],
 };
