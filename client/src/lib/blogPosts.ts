@@ -123,7 +123,7 @@ One security note that applies to both. SNMPv1 and v2c send a community string i
     tags: ["linux", "networking", "security"],
     excerpt:
       "Most firewall bugs I have debugged were not wrong rules. They were right rules attached at the wrong point in the packet path.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/netfilter-hook-order.jpg",
     content: `
 ## The packet path is a pipeline, not a list
 
@@ -235,7 +235,7 @@ A rule with zero packets after a day of traffic is either wrong or unnecessary, 
     tags: ["linux", "servers", "operations"],
     excerpt:
       "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/oom-killer-and-swap-sizing.jpg",
     content: `
 ## Allocation is a promise, not a delivery
 
@@ -318,7 +318,7 @@ cat /proc/pressure/memory
     tags: ["linux", "monitoring", "tools"],
     excerpt:
       "Metrics tell you something is wrong. eBPF lets you attach a small safe program to the exact kernel function involved and watch it happen.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/ebpf-observability-basics.jpg",
     content: `
 ## The gap between a metric and an answer
 
@@ -412,7 +412,7 @@ None of that changes the basic value. Before eBPF, answering "which process is c
     tags: ["storage", "hardware", "operations"],
     excerpt:
       "A degraded array is a race between a rebuild and a second failure. The interesting part is how long that race actually lasts.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/raid-rebuild-risk-math.jpg",
     content: `
 ## The window is the whole problem
 
@@ -487,7 +487,7 @@ That trade is the real design question in any distributed storage system, and it
     tags: ["ai", "linux", "operations"],
     excerpt:
       "Most accelerator problems are not compute problems. They are version mismatches between four layers that all have to agree.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/gpu-driver-stack-linux.jpg",
     content: `
 ## Four layers, all of which must agree
 
@@ -598,7 +598,7 @@ None of this is glamorous. It is the same discipline as any other dependency man
     tags: ["hardware", "homelab", "career"],
     excerpt:
       "Decommissioned enterprise equipment is the cheapest way into real infrastructure, as long as you know which cheap things are actually expensive.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/buying-used-enterprise-gear.jpg",
     content: `
 ## The reason this market exists
 
@@ -690,7 +690,7 @@ And be honest about the hidden cost that never shows up in the price: your time.
     tags: ["ai", "ml", "operations"],
     excerpt:
       "Low rank adapters turn fine tuning from a storage problem into a config problem, which changes how you version, deploy, and roll back a model.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/lora-adapters-operations.jpg",
     content: `
 ## The arithmetic that makes adapters interesting
 
@@ -991,7 +991,7 @@ And if your slow tier is already fast enough for the workload, adding a cache is
     tags: ["networking", "routing", "linux"],
     excerpt:
       "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/policy-based-routing-linux.jpg",
     content: `
 ## One lookup, one field
 
@@ -1220,7 +1220,7 @@ The underlying idea is not specific to machine learning. Any system built on par
     tags: ["operations", "learning", "career"],
     excerpt:
       "A postmortem for an audience of one is still worth writing, because the person you are protecting from the next outage does not remember this one.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/postmortems-team-of-one.jpg",
     content: `
 ## The objection, and why it is wrong
 
@@ -1335,7 +1335,7 @@ That is the real payoff of doing this alone. Nobody is going to notice the patte
     tags: ["security", "networking", "operations"],
     excerpt:
       "SMTP never proved who sent a message. Three DNS records fix that, and they only work when you understand what each one actually checks.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/spf-dkim-dmarc-email-auth.jpg",
     content: `
 ## The hole SMTP left open
 
@@ -1465,7 +1465,7 @@ filter, a mail rule, or an alert user can actually notice.
     tags: ["ai", "ml", "hardware"],
     excerpt:
       "An allocation fails while the card reports gigabytes unused. That is fragmentation, and it is a property of how the allocator works, not a bug.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/gpu-memory-fragmentation.jpg",
     content: `
 ## The confusing failure
 
@@ -1590,7 +1590,7 @@ requests, not in the size of the card.
     tags: ["operations", "servers", "tools"],
     excerpt:
       "A connection pool is a hard limit on database concurrency. Sized by guesswork it either wastes the server or takes it down under load.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/database-connection-pooling.jpg",
     content: `
 ## What a connection actually costs
 
@@ -1730,7 +1730,7 @@ error log.
     tags: ["security", "linux", "operations"],
     excerpt:
       "Copying public keys to every host does not scale and cannot revoke. OpenSSH has had a certificate model for years and almost nobody uses it.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/ssh-certificate-authority.jpg",
     content: `
 ## The sprawl problem
 
@@ -1871,7 +1871,7 @@ somewhere, and audit for its use.
     tags: ["ai", "ml", "servers"],
     excerpt:
       "A small model guesses ahead, a large model checks the guesses in one pass. The output is identical and the wall clock is shorter.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/speculative-decoding-explained.jpg",
     content: `
 ## Why generation is slow in an annoying way
 
@@ -2323,7 +2323,7 @@ sanitization step that actually matters.
     tags: ["ai", "virtualization", "hardware"],
     excerpt:
       "Three different mechanisms get called GPU sharing and they behave nothing alike. The difference that matters is what happens to memory.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/gpu-sharing-time-slicing.jpg",
     content: `
 ## One card, several tenants
 
@@ -2473,12 +2473,6 @@ tenants from memory first, then check whether the compute split makes sense.
     excerpt:
       "A write-ahead log exists so a crash cannot corrupt the database. The same log lets you rewind to any second before someone ran the bad DELETE.",
     coverImage: "/images/blog/wal-point-in-time-recovery.jpg",
-    coverCredit: {
-      author: "Shixart1985",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://commons.wikimedia.org/w/index.php?curid=196292995",
-    },
     content: `
 ## Why the log exists at all
 
@@ -2774,7 +2768,7 @@ I do not really have a result. I have an anecdote about one afternoon.
     tags: ["operations", "servers", "monitoring"],
     excerpt:
       "Adding a read replica moves load off the primary and adds a new class of bug: reads that return the state of the world a moment ago.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/read-replicas-replication-lag.jpg",
     content: `
 ## What a replica really is
 
@@ -3247,7 +3241,7 @@ the first time during an outage.
     tags: ["networking", "homelab", "linux"],
     excerpt:
       "IPv4 hands out addresses one way. IPv6 has at least three, and two flag bits in a router advertisement decide which one your host uses.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/slaac-vs-dhcpv6.jpg",
     content: `
 ## The client is not in charge
 
@@ -3506,12 +3500,6 @@ Learn the signature. Small works, large hangs. Then go measure the path instead 
     excerpt:
       "PXE looks like magic until you trace it. It is a DHCP conversation, a file transfer, and a second stage loader that does the actual work.",
     coverImage: "/images/blog/pxe-network-boot-chain.jpg",
-    coverCredit: {
-      author: "DSmous",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/94436653@N00/275375865",
-    },
     content: `
 ## The chain nobody draws
 
@@ -3949,12 +3937,6 @@ questions, and dashboards happily plot them on the same axis.
     excerpt:
       "The slot is physically x16 but the card negotiated x4. That is not a fault, it is a lane budget doing exactly what it was configured to do.",
     coverImage: "/images/blog/pcie-lanes-explained.jpg",
-    coverCredit: {
-      author: "instaSHINOBI",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/21050065@N06/6114414289",
-    },
     content: `
 ## Lanes Are a Budget, Not a Feature
 
@@ -4168,7 +4150,7 @@ Spend your time on ingestion and evaluation. Those two get the least attention a
     tags: ["security", "homelab", "cybersecurity"],
     excerpt:
       "Threat modeling sounds like an enterprise process. It is really just asking what you have, who would want it, and what happens when a control fails.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/threat-modeling-homelab.jpg",
     content: `
 ## Why Bother When It Is Just a Lab
 
@@ -4431,7 +4413,7 @@ It is also immediately useful without any container platform at all. Putting a m
     tags: ["networking", "security", "operations"],
     excerpt:
       "Rate limiting is four small algorithms and one hard question: which identity are you limiting, at which layer, and what happens to the requests you reject.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/rate-limiting-algorithms.jpg",
     content: `
 ## Four algorithms, and what each one gets wrong
 
@@ -4585,7 +4567,7 @@ probes is the day the dashboard goes green during an outage.
     tags: ["storage", "servers", "operations"],
     excerpt:
       "Treating object storage like a filesystem with a strange API is how people end up frustrated by it. The contract it offers is genuinely different, and deliberately so.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/object-storage-fundamentals.jpg",
     content: `
 ## Three Storage Models, Three Contracts
 
@@ -4791,7 +4773,7 @@ Run the numbers first. If the alert volume is not something a real team can work
     tags: ["networking", "linux", "troubleshooting"],
     excerpt:
       "A link with plenty of spare bandwidth can still deliver terrible throughput. Understanding what TCP is doing explains most of those cases.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/tcp-congestion-control-basics.jpg",
     content: `
 ## Why a Fast Link Can Feel Slow
 
@@ -5447,12 +5429,6 @@ otherwise meet during an incident.
     excerpt:
       "Local model speed is mostly arithmetic, not vibes. Here is the memory bandwidth math I use to predict tokens per second before buying anything.",
     coverImage: "/images/blog/local-llm-inference-limits.jpg",
-    coverCredit: {
-      author: "viagallery.com",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/15932083@N05/3594287535",
-    },
     content: `
 ## The question everybody asks first
 
@@ -5581,12 +5557,6 @@ nobody can reproduce, including me a month later.
     excerpt:
       "SSH connects, the file copy hangs at zero bytes. A walkthrough of diagnosing path MTU black holes and the fixes I apply, in order of preference.",
     coverImage: "/images/blog/mtu-mismatch-troubleshooting.jpg",
-    coverCredit: {
-      author: "sampsyo",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/48889110751@N01/8271860",
-    },
     content: `
 ## Symptom: the login works, the transfer does not
 
@@ -5869,7 +5839,7 @@ bits per weight, 8k context" is.
     tags: ["networking", "security", "routing"],
     excerpt:
       "Two tunnel stacks with opposite design philosophies. A comparison of their crypto models, routing behaviour, and the operational details that decide it.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/wireguard-vs-ipsec-tunnels.jpg",
     content: `
 ## Two different philosophies, not two versions of the same thing
 
@@ -6006,12 +5976,6 @@ you build it.
     excerpt:
       "A look under the hood of vector databases: why exact search is fine more often than people admit, and what graph and quantized indexes trade away.",
     coverImage: "/images/blog/vector-search-internals.jpg",
-    coverCredit: {
-      author: "blakespot",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/35448539@N00/2378337709",
-    },
     content: `
 ## Nearest neighbour is the whole problem
 
@@ -6152,12 +6116,6 @@ parameters at the same time, which is not a good afternoon.
     excerpt:
       "Growing a guest past one memory node can make it slower, not faster. How to read your NUMA topology and size virtual machines so they stay on one node.",
     coverImage: "/images/blog/numa-and-vm-performance.jpg",
-    coverCredit: {
-      author: "shokai",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/51753258@N00/7222512264",
-    },
     content: `
 ## The cliff
 
@@ -6587,7 +6545,7 @@ way.
     tags: ["storage", "linux", "servers"],
     excerpt:
       "A journal keeps filesystem metadata consistent across a crash. It does not promise your file contents survived, and that difference decides your data loss story.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/filesystem-journal-explained.jpg",
     content: `
 ## Two different problems wearing one name
 
@@ -7007,7 +6965,7 @@ loud one.
     tags: ["ai", "ml", "tools"],
     excerpt:
       "A tokenizer is a compression scheme, not a dictionary. Once you understand what it is actually doing, surprising token counts stop being surprising.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/why-token-counts-surprise-you.jpg",
     content: `
 ## Tokens Are Not Words
 
@@ -7141,7 +7099,7 @@ packets, tokens versus words. Learn the machine's unit.
     tags: ["security", "operations", "tools"],
     excerpt:
       "How I keep credentials out of git and off disk in plaintext, using encrypted files, systemd credentials, and a rotation habit that actually gets followed.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/secrets-without-a-vault-team.jpg",
     content: `
 ## The failure mode
 
@@ -7302,12 +7260,6 @@ manage and it means a leak is a contained incident rather than a full rebuild.
     excerpt:
       "Compute is easy to buy and watts are not. The circuit arithmetic, airflow direction, and power capping I work through before adding an accelerator to a room.",
     coverImage: "/images/blog/power-and-heat-limit-gpus.jpg",
-    coverCredit: {
-      author: "nordique",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/28435100@N00/7805224296",
-    },
     content: `
 ## Compute is easy to buy, watts are not
 
@@ -7455,7 +7407,7 @@ its rated speed or quietly at 70 percent of it.
     tags: ["ai", "ml", "security", "storage"],
     excerpt:
       "A model file is a bag of tensors plus metadata. How that bag is serialized decides whether loading it is a memory copy or a remote code execution.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/model-file-formats-and-safetensors.jpg",
     content: `
 ## A Model Is A Bag Of Tensors Plus Metadata
 
@@ -8004,7 +7956,7 @@ Change one variable, reboot, verify with a command, write down the result. Passt
     tags: ["ai", "ml", "operations"],
     excerpt:
       "Prefill and decode have completely different cost shapes. Here is how I build a per request cost model from numbers I can measure myself.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/inference-cost-per-request.jpg",
     content: `
 ## Why I Build The Model Before I Pick The Hardware
 
@@ -8148,7 +8100,7 @@ in is expensive.
     tags: ["storage", "networking", "servers"],
     excerpt:
       "NVMe over Fabrics carries the NVMe queue model across a network instead of translating it into SCSI. Here is what that design buys you and what it demands from your fabric.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/nvme-over-fabrics-explained.jpg",
     content: `
 ## The problem with the old translation
 
@@ -8236,12 +8188,6 @@ Run the same profile against the device locally and then across the fabric. The 
     excerpt:
       "HNSW graphs, inverted file lists, and product quantization are three answers to one question: how do you avoid comparing a query against every vector you own?",
     coverImage: "/images/blog/vector-database-indexes.jpg",
-    coverCredit: {
-      author: "dfulmer",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/28376044@N00/4350629792",
-    },
     content: `
 ## The only hard problem in a vector database
 
@@ -8325,7 +8271,7 @@ One more thing, because it causes more bad results than any index choice: the di
     tags: ["linux", "networking", "homelab"],
     excerpt:
       "Network namespaces and veth pairs give you real interfaces, real routing tables, and real packet captures on a single machine, with no extra hardware to buy.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/linux-network-namespaces.jpg",
     content: `
 ## Real topologies without more gear
 
@@ -8444,7 +8390,7 @@ Namespaces cost nothing, run on any Linux box including an old laptop, and use t
     tags: ["servers", "networking", "automation", "homelab"],
     excerpt:
       "Network boot is a relay race between DHCP, a tiny file transfer, and a real bootloader. Knowing which leg you are on turns most PXE failures into five minute fixes.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/network-boot-chain-pxe.jpg",
     content: `
 ## Why Bother With Network Boot
 
@@ -8590,7 +8536,7 @@ Three questions, and each one has an obvious place to look.
     tags: ["ai", "ml", "tools"],
     excerpt:
       "Asking for JSON in the prompt is a request. Constrained decoding is an enforcement mechanism. The difference shows up in your error rate at three in the morning.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/constrained-decoding-structured-output.jpg",
     content: `
 ## Asking Nicely Is Not A Guarantee
 
@@ -8735,7 +8681,7 @@ just an unusually eloquent client.
     tags: ["storage", "linux", "servers"],
     excerpt:
       "Most ZFS performance complaints are cache questions or sync write questions in disguise. Here is how the layers actually fit together and what each one cannot fix.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/zfs-arc-l2arc-tuning.jpg",
     content: `
 ## Three things people conflate
 
@@ -8827,7 +8773,7 @@ Almost every ZFS performance complaint I have looked at was answered somewhere i
     tags: ["security", "networking", "cybersecurity"],
     excerpt:
       "A threat model is four honest questions asked in order. Running one against your own network is the cheapest security work available and it changes what you build next.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/threat-modeling-small-networks.jpg",
     content: `
 ## Four questions, in order
 
@@ -9068,7 +9014,7 @@ be tracked properly.
     tags: ["storage", "servers", "homelab"],
     excerpt:
       "Ceph replaces the central lookup table with a hash function. Understanding CRUSH and placement groups explains almost every behavior you will ever see in a cluster.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/ceph-distributed-storage-intro.jpg",
     content: `
 ## The design decision everything follows from
 
@@ -9274,7 +9220,7 @@ Which is the other half of this: know the plain versions too. \`grep\`, \`netsta
     tags: ["ai", "operations", "monitoring"],
     excerpt:
       "Queue depth, batch size, and time to first token are the three numbers that explain a slow inference endpoint. Treat it as an ordinary latency sensitive service.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/model-serving-observability.jpg",
     content: `
 ## An inference endpoint is a queue with an accelerator attached
 
@@ -9518,7 +9464,7 @@ size.
     tags: ["networking", "operations", "security"],
     excerpt:
       "QUIC moved the transport into userspace and encrypted almost all of it. That is good for users and genuinely disruptive to how we monitor and troubleshoot networks.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/quic-http3-for-operators.jpg",
     content: `
 ## What Moved, And Where It Moved To
 
@@ -9661,12 +9607,6 @@ not going to reverse.
     excerpt:
       "SSH connects then freezes. Pages load halfway. Ping is fine. This is almost always an MTU black hole, and here is how I find and fix one.",
     coverImage: "/images/blog/mtu-blackhole-troubleshooting.jpg",
-    coverCredit: {
-      author: "sampsyo",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/48889110751@N01/8271860",
-    },
     content: `
 ## The symptom that should make you think MTU
 
@@ -9809,7 +9749,7 @@ layer.
     tags: ["ai", "ml", "learning"],
     excerpt:
       "Public leaderboards answer somebody else's question. Building a small honest evaluation for your own task is unglamorous, cheap, and the only thing that predicts your results.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/evaluating-without-a-benchmark.jpg",
     content: `
 ## Public Benchmarks Answer Somebody Else's Question
 
@@ -10411,7 +10351,7 @@ worse.
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "Wireless is a shared medium with a listen-before-talk rule. Wider channels and more access points often make it worse. Here is how I plan channels instead.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/wifi-channel-planning.jpg",
     content: `
 ## Airtime Is The Resource, Not Bandwidth
 
@@ -10545,7 +10485,7 @@ the plan.
     tags: ["career", "learning"],
     excerpt:
       "Certificates and projects prove different things to different audiences. Here is how I decide which one gets my next block of study time.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/certifications-versus-projects.jpg",
     content: `
 ## They are evidence of different things
 
@@ -10866,12 +10806,6 @@ a request id is the usual culprit.
     excerpt:
       "Objects are not files, and treating them as such is where designs go wrong. What the API model gives you, how durability actually works, and when it is the wrong tool.",
     coverImage: "/images/blog/object-storage-on-premises.jpg",
-    coverCredit: {
-      author: "blakespot",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/35448539@N00/2378337709",
-    },
     content: `
 ## Objects are not files
 
@@ -11479,7 +11413,7 @@ you can hand to somebody else.
     tags: ["ai", "tools", "automation"],
     excerpt:
       "A prompt is configuration that silently changes behaviour with no type checker and no compiler error. Version it, test it, and gate it in CI like anything else.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/prompts-as-versioned-code.jpg",
     content: `
 ## Configuration with no type checker
 
@@ -11675,7 +11609,7 @@ larger effect on what the system actually does. That asymmetry is the bug.
     tags: ["servers", "networking", "automation"],
     excerpt:
       "Network boot is a four-way conversation between firmware, DHCP, TFTP, and a bootloader. Knowing which step failed turns a mystery into a two-minute fix.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/pxe-network-boot.jpg",
     content: `
 ## Why I Bother With Network Boot
 
@@ -12119,12 +12053,6 @@ an hour downloading. That is the part I want people to take away.
     excerpt:
       "A connection that opens fine and then hangs on the first large transfer is almost always a path MTU problem. Here is how I isolate it in a few minutes.",
     coverImage: "/images/blog/mtu-black-hole-troubleshooting.jpg",
-    coverCredit: {
-      author: "sampsyo",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/48889110751@N01/8271860",
-    },
     content: `
 ## The symptom that gives it away
 
@@ -12422,7 +12350,7 @@ do.
     tags: ["security", "cybersecurity", "homelab"],
     excerpt:
       "Threat modeling sounds like an enterprise ritual. Done on your own services it is a one page exercise that tells you which controls are worth your time.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/threat-modeling-services-you-run.jpg",
     content: `
 ## Why bother when nobody is attacking you
 
@@ -12716,7 +12644,7 @@ wrong conclusion about why something was slow.
     tags: ["networking", "linux", "operations"],
     excerpt:
       "Congestion control is the algorithm deciding how fast your server sends. Most people never touch it. Knowing what the choices assume tells you when the default is wrong.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/choosing-tcp-congestion-control.jpg",
     content: `
 ## What the algorithm is for
 
@@ -13012,7 +12940,7 @@ make the tricks not worth much.
     tags: ["storage", "linux", "servers"],
     excerpt:
       "A successful write() call means almost nothing about durability. Understanding the layers between your program and the platter is what separates a backup from a hope.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/fsync-and-what-saved-means.jpg",
     content: `
 ## write() is not a promise
 
@@ -13166,7 +13094,7 @@ sync you have never tested are the same category of thing.
     tags: ["hardware", "ai", "ml"],
     excerpt:
       "Accelerator marketing leads with floating point throughput. For most of what people actually run, the number that predicts performance is how fast the chip can read its own memory.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/memory-bandwidth-is-the-spec.jpg",
     content: `
 ## The number on the box is rarely the number that binds
 
@@ -13310,7 +13238,7 @@ anything like it does now.
     tags: ["linux", "security", "operations"],
     excerpt:
       "Most self hosted services run as root with full access to the filesystem because nobody edited the unit file. systemd gives you sandboxing for free if you use it.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/systemd-service-hardening.jpg",
     content: `
 ## The default is worse than you think
 
@@ -13816,12 +13744,6 @@ fix it. None of that is glamorous, and it is the only part that survives.
     excerpt:
       "Local inference is not a mystery box. It comes down to memory capacity, memory bandwidth, and compute, and one of those three is almost always your bottleneck.",
     coverImage: "/images/blog/running-llms-locally-hardware.jpg",
-    coverCredit: {
-      author: "viagallery.com",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/15932083@N05/3594287535",
-    },
     content: `
 ## Why run a model on your own gear
 
@@ -14020,7 +13942,7 @@ Re-verify after every hardware change. A reseat, a firmware update, or a new ris
     tags: ["ai", "hardware", "ml"],
     excerpt:
       "Weights are the part everyone budgets for. The KV cache is the part that blows the budget. Here is the arithmetic I do first.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/gpu-memory-math-inference.jpg",
     content: `
 ## Three consumers, not one
 
@@ -14303,7 +14225,7 @@ Most homelabs and most small teams are doing inference, occasionally fine tuning
     tags: ["security", "cybersecurity", "learning"],
     excerpt:
       "Threat modeling is four questions and a drawing. Here is the lightweight version I run on my own projects before I write the first line of code.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/threat-modeling-a-project.jpg",
     content: `
 ## Four questions
 
@@ -14431,7 +14353,7 @@ The version I run on a school project takes under an hour and it consistently fi
     tags: ["ai", "storage", "ml"],
     excerpt:
       "Forget the marketing. A vector database is an index with a memory footprint, a build cost, and a recall dial you have to measure yourself.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/vector-databases-infrastructure.jpg",
     content: `
 ## What is actually being stored
 
@@ -14514,12 +14436,6 @@ I would reach for a dedicated vector engine when the collection outgrows what th
     excerpt:
       "Half the performance mysteries I have chased on Linux servers came down to misreading memory, dirty page writeback, or double caching. Here is the model.",
     coverImage: "/images/blog/linux-page-cache-and-io.jpg",
-    coverCredit: {
-      author: "barnoid",
-      license: "CC BY-SA 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/50359335@N00/151529520",
-    },
     content: `
 ## The output everyone misreads
 
@@ -14732,7 +14648,7 @@ Then evaluate the retriever separately from the generator. Build a small set of 
     tags: ["linux", "operations", "automation"],
     excerpt:
       "A service that restarts forever, starts before the network, and runs as root is three unit file directives away from being fixed.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/systemd-units-that-behave.jpg",
     content: `
 ## The unit file is a contract
 
@@ -14884,12 +14800,6 @@ Always run \`systemd-analyze verify\` on a new unit before enabling it, and alwa
     excerpt:
       "The model is not a security boundary. Once you accept that, the rest of securing an LLM app looks like ordinary input validation and least privilege.",
     coverImage: "/images/blog/llm-application-attack-surface.jpg",
-    coverCredit: {
-      author: "Visual Content",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/143601516@N03/29723649810",
-    },
     content: `
 ## Start from the right premise
 
@@ -15122,7 +15032,7 @@ If it speaks HTTP and I want observability, retries, and path routing, layer 7. 
     tags: ["learning", "networking", "tools"],
     excerpt:
       "RFCs are the actual source of truth for how the internet works, and they are far more readable than their reputation suggests once you know the structure.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/how-to-read-an-rfc.jpg",
     content: `
 ## Why go to the source
 
@@ -15219,7 +15129,7 @@ Then read one security considerations section a week from any document that inte
     tags: ["storage", "monitoring", "hardware"],
     excerpt:
       "SMART will not reliably tell you a drive is about to die, but a few specific attributes are worth acting on immediately. Here is which ones and why.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/smart-data-drive-failure.jpg",
     content: `
 ## What SMART is good for
 
@@ -15446,7 +15356,7 @@ So the honest position. I think the reading, summarizing, and drafting applicati
     tags: ["virtualization", "servers", "operations"],
     excerpt:
       "Moving a running virtual machine between hosts with milliseconds of downtime is a neat trick built on dirty page tracking and a race you can lose.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/live-migration-internals.jpg",
     content: `
 ## The problem statement
 
@@ -15668,7 +15578,7 @@ Do all four, in that order, on a loop.
     tags: ["ai", "ml", "hardware", "homelab"],
     excerpt:
       "Parameter count is only the first term. Here is the arithmetic I run before I try to load a model on hardware I already have.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/local-llm-memory-math.jpg",
     content: `
 ## The question everyone asks wrong
 
@@ -15836,12 +15746,6 @@ In order: does the working set fit in device memory, what is the memory bandwidt
     excerpt:
       "A guest with plenty of allocated cores and RAM can still crawl if it straddles memory nodes. How NUMA works and when pinning is worth the loss of flexibility.",
     coverImage: "/images/blog/numa-and-cpu-pinning.jpg",
-    coverCredit: {
-      author: "shokai",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/51753258@N00/7222512264",
-    },
     content: `
 ## Memory is not equidistant
 
@@ -15941,7 +15845,7 @@ I pin when a guest is latency sensitive, has a stable footprint, and owns its ho
     tags: ["ai", "ml", "servers"],
     excerpt:
       "Training and inference stress completely different parts of a machine. Confusing the two is how people buy the wrong hardware and size the wrong network.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/inference-vs-training-workloads.jpg",
     content: `
 ## Same model, opposite resource profile
 
@@ -16313,7 +16217,7 @@ Synthetic benchmarks tell you the shape of a device's performance. They do not t
     tags: ["ai", "ml", "tools"],
     excerpt:
       "Retrieval augmented generation is mostly parsing, chunking, and evaluation. The model is the easy part, and it is not where your quality problems come from.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/rag-chunking-and-evaluation.jpg",
     content: `
 ## The one paragraph version
 
@@ -16596,12 +16500,6 @@ None of that stops injection. It means a successful injection reads a document i
     excerpt:
       "Stop running services in a terminal multiplexer. A good unit file gives you restarts, logging, dependency ordering, and sandboxing for about fifteen lines of config.",
     coverImage: "/images/blog/systemd-units-homelab.jpg",
-    coverCredit: {
-      author: "barnoid",
-      license: "CC BY-SA 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/50359335@N00/151529520",
-    },
     content: `
 ## Why I stopped using screen and cron
 
@@ -16828,12 +16726,6 @@ Then a small load generator that ramps concurrency and records all four, so I ge
     excerpt:
       "Object storage is not a file share with a different name. What the API buys you, how durability really works, and where it is the wrong tool.",
     coverImage: "/images/blog/object-storage-on-prem.jpg",
-    coverCredit: {
-      author: "blakespot",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/35448539@N00/2378337709",
-    },
     content: `
 ## Why not just use a file share
 
@@ -17225,7 +17117,7 @@ That loop, read a section then prove it on the wire, has taught me more than any
     tags: ["security", "homelab", "learning"],
     excerpt:
       "Four questions, one honest diagram, and a written record. Threat modeling your own projects is the highest value security work you can do for free.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/threat-modeling-your-own-builds.jpg",
     content: `
 ## Four questions
 
@@ -17388,12 +17280,6 @@ Building this project taught me a lot about the relationship between software an
     excerpt:
       "How running real enterprise hardware at home changed the way I learn about networking, systems, and troubleshooting.",
     coverImage: "/images/blog/why-homelabs-matter.jpg",
-    coverCredit: {
-      author: "Alan Levine",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg",
-    },
     content: `
 ## Beyond the Textbook
 
@@ -17473,12 +17359,6 @@ Those habits translate directly to real-world troubleshooting. When a network go
     excerpt:
       "Why I added a rack-mount Mac Pro to my server infrastructure and what it actually brings to the table alongside Dell PowerEdge systems.",
     coverImage: "/images/blog/mac-pro-rack-mount-homelab.jpg",
-    coverCredit: {
-      author: "Gavin Lckg",
-      license: "CC BY-SA 4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_2019_on_wheels.jpg",
-    },
     content: `
 ## Why a Mac Pro in a Server Rack
 
@@ -18019,12 +17899,6 @@ It takes some effort to set up, but once it is running, you have a network that 
     excerpt:
       "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
     coverImage: "/images/blog/fortigate-firewall-homelab.jpg",
-    coverCredit: {
-      author: "Premeditated",
-      license: "CC BY-SA 4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png",
-    },
     content: `
 ## Why Fortinet
 
@@ -18215,12 +18089,6 @@ I currently run on 120V because that is what my circuit supports, but if I expan
     excerpt:
       "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
     coverImage: "/images/blog/wireshark-packet-analysis.jpg",
-    coverCredit: {
-      author: "Laurachappell",
-      license: "CC BY-SA 4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wireshark_Network_Analyzer_Screen.png",
-    },
     content: `
 ## More Than a Packet Viewer
 
@@ -18344,7 +18212,7 @@ I regularly scan my own lab environment to practice and to verify my security po
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "A look at what makes the 2019 Mac Pro's internal design unique compared to traditional server hardware.",
-    coverImage: "/images/blog-mac-pro-2019-teardown-analysis.png",
+    coverImage: "/images/blog/mac-pro-2019-teardown-analysis.jpg",
     content: `
 ## The Design Philosophy
 
@@ -18592,12 +18460,6 @@ All of this is automated. Backups run on schedules, retention policies are enfor
     excerpt:
       "A practical look at the monitoring tools running in my homelab and what each one tells me about my network.",
     coverImage: "/images/blog/network-monitoring-tools.jpg",
-    coverCredit: {
-      author: "Masdestructive",
-      license: "CC BY-SA 3.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Batelco_Network_Operations_Centre_(NOC).JPG",
-    },
     content: `
 ## Why Monitor
 
@@ -19377,12 +19239,6 @@ Firewall policies are not set-and-forget. I review my policies monthly to remove
     excerpt:
       "How virtual switches, port groups, and VLAN tagging work inside hypervisors, and how they connect to physical networks.",
     coverImage: "/images/blog/virtualization-networking-concepts.jpg",
-    coverCredit: {
-      author: "Primalmotion",
-      license: "CC BY-SA 3.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Diagramme_ArchiHyperviseur.png",
-    },
     content: `
 ## Virtual Switches
 
@@ -19621,7 +19477,7 @@ Power costs add up over years. A 500W reduction saves over $500 per year at typi
     tags: ["cybersecurity", "networking", "servers"],
     excerpt:
       "My approach to handling infrastructure incidents, from detection through resolution and documentation.",
-    coverImage: "/images/blog-incident-response-methodology.png",
+    coverImage: "/images/blog/incident-response-methodology.jpg",
     content: `
 ## Incidents Will Happen
 
@@ -19813,12 +19669,6 @@ This hybrid approach uses each filesystem where it is strongest.
     excerpt:
       "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
     coverImage: "/images/blog/homelab-network-evolution.jpg",
-    coverCredit: {
-      author: "Alan Levine",
-      license: "CC BY 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg",
-    },
     content: `
 ## Stage 1: Consumer Router
 
@@ -19860,12 +19710,6 @@ Start with a managed switch and a firewall from the beginning. The consumer rout
     excerpt:
       "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
     coverImage: "/images/blog/container-orchestration-basics.jpg",
-    coverCredit: {
-      author: "Dereckson",
-      license: "CC0",
-      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png",
-    },
     content: `
 ## Containers vs VMs
 
@@ -20278,12 +20122,6 @@ Enable Rapid PVST+ (or MSTP in larger environments). Set explicit bridge priorit
     tags: ["linux", "security", "servers"],
     excerpt: "Default SSH configuration is functional but not secure. Here is how to harden it against the most common attack vectors.",
     coverImage: "/images/blog/ssh-hardening-linux-servers.jpg",
-    coverCredit: {
-      author: "Hpott",
-      license: "CC BY-SA 4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg",
-    },
     content: `
 ## Why Default SSH Is Not Enough
 
@@ -20592,12 +20430,6 @@ HA VM migration requires shared storage so both source and destination nodes can
     tags: ["fortinet", "networking", "firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
-    coverCredit: {
-      author: "Premeditated",
-      license: "CC BY-SA 4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png",
-    },
     content: `
 ## What SD-WAN Solves
 
@@ -21338,12 +21170,6 @@ interface GigabitEthernet0/0
     tags: ["dell", "servers", "hardware"],
     excerpt: "Most people use iDRAC for basic console access and power control. Here are the features that make it genuinely powerful for server management.",
     coverImage: "/images/blog/idrac-advanced-features.jpg",
-    coverCredit: {
-      author: "Dell Inc.",
-      license: "CC BY-SA 2.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg",
-    },
     content: `
 ## Beyond Basic Remote Access
 
@@ -21516,12 +21342,6 @@ Understanding this rewrite is key to debugging connectivity problems in Kubernet
     tags: ["linux", "security", "servers"],
     excerpt: "Key-based SSH authentication is more secure than passwords and more convenient with proper setup. Here is how to do it right.",
     coverImage: "/images/blog/ssh-key-based-authentication.jpg",
-    coverCredit: {
-      author: "Hpott",
-      license: "CC BY-SA 4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
-      sourceUrl: "https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg",
-    },
     content: `
 ## Why Keys Are Better Than Passwords
 
@@ -22319,7 +22139,7 @@ Use iPerf to generate test traffic and verify that QoS is working as expected. G
     date: "2026-04-03",
     tags: ["networking", "automation", "operations"],
     excerpt: "Ansible's network modules allow you to configure routers, switches, and firewalls programmatically. Here is how to get started with network automation.",
-    coverImage: "/images/blog-ansible-network-automation.png",
+    coverImage: "/images/blog/ansible-network-automation.jpg",
     content: `
 ## Why Automate Network Configuration
 
