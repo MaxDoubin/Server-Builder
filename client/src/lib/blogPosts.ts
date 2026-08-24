@@ -36,7 +36,13 @@ export const blogPosts: BlogPost[] = [
     tags: ["networking", "monitoring", "automation"],
     excerpt:
       "Polling asks the same question forever and hopes the answer arrives. Streaming telemetry flips who talks first, and that changes what you can see.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/snmp-versus-streaming-telemetry.jpg",
+    coverCredit: {
+      author: "Shixart1985",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/w/index.php?curid=196292995",
+    },
     content: `
 ## The model everyone starts with
 
@@ -796,7 +802,13 @@ None of these are exotic. They are the same configuration management and regress
     tags: ["security", "networking", "operations"],
     excerpt:
       "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/spf-dkim-dmarc.jpg",
+    coverCredit: {
+      author: "RubyGoes",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/61997808@N00/8456755757",
+    },
     content: `
 ## SMTP has no idea who you are
 
@@ -884,7 +896,13 @@ One last point, because it is the reason to do any of this: these records do not
     tags: ["storage", "linux", "hardware"],
     excerpt:
       "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/flash-caching-tiers.jpg",
+    coverCredit: {
+      author: "osde8info",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/8764442@N07/8721114332",
+    },
     content: `
 ## The thing a cache tier actually fixes
 
@@ -1088,7 +1106,13 @@ Two habits keep this maintainable. Give tables names in \`rt_tables\`, because \
     tags: ["ai", "ml", "operations"],
     excerpt:
       "Sampling is the obvious reason. Floating point addition not being associative is the reason that survives after you set temperature to zero.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/inference-determinism.jpg",
+    coverCredit: {
+      author: "Sam Catanzaro",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/11794039@N03/7275395928",
+    },
     content: `
 ## Two different questions
 
@@ -1988,7 +2012,13 @@ entire economics of the technique.
     tags: ["networking", "operations", "tools"],
     excerpt:
       "HTTP caching is two separate mechanisms, freshness and validation. Most caching bugs come from configuring one and expecting the other.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/http-caching-headers-etags.jpg",
+    coverCredit: {
+      author: "dmitrybarsky",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/84816487@N00/2261404199",
+    },
     content: `
 ## Two mechanisms, not one
 
@@ -2142,7 +2172,13 @@ seeing another account's page.
     tags: ["security", "storage", "linux"],
     excerpt:
       "Full disk encryption defends against a drive leaving the building. It does nothing about a running machine, and confusing the two is the real risk.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/luks-at-rest-encryption.jpg",
+    coverCredit: {
+      author: "wyzik",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/54876474@N00/155621467",
+    },
     content: `
 ## Get the threat model right first
 
@@ -2436,7 +2472,13 @@ tenants from memory first, then check whether the compute split makes sense.
     tags: ["storage", "operations", "servers"],
     excerpt:
       "A write-ahead log exists so a crash cannot corrupt the database. The same log lets you rewind to any second before someone ran the bad DELETE.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/wal-point-in-time-recovery.jpg",
+    coverCredit: {
+      author: "Shixart1985",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/w/index.php?curid=196292995",
+    },
     content: `
 ## Why the log exists at all
 
@@ -2576,7 +2618,13 @@ than copying someone else's schedule.
     tags: ["ml", "ai", "operations"],
     excerpt:
       "You can pin the code, the weights, and the library versions and still not reproduce a result, because the data moved and nobody recorded it.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/dataset-versioning-for-ml.jpg",
+    coverCredit: {
+      author: "A.Davey",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/40595948@N00/3740060857",
+    },
     content: `
 ## The gap in reproducibility
 
@@ -2872,7 +2920,13 @@ the old primary is gone.
     tags: ["ai", "security", "operations"],
     excerpt:
       "Policy instructions inside a prompt are advice. A real guardrail is a separate classifier with a threshold, a latency budget, and a failure mode you chose.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/guardrail-classifier-layers.jpg",
+    coverCredit: {
+      author: "MTAPhotos",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/61135621@N03/6086702375",
+    },
     content: `
 ## The difference that matters
 
@@ -3029,7 +3083,13 @@ consumes it next. Those hold even when the classifier is wrong.
     tags: ["operations", "automation", "servers"],
     excerpt:
       "One swaps the whole fleet at once and rolls back instantly. The other exposes a slice of traffic and watches. They fail differently, so pick deliberately.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/blue-green-canary-deploys.jpg",
+    coverCredit: {
+      author: "Elsie esq.",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/61132483@N00/8230086",
+    },
     content: `
 ## Two strategies, one goal
 
