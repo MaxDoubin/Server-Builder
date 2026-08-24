@@ -4,8 +4,8 @@ import * as THREE from "three";
 /**
  * A field of identical, static boxes drawn in a single call.
  *
- * The rack detail meshes — vent slots, honeycomb perforations, patch-panel
- * ports, cage-nut holes — are all the same box repeated hundreds of times
+ * The rack detail meshes (vent slots, honeycomb perforations, patch-panel
+ * ports, cage-nut holes) are all the same box repeated hundreds of times
  * with one shared material. Emitting them as individual `<mesh>` elements
  * costs one draw call each: the cage-nut holes alone were 504 calls per
  * rack for detail that is a few pixels wide on screen.

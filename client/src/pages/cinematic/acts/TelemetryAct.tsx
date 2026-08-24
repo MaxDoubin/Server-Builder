@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import {
   ScrollReveal,
@@ -22,7 +22,7 @@ import {
 } from "@/lib/framer-animations";
 
 /**
- * TELEMETRY — Act 6
+ * TELEMETRY, Act 6
  *
  * NOC-style HUD overlay. Four live tiles animate sparklines + counters,
  * grouped as: Fabric · Thermal · Power · Availability.
@@ -100,7 +100,13 @@ function useSparklineSeries(length: number, base: number, variance: number) {
   return series;
 }
 
-function Sparkline({ data, color, gradientId }: { data: number[]; color: string; gradientId: string }) {
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  // Every tile renders one of these, so the gradient needs an id of its own.
+  // The id was a required prop that no caller passed, which left the fill
+  // pointing at url(#undefined) and the area under each line invisible.
+  // Colons are legal in an HTML id but not in a CSS url() reference, so the
+  // generated id gets stripped of them.
+  const gradientId = `spark-${useId().replace(/:/g, "")}`;
   if (data.length === 0) return null;
   const w = 220;
   const h = 52;

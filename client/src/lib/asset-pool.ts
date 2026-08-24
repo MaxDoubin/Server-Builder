@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { registerPoolDisposer } from "./asset-pool-dispose";
 
 const geometryPool = new Map<string, THREE.BufferGeometry>();
 const materialPool = new Map<string, THREE.Material>();
@@ -83,3 +84,7 @@ export function disposePooledAssets() {
   geometryPool.clear();
   materialPool.clear();
 }
+
+// Hand the disposer to the three-free registry so App can trigger cleanup
+// without importing this module (and therefore three) on every route.
+registerPoolDisposer(disposePooledAssets);

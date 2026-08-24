@@ -427,7 +427,7 @@ export function HallRacks({
         <meshBasicMaterial transparent opacity={0.5} toneMapped={false} depthWrite={false} />
       </instancedMesh>
 
-      {/* Equipment bezels — unit height, scaled per slot.
+      {/* Equipment bezels at unit height, scaled per slot.
           Colour comes from instanceColor, which multiplies the material
           colour, so the material must stay white or the two darks square
           together into black. */}
@@ -442,7 +442,7 @@ export function HallRacks({
         <meshStandardMaterial color="#05070a" metalness={0.28} roughness={0.92} />
       </instancedMesh>
 
-      {/* Lit equipment face — unlit material, so the aisle reads without
+      {/* Lit equipment face on unlit material, so the aisle reads without
           depending on room lighting reaching this far out. */}
       <instancedMesh ref={activityRef} args={[undefined, undefined, ns]} frustumCulled={false} visible={false}>
         <boxGeometry args={[RACK_INNER_WIDTH * 0.5, 1, 0.004]} />

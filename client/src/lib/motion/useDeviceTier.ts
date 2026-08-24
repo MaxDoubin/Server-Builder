@@ -66,7 +66,7 @@ function detectTier(): DeviceProfile {
 /**
  * Pick a quality profile based on the device.
  *
- * We read once on mount and keep it stable for the session — resizing
+ * We read once on mount and keep it stable for the session, because resizing
  * the window shouldn't toss Canvas GL contexts. Coarse/mobile checks
  * re-evaluate only when matchMedia fires.
  */

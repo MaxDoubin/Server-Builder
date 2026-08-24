@@ -62,10 +62,10 @@ export function CinematicHome() {
         name: "South Career Technical Academy",
       },
       award: [
-        "Top 1% — National Cyber League",
+        "Top 1% · National Cyber League",
         "South CTA ranked 7th in the nation in National Cyber League competition",
-        "#1 Percussionist — State of Nevada, 2024",
-        "Student of the Month — South CTA",
+        "#1 Percussionist · State of Nevada, 2024",
+        "Student of the Month · South CTA",
       ],
       hasCredential: [
         {

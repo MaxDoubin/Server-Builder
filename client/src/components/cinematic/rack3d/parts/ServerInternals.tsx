@@ -60,7 +60,7 @@ const OFFSETS: Record<string, [number, number, number]> = {
 };
 
 /**
- * Stage windows — each part's explode animates only within these
+ * Stage windows. Each part's explode animates only within these
  * progress bounds. This matches the camera-tour timing in ExplodedScene
  * so the viewer sees each part separating *while* the camera is focused
  * on it, instead of every part drifting in parallel.
@@ -190,7 +190,7 @@ export function ServerInternals({
       <mesh position={[0, 0.006, 0]} material={heatsinkMat}>
         <boxGeometry args={[0.055, 0.004, 0.055]} />
       </mesh>
-      {/* etched square — small darker plate */}
+      {/* etched square, a small darker plate */}
       <mesh position={[0, 0.009, 0]} material={steel}>
         <boxGeometry args={[0.04, 0.0008, 0.04]} />
       </mesh>

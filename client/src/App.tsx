@@ -16,7 +16,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
-import { disposePooledAssets } from "@/lib/asset-pool";
+import { disposePooledAssets } from "@/lib/asset-pool-dispose";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
@@ -265,7 +265,7 @@ export default function App() {
 
     // Idle-prefetch the most likely next routes so clicking Projects / Blog
     // / Contact doesn't show the skeleton loader on first navigation. Ties
-    // into the retry helper — prefetch failures are silent.
+    // into the retry helper, so prefetch failures are silent.
     const idle = (cb: () => void) => {
       const ric = (window as unknown as {
         requestIdleCallback?: (fn: () => void) => number;
@@ -274,8 +274,11 @@ export default function App() {
       else setTimeout(cb, 1500);
     };
     idle(() => {
+      // Not CinematicBlog: it imports the post archive, so prefetching it
+      // speculatively pulls over a megabyte on every visit to the home page,
+      // including from people who never open the blog. It loads on
+      // navigation like any other route.
       void import("@/pages/cinematic/CinematicProjects");
-      void import("@/pages/cinematic/CinematicBlog");
       void import("@/pages/cinematic/CinematicContact");
     });
 
@@ -304,7 +307,7 @@ export default function App() {
 }
 
 /**
- * Route transition — opacity only, deliberately.
+ * Route transition. Opacity only, deliberately.
  *
  * This wrapper is an ancestor of every page, including the pinned
  * scroll scenes (SystemsAct pins for ~900vh). GSAP pins by setting

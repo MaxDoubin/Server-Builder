@@ -40,7 +40,7 @@ export function CinematicContact() {
   useSEO({
     title: "Contact | Max Doubin",
     description:
-      "Get in touch with Max Doubin — cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+      "Get in touch with Max Doubin, cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
     canonical: "https://maxdoubin.com/contact",
   });
 

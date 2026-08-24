@@ -29,6 +29,8 @@ A professional personal website for Max Doubin, focused on enterprise networking
 - `AnimatedGradientText` clips a gradient to glyphs with `background-clip: text`. Its children must be plain text. Nesting `WordReveal` inside it puts the glyphs in child boxes outside the gradient and they render as a washed-out ghost.
 - The game must render with `hideNav`. Its own header is in normal flow and the site nav is `fixed top-0`, so both land in the same strip and the text overlaps.
 - `ScrollTrigger.refresh()` is the forced variant. Call `refresh(true)` from observers so it defers past an in-flight gesture.
+- Nothing in the entry graph may import `@/lib/asset-pool` (or anything else that imports `three`). App.tsx did, for one cleanup function, and it linked 681 KB of WebGL into every route. Use `@/lib/asset-pool-dispose`, which is three-free and gets its disposer registered by asset-pool when 3D actually loads.
+- `manualChunks` in vite.config.ts pins React, Vite's preload helper and Rollup's CommonJS interop helpers to the `react` chunk. Without those rules Rollup parked `jsx()`, `__vitePreload` and `getDefaultExportFromCjs` inside the `r3f` chunk, so the entry statically imported react-three-fiber (and therefore three) just to render any JSX at all. Symptom: `/contact` downloads 950 KB of WebGL and has no canvas on it. Check with the static closure of the entry chunk, not with the chunk sizes, which look fine either way.
 
 ## Hyperscale Game Equipment System
 - Equipment placement uses force-placement: clicking any slot (empty or occupied) opens the picker, and placing equipment auto-removes anything in the way

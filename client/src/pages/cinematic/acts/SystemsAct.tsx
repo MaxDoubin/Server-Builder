@@ -197,9 +197,17 @@ function SystemsActStatic() {
       className="relative w-full bg-[hsl(var(--brand-obsidian))]"
     >
       <div className="relative h-[62vh] w-full overflow-hidden">
-        <Suspense fallback={<ScenePoster />}>
-          <ContinuousRackScene progressRef={{ current: 0 }} />
-        </Suspense>
+        {/*
+          The still poster, not the WebGL scene.
+
+          Someone who has asked for reduced motion gets no scroll story here,
+          so the canvas would render a single frame they cannot interact with
+          while still pulling three.js and react-three-fiber (about 950 KB)
+          and holding a GPU context open for the life of the page. The poster
+          is the same silhouette in CSS. This is also the cheapest path for
+          anyone on a machine that sets the preference for battery reasons.
+        */}
+        <ScenePoster />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"

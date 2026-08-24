@@ -24,7 +24,7 @@ function prefersReducedMotion() {
  * scroll position between `start` and `end`.
  *
  * When `prefers-reduced-motion: reduce` is active the ScrollTrigger is
- * skipped entirely — the builder runs once on a detached timeline so
+ * skipped entirely. The builder runs once on a detached timeline so
  * onUpdate hooks (used to drive R3F rigs, counters, etc.) still fire
  * to their final state, then the timeline is killed. No pin, no scrub.
  */

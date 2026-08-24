@@ -1,5 +1,5 @@
 /**
- * Rack geometry constants — meters, loosely mapped to real server dimensions.
+ * Rack geometry constants in meters, loosely mapped to real server dimensions.
  *
  * 1U = 1.75in ≈ 0.04445m. Rack internal width 19in ≈ 0.4826m.
  * We use a rounded internal width of 0.48m and add outer posts.

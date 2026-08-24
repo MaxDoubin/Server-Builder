@@ -6,7 +6,7 @@
  * schema, and the full rendered blog content inside the <div id="root"> so
  * Google can read everything without executing JavaScript.
  *
- * React's createRoot will take over the root div when JS loads — the page
+ * React's createRoot will take over the root div when JS loads. The page
  * content is identical, so there is no visible flash for users.
  */
 
@@ -72,7 +72,7 @@ function injectBeforeHead(html: string, injection: string): string {
 
 function injectRootContent(html: string, content: string): string {
   // Replace the spinner placeholder with pre-rendered content.
-  // React's createRoot overwrites this on hydration — purely for crawlers.
+  // React's createRoot overwrites this on hydration. Purely for crawlers.
   return html.replace(
     /<div id="root">[\s\S]*?<\/div>\s*<style>/,
     `<div id="root">${content}</div>\n    <style>`,
@@ -179,7 +179,7 @@ ${JSON.stringify({
 })}
 </script>`;
 
-  // Full article HTML — Google reads this on the first HTML crawl
+  // Full article HTML. Google reads this on the first HTML crawl
   const contentHtml = await Promise.resolve(marked.parse(post.content));
   const dateStr = new Date(post.date).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
@@ -263,7 +263,7 @@ ${JSON.stringify({
 
 async function main(): Promise<void> {
   if (!existsSync(DIST)) {
-    console.log("⚠  dist/public not found — skipping prerender");
+    console.log("⚠  dist/public not found, skipping prerender");
     return;
   }
 
@@ -309,7 +309,7 @@ ${JSON.stringify({
     ${posts
       .map(
         (p) =>
-          `<li><a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a> — <span>${esc(p.excerpt)}</span></li>`,
+          `<li><a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a>: <span>${esc(p.excerpt)}</span></li>`,
       )
       .join("\n    ")}
   </ul>
@@ -336,7 +336,7 @@ ${JSON.stringify({
   await writePage("contact", base, {
     title: "Contact | Max Doubin",
     description:
-      "Get in touch with Max Doubin — cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+      "Get in touch with Max Doubin, cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
     canonical: `${SITE_URL}/contact`,
   });
 

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSmoothScroll } from "@/lib/motion/SmoothScrollProvider";
 
 interface PreloaderProps {
@@ -7,9 +7,53 @@ interface PreloaderProps {
   onDone?: () => void;
 }
 
-const LoaderScene = lazy(() =>
-  import("./LoaderScene").then((m) => ({ default: m.LoaderScene })),
-);
+/*
+  The preloader used to mount a WebGL scene. It appears on every route, so
+  three.js and react-three-fiber (about 950 KB) were pulled on /blog,
+  /projects and /contact purely to animate a screen that is up for a little
+  over a second, and which in practice usually showed the CSS fallback below
+  anyway because the chunk had not arrived yet. The fallback is now the
+  loader. The homepage still loads those libraries for the hero, where they
+  earn their weight.
+*/
+
+/** CSS rack silhouette whose units light up as boot progresses. */
+function BootRack({ progress }: { progress: number }) {
+  const UNITS = 18;
+  const lit = Math.round(progress * UNITS);
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <div
+        aria-hidden
+        className="relative flex h-[58%] w-[44%] flex-col justify-center gap-[3px] overflow-hidden rounded-md border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,#0a0d11_0%,#04050a_100%)] px-2"
+        style={{ boxShadow: "0 60px 80px -40px rgba(0,0,0,0.9)" }}
+      >
+        {Array.from({ length: UNITS }).map((_, i) => {
+          const on = UNITS - i <= lit;
+          return (
+            <div
+              key={i}
+              className="flex h-[5px] items-center gap-1 rounded-[2px] px-1"
+              style={{
+                background: on ? "hsl(220 26% 13%)" : "hsl(220 24% 9%)",
+                transition: "background 260ms linear",
+              }}
+            >
+              <span
+                className="h-[3px] w-[3px] rounded-full"
+                style={{
+                  background: on ? "hsl(72 100% 50%)" : "hsl(215 14% 26%)",
+                  boxShadow: on ? "0 0 5px hsl(72 100% 50%)" : "none",
+                  transition: "background 260ms linear",
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
   const [progress, setProgress] = useState(0);
@@ -19,17 +63,6 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
   const reduceMotion =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-  const fallback = (
-    <div className="flex h-full w-full items-center justify-center">
-      <div
-        className="relative h-[58%] w-[44%] overflow-hidden rounded-md border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,#0a0d11_0%,#04050a_100%)]"
-        style={{
-          boxShadow: "0 60px 80px -40px rgba(0,0,0,0.9)",
-        }}
-      />
-    </div>
-  );
 
   useEffect(() => {
     stop();
@@ -150,9 +183,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
             height: "min(420px, 60vh)",
           }}
         >
-          <Suspense fallback={fallback}>
-            <LoaderScene progress={progress} />
-          </Suspense>
+          <BootRack progress={progress} />
         </div>
 
         <div className="flex w-[min(320px,78vw)] items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
