@@ -86,7 +86,7 @@ export function GameHeader() {
         </div>
       </div>
 
-      <div className="flex min-w-0 shrink items-center gap-4">
+      <div className="flex min-w-0 shrink flex-wrap items-center justify-end gap-x-4 gap-y-2">
         <StatusBar />
         
         <div className="h-6 w-px bg-border hidden lg:block" />

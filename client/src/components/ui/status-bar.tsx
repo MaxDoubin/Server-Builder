@@ -42,7 +42,17 @@ export function StatusBar() {
   );
 
   return (
-    <div className="flex items-center gap-4 text-sm" data-testid="status-bar">
+    /*
+      Wraps. This is one flex item inside the header's right-hand group, and
+      as a nowrap row its readouts were 581px wide inside a 358px box on a
+      390px screen. While the header was `fixed` that overflow was invisible
+      to the document; once it became sticky, and therefore in flow, it gave
+      every dashboard 207px of sideways scroll on a phone.
+    */
+    <div
+      className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
+      data-testid="status-bar"
+    >
       <div className="flex items-center gap-1.5" data-testid="status-power">
         <Zap className="w-4 h-4 text-noc-yellow" />
         <span className="font-mono text-xs">
