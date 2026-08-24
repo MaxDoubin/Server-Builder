@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
-import { getAllPosts, getAllTags } from "@/lib/blogPosts";
+import { getAllPosts, getAllTags, readMinutes } from "@/lib/blogPosts";
 import { useEffect, useState, useMemo } from "react";
 import { useSEO } from "@/lib/useSEO";
 
@@ -128,7 +128,7 @@ export function Blog() {
                   </time>
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                   <span>
-                    {Math.ceil(post.content.split(/\s+/).length / 200)} min read
+                    {readMinutes(post)} min read
                   </span>
                 </div>
                 <h2 className="mt-2 text-lg font-semibold text-foreground transition-colors group-hover:text-primary">

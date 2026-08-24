@@ -1,6 +1,7 @@
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
 import { rm, readFile } from "fs/promises";
+import { execSync } from "child_process";
 
 // server deps to bundle to reduce openat(2) syscalls
 // which helps cold start times
@@ -35,11 +36,15 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
+  // Regenerate before Vite runs, so an edit to blogPosts.source.ts cannot
+  // ship with a stale index or a missing body.
+  console.log("generating post index...");
+  execSync("npx tsx script/generatePostIndex.ts", { stdio: "inherit" });
+
   console.log("building client...");
   await viteBuild();
 
   console.log("prerendering pages for SEO...");
-  const { execSync } = await import("child_process");
   execSync("npx tsx script/prerender.ts", { stdio: "inherit" });
 
   console.log("building server...");

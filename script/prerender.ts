@@ -16,7 +16,16 @@ import path from "path";
 import { Marked } from "marked";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
-const { blogPosts } = await import("../client/src/lib/blogPosts.ts");
+// postIndex is plain data with no Vite-only syntax in it, so it imports
+// cleanly here. lib/blogPosts.ts cannot: it reaches for the bodies through
+// import.meta.glob, which only exists inside a Vite build.
+const { postIndex } = await import("../client/src/lib/postIndex.ts");
+const POSTS_DIR = path.resolve("client/src/content/posts");
+
+/** One post's markdown, straight off disk. */
+async function readBody(slug: string): Promise<string> {
+  return readFile(path.join(POSTS_DIR, `${slug}.md`), "utf-8");
+}
 
 // ─── constants ───────────────────────────────────────────────────────────────
 const SITE_URL = "https://maxdoubin.com";
@@ -152,10 +161,11 @@ async function writePage(
 
 async function prerenderPost(
   base: string,
-  post: (typeof blogPosts)[number],
-  all: (typeof blogPosts)[number][] = [],
+  post: (typeof postIndex)[number],
+  all: (typeof postIndex)[number][] = [],
 ): Promise<void> {
   const url = `${SITE_URL}/blog/${post.slug}`;
+  const body = await readBody(post.slug);
   const ogImage = `${SITE_URL}${post.coverImage}`;
 
   const schema = `<script type="application/ld+json">
@@ -174,17 +184,17 @@ ${JSON.stringify({
   isPartOf: { "@type": "Blog", "@id": `${SITE_URL}/#blog` },
   keywords: post.tags.join(", "),
   inLanguage: "en-US",
-  wordCount: post.content.split(/\s+/).length,
+  wordCount: post.wordCount,
   mainEntityOfPage: { "@type": "WebPage", "@id": url },
 })}
 </script>`;
 
   // Full article HTML. Google reads this on the first HTML crawl
-  const contentHtml = await Promise.resolve(marked.parse(post.content));
+  const contentHtml = await Promise.resolve(marked.parse(body));
   const dateStr = new Date(post.date).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
-  const readMins = Math.ceil(post.content.split(/\s+/).length / 200);
+  const readMins = Math.max(1, Math.ceil(post.wordCount / 200));
   const tagLinks = post.tags
     .map((t) => `<a href="${SITE_URL}/blog">${esc(t)}</a>`)
     .join(" ");
@@ -216,7 +226,7 @@ ${JSON.stringify({
     .slice(0, 3)
     .map((x) => x.p);
 
-  const link = (p: (typeof blogPosts)[number]) =>
+  const link = (p: (typeof postIndex)[number]) =>
     `<a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a>`;
 
   const neighbourNav =
@@ -268,7 +278,7 @@ async function main(): Promise<void> {
   }
 
   const base = await readFile(path.join(DIST, "index.html"), "utf-8");
-  const posts = blogPosts.filter((p) => !p.draft);
+  const posts = postIndex.filter((p) => !p.draft);
 
   // ── blog posts ──
   console.log(`Prerendering ${posts.length} blog posts...`);

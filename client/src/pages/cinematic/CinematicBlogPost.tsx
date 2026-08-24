@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { marked } from "marked";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { getAllPosts, getPostBySlug } from "@/lib/blogPosts";
+import {
+  getAllPosts,
+  getLoadedContent,
+  getPostBySlug,
+  loadPostContent,
+  readMinutes,
+} from "@/lib/blogPosts";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
@@ -14,6 +20,35 @@ export function CinematicBlogPost() {
   const [, params] = useRoute("/blog/:slug");
   const slug = params?.slug ?? "";
   const post = getPostBySlug(slug);
+
+  /**
+   * The body arrives separately from the metadata.
+   *
+   * Every article used to be inlined in one module, so opening a single
+   * post downloaded all 236. Now each body is its own chunk. It is usually
+   * already cached (a reader who navigated here from the listing, or came
+   * back to a post they read), which is why the initial state checks first
+   * instead of always starting empty and flashing a skeleton.
+   */
+  const [content, setContent] = useState<string | null>(
+    () => getLoadedContent(slug) ?? null,
+  );
+
+  useEffect(() => {
+    const cached = getLoadedContent(slug);
+    if (cached !== undefined) {
+      setContent(cached);
+      return;
+    }
+    setContent(null);
+    let cancelled = false;
+    void loadPostContent(slug).then((text) => {
+      if (!cancelled) setContent(text);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   /**
    * Onward links.
@@ -99,7 +134,7 @@ export function CinematicBlogPost() {
         "@type": "WebPage",
         "@id": `${SITE_URL}/blog/${post.slug}`,
       },
-      wordCount: post.content.split(/\s+/).length,
+      wordCount: post.wordCount,
     };
   }, [post]);
 
@@ -117,9 +152,9 @@ export function CinematicBlogPost() {
   });
 
   const htmlContent = useMemo(() => {
-    if (!post) return "";
-    return marked(post.content) as string;
-  }, [post]);
+    if (!content) return "";
+    return marked(content) as string;
+  }, [content]);
 
   useScrollReveal(
     rootRef,
@@ -177,7 +212,7 @@ export function CinematicBlogPost() {
     );
   }
 
-  const readMinutes = Math.ceil(post.content.split(/\s+/).length / 200);
+  const readMins = readMinutes(post);
 
   return (
     <CinematicLayout>
@@ -267,7 +302,7 @@ export function CinematicBlogPost() {
                   })}
                 </time>
                 <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
-                <span>{readMinutes} min read</span>
+                <span>{readMins} min read</span>
               </div>
               <h1
                 data-testid="text-post-title"
@@ -293,11 +328,29 @@ export function CinematicBlogPost() {
         {/* Body */}
         <div className="relative px-6 md:px-10">
           <div className="mx-auto mt-16 max-w-[760px]">
-            <div
-              className="cinematic-prose prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-              data-testid="blog-post-content"
-            />
+            {content === null ? (
+              <div
+                className="cinematic-prose max-w-none"
+                data-testid="blog-post-loading"
+                aria-busy="true"
+              >
+                <span className="sr-only">Loading the rest of this note.</span>
+                {[92, 100, 74, 96, 88, 100, 61].map((width, i) => (
+                  <div
+                    key={i}
+                    aria-hidden
+                    className="mb-4 h-4 animate-pulse rounded bg-[hsl(var(--brand-iron))]"
+                    style={{ width: `${width}%`, animationDelay: `${i * 90}ms` }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div
+                className="cinematic-prose prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+                data-testid="blog-post-content"
+              />
+            )}
 
             <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
               <div className="flex items-center justify-between font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">

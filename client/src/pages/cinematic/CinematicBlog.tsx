@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { getAllPosts, getAllTags } from "@/lib/blogPosts";
+import { getAllPosts, getAllTags, readMinutes } from "@/lib/blogPosts";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import {
@@ -335,7 +335,7 @@ export function CinematicBlog() {
                               </time>
                               <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
                               <span>
-                                {Math.ceil(post.content.split(/\s+/).length / 200)} min read
+                                {readMinutes(post)} min read
                               </span>
                             </div>
                             <h2 className="mt-3 font-display text-xl font-medium leading-tight tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))] md:text-2xl">
