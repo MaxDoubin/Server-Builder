@@ -3,9 +3,20 @@ import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tool
 import { Network, Activity, Server, Link2 } from "lucide-react";
 import { useGame } from "@/lib/game-context";
 import { DashboardShell } from "@/pages/dashboard-shell";
+import { useSEO } from "@/lib/useSEO";
 import { KpiCard, Panel } from "@/pages/dashboard-widgets";
 
 export function NetworkDashboard() {
+  // An interactive view of simulated state, not writing. It carries almost
+  // no readable content, so it is deliberately kept out of the index
+  // rather than competing with the archive as a thin page.
+  useSEO({
+    title: "Network | Max Doubin",
+    description: "Network view of the simulated facility: topology, throughput and link health.",
+    canonical: "https://maxdoubin.com/network",
+    noindex: true,
+  });
+
   const { networkNodes, networkLinks } = useGame();
 
   const throughput = useMemo(

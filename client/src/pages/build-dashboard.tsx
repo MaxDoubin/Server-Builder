@@ -3,9 +3,20 @@ import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tool
 import { Wrench, Boxes, Gauge, Zap } from "lucide-react";
 import { useGame } from "@/lib/game-context";
 import { DashboardShell } from "@/pages/dashboard-shell";
+import { useSEO } from "@/lib/useSEO";
 import { KpiCard, Panel } from "@/pages/dashboard-widgets";
 
 export function BuildDashboard() {
+  // An interactive view of simulated state, not writing. It carries almost
+  // no readable content, so it is deliberately kept out of the index
+  // rather than competing with the archive as a thin page.
+  useSEO({
+    title: "Build | Max Doubin",
+    description: "Build view of the simulated facility: capacity, spend and equipment inventory.",
+    canonical: "https://maxdoubin.com/build",
+    noindex: true,
+  });
+
   const { racks, facilityMetrics } = useGame();
   const rackCount = racks.length;
 

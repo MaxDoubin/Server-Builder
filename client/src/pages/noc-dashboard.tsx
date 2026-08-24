@@ -3,9 +3,20 @@ import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tool
 import { Bell, ShieldAlert, Activity, Clock } from "lucide-react";
 import { useGame } from "@/lib/game-context";
 import { DashboardShell } from "@/pages/dashboard-shell";
+import { useSEO } from "@/lib/useSEO";
 import { KpiCard, Panel } from "@/pages/dashboard-widgets";
 
 export function NocDashboard() {
+  // An interactive view of simulated state, not writing. It carries almost
+  // no readable content, so it is deliberately kept out of the index
+  // rather than competing with the archive as a thin page.
+  useSEO({
+    title: "NOC | Max Doubin",
+    description: "Network operations centre view of the simulated facility: alert timeline, uptime and live status.",
+    canonical: "https://maxdoubin.com/noc",
+    noindex: true,
+  });
+
   const { alerts, facilityMetrics } = useGame();
 
   const alertTimeline = useMemo(

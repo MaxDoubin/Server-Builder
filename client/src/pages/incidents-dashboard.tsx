@@ -3,9 +3,20 @@ import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Toolti
 import { AlertTriangle, Siren, ClipboardList, Timer } from "lucide-react";
 import { useGame } from "@/lib/game-context";
 import { DashboardShell } from "@/pages/dashboard-shell";
+import { useSEO } from "@/lib/useSEO";
 import { KpiCard, Panel } from "@/pages/dashboard-widgets";
 
 export function IncidentsDashboard() {
+  // An interactive view of simulated state, not writing. It carries almost
+  // no readable content, so it is deliberately kept out of the index
+  // rather than competing with the archive as a thin page.
+  useSEO({
+    title: "Incidents | Max Doubin",
+    description: "Incident view of the simulated facility: open alerts, severity and response state.",
+    canonical: "https://maxdoubin.com/incidents",
+    noindex: true,
+  });
+
   const { incidents } = useGame();
 
   const severityData = useMemo(
