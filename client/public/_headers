@@ -65,6 +65,15 @@
   #                             so eval and new Function stay blocked, and no
   #                             external script host is allowed, so an injected
   #                             <script src> still fails.
+  #                             One known Function-from-string site exists, in
+  #                             lodash inside recharts (dashboard-widgets
+  #                             chunk): root = freeGlobal || freeSelf ||
+  #                             Function("return this")(). freeSelf is always
+  #                             truthy in a browser, so the third branch never
+  #                             evaluates and no violation is raised. If the
+  #                             ops dashboards ever report an eval violation,
+  #                             that line is where to look. Do not add
+  #                             'unsafe-eval' for it.
   #   style-src                 Tailwind ships a stylesheet, but framer-motion
   #                             and GSAP animate by writing element.style on
   #                             every frame, which counts as inline style. The

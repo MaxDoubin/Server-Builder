@@ -9,6 +9,12 @@ import {
   loadPostContent,
   readMinutes,
 } from "@/lib/blogPosts";
+import { CodeCopyButtons } from "@/components/blog/CodeCopyButtons";
+import { DifficultyBadge } from "@/components/blog/DifficultyBadge";
+import { PostPreviewLink } from "@/components/blog/PostPreviewLink";
+import { PostToc, useActiveHeading, usePostHeadings } from "@/components/blog/PostToc";
+import { postDifficulty } from "@/lib/postDifficulty";
+import { recordProgress } from "@/lib/readingHistory";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
@@ -92,6 +98,16 @@ export function CinematicBlogPost() {
   const rootRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  /** Latest scroll fraction, read by the history writer without re-rendering. */
+  const scrollFractionRef = useRef(0);
+  /** Null until the reader has actually started moving down the page. */
+  const [minutesLeft, setMinutesLeft] = useState<number | null>(null);
+
+  // Both are needed by effects that run before the not-found early return,
+  // so they cannot wait until after it.
+  const readMins = post ? readMinutes(post) : 0;
+  const historySlug = post?.slug;
 
   useEffect(() => {
     setMounted(true);
@@ -156,6 +172,12 @@ export function CinematicBlogPost() {
     return marked(content) as string;
   }, [content]);
 
+  // The body is injected as HTML, so the contents list is read back out of
+  // the rendered DOM. Passing htmlContent as the key rebuilds it when the
+  // reader moves to another post.
+  const headings = usePostHeadings(contentRef, htmlContent);
+  const activeHeading = useActiveHeading(headings);
+
   useScrollReveal(
     rootRef,
     ({ gsap }) => {
@@ -170,20 +192,102 @@ export function CinematicBlogPost() {
     [post?.slug],
   );
 
-  // Reading-progress bar
+  /**
+   * Reading progress, measured against the article body rather than the
+   * document.
+   *
+   * The document includes the hero, the onward links and the site footer,
+   * none of which are reading, so a document-relative bar sits at about 80%
+   * when the last paragraph goes past and the minutes-left figure never
+   * reaches zero. Progress here is "how much of the prose is above the
+   * bottom of the viewport", which hits 1 exactly when the note ends.
+   */
   useEffect(() => {
-    const onScroll = () => {
-      const el = document.documentElement;
-      const max = el.scrollHeight - el.clientHeight;
-      const pct = max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
-      if (progressRef.current) {
-        progressRef.current.style.transform = `scaleX(${pct})`;
+    let frame = 0;
+
+    const measure = () => {
+      frame = 0;
+      const body = contentRef.current;
+      let fraction = 0;
+
+      if (body) {
+        const rect = body.getBoundingClientRect();
+        const height = rect.height;
+        if (height > 0) {
+          fraction = (window.innerHeight - rect.top) / height;
+        }
+      } else {
+        // Body still loading: fall back to the document so the bar is not
+        // frozen at zero while the skeleton is on screen.
+        const el = document.documentElement;
+        const max = el.scrollHeight - el.clientHeight;
+        fraction = max > 0 ? el.scrollTop / max : 0;
       }
+
+      fraction = Math.min(1, Math.max(0, fraction));
+      scrollFractionRef.current = fraction;
+
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${fraction})`;
+      }
+
+      const left = fraction <= 0.02 ? null : Math.max(0, Math.ceil(readMins * (1 - fraction)));
+      // Whole minutes change rarely, and returning the previous value makes
+      // React skip the render entirely.
+      setMinutesLeft((prev) => (prev === left ? prev : left));
     };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(measure);
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", onScroll);
+    measure();
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [readMins, htmlContent]);
+
+  /**
+   * Remember where the reader got to.
+   *
+   * Written at most every few seconds while scrolling, then once more when
+   * the tab is hidden or the post is left, which covers closing the tab as
+   * well as navigating within the site.
+   */
+  useEffect(() => {
+    if (!historySlug) return;
+    let lastWrite = 0;
+
+    const flush = () => {
+      const fraction = scrollFractionRef.current;
+      // A visit that never scrolled is not worth a slot in a 50 entry list.
+      if (fraction < 0.02) return;
+      recordProgress(historySlug, fraction);
+      lastWrite = Date.now();
+    };
+
+    const onScroll = () => {
+      if (Date.now() - lastWrite < 3000) return;
+      flush();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibility);
+      flush();
+    };
+  }, [historySlug]);
 
   if (!post) {
     return (
@@ -212,8 +316,6 @@ export function CinematicBlogPost() {
     );
   }
 
-  const readMins = readMinutes(post);
-
   return (
     <CinematicLayout>
       <div
@@ -221,6 +323,15 @@ export function CinematicBlogPost() {
         className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-[hsl(var(--brand-signal))]"
         style={{ transform: "scaleX(0)", boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
       />
+
+      {minutesLeft !== null && (
+        <div
+          data-testid="reading-time-left"
+          className="pointer-events-none fixed bottom-4 right-4 z-[60] rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.85)] px-3 py-1.5 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] backdrop-blur-md"
+        >
+          {minutesLeft <= 0 ? "Note finished" : `${minutesLeft} min left`}
+        </div>
+      )}
 
       <article
         ref={rootRef as React.RefObject<HTMLElement>}
@@ -289,7 +400,7 @@ export function CinematicBlogPost() {
               >
                 ← Field notes
               </Link>
-              <div className="mt-6 flex items-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 <span
                   className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
                   style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
@@ -303,6 +414,7 @@ export function CinematicBlogPost() {
                 </time>
                 <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
                 <span>{readMins} min read</span>
+                <DifficultyBadge level={postDifficulty(post)} />
               </div>
               <h1
                 data-testid="text-post-title"
@@ -325,109 +437,132 @@ export function CinematicBlogPost() {
           </div>
         </div>
 
-        {/* Body */}
+        {/* Body. The TOC column only exists at lg and up, so the prose stays
+            centred on everything narrower. */}
         <div className="relative px-6 md:px-10">
-          <div className="mx-auto mt-16 max-w-[760px]">
-            {content === null ? (
-              <div
-                className="cinematic-prose max-w-none"
-                data-testid="blog-post-loading"
-                aria-busy="true"
-              >
-                <span className="sr-only">Loading the rest of this note.</span>
-                {[92, 100, 74, 96, 88, 100, 61].map((width, i) => (
-                  <div
-                    key={i}
-                    aria-hidden
-                    className="mb-4 h-4 animate-pulse rounded bg-[hsl(var(--brand-iron))]"
-                    style={{ width: `${width}%`, animationDelay: `${i * 90}ms` }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div
-                className="cinematic-prose prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: htmlContent }}
-                data-testid="blog-post-content"
+          <div className="mx-auto mt-16 flex max-w-[1180px] justify-center gap-12">
+            <div className="w-full min-w-0 max-w-[760px]">
+              <PostToc
+                headings={headings}
+                activeId={activeHeading}
+                variant="collapsible"
+                className="mb-10 lg:hidden"
               />
-            )}
 
-            <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
-              <div className="flex items-center justify-between font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-                <span>end of note</span>
-                <Link
-                  href="/blog"
-                  className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              {content === null ? (
+                <div
+                  className="cinematic-prose max-w-none"
+                  data-testid="blog-post-loading"
+                  aria-busy="true"
                 >
-                  ← All field notes
-                </Link>
+                  <span className="sr-only">Loading the rest of this note.</span>
+                  {[92, 100, 74, 96, 88, 100, 61].map((width, i) => (
+                    <div
+                      key={i}
+                      aria-hidden
+                      className="mb-4 h-4 animate-pulse rounded bg-[hsl(var(--brand-iron))]"
+                      style={{ width: `${width}%`, animationDelay: `${i * 90}ms` }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div
+                  ref={contentRef}
+                  className="cinematic-prose prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                  data-testid="blog-post-content"
+                />
+              )}
+
+              <CodeCopyButtons contentRef={contentRef} contentKey={htmlContent} />
+
+              <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
+                <div className="flex items-center justify-between font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                  <span>end of note</span>
+                  <Link
+                    href="/blog"
+                    className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  >
+                    ← All field notes
+                  </Link>
+                </div>
               </div>
+
+              {(prev || next) && (
+                <nav
+                  aria-label="Adjacent posts"
+                  className="mt-10 grid gap-4 sm:grid-cols-2"
+                  data-testid="post-neighbours"
+                >
+                  {prev ? (
+                    <PostPreviewLink
+                      post={prev}
+                      testId="link-prev-post"
+                      align="left"
+                      className="group block rounded-lg border border-[hsl(var(--brand-iron))] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/.5)]"
+                    >
+                      <span className="block font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                        ← Previous
+                      </span>
+                      <span className="mt-2 block font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
+                        {prev.title}
+                      </span>
+                    </PostPreviewLink>
+                  ) : (
+                    <span />
+                  )}
+                  {next && (
+                    <PostPreviewLink
+                      post={next}
+                      testId="link-next-post"
+                      align="right"
+                      wrapperClassName="sm:col-start-2"
+                      className="group block rounded-lg border border-[hsl(var(--brand-iron))] p-5 text-right transition-colors hover:border-[hsl(var(--brand-signal)/.5)]"
+                    >
+                      <span className="block font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                        Next →
+                      </span>
+                      <span className="mt-2 block font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
+                        {next.title}
+                      </span>
+                    </PostPreviewLink>
+                  )}
+                </nav>
+              )}
+
+              {related.length > 0 && (
+                <section className="mt-12" data-testid="related-posts">
+                  <h2 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                    · Related
+                  </h2>
+                  <ul className="mt-4 space-y-3">
+                    {related.map((r) => (
+                      <li key={r.slug}>
+                        <PostPreviewLink
+                          post={r}
+                          testId={`link-related-${r.slug}`}
+                          className="group flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1"
+                        >
+                          <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                            {r.date}
+                          </span>
+                          <span className="min-w-0 font-display text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
+                            {r.title}
+                          </span>
+                        </PostPreviewLink>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </div>
 
-            {(prev || next) && (
-              <nav
-                aria-label="Adjacent posts"
-                className="mt-10 grid gap-4 sm:grid-cols-2"
-                data-testid="post-neighbours"
-              >
-                {prev ? (
-                  <Link
-                    href={`/blog/${prev.slug}`}
-                    data-testid="link-prev-post"
-                    className="group rounded-lg border border-[hsl(var(--brand-iron))] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/.5)]"
-                  >
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-                      ← Previous
-                    </div>
-                    <div className="mt-2 font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
-                      {prev.title}
-                    </div>
-                  </Link>
-                ) : (
-                  <span />
-                )}
-                {next && (
-                  <Link
-                    href={`/blog/${next.slug}`}
-                    data-testid="link-next-post"
-                    className="group rounded-lg border border-[hsl(var(--brand-iron))] p-5 text-right transition-colors hover:border-[hsl(var(--brand-signal)/.5)] sm:col-start-2"
-                  >
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-                      Next →
-                    </div>
-                    <div className="mt-2 font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
-                      {next.title}
-                    </div>
-                  </Link>
-                )}
-              </nav>
-            )}
-
-            {related.length > 0 && (
-              <section className="mt-12" data-testid="related-posts">
-                <h2 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
-                  · Related
-                </h2>
-                <ul className="mt-4 space-y-3">
-                  {related.map((r) => (
-                    <li key={r.slug}>
-                      <Link
-                        href={`/blog/${r.slug}`}
-                        data-testid={`link-related-${r.slug}`}
-                        className="group flex items-baseline gap-3"
-                      >
-                        <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
-                          {r.date}
-                        </span>
-                        <span className="font-display text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
-                          {r.title}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
+            <PostToc
+              headings={headings}
+              activeId={activeHeading}
+              variant="sidebar"
+              className="hidden w-[220px] shrink-0 lg:block"
+            />
           </div>
         </div>
       </article>

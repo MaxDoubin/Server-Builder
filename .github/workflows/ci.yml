@@ -1,0 +1,130 @@
+name: CI
+
+# Runs on every pull request, and on pushes to main and to the claude/* work
+# branches. workflow_dispatch is there so a run can be kicked off by hand
+# without pushing an empty commit.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "claude/**"
+  workflow_dispatch:
+
+# A new push to the same branch makes the in-flight run pointless. Cancel it
+# rather than queueing behind it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# The site is static and nothing here writes to the repo.
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Informational only. Never fails the build.
+  #
+  # `tsc --noEmit` currently reports a few dozen pre-existing errors, almost
+  # all of them in the 3D and simulator code: react-three-fiber JSX intrinsics,
+  # a react-query v5 migration that left `onError` on useQuery, Badge props
+  # that no longer exist, and a handful of downlevelIteration complaints. None
+  # of them stop Vite, which strips types rather than checking them, so the
+  # build and the deployed site are unaffected.
+  #
+  # They are logged here so the number is visible and can be driven down, and
+  # so a NEW error is at least readable in the run output. Blocking on them
+  # today would mean every PR is red for reasons it did not cause.
+  #
+  # When the count reaches zero: delete the `|| true` and the `continue-on-
+  # error`, and this becomes a real gate.
+  # ---------------------------------------------------------------------------
+  typecheck:
+    name: Typecheck (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # node_modules is cached directly, keyed on the lockfile, so an unchanged
+      # dependency tree skips the install entirely. The OS and Node major go in
+      # the key too: the tree contains compiled output (bufferutil, esbuild)
+      # that is not portable between them.
+      - name: Restore node_modules
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.modules.outputs.cache-hit != 'true'
+        run: npm ci --no-audit --no-fund
+
+      - name: tsc --noEmit
+        run: npx tsc --noEmit || true
+
+  # ---------------------------------------------------------------------------
+  # The real gate. The build must pass, and then every check runs against the
+  # output it produced.
+  #
+  # One job rather than several because four of the five checks read dist/, and
+  # passing a 60MB build directory between jobs as an artifact costs more time
+  # than the checks take to run.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build and checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore node_modules
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.modules.outputs.cache-hit != 'true'
+        run: npm ci --no-audit --no-fund
+
+      # Cheap, and it needs no build output, so run it before the slow step.
+      - name: Image budget
+        run: node scripts-ci/check-image-budget.mjs
+
+      # vite build, then the prerenderer over 200+ posts, then the server
+      # bundle. The heap bump is for the prerender pass, which holds the whole
+      # post index and the rendered HTML for a batch at once.
+      - name: Build
+        run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Bundle budget
+        run: node scripts-ci/check-bundle-budget.mjs
+
+      - name: Internal links
+        run: node scripts-ci/check-links.mjs
+
+      - name: Page metadata
+        run: node scripts-ci/check-meta.mjs
+
+      # Last because it reads both the source trees and the built HTML.
+      - name: Em dashes
+        run: node scripts-ci/check-em-dashes.mjs

@@ -28,5 +28,5 @@
   marked, for the blog
   Static prerendering, deployed on Cloudflare Pages
 
-  Written mostly in Neovim and VS Code. No tracking, no analytics,
-  no cookies, no fonts beyond Google Fonts.
+  No analytics, no cookies, no third party scripts. Google Fonts is the
+  only origin the browser talks to besides this one.

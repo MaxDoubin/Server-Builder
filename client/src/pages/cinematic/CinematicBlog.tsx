@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "wouter";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { getAllPosts, getAllTags, readMinutes } from "@/lib/blogPosts";
+import type { PostMeta } from "@/lib/postIndex";
+import { BlogSearch } from "@/components/blog/BlogSearch";
+import { ContinueReading } from "@/components/blog/ContinueReading";
+import { DifficultyBadge } from "@/components/blog/DifficultyBadge";
+import { DIFFICULTIES, postDifficulty, type Difficulty } from "@/lib/postDifficulty";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import {
@@ -27,8 +32,15 @@ import {
 const SITE_URL = "https://maxdoubin.com";
 
 export function CinematicBlog() {
-  const allPosts = getAllPosts();
-  const allTags = getAllTags();
+  /**
+   * Both of these build a fresh array on every call, so they are held.
+   * BlogSearch memoises its lowercase index on the array it is handed and
+   * publishes results whenever that index changes; feeding it a new array
+   * each render would make it publish on every render, and publishing sets
+   * state here, which renders again.
+   */
+  const allPosts = useMemo(() => getAllPosts(), []);
+  const allTags = useMemo(() => getAllTags(), []);
 
   /**
    * Tags ranked by how many posts use them.
@@ -51,8 +63,18 @@ export function CinematicBlog() {
   const [showAllTags, setShowAllTags] = useState(false);
   const visibleTags = showAllTags ? rankedTags : rankedTags.slice(0, 14);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
+  /** Ranked search hits, or null when the search box is empty. */
+  const [searchResults, setSearchResults] = useState<PostMeta[] | null>(null);
+  const [, setLocation] = useLocation();
   const rootRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+
+  // Stable so BlogSearch's publish effect does not re-run on every render
+  // of this page.
+  const handleResults = useCallback((results: PostMeta[] | null) => {
+    setSearchResults(results);
+  }, []);
 
   const blogListSchema = useMemo(
     () => ({
@@ -87,9 +109,21 @@ export function CinematicBlog() {
     schemaId: "blog-list-schema",
   });
 
-  const filteredPosts = activeTag
-    ? allPosts.filter((post) => post.tags.includes(activeTag))
-    : allPosts;
+  /**
+   * Search first, then the tag and difficulty filters on top of whatever it
+   * returned. Search results arrive ranked by relevance, so that ordering is
+   * kept; with an empty box the list stays in date order.
+   */
+  const filteredPosts = useMemo(() => {
+    let list = searchResults ?? allPosts;
+    if (activeTag) list = list.filter((post) => post.tags.includes(activeTag));
+    if (activeDifficulty) {
+      list = list.filter((post) => postDifficulty(post) === activeDifficulty);
+    }
+    return list;
+  }, [searchResults, allPosts, activeTag, activeDifficulty]);
+
+  const searching = searchResults !== null;
 
   /**
    * The archive is a post per day, so it grows without bound. Rendering all
@@ -101,9 +135,21 @@ export function CinematicBlog() {
   const [visible, setVisible] = useState(PAGE);
   useEffect(() => {
     setVisible(PAGE);
-  }, [activeTag]);
+  }, [activeTag, activeDifficulty, searchResults]);
   const shownPosts = filteredPosts.slice(0, visible);
   const remaining = filteredPosts.length - shownPosts.length;
+
+  /**
+   * Random pick respects whatever is currently on screen, so filtering to
+   * "security" and rolling the dice stays inside security. With nothing
+   * matched it falls back to the whole archive.
+   */
+  const openRandomPost = () => {
+    const pool = filteredPosts.length > 0 ? filteredPosts : allPosts;
+    if (pool.length === 0) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setLocation(`/blog/${pick.slug}`);
+  };
 
   useScrollReveal(
     rootRef,
@@ -187,11 +233,53 @@ export function CinematicBlog() {
             delay={0.6}
           />
 
+          {/* Search, random pick, and the two hub pages */}
+          <ScrollReveal variants={fadeUp} delay={0.15}>
+            <div className="mt-12 flex flex-col gap-3 lg:flex-row lg:items-center">
+              <BlogSearch
+                posts={allPosts}
+                onResults={handleResults}
+                className="min-w-0 flex-1"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openRandomPost}
+                  data-testid="button-random-post"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                >
+                  <span
+                    aria-hidden
+                    className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
+                    style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
+                  />
+                  Random
+                </button>
+                <Link
+                  href="/paths"
+                  data-testid="link-reading-paths"
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                >
+                  Paths
+                </Link>
+                <Link
+                  href="/archive"
+                  data-testid="link-archive"
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                >
+                  Archive
+                </Link>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <ContinueReading />
+
           {/* Tag filter strip wrapped in ScrollReveal with fadeUp */}
           <ScrollReveal variants={fadeUp} delay={0.2}>
             <div
               data-testid="blog-tags"
-              className="mt-14 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
+              className="mt-10 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
             >
               <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 tag ·
@@ -259,6 +347,51 @@ export function CinematicBlog() {
             </div>
           </ScrollReveal>
 
+          {/* Difficulty filter. The labels are derived, see lib/postDifficulty.ts */}
+          <div
+            data-testid="blog-difficulty-filter"
+            className="mt-4 flex flex-wrap items-center gap-2 border-b border-[hsl(var(--brand-iron))] pb-4"
+          >
+            <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              level ·
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveDifficulty(null)}
+              data-testid="button-difficulty-all"
+              aria-pressed={activeDifficulty === null}
+              className={`inline-flex h-9 items-center rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+                activeDifficulty === null
+                  ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
+                  : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
+              }`}
+            >
+              Any
+            </button>
+            {DIFFICULTIES.map((level) => {
+              const active = activeDifficulty === level;
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setActiveDifficulty(active ? null : level)}
+                  data-testid={`button-difficulty-${level}`}
+                  aria-pressed={active}
+                  className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+                    active
+                      ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
+                      : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
+                  }`}
+                >
+                  {level}
+                </button>
+              );
+            })}
+            <span className="ml-auto font-mono-tight text-[10px] normal-case tracking-[0.12em] text-[hsl(var(--brand-ash))]">
+              derived from tags and length
+            </span>
+          </div>
+
           {/* Post list with AnimatePresence + StaggerGroup */}
           <StaggerGroup className="mt-10 space-y-4" staggerDelay={0.1} delayChildren={0.15}>
             <AnimatePresence mode="popLayout">
@@ -325,7 +458,7 @@ export function CinematicBlog() {
                           </div>
 
                           <div className="flex flex-col justify-center p-6">
-                            <div className="flex items-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                               <time dateTime={post.date}>
                                 {new Date(post.date).toLocaleDateString("en-US", {
                                   year: "numeric",
@@ -337,6 +470,7 @@ export function CinematicBlog() {
                               <span>
                                 {readMinutes(post)} min read
                               </span>
+                              <DifficultyBadge level={postDifficulty(post)} />
                             </div>
                             <h2 className="mt-3 font-display text-xl font-medium leading-tight tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))] md:text-2xl">
                               {post.title}
@@ -390,10 +524,12 @@ export function CinematicBlog() {
                 className="mt-16 rounded-lg border border-[hsl(var(--brand-iron))] p-12 text-center"
               >
                 <div className="font-display text-2xl text-[hsl(var(--brand-bone))]">
-                  No posts with that tag.
+                  {searching ? "Nothing matches that." : "No posts with that tag."}
                 </div>
                 <div className="mt-3 font-mono-tight text-[11px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-                  try a different filter
+                  {searching
+                    ? "try fewer words, or clear the filters"
+                    : "try a different filter"}
                 </div>
               </div>
             </ScrollReveal>
