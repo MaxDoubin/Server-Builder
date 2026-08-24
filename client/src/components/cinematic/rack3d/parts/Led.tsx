@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 
@@ -115,12 +115,91 @@ export function LedStrip({
     >
       <boxGeometry args={[size, size, size * 0.62]} />
       <meshBasicMaterial
-        color={color}
-        vertexColors
         toneMapped={false}
         transparent
         opacity={0.98}
       />
+    </instancedMesh>
+  );
+}
+
+
+/**
+ * An arbitrary field of blinking LEDs drawn in one call.
+ *
+ * Equivalent to scattering individual `<Led>` components, but a patch
+ * panel carries 48 of them and the layout repeats down the rack. As
+ * separate meshes that is 48 draw calls *and* 48 `useFrame` callbacks per
+ * panel; here it is one of each, with the per-instance colour buffer
+ * uploaded once per frame.
+ */
+export function LedField({
+  points,
+  size = 0.0019,
+  seed = 0,
+}: {
+  points: Array<{
+    position: [number, number, number];
+    color: string;
+    blink?: boolean;
+  }>;
+  size?: number;
+  seed?: number;
+}) {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const count = points.length;
+
+  const colors = useMemo(
+    () => points.map((p) => new THREE.Color(p.color)),
+    [points],
+  );
+  const dims = useMemo(
+    () => colors.map((c) => c.clone().multiplyScalar(0.14)),
+    [colors],
+  );
+  const phases = useMemo(
+    () => points.map((_, i) => ((i * 9301 + seed * 49297) % 233280) / 233280),
+    [points, seed],
+  );
+  const scratch = useMemo(() => new THREE.Color(), []);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useLayoutEffect(() => {
+    const mesh = meshRef.current;
+    if (!mesh || count === 0) return;
+    for (let i = 0; i < count; i++) {
+      const [x, y, z] = points[i].position;
+      dummy.position.set(x, y, z);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }, [points, count, dummy]);
+
+  useFrame(({ clock }) => {
+    const mesh = meshRef.current;
+    if (!mesh || count === 0) return;
+    const t = clock.elapsedTime;
+    for (let i = 0; i < count; i++) {
+      if (points[i].blink === false) {
+        mesh.setColorAt(i, colors[i]);
+        continue;
+      }
+      const phase = phases[i] * 6.28;
+      const v =
+        0.5 + 0.5 * (0.5 + 0.5 * Math.sin(t * 5.2 + phase) * Math.cos(t * 1.7 + phase));
+      mesh.setColorAt(i, scratch.copy(dims[i]).lerp(colors[i], v));
+    }
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  });
+
+  if (count === 0) return null;
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      <boxGeometry args={[size, size, size * 0.72]} />
+      <meshBasicMaterial toneMapped={false} />
     </instancedMesh>
   );
 }

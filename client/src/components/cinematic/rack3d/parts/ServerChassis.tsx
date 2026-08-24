@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import { Led, LedStrip } from "./Led";
+import { Led, LedField, LedStrip } from "./Led";
+import { InstancedBoxes } from "./InstancedBoxes";
 import { ACCENT_HEX, RACK_DEPTH, RACK_INNER_WIDTH, U } from "../rackConfig";
 import type { GearKind } from "../rackConfig";
 
@@ -36,6 +37,11 @@ const mats = {
     color: "#262a30",
     metalness: 0.6,
     roughness: 0.55,
+  }),
+  patchPort: new THREE.MeshStandardMaterial({
+    color: "#0b0d10",
+    metalness: 0.35,
+    roughness: 0.85,
   }),
   darkPlastic: new THREE.MeshStandardMaterial({
     color: "#07090b",
@@ -135,14 +141,20 @@ function VentStrip({
     return { out, slotW, slotH };
   }, [width, height, rows, cols, y, xOffset]);
 
+  const points = useMemo(
+    () =>
+      slots.out.map(
+        (s) => [s.x, s.y, FACE_Z - 0.0005] as [number, number, number],
+      ),
+    [slots],
+  );
+
   return (
-    <group>
-      {slots.out.map((s, i) => (
-        <mesh key={i} position={[s.x, s.y, FACE_Z - 0.0005]} material={mats.ventSlot}>
-          <boxGeometry args={[slots.slotW * 0.72, slots.slotH * 0.55, 0.003]} />
-        </mesh>
-      ))}
-    </group>
+    <InstancedBoxes
+      positions={points}
+      size={[slots.slotW * 0.72, slots.slotH * 0.55, 0.003]}
+      material={mats.ventSlot}
+    />
   );
 }
 
@@ -165,14 +177,20 @@ function HoneycombVent({ width, height }: { width: number; height: number }) {
     return { out, cellW, cellH };
   }, [width, height]);
 
+  const points = useMemo(
+    () =>
+      pattern.out.map(
+        (s) => [s.x, s.y, FACE_Z - 0.0008] as [number, number, number],
+      ),
+    [pattern],
+  );
+
   return (
-    <group>
-      {pattern.out.map((s, i) => (
-        <mesh key={i} position={[s.x, s.y, FACE_Z - 0.0008]} material={mats.ventSlot}>
-          <boxGeometry args={[pattern.cellW * 0.78, pattern.cellH * 0.78, 0.004]} />
-        </mesh>
-      ))}
-    </group>
+    <InstancedBoxes
+      positions={points}
+      size={[pattern.cellW * 0.78, pattern.cellH * 0.78, 0.004]}
+      material={mats.ventSlot}
+    />
   );
 }
 
@@ -274,7 +292,32 @@ function ServerControlPanel({
   );
 }
 
+const PATCH_PORT_POSITIONS: Array<[number, number, number]> = Array.from(
+  { length: 48 },
+  (_, i) => {
+    const col = i % 24;
+    const row = Math.floor(i / 24);
+    return [
+      -0.198 + col * 0.017 + (col >= 12 ? 0.006 : 0),
+      (row === 0 ? 1 : -1) * 0.008,
+      FACE_Z + 0.0014,
+    ];
+  },
+);
+
 function PatchPanelFace({ accentColor, seed }: { accentColor: string; seed: number }) {
+  // 48 ports, each previously a mesh plus its own <Led> with its own
+  // per-frame callback. Instanced, the whole face is three draw calls.
+  const portLeds = useMemo(
+    () =>
+      PATCH_PORT_POSITIONS.map((pos, i) => ({
+        position: [pos[0], pos[1] + 0.006, pos[2] + 0.0008] as [number, number, number],
+        color: i % 24 % 3 === 0 ? accentColor : "#64e6ff",
+        blink: i % 2 === 0,
+      })),
+    [accentColor],
+  );
+
   return (
     <group>
       <mesh position={[0, 0, FACE_Z - 0.0005]} material={mats.chassisFront}>
@@ -282,28 +325,12 @@ function PatchPanelFace({ accentColor, seed }: { accentColor: string; seed: numb
       </mesh>
       <AccentRule width={RACK_INNER_WIDTH - 0.04} y={U * 0.24} color={accentColor} opacity={0.3} />
       <AccentRule width={RACK_INNER_WIDTH - 0.08} y={-U * 0.22} color="#64e6ff" opacity={0.18} />
-      {Array.from({ length: 48 }).map((_, i) => {
-        const col = i % 24;
-        const row = Math.floor(i / 24);
-        return (
-          <group
-            key={i}
-            position={[
-              -0.198 + col * 0.017 + (col >= 12 ? 0.006 : 0),
-              (row === 0 ? 1 : -1) * 0.008,
-              FACE_Z + 0.0014,
-            ]}
-          >
-            <mesh>
-              <boxGeometry args={[0.012, 0.009, 0.0022]} />
-              <meshStandardMaterial color="#0b0d10" metalness={0.35} roughness={0.85} />
-            </mesh>
-            <group position={[0, 0.006, 0.0008]}>
-              <Led color={col % 3 === 0 ? accentColor : "#64e6ff"} size={0.0019} blink={i % 2 === 0} seed={seed + i} />
-            </group>
-          </group>
-        );
-      })}
+      <InstancedBoxes
+        positions={PATCH_PORT_POSITIONS}
+        size={[0.012, 0.009, 0.0022]}
+        material={mats.patchPort}
+      />
+      <LedField points={portLeds} size={0.0019} seed={seed} />
       <group position={[0, -0.014, FACE_Z + 0.0018]}>
         <LedStrip count={28} length={0.36} color={accentColor} size={0.002} seed={seed + 18} />
       </group>

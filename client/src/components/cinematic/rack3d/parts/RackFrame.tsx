@@ -13,6 +13,7 @@ import {
   U,
 } from "../rackConfig";
 import { Led, LedStrip } from "./Led";
+import { InstancedBoxes } from "./InstancedBoxes";
 
 const POST_COLOR = "#1a1d21";
 const FRAME_COLOR = "#0d0f11";
@@ -20,41 +21,33 @@ const HOLE_COLOR = "#06070a";
 const BRAND_COLOR = "#c7f000";
 const CYAN_COLOR = "#64e6ff";
 
+const holeMaterial = new THREE.MeshStandardMaterial({
+  color: HOLE_COLOR,
+  roughness: 0.95,
+});
+
 function CageNutHoles({ side }: { side: "front" | "back" }) {
+  // 42U x 3 holes x 2 posts = 252 boxes per side. As individual meshes
+  // that was 504 draw calls a rack for detail a few pixels wide.
   const holes = useMemo(() => {
-    const rows: Array<{ y: number; slot: number }> = [];
+    const z = side === "front" ? RACK_DEPTH / 2 - 0.001 : -RACK_DEPTH / 2 + 0.001;
+    const x = RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004;
+    const out: Array<[number, number, number]> = [];
     for (let u = 0; u < RACK_UNITS; u++) {
       for (let h = 0; h < 3; h++) {
-        const y =
-          RACK_FEET_HEIGHT + u * U + U * 0.18 + h * (U * 0.32);
-        rows.push({ y, slot: u });
+        const y = RACK_FEET_HEIGHT + u * U + U * 0.18 + h * (U * 0.32);
+        out.push([-x, y, z], [x, y, z]);
       }
     }
-    return rows;
-  }, []);
-
-  const z = side === "front" ? RACK_DEPTH / 2 - 0.001 : -RACK_DEPTH / 2 + 0.001;
+    return out;
+  }, [side]);
 
   return (
-    <group>
-      {holes.map((hole, i) => (
-        <group key={i}>
-          {[-1, 1].map((dir) => (
-            <mesh
-              key={dir}
-              position={[
-                dir * (RACK_INNER_WIDTH / 2 + RACK_POST_WIDTH / 2 - 0.004),
-                hole.y,
-                z,
-              ]}
-            >
-              <boxGeometry args={[0.006, 0.006, 0.002]} />
-              <meshStandardMaterial color={HOLE_COLOR} roughness={0.95} />
-            </mesh>
-          ))}
-        </group>
-      ))}
-    </group>
+    <InstancedBoxes
+      positions={holes}
+      size={[0.006, 0.006, 0.002]}
+      material={holeMaterial}
+    />
   );
 }
 

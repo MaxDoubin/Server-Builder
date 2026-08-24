@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -38,8 +39,25 @@ interface Props {
 
 export function SmoothScrollProvider({ children, disabled = false }: Props) {
   const lenisRef = useRef<Lenis | null>(null);
-  const rafRef = useRef<number | null>(null);
   const [ready, setReady] = useState(false);
+
+  /**
+   * Children mount before the provider's effect runs, so a child calling
+   * `stop()` on mount (the preloader does) would otherwise hit a null
+   * Lenis and silently no-op, leaving the page scrollable behind the
+   * loading screen. Record the intent and apply it at construction.
+   */
+  const wantStopped = useRef(false);
+
+  const stop = useCallback(() => {
+    wantStopped.current = true;
+    lenisRef.current?.stop();
+  }, []);
+
+  const start = useCallback(() => {
+    wantStopped.current = false;
+    lenisRef.current?.start();
+  }, []);
 
   useEffect(() => {
     const reduced = typeof window !== "undefined"
@@ -50,7 +68,7 @@ export function SmoothScrollProvider({ children, disabled = false }: Props) {
       return;
     }
 
-    const { ScrollTrigger } = ensureGsapRegistered();
+    const { gsap, ScrollTrigger } = ensureGsapRegistered();
 
     const lenis = new Lenis({
       duration: 1.15,
@@ -65,38 +83,68 @@ export function SmoothScrollProvider({ children, disabled = false }: Props) {
 
     lenisRef.current = lenis;
     document.documentElement.classList.add("lenis", "lenis-smooth");
+    if (wantStopped.current) lenis.stop();
 
-    // Drive GSAP ScrollTrigger off Lenis' scroll position
-    lenis.on("scroll", ScrollTrigger.update);
+    /**
+     * Lenis drives the real window scroll position, so ScrollTrigger can
+     * keep using its default window scroller and read `window.scrollY`
+     * directly. It only needs to be told when to re-measure.
+     *
+     * A `ScrollTrigger.scrollerProxy` was used here previously. That made
+     * ScrollTrigger read Lenis' *virtual* scroll value instead, which does
+     * not follow programmatic scrolls (anchor links, keyboard Home/End,
+     * find-in-page, the browser restoring position on reload). Progress
+     * would freeze at a stale value while the page kept moving.
+     */
+    const onScroll = () => ScrollTrigger.update();
+    lenis.on("scroll", onScroll);
 
-    const tick = (time: number) => {
-      lenis.raf(time);
-      rafRef.current = requestAnimationFrame(tick);
+    // Run Lenis off GSAP's ticker so scroll and tweens share one clock and
+    // cannot tear against each other.
+    const raf = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(raf);
+    gsap.ticker.lagSmoothing(0);
+
+    /**
+     * Trigger positions are measured once at creation. This page lazy-loads
+     * most of its sections and a WebGL canvas, and pins a section for ~900vh
+     * against those measurements, so anything that changes document height
+     * after mount leaves every trigger anchored to stale coordinates: pinned
+     * sections release early and `gsap.from(..., {opacity: 0})` reveals never
+     * fire, stranding content invisible. Re-measure whenever the page resizes.
+     */
+    let refreshTimer = 0;
+    const scheduleRefresh = () => {
+      window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 120);
     };
-    rafRef.current = requestAnimationFrame(tick);
 
-    // GSAP ticker fallback for any animation that uses gsap.ticker
-    const gsapScroller = (value?: number) => {
-      if (typeof value === "number") lenis.scrollTo(value, { immediate: true });
-      return lenis.scroll;
-    };
-    ScrollTrigger.scrollerProxy(document.documentElement, {
-      scrollTop: gsapScroller,
-      getBoundingClientRect() {
-        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-      },
-    });
-    ScrollTrigger.defaults({ scroller: document.documentElement });
+    const resizeObserver = new ResizeObserver(scheduleRefresh);
+    resizeObserver.observe(document.body);
+
+    // Web fonts reflow text after first paint and shift every section below.
+    if (document.fonts?.ready) {
+      void document.fonts.ready.then(scheduleRefresh);
+    }
+    window.addEventListener("load", scheduleRefresh);
+
     ScrollTrigger.refresh();
-
     setReady(true);
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.clearTimeout(refreshTimer);
+      resizeObserver.disconnect();
+      window.removeEventListener("load", scheduleRefresh);
+      lenis.off("scroll", onScroll);
+      gsap.ticker.remove(raf);
       lenis.destroy();
       lenisRef.current = null;
       document.documentElement.classList.remove("lenis", "lenis-smooth");
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      // Scenes own their own triggers through `gsap.context` and revert them
+      // on unmount. Killing every trigger globally here used to take out the
+      // incoming page's triggers too, because React mounts the next route
+      // before tearing the previous one down.
+      ScrollTrigger.refresh();
     };
   }, [disabled]);
 
@@ -111,11 +159,11 @@ export function SmoothScrollProvider({ children, disabled = false }: Props) {
         }
         lenis.scrollTo(target as unknown as number, opts);
       },
-      stop: () => lenisRef.current?.stop(),
-      start: () => lenisRef.current?.start(),
+      stop,
+      start,
       ready,
     }),
-    [ready],
+    [ready, stop, start],
   );
 
   return <ScrollContext.Provider value={value}>{children}</ScrollContext.Provider>;
