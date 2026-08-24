@@ -299,6 +299,7 @@ ${JSON.stringify({
   // gone stale, listing 105 URLs with a lastmod months behind the newest
   // post, so anything published since was invisible to crawlers.
   await writeSitemap(posts);
+  await writeFeed(posts);
 
   console.log("Prerender complete.");
 }
@@ -354,3 +355,51 @@ main().catch((err) => {
   console.error("Prerender failed:", err);
   process.exit(1);
 });
+
+/**
+ * Emit an RSS 2.0 feed of the most recent posts.
+ *
+ * A daily archive with no feed is only reachable by people who think to
+ * revisit. Readers, aggregators and several crawlers all consume this.
+ */
+async function writeFeed(
+  posts: Array<{ slug: string; title: string; date: string; excerpt: string; draft?: boolean }>,
+) {
+  // Newest first. The source array is in insertion order, not date order,
+  // so slicing it directly published a feed headed by an arbitrary post.
+  const live = posts
+    .filter((p) => !p.draft)
+    .slice()
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    .slice(0, 50);
+  const rfc822 = (iso: string) => new Date(`${iso}T12:00:00Z`).toUTCString();
+  const items = live
+    .map(
+      (p) =>
+        `    <item>\n` +
+        `      <title>${esc(p.title)}</title>\n` +
+        `      <link>${SITE_URL}/blog/${p.slug}</link>\n` +
+        `      <guid isPermaLink="true">${SITE_URL}/blog/${p.slug}</guid>\n` +
+        `      <pubDate>${rfc822(p.date)}</pubDate>\n` +
+        `      <description>${esc(p.excerpt)}</description>\n` +
+        `    </item>`,
+    )
+    .join("\n");
+
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n` +
+    `  <channel>\n` +
+    `    <title>Max Doubin</title>\n` +
+    `    <link>${SITE_URL}/blog</link>\n` +
+    `    <description>Writing on cybersecurity, enterprise networking, and systems infrastructure.</description>\n` +
+    `    <language>en-us</language>\n` +
+    `    <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />\n` +
+    (live[0] ? `    <lastBuildDate>${rfc822(live[0].date)}</lastBuildDate>\n` : "") +
+    `${items}\n` +
+    `  </channel>\n` +
+    `</rss>\n`;
+
+  await writeFile(path.join(DIST, "feed.xml"), xml, "utf8");
+  console.log(`feed.xml: ${live.length} items`);
+}
