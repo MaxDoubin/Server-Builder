@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { marked } from "marked";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { getPostBySlug } from "@/lib/blogPosts";
+import { getAllPosts, getPostBySlug } from "@/lib/blogPosts";
 import { useSEO } from "@/lib/useSEO";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 
@@ -14,6 +14,45 @@ export function CinematicBlogPost() {
   const [, params] = useRoute("/blog/:slug");
   const slug = params?.slug ?? "";
   const post = getPostBySlug(slug);
+
+  /**
+   * Onward links.
+   *
+   * A post used to end with a single "all field notes" link, so every one
+   * of 236 pages was a dead end: nothing to read next, and nothing linking
+   * posts to each other for a crawler to follow. Neighbours come from the
+   * date ordering; related posts are the nearest by shared tags, most
+   * specific tag first so a post about one narrow subject does not just
+   * pull in whatever else is tagged "networking".
+   */
+  const { prev, next, related } = useMemo(() => {
+    const all = getAllPosts();
+    const i = all.findIndex((p) => p.slug === slug);
+    if (i === -1) return { prev: undefined, next: undefined, related: [] };
+
+    const tagCounts = new Map<string, number>();
+    all.forEach((p) => p.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)));
+
+    const current = all[i];
+    const scored = all
+      .filter((p) => p.slug !== slug)
+      .map((p) => ({
+        post: p,
+        score: p.tags
+          .filter((t) => current.tags.includes(t))
+          // A tag shared by few posts says more than one shared by many.
+          .reduce((sum, t) => sum + 1 / (tagCounts.get(t) ?? 1), 0),
+      }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || (a.post.date < b.post.date ? 1 : -1));
+
+    return {
+      // getAllPosts is newest first, so the later index is the older post.
+      next: all[i - 1],
+      prev: all[i + 1],
+      related: scored.slice(0, 3).map((x) => x.post),
+    };
+  }, [slug]);
   const [mounted, setMounted] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -271,6 +310,71 @@ export function CinematicBlogPost() {
                 </Link>
               </div>
             </div>
+
+            {(prev || next) && (
+              <nav
+                aria-label="Adjacent posts"
+                className="mt-10 grid gap-4 sm:grid-cols-2"
+                data-testid="post-neighbours"
+              >
+                {prev ? (
+                  <Link
+                    href={`/blog/${prev.slug}`}
+                    data-testid="link-prev-post"
+                    className="group rounded-lg border border-[hsl(var(--brand-iron))] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/.5)]"
+                  >
+                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                      ← Previous
+                    </div>
+                    <div className="mt-2 font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
+                      {prev.title}
+                    </div>
+                  </Link>
+                ) : (
+                  <span />
+                )}
+                {next && (
+                  <Link
+                    href={`/blog/${next.slug}`}
+                    data-testid="link-next-post"
+                    className="group rounded-lg border border-[hsl(var(--brand-iron))] p-5 text-right transition-colors hover:border-[hsl(var(--brand-signal)/.5)] sm:col-start-2"
+                  >
+                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                      Next →
+                    </div>
+                    <div className="mt-2 font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
+                      {next.title}
+                    </div>
+                  </Link>
+                )}
+              </nav>
+            )}
+
+            {related.length > 0 && (
+              <section className="mt-12" data-testid="related-posts">
+                <h2 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                  · Related
+                </h2>
+                <ul className="mt-4 space-y-3">
+                  {related.map((r) => (
+                    <li key={r.slug}>
+                      <Link
+                        href={`/blog/${r.slug}`}
+                        data-testid={`link-related-${r.slug}`}
+                        className="group flex items-baseline gap-3"
+                      >
+                        <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                          {r.date}
+                        </span>
+                        <span className="font-display text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
+                          {r.title}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         </div>
       </article>
