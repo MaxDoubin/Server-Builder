@@ -1,0 +1,20 @@
+# security.txt for maxdoubin.com, per RFC 9116.
+#
+# Policy, in plain words: this is a personal portfolio site. Static files on
+# Cloudflare Pages, no backend, no accounts, no user data at rest. There is
+# nothing to breach and no bounty to pay. Reports are still welcome, and a
+# careful one gets a fast fix and a thank you.
+#
+# Useful things to report: a response header that is wrong or missing, a way
+# to get markup into a prerendered page, a dependency shipping a known CVE,
+# or anything reachable that should not be. Please allow a reasonable window
+# to fix before disclosing publicly.
+#
+# This file is also served from https://maxdoubin.com/security.txt for
+# clients that still look at the legacy location. The copy under
+# /.well-known/ is the authoritative one, as the Canonical field records.
+
+Contact: mailto:max@maxdoubin.com
+Expires: 2027-08-24T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://maxdoubin.com/.well-known/security.txt

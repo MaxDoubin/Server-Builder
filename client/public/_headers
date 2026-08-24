@@ -1,0 +1,146 @@
+# Cloudflare Pages response headers.
+#
+# Format (developers.cloudflare.com/pages/configuration/headers):
+#   a line starting with "/" is a URL pattern, the indented lines under it are
+#   "Name: value" headers, "#" starts a comment, and a blank line ends a rule.
+#   "*" is a greedy splat. Limits: 100 rules per file, 2000 chars per line.
+#
+# ONE RULE THAT BITES: a request matching several patterns inherits the headers
+# from all of them, and a header set twice has its values JOINED WITH A COMMA.
+# So Cache-Control is deliberately absent from /* below. Setting it there and
+# again on /assets/* would emit
+#   Cache-Control: public, max-age=0, must-revalidate, public, max-age=31536000
+# and the first max-age wins, which would kill caching on the hashed assets.
+# Cache-Control therefore only ever appears on non-overlapping patterns.
+
+
+# ---------------------------------------------------------------------------
+# Security headers, every route (documents, assets, images, everything).
+# ---------------------------------------------------------------------------
+/*
+  # Two years, subdomains included, and eligible for the browser preload list.
+  # Only set this while the apex and every subdomain can serve HTTPS: preload
+  # entries are slow and painful to back out of.
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+  # Stop browsers guessing a MIME type. Without it a .txt or an upload that
+  # sniffs as HTML can be executed as a document on this origin.
+  X-Content-Type-Options: nosniff
+
+  # Send the full URL to same-origin destinations, the origin only when the
+  # scheme stays HTTPS cross-origin, and nothing at all on a downgrade. Blog
+  # posts link out heavily, so path leakage to third parties matters.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Clickjacking. frame-ancestors 'none' in the CSP below is the modern form
+  # and takes precedence where both are understood; this stays for older
+  # browsers that never implemented frame-ancestors.
+  X-Frame-Options: DENY
+
+  # No page here asks for a camera, a mic, or a location, so refuse for this
+  # document and every embed. interest-cohort is the historical FLoC opt-out,
+  # kept because some crawlers and scanners still look for it; browsing-topics
+  # is the API that actually replaced it. Unknown feature names are ignored by
+  # the parser, so listing both is safe.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()
+
+  # Content-Security-Policy. Directive by directive:
+  #
+  #   default-src 'self'        fallback for anything not named below.
+  #   script-src  'unsafe-inline'
+  #                             REQUIRED, and it is a known, accepted cost, not
+  #                             an oversight. script/prerender.ts writes a
+  #                             <script type="application/ld+json"> block into
+  #                             every one of the ~240 static pages, and
+  #                             client/index.html carries three more. CSP
+  #                             treats those as inline scripts even though
+  #                             ld+json is data the parser never executes.
+  #                             Removing 'unsafe-inline' means either a nonce
+  #                             (needs a per-request server; this deploys as
+  #                             static files) or a sha256 hash per block (240
+  #                             hashes, regenerated on every content edit, in a
+  #                             header with a 2000 character ceiling). Neither
+  #                             fits. Note that 'unsafe-inline' here permits
+  #                             inline <script> only; there is no 'unsafe-eval',
+  #                             so eval and new Function stay blocked, and no
+  #                             external script host is allowed, so an injected
+  #                             <script src> still fails.
+  #   style-src                 Tailwind ships a stylesheet, but framer-motion
+  #                             and GSAP animate by writing element.style on
+  #                             every frame, which counts as inline style. The
+  #                             Google Fonts origin serves the @font-face sheet.
+  #   font-src                  the font files themselves come from gstatic.
+  #                             data: covers any inlined face.
+  #   img-src                   own images plus data: (inlined SVG/PNG) and
+  #                             blob: (canvas readback, export.ts downloads).
+  #   connect-src 'self'        /api/* is answered in-page by lib/local-api,
+  #                             and nothing else calls out. Any exfiltration
+  #                             attempt to a third party origin is refused.
+  #   worker-src                the service worker at /sw.js, plus blob: for
+  #                             libraries that construct a worker from source.
+  #   object-src 'none'         no Flash/Java/embed surface at all.
+  #   frame-src 'none'          nothing is embedded; no iframes anywhere.
+  #   frame-ancestors 'none'    nobody may embed this site.
+  #   base-uri 'self'           an injected <base> cannot repoint every
+  #                             relative asset URL at an attacker origin.
+  #   form-action 'self'        an injected form cannot post credentials away.
+  #   upgrade-insecure-requests belt and braces alongside HSTS.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+
+
+# ---------------------------------------------------------------------------
+# Caching. Every pattern below is disjoint from every other one, so no
+# Cache-Control value is ever emitted twice for one request.
+# ---------------------------------------------------------------------------
+
+# Vite writes content-hashed filenames here (index-CV8h2284.js and friends), so
+# the URL changes whenever the bytes do. A year, immutable, never revalidated.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Post covers and OG cards are NOT hashed: the path stays the same when an
+# image is replaced. A week is long enough to help repeat readers and short
+# enough that a swapped cover is not stuck in caches for a year.
+/images/*
+  Cache-Control: public, max-age=604800
+
+# The service worker must never be served stale, or a bad worker keeps itself
+# alive. Browsers already bypass the HTTP cache for the worker script after 24
+# hours, but say it explicitly.
+/sw.js
+  Cache-Control: no-cache, must-revalidate
+
+# HTML documents. These reference hashed asset filenames that disappear on the
+# next deploy, so a cached copy must always be revalidated. Cloudflare Pages
+# already defaults HTML to max-age=0, must-revalidate; these rules make the
+# intent explicit for the routes that exist. A route not listed here still
+# inherits that default, so a new page cannot accidentally become cacheable.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/blog
+  Cache-Control: public, max-age=0, must-revalidate
+
+/blog/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/projects
+  Cache-Control: public, max-age=0, must-revalidate
+
+/contact
+  Cache-Control: public, max-age=0, must-revalidate
+
+/game
+  Cache-Control: public, max-age=0, must-revalidate
+
+/tools
+  Cache-Control: public, max-age=0, must-revalidate
+
+/tools/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/legacy
+  Cache-Control: public, max-age=0, must-revalidate
+
+/legacy/*
+  Cache-Control: public, max-age=0, must-revalidate
