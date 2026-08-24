@@ -12,16 +12,23 @@ export function DashboardShell({
 }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="fixed top-0 left-0 right-0 z-40">
+      {/*
+        Sticky rather than fixed. Fixed meant the page had to reserve the
+        header's height by hand (pt-36 lg:pt-24), and those numbers only
+        matched one particular header layout: as soon as the header wrapped
+        to two rows the first heading went underneath it. In flow, the
+        content starts below the header whatever height it happens to be.
+      */}
+      <div className="sticky top-0 z-40">
         <GameHeader />
       </div>
-      <div className="px-6 pb-10 pt-36 lg:pt-24">
+      <main id="main-content" className="px-6 pb-10 pt-8">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-white">{title}</h1>
           <p className="text-sm text-white/60">{subtitle}</p>
         </div>
         {children}
-      </div>
+      </main>
     </div>
   );
 }

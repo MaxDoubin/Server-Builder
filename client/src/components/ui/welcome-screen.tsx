@@ -123,9 +123,14 @@ export function WelcomeScreen({
               </div>
 
               <div className="space-y-3">
-                <h1 className="font-display text-[clamp(3rem,8vw,6.5rem)] font-medium leading-[0.92] tracking-[-0.05em] text-[hsl(var(--brand-bone))]">
+                {/*
+                  h2, not h1. This gate renders inside the game page, which
+                  already has its own h1 in the briefing above it, so this
+                  gave the document two top-level headings.
+                */}
+                <h2 className="font-display text-[clamp(3rem,8vw,6.5rem)] font-medium leading-[0.92] tracking-[-0.05em] text-[hsl(var(--brand-bone))]">
                   {siteConfig.name}
-                </h1>
+                </h2>
                 <p className="max-w-2xl font-mono-tight text-base text-[hsl(var(--brand-bone-dim))] sm:text-lg">
                   {siteConfig.tagline}
                 </p>

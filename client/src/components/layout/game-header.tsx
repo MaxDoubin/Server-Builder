@@ -56,9 +56,9 @@ export function GameHeader() {
         <div className="flex items-center gap-2">
           <Building2 className="w-6 h-6 text-noc-blue" />
           <div className="hidden sm:flex flex-col leading-none">
-            <h1 className="font-display text-lg font-bold tracking-wider">
+            <span className="font-display text-lg font-bold tracking-wider">
               HYPERSCALE
-            </h1>
+            </span>
             <span className="text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">
               Max Doubin
             </span>
@@ -103,7 +103,17 @@ export function GameHeader() {
         </div>
 
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            aria-label={
+              unacknowledgedCount > 0
+                ? `Notifications, ${unacknowledgedCount} unread`
+                : "Notifications"
+            }
+            data-testid="button-notifications"
+          >
             <Bell className="w-4 h-4" />
             {unacknowledgedCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-noc-red text-[10px] font-bold text-white flex items-center justify-center">
