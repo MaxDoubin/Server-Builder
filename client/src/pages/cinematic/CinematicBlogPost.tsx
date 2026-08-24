@@ -285,7 +285,7 @@ export function CinematicBlogPost() {
               <Link
                 href="/blog"
                 data-testid="link-back-to-blog"
-                className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
               >
                 ← Field notes
               </Link>
@@ -357,7 +357,7 @@ export function CinematicBlogPost() {
                 <span>end of note</span>
                 <Link
                   href="/blog"
-                  className="text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   ← All field notes
                 </Link>

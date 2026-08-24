@@ -107,7 +107,6 @@ export function CinematicHome() {
       sameAs: [
         "https://github.com/MaxFromYT",
         "https://instagram.com/maxdoubin",
-        "https://instagram.com/percussionmax",
       ],
       subjectOf: {
         "@type": "NewsArticle",

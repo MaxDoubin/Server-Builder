@@ -174,10 +174,8 @@ export function CTAAct() {
             <motion.span className="h-px w-8 bg-[hsl(var(--brand-iron))]" animate={{ width: [32, 48, 32] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} />
             <motion.span whileHover={{ color: "hsl(var(--brand-bone))" }}>Top 1% NCL</motion.span>
             <motion.span className="h-px w-8 bg-[hsl(var(--brand-iron))]" animate={{ width: [32, 48, 32] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }} />
-            <motion.a href="https://instagram.com/maxdoubin" target="_blank" rel="noreferrer noopener" whileHover={{ color: "hsl(72 100% 50%)", scale: 1.05 }} data-testid="link-cta-instagram">@maxdoubin</motion.a>
+            <motion.a href="https://instagram.com/maxdoubin" target="_blank" rel="noreferrer noopener" whileHover={{ color: "hsl(72 100% 50%)", scale: 1.05 }} className="inline-flex min-h-[24px] items-center py-1" data-testid="link-cta-instagram">@maxdoubin</motion.a>
             <motion.span className="h-px w-8 bg-[hsl(var(--brand-iron))]" animate={{ width: [32, 48, 32] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }} />
-            <motion.a href="https://instagram.com/percussionmax" target="_blank" rel="noreferrer noopener" whileHover={{ color: "hsl(72 100% 50%)", scale: 1.05 }} data-testid="link-cta-percussionmax">@percussionmax</motion.a>
-            <motion.span className="h-px w-8 bg-[hsl(var(--brand-iron))]" animate={{ width: [32, 48, 32] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
             <PulseGlow color="hsl(72 100% 50%)"><span className="text-[hsl(var(--brand-signal))]"><ScrambleText text="signal · open" scrambleDuration={0.8} /></span></PulseGlow>
           </div>
         </motion.div>

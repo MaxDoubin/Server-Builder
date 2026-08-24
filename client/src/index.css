@@ -315,6 +315,14 @@
   text-decoration: none;
   border-bottom: 1px solid hsl(var(--brand-signal) / 0.4);
   transition: border-color 150ms ease, color 150ms ease;
+  /*
+    Links in the body ran 21px tall, under the 24px minimum for a touch
+    target. Vertical padding on an inline box grows the hit area without
+    contributing to line height, so nothing moves on the page. The
+    reference lists at the foot of each post are the main beneficiary:
+    a column of bare URLs that were fiddly to hit on a phone.
+  */
+  padding-block: 3px;
 }
 
 .cinematic .cinematic-prose a:hover {

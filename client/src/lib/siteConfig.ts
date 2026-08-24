@@ -31,10 +31,6 @@ export const siteConfig = {
       handle: "@maxdoubin",
       url: "https://instagram.com/maxdoubin",
     },
-    percussion: {
-      handle: "@percussionmax",
-      url: "https://instagram.com/percussionmax",
-    },
     github: {
       handle: "MaxFromYT",
       url: "https://github.com/MaxFromYT",

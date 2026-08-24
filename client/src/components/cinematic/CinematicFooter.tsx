@@ -56,7 +56,7 @@ export function CinematicFooter() {
               <motion.a
                 href="mailto:max@maxdoubin.com"
                 data-testid="link-footer-email"
-                className="mt-6 inline-flex items-center gap-3 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
+                className="mt-6 inline-flex min-h-[24px] items-center gap-3 py-1 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
                 whileHover={{ x: 6, color: "hsl(72 100% 50%)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
@@ -92,7 +92,7 @@ export function CinematicFooter() {
                     whileHover={{ x: 8, color: "hsl(var(--brand-bone))" }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <Link href={item.href} className="inline-block hover:text-[hsl(var(--brand-bone))]" data-testid={item.testId}>
+                    <Link href={item.href} className="inline-block py-1 hover:text-[hsl(var(--brand-bone))]" data-testid={item.testId}>
                       {item.label}
                     </Link>
                   </motion.div>
@@ -112,7 +112,6 @@ export function CinematicFooter() {
             {[
               { href: "https://github.com/MaxFromYT/Server-Builder", label: "GitHub · MaxFromYT/Server-Builder", testId: "link-footer-github" },
               { href: "https://instagram.com/maxdoubin", label: "Instagram · @maxdoubin", testId: "link-footer-instagram" },
-              { href: "https://instagram.com/percussionmax", label: "Instagram · @percussionmax", testId: "link-footer-percussionmax" },
               { href: PRESS.url, label: `${PRESS.outlet} · Press feature`, testId: "link-footer-press" },
               { href: "mailto:max@maxdoubin.com", label: "max@maxdoubin.com", testId: "link-footer-email-2" },
             ].map((item) => (
@@ -126,7 +125,7 @@ export function CinematicFooter() {
                       href={item.href}
                       target={item.href.startsWith("http") ? "_blank" : undefined}
                       rel={item.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                      className="inline-block hover:text-[hsl(var(--brand-bone))]"
+                      className="inline-block py-1 hover:text-[hsl(var(--brand-bone))]"
                       data-testid={item.testId}
                     >
                       {item.label}

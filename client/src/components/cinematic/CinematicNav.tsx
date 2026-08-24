@@ -127,7 +127,7 @@ export function CinematicNav() {
             <Magnetic strength={0.2} radius={100}>
               <Link
                 href="/"
-                className="group flex items-center gap-3 text-[hsl(var(--brand-bone))]"
+                className="group flex min-h-[24px] items-center gap-3 py-1 text-[hsl(var(--brand-bone))]"
                 data-testid="link-home-wordmark"
               >
                 <motion.span
