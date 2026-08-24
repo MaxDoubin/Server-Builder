@@ -29,6 +29,27 @@ const SITE_URL = "https://maxdoubin.com";
 export function CinematicBlog() {
   const allPosts = getAllPosts();
   const allTags = getAllTags();
+
+  /**
+   * Tags ranked by how many posts use them.
+   *
+   * The archive carries 55 distinct tags and 24 of them sit on a single
+   * post. Rendering all of them put a wall of pills between the heading and
+   * the first post, which on a phone is most of a screen of scrolling before
+   * any writing appears.
+   */
+  const rankedTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    allPosts.forEach((post) =>
+      post.tags.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)),
+    );
+    return [...allTags].sort(
+      (a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0) || a.localeCompare(b),
+    );
+  }, [allTags, allPosts]);
+
+  const [showAllTags, setShowAllTags] = useState(false);
+  const visibleTags = showAllTags ? rankedTags : rankedTags.slice(0, 14);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -194,7 +215,7 @@ export function CinematicBlog() {
                 )}
                 All
               </motion.button>
-              {allTags.map((tag) => {
+              {visibleTags.map((tag) => {
                 const active = activeTag === tag;
                 return (
                   <motion.button
@@ -219,6 +240,16 @@ export function CinematicBlog() {
                   </motion.button>
                 );
               })}
+              {rankedTags.length > visibleTags.length && (
+                <button
+                  type="button"
+                  data-testid="button-show-all-tags"
+                  onClick={() => setShowAllTags(true)}
+                  className="inline-flex h-9 items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"
+                >
+                  + {rankedTags.length - visibleTags.length} more
+                </button>
+              )}
               <span className="ml-auto font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 <AnimatedGradientText>
                   {filteredPosts.length.toString().padStart(2, "0")} · post
