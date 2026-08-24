@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useGame } from "@/lib/game-context";
+import { ModeSwitcher } from "@/components/ui/mode-switcher";
 import { StatusBar } from "@/components/ui/status-bar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -58,15 +59,14 @@ export function GameHeader() {
       </div>
 
       {/*
-        The mode tabs that used to sit here (Build, Floor, Network, NOC,
-        Incidents, About) navigated to /build, /floor, /network, /noc,
-        /incidents and /about. None of those routes exist, so every one of
-        them landed the player on the 404 page, and nothing in the current
-        game reads the mode they set. They are removed rather than pointed
-        at stub pages. Mode is switched from the Datacenter Command panel,
-        which works.
+        These tabs used to point at /build, /floor, /network, /noc and
+        /incidents with none of those routes defined, so every one landed on
+        the 404 page. The dashboards they were written for existed the whole
+        time; they just had no route. Both halves are connected now.
       */}
-      <div className="flex-1" />
+      <div className="hidden flex-1 justify-center lg:flex">
+        <ModeSwitcher />
+      </div>
 
       <div className="flex items-center gap-4">
         <StatusBar />

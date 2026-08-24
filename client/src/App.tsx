@@ -14,6 +14,8 @@ import { Route, Switch, Router, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { GameProvider } from "@/lib/game-context";
+import { BuildProvider } from "@/lib/build-context";
 import { disposePooledAssets } from "@/lib/asset-pool";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
@@ -109,6 +111,32 @@ const CinematicGame = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicGame").then((module) => ({
     default: module.CinematicGame,
   })),
+);
+
+/**
+ * Operations dashboards.
+ *
+ * These are complete pages (NOC, network, floor, incidents, build) that had
+ * no route. The only way in was a set of game-header tabs pointing at
+ * /noc, /network and friends, none of which the router defined, so every
+ * one of them landed on the 404 page and the dashboards themselves were
+ * unreachable dead code. They are routed now, wrapped in the same
+ * providers the game uses since they read from game state.
+ */
+const NocDashboard = lazyWithRetry(() =>
+  import("@/pages/noc-dashboard").then((m) => ({ default: m.NocDashboard })),
+);
+const NetworkDashboard = lazyWithRetry(() =>
+  import("@/pages/network-dashboard").then((m) => ({ default: m.NetworkDashboard })),
+);
+const FloorDashboard = lazyWithRetry(() =>
+  import("@/pages/floor-dashboard").then((m) => ({ default: m.FloorDashboard })),
+);
+const IncidentsDashboard = lazyWithRetry(() =>
+  import("@/pages/incidents-dashboard").then((m) => ({ default: m.IncidentsDashboard })),
+);
+const BuildDashboard = lazyWithRetry(() =>
+  import("@/pages/build-dashboard").then((m) => ({ default: m.BuildDashboard })),
 );
 
 const CinematicNotFound = lazyWithRetry(() =>
@@ -377,6 +405,17 @@ function scrollToHash() {
   window.setTimeout(tryScroll, 60);
 }
 
+/** Dashboards read live game state, so they need the same providers the game mounts. */
+function OpsRoute({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<GameLoading />}>
+      <GameProvider>
+        <BuildProvider>{children}</BuildProvider>
+      </GameProvider>
+    </Suspense>
+  );
+}
+
 function AnimatedRoutes() {
   const [location] = useLocation();
   useHashScroll();
@@ -434,6 +473,21 @@ function AnimatedRoutes() {
             <Suspense fallback={<GameLoading />}>
               <CinematicGame />
             </Suspense>
+          </Route>
+          <Route path="/noc">
+            <OpsRoute><NocDashboard /></OpsRoute>
+          </Route>
+          <Route path="/network">
+            <OpsRoute><NetworkDashboard /></OpsRoute>
+          </Route>
+          <Route path="/floor">
+            <OpsRoute><FloorDashboard /></OpsRoute>
+          </Route>
+          <Route path="/incidents">
+            <OpsRoute><IncidentsDashboard /></OpsRoute>
+          </Route>
+          <Route path="/build">
+            <OpsRoute><BuildDashboard /></OpsRoute>
           </Route>
           <Route path="/legacy/game">
             <Suspense fallback={<GameLoading />}>
