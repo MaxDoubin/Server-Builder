@@ -88,6 +88,22 @@ export function CinematicHome() {
           name: "Nevada OWINN Youth Advisory Council",
         },
       ],
+      // Topic coverage. Search engines and AI summarisers use knowsAbout to
+      // decide what a person is an authority on, and the blog archive backs
+      // every one of these with published writing.
+      knowsAbout: [
+        "Cybersecurity",
+        "Capture the Flag competition",
+        "Enterprise networking",
+        "Network segmentation and VLANs",
+        "Server infrastructure",
+        "Virtualization",
+        "Storage systems",
+        "Linux systems administration",
+        "Data center operations",
+        "Percussion performance",
+        "Youth technology education",
+      ],
       sameAs: [
         "https://github.com/MaxFromYT",
         "https://instagram.com/maxdoubin",

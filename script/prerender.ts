@@ -294,7 +294,60 @@ ${JSON.stringify({
     canonical: `${SITE_URL}/contact`,
   });
 
+  // ── sitemap ──
+  // Generated here rather than hand-maintained. The checked-in sitemap had
+  // gone stale, listing 105 URLs with a lastmod months behind the newest
+  // post, so anything published since was invisible to crawlers.
+  await writeSitemap(posts);
+
   console.log("Prerender complete.");
+}
+
+/**
+ * Emit sitemap.xml covering every route and every published post.
+ *
+ * lastmod comes from each post's own date, so a crawler can tell what
+ * actually changed instead of re-reading the whole archive.
+ */
+async function writeSitemap(posts: Array<{ slug: string; date: string; draft?: boolean }>) {
+  const live = posts.filter((p) => !p.draft);
+  const newest = live.reduce((a, p) => (p.date > a ? p.date : a), "1970-01-01");
+  const today = newest;
+
+  const urls: Array<{ loc: string; lastmod: string; changefreq: string; priority: string }> = [
+    { loc: `${SITE_URL}/`, lastmod: today, changefreq: "weekly", priority: "1.0" },
+    { loc: `${SITE_URL}/blog`, lastmod: today, changefreq: "daily", priority: "0.9" },
+    { loc: `${SITE_URL}/projects`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/contact`, lastmod: today, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/game`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+  ];
+  for (const post of live) {
+    urls.push({
+      loc: `${SITE_URL}/blog/${post.slug}`,
+      lastmod: post.date,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+
+  const xml =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls
+      .map(
+        (u) =>
+          `  <url>\n` +
+          `    <loc>${u.loc}</loc>\n` +
+          `    <lastmod>${u.lastmod}</lastmod>\n` +
+          `    <changefreq>${u.changefreq}</changefreq>\n` +
+          `    <priority>${u.priority}</priority>\n` +
+          `  </url>`,
+      )
+      .join("\n") +
+    `\n</urlset>\n`;
+
+  await writeFile(path.join(DIST, "sitemap.xml"), xml, "utf8");
+  console.log(`sitemap.xml: ${urls.length} urls`);
 }
 
 main().catch((err) => {
