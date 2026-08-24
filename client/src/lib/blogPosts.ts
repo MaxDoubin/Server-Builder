@@ -188,7 +188,13 @@ authoritative per segment and write it in the network documentation.
     tags: ["networking", "troubleshooting", "operations"],
     excerpt:
       "Ping works, SSH connects, and then a large file transfer hangs forever. That specific pattern almost always means an MTU mismatch somewhere on the path.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/mtu-and-jumbo-frames.jpg",
+    coverCredit: {
+      author: "David Davies",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/44124390461@N01/5339417741",
+    },
     content: `
 ## The Symptom That Gives It Away
 
@@ -288,7 +294,13 @@ Learn the signature. Small works, large hangs. Then go measure the path instead 
     tags: ["servers", "networking", "automation", "homelab"],
     excerpt:
       "PXE looks like magic until you trace it. It is a DHCP conversation, a file transfer, and a second stage loader that does the actual work.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/pxe-network-boot-chain.jpg",
+    coverCredit: {
+      author: "DSmous",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/94436653@N00/275375865",
+    },
     content: `
 ## The chain nobody draws
 
@@ -454,7 +466,13 @@ path that is correct on the server and wrong relative to the TFTP root.
     tags: ["linux", "storage", "operations"],
     excerpt:
       "The server feels slow and the dashboard says the disk is 100 percent utilized. That number probably does not mean what you think it means on modern storage.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/linux-disk-io-troubleshooting.jpg",
+    coverCredit: {
+      author: "TJStamp",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/40246732@N00/6917858944",
+    },
     content: `
 ## Start With the Complaint, Not the Tool
 
@@ -575,7 +593,13 @@ The discipline is the whole trick. Storage problems reward people who measure an
     tags: ["ai", "hardware", "monitoring", "operations"],
     excerpt:
       "A GPU pinned at 100 percent can be doing almost nothing useful. Here is what that counter actually samples, and which numbers tell you the truth.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/gpu-utilization-metrics.jpg",
+    coverCredit: {
+      author: "TJStamp",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/40246732@N00/8526390650",
+    },
     content: `
 ## The counter measures time, not work
 
@@ -713,7 +737,13 @@ questions, and dashboards happily plot them on the same axis.
     tags: ["hardware", "servers", "storage"],
     excerpt:
       "The slot is physically x16 but the card negotiated x4. That is not a fault, it is a lane budget doing exactly what it was configured to do.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/pcie-lanes-explained.jpg",
+    coverCredit: {
+      author: "instaSHINOBI",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/21050065@N06/6114414289",
+    },
     content: `
 ## Lanes Are a Budget, Not a Feature
 
@@ -807,7 +837,13 @@ Lanes are finite and shared. Physical slot size is not electrical width. Generat
     tags: ["ai", "ml", "operations"],
     excerpt:
       "Retrieval augmented generation demos are easy. What makes them work in production is parsing, chunking, hybrid search, and evaluation, none of which are glamorous.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/rag-pipeline-engineering.jpg",
+    coverCredit: {
+      author: "Barta IV",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/98640399@N08/10030588973",
+    },
     content: `
 ## Retrieval Is an Infrastructure Problem
 
@@ -1031,7 +1067,13 @@ Threat modelling has made me a better builder, not just a better defender. Once 
     tags: ["linux", "virtualization", "operations"],
     excerpt:
       "One runaway process should not take down everything else on the box. Control groups are how Linux enforces that, and you can use them without containers.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/cgroups-resource-limits.jpg",
+    coverCredit: {
+      author: "barnoid",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/50359335@N00/410484763",
+    },
     content: `
 ## The Problem With Sharing a Box
 
@@ -1421,7 +1463,13 @@ The credential mistake is the one I would flag hardest. A single key with full a
     tags: ["ai", "networking", "monitoring"],
     excerpt:
       "Machine learning on network telemetry is a reasonable idea with a brutal math problem underneath it. Here is the arithmetic I would run before believing any of it.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/ml-network-anomaly-detection.jpg",
+    coverCredit: {
+      author: "Nicola since 1972",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/15216811@N06/8521338394",
+    },
     content: `
 ## The Pitch and the Catch
 
@@ -1656,7 +1704,13 @@ Once you think of it that way, the diagnostic path is obvious. Find out what sig
     tags: ["hardware", "power", "ai"],
     excerpt:
       "Compute is the easy part to buy. Whether your circuit can carry it and your room can reject the heat is what actually decides what you can run.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/gpu-power-and-cooling.jpg",
+    coverCredit: {
+      author: "nordique",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/28435100@N00/7805224296",
+    },
     content: `
 ## Compute Is Easy to Buy, Watts Are Not
 
@@ -1766,7 +1820,13 @@ Every serious infrastructure environment is constrained by power and cooling lon
     tags: ["security", "automation", "operations"],
     excerpt:
       "Issuing a certificate is the easy part. The failure mode is renewal, and it is almost always discovered by an outage rather than by a dashboard.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/certificate-rotation-automation.jpg",
+    coverCredit: {
+      author: "nevil zaveri (thank you for 20+M views:)",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/43109416@N00/6804963524",
+    },
     content: `
 ## Issuance is a one time problem, renewal is forever
 
@@ -1905,7 +1965,13 @@ request.
     tags: ["ml", "operations", "automation"],
     excerpt:
       "If you already run services, you know most of MLOps. The genuinely new part is that the artifact depends on data, and data is much harder to pin down than code.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/mlops-for-infrastructure-people.jpg",
+    coverCredit: {
+      author: "jurvetson",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/44124348109@N01/5170026234",
+    },
     content: `
 ## The Same Job With Extra State
 
@@ -2029,7 +2095,13 @@ Focus on the parts that are genuinely different: version the data as carefully a
     tags: ["operations", "monitoring", "servers"],
     excerpt:
       "Utilization and latency are not linearly related. A page of queueing arithmetic explains most capacity surprises before they turn into incidents.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/queueing-theory-for-operators.jpg",
+    coverCredit: {
+      author: "qubodup",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/21051491@N02/15239578860",
+    },
     content: `
 ## The curve everyone learns the hard way
 
@@ -3012,7 +3084,13 @@ cores driving it.
     tags: ["networking", "security", "operations"],
     excerpt:
       "HTTP/3 is not HTTP/2 over UDP. Moving streams down into the transport changes what breaks, what your load balancer sees, and what you can log.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/http2-http3-quic.jpg",
+    coverCredit: {
+      author: "dvanzuijlekom",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/52365139@N05/9276064862",
+    },
     content: `
 ## What HTTP/2 fixed, and what it could not
 
@@ -3140,7 +3218,13 @@ only honest measure of whether the deployment worked.
     tags: ["automation", "operations", "linux", "tools"],
     excerpt:
       "Running the same playbook twice should change nothing the second time. That is a claim about the code you wrote, not a feature you get from the tool.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/config-drift-and-idempotence.jpg",
+    coverCredit: {
+      author: "DSmous",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/94436653@N00/275375865",
+    },
     content: `
 ## The definition people skip past
 
@@ -3421,7 +3505,13 @@ Neither is true, and the fixes for them live in different layers entirely.
     tags: ["ai", "ml", "learning"],
     excerpt:
       "Byte pair encoding decides how much of a document fits in a context window. Understanding it turns a mysterious limit into arithmetic you can do in advance.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/tokenizers-and-context-budget.jpg",
+    coverCredit: {
+      author: "Elliot Moore",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/24318458@N00/366179545",
+    },
     content: `
 ## A token is a byte sequence
 
@@ -3569,7 +3659,13 @@ between them is worth thinking about before somebody else does.
     tags: ["ai", "storage", "security", "operations"],
     excerpt:
       "A model file is a large binary you downloaded from the internet and load into a process with hardware access. Treat it like every other supply chain input.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/model-weights-are-artifacts.jpg",
+    coverCredit: {
+      author: "Jaymis",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/49048289@N00/3190462946",
+    },
     content: `
 ## Start by naming what it is
 
@@ -4447,7 +4543,13 @@ You just have to know which file to read.
     tags: ["networking", "linux", "operations"],
     excerpt:
       "Stub, forwarder, recursive: three different jobs people all call a DNS server. Here is the walk down the tree, the caching rules, and how to watch it happen.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/recursive-resolver-internals.jpg",
+    coverCredit: {
+      author: "comedy_nose",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://www.flickr.com/photos/23408922@N07/4150503612",
+    },
     content: `
 ## Three Different Things Called A DNS Server
 
@@ -5606,7 +5708,13 @@ Then set a reminder to revisit it every few months. Networks accumulate. The mod
     tags: ["automation", "operations", "linux"],
     excerpt:
       "If running your automation twice does something different from running it once, you do not have automation, you have a script with good marketing.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/idempotence-and-config-drift.jpg",
+    coverCredit: {
+      author: "Double--M",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/49879584@N00/4619270851",
+    },
     content: `
 ## Drift Is What Happens Between Deploys
 
@@ -6043,7 +6151,13 @@ The constraint just happens to be memory holding attention state rather than con
     tags: ["ai", "ml", "storage", "operations"],
     excerpt:
       "A vector is only meaningful inside the model that produced it. That single fact dictates the entire operational story of running a retrieval system over time.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/embedding-changes-and-reindexing.jpg",
+    coverCredit: {
+      author: "bookfinch",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/53585158@N00/4175023689",
+    },
     content: `
 ## A Vector Only Means Something Inside One Model
 
@@ -6777,7 +6891,13 @@ being surprised by it.
     tags: ["networking", "operations", "linux"],
     excerpt:
       "You created the record, the authoritative server answers correctly, and clients still get NXDOMAIN. The answer lives in RFC 2308 and the SOA record.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/dns-negative-caching.jpg",
+    coverCredit: {
+      author: "hdaniel",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/43779660@N00/390634588",
+    },
     content: `
 ## The Failure That Looks Like Broken Caching
 
@@ -7363,7 +7483,13 @@ made sense.
     tags: ["ai", "operations", "tools"],
     excerpt:
       "The cheapest inference is the one you never run. What belongs in the cache key, why semantic caching is riskier than it looks, and how to avoid stampedes.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/caching-model-endpoint.jpg",
+    coverCredit: {
+      author: "dfulmer",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/28376044@N00/4350629792",
+    },
     content: `
 ## The Cheapest Inference Is The One You Skip
 
@@ -7828,7 +7954,13 @@ start.
     tags: ["ai", "hardware", "linux"],
     excerpt:
       "A CPU can run a model perfectly well if the build uses the vector units you actually have. How SIMD, fused multiply-add, and thread placement decide the result.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/cpu-inference-simd.jpg",
+    coverCredit: {
+      author: "shokai",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/51753258@N00/7222512264",
+    },
     content: `
 ## A CPU Is Not A Bad Matrix Machine
 
@@ -10316,7 +10448,13 @@ is so you can constrain what you handed out.
     tags: ["career", "learning", "cybersecurity"],
     excerpt:
       "A club with a wide skill range is an operations problem before it is a teaching problem. How I structure meetings, lab infrastructure, and competition prep.",
-    coverImage: "/images/blog-cover-default.png",
+    coverImage: "/images/blog/running-a-cyber-club.jpg",
+    coverCredit: {
+      author: "flickingerbrad",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/56155476@N08/6660076003",
+    },
     content: `
 ## A Club Is An Operations Problem
 
