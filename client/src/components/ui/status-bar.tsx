@@ -40,7 +40,14 @@ export function StatusBar() {
 
   const resolvedMetrics = {
     itLoad: facilityMetrics.itLoad || derivedMetrics.itLoad,
-    pue: facilityMetrics.pue || derivedMetrics.pue,
+    // A PUE of 1.0 means zero overhead for cooling and distribution, which
+    // is not physically achievable. The seeded default is exactly 1, and it
+    // is truthy, so `||` never reached the derived value and both readouts
+    // showed PUE 1.00.
+    pue:
+      facilityMetrics.pue && facilityMetrics.pue > 1
+        ? facilityMetrics.pue
+        : derivedMetrics.pue,
     uptime: facilityMetrics.uptime || derivedMetrics.uptime,
     serverCount: facilityMetrics.serverCount || derivedMetrics.serverCount,
     storageCapacity:

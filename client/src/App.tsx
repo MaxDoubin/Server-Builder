@@ -311,8 +311,75 @@ export default function App() {
  * A page transition is decoration; it must never be the thing that decides
  * whether the site is visible.
  */
+/**
+ * Scroll to an in-page anchor after a client-side navigation.
+ *
+ * The nav links to "/#dossier". A fresh page load honours that, but wouter
+ * pushes history without scrolling, so clicking Dossier from the site
+ * changed the URL and left the reader at the top of an 8000px page with no
+ * indication anything had happened.
+ *
+ * The target is inside a lazily loaded act behind a pinned scroll scene, so
+ * it may not exist yet when the click lands. Poll briefly for it, then give
+ * up rather than scrolling somewhere arbitrary.
+ */
+function useHashScroll() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    scrollToHash();
+  }, [location]);
+
+  // wouter pushes history without firing hashchange, and a same-page hash
+  // link does not change the path either, so neither the router nor the
+  // browser tells us anything. Watch the URL directly.
+  useEffect(() => {
+    let last = window.location.hash;
+    const check = () => {
+      if (window.location.hash !== last) {
+        last = window.location.hash;
+        scrollToHash();
+      }
+    };
+    const id = window.setInterval(check, 120);
+    window.addEventListener("hashchange", check);
+    window.addEventListener("popstate", check);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("hashchange", check);
+      window.removeEventListener("popstate", check);
+    };
+  }, []);
+}
+
+function scrollToHash() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return;
+
+  let attempts = 0;
+  const tryScroll = () => {
+    const el = document.getElementById(hash);
+    if (el) {
+      const reduced = window.matchMedia?.(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      el.scrollIntoView({
+        behavior: reduced ? "auto" : "smooth",
+        block: "start",
+      });
+      return;
+    }
+    // The target can sit inside a lazily loaded act, so wait for it rather
+    // than giving up on the first miss. Four seconds, then stop, instead of
+    // scrolling somewhere arbitrary.
+    if (attempts++ < 40) window.setTimeout(tryScroll, 100);
+  };
+  window.setTimeout(tryScroll, 60);
+}
+
 function AnimatedRoutes() {
   const [location] = useLocation();
+  useHashScroll();
 
   return (
     <div key={location} className="route-fade">

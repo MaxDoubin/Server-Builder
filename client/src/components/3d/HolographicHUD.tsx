@@ -81,11 +81,18 @@ export function HolographicHUD({ position, visible = true }: HolographicHUDProps
           <div className="grid grid-cols-3 gap-4 mb-4">
             <MetricCard label="TOTAL POWER" value={`${(totalPower / 1000).toFixed(1)} kW`} color="cyan" />
             <MetricCard label="AVG TEMP" value={`${avgTemp.toFixed(1)}°C`} color={avgTemp > 35 ? "orange" : "green"} />
-            <MetricCard label="UPTIME" value={`${facilityMetrics?.uptime?.toFixed(2) || 99.99}%`} color="green" />
+            {/*
+              Guard the number, not the formatted string. facilityMetrics
+              initialises uptime to 0 and is never recomputed, and
+              (0).toFixed(2) is the truthy string "0.00", so the fallback
+              after `||` could never run and the HUD read UPTIME 0.00% while
+              the header beside it read 99.9%.
+            */}
+            <MetricCard label="UPTIME" value={`${(facilityMetrics?.uptime || 99.99).toFixed(2)}%`} color="green" />
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <MetricCard label="PUE" value={facilityMetrics?.pue?.toFixed(2) || "1.20"} color="cyan" />
+            <MetricCard label="PUE" value={(facilityMetrics?.pue && facilityMetrics.pue > 1 ? facilityMetrics.pue : 1.2).toFixed(2)} color="cyan" />
             <MetricCard label="RACKS ONLINE" value={`${racks?.length || 0}`} color="cyan" />
           </div>
 

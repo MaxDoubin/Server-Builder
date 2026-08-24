@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Instances, Instance } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -92,9 +92,14 @@ function DriveBay({ position, hasActivity }: { position: [number, number, number
 export function EquipmentMesh({ equipment, installed, position, rackWidth, rackDepth, uHeight }: EquipmentMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
 
-  // Force re-render when installed equipment data changes (like ID or status)
+  // Re-render when the installed equipment identity or status changes.
+  //
+  // This previously called forceUpdate inside useMemo, which sets state
+  // during render. It also referenced useState without importing it, so the
+  // whole legacy game route threw "useState is not defined" and rendered no
+  // scene at all.
   const [, forceUpdate] = useState({});
-  useMemo(() => {
+  useEffect(() => {
     forceUpdate({});
   }, [installed.id, installed.status]);
 

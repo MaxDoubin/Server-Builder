@@ -5,6 +5,7 @@ type Theme = "dark" | "light";
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
   fontScale: number;
   setFontScale: (scale: number) => void;
   highContrast: boolean;
@@ -75,6 +76,10 @@ export function ThemeProvider({
     () => ({
       theme,
       toggleTheme,
+      // The legacy navbar picks a theme directly rather than toggling. It
+      // was destructuring setTheme from here, which was undefined, so every
+      // click threw and the theme never changed.
+      setTheme,
       fontScale,
       setFontScale,
       highContrast,

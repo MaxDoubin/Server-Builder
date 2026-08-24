@@ -1,9 +1,10 @@
+import { Link } from "wouter";
 import { useGame } from "@/lib/game-context";
 import { StatusBar } from "@/components/ui/status-bar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, DollarSign, Star, Building2 } from "lucide-react";
+import { ArrowLeft, Bell, DollarSign, Star, Building2 } from "lucide-react";
 
 const tierLabels = {
   garage: null,
@@ -20,6 +21,21 @@ export function GameHeader() {
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center justify-between px-4 gap-4" data-testid="game-header">
       <div className="flex items-center gap-4">
+        {/*
+          The only route out of the game. Once the briefing unmounts, its
+          "back to portfolio" link goes with it, and every other control in
+          here is a game control, so a player who entered Build had no way
+          back to the site short of the browser button.
+        */}
+        <Link
+          href="/"
+          data-testid="link-game-exit"
+          aria-label="Back to the profile"
+          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-noc-blue hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-noc-blue"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Portfolio</span>
+        </Link>
         <div className="flex items-center gap-2">
           <Building2 className="w-6 h-6 text-noc-blue" />
           <div className="hidden sm:flex flex-col leading-none">
