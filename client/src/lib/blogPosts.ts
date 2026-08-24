@@ -36,7 +36,13 @@ export const blogPosts: BlogPost[] = [
     tags: ["three.js", "react", "simulation", "servers"],
     excerpt:
       "How I built an immersive 3D datacenter simulation with procedural generation, real-time thermal modeling, and React Three Fiber.",
-    coverImage: "/images/blog-building-hyperscale.png",
+    coverImage: "/images/blog/building-hyperscale.jpg",
+    coverCredit: {
+      author: "DOE / National Renewable Energy Laboratory (NREL)",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Data_center_infrastructure_in_the_United_States.jpg",
+    },
     content: `
 ## Why I Built This
 
@@ -92,7 +98,13 @@ Building this project taught me a lot about the relationship between software an
     tags: ["networking", "homelab", "servers"],
     excerpt:
       "How running real enterprise hardware at home changed the way I learn about networking, systems, and troubleshooting.",
-    coverImage: "/images/blog-why-homelabs-matter.png",
+    coverImage: "/images/blog/why-homelabs-matter.jpg",
+    coverCredit: {
+      author: "Alan Levine",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg",
+    },
     content: `
 ## Beyond the Textbook
 
@@ -129,7 +141,13 @@ These habits carry directly into professional environments. The difference betwe
     tags: ["cybersecurity", "competition", "networking"],
     excerpt:
       "What I learned from reaching the top 1 percent in competitive cybersecurity, and why the process matters more than the ranking.",
-    coverImage: "/images/blog-ncl-competition-lessons.png",
+    coverImage: "/images/blog/ncl-competition-lessons.jpg",
+    coverCredit: {
+      author: "U.S. Air Force photo by Tech. Sgt. Robert Biermann",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Units_compete_in_NAF-wide_cyber_competition_(5470557).jpg",
+    },
     content: `
 ## What NCL Actually Tests
 
@@ -165,7 +183,13 @@ Those habits translate directly to real-world troubleshooting. When a network go
     tags: ["apple", "mac-pro", "servers", "homelab"],
     excerpt:
       "Why I added a rack-mount Mac Pro to my server infrastructure and what it actually brings to the table alongside Dell PowerEdge systems.",
-    coverImage: "/images/blog-mac-pro-rack-mount-homelab.png",
+    coverImage: "/images/blog/mac-pro-rack-mount-homelab.jpg",
+    coverCredit: {
+      author: "Gavin Lckg",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_2019_on_wheels.jpg",
+    },
     content: `
 ## Why a Mac Pro in a Server Rack
 
@@ -199,7 +223,13 @@ But for specific use cases, the rack-mount Mac Pro is hard to beat. It is the be
     tags: ["dell", "servers", "homelab", "hardware"],
     excerpt:
       "A deep dive into the PowerEdge R740 and why it is still one of the best platforms for a serious home lab environment.",
-    coverImage: "/images/blog-dell-poweredge-r740-deep-dive.png",
+    coverImage: "/images/blog/dell-poweredge-r740-deep-dive.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg",
+    },
     content: `
 ## Why the R740
 
@@ -235,7 +265,13 @@ Used R740s are available from resellers and auction sites. Prices vary a lot bas
     tags: ["apple", "servers", "hardware", "mac-pro"],
     excerpt:
       "Apple Silicon changed the laptop game. Here is why it probably will not replace x86 in datacenters any time soon, and what would need to change.",
-    coverImage: "/images/blog-apple-silicon-server-future.png",
+    coverImage: "/images/blog/apple-silicon-server-future.jpg",
+    coverCredit: {
+      author: "Sonic8400",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_M1_-_APL1102_-_IHS_removed.jpg",
+    },
     content: `
 ## The Performance Argument
 
@@ -271,7 +307,13 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     tags: ["storage", "zfs", "servers", "homelab"],
     excerpt:
       "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
-    coverImage: "/images/blog-zfs-on-enterprise-hardware.png",
+    coverImage: "/images/blog/zfs-on-enterprise-hardware.jpg",
+    coverCredit: {
+      author: "Markus Then",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:ZFS_hardware_storage_29.jpg",
+    },
     content: `
 ## Why ZFS
 
@@ -314,7 +356,13 @@ ZFS rewards careful planning. Choose your pool layout thoughtfully because chang
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "How I moved from gigabit to 10 gigabit Ethernet across my lab and what actually changed in practice.",
-    coverImage: "/images/blog-10gbe-networking-homelab.png",
+    coverImage: "/images/blog/10gbe-networking-homelab.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Intel_X540-T2.jpg",
+    },
     content: `
 ## Why 10GbE
 
@@ -350,7 +398,13 @@ Backup windows also shrank significantly. A full backup that took 45 minutes ove
     tags: ["servers", "hardware", "networking"],
     excerpt:
       "Why out-of-band management is essential for running servers, and how IPMI and iDRAC actually work under the hood.",
-    coverImage: "/images/blog-ipmi-remote-management.png",
+    coverImage: "/images/blog/ipmi-remote-management.jpg",
+    coverCredit: {
+      author: "Phiarc",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:ASPEED_AST2400_BMC_Baseboard_management_controller.jpg",
+    },
     content: `
 ## What Is Out-of-Band Management
 
@@ -395,7 +449,13 @@ Change the default password immediately. Enable HTTPS and disable HTTP. Keep the
     tags: ["servers", "homelab", "hardware"],
     excerpt:
       "Good cable management is not about aesthetics. It is about airflow, troubleshooting speed, and not hating yourself six months from now.",
-    coverImage: "/images/blog-server-rack-cable-management.png",
+    coverImage: "/images/blog/server-rack-cable-management.jpg",
+    coverCredit: {
+      author: "ShakataGaNai",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cable_Management_Dell_1950.jpg",
+    },
     content: `
 ## Why It Matters
 
@@ -433,7 +493,13 @@ Power cables get their own vertical cable manager on the right side of the rack.
     tags: ["virtualization", "servers", "homelab"],
     excerpt:
       "I have run both Proxmox and VMware ESXi in my lab. Here is how they compare for real workloads.",
-    coverImage: "/images/blog-proxmox-vs-esxi.png",
+    coverImage: "/images/blog/proxmox-vs-esxi.jpg",
+    coverCredit: {
+      author: "Proxmox Server Solutions GmbH",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Proxmox-VE-8-0-Cluster-Summary.png",
+    },
     content: `
 ## The Two Contenders
 
@@ -473,7 +539,13 @@ For a homelab, Proxmox wins on value. You get enterprise-class virtualization wi
     tags: ["hardware", "servers", "storage"],
     excerpt:
       "A practical explanation of ECC memory, why it matters for servers, and when you actually need it.",
-    coverImage: "/images/blog-ecc-ram-explained.png",
+    coverImage: "/images/blog/ecc-ram-explained.jpg",
+    coverCredit: {
+      author: "Mister rf",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:MT36JSF1G72PZ-1G9K1HE.jpg",
+    },
     content: `
 ## What ECC Does
 
@@ -507,7 +579,13 @@ For a homelab, ECC is a strong recommendation but not an absolute requirement. I
     tags: ["apple", "mac-pro", "dell", "servers"],
     excerpt:
       "Two very different approaches to rack-mount hardware. Here is how the Mac Pro and PowerEdge compare for real workloads.",
-    coverImage: "/images/blog-mac-pro-vs-poweredge-comparison.png",
+    coverImage: "/images/blog/mac-pro-vs-poweredge-comparison.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg",
+    },
     content: `
 ## Different Tools for Different Jobs
 
@@ -551,7 +629,13 @@ Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific 
     tags: ["hardware", "servers", "homelab", "power"],
     excerpt:
       "A practical guide to choosing the right UPS for your servers, including how to calculate your actual power needs.",
-    coverImage: "/images/blog-ups-sizing-homelab.png",
+    coverImage: "/images/blog/ups-sizing-homelab.jpg",
+    coverCredit: {
+      author: "MiNe",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:APC_BR700G-TW_20140114.jpg",
+    },
     content: `
 ## Why You Need a UPS
 
@@ -596,7 +680,13 @@ The total cost was significant, but it has already saved my data at least three 
     tags: ["networking", "security", "homelab"],
     excerpt:
       "How I use VLANs to segment my home network into isolated zones for security, performance, and sanity.",
-    coverImage: "/images/blog-vlan-segmentation-guide.png",
+    coverImage: "/images/blog/vlan-segmentation-guide.jpg",
+    coverCredit: {
+      author: "X-Javier",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_4506-E_Switch_001.jpg",
+    },
     content: `
 ## What VLANs Actually Do
 
@@ -639,7 +729,13 @@ It takes some effort to set up, but once it is running, you have a network that 
     tags: ["networking", "security", "homelab", "fortinet"],
     excerpt:
       "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
-    coverImage: "/images/blog-fortigate-firewall-homelab.png",
+    coverImage: "/images/blog/fortigate-firewall-homelab.jpg",
+    coverCredit: {
+      author: "Premeditated",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png",
+    },
     content: `
 ## Why Fortinet
 
@@ -687,7 +783,13 @@ The IPS features have also caught real threats. Even in a homelab, there is scan
     tags: ["hardware", "servers", "apple"],
     excerpt:
       "A guide to picking the right processor for your server workload, covering Intel Xeon, AMD EPYC, and Apple's approach.",
-    coverImage: "/images/blog-server-cpu-selection-guide.png",
+    coverImage: "/images/blog/server-cpu-selection-guide.jpg",
+    coverCredit: {
+      author: "Sonic84alpha",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Xeon_Beckton_with_and_without_heat_spreader.jpg",
+    },
     content: `
 ## Intel Xeon
 
@@ -733,7 +835,13 @@ Pick your CPU based on your actual workload:
     tags: ["servers", "datacenter", "hardware"],
     excerpt:
       "The principles behind datacenter cooling and how I apply hot/cold aisle concepts even in a homelab environment.",
-    coverImage: "/images/blog-hot-cold-aisle-containment.png",
+    coverImage: "/images/blog/hot-cold-aisle-containment.jpg",
+    coverCredit: {
+      author: "Hugovanmeijeren",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cern_datacenter.jpg",
+    },
     content: `
 ## The Problem
 
@@ -771,7 +879,13 @@ Airflow management is not optional for servers. Hot air recirculation causes the
     tags: ["hardware", "servers", "power", "homelab"],
     excerpt:
       "A guide to power distribution units for server racks, from basic power strips to intelligent metered PDUs.",
-    coverImage: "/images/blog-pdu-selection-guide.png",
+    coverImage: "/images/blog/pdu-selection-guide.jpg",
+    coverCredit: {
+      author: "Tobias Maier",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:1U_19inch_rack_switching_panel_8_C13_plugs_8_Switches_1_Fuse.jpg",
+    },
     content: `
 ## What Is a PDU
 
@@ -811,7 +925,13 @@ I currently run on 120V because that is what my circuit supports, but if I expan
     tags: ["networking", "cybersecurity", "tools"],
     excerpt:
       "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
-    coverImage: "/images/blog-wireshark-packet-analysis.png",
+    coverImage: "/images/blog/wireshark-packet-analysis.jpg",
+    coverCredit: {
+      author: "Laurachappell",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wireshark_Network_Analyzer_Screen.png",
+    },
     content: `
 ## More Than a Packet Viewer
 
@@ -865,7 +985,13 @@ The best way to get good at packet analysis is to capture your own traffic and s
     tags: ["cybersecurity", "networking", "tools"],
     excerpt:
       "How I use Nmap for network discovery and security assessment, with practical examples from my lab environment.",
-    coverImage: "/images/blog-nmap-scanning-techniques.png",
+    coverImage: "/images/blog/nmap-scanning-techniques.jpg",
+    coverCredit: {
+      author: "Barnacl437",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Kali-screenshot-20221021.png",
+    },
     content: `
 ## What Nmap Does
 
@@ -965,7 +1091,13 @@ For datacenter use where density matters, the Mac Pro loses. For a lab or studio
     tags: ["cybersecurity", "linux", "servers"],
     excerpt:
       "The fundamental security configurations I apply to every Linux server in my lab, and why each one matters.",
-    coverImage: "/images/blog-linux-server-hardening.png",
+    coverImage: "/images/blog/linux-server-hardening.jpg",
+    coverCredit: {
+      author: "jaydeep_",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cybersecurity.png",
+    },
     content: `
 ## Start with Updates
 
@@ -1026,7 +1158,13 @@ These are basics, but basics done consistently are more valuable than advanced t
     tags: ["servers", "networking", "windows"],
     excerpt:
       "How I set up a full Active Directory domain in my lab to practice enterprise identity management.",
-    coverImage: "/images/blog-active-directory-homelab.png",
+    coverImage: "/images/blog/active-directory-homelab.jpg",
+    coverCredit: {
+      author: "Alan Levine",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg",
+    },
     content: `
 ## Why Active Directory
 
@@ -1072,7 +1210,13 @@ Understanding the attacks makes me better at configuring the defenses.
     tags: ["networking", "hardware"],
     excerpt:
       "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
-    coverImage: "/images/blog-sfp-transceivers-explained.png",
+    coverImage: "/images/blog/sfp-transceivers-explained.jpg",
+    coverCredit: {
+      author: "Aur\u00e9lien Rinaldi",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Modules_SFP_officiels_et_compatibles.jpg",
+    },
     content: `
 ## What Transceivers Do
 
@@ -1116,7 +1260,13 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
     tags: ["storage", "servers", "homelab"],
     excerpt:
       "A practical guide to implementing a real backup strategy using the 3-2-1 rule with enterprise hardware.",
-    coverImage: "/images/blog-backup-strategy-321-rule.png",
+    coverImage: "/images/blog/backup-strategy-321-rule.jpg",
+    coverCredit: {
+      author: "Armchair",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Typical_External_Hard_Drive.JPG",
+    },
     content: `
 ## The Rule
 
@@ -1152,7 +1302,13 @@ All of this is automated. Backups run on schedules, retention policies are enfor
     tags: ["networking", "tools", "homelab"],
     excerpt:
       "A practical look at the monitoring tools running in my homelab and what each one tells me about my network.",
-    coverImage: "/images/blog-network-monitoring-tools.png",
+    coverImage: "/images/blog/network-monitoring-tools.jpg",
+    coverCredit: {
+      author: "Masdestructive",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Batelco_Network_Operations_Centre_(NOC).JPG",
+    },
     content: `
 ## Why Monitor
 
@@ -1190,7 +1346,13 @@ My main Grafana dashboard shows a high-level view of the entire lab: all servers
     tags: ["apple", "networking", "hardware"],
     excerpt:
       "How Thunderbolt networking works, where it fits, and why it is both brilliant and frustrating for mixed environments.",
-    coverImage: "/images/blog-thunderbolt-networking.png",
+    coverImage: "/images/blog/thunderbolt-networking.jpg",
+    coverCredit: {
+      author: "Macfan97",
+      license: "CC BY 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:ThunderboltIO.jpg",
+    },
     content: `
 ## What Thunderbolt Networking Is
 
@@ -1224,7 +1386,13 @@ The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE 
     tags: ["networking", "cisco", "homelab"],
     excerpt:
       "The core switching concepts I learned on Cisco hardware and use every day in my lab environment.",
-    coverImage: "/images/blog-cisco-switching-fundamentals.png",
+    coverImage: "/images/blog/cisco-switching-fundamentals.jpg",
+    coverCredit: {
+      author: "Jemimus",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_2950_network_switches_in_situ_-_IMG_1076.jpg",
+    },
     content: `
 ## Why Cisco
 
@@ -1277,7 +1445,13 @@ One of the most common mistakes on Cisco switches is forgetting to save the conf
     tags: ["dell", "servers", "hardware"],
     excerpt:
       "Advanced iDRAC features that most people overlook, from virtual console to automated alerts and firmware management.",
-    coverImage: "/images/blog-dell-idrac-tips-tricks.png",
+    coverImage: "/images/blog/dell-idrac-tips-tricks.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg",
+    },
     content: `
 ## Beyond the Basics
 
@@ -1329,7 +1503,13 @@ This is how I configure iDRAC on new servers. Run the script, and every setting 
     tags: ["apple", "mac-pro", "storage", "hardware"],
     excerpt:
       "The options for adding storage to a Mac Pro, from internal NVMe to Thunderbolt expansion and network-attached storage.",
-    coverImage: "/images/blog-mac-pro-storage-expansion.png",
+    coverImage: "/images/blog/mac-pro-storage-expansion.jpg",
+    coverCredit: {
+      author: "mark sebastian",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Mac_Pro_Two_2.8GHz_Quad-Core_Intel_Xeon_(59695).jpg",
+    },
     content: `
 ## The Challenge
 
@@ -1369,7 +1549,13 @@ My storage hierarchy mirrors what you would see in a professional post-productio
     tags: ["networking", "homelab"],
     excerpt:
       "How I think about subnetting in practice, with real examples from my network instead of textbook exercises.",
-    coverImage: "/images/blog-subnetting-practical-guide.png",
+    coverImage: "/images/blog/subnetting-practical-guide.jpg",
+    coverCredit: {
+      author: "Michel Bakni",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Subnetting_Example_(3)_-en.png",
+    },
     content: `
 ## Why Subnetting Matters
 
@@ -1416,7 +1602,13 @@ The second most common mistake is forgetting the gateway. Every subnet needs a g
     tags: ["servers", "hardware", "performance"],
     excerpt:
       "The BIOS settings I configure on every server and why each one makes a difference for performance and reliability.",
-    coverImage: "/images/blog-server-bios-configuration.png",
+    coverImage: "/images/blog/server-bios-configuration.jpg",
+    coverCredit: {
+      author: "Paul Schultz from Kenmore, Washington, USA",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:BIOS_Setup_First_Time.jpg",
+    },
     content: `
 ## Why BIOS Settings Matter
 
@@ -1458,7 +1650,13 @@ Keep the BIOS firmware updated. Dell releases BIOS updates that fix bugs, improv
     tags: ["networking", "servers", "homelab"],
     excerpt:
       "Why DNS is the most critical piece of network infrastructure and how I run it in my lab.",
-    coverImage: "/images/blog-dns-fundamentals-infrastructure.png",
+    coverImage: "/images/blog/dns-fundamentals-infrastructure.jpg",
+    coverCredit: {
+      author: "Bas van Schaik",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Ams-ix.k.root-servers.net.jpg",
+    },
     content: `
 ## DNS Is Everything
 
@@ -1503,7 +1701,13 @@ Always test from the perspective of the client that is having the problem. DNS i
     tags: ["apple", "servers", "hardware", "history"],
     excerpt:
       "Apple used to make rack-mount servers. Here is why the Xserve mattered, why Apple killed it, and what it means for the Mac Pro.",
-    coverImage: "/images/blog-xserve-apple-server-legacy.png",
+    coverImage: "/images/blog/xserve-apple-server-legacy.jpg",
+    coverCredit: {
+      author: "htomari",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg",
+    },
     content: `
 ## What Was the Xserve
 
@@ -1539,7 +1743,13 @@ The Xserve was ahead of its time in build quality and design. But it was in a ma
     tags: ["storage", "servers", "hardware"],
     excerpt:
       "A practical comparison of RAID levels with real performance and reliability tradeoffs from my lab experience.",
-    coverImage: "/images/blog-raid-levels-comparison.png",
+    coverImage: "/images/blog/raid-levels-comparison.jpg",
+    coverCredit: {
+      author: "Mixabest",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:FSC_Primergy_TX200_S2_0012.JPG",
+    },
     content: `
 ## What RAID Does
 
@@ -1581,7 +1791,13 @@ I use ZFS RAIDZ2 (which is conceptually similar to RAID 6) for my bulk storage a
     tags: ["networking", "automation", "tools"],
     excerpt:
       "How I use Python to automate repetitive network configuration and monitoring tasks in my lab.",
-    coverImage: "/images/blog-python-network-automation.png",
+    coverImage: "/images/blog/python-network-automation.jpg",
+    coverCredit: {
+      author: "9002Jack",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Python_sul_Terminale.jpg",
+    },
     content: `
 ## Why Automate
 
@@ -1656,7 +1872,13 @@ Each script is simple, focused, and reliable. They save me hours of manual check
     tags: ["servers", "hardware", "homelab"],
     excerpt:
       "How I planned and organized my server rack, from choosing the right size to power distribution and cooling.",
-    coverImage: "/images/blog-server-rack-planning.png",
+    coverImage: "/images/blog/server-rack-planning.jpg",
+    coverCredit: {
+      author: "Derrick Coetzee from Berkeley, CA, USA",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:UPS_Power_Management_Module,_racks_with_network_cabling_in_NERSC_data_center.jpg",
+    },
     content: `
 ## Choosing a Rack
 
@@ -1707,7 +1929,13 @@ Buy more rack than you think you need. Label everything during installation, not
     tags: ["networking", "cisco", "troubleshooting"],
     excerpt:
       "Real STP problems I have encountered and how I diagnosed them using show commands and packet captures.",
-    coverImage: "/images/blog-stp-troubleshooting.png",
+    coverImage: "/images/blog/stp-troubleshooting.jpg",
+    coverCredit: {
+      author: "The original uploader was J.smith at English Wikipedia .",
+      license: "CC BY-SA 2.5",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.5",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Switch-and-nest.jpg",
+    },
     content: `
 ## STP Is Everywhere
 
@@ -1758,7 +1986,13 @@ These two features together prevent most common STP issues on access ports.
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "What Apple's Afterburner accelerator card does, how it works, and why hardware-accelerated ProRes decoding matters.",
-    coverImage: "/images/blog-mac-pro-afterburner-card.png",
+    coverImage: "/images/blog/mac-pro-afterburner-card.jpg",
+    coverCredit: {
+      author: "Gavin Lckg",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_2019_on_wheels.jpg",
+    },
     content: `
 ## What Afterburner Does
 
@@ -1794,7 +2028,13 @@ Afterburner is a good example of how hardware acceleration can transform specifi
     tags: ["security", "networking", "fortinet"],
     excerpt:
       "How I approach firewall policy design, with practical examples from my FortiGate configuration.",
-    coverImage: "/images/blog-firewall-policy-design.png",
+    coverImage: "/images/blog/firewall-policy-design.jpg",
+    coverCredit: {
+      author: "ShakataGaNai",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_ASA_5510.jpg",
+    },
     content: `
 ## The Principle of Least Privilege
 
@@ -1847,7 +2087,13 @@ Firewall policies are not set-and-forget. I review my policies monthly to remove
     tags: ["networking", "virtualization", "servers"],
     excerpt:
       "How virtual switches, port groups, and VLAN tagging work inside hypervisors, and how they connect to physical networks.",
-    coverImage: "/images/blog-virtualization-networking-concepts.png",
+    coverImage: "/images/blog/virtualization-networking-concepts.jpg",
+    coverCredit: {
+      author: "Primalmotion",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Diagramme_ArchiHyperviseur.png",
+    },
     content: `
 ## Virtual Switches
 
@@ -1883,7 +2129,13 @@ I use SR-IOV for my NFS storage VMs that need maximum throughput, and standard v
     tags: ["cybersecurity", "tools", "servers"],
     excerpt:
       "My methodology for analyzing logs to find problems, with examples from real troubleshooting sessions.",
-    coverImage: "/images/blog-log-analysis-methodology.png",
+    coverImage: "/images/blog/log-analysis-methodology.jpg",
+    coverCredit: {
+      author: "Hpott",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg",
+    },
     content: `
 ## Logs Tell the Truth
 
@@ -1933,7 +2185,13 @@ Log analysis is a major category in the National Cyber League competition. The s
     tags: ["apple", "mac-pro", "security", "hardware"],
     excerpt:
       "What the T2 chip does in the Mac Pro, how it affects server use, and the tradeoffs between security and flexibility.",
-    coverImage: "/images/blog-apple-t2-security-chip.png",
+    coverImage: "/images/blog/apple-t2-security-chip.jpg",
+    coverCredit: {
+      author: "Henriok",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_T2_APL1027.jpg",
+    },
     content: `
 ## What the T2 Does
 
@@ -1971,7 +2229,13 @@ In my lab, I keep the Mac Pro on its default macOS configuration and use my Dell
     tags: ["networking", "homelab", "tools"],
     excerpt:
       "How I document my network infrastructure in a way that is useful during outages, not just for show.",
-    coverImage: "/images/blog-network-documentation-best-practices.png",
+    coverImage: "/images/blog/network-documentation-best-practices.jpg",
+    coverCredit: {
+      author: "R. Vogl, University of M\u00fcnster (Germany), Center for Information Processing",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:WWU-network-structure-v1.png",
+    },
     content: `
 ## The Problem
 
@@ -2011,7 +2275,13 @@ The hardest part of documentation is keeping it updated. I make it a rule: no in
     tags: ["servers", "hardware", "homelab", "power"],
     excerpt:
       "How I monitor power usage in my rack and the settings that made the biggest difference in my electricity bill.",
-    coverImage: "/images/blog-power-consumption-monitoring.png",
+    coverImage: "/images/blog/power-consumption-monitoring.jpg",
+    coverCredit: {
+      author: "Robert.Harker",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:UPS_PDU_Open.jpg",
+    },
     content: `
 ## Measuring Power
 
@@ -2108,7 +2378,13 @@ I occasionally create intentional incidents in my lab environment to practice re
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "How the Mac Pro's dual Vega II GPUs handle compute workloads and where they fit in the GPU computing landscape.",
-    coverImage: "/images/blog-mac-pro-gpu-compute.png",
+    coverImage: "/images/blog/mac-pro-gpu-compute.jpg",
+    coverCredit: {
+      author: "FritzchensFritz",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:AMD@14nm@GCN_5th_gen@Vega10@Radeon_RX_Vega_64@ES-Sample@_DSC01129.jpg",
+    },
     content: `
 ## The Hardware
 
@@ -2146,7 +2422,13 @@ I use the Mac Pro's GPUs primarily for video processing and as a learning platfo
     tags: ["security", "networking", "servers"],
     excerpt:
       "A practical explanation of TLS certificates, certificate authorities, and how to manage certificates on your own infrastructure.",
-    coverImage: "/images/blog-ssl-tls-certificates-explained.png",
+    coverImage: "/images/blog/ssl-tls-certificates-explained.jpg",
+    coverCredit: {
+      author: "Wikisosh",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Digital_certificates_chain_of_trust.png",
+    },
     content: `
 ## What TLS Does
 
@@ -2194,7 +2476,13 @@ The biggest challenge with certificates is tracking expiration dates. An expired
     tags: ["apple", "storage", "mac-pro"],
     excerpt:
       "How APFS works, what it does well, and why it is not a replacement for ZFS in server environments.",
-    coverImage: "/images/blog-apple-file-system-apfs.png",
+    coverImage: "/images/blog/apple-file-system-apfs.jpg",
+    coverCredit: {
+      author: "FaceMePLS from The Hague, The Netherlands",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:SSD_in_Mac_(26457298651).jpg",
+    },
     content: `
 ## What APFS Is
 
@@ -2235,7 +2523,13 @@ This hybrid approach uses each filesystem where it is strongest.
     tags: ["networking", "homelab", "hardware"],
     excerpt:
       "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
-    coverImage: "/images/blog-homelab-network-evolution.png",
+    coverImage: "/images/blog/homelab-network-evolution.jpg",
+    coverCredit: {
+      author: "Alan Levine",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg",
+    },
     content: `
 ## Stage 1: Consumer Router
 
@@ -2276,7 +2570,13 @@ Start with a managed switch and a firewall from the beginning. The consumer rout
     tags: ["virtualization", "servers", "homelab"],
     excerpt:
       "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
-    coverImage: "/images/blog-container-orchestration-basics.png",
+    coverImage: "/images/blog/container-orchestration-basics.jpg",
+    coverCredit: {
+      author: "Dereckson",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png",
+    },
     content: `
 ## Containers vs VMs
 
@@ -2324,7 +2624,13 @@ There is no universal answer to "containers or VMs." Both have their place. My r
     date: "2026-02-21",
     tags: ["networking", "bgp", "routing"],
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
-    coverImage: "/images/blog-bgp-for-network-engineers.png",
+    coverImage: "/images/blog/bgp-for-network-engineers.jpg",
+    coverCredit: {
+      author: "pmsyyz",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/96671942@N00/5768497319",
+    },
     content: `
 ## What BGP Actually Is
 
@@ -2368,7 +2674,13 @@ You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start
     date: "2026-02-22",
     tags: ["fortinet", "firewall", "networking"],
     excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
-    coverImage: "/images/blog-fortigate-cli-essentials.png",
+    coverImage: "/images/blog/fortigate-cli-essentials.jpg",
+    coverCredit: {
+      author: "Premeditated",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png",
+    },
     content: `
 ## Why Learn the CLI
 
@@ -2442,7 +2754,13 @@ Always run \`diagnose debug disable\` and \`diagnose debug reset\` when you are 
     date: "2026-02-23",
     tags: ["virtualization", "servers", "homelab"],
     excerpt: "Three serious hypervisors, three different trade-offs. Here is how to think about choosing between KVM, Proxmox, and VMware ESXi for your environment.",
-    coverImage: "/images/blog-kvm-proxmox-esxi-comparison.png",
+    coverImage: "/images/blog/kvm-proxmox-esxi-comparison.jpg",
+    coverCredit: {
+      author: "Primalmotion",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Diagramme_ArchiHyperviseur.png",
+    },
     content: `
 ## The Core Question
 
@@ -2483,7 +2801,13 @@ For a homelab or small lab environment, Proxmox is the clear winner. You get all
     date: "2026-02-24",
     tags: ["storage", "hardware", "servers"],
     excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
-    coverImage: "/images/blog-nvme-vs-sata-enterprise-storage.png",
+    coverImage: "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Intel_P3608_NVMe_flash_SSD,_PCI-E_add-in_card.jpg",
+    },
     content: `
 ## The Numbers
 
@@ -2518,7 +2842,13 @@ In my lab, I run NVMe for VM storage pools and SATA SSDs for secondary storage. 
     date: "2026-02-25",
     tags: ["networking", "monitoring", "homelab"],
     excerpt: "A step-by-step look at building a monitoring system that gives you real visibility into your network's health, traffic, and events.",
-    coverImage: "/images/blog-network-monitoring-system-build.png",
+    coverImage: "/images/blog/network-monitoring-system-build.jpg",
+    coverCredit: {
+      author: "Masdestructive",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Batelco_Network_Operations_Centre_(NOC).JPG",
+    },
     content: `
 ## Why Build Your Own
 
@@ -2571,7 +2901,13 @@ The goal is not to collect everything. It is to make sure you find out about rea
     date: "2026-02-26",
     tags: ["hardware", "servers", "homelab"],
     excerpt: "Redundant PSUs are a fundamental part of enterprise server design. Here is how they actually work and when they matter.",
-    coverImage: "/images/blog-redundant-power-supplies.png",
+    coverImage: "/images/blog/redundant-power-supplies.jpg",
+    coverCredit: {
+      author: "Thesydneyknowitall at English Wikipedia",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DL380sREAR.jpg",
+    },
     content: `
 ## The Problem They Solve
 
@@ -2609,7 +2945,13 @@ I run all my lab servers with redundant PSUs and connect them to separate circui
     date: "2026-02-27",
     tags: ["networking", "switching", "homelab"],
     excerpt: "STP prevents broadcast storms but introduces its own complexity. Understanding it deeply is essential for anyone working with switched networks.",
-    coverImage: "/images/blog-spanning-tree-protocol-deep-dive.png",
+    coverImage: "/images/blog/spanning-tree-protocol-deep-dive.jpg",
+    coverCredit: {
+      author: "X-Javier",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_4506-E_Switch_004.jpg",
+    },
     content: `
 ## The Problem STP Solves
 
@@ -2646,7 +2988,13 @@ Enable Rapid PVST+ (or MSTP in larger environments). Set explicit bridge priorit
     date: "2026-02-28",
     tags: ["linux", "security", "servers"],
     excerpt: "Default SSH configuration is functional but not secure. Here is how to harden it against the most common attack vectors.",
-    coverImage: "/images/blog-ssh-hardening-linux-servers.png",
+    coverImage: "/images/blog/ssh-hardening-linux-servers.jpg",
+    coverCredit: {
+      author: "Hpott",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg",
+    },
     content: `
 ## Why Default SSH Is Not Enough
 
@@ -2714,7 +3062,13 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
     date: "2026-03-01",
     tags: ["networking", "ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
-    coverImage: "/images/blog-ipv6-in-the-real-world.png",
+    coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
+    coverCredit: {
+      author: "Mikm (Wikimedia Commons uploader; file page records no separate author)",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "http://creativecommons.org/licenses/by-sa/3.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:IPv6_header_rv1.png",
+    },
     content: `
 ## Why IPv6 Exists
 
@@ -2751,7 +3105,13 @@ Most enterprise environments now operate dual-stack, running both IPv4 and IPv6 
     date: "2026-03-02",
     tags: ["cisco", "networking", "routing"],
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
-    coverImage: "/images/blog-cisco-ios-fundamentals.png",
+    coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
+    coverCredit: {
+      author: "Robert",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_2800_series_router_(1).jpg",
+    },
     content: `
 ## Navigating IOS Modes
 
@@ -2826,7 +3186,13 @@ Type \`?\` at any point to see available commands. This works in all modes. \`sh
     date: "2026-03-03",
     tags: ["storage", "networking", "servers"],
     excerpt: "SANs power the storage backends of most enterprise datacenters. Here is how they work and why they are architected the way they are.",
-    coverImage: "/images/blog-storage-area-networks-explained.png",
+    coverImage: "/images/blog/storage-area-networks-explained.jpg",
+    coverCredit: {
+      author: "Redline",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HP_EVA4400-1.jpg",
+    },
     content: `
 ## What a SAN Is
 
@@ -2871,7 +3237,13 @@ SANs make sense when you need shared storage for clustered workloads, high-perfo
     date: "2026-03-04",
     tags: ["proxmox", "virtualization", "homelab"],
     excerpt: "Proxmox clustering lets multiple hosts share workloads and survive individual node failures. Here is how to set it up and what to watch out for.",
-    coverImage: "/images/blog-proxmox-clustering-high-availability.png",
+    coverImage: "/images/blog/proxmox-clustering-high-availability.jpg",
+    coverCredit: {
+      author: "Patrick Finnegan",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:HP_s6500_chassis_with_ProLiant_SL250s_servers_and_storage.jpg",
+    },
     content: `
 ## Why Cluster
 
@@ -2930,7 +3302,13 @@ HA VM migration requires shared storage so both source and destination nodes can
     date: "2026-03-05",
     tags: ["fortinet", "networking", "firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
-    coverImage: "/images/blog-fortigate-sdwan-configuration.png",
+    coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
+    coverCredit: {
+      author: "Premeditated",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png",
+    },
     content: `
 ## What SD-WAN Solves
 
@@ -3012,7 +3390,13 @@ Traffic automatically routes over the best-performing link. When a link degrades
     date: "2026-03-06",
     tags: ["security", "networking", "firewall"],
     excerpt: "A well-designed zone architecture is the foundation of network security. Here is how to think about segmenting your network into security zones.",
-    coverImage: "/images/blog-network-security-zones-dmz.png",
+    coverImage: "/images/blog/network-security-zones-dmz.jpg",
+    coverCredit: {
+      author: "Dgondim",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Traditional_Single_Layer_DMZ_with_two_flanking_firewalls.png",
+    },
     content: `
 ## The Zone Model
 
@@ -3054,7 +3438,13 @@ Each additional zone adds security but also adds management complexity. Start wi
     date: "2026-03-07",
     tags: ["networking", "hardware", "switching"],
     excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
-    coverImage: "/images/blog-power-over-ethernet-poe.png",
+    coverImage: "/images/blog/power-over-ethernet-poe.jpg",
+    coverCredit: {
+      author: "Phiarc",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:PowerDsine_3524G_24-Port_Gigabit_Ethernet_PoE_Midspan_Injector_with_top_cover_removed,_oblique_view.jpg",
+    },
     content: `
 ## What PoE Does
 
@@ -3094,7 +3484,13 @@ PoE simplifies physical deployments significantly. The ability to mount an AP or
     date: "2026-03-08",
     tags: ["hardware", "servers", "memory"],
     excerpt: "Server memory is more complex than desktop memory. Understanding channels, DIMM placement, and ECC is essential for getting the performance and reliability you expect.",
-    coverImage: "/images/blog-server-memory-architecture.png",
+    coverImage: "/images/blog/server-memory-architecture.jpg",
+    coverCredit: {
+      author: "Project Kei",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Four_SDRAM_DIMM_slots_on_a_computer_motherboard.jpg",
+    },
     content: `
 ## Memory Channels
 
@@ -3131,7 +3527,13 @@ Memory speed is limited by the slowest DIMM installed and by the number of DIMMs
     date: "2026-03-09",
     tags: ["cybersecurity", "homelab", "security"],
     excerpt: "A SOC home lab gives you a realistic environment to practice threat detection, log analysis, and incident response without touching production systems.",
-    coverImage: "/images/blog-soc-home-lab-build.png",
+    coverImage: "/images/blog/soc-home-lab-build.jpg",
+    coverCredit: {
+      author: "Unknown photographer",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:NSOC-2012.jpg",
+    },
     content: `
 ## Why a SOC Lab
 
@@ -3166,7 +3568,13 @@ Document every detection you build: what it detects, how it works, and what the 
     date: "2026-03-10",
     tags: ["storage", "networking", "servers"],
     excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
-    coverImage: "/images/blog-iscsi-storage-protocol.png",
+    coverImage: "/images/blog/iscsi-storage-protocol.jpg",
+    coverCredit: {
+      author: "KorP",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:NetApp_E5700.jpg",
+    },
     content: `
 ## iSCSI Basics
 
@@ -3225,7 +3633,13 @@ I use iSCSI to provide shared storage for my Proxmox cluster. All nodes can acce
     date: "2026-03-11",
     tags: ["security", "networking", "dns"],
     excerpt: "DNS is foundational to every network connection, which makes it a prime target for attacks. Here is how DNSSEC and encrypted DNS protect the resolution process.",
-    coverImage: "/images/blog-dns-security-dnssec.png",
+    coverImage: "/images/blog/dns-security-dnssec.jpg",
+    coverCredit: {
+      author: "Jan Bellon",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DNSSEC_Trust_Anchor_Diagram.png",
+    },
     content: `
 ## Why DNS Security Matters
 
@@ -3265,7 +3679,13 @@ Implementing DNS filtering is one of the highest-value, lowest-cost security con
     date: "2026-03-12",
     tags: ["linux", "servers", "high-availability"],
     excerpt: "Pacemaker and Corosync provide Linux HA clustering that can automatically restart services and VMs after node failures.",
-    coverImage: "/images/blog-high-availability-clustering.png",
+    coverImage: "/images/blog/high-availability-clustering.jpg",
+    coverCredit: {
+      author: "Leon Brooks",
+      license: "Public domain",
+      licenseUrl: "https://creativecommons.org/publicdomain/mark/1.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Linux_supercomputing_cluster.jpg",
+    },
     content: `
 ## What High Availability Clustering Does
 
@@ -3328,7 +3748,13 @@ pcs stonith create ipmi-node1 fence_ipmilan \
     date: "2026-03-13",
     tags: ["networking", "security", "switching"],
     excerpt: "802.1X port authentication ensures that only authorized devices can connect to your network. Here is how to implement it with a RADIUS server.",
-    coverImage: "/images/blog-network-access-control-8021x.png",
+    coverImage: "/images/blog/network-access-control-8021x.jpg",
+    coverCredit: {
+      author: "VictorMasivi",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:IEEE_8021x_Network_Diagram_Example.png",
+    },
     content: `
 ## The Problem 802.1X Solves
 
@@ -3391,7 +3817,13 @@ Configure RADIUS to return VLAN attributes in the Access-Accept response, and th
     date: "2026-03-14",
     tags: ["networking", "virtualization", "datacenter"],
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
-    coverImage: "/images/blog-vxlan-network-virtualization.png",
+    coverImage: "/images/blog/vxlan-network-virtualization.jpg",
+    coverCredit: {
+      author: "Jupeterson",
+      license: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Network_Virtualization_Platform_Architecture_Example.png",
+    },
     content: `
 ## The Problem with VLANs at Scale
 
@@ -3431,7 +3863,13 @@ AWS VPCs, Azure virtual networks, and most cloud networking platforms are built 
     date: "2026-03-15",
     tags: ["networking", "troubleshooting", "wireshark"],
     excerpt: "Packet captures are the most powerful diagnostic tool in networking. Here is a systematic approach to using them effectively for real troubleshooting.",
-    coverImage: "/images/blog-troubleshooting-packet-captures.png",
+    coverImage: "/images/blog/troubleshooting-packet-captures.jpg",
+    coverCredit: {
+      author: "Laurachappell",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Wireshark_Network_Analyzer_Screen.png",
+    },
     content: `
 ## When to Reach for Packet Captures
 
@@ -3497,7 +3935,13 @@ tcpdump -i eth0 -w capture.pcap -C 100 -W 10
     date: "2026-03-16",
     tags: ["operations", "documentation", "servers"],
     excerpt: "A runbook that no one reads is just a box-checking exercise. Here is how to write documentation that engineers actually reach for during incidents.",
-    coverImage: "/images/blog-runbooks-infrastructure-teams.png",
+    coverImage: "/images/blog/runbooks-infrastructure-teams.jpg",
+    coverCredit: {
+      author: "Steve Jurvetson from Los Altos, USA",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apollo_17_Lunar_Surface_Checklist_(4705455692).jpg",
+    },
     content: `
 ## Why Runbooks Fail
 
@@ -3547,7 +3991,13 @@ Runbooks are living documentation. Treat them that way.
     date: "2026-03-17",
     tags: ["networking", "routing", "ospf"],
     excerpt: "OSPF is the most common interior gateway protocol in enterprise environments. Here is how it works and how to configure it correctly.",
-    coverImage: "/images/blog-ospf-routing-protocol.png",
+    coverImage: "/images/blog/ospf-routing-protocol.jpg",
+    coverCredit: {
+      author: "EidenNor",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:OSPF-NSSA_figur.drawio.png",
+    },
     content: `
 ## What OSPF Does
 
@@ -3598,7 +4048,13 @@ interface GigabitEthernet0/0
     date: "2026-03-18",
     tags: ["dell", "servers", "hardware"],
     excerpt: "Most people use iDRAC for basic console access and power control. Here are the features that make it genuinely powerful for server management.",
-    coverImage: "/images/blog-idrac-advanced-features.png",
+    coverImage: "/images/blog/idrac-advanced-features.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg",
+    },
     content: `
 ## Beyond Basic Remote Access
 
@@ -3652,7 +4108,13 @@ Configure iDRAC alerts to notify you immediately when hardware events occur. Opt
     date: "2026-03-19",
     tags: ["operations", "monitoring", "servers"],
     excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
-    coverImage: "/images/blog-syslog-centralized-logging.png",
+    coverImage: "/images/blog/syslog-centralized-logging.jpg",
+    coverCredit: {
+      author: "Klapi",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Kibana_demo_screenshot.jpg",
+    },
     content: `
 ## Why Centralize Logs
 
@@ -3710,7 +4172,13 @@ Define a log retention policy. Security logs often need to be kept for 90 days o
     date: "2026-03-20",
     tags: ["networking", "containers", "kubernetes"],
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
-    coverImage: "/images/blog-container-networking-fundamentals.png",
+    coverImage: "/images/blog/container-networking-fundamentals.jpg",
+    coverCredit: {
+      author: "Dereckson",
+      license: "CC0",
+      licenseUrl: "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png",
+    },
     content: `
 ## Network Namespaces
 
@@ -3758,7 +4226,13 @@ Understanding this rewrite is key to debugging connectivity problems in Kubernet
     date: "2026-03-21",
     tags: ["linux", "security", "servers"],
     excerpt: "Key-based SSH authentication is more secure than passwords and more convenient with proper setup. Here is how to do it right.",
-    coverImage: "/images/blog-ssh-key-based-authentication.png",
+    coverImage: "/images/blog/ssh-key-based-authentication.jpg",
+    coverCredit: {
+      author: "Hpott",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg",
+    },
     content: `
 ## Why Keys Are Better Than Passwords
 
@@ -3824,7 +4298,13 @@ Rotate SSH keys periodically. When an employee leaves, remove their public key f
     date: "2026-03-22",
     tags: ["storage", "networking", "servers"],
     excerpt: "NFS and SMB both share files over a network, but they are designed for different environments. Here is how to choose between them.",
-    coverImage: "/images/blog-nfs-vs-smb-network-storage.png",
+    coverImage: "/images/blog/nfs-vs-smb-network-storage.jpg",
+    coverCredit: {
+      author: "DYVER",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Synology_Disk_Station_DS223J_-_NAS-Server.jpg",
+    },
     content: `
 ## The Basic Difference
 
@@ -3880,7 +4360,13 @@ I use NFS for VM storage and Linux data shares in my lab. Windows VMs that need 
     date: "2026-03-23",
     tags: ["networking", "servers", "operations"],
     excerpt: "Accurate time is foundational to authentication, logging, and troubleshooting. Here is how NTP works and how to deploy it properly.",
-    coverImage: "/images/blog-ntp-enterprise-networks.png",
+    coverImage: "/images/blog/ntp-enterprise-networks.jpg",
+    coverCredit: {
+      author: "US Air Force",
+      license: "Public domain",
+      licenseUrl: "https://commons.wikimedia.org/wiki/Commons:Licensing#Public_domain",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Usno-amc.jpg",
+    },
     content: `
 ## Why Time Matters
 
@@ -3937,7 +4423,13 @@ Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause s
     date: "2026-03-24",
     tags: ["linux", "networking", "servers"],
     excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
-    coverImage: "/images/blog-nginx-reverse-proxy-setup.png",
+    coverImage: "/images/blog/nginx-reverse-proxy-setup.jpg",
+    coverCredit: {
+      author: "PauleMiranda",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Home_Server_Debian.jpg",
+    },
     content: `
 ## Why a Reverse Proxy
 
@@ -4011,7 +4503,13 @@ location /api/ {
     date: "2026-03-25",
     tags: ["networking", "switching", "hardware"],
     excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
-    coverImage: "/images/blog-lacp-link-aggregation.png",
+    coverImage: "/images/blog/lacp-link-aggregation.jpg",
+    coverCredit: {
+      author: "JITHIN",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Network-bonding-2.png",
+    },
     content: `
 ## What Link Aggregation Does
 
@@ -4076,7 +4574,13 @@ Check that both sides are in the same LACP mode (active/active or active/passive
     date: "2026-03-26",
     tags: ["networking", "wireless", "hardware"],
     excerpt: "Enterprise access points cost significantly more than consumer routers. Here is what you actually get for that investment.",
-    coverImage: "/images/blog-enterprise-wifi-vs-consumer.png",
+    coverImage: "/images/blog/enterprise-wifi-vs-consumer.jpg",
+    coverCredit: {
+      author: "Xosema",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_Aironet_1131AG_-_Close.jpg",
+    },
     content: `
 ## The Core Difference
 
@@ -4111,7 +4615,13 @@ For a home with a handful of devices and no performance-sensitive applications, 
     date: "2026-03-27",
     tags: ["networking", "security", "switching"],
     excerpt: "DHCP snooping and DAI are essential Layer 2 security features that prevent common attacks on switched networks. Here is how to configure them.",
-    coverImage: "/images/blog-dhcp-snooping-arp-inspection.png",
+    coverImage: "/images/blog/dhcp-snooping-arp-inspection.jpg",
+    coverCredit: {
+      author: "Dsimic",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:19-inch_rackmount_Ethernet_switches_and_patch_panels.jpg",
+    },
     content: `
 ## The Attacks These Prevent
 
@@ -4167,7 +4677,13 @@ These features are lightweight and should be standard configuration on access la
     date: "2026-03-28",
     tags: ["monitoring", "servers", "operations"],
     excerpt: "Prometheus and Grafana together provide powerful, flexible infrastructure monitoring. Here is how to get a production-quality monitoring setup running.",
-    coverImage: "/images/blog-prometheus-server-monitoring.png",
+    coverImage: "/images/blog/prometheus-server-monitoring.jpg",
+    coverCredit: {
+      author: "Joel Kennedy",
+      license: "Public domain",
+      licenseUrl: "https://commons.wikimedia.org/wiki/Commons:Licensing#Public_domain",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Grafana_screenshot_(2018).png",
+    },
     content: `
 ## Why Prometheus
 
@@ -4246,7 +4762,13 @@ Pair Alertmanager with routing rules to send alerts to email, Slack, or PagerDut
     date: "2026-03-29",
     tags: ["networking", "bgp", "security"],
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
-    coverImage: "/images/blog-bgp-route-filtering-security.png",
+    coverImage: "/images/blog/bgp-route-filtering-security.jpg",
+    coverCredit: {
+      author: "Stefan Funke from Frankfurt, Germany",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:DE-CIX_GERMANY_-_Switch_Rack_(6218137120).jpg",
+    },
     content: `
 ## Why BGP Filtering Matters
 
@@ -4300,7 +4822,13 @@ Limit the AS path length you accept. An AS path longer than a reasonable maximum
     date: "2026-03-30",
     tags: ["security", "networking", "architecture"],
     excerpt: "Security is most effective when it is built into network architecture from the start, not added on top afterward. Here are the foundational principles.",
-    coverImage: "/images/blog-secure-network-design-principles.png",
+    coverImage: "/images/blog/secure-network-design-principles.jpg",
+    coverCredit: {
+      author: "istolethetv",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/44124401641@N01/8746385789",
+    },
     content: `
 ## Defense in Depth
 
@@ -4341,7 +4869,13 @@ Security without visibility is guesswork. Build observability into the network f
     date: "2026-03-31",
     tags: ["homelab", "servers", "networking"],
     excerpt: "A homelab that grows without a plan becomes chaos. Here are the lessons I learned growing from one server to a multi-rack lab environment.",
-    coverImage: "/images/blog-scaling-homelab-lessons.png",
+    coverImage: "/images/blog/scaling-homelab-lessons.jpg",
+    coverCredit: {
+      author: "Tecnalia",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/34843636@N02/5808435079",
+    },
     content: `
 ## Start with the Network
 
@@ -4378,7 +4912,13 @@ The lab is a place to practice and learn. Let it teach you through failures in c
     date: "2026-04-01",
     tags: ["security", "firewall", "operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
-    coverImage: "/images/blog-firewall-log-analysis.png",
+    coverImage: "/images/blog/firewall-log-analysis.jpg",
+    coverCredit: {
+      author: "ChrisDag",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/8558461@N08/5212583486",
+    },
     content: `
 ## The Volume Problem
 
@@ -4426,7 +4966,13 @@ An alert is only valuable if someone acts on it. Build a workflow: alerts genera
     date: "2026-04-02",
     tags: ["networking", "qos", "switching"],
     excerpt: "QoS ensures that critical traffic gets priority when bandwidth is constrained. Here is how to design and implement a QoS policy that actually works.",
-    coverImage: "/images/blog-qos-enterprise-networks.png",
+    coverImage: "/images/blog/qos-enterprise-networks.jpg",
+    coverCredit: {
+      author: "tawalker",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/30139045@N00/458064906",
+    },
     content: `
 ## When QoS Matters
 
@@ -4559,7 +5105,13 @@ ansible-playbook add_vlan.yml --ask-vault-pass
     date: "2026-04-04",
     tags: ["networking", "career", "technology"],
     excerpt: "Networking has changed significantly in the last few years. Here is what the role looks like now and what skills matter most going forward.",
-    coverImage: "/images/blog-network-engineer-role-2026.png",
+    coverImage: "/images/blog/network-engineer-role-2026.jpg",
+    coverCredit: {
+      author: "cogdogblog",
+      license: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      sourceUrl: "https://www.flickr.com/photos/37996646802@N01/537486932",
+    },
     content: `
 ## What Has Changed
 
@@ -4592,7 +5144,13 @@ That combination is not common, which makes it worth investing in.
     date: "2026-04-05",
     tags: ["cybersecurity", "security", "networking"],
     excerpt: "Understanding how penetration testing works helps defenders build better controls. Here is what pen testers actually do and what it means for defense.",
-    coverImage: "/images/blog-penetration-testing-basics.png",
+    coverImage: "/images/blog/penetration-testing-basics.jpg",
+    coverCredit: {
+      author: "gaudiramone",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/31112252@N00/14096358745",
+    },
     content: `
 ## Why Defenders Should Understand Offense
 
@@ -4633,7 +5191,13 @@ The MITRE ATT&CK framework maps attacker techniques to defensive detections. If 
     date: "2026-04-06",
     tags: ["security", "encryption", "networking"],
     excerpt: "TLS 1.3 significantly improved on TLS 1.2 in both security and performance. Here is what changed and what you need to do about it.",
-    coverImage: "/images/blog-tls-modern-encryption.png",
+    coverImage: "/images/blog/tls-modern-encryption.jpg",
+    coverCredit: {
+      author: "Halub3",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/w/index.php?curid=113054252",
+    },
     content: `
 ## Why TLS 1.3 Is Important
 
@@ -4673,7 +5237,13 @@ Monitor your cipher suite usage and set a timeline for deprecating TLS 1.2 once 
     date: "2026-04-07",
     tags: ["virtualization", "servers", "operations"],
     excerpt: "Server consolidation using virtualization reduces hardware costs, power consumption, and management complexity. Here is how to plan and execute it.",
-    coverImage: "/images/blog-server-consolidation-virtualization.png",
+    coverImage: "/images/blog/server-consolidation-virtualization.jpg",
+    coverCredit: {
+      author: "e53",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/12149418@N00/2367945536",
+    },
     content: `
 ## The Case for Consolidation
 
@@ -4717,7 +5287,13 @@ After consolidation, monitor CPU ready time (VMs waiting to be scheduled), memor
     date: "2026-04-08",
     tags: ["career", "community", "technology"],
     excerpt: "A genuine personal brand opens doors that credentials alone do not. Here is how to build one that reflects real expertise rather than manufactured content.",
-    coverImage: "/images/blog-personal-brand-in-tech.png",
+    coverImage: "/images/blog/personal-brand-in-tech.jpg",
+    coverCredit: {
+      author: "jurvetson",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/44124348109@N01/18279271865",
+    },
     content: `
 ## What a Personal Brand Actually Is
 
@@ -4752,7 +5328,13 @@ Teaching coding camps in the Las Vegas Valley has been one of the most meaningfu
     date: "2026-04-09",
     tags: ["community", "education", "coding"],
     excerpt: "Running coding camps for youth in the Las Vegas Valley has taught me as much as it has taught the students. Here is what actually works when introducing young people to technology.",
-    coverImage: "/images/blog-teaching-youth-to-code.png",
+    coverImage: "/images/blog/teaching-youth-to-code.jpg",
+    coverCredit: {
+      author: "expertinfantry",
+      license: "CC BY 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      sourceUrl: "https://www.flickr.com/photos/58297778@N04/5431970803",
+    },
     content: `
 ## Why It Matters
 
