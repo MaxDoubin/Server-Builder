@@ -233,8 +233,16 @@ export function CinematicBlog() {
             delay={0.6}
           />
 
-          {/* Search, random pick, and the two hub pages */}
-          <ScrollReveal variants={fadeUp} delay={0.15}>
+          {/*
+            Search, random pick, and the two hub pages.
+
+            relative z-40 on the reveal wrapper is load bearing: framer's
+            variants leave a transform on it, which makes it a stacking
+            context, and the post list below is another one later in the
+            document. Without a z-index the results panel paints underneath
+            the first card.
+          */}
+          <ScrollReveal variants={fadeUp} delay={0.15} className="relative z-40">
             <div className="mt-12 flex flex-col gap-3 lg:flex-row lg:items-center">
               <BlogSearch
                 posts={allPosts}

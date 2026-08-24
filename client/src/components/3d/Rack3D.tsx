@@ -12,6 +12,7 @@ import {
   getPhysicalMaterial,
   getBasicMaterial,
 } from "@/lib/asset-pool";
+import { heatLevelColor } from "@/lib/capacity";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -33,6 +34,11 @@ interface Rack3DProps {
   isDragging?: boolean;
   rackScale?: number;
   showHud?: boolean;
+  /**
+   * Thermal load of this rack on a 0 to 1 scale, or null when the heatmap is
+   * off. Quantised by the caller so the pooled materials stay countable.
+   */
+  heatLevel?: number | null;
 }
 
 const RACK_WIDTH = 0.85;
@@ -56,15 +62,21 @@ function RackFrame({
   isSelected,
   thermalStatus,
   statusGlowIntensity,
+  heatColor,
 }: {
   isSelected: boolean;
   thermalStatus: string;
   statusGlowIntensity: number;
+  heatColor?: string | null;
 }) {
   const frameColor = "#1a1d24";
   const highlightColor = isSelected ? "#4488ff" : "#2a2d34";
 
   const statusGlowHex = useMemo(() => {
+    // With the heatmap on, the strips carry the rack's measured thermal load
+    // instead of its alert state. Two different meanings on one light would
+    // be worse than either.
+    if (heatColor) return heatColor;
     switch (thermalStatus) {
       case "critical":
         return "#ff3333";
@@ -75,7 +87,7 @@ function RackFrame({
       default:
         return "#00ff66";
     }
-  }, [thermalStatus]);
+  }, [heatColor, thermalStatus]);
 
   return (
     <group>
@@ -212,8 +224,15 @@ function RackFrame({
   );
 }
 
-function SimplifiedRack({ thermalStatus }: { thermalStatus: string }) {
+function SimplifiedRack({
+  thermalStatus,
+  heatColor,
+}: {
+  thermalStatus: string;
+  heatColor?: string | null;
+}) {
   const statusGlowHex = useMemo(() => {
+    if (heatColor) return heatColor;
     switch (thermalStatus) {
       case "critical":
         return "#ff3333";
@@ -224,16 +243,32 @@ function SimplifiedRack({ thermalStatus }: { thermalStatus: string }) {
       default:
         return "#00ff66";
     }
-  }, [thermalStatus]);
+  }, [heatColor, thermalStatus]);
+
+  /*
+    Most of a 500 rack floor renders as this box, so the heatmap has to reach
+    it or the map is a map of nothing. Emissive rather than diffuse keeps the
+    reading independent of where the lights are.
+  */
+  const bodyMaterial = useMemo(
+    () =>
+      heatColor
+        ? getStandardMaterial({
+            color: "#12151b",
+            emissive: heatColor,
+            emissiveIntensity: 0.42,
+            metalness: 0.4,
+            roughness: 0.6,
+          })
+        : getStandardMaterial({ color: "#1a1d24", metalness: 0.6, roughness: 0.4 }),
+    [heatColor],
+  );
 
   return (
     <group>
       <mesh position={[0, RACK_HEIGHT / 2, 0]} castShadow>
         <primitive object={getBoxGeometry([RACK_WIDTH - 0.02, RACK_HEIGHT, RACK_DEPTH - 0.02])} attach="geometry" />
-        <primitive
-          object={getStandardMaterial({ color: "#1a1d24", metalness: 0.6, roughness: 0.4 })}
-          attach="material"
-        />
+        <primitive object={bodyMaterial} attach="material" />
       </mesh>
       <mesh position={[0, RACK_HEIGHT - 0.05, RACK_DEPTH / 2 + 0.01]}>
         <primitive object={getBoxGeometry([RACK_WIDTH - 0.08, 0.025, 0.01])} attach="geometry" />
@@ -290,6 +325,7 @@ export function Rack3D({
   isDragging = false,
   rackScale = 1,
   showHud = true,
+  heatLevel = null,
 }: Rack3DProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -312,6 +348,11 @@ export function Rack3D({
 
     return "normal";
   }, [rack.inletTemp, rack.currentPowerDraw, rack.powerCapacity, rack.installedEquipment]);
+
+  const heatColor = useMemo(
+    () => (heatLevel === null || heatLevel === undefined ? null : heatLevelColor(heatLevel)),
+    [heatLevel],
+  );
 
   const [isDetailedView, setIsDetailedView] = useState(true);
   const allowDetailed = !forceSimplified && (detailBudget === undefined || lodIndex < detailBudget);
@@ -390,6 +431,7 @@ export function Rack3D({
             isSelected={isSelected}
             thermalStatus={operationalStatus}
             statusGlowIntensity={statusGlowIntensity}
+            heatColor={heatColor}
           />
 
           {sortedEquipment.map((installed) => {
@@ -431,7 +473,7 @@ export function Rack3D({
           })}
         </>
       ) : (
-        <SimplifiedRack thermalStatus={operationalStatus} />
+        <SimplifiedRack thermalStatus={operationalStatus} heatColor={heatColor} />
       )}
 
       <mesh position={[0, RACK_HEIGHT / 2, 0]}>

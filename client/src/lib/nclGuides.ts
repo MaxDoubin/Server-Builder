@@ -167,7 +167,7 @@ const cryptography: NclGuide = {
   order: 2,
   tagline: "Recognise the scheme, peel the layers, recover the plaintext.",
   seoDescription:
-    "How the NCL Cryptography category works: telling encoding from ciphers from modern crypto, classical cipher techniques, RSA weaknesses, and a worked example.",
+    "How the NCL Cryptography category works: telling encodings from ciphers, classical cipher methods, RSA weaknesses, and a worked example.",
   whatItTests: [
     "The Cryptography category tests whether you can recognise how a message has been transformed and then reverse it. That spans three quite different things that beginners often blur together: encodings such as Base64 and hex, which carry no secret and are trivially reversible; classical ciphers such as Caesar, Vigenere, and simple substitution, which do carry a key but leak the structure of the underlying language; and modern cryptography such as RSA, where the challenge is usually a weak parameter rather than breaking the algorithm itself.",
     "Challenges are frequently layered. A token might be Base64 that decodes to a hex string that decodes to a rotated message. The skill is identifying each layer in turn and applying the right transformation, rather than guessing wildly.",
@@ -186,13 +186,13 @@ const cryptography: NclGuide = {
   ],
   walkthrough: {
     scenario:
-      "You are handed a token and told it hides a short phrase. It looks like this: R3VyIEtybCBWZiBHdWlyZ3JyYQ== (the exact characters are not important; the shape is).",
+      "You are handed a token and told it hides a short phrase: Z3VyIHhybCB2ZiBndXZlZ3JyYQ==. Every step below is reproducible if you want to follow along.",
     steps: [
       {
         label: "Classify the outer layer",
         detail:
           "The string uses only Base64's alphabet and ends in equals padding. That is the signature of Base64, an encoding, so decode it first rather than treating it as a cipher.",
-        code: "echo 'R3VyIEtybCBWZiBHdWlyZ3JyYQ==' | base64 -d",
+        code: "echo 'Z3VyIHhybCB2ZiBndXZlZ3JyYQ==' | base64 -d",
       },
       {
         label: "Read the decoded text",
@@ -481,7 +481,7 @@ const trafficAnalysis: NclGuide = {
   order: 5,
   tagline: "Survey the capture, follow the stream, extract the payload.",
   seoDescription:
-    "How the NCL Network Traffic Analysis category works: reading pcaps in Wireshark, display versus capture filters, following streams, scan signatures, and an example.",
+    "How the NCL Network Traffic Analysis category works: reading pcaps in Wireshark, display versus capture filters, following streams, and an example.",
   whatItTests: [
     "Network Traffic Analysis tests whether you can read a packet capture and pull information out of it: credentials sent in cleartext, a file that was transferred, the names a host looked up in DNS, or the behaviour of a protocol. This is also where scanning and enumeration show up, because a port scan leaves an unmistakable pattern in a capture and recognising it is part of the skill.",
     "You are given pcap files and expected to navigate them efficiently. Captures can hold tens of thousands of packets, so the work is about narrowing quickly to the conversation that matters and then reassembling it into something readable.",
@@ -692,7 +692,7 @@ const webExploitation: NclGuide = {
   order: 7,
   tagline: "Map the app, distrust every input, exploit the trust boundary.",
   seoDescription:
-    "How the NCL Web Application Exploitation category works: recon and enumeration, SQL injection, XSS and more, OWASP references, and a worked auth-bypass example.",
+    "How the NCL Web Application Exploitation category works: recon and enumeration, SQL injection, XSS, OWASP references, and a worked example.",
   whatItTests: [
     "Web Application Exploitation tests whether you can find and exploit flaws in a web application. The common families are SQL injection, cross-site scripting, command injection, path traversal, insecure direct object references, and broken authentication or authorisation, along with information disclosure through exposed files. It also rewards thorough enumeration, because finding the vulnerable endpoint is often harder than exploiting it once found.",
     "The unifying idea is the trust boundary. Everything that arrives from the client, form fields, URL parameters, headers, and cookies, is attacker-controlled and must be treated as hostile. Vulnerabilities are where the application forgets that.",

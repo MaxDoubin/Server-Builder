@@ -41,7 +41,7 @@ export function CinematicNcl() {
   useSEO({
     title: "National Cyber League Study Guide | Max Doubin",
     description:
-      "What the National Cyber League is, how it is scored, how to prepare, and in-depth guides to all seven challenge categories, from a top 1 percent competitor.",
+      "What the National Cyber League is, how scoring works, how to prepare, and guides to all seven challenge categories, from a top 1 percent competitor.",
     canonical: `${SITE_URL}/ncl`,
     schema: courseSchema,
     schemaId: "ncl-course-schema",

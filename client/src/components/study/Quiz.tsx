@@ -42,7 +42,11 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
   const question = questions[current];
 
   const score = useMemo(
-    () => answers.reduce((sum, ans, i) => (ans === questions[i].correctIndex ? sum + 1 : sum), 0),
+    () =>
+      answers.reduce<number>(
+        (sum, ans, i) => (ans === questions[i].correctIndex ? sum + 1 : sum),
+        0,
+      ),
     [answers, questions],
   );
 

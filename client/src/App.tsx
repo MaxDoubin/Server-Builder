@@ -159,6 +159,125 @@ const CinematicRoadmap = lazyWithRetry(() =>
   })),
 );
 
+/**
+ * Standalone pages.
+ *
+ * Each is lazy for the same reason every other route is: none of them
+ * should cost anything to a visitor who never opens them.
+ */
+const CinematicArchive = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicArchive").then((m) => ({ default: m.CinematicArchive })),
+);
+const CinematicPaths = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicPaths").then((m) => ({ default: m.CinematicPaths })),
+);
+const CinematicNow = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicNow").then((m) => ({ default: m.CinematicNow })),
+);
+const CinematicUses = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicUses").then((m) => ({ default: m.CinematicUses })),
+);
+const CinematicResume = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicResume").then((m) => ({ default: m.CinematicResume })),
+);
+const CinematicTimeline = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicTimeline").then((m) => ({ default: m.CinematicTimeline })),
+);
+const CinematicCyberClub = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCyberClub").then((m) => ({ default: m.CinematicCyberClub })),
+);
+const CinematicCamps = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCamps").then((m) => ({ default: m.CinematicCamps })),
+);
+const CinematicColophon = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicColophon").then((m) => ({ default: m.CinematicColophon })),
+);
+const CinematicFaq = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicFaq").then((m) => ({ default: m.CinematicFaq })),
+);
+const CinematicLinks = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLinks").then((m) => ({ default: m.CinematicLinks })),
+);
+const CinematicSubscribe = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicSubscribe").then((m) => ({ default: m.CinematicSubscribe })),
+);
+const CinematicStudyTimer = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicStudyTimer").then((m) => ({ default: m.CinematicStudyTimer })),
+);
+const CinematicAsk = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAsk").then((m) => ({ default: m.CinematicAsk })),
+);
+const CinematicChangelog = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicChangelog").then((m) => ({ default: m.CinematicChangelog })),
+);
+
+/** Browser utilities. One chunk each, so /tools costs nothing until used. */
+const SubnetCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/SubnetCalculator").then((m) => ({ default: m.SubnetCalculator })),
+);
+const VlsmPractice = lazyWithRetry(() =>
+  import("@/pages/tools/VlsmPractice").then((m) => ({ default: m.VlsmPractice })),
+);
+const CidrVisualizer = lazyWithRetry(() =>
+  import("@/pages/tools/CidrVisualizer").then((m) => ({ default: m.CidrVisualizer })),
+);
+const PacketHeaders = lazyWithRetry(() =>
+  import("@/pages/tools/PacketHeaders").then((m) => ({ default: m.PacketHeaders })),
+);
+const PortReference = lazyWithRetry(() =>
+  import("@/pages/tools/PortReference").then((m) => ({ default: m.PortReference })),
+);
+const WiresharkFilters = lazyWithRetry(() =>
+  import("@/pages/tools/WiresharkFilters").then((m) => ({ default: m.WiresharkFilters })),
+);
+const DnsRecords = lazyWithRetry(() =>
+  import("@/pages/tools/DnsRecords").then((m) => ({ default: m.DnsRecords })),
+);
+const MacLookup = lazyWithRetry(() =>
+  import("@/pages/tools/MacLookup").then((m) => ({ default: m.MacLookup })),
+);
+const ChmodCalculator = lazyWithRetry(() =>
+  import("@/pages/tools/ChmodCalculator").then((m) => ({ default: m.ChmodCalculator })),
+);
+const CronExplainer = lazyWithRetry(() =>
+  import("@/pages/tools/CronExplainer").then((m) => ({ default: m.CronExplainer })),
+);
+const RegexTester = lazyWithRetry(() =>
+  import("@/pages/tools/RegexTester").then((m) => ({ default: m.RegexTester })),
+);
+const HttpStatusCodes = lazyWithRetry(() =>
+  import("@/pages/tools/HttpStatusCodes").then((m) => ({ default: m.HttpStatusCodes })),
+);
+const EncoderDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/EncoderDecoder").then((m) => ({ default: m.EncoderDecoder })),
+);
+const BaseConverter = lazyWithRetry(() =>
+  import("@/pages/tools/BaseConverter").then((m) => ({ default: m.BaseConverter })),
+);
+const ClassicalCiphers = lazyWithRetry(() =>
+  import("@/pages/tools/ClassicalCiphers").then((m) => ({ default: m.ClassicalCiphers })),
+);
+const HashIdentifier = lazyWithRetry(() =>
+  import("@/pages/tools/HashIdentifier").then((m) => ({ default: m.HashIdentifier })),
+);
+const CinematicTools = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicTools").then((m) => ({ default: m.CinematicTools })),
+);
+
+/** Competition study material. */
+const CinematicNcl = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicNcl").then((m) => ({ default: m.CinematicNcl })),
+);
+const CinematicNclGuide = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicNclGuide").then((m) => ({ default: m.CinematicNclGuide })),
+);
+const CinematicFlashcards = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicFlashcards").then((m) => ({ default: m.CinematicFlashcards })),
+);
+const CinematicCerts = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCerts").then((m) => ({ default: m.CinematicCerts })),
+);
+
 const CinematicNotFound = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNotFound").then((module) => ({
     default: module.CinematicNotFound,
@@ -495,6 +614,193 @@ function AnimatedRoutes() {
           <Route path="/blog/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicBlogPost />
+            </Suspense>
+          </Route>
+          <Route path="/ncl">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicNcl />
+            </Suspense>
+          </Route>
+          <Route path="/ncl/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicNclGuide />
+            </Suspense>
+          </Route>
+          <Route path="/flashcards">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicFlashcards />
+            </Suspense>
+          </Route>
+          <Route path="/certifications">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCerts />
+            </Suspense>
+          </Route>
+          <Route path="/archive">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicArchive />
+            </Suspense>
+          </Route>
+          <Route path="/paths">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicPaths />
+            </Suspense>
+          </Route>
+          <Route path="/now">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicNow />
+            </Suspense>
+          </Route>
+          <Route path="/uses">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicUses />
+            </Suspense>
+          </Route>
+          <Route path="/resume">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicResume />
+            </Suspense>
+          </Route>
+          <Route path="/timeline">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicTimeline />
+            </Suspense>
+          </Route>
+          <Route path="/cyber-club">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCyberClub />
+            </Suspense>
+          </Route>
+          <Route path="/coding-camps">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCamps />
+            </Suspense>
+          </Route>
+          <Route path="/colophon">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicColophon />
+            </Suspense>
+          </Route>
+          <Route path="/faq">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicFaq />
+            </Suspense>
+          </Route>
+          <Route path="/links">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLinks />
+            </Suspense>
+          </Route>
+          <Route path="/subscribe">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicSubscribe />
+            </Suspense>
+          </Route>
+          <Route path="/study-timer">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicStudyTimer />
+            </Suspense>
+          </Route>
+          <Route path="/ask">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAsk />
+            </Suspense>
+          </Route>
+          <Route path="/changelog">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicChangelog />
+            </Suspense>
+          </Route>
+          {/*
+            Tool routes are listed explicitly rather than resolved from the
+            registry through one dynamic import. A single import() with a
+            variable specifier makes Rollup bundle every tool into one
+            chunk, which would put all sixteen on the wire the moment
+            anybody opened one of them.
+          */}
+          <Route path="/tools">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicTools />
+            </Suspense>
+          </Route>
+          <Route path="/tools/hash-identifier">
+            <Suspense fallback={<RouteLoading />}>
+              <HashIdentifier />
+            </Suspense>
+          </Route>
+          <Route path="/tools/subnet-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <SubnetCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/vlsm-practice">
+            <Suspense fallback={<RouteLoading />}>
+              <VlsmPractice />
+            </Suspense>
+          </Route>
+          <Route path="/tools/cidr-visualizer">
+            <Suspense fallback={<RouteLoading />}>
+              <CidrVisualizer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/packet-headers">
+            <Suspense fallback={<RouteLoading />}>
+              <PacketHeaders />
+            </Suspense>
+          </Route>
+          <Route path="/tools/port-reference">
+            <Suspense fallback={<RouteLoading />}>
+              <PortReference />
+            </Suspense>
+          </Route>
+          <Route path="/tools/wireshark-filters">
+            <Suspense fallback={<RouteLoading />}>
+              <WiresharkFilters />
+            </Suspense>
+          </Route>
+          <Route path="/tools/dns-records">
+            <Suspense fallback={<RouteLoading />}>
+              <DnsRecords />
+            </Suspense>
+          </Route>
+          <Route path="/tools/mac-lookup">
+            <Suspense fallback={<RouteLoading />}>
+              <MacLookup />
+            </Suspense>
+          </Route>
+          <Route path="/tools/chmod-calculator">
+            <Suspense fallback={<RouteLoading />}>
+              <ChmodCalculator />
+            </Suspense>
+          </Route>
+          <Route path="/tools/cron-explainer">
+            <Suspense fallback={<RouteLoading />}>
+              <CronExplainer />
+            </Suspense>
+          </Route>
+          <Route path="/tools/regex-tester">
+            <Suspense fallback={<RouteLoading />}>
+              <RegexTester />
+            </Suspense>
+          </Route>
+          <Route path="/tools/http-status-codes">
+            <Suspense fallback={<RouteLoading />}>
+              <HttpStatusCodes />
+            </Suspense>
+          </Route>
+          <Route path="/tools/encoder-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <EncoderDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/base-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <BaseConverter />
+            </Suspense>
+          </Route>
+          <Route path="/tools/classical-ciphers">
+            <Suspense fallback={<RouteLoading />}>
+              <ClassicalCiphers />
             </Suspense>
           </Route>
           <Route path="/topics">

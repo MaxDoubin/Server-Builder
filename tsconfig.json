@@ -5,6 +5,10 @@
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
     "noEmit": true,
+    // Without a target, TypeScript assumes ES3 and rejects iterating a Set
+    // or a Map directly, which is a false alarm here: Vite targets modern
+    // browsers and this config only ever typechecks (noEmit).
+    "target": "ES2020",
     "module": "ESNext",
     "strict": true,
     "lib": ["esnext", "dom", "dom.iterable"],

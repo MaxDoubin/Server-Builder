@@ -14,7 +14,7 @@ export function CinematicCerts() {
   useSEO({
     title: "Certifications | Max Doubin",
     description:
-      "An honest certification status board: CompTIA Tech+ earned, and Security+, Network+, and CCNA in progress, with the official exam domains and study resources.",
+      "An honest status board: CompTIA Tech+ earned, with Security+, Network+, and CCNA in progress, plus each exam's official domains and resources.",
     canonical: `${SITE_URL}/certifications`,
   });
 

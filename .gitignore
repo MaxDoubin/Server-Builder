@@ -4,3 +4,8 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+# Generated at build time by script/prerender.ts, never checked in.
+# A stale committed sitemap shipped 105 URLs while the site had 236 posts,
+# and it was only masked because the prerenderer happens to overwrite it.
+/client/public/sitemap.xml
+/client/public/feed.xml

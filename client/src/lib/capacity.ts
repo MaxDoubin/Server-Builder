@@ -103,6 +103,8 @@ export interface FacilityCapacity {
   avgInletTempC: number;
   /** Racks drawing more than 90 percent of their own rated power capacity. */
   racksNearOwnCapacity: number;
+  /** Racks in a critical state: failed gear, over capacity, or over 32 C inlet. */
+  criticalRacks: number;
   /** Installed item counts by equipment class, for objectives that count gear. */
   serverCount: number;
   switchCount: number;
@@ -237,6 +239,7 @@ export function deriveCapacity(
   let inletSum = 0;
   let maxInletTempC = 0;
   let racksNearOwnCapacity = 0;
+  let criticalRacks = 0;
   let serverCount = 0;
   let switchCount = 0;
   let routerCount = 0;
@@ -258,7 +261,12 @@ export function deriveCapacity(
     if (rack.powerCapacity > 0 && rack.currentPowerDraw > rack.powerCapacity * 0.9) {
       racksNearOwnCapacity += 1;
     }
+    // Same rule the 3D rack uses for its status light, so the count and the
+    // colour on the floor cannot disagree.
+    let isCritical =
+      inlet > 32 || (rack.powerCapacity > 0 && rack.currentPowerDraw > rack.powerCapacity * 0.98);
     for (const installed of rack.installedEquipment) {
+      if (installed.status === "critical") isCritical = true;
       const equipment = catalog.get(installed.equipmentId);
       if (!equipment) continue;
       types.add(equipment.type);
@@ -268,6 +276,7 @@ export function deriveCapacity(
       else if (equipment.type.startsWith("firewall")) firewallCount += 1;
       else if (equipment.type.startsWith("storage")) storageCount += 1;
     }
+    if (isCritical) criticalRacks += 1;
   }
 
   const crahUnitsOnline = Math.max(
@@ -304,12 +313,25 @@ export function deriveCapacity(
     maxInletTempC,
     avgInletTempC: rackCount > 0 ? inletSum / rackCount : 0,
     racksNearOwnCapacity,
+    criticalRacks,
     serverCount,
     switchCount,
     routerCount,
     firewallCount,
     storageCount,
   };
+}
+
+/**
+ * Power usage effectiveness for a floor of this size.
+ *
+ * A small floor shares its cooling and distribution losses across less IT
+ * load, but a very large one runs its plant closer to design and stops
+ * getting worse, hence the cap. Shared so the NOC dashboard and the cost
+ * estimator cannot drift apart.
+ */
+export function facilityPue(rackCount: number): number {
+  return 1.12 + Math.min(0.28, Math.max(0, rackCount) / 400);
 }
 
 /**

@@ -131,8 +131,8 @@ function parseField(raw: string, def: FieldDef): Field {
   }
 
   // Cron accepts both 0 and 7 for Sunday.
-  let values = [...set];
-  if (def.name === "day of week") values = [...new Set(values.map((v) => (v === 7 ? 0 : v)))];
+  let values = Array.from(set);
+  if (def.name === "day of week") values = Array.from(new Set(values.map((v) => (v === 7 ? 0 : v))));
   values.sort((a, b) => a - b);
 
   return { def, raw, values, star: raw.startsWith("*") };

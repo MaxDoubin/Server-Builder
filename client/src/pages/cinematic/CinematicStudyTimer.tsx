@@ -549,7 +549,7 @@ export function CinematicStudyTimer() {
                 {clock}
               </div>
               <div className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
-                {PHASE_META[phase].label} · {Math.round(phaseTotal / 60_000)} min
+                {PHASE_META[phase].label} · {Math.round(phaseSpan / 60_000)} min
               </div>
             </div>
 

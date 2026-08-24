@@ -15,7 +15,7 @@ import { ToolShell, ToolPanel } from "./ToolShell";
 
 const TIME_BUDGET_MS = 250;
 const MAX_MATCHES = 2000;
-const MAX_TEXT = 200000;
+const MAX_TEXT = 100000;
 const SHOWN_MATCHES = 60;
 
 interface RawMatch {
@@ -78,10 +78,14 @@ self.onmessage = function (e) {
 };`;
 
 /**
- * Main thread fallback. Times the pattern against short prefixes first and
- * gives up before reaching a length that would take real time. Exponential
- * blowup grows fast enough that a small additive step keeps the worst single
- * probe well under a second.
+ * Main thread fallback, for the case where the worker cannot be created.
+ *
+ * Nothing can abort a running match here, so the only defence is to not
+ * start an expensive one: time the pattern against short samples and give up
+ * before reaching a length that would cost real time. Both ends are sampled
+ * because a prefix of a pathological input usually matches happily, the
+ * blowup being caused by the mismatch at the tail. A small additive step at
+ * the start bounds how much worse one rung can be than the last.
  */
 function guardedMatch(pattern: string, flags: string, text: string): MatchResult | null {
   const start = performance.now();
@@ -89,8 +93,9 @@ function guardedMatch(pattern: string, flags: string, text: string): MatchResult
   while (probe < text.length) {
     const t0 = performance.now();
     matchAll(pattern, flags, text.slice(0, probe), MAX_MATCHES);
+    matchAll(pattern, flags, text.slice(text.length - probe), MAX_MATCHES);
     if (performance.now() - t0 > 30 || performance.now() - start > TIME_BUDGET_MS) return null;
-    probe = probe < 64 ? probe + 4 : probe * 2;
+    probe = probe < 96 ? probe + 4 : probe * 2;
   }
   if (performance.now() - start > TIME_BUDGET_MS) return null;
   return matchAll(pattern, flags, text, MAX_MATCHES);
@@ -209,7 +214,9 @@ export function RegexTester() {
   const [pattern, setPattern] = useState(PRESETS[0].pattern);
   const [flags, setFlags] = useState(PRESETS[0].flags);
   const [text, setText] = useState(PRESETS[0].sample);
-  const [result, setResult] = useState<MatchResult | null>(null);
+  // The matched text is stored with the result so the highlight can never
+  // render new text against old match offsets while the debounce is open.
+  const [result, setResult] = useState<{ data: MatchResult; text: string } | null>(null);
   const [syntaxError, setSyntaxError] = useState<string | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const [elapsed, setElapsed] = useState<number | null>(null);
@@ -283,7 +290,7 @@ export function RegexTester() {
           setTimedOut(true);
           setResult(null);
         } else {
-          setResult(guarded);
+          setResult({ data: guarded, text: body });
         }
         return;
       }
@@ -306,7 +313,7 @@ export function RegexTester() {
         if (timerRef.current) window.clearTimeout(timerRef.current);
         setElapsed(performance.now() - started);
         if (data.ok) {
-          setResult(data.result);
+          setResult({ data: data.result, text: body });
           setTimedOut(false);
         } else {
           setSyntaxError(data.message);
@@ -320,7 +327,7 @@ export function RegexTester() {
         const guarded = guardedMatch(pattern, flags, body);
         setElapsed(performance.now() - started);
         if (guarded === null) setTimedOut(true);
-        else setResult(guarded);
+        else setResult({ data: guarded, text: body });
       };
 
       worker.postMessage({ id, pattern, flags, text: body, maxMatches: MAX_MATCHES });
@@ -330,17 +337,18 @@ export function RegexTester() {
   }, [pattern, flags, body, ensureWorker, disposeWorker]);
 
   const segments = useMemo(() => {
-    if (!result || result.matches.length === 0) return null;
-    const out: { text: string; match: boolean; n?: number }[] = [];
+    if (!result || result.data.matches.length === 0) return null;
+    const source = result.text;
+    const out: { text: string; match: boolean; n: number }[] = [];
     let cursor = 0;
-    result.matches.forEach((m, i) => {
-      if (m.index > cursor) out.push({ text: body.slice(cursor, m.index), match: false });
-      out.push({ text: body.slice(m.index, m.end), match: true, n: i + 1 });
+    result.data.matches.forEach((m, i) => {
+      if (m.index > cursor) out.push({ text: source.slice(cursor, m.index), match: false, n: 0 });
+      out.push({ text: source.slice(m.index, m.end), match: true, n: i + 1 });
       cursor = Math.max(cursor, m.end);
     });
-    if (cursor < body.length) out.push({ text: body.slice(cursor), match: false });
+    if (cursor < source.length) out.push({ text: source.slice(cursor), match: false, n: 0 });
     return out;
-  }, [result, body]);
+  }, [result]);
 
   function toggleFlag(flag: string) {
     setFlags((current) =>
@@ -361,7 +369,7 @@ export function RegexTester() {
     setText(preset.sample);
   }
 
-  const matchCount = result?.matches.length ?? 0;
+  const matchCount = result?.data.matches.length ?? 0;
 
   return (
     <ToolShell
@@ -548,7 +556,7 @@ export function RegexTester() {
                 className="font-display text-2xl text-[hsl(var(--brand-bone))]"
               >
                 {timedOut || syntaxError ? "--" : matchCount}
-                {result?.truncated ? "+" : ""}
+                {result?.data.truncated ? "+" : ""}
               </span>
               <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                 {matchCount === 1 ? "match" : "matches"}
@@ -571,7 +579,7 @@ export function RegexTester() {
               </p>
             ) : null}
 
-            {result?.truncated ? (
+            {result?.data.truncated ? (
               <p className="mt-3 font-mono-tight text-xs text-[hsl(var(--brand-amber))]">
                 Stopped at {MAX_MATCHES.toLocaleString()} matches.
               </p>
@@ -590,7 +598,7 @@ export function RegexTester() {
                       <mark
                         key={i}
                         className={`rounded-sm px-0.5 text-[hsl(var(--brand-obsidian))] ${
-                          (seg.n ?? 0) % 2 === 1
+                          seg.n % 2 === 1
                             ? "bg-[hsl(var(--brand-signal))]"
                             : "bg-[hsl(var(--brand-cyan))]"
                         }`}
@@ -610,10 +618,10 @@ export function RegexTester() {
             ) : null}
           </ToolPanel>
 
-          {result && result.matches.length > 0 ? (
+          {result && result.data.matches.length > 0 ? (
             <ToolPanel title="Captures">
               <ol className="space-y-3" data-testid="list-captures">
-                {result.matches.slice(0, SHOWN_MATCHES).map((m, i) => (
+                {result.data.matches.slice(0, SHOWN_MATCHES).map((m, i) => (
                   <li
                     key={`${m.index}-${i}`}
                     className="rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] p-3"
@@ -653,9 +661,9 @@ export function RegexTester() {
                   </li>
                 ))}
               </ol>
-              {result.matches.length > SHOWN_MATCHES ? (
+              {result.data.matches.length > SHOWN_MATCHES ? (
                 <p className="mt-3 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                  Showing the first {SHOWN_MATCHES} of {result.matches.length} matches.
+                  Showing the first {SHOWN_MATCHES} of {result.data.matches.length} matches.
                 </p>
               ) : null}
             </ToolPanel>

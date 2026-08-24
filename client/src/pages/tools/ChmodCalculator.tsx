@@ -113,8 +113,11 @@ function parseMode(raw: string): Parsed {
   if (/^[0-7]{3,4}$/.test(input)) {
     return { mode: parseInt(input, 8), error: null };
   }
+  if (/^[0-7]+$/.test(input)) {
+    return { mode: null, error: "An octal mode is three or four digits, for example 644 or 0755." };
+  }
   if (/^[0-9]+$/.test(input)) {
-    return { mode: null, error: "Octal modes use the digits 0 to 7 only, in groups of three or four." };
+    return { mode: null, error: "Octal uses the digits 0 to 7 only. There is no 8 or 9 in a file mode." };
   }
 
   // ls -l prints a leading type character. Accept and ignore it so a pasted

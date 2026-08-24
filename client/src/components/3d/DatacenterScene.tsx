@@ -29,9 +29,14 @@ import { PerformanceOverlay } from "./PerformanceOverlay";
 import type { Rack, Equipment, InstalledEquipment } from "@shared/schema";
 import * as THREE from "three";
 import { precompileSceneMaterials } from "@/lib/asset-manager";
+import { rackHeatLevel } from "@/lib/capacity";
 import { useBuild } from "@/lib/build-context";
 import { logInfo, logWarning } from "@/lib/error-log";
 import type { GameRenderProfile } from "@/lib/webgl-support";
+
+/** Photo mode and the day / night toggle both need to reach into the Canvas. */
+export type SceneCapture = () => Promise<Blob | null>;
+export type LightingMode = "day" | "night";
 
 interface DatacenterSceneProps {
   onSelectRack: (rack: Rack | null) => void;
@@ -44,6 +49,14 @@ interface DatacenterSceneProps {
   rackScale?: number;
   rackCount?: number;
   showHeatmap?: boolean;
+  lightingMode?: LightingMode;
+  /**
+   * Set to true while a photo is being taken: parks the camera on a framing
+   * that shows the floor rather than wherever the user left it.
+   */
+  photoFraming?: boolean;
+  /** Filled in with a function that renders and returns a PNG of the canvas. */
+  captureRef?: React.MutableRefObject<SceneCapture | null>;
   performanceMode?: boolean;
   qualityMode?: "low" | "high";
   visibleRacks?: Rack[];
@@ -64,26 +77,44 @@ interface DatacenterSceneProps {
 function AdvancedLights({
   performanceMode = false,
   theme = "dark",
+  lightingMode = "night",
 }: {
   performanceMode?: boolean;
   theme?: "dark" | "light";
+  lightingMode?: LightingMode;
 }) {
   const isLight = theme === "light";
+  /*
+    Day is not just "brighter". A hall on day shift has the overheads on, so
+    the fill lifts a long way and the colour temperature comes up towards
+    daylight, while at night the room is lit by equipment LEDs and the aisle
+    strips, which is cooler and much dimmer. Both multipliers are applied to
+    the existing per-theme values so the light and dark site themes keep
+    their own character.
+  */
+  const isDay = lightingMode === "day";
+  const fill = isDay ? 2.1 : 1;
+  const key = isDay ? 1.35 : 1;
+  const warm = (dayColor: string, nightColor: string) => (isDay ? dayColor : nightColor);
+
   return (
     <>
-      <ambientLight intensity={isLight ? 0.55 : 0.25} color={isLight ? "#dbe8ff" : "#5b79c7"} />
+      <ambientLight
+        intensity={(isLight ? 0.55 : 0.25) * fill}
+        color={warm("#fff4e2", isLight ? "#dbe8ff" : "#5b79c7")}
+      />
       {!performanceMode && (
         <>
-          <pointLight position={[0, 18, 0]} intensity={isLight ? 0.8 : 0.6} color={isLight ? "#d9f0ff" : "#8bbcff"} />
-          <pointLight position={[20, 12, 20]} intensity={isLight ? 0.6 : 0.4} color={isLight ? "#e8f4ff" : "#7fd4ff"} />
-          <pointLight position={[-20, 12, -20]} intensity={isLight ? 0.6 : 0.4} color={isLight ? "#e8f4ff" : "#7fd4ff"} />
+          <pointLight position={[0, 18, 0]} intensity={(isLight ? 0.8 : 0.6) * fill} color={warm("#fff1da", isLight ? "#d9f0ff" : "#8bbcff")} />
+          <pointLight position={[20, 12, 20]} intensity={(isLight ? 0.6 : 0.4) * fill} color={warm("#ffeccd", isLight ? "#e8f4ff" : "#7fd4ff")} />
+          <pointLight position={[-20, 12, -20]} intensity={(isLight ? 0.6 : 0.4) * fill} color={warm("#ffeccd", isLight ? "#e8f4ff" : "#7fd4ff")} />
         </>
       )}
 
       <directionalLight
         position={[60, 100, 40]}
-        intensity={performanceMode ? 0.8 : isLight ? 1.1 : 1.0}
-        color={isLight ? "#f4f7ff" : "#ffffff"}
+        intensity={(performanceMode ? 0.8 : isLight ? 1.1 : 1.0) * key}
+        color={warm("#fffaf0", isLight ? "#f4f7ff" : "#ffffff")}
         castShadow={!performanceMode}
         shadow-mapSize={performanceMode ? [1024, 1024] : [2048, 2048]}
         shadow-camera-far={200}
@@ -100,8 +131,8 @@ function AdvancedLights({
             position={[0, 35, 10]}
             angle={0.4}
             penumbra={0.6}
-            intensity={isLight ? 0.7 : 0.6}
-            color={isLight ? "#b4d6ff" : "#8bbcff"}
+            intensity={(isLight ? 0.7 : 0.6) * key}
+            color={warm("#ffe9c4", isLight ? "#b4d6ff" : "#8bbcff")}
             castShadow
             shadow-mapSize={[1024, 1024]}
           />
@@ -109,21 +140,21 @@ function AdvancedLights({
             position={[0, 30, -12]}
             angle={0.45}
             penumbra={0.6}
-            intensity={isLight ? 0.6 : 0.5}
-            color={isLight ? "#a5f3fc" : "#7ee7ff"}
+            intensity={(isLight ? 0.6 : 0.5) * key}
+            color={warm("#ffe4bd", isLight ? "#a5f3fc" : "#7ee7ff")}
             castShadow
             shadow-mapSize={[1024, 1024]}
           />
         </>
       )}
 
-      <directionalLight position={[-40, 50, -30]} intensity={isLight ? 0.45 : 0.3} color={isLight ? "#d1e2ff" : "#6688ff"} />
-      <directionalLight position={[0, 20, -50]} intensity={isLight ? 0.25 : 0.2} color={isLight ? "#ffd2b3" : "#ff8844"} />
+      <directionalLight position={[-40, 50, -30]} intensity={(isLight ? 0.45 : 0.3) * fill} color={warm("#ffe8cc", isLight ? "#d1e2ff" : "#6688ff")} />
+      <directionalLight position={[0, 20, -50]} intensity={(isLight ? 0.25 : 0.2) * fill} color={isLight ? "#ffd2b3" : "#ff8844"} />
 
       <hemisphereLight
-        color={isLight ? "#cfe2ff" : "#88aaff"}
+        color={warm("#fff3e0", isLight ? "#cfe2ff" : "#88aaff")}
         groundColor={isLight ? "#e9eef7" : "#442200"}
-        intensity={isLight ? 0.3 : 0.15}
+        intensity={(isLight ? 0.3 : 0.15) * fill}
       />
     </>
   );
@@ -184,6 +215,74 @@ function RendererRuntime({ renderProfile }: { renderProfile: GameRenderProfile }
       gl.outputColorSpace = previousColorSpace;
     };
   }, [gl, renderProfile]);
+
+  return null;
+}
+
+/**
+ * Hands the page a function that renders one frame and returns it as a PNG.
+ *
+ * The explicit gl.render before toBlob is not optional. React Three Fiber
+ * renders on its own schedule, and the drawing buffer is only guaranteed to
+ * hold the last frame because the context is created with
+ * preserveDrawingBuffer. Rendering immediately before the read removes any
+ * question about which frame you get.
+ */
+function CaptureBridge({ captureRef }: { captureRef?: React.MutableRefObject<SceneCapture | null> }) {
+  const { gl, scene, camera } = useThree();
+
+  useEffect(() => {
+    if (!captureRef) return;
+    captureRef.current = () =>
+      new Promise<Blob | null>((resolve) => {
+        try {
+          gl.render(scene, camera);
+          gl.domElement.toBlob((blob) => resolve(blob), "image/png");
+        } catch (error) {
+          logWarning("Could not read the canvas for photo mode.", error);
+          resolve(null);
+        }
+      });
+    return () => {
+      captureRef.current = null;
+    };
+  }, [camera, captureRef, gl, scene]);
+
+  return null;
+}
+
+/**
+ * Parks the camera on a three quarter view of the whole floor for a photo.
+ *
+ * Restores whatever the camera was doing when photo mode ends, so taking a
+ * picture does not lose the user's place. The move is instant rather than
+ * animated: a tween would need the capture to wait on it, and there is
+ * nothing to watch while the UI is hidden anyway.
+ */
+function PhotoFraming({ active, floorSize }: { active: boolean; floorSize: number }) {
+  const { camera } = useThree();
+  const previous = useRef<{ position: THREE.Vector3; quaternion: THREE.Quaternion } | null>(null);
+
+  useEffect(() => {
+    if (!active) return;
+    previous.current = {
+      position: camera.position.clone(),
+      quaternion: camera.quaternion.clone(),
+    };
+    const reach = Math.max(18, floorSize * 0.62);
+    camera.position.set(reach, Math.max(12, floorSize * 0.34), reach);
+    camera.lookAt(0, 2.4, 0);
+    camera.updateProjectionMatrix();
+
+    return () => {
+      const saved = previous.current;
+      if (!saved) return;
+      camera.position.copy(saved.position);
+      camera.quaternion.copy(saved.quaternion);
+      camera.updateProjectionMatrix();
+      previous.current = null;
+    };
+  }, [active, camera, floorSize]);
 
   return null;
 }
@@ -279,6 +378,20 @@ function RackGrid({
     }));
   }, [racks, rackSpacing, aisleSpacing, centerX, centerZ]);
 
+  /*
+    Real thermal load per rack, computed once per rack rather than per frame
+    and only while the heatmap is on. rackHeatLevel quantises to twelfths so
+    the colours resolve to a dozen pooled materials instead of one per rack.
+  */
+  const heatLevels = useMemo(() => {
+    if (!heatmapMode) return null;
+    const levels = new Map<string, number>();
+    for (const rack of racks) {
+      levels.set(rack.id, rackHeatLevel(rack, equipmentCatalog));
+    }
+    return levels;
+  }, [equipmentCatalog, heatmapMode, racks]);
+
   useFrame(() => {
     const drag = draggingRef.current;
     if (!drag && onPointerGridChange) {
@@ -357,6 +470,7 @@ function RackGrid({
               buildMode={buildMode}
               isDragging
               rackScale={rackScale}
+              heatLevel={heatLevels?.get(rack.id) ?? null}
               onDragStart={(point) => {
                 if (!canMove || buildMode !== "place") return;
                 draggingRef.current = {
@@ -382,6 +496,7 @@ function RackGrid({
               lodIndex={index}
               buildMode={buildMode}
               rackScale={rackScale}
+              heatLevel={heatLevels?.get(rack.id) ?? null}
               onDragStart={(point) => {
                 if (!canMove || buildMode !== "place") return;
                 draggingRef.current = {
@@ -595,6 +710,9 @@ export function DatacenterScene({
   rackScale = 1,
   rackCount = 9,
   showHeatmap = false,
+  lightingMode = "night",
+  photoFraming = false,
+  captureRef,
   performanceMode = false,
   qualityMode = "high",
   visibleRacks,
@@ -621,6 +739,7 @@ export function DatacenterScene({
   const ceilingHeight = 36;
   const minCameraHeight = 0.6;
   const isLight = theme === "light";
+  const isDaylight = lightingMode === "day";
   const compatibilityMode = renderProfile === "compatibility";
   const balancedMode = renderProfile === "balanced";
   const effectiveQualityMode = compatibilityMode ? "low" : qualityMode;
@@ -775,12 +894,20 @@ export function DatacenterScene({
           stencil: false,
           powerPreference: compatibilityMode ? "low-power" : balancedMode ? "default" : "high-performance",
           failIfMajorPerformanceCaveat: false,
-          preserveDrawingBuffer: false,
+          /*
+            Required by photo mode. Without it the drawing buffer is cleared
+            after compositing and canvas.toBlob returns a blank image. The
+            cost is that the browser cannot discard the back buffer between
+            frames, which is a small amount of extra memory bandwidth.
+          */
+          preserveDrawingBuffer: true,
         }}
         style={{
-          background: isLight
-            ? "linear-gradient(180deg, #edf4ff 0%, #e5ebf7 40%, #d7dfea 100%)"
-            : "linear-gradient(180deg, #050508 0%, #0a0c12 30%, #0d1117 70%, #101520 100%)",
+          background: isDaylight
+            ? "linear-gradient(180deg, #f3f7ff 0%, #e6edfa 42%, #dbe3f0 100%)"
+            : isLight
+              ? "linear-gradient(180deg, #edf4ff 0%, #e5ebf7 40%, #d7dfea 100%)"
+              : "linear-gradient(180deg, #050508 0%, #0a0c12 30%, #0d1117 70%, #101520 100%)",
         }}
         onPointerMissed={handlePointerMissed}
         onPointerDown={(event) => {
@@ -803,11 +930,22 @@ export function DatacenterScene({
         }}
       >
         <RendererRuntime renderProfile={renderProfile} />
-        <fog attach="fog" args={[isLight ? "#dfe7f2" : "#080a10", 20, 120]} />
+        <CaptureBridge captureRef={captureRef} />
+        <PhotoFraming active={photoFraming} floorSize={floorSize} />
+        <fog
+          attach="fog"
+          args={[isDaylight ? "#e8eef8" : isLight ? "#dfe7f2" : "#080a10", 20, 120]}
+        />
 
         <PerspectiveCamera makeDefault position={[25, 18, 25]} fov={balancedMode ? 54 : 50} near={0.1} far={500} />
 
-        {cameraMode === "orbit" && (
+        {/*
+          Photo mode takes the camera on its own. Leaving a controller mounted
+          would have it write a position back every frame and fight the
+          framing, so all three are unmounted for the duration and remount
+          afterwards from the restored camera.
+        */}
+        {cameraMode === "orbit" && !photoFraming && (
           <OrbitControls
             ref={controlsRef}
             enabled={!uiLock}
@@ -830,15 +968,15 @@ export function DatacenterScene({
           />
         )}
 
-        {cameraMode === "orbit" && (
+        {cameraMode === "orbit" && !photoFraming && (
           <CameraBounds controlsRef={controlsRef} minHeight={minCameraHeight} maxHeight={ceilingHeight - 0.5} />
         )}
 
-        {cameraMode === "auto" && (
+        {cameraMode === "auto" && !photoFraming && (
           <CameraController autoOrbit orbitSpeed={0.08} maxHeight={ceilingHeight - 0.5} minHeight={minCameraHeight} />
         )}
 
-        {cameraMode === "cinematic" && (
+        {cameraMode === "cinematic" && !photoFraming && (
           <CinematicFlythrough
             waypoints={cinematicWaypoints}
             speed={balancedMode ? 0.42 : 0.5}
@@ -850,9 +988,13 @@ export function DatacenterScene({
         )}
 
         <Suspense fallback={<LoadingFallback />}>
-          <AdvancedLights performanceMode={useLowEffects || balancedMode} theme={theme} />
+          <AdvancedLights
+            performanceMode={useLowEffects || balancedMode}
+            theme={theme}
+            lightingMode={lightingMode}
+          />
 
-          {!compatibilityMode && (
+          {!compatibilityMode && !isDaylight && (
             <Stars
               radius={200}
               depth={100}

@@ -13,6 +13,7 @@ import { CodeCopyButtons } from "@/components/blog/CodeCopyButtons";
 import { DifficultyBadge } from "@/components/blog/DifficultyBadge";
 import { PostPreviewLink } from "@/components/blog/PostPreviewLink";
 import { PostToc, useActiveHeading, usePostHeadings } from "@/components/blog/PostToc";
+import { SuggestEdit } from "@/components/blog/SuggestEdit";
 import { postDifficulty } from "@/lib/postDifficulty";
 import { recordProgress } from "@/lib/readingHistory";
 import { useSEO } from "@/lib/useSEO";
@@ -477,7 +478,7 @@ export function CinematicBlogPost() {
               <CodeCopyButtons contentRef={contentRef} contentKey={htmlContent} />
 
               <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
-                <div className="flex items-center justify-between font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                <div className="flex flex-wrap items-center justify-between gap-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                   <span>end of note</span>
                   <Link
                     href="/blog"
@@ -485,6 +486,9 @@ export function CinematicBlogPost() {
                   >
                     ← All field notes
                   </Link>
+                </div>
+                <div className="mt-4">
+                  <SuggestEdit slug={post.slug} />
                 </div>
               </div>
 

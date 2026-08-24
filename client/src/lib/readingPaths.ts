@@ -12,8 +12,13 @@
  * path full of 404s is worse than no path at all.
  */
 
-import { getPostBySlug } from "./blogPosts";
-import type { PostMeta } from "./postIndex";
+/*
+  Resolution goes straight to postIndex rather than through blogPosts.
+  blogPosts reaches for post bodies with import.meta.glob, which only exists
+  inside a Vite build, so importing it here would make this module unusable
+  from the pre-renderer. Nothing in here needs a body.
+*/
+import { postIndex, type PostMeta } from "./postIndex";
 
 export interface PathStep {
   slug: string;
@@ -226,16 +231,20 @@ export interface ResolvedStep {
   why: string;
 }
 
+const publishedBySlug = new Map<string, PostMeta>(
+  postIndex.filter((post) => !post.draft).map((post) => [post.slug, post]),
+);
+
 /**
  * Look every step up in the index, dropping any that no longer resolves.
  *
- * getPostBySlug also filters drafts, so a post pulled back to draft leaves
- * the path rather than linking to a page that will not render.
+ * Drafts are excluded along with missing slugs, so a post pulled back to
+ * draft leaves the path rather than linking to a page that will not render.
  */
 export function resolvePath(path: ReadingPath): ResolvedStep[] {
   const steps: ResolvedStep[] = [];
   for (const step of path.steps) {
-    const post = getPostBySlug(step.slug);
+    const post = publishedBySlug.get(step.slug);
     if (post) steps.push({ post, why: step.why });
   }
   return steps;

@@ -10,6 +10,13 @@ import {
   buildIncidents,
   buildNetwork,
 } from "@/lib/static-facility";
+import {
+  CRAH_UNITS_INSTALLED,
+  CRAH_UNIT_CAPACITY_W,
+  facilityPue,
+  IN_ROOM_LOSS_FACTOR,
+} from "@/lib/capacity";
+import { clearLayoutHash, decodeLayout, readLayoutHash } from "@/lib/shareLink";
 import type { 
   GameMode, 
   GameState, 
@@ -71,6 +78,11 @@ interface GameContextType {
   deleteRacks: (rackIds: string[]) => void;
   duplicateRacks: (rackIds: string[]) => void;
   setRacksFromSave: (racks: Rack[]) => void;
+  /**
+   * Rack density a shared link asked for, or null when the floor did not come
+   * from one. Read once by the scene page to set its slider.
+   */
+  sharedLayoutVisibleCount: number | null;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -126,6 +138,15 @@ const defaultMetrics: FacilityMetrics = {
  * PUE. StatusBar masked it with `metric || derived` fallbacks of its own,
  * which is why the top strip looked right while the NOC card directly under
  * it read 0.00%. Deriving here gives every consumer the same real numbers.
+ *
+ * IT load is now the sum of what the racks actually draw rather than a
+ * headcount formula. The formula put a full 500 rack floor at about 735 kW
+ * when the racks on it add up to 7.8 MW, so the NOC read an order of
+ * magnitude light and nothing on the floor could ever run out of anything.
+ *
+ * Cooling capacity is the plant, not a multiple of the load. A capacity that
+ * grows with demand is not a capacity, and the budget meters, the scenarios
+ * and this dashboard all have to agree on one ceiling.
  */
 function deriveMetrics(racks: Rack[], alerts: Alert[]): FacilityMetrics {
   const rackCount = racks.length;
@@ -133,16 +154,18 @@ function deriveMetrics(racks: Rack[], alerts: Alert[]): FacilityMetrics {
     (sum, rack) => sum + rack.installedEquipment.length,
     0,
   );
-  const itLoad = Math.max(1800, serverCount * 45 + rackCount * 120);
-  const pue = 1.12 + Math.min(0.28, rackCount / 400);
+  const itLoad = Math.round(
+    racks.reduce((sum, rack) => sum + Math.max(0, rack.currentPowerDraw), 0),
+  );
+  const pue = facilityPue(rackCount);
   const storageCapacity = Math.max(100, serverCount * 4);
   const unacknowledged = alerts.filter((alert) => !alert.acknowledged);
   return {
     totalPower: Math.round(itLoad * pue),
     itLoad,
     pue: Number(pue.toFixed(3)),
-    coolingCapacity: Math.round(itLoad * 1.35),
-    coolingLoad: Math.round(itLoad * 0.86),
+    coolingCapacity: CRAH_UNITS_INSTALLED * CRAH_UNIT_CAPACITY_W,
+    coolingLoad: Math.round(itLoad * IN_ROOM_LOSS_FACTOR),
     uptime: 99.98,
     activeAlerts: unacknowledged.length,
     criticalAlerts: unacknowledged.filter((a) => a.severity === "critical").length,
@@ -168,6 +191,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [selectedRackId, setSelectedRackId] = useState<string | null>(null);
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
   const [preloadQueue, setPreloadQueue] = useState<Equipment[]>([]);
+  const [sharedLayoutVisibleCount, setSharedLayoutVisibleCount] = useState<number | null>(null);
   const useStaticData = true;
   const staticRacks = useMemo(
     () =>
@@ -554,8 +578,32 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setStaticRacksState(sanitized);
   }, [useStaticData]);
 
+  /**
+   * Restore on load: a shared layout in the URL wins over the autosave.
+   *
+   * This has to happen here rather than in the scene page. React runs child
+   * effects before parent effects, so a page level restore would be undone a
+   * moment later when this provider's autosave restore ran.
+   */
   useEffect(() => {
     if (!useStaticData || hasLoadedAutosave.current) return;
+    hasLoadedAutosave.current = true;
+
+    const hash = readLayoutHash();
+    if (hash) {
+      const decoded = decodeLayout(hash, staticEquipmentCatalog);
+      const sanitized = decoded ? sanitizeRacks(decoded.racks) : [];
+      clearLayoutHash();
+      if (decoded && sanitized.length > 0) {
+        setStaticRacksState(sanitized);
+        setSharedLayoutVisibleCount(
+          Math.min(Math.max(1, decoded.visibleCount || sanitized.length), sanitized.length),
+        );
+        return;
+      }
+      logWarning("A shared layout was in the URL but could not be restored.");
+    }
+
     const snapshots = loadAutosaveSnapshots();
     if (snapshots.length > 0) {
       const sanitized = sanitizeRacks(snapshots[0].racks);
@@ -565,7 +613,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setStaticRacksState(sanitized);
       }
     }
-    hasLoadedAutosave.current = true;
   }, [useStaticData]);
 
   useEffect(() => {
@@ -662,6 +709,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     deleteRacks,
     duplicateRacks,
     setRacksFromSave,
+    sharedLayoutVisibleCount,
   };
 
   return (

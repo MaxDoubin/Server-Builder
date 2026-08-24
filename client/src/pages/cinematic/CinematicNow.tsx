@@ -5,7 +5,9 @@ import { nowConfig, type NowItem } from "@/lib/nowConfig";
 
 export function CinematicNow() {
   useSEO({
-    title: `Now · ${nowConfig.period} | Max Doubin`,
+    // Deliberately not templated with the period: the prerenderer carries a
+    // fixed title per route, and this page's month changes every update.
+    title: "Now | Max Doubin",
     description:
       "What Max Doubin is focused on this month: certification study, what he is building, what he is reading, and what the South CTA Cyber Club is working on.",
     canonical: "https://maxdoubin.com/now",
