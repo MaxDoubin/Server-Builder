@@ -1853,7 +1853,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","homelab","hardware"],
     excerpt: "From a consumer router to a full enterprise network. The stages, mistakes, and lessons from building my infrastructure.",
     coverImage: "/images/blog/homelab-network-evolution.jpg",
-    wordCount: 383,
+    wordCount: 1869,
   },
   {
     slug: "container-orchestration-basics",
