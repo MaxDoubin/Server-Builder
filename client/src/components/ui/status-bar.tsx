@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGame } from "@/lib/game-context";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Clock, AlertCircle, Server, HardDrive } from "lucide-react";
 
 export function StatusBar() {
-  const { facilityMetrics, alerts, racks } = useGame();
+  const { facilityMetrics, alerts } = useGame();
   const criticalCount = alerts.filter((a) => a.severity === "critical" && !a.acknowledged).length;
   const bootTimeRef = useRef(Date.now());
   const [uptimeWave, setUptimeWave] = useState(0);
@@ -17,35 +17,24 @@ export function StatusBar() {
     return () => window.clearInterval(interval);
   }, []);
 
-  const derivedMetrics = useMemo(() => {
-    const rackCount = racks.length;
-    const serverCount = racks.reduce(
-      (sum, rack) => sum + rack.installedEquipment.length,
-      0
-    );
-    const itLoad = Math.max(1800, serverCount * 45 + rackCount * 120);
-    const pue = 1.12 + Math.min(0.28, rackCount / 400);
-    const storageCapacity = Math.max(100, serverCount * 4);
-    const storageUsed = storageCapacity * Math.min(0.92, 0.42 + (serverCount % 30) / 100);
-    const uptime = 99.9 + uptimeWave;
-    return {
-      itLoad,
-      pue,
-      uptime,
-      serverCount,
-      storageCapacity,
-      storageUsed,
-    };
-  }, [racks, uptimeWave]);
-
+  /**
+   * These used to be `facilityMetrics.x || locallyDerived.x` fallbacks,
+   * because facilityMetrics arrived all zeroes in static mode. That masked
+   * the problem here while every dashboard KPI reading the same context
+   * still showed 0. game-context now derives real numbers, so this reads
+   * them straight and the strip agrees with the panels beneath it.
+   *
+   * The wave is display-only jitter so the uptime readout is not frozen. It
+   * stays local: putting a two-second tick in the context would re-render
+   * every consumer of the game state.
+   */
   const resolvedMetrics = {
-    itLoad: facilityMetrics.itLoad || derivedMetrics.itLoad,
-    pue: facilityMetrics.pue || derivedMetrics.pue,
-    uptime: facilityMetrics.uptime || derivedMetrics.uptime,
-    serverCount: facilityMetrics.serverCount || derivedMetrics.serverCount,
-    storageCapacity:
-      facilityMetrics.storageCapacity || derivedMetrics.storageCapacity,
-    storageUsed: facilityMetrics.storageUsed || derivedMetrics.storageUsed,
+    itLoad: facilityMetrics.itLoad,
+    pue: facilityMetrics.pue,
+    uptime: Math.min(99.999, facilityMetrics.uptime + uptimeWave),
+    serverCount: facilityMetrics.serverCount,
+    storageCapacity: facilityMetrics.storageCapacity,
+    storageUsed: facilityMetrics.storageUsed,
   };
   const storagePercent = Math.min(
     100,
@@ -53,7 +42,17 @@ export function StatusBar() {
   );
 
   return (
-    <div className="flex items-center gap-4 text-sm" data-testid="status-bar">
+    /*
+      Wraps. This is one flex item inside the header's right-hand group, and
+      as a nowrap row its readouts were 581px wide inside a 358px box on a
+      390px screen. While the header was `fixed` that overflow was invisible
+      to the document; once it became sticky, and therefore in flow, it gave
+      every dashboard 207px of sideways scroll on a phone.
+    */
+    <div
+      className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
+      data-testid="status-bar"
+    >
       <div className="flex items-center gap-1.5" data-testid="status-power">
         <Zap className="w-4 h-4 text-noc-yellow" />
         <span className="font-mono text-xs">

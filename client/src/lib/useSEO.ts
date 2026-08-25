@@ -5,7 +5,7 @@ const DEFAULT_TITLE =
   "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
 const DEFAULT_DESC =
   "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.";
-const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.jpg`;
 const DEFAULT_CANONICAL = SITE_URL;
 const DEFAULT_OG_TYPE = "profile";
 
@@ -20,6 +20,13 @@ interface SEOProps {
   schema?: Record<string, unknown> | null;
   /** Unique id for the injected <script> tag so it can be cleaned up. */
   schemaId?: string;
+  /**
+   * Keep this page out of the index.
+   *
+   * For interactive tool pages that carry almost no readable content. They
+   * would otherwise be crawled as thin pages competing with the writing.
+   */
+  noindex?: boolean;
 }
 
 function setMeta(selector: string, attr: string, value: string) {
@@ -36,12 +43,18 @@ export function useSEO({
   ogImageAlt = "Max Doubin",
   schema = null,
   schemaId,
+  noindex = false,
 }: SEOProps) {
   useEffect(() => {
     document.title = title;
 
     setMeta('meta[name="description"]', "content", description);
     setMeta('link[rel="canonical"]', "href", canonical);
+    setMeta(
+      'meta[name="robots"]',
+      "content",
+      noindex ? "noindex, follow" : "index, follow",
+    );
 
     // Open Graph
     setMeta('meta[property="og:title"]', "content", title);
@@ -71,6 +84,7 @@ export function useSEO({
       document.title = DEFAULT_TITLE;
       setMeta('meta[name="description"]', "content", DEFAULT_DESC);
       setMeta('link[rel="canonical"]', "href", DEFAULT_CANONICAL);
+      setMeta('meta[name="robots"]', "content", "index, follow");
       setMeta('meta[property="og:title"]', "content", DEFAULT_TITLE);
       setMeta('meta[property="og:description"]', "content", DEFAULT_DESC);
       setMeta('meta[property="og:url"]', "content", DEFAULT_CANONICAL);
@@ -83,5 +97,5 @@ export function useSEO({
       setMeta('meta[name="twitter:url"]', "content", DEFAULT_CANONICAL);
       if (schemaId) document.getElementById(schemaId)?.remove();
     };
-  }, [title, description, canonical, ogType, ogImage, ogImageAlt, schema, schemaId]);
+  }, [title, description, canonical, ogType, ogImage, ogImageAlt, schema, schemaId, noindex]);
 }

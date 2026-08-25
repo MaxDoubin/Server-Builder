@@ -5,6 +5,18 @@ import { generateProceduralRacks } from "@/components/3d/ProceduralRacks";
 import { staticEquipmentCatalog, enhanceEquipmentCatalogItem, type EquipmentCatalogItem } from "@/lib/static-equipment";
 import { addAutosaveSnapshot, loadAutosaveSnapshots, sanitizeRacks } from "@/lib/save-system";
 import { logError, logWarning } from "@/lib/error-log";
+import {
+  buildAlerts,
+  buildIncidents,
+  buildNetwork,
+} from "@/lib/static-facility";
+import {
+  CRAH_UNITS_INSTALLED,
+  CRAH_UNIT_CAPACITY_W,
+  facilityPue,
+  IN_ROOM_LOSS_FACTOR,
+} from "@/lib/capacity";
+import { clearLayoutHash, decodeLayout, readLayoutHash } from "@/lib/shareLink";
 import type { 
   GameMode, 
   GameState, 
@@ -66,6 +78,11 @@ interface GameContextType {
   deleteRacks: (rackIds: string[]) => void;
   duplicateRacks: (rackIds: string[]) => void;
   setRacksFromSave: (racks: Rack[]) => void;
+  /**
+   * Rack density a shared link asked for, or null when the floor did not come
+   * from one. Read once by the scene page to set its slider.
+   */
+  sharedLayoutVisibleCount: number | null;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -112,6 +129,56 @@ const defaultMetrics: FacilityMetrics = {
   storageUsed: 0,
 };
 
+/**
+ * Facility metrics computed from the racks actually on the floor.
+ *
+ * The site deploys as static files, so the /api/init query is disabled and
+ * `data` is undefined. facilityMetrics fell back to defaultMetrics, which is
+ * all zeroes, and every dashboard KPI read zero: uptime 0.00%, no power, no
+ * PUE. StatusBar masked it with `metric || derived` fallbacks of its own,
+ * which is why the top strip looked right while the NOC card directly under
+ * it read 0.00%. Deriving here gives every consumer the same real numbers.
+ *
+ * IT load is now the sum of what the racks actually draw rather than a
+ * headcount formula. The formula put a full 500 rack floor at about 735 kW
+ * when the racks on it add up to 7.8 MW, so the NOC read an order of
+ * magnitude light and nothing on the floor could ever run out of anything.
+ *
+ * Cooling capacity is the plant, not a multiple of the load. A capacity that
+ * grows with demand is not a capacity, and the budget meters, the scenarios
+ * and this dashboard all have to agree on one ceiling.
+ */
+function deriveMetrics(racks: Rack[], alerts: Alert[]): FacilityMetrics {
+  const rackCount = racks.length;
+  const serverCount = racks.reduce(
+    (sum, rack) => sum + rack.installedEquipment.length,
+    0,
+  );
+  const itLoad = Math.round(
+    racks.reduce((sum, rack) => sum + Math.max(0, rack.currentPowerDraw), 0),
+  );
+  const pue = facilityPue(rackCount);
+  const storageCapacity = Math.max(100, serverCount * 4);
+  const unacknowledged = alerts.filter((alert) => !alert.acknowledged);
+  return {
+    totalPower: Math.round(itLoad * pue),
+    itLoad,
+    pue: Number(pue.toFixed(3)),
+    coolingCapacity: CRAH_UNITS_INSTALLED * CRAH_UNIT_CAPACITY_W,
+    coolingLoad: Math.round(itLoad * IN_ROOM_LOSS_FACTOR),
+    uptime: 99.98,
+    activeAlerts: unacknowledged.length,
+    criticalAlerts: unacknowledged.filter((a) => a.severity === "critical").length,
+    serverCount,
+    rackCount,
+    networkDevices: Math.max(2, Math.round(rackCount * 2.5)),
+    storageCapacity,
+    storageUsed: Math.round(
+      storageCapacity * Math.min(0.92, 0.42 + (serverCount % 30) / 100),
+    ),
+  };
+}
+
 const defaultInventory = {
   cpus: [],
   rams: [],
@@ -124,6 +191,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [selectedRackId, setSelectedRackId] = useState<string | null>(null);
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
   const [preloadQueue, setPreloadQueue] = useState<Equipment[]>([]);
+  const [sharedLayoutVisibleCount, setSharedLayoutVisibleCount] = useState<number | null>(null);
   const useStaticData = true;
   const staticRacks = useMemo(
     () =>
@@ -510,8 +578,32 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setStaticRacksState(sanitized);
   }, [useStaticData]);
 
+  /**
+   * Restore on load: a shared layout in the URL wins over the autosave.
+   *
+   * This has to happen here rather than in the scene page. React runs child
+   * effects before parent effects, so a page level restore would be undone a
+   * moment later when this provider's autosave restore ran.
+   */
   useEffect(() => {
     if (!useStaticData || hasLoadedAutosave.current) return;
+    hasLoadedAutosave.current = true;
+
+    const hash = readLayoutHash();
+    if (hash) {
+      const decoded = decodeLayout(hash, staticEquipmentCatalog);
+      const sanitized = decoded ? sanitizeRacks(decoded.racks) : [];
+      clearLayoutHash();
+      if (decoded && sanitized.length > 0) {
+        setStaticRacksState(sanitized);
+        setSharedLayoutVisibleCount(
+          Math.min(Math.max(1, decoded.visibleCount || sanitized.length), sanitized.length),
+        );
+        return;
+      }
+      logWarning("A shared layout was in the URL but could not be restored.");
+    }
+
     const snapshots = loadAutosaveSnapshots();
     if (snapshots.length > 0) {
       const sanitized = sanitizeRacks(snapshots[0].racks);
@@ -521,7 +613,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setStaticRacksState(sanitized);
       }
     }
-    hasLoadedAutosave.current = true;
   }, [useStaticData]);
 
   useEffect(() => {
@@ -539,6 +630,45 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     };
   }, [staticRacksState, useStaticData]);
 
+  const resolvedRacks = useStaticData
+    ? staticRacksState
+    : racksData ?? data?.racks ?? [];
+
+  /**
+   * The rest of the facility, for the static build.
+   *
+   * useStaticData disables the API queries, so alerts, incidents and the
+   * network topology all arrived empty. The ops dashboards then described a
+   * 500 rack site with no network, no alerts and no open incidents. These
+   * derive from the racks that exist and are deterministic, so the numbers
+   * hold still between navigations.
+   *
+   * The timestamps are relative to first render rather than to now, which is
+   * why the clock is read once here instead of inside the builders.
+   */
+  const staticClock = useRef(Date.now());
+  const staticAlerts = useMemo(
+    () => (useStaticData ? buildAlerts(resolvedRacks, staticClock.current) : []),
+    [useStaticData, resolvedRacks],
+  );
+  const staticIncidents = useMemo(
+    () => (useStaticData ? buildIncidents(staticClock.current) : []),
+    [useStaticData],
+  );
+  const staticNetwork = useMemo(
+    () =>
+      useStaticData
+        ? buildNetwork(resolvedRacks.length)
+        : { nodes: [], links: [] },
+    [useStaticData, resolvedRacks.length],
+  );
+
+  const resolvedAlerts = data?.alerts ?? staticAlerts;
+  const derivedMetrics = useMemo(
+    () => deriveMetrics(resolvedRacks, resolvedAlerts),
+    [resolvedRacks, resolvedAlerts],
+  );
+
   const contextValue: GameContextType = {
     isLoading,
     isStaticMode: useStaticData,
@@ -547,13 +677,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       currentMode: localGameMode,
     },
     setGameMode,
-    racks: useStaticData ? staticRacksState : racksData ?? data?.racks ?? [],
+    racks: resolvedRacks,
     servers: data?.servers ?? [],
-    alerts: data?.alerts ?? [],
-    incidents: data?.incidents ?? [],
-    networkNodes: data?.networkNodes ?? [],
-    networkLinks: data?.networkLinks ?? [],
-    facilityMetrics: data?.facilityMetrics ?? defaultMetrics,
+    alerts: resolvedAlerts,
+    incidents: data?.incidents ?? staticIncidents,
+    networkNodes: data?.networkNodes ?? staticNetwork.nodes,
+    networkLinks: data?.networkLinks ?? staticNetwork.links,
+    facilityMetrics: data?.facilityMetrics ?? derivedMetrics,
     equipmentCatalog: useMemo(() => {
       if (useStaticData) {
         return staticEquipmentCatalog;
@@ -579,6 +709,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     deleteRacks,
     duplicateRacks,
     setRacksFromSave,
+    sharedLayoutVisibleCount,
   };
 
   return (

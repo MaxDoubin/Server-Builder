@@ -56,7 +56,7 @@ export function CinematicFooter() {
               <motion.a
                 href="mailto:max@maxdoubin.com"
                 data-testid="link-footer-email"
-                className="mt-6 inline-flex items-center gap-3 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
+                className="mt-6 inline-flex min-h-[24px] items-center gap-3 py-1 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
                 whileHover={{ x: 6, color: "hsl(72 100% 50%)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
@@ -83,6 +83,10 @@ export function CinematicFooter() {
               { href: "/#dossier", label: "Dossier", testId: "link-footer-dossier" },
               { href: "/projects", label: "Projects", testId: "link-footer-projects" },
               { href: "/blog", label: "Field Notes", testId: "link-footer-blog" },
+              { href: "/topics", label: "Topics", testId: "link-footer-topics" },
+              { href: "/archive", label: "Archive", testId: "link-footer-archive" },
+              { href: "/tools", label: "Tools", testId: "link-footer-tools" },
+              { href: "/ncl", label: "NCL guides", testId: "link-footer-ncl" },
               { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
               { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },
             ].map((item) => (
@@ -92,7 +96,7 @@ export function CinematicFooter() {
                     whileHover={{ x: 8, color: "hsl(var(--brand-bone))" }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <Link href={item.href} className="inline-block hover:text-[hsl(var(--brand-bone))]" data-testid={item.testId}>
+                    <Link href={item.href} className="inline-block py-1 hover:text-[hsl(var(--brand-bone))]" data-testid={item.testId}>
                       {item.label}
                     </Link>
                   </motion.div>
@@ -102,7 +106,45 @@ export function CinematicFooter() {
           </StaggerGroup>
         </div>
 
-        <div className="md:col-span-4">
+        <div className="md:col-span-2">
+          <ScrollReveal variants={fadeUp} delay={0.28}>
+            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              About
+            </div>
+          </ScrollReveal>
+          <StaggerGroup className="mt-4 space-y-2 font-mono-tight text-sm" staggerDelay={0.06} delayChildren={0.32}>
+            {[
+              { href: "/now", label: "Now", testId: "link-footer-now" },
+              { href: "/resume", label: "Resume", testId: "link-footer-resume" },
+              { href: "/timeline", label: "Timeline", testId: "link-footer-timeline" },
+              { href: "/certifications", label: "Certifications", testId: "link-footer-certs" },
+              { href: "/cyber-club", label: "Cyber Club", testId: "link-footer-club" },
+              { href: "/cyber-club/kit", label: "Start a cyber club", testId: "link-footer-club-kit" },
+              { href: "/coding-camps", label: "Coding camps", testId: "link-footer-camps" },
+              { href: "/faq", label: "FAQ", testId: "link-footer-faq" },
+              { href: "/uses", label: "Uses", testId: "link-footer-uses" },
+              { href: "/subscribe", label: "Subscribe", testId: "link-footer-subscribe" },
+              { href: "/colophon", label: "Colophon", testId: "link-footer-colophon" },
+              { href: "/verify", label: "Verify these claims", testId: "link-footer-verify" },
+              { href: "/roadmap", label: "Roadmap", testId: "link-footer-roadmap" },
+            ].map((item) => (
+              <StaggerItem key={item.href} variants={footerLinkVariants}>
+                <Magnetic strength={0.1} radius={60}>
+                  <motion.div
+                    whileHover={{ x: 8, color: "hsl(var(--brand-bone))" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <Link href={item.href} className="inline-block py-1 hover:text-[hsl(var(--brand-bone))]" data-testid={item.testId}>
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                </Magnetic>
+              </StaggerItem>
+            ))}
+          </StaggerGroup>
+        </div>
+
+        <div className="md:col-span-2">
           <ScrollReveal variants={fadeRight} delay={0.3}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Elsewhere
@@ -112,7 +154,6 @@ export function CinematicFooter() {
             {[
               { href: "https://github.com/MaxFromYT/Server-Builder", label: "GitHub · MaxFromYT/Server-Builder", testId: "link-footer-github" },
               { href: "https://instagram.com/maxdoubin", label: "Instagram · @maxdoubin", testId: "link-footer-instagram" },
-              { href: "https://instagram.com/percussionmax", label: "Instagram · @percussionmax", testId: "link-footer-percussionmax" },
               { href: PRESS.url, label: `${PRESS.outlet} · Press feature`, testId: "link-footer-press" },
               { href: "mailto:max@maxdoubin.com", label: "max@maxdoubin.com", testId: "link-footer-email-2" },
             ].map((item) => (
@@ -126,7 +167,7 @@ export function CinematicFooter() {
                       href={item.href}
                       target={item.href.startsWith("http") ? "_blank" : undefined}
                       rel={item.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                      className="inline-block hover:text-[hsl(var(--brand-bone))]"
+                      className="inline-block py-1 hover:text-[hsl(var(--brand-bone))]"
                       data-testid={item.testId}
                     >
                       {item.label}

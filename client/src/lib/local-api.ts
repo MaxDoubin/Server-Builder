@@ -7,8 +7,11 @@
  * reuse that same in-memory storage in the browser and intercept `/api/*` fetch
  * calls, serving them locally. Each visitor gets their own isolated sandbox.
  *
- * This module has a side effect on import: it patches window.fetch. Import it
- * once, as early as possible (see main.tsx), before any query fires.
+ * This module is the heavy half: it pulls in server/storage and, through the
+ * shared schema, zod. It used to patch window.fetch on import, which meant
+ * every visitor to the blog or the contact page downloaded the whole API
+ * backend to serve requests they would never make. The interceptor now lives
+ * in local-api-install.ts and imports this on the first /api/ call.
  */
 
 import { storage } from "../../../server/storage";
@@ -165,8 +168,6 @@ async function handleApi(method: string, pathname: string, body: any): Promise<R
   return json({ error: "Not found" }, 404);
 }
 
-// ============ fetch interceptor ============
-
 function toResponse(result: RouteResult): Response {
   if (result.status === 204) return new Response(null, { status: 204 });
   return new Response(JSON.stringify(result.body ?? null), {
@@ -175,57 +176,16 @@ function toResponse(result: RouteResult): Response {
   });
 }
 
-let installed = false;
-
-export function installLocalApi() {
-  if (installed || typeof window === "undefined") return;
-  installed = true;
-
-  const originalFetch = window.fetch.bind(window);
-
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    try {
-      let url: string;
-      let method = (init?.method || "GET").toUpperCase();
-      let requestForBody: Request | null = null;
-
-      if (typeof input === "string") {
-        url = input;
-      } else if (input instanceof URL) {
-        url = input.toString();
-      } else {
-        url = input.url;
-        method = (init?.method || input.method || "GET").toUpperCase();
-        requestForBody = input;
-      }
-
-      const parsed = new URL(url, window.location.origin);
-
-      if (parsed.pathname.startsWith("/api/")) {
-        let body: any = undefined;
-        if (init?.body != null) {
-          try {
-            body = typeof init.body === "string" ? JSON.parse(init.body) : init.body;
-          } catch {
-            body = init.body;
-          }
-        } else if (requestForBody) {
-          try {
-            body = await requestForBody.clone().json();
-          } catch {
-            body = undefined;
-          }
-        }
-        return toResponse(await handleApi(method, parsed.pathname, body));
-      }
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("[local-api] interceptor error, falling back to network", err);
-    }
-    return originalFetch(input as any, init);
-  };
+/**
+ * Serve one /api/ request from the in-browser backend.
+ *
+ * Called by the interceptor in local-api-install.ts once this module has
+ * been fetched.
+ */
+export async function respond(
+  method: string,
+  pathname: string,
+  body: unknown,
+): Promise<Response> {
+  return toResponse(await handleApi(method, pathname, body));
 }
-
-installLocalApi();
-
-export {};

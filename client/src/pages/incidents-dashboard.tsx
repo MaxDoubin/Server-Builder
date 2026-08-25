@@ -3,9 +3,20 @@ import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Toolti
 import { AlertTriangle, Siren, ClipboardList, Timer } from "lucide-react";
 import { useGame } from "@/lib/game-context";
 import { DashboardShell } from "@/pages/dashboard-shell";
+import { useSEO } from "@/lib/useSEO";
 import { KpiCard, Panel } from "@/pages/dashboard-widgets";
 
 export function IncidentsDashboard() {
+  // An interactive view of simulated state, not writing. It carries almost
+  // no readable content, so it is deliberately kept out of the index
+  // rather than competing with the archive as a thin page.
+  useSEO({
+    title: "Incidents | Max Doubin",
+    description: "Incident view of the simulated facility: open alerts, severity and response state.",
+    canonical: "https://maxdoubin.com/incidents",
+    noindex: true,
+  });
+
   const { incidents } = useGame();
 
   const severityData = useMemo(
@@ -34,7 +45,13 @@ export function IncidentsDashboard() {
     >
       <div className="grid gap-4 md:grid-cols-4">
         <KpiCard label="Open Incidents" value={incidents.length.toString()} icon={<AlertTriangle className="h-4 w-4 text-cyan-300" />} />
-        <KpiCard label="Critical" value="3" icon={<Siren className="h-4 w-4 text-cyan-300" />} />
+        <KpiCard
+          label="Critical"
+          value={incidents
+            .filter((incident) => incident.severity === "P1" || incident.severity === "P2")
+            .length.toString()}
+          icon={<Siren className="h-4 w-4 text-cyan-300" />}
+        />
         <KpiCard label="Runbooks" value="18" icon={<ClipboardList className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Median MTTR" value="11m" icon={<Timer className="h-4 w-4 text-cyan-300" />} />
       </div>

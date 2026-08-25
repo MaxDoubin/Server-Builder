@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import {
   ScrollReveal,
@@ -22,10 +22,18 @@ import {
 } from "@/lib/framer-animations";
 
 /**
- * TELEMETRY — Act 6
+ * TELEMETRY, Act 6
  *
- * NOC-style HUD overlay. Four live tiles animate sparklines + counters,
- * grouped as: Fabric · Thermal · Power · Availability.
+ * NOC-style HUD overlay. Four tiles animate sparklines and counters, grouped
+ * as: Fabric · Thermal · Power · Availability.
+ *
+ * The values are generated, not measured. They used to be badged LIVE and
+ * labelled against Max's own lab, which read as real-time instrumentation
+ * from a facility he runs. The site is static and there is no telemetry
+ * pipeline behind it, so the badge says SIMULATED and the copy says so too.
+ * Under a heading that reads "If it isn't measured, it doesn't exist", the
+ * old framing was the one thing on the page that could not survive being
+ * checked.
  *
  * Now supercharged with Framer Motion animations layered on top of
  * the existing GSAP scroll reveals.
@@ -100,7 +108,13 @@ function useSparklineSeries(length: number, base: number, variance: number) {
   return series;
 }
 
-function Sparkline({ data, color, gradientId }: { data: number[]; color: string; gradientId: string }) {
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  // Every tile renders one of these, so the gradient needs an id of its own.
+  // The id was a required prop that no caller passed, which left the fill
+  // pointing at url(#undefined) and the area under each line invisible.
+  // Colons are legal in an HTML id but not in a CSS url() reference, so the
+  // generated id gets stripped of them.
+  const gradientId = `spark-${useId().replace(/:/g, "")}`;
   if (data.length === 0) return null;
   const w = 220;
   const h = 52;
@@ -141,6 +155,10 @@ function Sparkline({ data, color, gradientId }: { data: number[]; color: string;
         cy={lastY}
         r={2.4}
         fill={color}
+        /* Without an explicit initial, framer can emit a frame where the r
+           attribute is undefined, which the SVG parser rejects with
+           "attribute r: Expected length". */
+        initial={{ r: 2.4 }}
         animate={{
           r: [2.4, 3.6, 2.4],
           opacity: [1, 0.7, 1],
@@ -155,10 +173,11 @@ function Sparkline({ data, color, gradientId }: { data: number[]; color: string;
       <motion.circle
         cx={w}
         cy={lastY}
-        r={2.4}
+        r={4}
         fill="none"
         stroke={color}
         strokeWidth={0.8}
+        initial={{ r: 4 }}
         animate={{
           r: [4, 8, 4],
           opacity: [0.5, 0, 0.5],
@@ -335,7 +354,7 @@ export function TelemetryAct() {
             />
             <PulseGlow color="hsl(var(--brand-signal))">
               <Breathing intensity={1.2}>
-                <span className="text-[hsl(var(--brand-signal))]">LIVE</span>
+                <span className="text-[hsl(var(--brand-signal))]">SIMULATED</span>
               </Breathing>
             </PulseGlow>
           </div>
@@ -376,8 +395,9 @@ export function TelemetryAct() {
         >
           <ScrollReveal variants={fadeUp} transition={{ duration: 0.8, delay: 0.2 }}>
             A rack only earns trust when you can answer, at any hour: how many packets
-            moved, how warm, how much power, how long up. These four tiles are what
-            every NOC I run starts with.
+            moved, how warm, how much power, how long up. These are the four tiles
+            every NOC I run starts with. The numbers here are simulated to show the
+            shape of the thing, not a feed from a live facility.
           </ScrollReveal>
         </div>
 
@@ -418,7 +438,7 @@ export function TelemetryAct() {
               </span>
             </StaggerItem>
             <StaggerItem variants={fadeUp}>
-              <span>fabric · 14.2 M pps</span>
+              <span>fabric · 1.42 M pps</span>
             </StaggerItem>
             <StaggerItem variants={fadeUp}>
               <span>l2 · 0 errors</span>

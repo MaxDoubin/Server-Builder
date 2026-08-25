@@ -1,10 +1,16 @@
 import { useRoute, Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
-import { getPostBySlug } from "@/lib/blogPosts";
+import {
+  getLoadedContent,
+  getPostBySlug,
+  loadPostContent,
+  readMinutes,
+} from "@/lib/blogPosts";
 import { useMemo, useEffect, useState } from "react";
 import { marked } from "marked";
 import { ArrowLeft } from "lucide-react";
 import { useSEO } from "@/lib/useSEO";
+import { formatPostDate } from "@/lib/formatDate";
 
 marked.setOptions({
   gfm: true,
@@ -14,10 +20,34 @@ marked.setOptions({
 const SITE_URL = "https://maxdoubin.com";
 
 export function BlogPost() {
+  // This page is mounted at two paths. Matching only "/blog/:slug" meant
+  // /legacy/blog/<slug> parsed no slug at all and every legacy post URL
+  // rendered "Post Not Found".
+  const [, legacyParams] = useRoute("/legacy/blog/:slug");
   const [, params] = useRoute("/blog/:slug");
-  const slug = params?.slug ?? "";
+  const slug = legacyParams?.slug ?? params?.slug ?? "";
   const post = getPostBySlug(slug);
   const [mounted, setMounted] = useState(false);
+  // Bodies load one chunk at a time. See lib/blogPosts.
+  const [content, setContent] = useState<string | null>(
+    () => getLoadedContent(slug) ?? null,
+  );
+
+  useEffect(() => {
+    const cached = getLoadedContent(slug);
+    if (cached !== undefined) {
+      setContent(cached);
+      return;
+    }
+    setContent(null);
+    let cancelled = false;
+    void loadPostContent(slug).then((text) => {
+      if (!cancelled) setContent(text);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   useEffect(() => {
     setMounted(true);
@@ -60,7 +90,7 @@ export function BlogPost() {
         "@type": "WebPage",
         "@id": `${SITE_URL}/blog/${post.slug}`,
       },
-      wordCount: post.content.split(/\s+/).length,
+      wordCount: post.wordCount,
     };
   }, [post]);
 
@@ -69,16 +99,16 @@ export function BlogPost() {
     description: post?.excerpt ?? "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
     canonical: post ? `${SITE_URL}/blog/${post.slug}` : SITE_URL,
     ogType: post ? "article" : "profile",
-    ogImage: post ? `${SITE_URL}${post.coverImage}` : `${SITE_URL}/images/og-image.png`,
+    ogImage: post ? `${SITE_URL}${post.coverImage}` : `${SITE_URL}/images/og-image.jpg`,
     ogImageAlt: post ? post.title : "Max Doubin - Cybersecurity Specialist",
     schema: postSchema,
     schemaId: "post-schema",
   });
 
   const htmlContent = useMemo(() => {
-    if (!post) return "";
-    return marked(post.content) as string;
-  }, [post]);
+    if (!content) return "";
+    return marked(content) as string;
+  }, [content]);
 
   if (!post) {
     return (
@@ -123,14 +153,10 @@ export function BlogPost() {
         <header className="mt-8">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <time dateTime={post.date}>
-              {new Date(post.date).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {formatPostDate(post.date)}
             </time>
             <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-            <span>{Math.ceil(post.content.split(/\s+/).length / 200)} min read</span>
+            <span>{readMinutes(post)} min read</span>
           </div>
           <h1 className="mt-3 text-3xl font-bold text-foreground sm:text-4xl" data-testid="text-post-title">
             {post.title}
@@ -148,11 +174,25 @@ export function BlogPost() {
           </div>
         </header>
 
-        <div
-          className="prose prose-neutral dark:prose-invert mt-10 max-w-none prose-headings:font-bold prose-a:text-primary prose-code:rounded prose-code:bg-accent/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-pre:bg-accent/30 prose-pre:border prose-pre:border-border/50"
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
-          data-testid="blog-post-content"
-        />
+        {content === null ? (
+          <div className="mt-10" data-testid="blog-post-loading" aria-busy="true">
+            <span className="sr-only">Loading the rest of this post.</span>
+            {[92, 100, 74, 96, 88, 100, 61].map((width, i) => (
+              <div
+                key={i}
+                aria-hidden
+                className="mb-4 h-4 animate-pulse rounded bg-muted"
+                style={{ width: `${width}%`, animationDelay: `${i * 90}ms` }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            className="prose prose-neutral dark:prose-invert mt-10 max-w-none prose-headings:font-bold prose-a:text-primary prose-code:rounded prose-code:bg-accent/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-pre:bg-accent/30 prose-pre:border prose-pre:border-border/50"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+            data-testid="blog-post-content"
+          />
+        )}
       </article>
     </Layout>
   );

@@ -52,7 +52,7 @@ export function BuildToolbar() {
         data-ui="true"
         onPointerDownCapture={stop}
         onPointerMoveCapture={stop}
-        className="fixed top-32 left-1/2 z-50 flex -translate-x-1/2 select-none items-center gap-2 rounded-full border border-cyan-500/30 bg-black/70 px-3 py-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] backdrop-blur"
+        className="absolute top-32 left-1/2 z-50 flex w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 select-none flex-wrap items-center justify-center gap-2 whitespace-nowrap rounded-full border border-cyan-500/30 bg-black/85 px-3 py-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] backdrop-blur"
       >
         {modeButtons.map((button) => {
           const Icon = button.icon;
@@ -86,7 +86,7 @@ export function BuildToolbar() {
         data-ui="true"
         onPointerDownCapture={stop}
         onPointerMoveCapture={stop}
-        className="fixed bottom-24 left-1/2 z-50 flex -translate-x-1/2 select-none flex-row gap-3 rounded-2xl border border-cyan-500/30 bg-black/70 p-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] backdrop-blur"
+        className="absolute bottom-24 left-1/2 z-50 flex w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 select-none flex-row flex-wrap justify-center gap-3 rounded-2xl border border-cyan-500/30 bg-black/85 p-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] backdrop-blur"
       >
         <ToolbarButton
           label="Multi"

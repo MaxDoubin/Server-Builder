@@ -790,7 +790,7 @@ export function ParallaxFloat({
   /**
    * `useScroll` with a `target` measures against the offset parent, and
    * warns (and mismeasures) when the element is statically positioned.
-   * Callers that already position this wrapper keep their own value —
+   * Callers that already position this wrapper keep their own value, and
    * an inline `position` would beat their Tailwind class and move them.
    */
   const isPositioned = /(^|\s)(absolute|fixed|relative|sticky)(\s|$)/.test(

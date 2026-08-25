@@ -10,6 +10,15 @@ interface Props {
   skipPreloader?: boolean;
   /** Omit the standard footer (for game / immersive pages). */
   hideFooter?: boolean;
+  /**
+   * Omit the site navigation.
+   *
+   * The nav is `fixed top-0`, so on a page that renders its own header in
+   * normal flow the two occupy the same strip and their text overlaps into
+   * something unreadable. Immersive pages that carry their own navigation
+   * opt out here.
+   */
+  hideNav?: boolean;
   /** Disable Lenis smooth-scroll (useful when embedding interactive 3D). */
   disableSmoothScroll?: boolean;
 }
@@ -18,6 +27,7 @@ export function CinematicLayout({
   children,
   skipPreloader = false,
   hideFooter = false,
+  hideNav = false,
   disableSmoothScroll = false,
 }: Props) {
   const [bootedOnce, setBootedOnce] = useState(false);
@@ -46,7 +56,7 @@ export function CinematicLayout({
         {!skipPreloader && !bootedOnce && (
           <Preloader onDone={() => setBootedOnce(true)} />
         )}
-        <CinematicNav />
+        {!hideNav && <CinematicNav />}
         <main id="main-content" className="relative">
           {children}
         </main>

@@ -7,7 +7,7 @@ export interface LedProps {
   size?: number;
   intensity?: number;
   blink?: boolean;
-  /** 0..1 — relative blink offset so adjacent LEDs don't pulse in sync. */
+  /** 0..1, relative blink offset so adjacent LEDs don't pulse in sync. */
   seed?: number;
 }
 

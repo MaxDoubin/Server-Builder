@@ -50,7 +50,7 @@ export function CinematicHome() {
         "10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. Work spans networking, server infrastructure, cybersecurity competition, percussion, and community leadership.",
       url: "https://maxdoubin.com/",
       email: "mailto:max@maxdoubin.com",
-      image: "https://maxdoubin.com/images/og-image.png",
+      image: "https://maxdoubin.com/images/og-image.jpg",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Las Vegas",
@@ -62,10 +62,11 @@ export function CinematicHome() {
         name: "South Career Technical Academy",
       },
       award: [
-        "Top 1% — National Cyber League",
+        "Top 1% · National Cyber League",
         "South CTA ranked 7th in the nation in National Cyber League competition",
-        "#1 Percussionist — State of Nevada, 2024",
-        "Student of the Month — South CTA",
+        "#1 Percussionist · State of Nevada, 2024",
+        "PBS Varsity Quiz · State finalist, 2026",
+        "Student of the Month · South CTA",
       ],
       hasCredential: [
         {
@@ -88,10 +89,25 @@ export function CinematicHome() {
           name: "Nevada OWINN Youth Advisory Council",
         },
       ],
+      // Topic coverage. Search engines and AI summarisers use knowsAbout to
+      // decide what a person is an authority on, and the blog archive backs
+      // every one of these with published writing.
+      knowsAbout: [
+        "Cybersecurity",
+        "Capture the Flag competition",
+        "Enterprise networking",
+        "Network segmentation and VLANs",
+        "Server infrastructure",
+        "Virtualization",
+        "Storage systems",
+        "Linux systems administration",
+        "Data center operations",
+        "Percussion performance",
+        "Youth technology education",
+      ],
       sameAs: [
         "https://github.com/MaxFromYT",
         "https://instagram.com/maxdoubin",
-        "https://instagram.com/percussionmax",
       ],
       subjectOf: {
         "@type": "NewsArticle",

@@ -1,8 +1,9 @@
 import { Link } from "wouter";
 import { Layout } from "@/components/site/Layout";
-import { getAllPosts, getAllTags } from "@/lib/blogPosts";
-import { useState, useMemo } from "react";
+import { getAllPosts, getAllTags, readMinutes } from "@/lib/blogPosts";
+import { useEffect, useState, useMemo } from "react";
 import { useSEO } from "@/lib/useSEO";
+import { formatPostDate } from "@/lib/formatDate";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -34,6 +35,15 @@ export function Blog() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
+
+  /**
+   * The archive grows by a post a day. Rendering all of it made this page
+   * 42,000px tall with a card and cover per post, the same problem the
+   * cinematic index had.
+   */
+  const PAGE = 24;
+  const [visible, setVisible] = useState(PAGE);
+  useEffect(() => setVisible(PAGE), [activeTag]);
 
   useSEO({
     title: "Blog | Max Doubin",
@@ -90,7 +100,7 @@ export function Blog() {
         </div>
 
         <div className="mt-8 space-y-6">
-          {filteredPosts.map((post) => (
+          {filteredPosts.slice(0, visible).map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
@@ -111,15 +121,11 @@ export function Blog() {
               <div className="flex-1 p-5">
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <time dateTime={post.date}>
-                    {new Date(post.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {formatPostDate(post.date)}
                   </time>
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                   <span>
-                    {Math.ceil(post.content.split(/\s+/).length / 200)} min read
+                    {readMinutes(post)} min read
                   </span>
                 </div>
                 <h2 className="mt-2 text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
@@ -142,6 +148,19 @@ export function Blog() {
             </Link>
           ))}
         </div>
+
+        {filteredPosts.length > visible && (
+          <div className="mt-10 flex justify-center">
+            <button
+              type="button"
+              data-testid="button-load-more-legacy"
+              onClick={() => setVisible((v) => v + PAGE)}
+              className="rounded-lg border border-border px-6 py-2.5 text-sm text-muted-foreground transition-colors hover:border-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Load more ({filteredPosts.length - visible})
+            </button>
+          </div>
+        )}
 
         {filteredPosts.length === 0 && (
           <div

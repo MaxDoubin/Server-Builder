@@ -61,6 +61,7 @@ const PILLARS: Pillar[] = [
     accent: "cyan",
     lines: [
       "South Career Technical Academy, Las Vegas, Nevada",
+      "PBS Varsity Quiz state finalist in 2026, on an all-freshman team",
       "AP Computer Science Principles and AP Human Geography",
       "CYBER.ORG coursework in Google Dorking, recon, ARP poisoning, and Wireshark or PCAP analysis",
       "Preferred languages: Python and JavaScript",

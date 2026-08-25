@@ -315,6 +315,14 @@
   text-decoration: none;
   border-bottom: 1px solid hsl(var(--brand-signal) / 0.4);
   transition: border-color 150ms ease, color 150ms ease;
+  /*
+    Links in the body ran 21px tall, under the 24px minimum for a touch
+    target. Vertical padding on an inline box grows the hit area without
+    contributing to line height, so nothing moves on the page. The
+    reference lists at the foot of each post are the main beneficiary:
+    a column of bare URLs that were fiddly to hit on a phone.
+  */
+  padding-block: 3px;
 }
 
 .cinematic .cinematic-prose a:hover {
@@ -1128,4 +1136,95 @@ html.lenis-smooth {
 
 @media (prefers-reduced-motion: reduce) {
   .route-fade { animation: none; }
+}
+
+/*
+  Printing a post.
+
+  Teachers and students print things. Without this, printing a post gives
+  you the dark background as a solid ink block, the fixed nav across the
+  first page, and the footer navigation on the last one. This strips the
+  page down to the article: black on white, links shown with their URLs so
+  a paper copy is still usable, and no orphaned headings.
+*/
+@media print {
+  :root,
+  .cinematic {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Chrome, the ambient layers, and anything interactive. */
+  .cinematic-grain::before,
+  .cinematic nav,
+  .cinematic footer,
+  .cinematic canvas,
+  [data-testid="link-skip-to-content"],
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  .cinematic *,
+  .cinematic *::before,
+  .cinematic *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .cinematic main {
+    padding: 0 !important;
+  }
+
+  .cinematic-prose a::after {
+    /* A printed link is useless without its destination. */
+    content: " (" attr(href) ")";
+    font-size: 0.75em;
+    word-break: break-all;
+  }
+
+  .cinematic-prose h2,
+  .cinematic-prose h3 {
+    break-after: avoid-page;
+  }
+
+  .cinematic-prose pre,
+  .cinematic-prose blockquote,
+  .cinematic-prose figure,
+  .cinematic-prose table {
+    break-inside: avoid;
+    border: 1px solid #ccc !important;
+  }
+
+  .cinematic-prose img {
+    max-width: 100% !important;
+    break-inside: avoid;
+  }
+}
+
+/*
+  Cross-document-style route transitions where the browser supports them.
+
+  The JS route fade above stays as the baseline, since View Transitions is
+  not universal. Where it exists the browser cross-fades the old and new
+  frames itself, which is smoother than animating opacity on mount and
+  does not fight the lazy-chunk Suspense boundary.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }

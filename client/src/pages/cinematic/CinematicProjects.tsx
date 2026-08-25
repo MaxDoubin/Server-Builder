@@ -28,12 +28,22 @@ import {
   useInView,
 } from "@/lib/framer-animations";
 
+/**
+ * Filters, derived from the projects that actually exist.
+ *
+ * This list used to be hardcoded, so it drifted: it offered Web and Art
+ * after both of those projects were removed, and offered nothing for the
+ * categories added since. A filter that returns an empty page is worse
+ * than no filter.
+ */
 const CATEGORIES = [
   { value: "all", label: "All" },
-  { value: "networking", label: "Networking" },
-  { value: "simulation", label: "Simulation" },
-  { value: "web", label: "Web" },
-  { value: "art", label: "Art" },
+  ...Array.from(new Set(siteConfig.projects.map((p) => p.category)))
+    .sort()
+    .map((value) => ({
+      value,
+      label: value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, " "),
+    })),
 ];
 
 export function CinematicProjects() {
@@ -224,11 +234,21 @@ export function CinematicProjects() {
                         {project.coverImage && (
                           <ParallaxFloat speed={0.2}>
                             <div className="relative aspect-[16/9] overflow-hidden">
+                              {/*
+                                Intrinsic size so the browser reserves the
+                                card's aspect ratio before the file lands.
+                                Without it each cover popped in and pushed
+                                the grid around as it loaded. Every cover is
+                                16:9 at 1600x900.
+                              */}
                               <img
                                 src={project.coverImage}
                                 alt={project.title}
+                                width={1600}
+                                height={900}
                                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 loading="lazy"
+                                decoding="async"
                               />
                               <div
                                 aria-hidden
@@ -317,7 +337,13 @@ export function CinematicProjects() {
 
                           <div className="mt-0 flex items-center justify-between pt-5">
                             <span className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-                              {project.isGame ? "interactive · 3D" : project.link ? "external" : "ongoing"}
+                              {project.isGame
+                                ? "interactive · 3D"
+                                : !project.link
+                                  ? "ongoing"
+                                  : project.link.startsWith("/")
+                                    ? "on this site"
+                                    : "external"}
                             </span>
                             {project.isGame ? (
                               <PulseGlow color="hsl(var(--brand-signal))">
@@ -335,6 +361,20 @@ export function CinematicProjects() {
                                   </Link>
                                 </Magnetic>
                               </PulseGlow>
+                            ) : project.link && !project.link.startsWith("/") ? (
+                              // Off-site: a real anchor, so the router does not
+                              // try to resolve another origin as a route.
+                              <Magnetic strength={0.15} radius={100}>
+                                <a
+                                  href={project.link}
+                                  target="_blank"
+                                  rel="noreferrer noopener"
+                                  data-testid={`link-project-${project.id}`}
+                                  className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                                >
+                                  Open project →
+                                </a>
+                              </Magnetic>
                             ) : project.link ? (
                               <Magnetic strength={0.15} radius={100}>
                                 <Link
@@ -342,12 +382,21 @@ export function CinematicProjects() {
                                   data-testid={`link-project-${project.id}`}
                                   className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                                 >
-                                  Open project →
+                                  See the work →
                                 </Link>
                               </Magnetic>
                             ) : (
+                              /*
+                                Four of the six cards used to land here and
+                                render "private · no link", which dead-ended
+                                the page and was not even accurate: a public
+                                coding camp and a school club are not private.
+                                Each now points at the page on this site that
+                                substantiates it, so this branch is the
+                                genuine no-evidence case only.
+                              */
                               <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
-                                private · no link
+                                no public link
                               </span>
                             )}
                           </div>

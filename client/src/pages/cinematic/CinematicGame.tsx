@@ -116,7 +116,7 @@ export function CinematicGame() {
   useSEO({
     title: "Hyperscale Simulator | Max Doubin",
     description:
-      "Hyperscale Data Center Architect — design, build, and operate hyper-realistic data centers. Explore the 3D environment, inspect racks, and scale from 1 to 500 racks.",
+      "Hyperscale Data Center Architect: design, build, and operate hyper-realistic data centers. Explore the 3D environment, inspect racks, and scale from 1 to 500 racks.",
     canonical: `${SITE_URL}/game`,
   });
 
@@ -169,7 +169,7 @@ export function CinematicGame() {
   }
 
   return (
-    <CinematicLayout disableSmoothScroll hideFooter>
+    <CinematicLayout disableSmoothScroll hideFooter hideNav>
       <GameBriefing
         support={support}
         profile={profile}

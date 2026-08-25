@@ -12,9 +12,9 @@ import {
   getPhysicalMaterial,
   getBasicMaterial,
 } from "@/lib/asset-pool";
+import { heatLevelColor } from "@/lib/capacity";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Thermometer, Zap } from "lucide-react";
 import { logWarning } from "@/lib/error-log";
 
@@ -33,6 +33,11 @@ interface Rack3DProps {
   isDragging?: boolean;
   rackScale?: number;
   showHud?: boolean;
+  /**
+   * Thermal load of this rack on a 0 to 1 scale, or null when the heatmap is
+   * off. Quantised by the caller so the pooled materials stay countable.
+   */
+  heatLevel?: number | null;
 }
 
 const RACK_WIDTH = 0.85;
@@ -56,15 +61,21 @@ function RackFrame({
   isSelected,
   thermalStatus,
   statusGlowIntensity,
+  heatColor,
 }: {
   isSelected: boolean;
   thermalStatus: string;
   statusGlowIntensity: number;
+  heatColor?: string | null;
 }) {
   const frameColor = "#1a1d24";
   const highlightColor = isSelected ? "#4488ff" : "#2a2d34";
 
   const statusGlowHex = useMemo(() => {
+    // With the heatmap on, the strips carry the rack's measured thermal load
+    // instead of its alert state. Two different meanings on one light would
+    // be worse than either.
+    if (heatColor) return heatColor;
     switch (thermalStatus) {
       case "critical":
         return "#ff3333";
@@ -75,7 +86,7 @@ function RackFrame({
       default:
         return "#00ff66";
     }
-  }, [thermalStatus]);
+  }, [heatColor, thermalStatus]);
 
   return (
     <group>
@@ -212,8 +223,15 @@ function RackFrame({
   );
 }
 
-function SimplifiedRack({ thermalStatus }: { thermalStatus: string }) {
+function SimplifiedRack({
+  thermalStatus,
+  heatColor,
+}: {
+  thermalStatus: string;
+  heatColor?: string | null;
+}) {
   const statusGlowHex = useMemo(() => {
+    if (heatColor) return heatColor;
     switch (thermalStatus) {
       case "critical":
         return "#ff3333";
@@ -224,16 +242,32 @@ function SimplifiedRack({ thermalStatus }: { thermalStatus: string }) {
       default:
         return "#00ff66";
     }
-  }, [thermalStatus]);
+  }, [heatColor, thermalStatus]);
+
+  /*
+    Most of a 500 rack floor renders as this box, so the heatmap has to reach
+    it or the map is a map of nothing. Emissive rather than diffuse keeps the
+    reading independent of where the lights are.
+  */
+  const bodyMaterial = useMemo(
+    () =>
+      heatColor
+        ? getStandardMaterial({
+            color: "#12151b",
+            emissive: heatColor,
+            emissiveIntensity: 0.42,
+            metalness: 0.4,
+            roughness: 0.6,
+          })
+        : getStandardMaterial({ color: "#1a1d24", metalness: 0.6, roughness: 0.4 }),
+    [heatColor],
+  );
 
   return (
     <group>
       <mesh position={[0, RACK_HEIGHT / 2, 0]} castShadow>
         <primitive object={getBoxGeometry([RACK_WIDTH - 0.02, RACK_HEIGHT, RACK_DEPTH - 0.02])} attach="geometry" />
-        <primitive
-          object={getStandardMaterial({ color: "#1a1d24", metalness: 0.6, roughness: 0.4 })}
-          attach="material"
-        />
+        <primitive object={bodyMaterial} attach="material" />
       </mesh>
       <mesh position={[0, RACK_HEIGHT - 0.05, RACK_DEPTH / 2 + 0.01]}>
         <primitive object={getBoxGeometry([RACK_WIDTH - 0.08, 0.025, 0.01])} attach="geometry" />
@@ -290,6 +324,7 @@ export function Rack3D({
   isDragging = false,
   rackScale = 1,
   showHud = true,
+  heatLevel = null,
 }: Rack3DProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -313,14 +348,22 @@ export function Rack3D({
     return "normal";
   }, [rack.inletTemp, rack.currentPowerDraw, rack.powerCapacity, rack.installedEquipment]);
 
+  const heatColor = useMemo(
+    () => (heatLevel === null || heatLevel === undefined ? null : heatLevelColor(heatLevel)),
+    [heatLevel],
+  );
+
   const [isDetailedView, setIsDetailedView] = useState(true);
   const allowDetailed = !forceSimplified && (detailBudget === undefined || lodIndex < detailBudget);
 
-  // Force re-render when rack._lastUpdate changes
+  // Force re-render when the game context stamps a rack as changed.
+  // _lastUpdate is written by the equipment add path and is not part of the
+  // Rack schema, so it has to be read through a widened type.
+  const lastUpdate = (rack as Rack & { _lastUpdate?: number })._lastUpdate;
   const [, forceUpdate] = useState({});
   useEffect(() => {
     forceUpdate({});
-  }, [rack._lastUpdate]);
+  }, [lastUpdate]);
 
   useFrame((state, delta) => {
     if (groupRef.current) {
@@ -390,6 +433,7 @@ export function Rack3D({
             isSelected={isSelected}
             thermalStatus={operationalStatus}
             statusGlowIntensity={statusGlowIntensity}
+            heatColor={heatColor}
           />
 
           {sortedEquipment.map((installed) => {
@@ -431,7 +475,7 @@ export function Rack3D({
           })}
         </>
       ) : (
-        <SimplifiedRack thermalStatus={operationalStatus} />
+        <SimplifiedRack thermalStatus={operationalStatus} heatColor={heatColor} />
       )}
 
       <mesh position={[0, RACK_HEIGHT / 2, 0]}>
@@ -485,11 +529,23 @@ export function Rack3D({
                     <span>Power Usage</span>
                     <span>{Math.round((rack.currentPowerDraw / rack.powerCapacity) * 100)}%</span>
                   </div>
-                  <Progress
-                    value={(rack.currentPowerDraw / rack.powerCapacity) * 100}
-                    className="h-1 bg-white/10"
-                    indicatorClassName="bg-cyan-500 shadow-[0_0_5px_rgba(0,255,255,0.5)]"
-                  />
+                  {/*
+                    The shared Progress has no indicatorClassName, so the prop
+                    that was here never coloured anything and React forwarded
+                    it to the DOM as an unknown attribute. The bar is two divs;
+                    it does not need a component.
+                  */}
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-cyan-500 shadow-[0_0_5px_rgba(0,255,255,0.5)]"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.max(0, (rack.currentPowerDraw / Math.max(1, rack.powerCapacity)) * 100),
+                        )}%`,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </Card>

@@ -1,6 +1,7 @@
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
 import { rm, readFile } from "fs/promises";
+import { execSync } from "child_process";
 
 // server deps to bundle to reduce openat(2) syscalls
 // which helps cold start times
@@ -35,12 +36,40 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
+  // The archive round trips. Markdown edits go up into the source first,
+  // then the source comes back down into markdown and the metadata index.
+  // Without the first half, editing the file that actually holds the article
+  // is silently undone by the second half, which is exactly what happened.
+  console.log("syncing post bodies...");
+  const { syncPostBodies } = await import("./syncPostBodies.ts");
+  await syncPostBodies();
+
+  // Regenerate before Vite runs, so an edit to blogPosts.source.ts cannot
+  // ship with a stale index or a missing body.
+  console.log("generating post index...");
+  execSync("npx tsx script/generatePostIndex.ts", { stdio: "inherit" });
+
   console.log("building client...");
   await viteBuild();
 
   console.log("prerendering pages for SEO...");
-  const { execSync } = await import("child_process");
   execSync("npx tsx script/prerender.ts", { stdio: "inherit" });
+
+  console.log("building data pack...");
+  const { generateDataPack } = await import("./generateDataPack.ts");
+  await generateDataPack();
+
+  console.log("building search index...");
+  const { generateSearchIndex } = await import("./generateSearchIndex.ts");
+  await generateSearchIndex();
+
+  console.log("building cyber club kit...");
+  const { generateClubKit } = await import("./generateClubKit.ts");
+  await generateClubKit();
+
+  console.log("building llms.txt...");
+  const { generateLlmsTxt } = await import("./generateLlmsTxt.ts");
+  await generateLlmsTxt();
 
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));

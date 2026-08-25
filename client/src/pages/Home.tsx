@@ -3,7 +3,9 @@ import { Link } from "wouter";
 import { siteConfig } from "@/lib/siteConfig";
 import { Layout } from "@/components/site/Layout";
 import { getAllPosts } from "@/lib/blogPosts";
+import { useSEO } from "@/lib/useSEO";
 import { AnimatedCounter } from "@/components/site/AnimatedCounter";
+import { formatPostDate } from "@/lib/formatDate";
 import {
   ArrowRight,
   Instagram,
@@ -104,6 +106,24 @@ function SectionHeader({ label }: { label: string }) {
 export function Home() {
   const recentPosts = getAllPosts().slice(0, 3);
   useScrollReveal();
+
+  /*
+    This page had no SEO call at all. On a client-side navigation nothing
+    reset the document head, so it kept the previous route's title,
+    description and canonical: arriving here from a blog post left the
+    browser tab and the canonical URL still claiming to be that post.
+
+    The canonical points at "/" rather than "/legacy" on purpose. This is an
+    alternate presentation of the same profile, so search engines should
+    consolidate it onto the main page instead of indexing both.
+  */
+  useSEO({
+    title:
+      "Max Doubin | Cybersecurity, Networking, Systems Infrastructure, and Leadership",
+    description: siteConfig.shortBio,
+    canonical: "https://maxdoubin.com/",
+    ogType: "profile",
+  });
 
   return (
     <Layout>
@@ -522,7 +542,7 @@ export function Home() {
                   </div>
                   <div className="p-4">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-primary/60 mb-1.5">
-                      {new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      {formatPostDate(post.date)}
                     </p>
                     <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
                       {post.title}

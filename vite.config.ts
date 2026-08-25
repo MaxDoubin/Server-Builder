@@ -43,7 +43,28 @@ export default defineConfig({
         // these in parallel; the route that needs them triggers the
         // load and the rest of the shell renders immediately.
         manualChunks(id) {
+          // The post archive is over a megabyte of markdown shared by four
+          // routes. Give it its own chunk so those routes reference one copy
+          // and nothing else has to carry it.
+          if (id.includes("lib/blogPosts")) return "posts";
+          // React and Vite's preload helper are needed by every route. Left
+          // to Rollup they get parked in whichever chunk happens to claim
+          // them, and they landed inside the r3f chunk. The entry then had
+          // to statically import react-three-fiber (which statically imports
+          // three) purely to reach jsx() and __vitePreload, so every visitor
+          // downloaded 950KB of WebGL before the page could render, even on
+          // routes with no canvas. Pin them somewhere r3f cannot absorb.
+          if (
+            id.includes("vite/preload-helper") ||
+            id.includes("commonjsHelpers") ||
+            id.includes("commonjs-dynamic-modules")
+          ) {
+            return "react";
+          }
           if (!id.includes("node_modules")) return;
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
+            return "react";
+          }
           if (id.includes("three") && !id.includes("@react-three")) {
             return "three";
           }

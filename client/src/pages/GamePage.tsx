@@ -2,6 +2,7 @@ import { Suspense, lazy, Component, type ErrorInfo, type ReactNode, useMemo, use
 import { Maximize2, Minimize2, AlertTriangle, RefreshCw, RotateCcw } from "lucide-react";
 import { GameProvider } from "@/lib/game-context";
 import { BuildProvider } from "@/lib/build-context";
+import { useSEO } from "@/lib/useSEO";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { SiteLoader } from "@/components/ui/site-loader";
@@ -141,6 +142,20 @@ function GameLoading() {
 }
 
 export function GamePage() {
+  /*
+    This route had no SEO call, so it kept whatever head the previous route
+    left behind, the same problem /legacy had. The canonical points at
+    /game because this is the legacy presentation of the same simulator and
+    the two should not be indexed separately.
+  */
+  useSEO({
+    title: "Hyperscale Simulator | Max Doubin",
+    description:
+      "An interactive 3D data center simulator: design racks, place equipment, and watch power, thermals and network load respond.",
+    canonical: "https://maxdoubin.com/game",
+    ogType: "website",
+  });
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [sceneNonce, setSceneNonce] = useState(0);
   const webglSupport = useMemo(() => detectWebGLSupport(), []);
@@ -204,7 +219,7 @@ export function GamePage() {
           </div>
         </div>
 
-        <div className="h-[70vh] min-h-[500px] bg-black">
+        <div className="relative h-[70vh] min-h-[500px] bg-black">
           <GameProvider>
             <BuildProvider>{sceneShell}</BuildProvider>
           </GameProvider>

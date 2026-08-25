@@ -31,10 +31,6 @@ export const siteConfig = {
       handle: "@maxdoubin",
       url: "https://instagram.com/maxdoubin",
     },
-    percussion: {
-      handle: "@percussionmax",
-      url: "https://instagram.com/percussionmax",
-    },
     github: {
       handle: "MaxFromYT",
       url: "https://github.com/MaxFromYT",
@@ -228,6 +224,11 @@ export const siteConfig = {
         "Ranked #1 percussionist in the state of Nevada in 2024 and selected for Nevada All-State Band in 6th, 7th, and 9th grade.",
     },
     {
+      title: "2026 PBS Varsity Quiz State Finalist",
+      description:
+        "Reached the state finals of PBS Varsity Quiz in 2026 on a team made up entirely of freshmen.",
+    },
+    {
       title: "Student of the Month",
       description:
         "Recognized as Student of the Month in October at South Career Technical Academy.",
@@ -249,7 +250,7 @@ export const siteConfig = {
       category: "simulation",
       link: "/game",
       isGame: true,
-      coverImage: "/images/blog-cover-datacenter.png",
+      coverImage: "/images/projects/hyperscale.jpg",
     },
     {
       id: "homelab",
@@ -262,8 +263,48 @@ export const siteConfig = {
         "Virtualization",
       ],
       category: "networking",
-      link: "",
-      coverImage: "/images/blog-cover-default.png",
+      link: "/topics/homelab",
+      coverImage: "/images/projects/homelab.jpg",
+    },
+    {
+      id: "youth-coding-camps",
+      title: "Youth Coding Camps",
+      description:
+        "Lead instructor for youth coding camps across the Las Vegas Valley, teaching programming and computing fundamentals to students beginning in technology.",
+      tech: ["Teaching", "Curriculum", "Python", "Community"],
+      category: "education",
+      link: "/coding-camps",
+      coverImage: "/images/projects/youth-coding-camps.jpg",
+    },
+    {
+      id: "cyber-club",
+      title: "South CTA Cyber Club",
+      description:
+        "President of the school cybersecurity club: running practice sessions, building a lab that resets between meetings, and preparing members for competition.",
+      tech: ["Leadership", "Cybersecurity", "Lab Design"],
+      category: "leadership",
+      link: "/cyber-club",
+      coverImage: "/images/projects/cyber-club.jpg",
+    },
+    {
+      id: "competition",
+      title: "Competitive Cybersecurity",
+      description:
+        "National Cyber League and Cyber Skyline competition across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation. Top 1 percent individually, with a team placing 7th nationally.",
+      tech: ["OSINT", "Cryptography", "Forensics", "Web Exploitation"],
+      category: "security",
+      link: "/ncl",
+      coverImage: "/images/projects/competition.jpg",
+    },
+    {
+      id: "field-notes",
+      title: "Field Notes",
+      description:
+        "A daily technical journal on networking, cybersecurity, storage, virtualization, and the operational side of running infrastructure.",
+      tech: ["Technical Writing", "Documentation"],
+      category: "writing",
+      link: "/blog",
+      coverImage: "/images/projects/field-notes.jpg",
     },
   ],
 };

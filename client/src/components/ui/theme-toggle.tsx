@@ -10,6 +10,9 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
+      // Icon only, so it had no accessible name at all: a screen reader
+      // announced it as just "button".
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
       data-testid="button-theme-toggle"
     >
       {theme === "dark" ? (

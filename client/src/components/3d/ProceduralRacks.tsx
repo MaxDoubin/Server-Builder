@@ -119,7 +119,11 @@ export function generateProceduralRacks(
     
     const variance = 0.85 + rackRandom() * 0.3;
     const inletTemp = tempBase + rackRandom() * 5;
-    const heatLoad = basePower * 0.0034 * variance;
+    // Exhaust rise over inlet. The coefficient was 0.0034, which at a
+    // typical rack load put every rack about 51 C above inlet and pinned
+    // the whole floor above the 40 C warning threshold, with the heat
+    // shimmer permanently on. A real hot aisle runs 10 to 15 C above inlet.
+    const heatLoad = basePower * 0.0009 * variance;
     
     racks.push({
       id: generateRackId(i),

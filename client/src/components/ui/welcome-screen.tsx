@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Cpu, Eye, Hammer, Play, Shield, Sparkles } from "lucide-react";
+import { Cpu, Eye, Hammer, Shield, Sparkles } from "lucide-react";
 import { siteConfig } from "@/lib/siteConfig";
 
 type StartMode = "build" | "explore";
@@ -54,7 +54,14 @@ export function WelcomeScreen({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-hidden bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone))]">
+    /*
+      Absolute, not fixed. This is the lab's entry gate and belongs to the
+      scene box. Pinned to the viewport it covered the whole page including
+      the briefing above it, so /game presented two competing entry screens
+      and the briefing was never seen. In fullscreen the scene box is the
+      viewport anyway, so that case is unchanged.
+    */
+    <div className="absolute inset-0 z-[100] overflow-hidden bg-[hsl(var(--brand-obsidian))] text-[hsl(var(--brand-bone))]">
       <div
         className="absolute inset-0"
         style={{
@@ -116,9 +123,14 @@ export function WelcomeScreen({
               </div>
 
               <div className="space-y-3">
-                <h1 className="font-display text-[clamp(3rem,8vw,6.5rem)] font-medium leading-[0.92] tracking-[-0.05em] text-[hsl(var(--brand-bone))]">
+                {/*
+                  h2, not h1. This gate renders inside the game page, which
+                  already has its own h1 in the briefing above it, so this
+                  gave the document two top-level headings.
+                */}
+                <h2 className="font-display text-[clamp(3rem,8vw,6.5rem)] font-medium leading-[0.92] tracking-[-0.05em] text-[hsl(var(--brand-bone))]">
                   {siteConfig.name}
-                </h1>
+                </h2>
                 <p className="max-w-2xl font-mono-tight text-base text-[hsl(var(--brand-bone-dim))] sm:text-lg">
                   {siteConfig.tagline}
                 </p>
@@ -136,7 +148,7 @@ export function WelcomeScreen({
                     Choose your entry point
                   </div>
                   <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                    Build for the interactive rack and data center environment. Explore for a guided presentation of credentials, projects, leadership, and technical work.
+                    Build opens the interactive rack and data center environment. Explore opens a guided presentation of credentials, projects, leadership, and technical work.
                   </p>
                 </div>
 
@@ -144,7 +156,10 @@ export function WelcomeScreen({
                   <Button
                     type="button"
                     variant={mode === "build" ? "default" : "ghost"}
-                    onClick={() => setMode("build")}
+                    onClick={() => {
+                      setMode("build");
+                      onStart?.("build");
+                    }}
                     className={
                       mode === "build"
                         ? "border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.14)] text-[hsl(var(--brand-bone))]"
@@ -157,7 +172,10 @@ export function WelcomeScreen({
                   <Button
                     type="button"
                     variant={mode === "explore" ? "default" : "ghost"}
-                    onClick={() => setMode("explore")}
+                    onClick={() => {
+                      setMode("explore");
+                      onStart?.("explore");
+                    }}
                     className={
                       mode === "explore"
                         ? "border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-bone))]"
@@ -166,14 +184,6 @@ export function WelcomeScreen({
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     Explore
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => onStart?.(mode)}
-                    className="border border-[hsl(var(--brand-bone)/0.14)] bg-[hsl(var(--brand-bone)/0.08)] text-[hsl(var(--brand-bone))] hover:bg-[hsl(var(--brand-bone)/0.14)]"
-                  >
-                    <Play className="mr-2 h-4 w-4" />
-                    Enter
                   </Button>
                   <Button
                     type="button"

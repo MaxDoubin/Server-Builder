@@ -1,0 +1,32 @@
+/* TEAM */
+
+  Max Doubin
+  Cybersecurity and networking student, Las Vegas, Nevada
+  Site: https://maxdoubin.com
+  Contact: max [at] maxdoubin.com
+
+
+/* THANKS */
+
+  The Cyber Club at South Career Technical Academy, for making the
+  competition practice worth showing up for.
+
+  Everyone who writes documentation that assumes you want to understand
+  the thing, not just copy the command.
+
+  The maintainers of every open source project listed below.
+
+
+/* TECHNOLOGY */
+
+  React 18, TypeScript
+  Vite
+  wouter for routing
+  Tailwind CSS
+  Framer Motion, GSAP, Lenis
+  React Three Fiber and three.js
+  marked, for the blog
+  Static prerendering, deployed on Cloudflare Pages
+
+  No analytics, no cookies, no third party scripts. Google Fonts is the
+  only origin the browser talks to besides this one.
