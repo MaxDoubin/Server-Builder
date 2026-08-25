@@ -166,15 +166,32 @@ function buildPageHtml(base: string, meta: PageMeta): string {
 
 // ─── write helpers ────────────────────────────────────────────────────────────
 
+/**
+ * Write one prerendered page.
+ *
+ * As <path>.html, not <path>/index.html, because of how Cloudflare Pages
+ * resolves a request. Given foo/index.html it answers /foo with a 308 to
+ * /foo/ and serves the page on the second request. Given foo.html it answers
+ * /foo with the page, 200, first time.
+ *
+ * That mattered because every canonical tag, every sitemap entry and every
+ * internal link on this site uses the extensionless form. All 331 of them
+ * were redirecting: two round trips per page for every visitor and every
+ * crawl, and a canonical URL that did not itself resolve.
+ *
+ * Verified against the live host before making the change: /404 returned 200
+ * from 404.html while /404.html returned a 308, which is the same rule in the
+ * other direction.
+ */
 async function writePage(
   relDir: string,
   base: string,
   meta: PageMeta,
 ): Promise<void> {
-  const dir = path.join(DIST, relDir);
-  await mkdir(dir, { recursive: true });
+  const target = path.join(DIST, `${relDir}.html`);
+  await mkdir(path.dirname(target), { recursive: true });
   const html = buildPageHtml(base, meta);
-  await writeFile(path.join(dir, "index.html"), html, "utf-8");
+  await writeFile(target, html, "utf-8");
 }
 
 /**

@@ -1488,7 +1488,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","homelab","fortinet"],
     excerpt: "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
     coverImage: "/images/blog/fortigate-firewall-homelab.jpg",
-    wordCount: 371,
+    wordCount: 1542,
   },
   {
     slug: "server-cpu-selection-guide",
@@ -1519,7 +1519,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A guide to power distribution units for server racks, from basic power strips to intelligent metered PDUs.",
     coverImage: "/images/blog/pdu-selection-guide.jpg",
     coverCredit: {"author":"Tobias Maier","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:1U_19inch_rack_switching_panel_8_C13_plugs_8_Switches_1_Fuse.jpg"},
-    wordCount: 367,
+    wordCount: 1884,
   },
   {
     slug: "wireshark-packet-analysis",
@@ -1539,7 +1539,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I use Nmap for network discovery and security assessment, with practical examples from my lab environment.",
     coverImage: "/images/blog/nmap-scanning-techniques.jpg",
     coverCredit: {"author":"Barnacl437","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Kali-screenshot-20221021.png"},
-    wordCount: 385,
+    wordCount: 1883,
   },
   {
     slug: "mac-pro-2019-teardown-analysis",
@@ -1633,7 +1633,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Advanced iDRAC features that most people overlook, from virtual console to automated alerts and firmware management.",
     coverImage: "/images/blog/dell-idrac-tips-tricks.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg"},
-    wordCount: 370,
+    wordCount: 1552,
   },
   {
     slug: "mac-pro-storage-expansion",
@@ -1750,7 +1750,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I approach firewall policy design, with practical examples from my FortiGate configuration.",
     coverImage: "/images/blog/firewall-policy-design.jpg",
     coverCredit: {"author":"ShakataGaNai","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_ASA_5510.jpg"},
-    wordCount: 367,
+    wordCount: 1894,
   },
   {
     slug: "virtualization-networking-concepts",
@@ -1792,7 +1792,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I document my network infrastructure in a way that is useful during outages, not just for show.",
     coverImage: "/images/blog/network-documentation-best-practices.jpg",
     coverCredit: {"author":"R. Vogl, University of Münster (Germany), Center for Information Processing","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:WWU-network-structure-v1.png"},
-    wordCount: 345,
+    wordCount: 1525,
   },
   {
     slug: "power-consumption-monitoring",
@@ -1802,7 +1802,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I monitor power usage in my rack and the settings that made the biggest difference in my electricity bill.",
     coverImage: "/images/blog/power-consumption-monitoring.jpg",
     coverCredit: {"author":"Robert.Harker","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:UPS_PDU_Open.jpg"},
-    wordCount: 351,
+    wordCount: 1580,
   },
   {
     slug: "incident-response-methodology",
@@ -1811,7 +1811,7 @@ export const postIndex: PostMeta[] = [
     tags: ["cybersecurity","networking","servers"],
     excerpt: "My approach to handling infrastructure incidents, from detection through resolution and documentation.",
     coverImage: "/images/blog/incident-response-methodology.jpg",
-    wordCount: 367,
+    wordCount: 1730,
   },
   {
     slug: "mac-pro-gpu-compute",
@@ -1862,7 +1862,7 @@ export const postIndex: PostMeta[] = [
     tags: ["virtualization","servers","homelab"],
     excerpt: "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
     coverImage: "/images/blog/container-orchestration-basics.jpg",
-    wordCount: 357,
+    wordCount: 1548,
   },
   {
     slug: "bgp-for-network-engineers",
@@ -1892,7 +1892,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Three serious hypervisors, three different trade-offs. Here is how to think about choosing between KVM, Proxmox, and VMware ESXi for your environment.",
     coverImage: "/images/blog/kvm-proxmox-esxi-comparison.jpg",
     coverCredit: {"author":"Primalmotion","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Diagramme_ArchiHyperviseur.png"},
-    wordCount: 361,
+    wordCount: 1678,
   },
   {
     slug: "nvme-vs-sata-enterprise-storage",
@@ -2025,7 +2025,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Server memory is more complex than desktop memory. Understanding channels, DIMM placement, and ECC is essential for getting the performance and reliability you expect.",
     coverImage: "/images/blog/server-memory-architecture.jpg",
     coverCredit: {"author":"Project Kei","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Four_SDRAM_DIMM_slots_on_a_computer_motherboard.jpg"},
-    wordCount: 336,
+    wordCount: 1782,
   },
   {
     slug: "soc-home-lab-build",
@@ -2147,7 +2147,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
     coverCredit: {"author":"Dereckson","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png"},
-    wordCount: 349,
+    wordCount: 1551,
   },
   {
     slug: "ssh-key-based-authentication",

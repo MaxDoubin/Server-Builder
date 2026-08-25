@@ -35,11 +35,36 @@ const DYNAMIC_COVERED_BY = {
   "/study/:exam/:domain": "study",
 };
 
-const rules = redirects
+const ruleLines = redirects
   .split("\n")
   .map((l) => l.trim())
-  .filter((l) => l && !l.startsWith("#"))
-  .map((l) => l.split(/\s+/)[0]);
+  .filter((l) => l && !l.startsWith("#"));
+
+const rules = ruleLines.map((l) => l.split(/\s+/)[0]);
+
+/*
+  A rewrite target must not end in .html.
+
+  Cloudflare Pages strips the .html extension from a rewrite target the same
+  way it does from a request path, so `/noc /index.html 200` turns into a 308
+  to / and the rewrite never happens. That shipped: every simulator dashboard
+  and the whole legacy site redirected to the home page, and nothing local
+  caught it because the rule was present and well formed. The target is `/`.
+*/
+const htmlTargets = ruleLines
+  .map((l) => l.split(/\s+/))
+  .filter((parts) => parts.length >= 2 && /\.html$/.test(parts[1]))
+  .map((parts) => `${parts[0]} -> ${parts[1]}`);
+
+if (htmlTargets.length > 0) {
+  console.error(
+    "FAIL  a rewrite target ends in .html, which Cloudflare Pages turns into\n" +
+      "      a redirect, defeating the rewrite.\n",
+  );
+  for (const t of htmlTargets) console.error(`  ${t}`);
+  console.error("\n  Use `/` as the target instead of `/index.html`.");
+  process.exit(1);
+}
 
 function coveredByRule(route) {
   return rules.some((rule) => {
@@ -52,6 +77,8 @@ function coveredByRule(route) {
 
 function prerendered(route) {
   if (route === "/") return existsSync(path.join(DIST, "index.html"));
+  const flat = path.join(DIST, `${route.slice(1)}.html`);
+  if (existsSync(flat)) return true;
   return existsSync(path.join(DIST, route.slice(1), "index.html"));
 }
 

@@ -43,7 +43,10 @@ function htmlFiles(dir, found = []) {
 function routeOf(file) {
   const relative = path.relative(DIST, file);
   if (relative === "index.html") return "/";
-  return `/${relative.replace(/(?:^|\/)index\.html$/, "")}`;
+  // Pages are emitted flat as <path>.html; 404.html keeps its name because
+  // Cloudflare looks for it by that exact filename.
+  if (relative === "404.html") return "/404.html";
+  return `/${relative.replace(/\.html$/, "").replace(/(?:^|\/)index$/, "")}`;
 }
 
 const pages = htmlFiles(DIST);
