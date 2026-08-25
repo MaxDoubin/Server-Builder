@@ -1,7 +1,7 @@
 
 ## DNS is everything
 
-Something on your network stopped working and you cannot tell why. SSH to the IP address works, SSH to the hostname hangs for five seconds and then fails. Or half your machines can reach the internet and the other half cannot, and the only difference between them is which resolver they were handed by DHCP. That is a DNS problem, and it is the single most common cause of "the network is down" complaints.
+Something on your network stopped working and you cannot tell why. SSH to the IP address works, SSH to the hostname hangs for five seconds and then fails. Or half your machines can reach the internet and the other half cannot, and the only difference is which resolver DHCP handed them. That is a DNS problem, and it is the single most common cause of "the network is down" complaints.
 
 If DNS is not working, nothing works. Web browsers cannot resolve domain names. Active Directory cannot find domain controllers. Email cannot route to mail servers. Monitoring systems cannot identify hosts. DNS is the foundation that everything else depends on, and because it fails by hanging rather than by returning a clean error, it looks like a hundred other problems before it looks like itself.
 
@@ -19,7 +19,7 @@ The **authoritative server** holds the real zone data. It never asks anyone else
 
 The hierarchy is walked from the right of the name to the left. For `pve01.lab.example.com`, a resolver starts at the root, then `com`, then `example.com`. Each step is a referral, not a redirect: the resolver keeps control and makes every query itself.
 
-DNS runs on port 53, over both UDP and TCP. A classic DNS message carried over UDP is limited to 512 bytes of payload, and a response too large for that gets sent back with the truncation bit set so the client retries over TCP. EDNS(0) added a mechanism for the client to advertise a larger UDP buffer, which is why most modern responses still fit in a single UDP packet. Blocking TCP port 53 on a firewall because "DNS is UDP" is a classic way to break large responses in a way that only shows up occasionally.
+DNS runs on port 53, over both UDP and TCP. A classic DNS message over UDP is limited to 512 bytes of payload, and a larger response comes back with the truncation bit set so the client retries over TCP. EDNS(0) lets the client advertise a bigger UDP buffer, which is why most modern responses still fit in one packet. Blocking TCP port 53 because "DNS is UDP" breaks large responses in a way that only shows up occasionally.
 
 ## The records you will actually touch
 
@@ -38,7 +38,7 @@ I run two BIND DNS servers in my lab on separate VMs for redundancy. They serve 
 
 Internal DNS means I can access my servers by name instead of IP address. Instead of remembering that the Proxmox host is at 10.0.20.5, I type pve01.lab.local. When I reconfigure IP addresses, I update DNS once instead of updating every configuration file that references the old IP.
 
-Two servers is the minimum that is worth having. One resolver is not redundancy, it is a single point of failure sitting underneath every other service you run. The rule I follow is that the two resolvers must not share a failure domain: not the same hypervisor host, not the same storage pool, and ideally not the same power circuit. A pair of resolvers that both live on the host you are rebooting is a pair of resolvers that are both down.
+Two servers is the minimum worth having. One resolver is not redundancy, it is a single point of failure under every other service you run. The rule I follow is that the two must not share a failure domain: not the same hypervisor host, not the same storage pool, ideally not the same power circuit. A pair of resolvers that both live on the host you are rebooting is a pair of resolvers that are both down.
 
 ## Split DNS
 

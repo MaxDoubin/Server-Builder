@@ -21,6 +21,7 @@ import { Marked } from "marked";
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
 const { getTagPage } = await import("../client/src/lib/tagPages.ts");
+const { EXAMS } = await import("../client/src/lib/examObjectives.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
@@ -728,6 +729,67 @@ ${TAG_PAGES.map(
 </main>`,
   });
 
+  // ── certification study index and one page per exam domain ──
+  // These answer high-intent objective queries, so they have to exist as
+  // static HTML rather than only after hydration.
+  await writePage("study", base, {
+    title: "Certification study by exam objective | Max Doubin",
+    description:
+      "Security+ SY0-701, Network+ N10-009 and CCNA 200-301 exam domains mapped to the posts and free tools on this site that cover each one.",
+    canonical: `${SITE_URL}/study`,
+    rootContent: `
+<main>
+  <h1>Study by exam objective</h1>
+${EXAMS.map(
+  (e) =>
+    `  <section>\n    <h2>${esc(e.name)} (${esc(e.code)})</h2>\n    <p>${esc(e.intro)}</p>\n    <ul>\n` +
+    e.domains
+      .map(
+        (d) =>
+          `      <li><a href="${SITE_URL}/study/${e.slug}/${d.slug}">${esc(d.name)}</a>` +
+          `${d.weight === null ? "" : ` <span>${d.weight}% of exam</span>`}` +
+          ` <span>${esc(d.summary)}</span></li>`,
+      )
+      .join("\n") +
+    `\n    </ul>\n    <p><a href="${e.officialUrl}">Official ${esc(e.code)} objectives</a></p>\n  </section>`,
+).join("\n")}
+</main>`,
+  });
+
+  for (const exam of EXAMS) {
+    for (const domain of exam.domains) {
+      const matched = posts.filter((post) => {
+        const title = post.title.toLowerCase();
+        const tags = post.tags.map((t) => t.toLowerCase());
+        return domain.keywords.some(
+          (k) => title.includes(k.toLowerCase()) || tags.includes(k.toLowerCase()),
+        );
+      });
+      await writePage(`study/${exam.slug}/${domain.slug}`, base, {
+        title: `${domain.name} | ${exam.name} ${exam.code} | Max Doubin`,
+        description: `${domain.summary} Mapped to ${matched.length} posts and free tools covering ${exam.name} ${exam.code}.`,
+        canonical: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
+        rootContent: `
+<main>
+  <nav><a href="${SITE_URL}/study">All exam domains</a></nav>
+  <h1>${esc(domain.name)}</h1>
+  <p>${esc(exam.name)} ${esc(exam.code)}${domain.weight === null ? "" : `, ${domain.weight}% of the exam`}</p>
+  <p>${esc(domain.summary)}</p>
+  <h2>Posts covering this domain</h2>
+  <ul>
+${matched
+  .map(
+    (post) =>
+      `    <li><a href="${SITE_URL}/blog/${post.slug}">${esc(post.title)}</a> <span>${esc(post.excerpt)}</span></li>`,
+  )
+  .join("\n")}
+  </ul>
+  <p><a href="${exam.officialUrl}">Official ${esc(exam.code)} objectives</a></p>
+</main>`,
+      });
+    }
+  }
+
   // ── roadmap ──
   await writePage("roadmap", base, {
     title: "Roadmap | Max Doubin",
@@ -765,6 +827,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/projects`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/contact`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/game`, lastmod: today, changefreq: "monthly", priority: "0.6" },
+    { loc: `${SITE_URL}/study`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/topics`, lastmod: today, changefreq: "weekly", priority: "0.8" },
     { loc: `${SITE_URL}/archive`, lastmod: today, changefreq: "weekly", priority: "0.8" },
     { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },
@@ -828,6 +891,16 @@ async function writeSitemap(
       changefreq: "weekly",
       priority: "0.7",
     });
+  }
+  for (const exam of EXAMS) {
+    for (const domain of exam.domains) {
+      urls.push({
+        loc: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
+        lastmod: today,
+        changefreq: "monthly",
+        priority: "0.7",
+      });
+    }
   }
   for (const post of live) {
     urls.push({

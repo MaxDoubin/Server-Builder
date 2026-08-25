@@ -279,6 +279,15 @@ const CinematicCerts = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCerts").then((m) => ({ default: m.CinematicCerts })),
 );
 
+const CinematicStudy = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicStudy").then((m) => ({ default: m.CinematicStudy })),
+);
+const CinematicStudyDomain = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicStudyDomain").then((m) => ({
+    default: m.CinematicStudyDomain,
+  })),
+);
+
 const CinematicNotFound = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNotFound").then((module) => ({
     default: module.CinematicNotFound,
@@ -808,6 +817,16 @@ function AnimatedRoutes() {
           <Route path="/tools/classical-ciphers">
             <Suspense fallback={<RouteLoading />}>
               <ClassicalCiphers />
+            </Suspense>
+          </Route>
+          <Route path="/study">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicStudy />
+            </Suspense>
+          </Route>
+          <Route path="/study/:exam/:domain">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicStudyDomain />
             </Suspense>
           </Route>
           <Route path="/topics">
