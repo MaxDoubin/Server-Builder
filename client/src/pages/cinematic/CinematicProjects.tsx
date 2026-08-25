@@ -351,7 +351,7 @@ export function CinematicProjects() {
                                   <Link
                                     href={project.link}
                                     data-testid={`button-play-${project.id}`}
-                                    className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                                    className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                                   >
                                     <span
                                       className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
@@ -370,7 +370,7 @@ export function CinematicProjects() {
                                   target="_blank"
                                   rel="noreferrer noopener"
                                   data-testid={`link-project-${project.id}`}
-                                  className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                                  className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                                 >
                                   Open project →
                                 </a>
@@ -380,7 +380,7 @@ export function CinematicProjects() {
                                 <Link
                                   href={project.link}
                                   data-testid={`link-project-${project.id}`}
-                                  className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                                  className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                                 >
                                   See the work →
                                 </Link>
