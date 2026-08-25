@@ -17787,6 +17787,7 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     slug: "zfs-on-enterprise-hardware",
     title: "Running ZFS on Dell Enterprise Hardware",
     date: "2026-02-08",
+    updated: "2026-08-25",
     tags: ["storage", "zfs", "servers", "homelab"],
     excerpt:
       "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
@@ -17800,17 +17801,29 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     content: `
 ## Why ZFS
 
+You have a PowerEdge with a stack of drives in it, you want a filesystem that will tell you when something is quietly rotting, and the RAID controller in the front of the machine is standing in your way. That is the whole problem in one sentence, and most of the work in getting ZFS running on Dell hardware is convincing the storage controller to get out of the way and then choosing a pool layout you will not regret in two years.
+
 ZFS is a filesystem and volume manager that handles things most filesystems leave to external tools. It does its own RAID (called RAIDZ), snapshots, compression, deduplication, checksumming, and self-healing. Once you use ZFS, going back to traditional RAID controllers and ext4 feels primitive.
 
 The killer feature is data integrity. ZFS checksums every block of data and can detect and correct silent corruption automatically. In a homelab where you are storing data you care about, that matters.
 
-## Setting It Up on a PowerEdge
+## How the integrity guarantee actually works
+
+Two design decisions do the heavy lifting. First, ZFS is copy-on-write: it never overwrites a live block. A modified block is written somewhere new and the pointer to it is updated afterwards, all the way up a tree of block pointers to a root block called the uberblock. Either the whole transaction group lands or none of it does, so there is no fsck and no equivalent of the parity RAID write hole.
+
+Second, a block's checksum lives in the parent block pointer rather than beside the data. If a drive returns the wrong sector, stale data, or a flipped bit, the parent's checksum will not match what came back. In a redundant configuration ZFS reads the good copy from another disk, hands the correct data to the application, and rewrites the bad block. That is the self-healing, and \`zpool status\` counts it in the CKSUM column. It is also why ZFS wants raw disks: a controller presenting one logical volume has already hidden which physical drive returned the bad read.
+
+## Setting it up on a PowerEdge
 
 Running ZFS on Dell hardware requires some decisions. The PERC RAID controller that comes standard with most PowerEdge servers wants to manage the drives itself. For ZFS, you want the OS to see the raw drives. That means either flashing the PERC to IT mode (so it acts as a simple HBA) or using a separate HBA card.
 
 I went with flashing the PERC H330 to IT mode on one of my R740s. The process involves downloading the firmware from Broadcom, booting into the UEFI shell, and running the flash utility. It is straightforward if you follow the steps carefully, but it is permanent (or at least annoying to reverse), so make sure you want ZFS before committing.
 
-## Pool Layout
+Two alternatives are worth knowing before you pick up a flash utility. Several PERC models expose a non-RAID or HBA mode in the controller setup screen, which passes drives through without reflashing anything, and Dell sells the HBA330, a plain host bus adapter with no RAID personality at all. Either is less risk than a firmware crossflash.
+
+What you must not do is the workaround people reach for first: creating a single drive RAID 0 volume per disk so the OS "sees" each drive. That looks like passthrough and is not. The controller still owns the drive, writes its own metadata, usually hides SMART data and the drive serial, and may cache writes in a way ZFS does not know about. Verify before you build anything: real HBA mode means \`lsblk\` shows every physical disk individually and \`smartctl -a /dev/sda\` returns a full SMART report with the manufacturer's model and serial rather than a Dell virtual disk. If \`smartctl\` cannot read the drive, ZFS is not seeing the hardware either.
+
+## Pool layout
 
 My main ZFS pool is a RAIDZ2 configuration across 8 drives. RAIDZ2 gives me double parity, meaning I can lose any two drives simultaneously without data loss. For a homelab, that is a good balance between capacity and safety.
 
@@ -17821,15 +17834,111 @@ zpool create tank raidz2 /dev/sda /dev/sdb /dev/sdc /dev/sdd /dev/sde /dev/sdf /
 zpool create fast mirror /dev/nvme0n1 /dev/nvme1n1
 \`\`\`
 
-## Compression and Snapshots
+Two refinements I would add to that command in production. Set \`ashift\` explicitly, and reference disks by stable identifiers rather than kernel names:
+
+\`\`\`bash
+zpool create -o ashift=12 -O compression=lz4 -O atime=off \\
+  tank raidz2 \\
+  /dev/disk/by-id/scsi-35000c500a1b2c3d4 \\
+  /dev/disk/by-id/scsi-35000c500a1b2c3d5 \\
+  ...
+\`\`\`
+
+\`ashift\` is the base-2 logarithm of the sector size ZFS will use, so \`ashift=12\` means 4096 byte sectors. Almost every modern drive is physically 4K even when it reports 512 byte logical sectors for compatibility, and if ZFS believes the 512 byte lie it does read-modify-write on every operation. It is set per vdev at creation and cannot be changed afterwards.
+
+The \`by-id\` paths matter because \`/dev/sda\` is assigned in whatever order the kernel enumerates devices at boot. Add a controller, move a cable, and the letters shuffle. ZFS labels its disks and usually copes, but troubleshooting a degraded pool is far easier when the name in \`zpool status\` contains the serial of the drive you need to pull out of the chassis.
+
+One more thing to hold onto: parity level is fixed for the life of a vdev. OpenZFS 2.3 added the ability to expand a RAIDZ vdev by one disk at a time, but that adds width, not parity, and existing data keeps its original data to parity ratio until it is rewritten. Plan the parity level like it is permanent, because functionally it is.
+
+## A worked example: verifying the pool is healthy
+
+The single most useful command:
+
+\`\`\`bash
+zpool status -v tank
+\`\`\`
+
+\`\`\`
+  pool: tank
+ state: ONLINE
+  scan: scrub repaired 0B in 07:42:11 with 0 errors on Sun Aug  9 08:12:33 2026
+config:
+
+	NAME                        STATE     READ WRITE CKSUM
+	tank                        ONLINE       0     0     0
+	  raidz2-0                  ONLINE       0     0     0
+	    scsi-35000c500a1b2c3d4  ONLINE       0     0     0
+	    scsi-35000c500a1b2c3d5  ONLINE       0     0     0
+	    scsi-35000c500a1b2c3d6  ONLINE       0     0     0
+	    scsi-35000c500a1b2c3d7  ONLINE       0     0     0
+
+errors: No known data errors
+\`\`\`
+
+Correct output is \`ONLINE\` everywhere, zeros in all three error columns, a recent scrub, and the final line reading "No known data errors". Non-zero CKSUM on one disk with zeros elsewhere is the classic signature of a failing drive or a bad cable, and it is a warning you get long before the drive drops out.
+
+Scrubs are what surface latent corruption. Start one manually and watch it:
+
+\`\`\`bash
+zpool scrub tank
+zpool status tank
+\`\`\`
+
+While it runs the status shows a progress line with a percentage and an estimated completion time. Monthly is a reasonable cadence for spinning disks; most distributions ship a systemd timer or cron entry for it already, and you should confirm it is enabled rather than assume.
+
+Check that compression is doing something useful:
+
+\`\`\`bash
+zfs get compression,compressratio,recordsize tank
+\`\`\`
+
+\`\`\`
+NAME  PROPERTY       VALUE     SOURCE
+tank  compression    lz4       local
+tank  compressratio  1.47x     -
+tank  recordsize     128K      default
+\`\`\`
+
+And configure the event daemon so a failing disk emails you instead of sitting quietly in \`zpool status\`. Set \`ZED_EMAIL_ADDR\` in \`/etc/zfs/zed.d/zed.rc\` and enable the \`zfs-zed\` service. A pool that degrades with nobody watching is just a slower way to lose data.
+
+## Compression and snapshots
 
 I enable LZ4 compression on all datasets by default. LZ4 is fast enough that it actually improves performance in many cases because you are writing less data to disk. The compression ratios vary by workload, but I typically see 1.3x to 1.8x on general data.
 
+LZ4 also has an early abort: it gives up quickly on incompressible data, so already compressed files like video and archives cost almost nothing to attempt. That is why leaving it on globally is right rather than something to tune per dataset. For cold, bulky, compressible data with CPU to spare, \`zstd\` compresses harder at higher cost.
+
+\`recordsize\` is the tuning knob that actually moves numbers. The default is 128K, and it is a maximum rather than a fixed size, so small files do not waste a whole record. Databases that read and write in fixed pages are the exception: matching recordsize to the page size avoids reading 128K to service an 8K or 16K request. Changing it only affects newly written data, so set it before you load the data in.
+
 Snapshots are the other game changer. I take automated snapshots every hour and keep daily snapshots for 30 days. Rolling back a VM or recovering a deleted file takes seconds instead of hours.
 
-## Lessons Learned
+Snapshots are nearly free at creation because copy-on-write means the snapshot is just a reference to blocks that already exist. They cost space only as the live data diverges from them. Two things follow. Deleting a large file inside a filesystem that has snapshots frees nothing, because the snapshots still reference those blocks. And a snapshot is not a backup, because it lives in the same pool as the data it protects. Use \`zfs send\` to get a copy onto different hardware.
+
+## Lessons learned
 
 ZFS rewards careful planning. Choose your pool layout thoughtfully because changing it later means destroying and recreating the pool. Buy drives from different batches to avoid correlated failures. And always have more RAM than you think you need, because ZFS uses memory aggressively for caching.
+
+On the RAM question, the widely repeated "1 GB per TB" rule is folklore that came from deduplication guidance and does not apply to ordinary pools. What is true: the ARC on Linux defaults to using about half of system memory, that memory is reclaimable so it is not lost, and dedup genuinely does need several gigabytes per terabyte of unique data because its table has to stay resident. Give ZFS plenty of RAM for cache, and leave deduplication off unless you have measured that your data actually dedupes. Compression gets you most of the saving for a fraction of the cost.
+
+## What breaks
+
+**A pool built with the wrong ashift.** If you create a vdev on 512e drives without setting \`ashift=12\`, ZFS uses 512 byte sectors and every write becomes a read-modify-write inside the drive. Performance is poor from day one and there is no fix short of destroying and recreating the pool. Always pass \`-o ashift=12\` explicitly rather than trusting autodetection, which relies on the drive telling the truth about its physical sector size.
+
+**Someone types \`zpool add\` when they meant \`zpool attach\`.** \`attach\` adds a mirror to an existing device. \`add\` creates a brand new top level vdev. Run \`zpool add tank /dev/sdi\` on a raidz2 pool and you have just striped your carefully protected pool with a single unprotected disk, and until recently there was no way to remove it. Use \`zpool add -n\` first, which prints exactly what the command would do without doing it.
+
+**The pool fills past about 80 percent and everything gets slow.** ZFS allocates from free space, and as a copy-on-write filesystem it needs contiguous free space to write efficiently. As the pool fills, the allocator switches to a slower best-fit strategy and fragmentation rises. Plan capacity so the pool stays comfortably below 80 percent, and watch \`zpool list\` for the \`CAP\` and \`FRAG\` columns.
+
+**An SLOG is added expecting a general write cache.** The separate log device only accelerates synchronous writes, which are mostly NFS with sync exports, iSCSI, and databases. Asynchronous writes never touch it. Worse, a consumer SSD without power loss protection as an SLOG is actively harmful, because the entire point of the device is to survive a power cut. If your workload is asynchronous, an SLOG changes nothing at all.
+
+**Snapshots accumulate forever and the pool runs out of space with no obvious culprit.** Every hourly snapshot pins the blocks that existed when it was taken, so a busy dataset can hold many times its apparent size in snapshot history. Check with \`zfs list -t snapshot -o name,used -s used\` and put an automatic pruning policy in place from the start, not after the pool is full.
+
+## References
+
+- https://openzfs.github.io/openzfs-docs/
+- https://openzfs.github.io/openzfs-docs/man/master/8/zpool-create.8.html
+- https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html
+- https://openzfs.github.io/openzfs-docs/man/master/8/zpool-scrub.8.html
+- https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html
+- https://wiki.archlinux.org/title/ZFS
 `,
   },
   {
@@ -18118,6 +18227,7 @@ For a homelab, Proxmox wins on value. You get enterprise-class virtualization wi
     slug: "ecc-ram-explained",
     title: "ECC RAM: What It Is and Why Servers Use It",
     date: "2026-01-22",
+    updated: "2026-08-25",
     tags: ["hardware", "servers", "storage"],
     excerpt:
       "A practical explanation of ECC memory, why it matters for servers, and when you actually need it.",
@@ -18129,29 +18239,114 @@ For a homelab, Proxmox wins on value. You get enterprise-class virtualization wi
       sourceUrl: "https://commons.wikimedia.org/wiki/File:MT36JSF1G72PZ-1G9K1HE.jpg",
     },
     content: `
-## What ECC Does
+## What ECC does
+
+You are speccing a server, the ECC memory costs more than the desktop sticks sitting in a bin on your desk, and nobody can give you a straight answer about whether it matters. Or you already have a machine that randomly panics once a month and you are trying to work out whether the memory is lying to you. Both of those questions have the same answer underneath, so here is how ECC works and how to check whether yours is doing anything.
 
 ECC stands for Error-Correcting Code. Standard desktop RAM (non-ECC) can detect some memory errors but cannot fix them. ECC RAM adds an extra bit per byte that allows the memory controller to detect and correct single-bit errors automatically, and detect (but not correct) double-bit errors.
 
 Single-bit errors happen more often than you might think. Cosmic rays, electrical noise, and manufacturing imperfections can all flip a bit in memory. On a desktop, this might cause a crash or a corrupted file once in a while. On a server running 24/7 with terabytes of RAM, the probability of a bit flip becomes a near certainty over time.
 
-## Why Servers Need It
+## How the correction actually works
+
+The scheme is called SECDED: single error correct, double error detect. A DDR4 ECC DIMM is 72 bits wide where a non-ECC DIMM is 64 bits wide, and \`dmidecode\` will show you exactly that as "Total Width: 72 bits, Data Width: 64 bits". Those 8 extra bits per 64-bit word are check bits derived from a Hamming code with one added overall parity bit.
+
+On every read, the memory controller recomputes the check bits from the data it got back and compares them to the check bits it stored. If they match, the read is clean. If they differ, the pattern of the difference (the syndrome) points at exactly which of the 72 bit positions is wrong, and the controller flips it back before the data reaches the CPU. That is a correctable error, or CE. If two bits in the same word are wrong, the syndrome is ambiguous: the controller can tell something is broken but not what, so it reports an uncorrectable error, or UE, and the kernel usually kills the affected process or panics rather than continuing on data it knows is wrong.
+
+Server platforms layer more on top of plain SECDED. Patrol scrubbing walks memory in the background reading and rewriting it, so a latent single-bit error gets corrected before a second flip in the same word turns it into an uncorrectable one. Chipkill, which Intel calls single device data correction, spreads a codeword across DRAM devices so that an entire failed chip looks like a correctable error rather than a catastrophe.
+
+DDR5 muddies the vocabulary. Every DDR5 module, including consumer ones, has on-die ECC inside the DRAM chips, because the cell densities are high enough that the parts would not be reliable without it. That is not the same thing as an ECC DIMM. On-die ECC protects the array internally, does not protect the data as it crosses the bus to the CPU, and does not report anything to the operating system. A real DDR5 ECC module is wider on the wire: two 32-bit subchannels each carrying 8 bits of ECC, 80 bits total. If a vendor tells you a DDR5 stick "has ECC", ask which one they mean.
+
+## Why servers need it
 
 Servers store critical data in memory. Database pages, file system caches, VM memory, and application state all live in RAM. A single flipped bit in a database page could corrupt a record. A flipped bit in a file system write could silently damage data on disk.
 
 ECC memory prevents this by catching and fixing errors before they can cause damage. The correction happens transparently, with no performance penalty and no software involvement. The server logs the correction so administrators can monitor memory health, and if a DIMM starts throwing too many errors, it can be replaced before it fails completely.
 
-## The Performance Question
+That logging is the underrated half. Large scale studies of production fleets keep finding the same shape of result: memory errors are not spread evenly across all modules, they cluster hard on a small number of bad DIMMs, and a DIMM that has thrown correctable errors is dramatically more likely to throw more. In other words the useful signal is not "did an error happen", it is "is this specific slot getting worse". Non-ECC hardware gives you neither the correction nor the signal.
+
+## A worked example: proving your ECC is working
+
+Three checks, in order. First, confirm the hardware is actually ECC:
+
+\`\`\`bash
+sudo dmidecode -t memory | grep -E 'Total Width|Data Width|Error Correction'
+\`\`\`
+
+\`\`\`
+	Error Correction Type: Multi-bit ECC
+	Total Width: 72 bits
+	Data Width: 64 bits
+\`\`\`
+
+If total width equals data width, the module is not ECC no matter what the sticker says. If the memory array reports "None" for error correction type, the board or the CPU is not running the memory in ECC mode even if the sticks support it.
+
+Second, confirm the kernel has an EDAC driver bound to your memory controller. EDAC is the kernel subsystem that reads the controller's error registers and exposes counters in sysfs:
+
+\`\`\`bash
+grep . /sys/devices/system/edac/mc/mc0/{ce_count,ue_count}
+\`\`\`
+
+\`\`\`
+/sys/devices/system/edac/mc/mc0/ce_count:0
+/sys/devices/system/edac/mc/mc0/ue_count:0
+\`\`\`
+
+Two zeros is the healthy answer. No \`mc0\` directory at all is the answer you have to chase, because it means nothing is reading the error registers and errors will be corrected silently with no record. Check that an EDAC module for your platform is loaded with \`lsmod | grep edac\`.
+
+Third, install rasdaemon so errors get decoded, timestamped, and stored rather than just incrementing a counter:
+
+\`\`\`bash
+sudo ras-mc-ctl --summary
+\`\`\`
+
+\`\`\`
+No Memory errors.
+No PCIe AER errors.
+No Extlog errors.
+No MCE errors.
+\`\`\`
+
+When something does go wrong, \`ras-mc-ctl --errors\` prints the location down to the DIMM label, which is what you need to know which slot to pull. Cross-check against the out of band log on the service processor, the iDRAC or IPMI system event log, because that records memory events even when the host operating system is not running.
+
+## The performance question
 
 ECC RAM is often slightly slower than non-ECC RAM because of the additional error-checking overhead. In practice, the difference is negligible for server workloads. We are talking about single-digit percentage differences in memory bandwidth, which almost never matters for real applications.
 
 The bigger factor is that server-class ECC DIMMs (RDIMMs and LRDIMMs) run at specific speeds that are often lower than what consumer DDR4 or DDR5 achieves. But servers compensate with more memory channels and more DIMMs, so total bandwidth is usually higher than a consumer system despite the lower per-DIMM speed.
 
-## When You Need It
+The reason those DIMMs are slower per module is worth knowing, because it explains the whole product line. A registered DIMM puts a register between the memory controller and the DRAM chips for the command and address signals, which adds a cycle of latency but massively reduces the electrical load the controller has to drive. A load-reduced DIMM buffers the data lines too. That buffering is what lets a server hang eight, twelve, or more high capacity modules off one controller at all. Unbuffered ECC also exists, and is what you find on entry level server boards and workstation platforms.
+
+## When you need it
 
 If you are running workloads where data integrity matters (databases, file servers, ZFS, virtualization), use ECC. ZFS in particular strongly recommends ECC RAM because it relies on the integrity of its in-memory data structures to maintain data consistency.
 
+Worth being precise about the ZFS case, because the internet has invented a monster around it. The folklore says a scrub on a machine with bad RAM will progressively destroy the whole pool. That specific escalating failure is not a documented behaviour of ZFS and the developers have said so. The real risk is duller and still bad: ZFS checksums data after it exists in memory, so if a bit flips before the checksum is computed, ZFS faithfully stores corrupt data with a perfectly valid checksum and will defend that corruption forever. ECC closes the window that no filesystem can close from software.
+
 For a homelab, ECC is a strong recommendation but not an absolute requirement. If you are running ZFS or storing data you care about, get ECC. If you are just experimenting with VMs and do not mind the occasional crash, non-ECC will work, but you are accepting a risk that grows with the amount of RAM in the system.
+
+## What breaks
+
+**The DIMMs are ECC but the platform is not.** ECC needs support from the memory controller, which lives in the CPU, and from the firmware. Put ECC modules in a board that does not support it and, if they post at all, they run as ordinary memory with the check bits ignored. You will have paid for ECC and got nothing. Verify with \`dmidecode\` after the build, not with the invoice.
+
+**Nothing is watching the counters.** Correctable errors are, by design, invisible. The machine keeps working. A DIMM can spend six months quietly correcting thousands of errors an hour, then produce an uncorrectable one at three in the morning. Scrape \`ce_count\` per DIMM into your monitoring and alert on the rate of change, not the absolute value, because a slot that suddenly starts accumulating is the thing you want to catch.
+
+**memtest86+ comes back clean on genuinely bad memory.** On an ECC system, single-bit faults get corrected before the test sees them, so the test passes while the hardware degrades. Memory testers are for non-ECC systems and for confirming gross failures. On a server, the EDAC and rasdaemon logs are the real diagnostic, and they run continuously instead of only when the machine is offline.
+
+**Mixing modules, or filling slots in the wrong order.** Server memory population rules are not suggestions. Channels must usually be filled symmetrically and in a documented slot order, and mixing ranks, sizes, or RDIMM with LRDIMM often forces the whole set to a lower speed or refuses to post. Read the board's memory population table before you order, because the cheap secondhand DIMM that will not cooperate with your existing set is not a bargain.
+
+**Assuming ECC makes you immune to Rowhammer.** Repeatedly hammering one DRAM row can disturb bits in adjacent rows, and researchers have demonstrated attacks that work on ECC systems by finding multi-bit patterns the code cannot catch or by using the timing of corrections as a side channel. ECC raises the difficulty substantially. It is not a mitigation you can rely on by itself, and target row refresh in the DRAM plus a patched hypervisor still matter.
+
+**Uncorrectable errors get treated as software bugs.** A UE typically surfaces as a machine check exception, and the visible symptom is a process that died for no reason or a host that panicked. If you see those in a pattern and you have not checked the memory logs, you can burn a week debugging an application that was never at fault.
+
+## References
+
+- https://en.wikipedia.org/wiki/ECC_memory
+- https://en.wikipedia.org/wiki/Hamming_code
+- https://www.kernel.org/doc/html/latest/admin-guide/RAS/main.html
+- https://www.kernel.org/doc/html/latest/driver-api/edac.html
+- https://en.wikipedia.org/wiki/Registered_memory
+- https://en.wikipedia.org/wiki/Row_hammer
 `,
   },
   {
@@ -19880,21 +20075,19 @@ The layout rule I follow is that the top row answers "is anything on fire right 
     content: `
 ## The problem
 
-You have two Macs sitting a metre apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you already plugged in the cable, macOS created something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that cannot reach anything and may have broken your internet. Here is what Thunderbolt networking is underneath, how to set it up and prove it is carrying traffic, and where it stops being the right tool.
+You have two Macs a metre apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you plugged the cable in, macOS made something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that reaches nothing and may have broken your internet. Here is what Thunderbolt networking is underneath, how to prove it is carrying traffic, and where it stops being the right tool.
 
 ## What Thunderbolt networking is
 
 Thunderbolt supports native IP networking when you connect two Macs with a Thunderbolt cable. The connection appears as a standard network interface, and you get speeds up to 10 Gbps (Thunderbolt 3/4) with extremely low latency. No switches, no transceivers, no configuration beyond plugging in a cable.
 
-For direct Mac-to-Mac file transfers, it is the fastest option available. Thunderbolt Bridge in macOS makes it completely transparent to applications. Finder copies, \`rsync\`, SMB, NFS, \`scp\`, and Screen Sharing all use it the moment the routing table points that way.
+For direct Mac-to-Mac file transfers, it is the fastest option available. Thunderbolt Bridge in macOS makes it completely transparent to applications. Finder copies, \`rsync\`, SMB, and \`ssh\` all use it the moment the routing table points that way.
 
 ## How it works underneath
 
-Thunderbolt is a tunnelling protocol, not a network protocol. The link carries PCIe packets, DisplayPort packets, and since Thunderbolt 3 also USB packets, each in its own tunnel over the same wire. That is why one port can drive a monitor, an SSD, and a keyboard at once.
+Thunderbolt is a tunnelling protocol, not a network protocol. The link carries PCIe, DisplayPort, and since Thunderbolt 3 also USB packets, each in its own tunnel over the same wire. Host-to-host is the awkward case. Normally one side is a host and the other is a PCIe endpoint, but when you join two Macs neither is willing to be the peripheral. Instead the two controllers negotiate a direct DMA path between host memory on each side, and each operating system presents that path to its network stack as an ordinary Ethernet NIC. Apple's protocol for this is called ThunderboltIP, which is why the link shows up with a MAC address and an MTU like any other interface. macOS then wraps it in a real layer 2 bridge, \`bridge0\`, whose members are the machine's Thunderbolt ports. That detail matters later.
 
-Host-to-host is the awkward case. Normally one side is a host and the other is a PCIe endpoint, but when you join two Macs neither is willing to be the peripheral. Instead the two controllers negotiate a direct DMA path between host memory on each side, and each operating system presents that path to its network stack as an ordinary Ethernet NIC. Apple's protocol for this is called ThunderboltIP, which is why the link shows up with a MAC address and an MTU like any other interface. macOS then wraps it in a real layer 2 bridge, \`bridge0\`, whose members are the machine's Thunderbolt ports. That detail matters later.
-
-The link rates, in order: Thunderbolt 1 in 2011 at 10 Gbps per channel, Thunderbolt 2 in 2013 aggregating two channels to 20 Gbps, Thunderbolt 3 in 2015 at 40 Gbps on USB-C, Thunderbolt 4 in 2020 at the same 40 Gbps with stricter mandatory minimums, and Thunderbolt 5 raising it to 80 Gbps bidirectional with an asymmetric mode reaching 120 Gbps in one direction. Do not expect the link rate to be your transfer rate. That 40 Gbps is the whole link, shared with display and USB tunnels, and IP traffic crosses the ThunderboltIP path with the host CPU in the loop on both ends.
+The link rates: 10 Gbps per channel for Thunderbolt 1 in 2011, 20 Gbps aggregated for Thunderbolt 2 in 2013, 40 Gbps on USB-C for Thunderbolt 3 in 2015 and Thunderbolt 4 in 2020, and 80 Gbps bidirectional for Thunderbolt 5, with an asymmetric mode reaching 120 Gbps one way. Do not expect any of that to be your transfer rate. The link is shared with display and USB tunnels, and IP traffic crosses the ThunderboltIP path with the host CPU in the loop on both ends.
 
 ## Setting it up, with commands
 
@@ -19912,7 +20105,7 @@ Device: bridge0
 Ethernet Address: 36:1a:4c:2f:88:01
 \`\`\`
 
-If it is missing, the Thunderbolt Bridge service was deleted from Network settings and has to be added back. If it is present, check that the cable actually came up:
+If it is missing, the Thunderbolt Bridge service was removed from Network settings and has to be added back. If it is present, check the cable came up:
 
 \`\`\`bash
 ifconfig bridge0
@@ -19930,7 +20123,7 @@ bridge0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
 
 The 169.254 address is not an error. With no DHCP on a two-node link, each side self-assigns an IPv4 link-local address out of 169.254.0.0/16 as described in RFC 3927, and the two will talk happily on it. Add multicast DNS (RFC 6762) and \`ping othermac.local\` works with zero configuration.
 
-I still prefer static addresses on a lab link, because link-local addresses move and I want the same target every time:
+I still prefer static addresses on a lab link, because link-local addresses move:
 
 \`\`\`bash
 # On Mac A
@@ -19939,7 +20132,7 @@ sudo networksetup -setmanual "Thunderbolt Bridge" 10.99.0.1 255.255.255.0
 sudo networksetup -setmanual "Thunderbolt Bridge" 10.99.0.2 255.255.255.0
 \`\`\`
 
-There is no router argument, deliberately. Leave the gateway empty. This is a private segment between two machines and should never carry a default route.
+There is no router argument, deliberately. This is a private segment between two machines and should never carry a default route.
 
 ## Proving it is actually working
 
@@ -19948,9 +20141,9 @@ route get 10.99.0.2
 netstat -ib | grep -E '^bridge0'
 \`\`\`
 
-The \`interface:\` line from \`route get\` must say \`bridge0\`. If it says \`en0\`, traffic is going out the wrong door and anything you measure after that is a test of your switch. The \`netstat -ib\` counters are the check that cannot be faked by a friendly-looking \`ping\`: run it before and after a copy, and Ibytes and Obytes should climb by roughly the size of what you moved.
+The \`interface:\` line from \`route get\` must say \`bridge0\`. If it says \`en0\`, traffic is going out the wrong door and anything you measure afterwards is a test of your switch. The \`netstat -ib\` counters are the check a \`ping\` cannot fake: run it before and after a copy and watch Ibytes and Obytes climb by roughly what you moved.
 
-For throughput, \`iperf3\` is not part of macOS, so install it with Homebrew or MacPorts:
+\`iperf3\` is not part of macOS, so install it with Homebrew or MacPorts:
 
 \`\`\`bash
 # Mac A
@@ -19959,19 +20152,19 @@ iperf3 -s
 iperf3 -c 10.99.0.1 -P 4 -t 20
 \`\`\`
 
-Use \`-P 4\` rather than a single stream. One TCP stream here is usually bounded by one core, and parallel streams give a more honest picture of the link. Then compare \`ping -c 20 10.99.0.1\` over the bridge against the same host over Wi-Fi. The Thunderbolt figures should be smaller and, more importantly, far less variable. Consistency is the real win, not the peak number.
+Then compare \`ping -c 20 10.99.0.1\` over the bridge against the same host over Wi-Fi. The Thunderbolt figures should be smaller and, more importantly, far less variable. Consistency is the real win, not the peak number.
 
 ## Where it works
 
 Thunderbolt networking is fantastic for specific scenarios: editing teams working with shared storage, direct transfers between workstations, and high-speed connections between a Mac Pro and a NAS. In a creative studio environment, it solves a real problem elegantly.
 
-In my lab, I have used Thunderbolt networking between my Mac Pro and a Mac Mini for fast data transfers during media processing workflows. The speed is impressive and the latency is nearly zero. Other cases where I reach for it: seeding a new machine's disk image, running a backup that would otherwise saturate the switch for an hour, and giving a headless Mac a management link that survives me breaking its Wi-Fi config.
+In my lab, I have used Thunderbolt networking between my Mac Pro and a Mac Mini for fast data transfers during media processing workflows. The speed is impressive and the latency is nearly zero. It also earns its place giving a headless Mac a management link that survives me breaking its Wi-Fi config.
 
 ## Where it falls short
 
 Thunderbolt networking is point-to-point. You cannot build a network fabric with Thunderbolt. There are no Thunderbolt switches. If you need to connect more than two devices, you need to use standard Ethernet.
 
-One partial exception is worth knowing, because \`bridge0\` really is a bridge. A Mac with two Thunderbolt ports connected to two other Macs will forward frames between them at layer 2, so a three-node chain is technically possible. I do not build anything on it. The middle machine becomes a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop by cabling the third machine back to the first gives you a broadcast storm unless spanning tree is enabled on the bridge.
+One partial exception, because \`bridge0\` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless spanning tree is on.
 
 Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a metre, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
 
@@ -19979,15 +20172,13 @@ Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40
 
 Thunderbolt began as an Intel and Apple collaboration and is now folded into USB4, but the networking feature grew up on Apple's side and it shows. On macOS it configures itself. Everywhere else you are doing work.
 
-To be accurate about Linux, since this comes up every time: the kernel ships a \`thunderbolt-net\` driver implementing Apple's ThunderboltIP. The kernel documentation states that if the other host runs macOS or Windows, connecting the cable is enough and the driver loads automatically, and that it creates one virtual interface per port named \`thunderbolt0\` and so on, configured with \`ip\` like any other NIC. So Mac to Linux does work, on a Linux box that has a Thunderbolt or USB4 controller and \`CONFIG_USB4_NET\`.
+To be accurate about Linux, since this comes up every time: the kernel ships a \`thunderbolt-net\` driver implementing Apple's ThunderboltIP. The kernel documentation says that if the other host runs macOS or Windows, connecting the cable is enough: the driver loads automatically and creates one interface per port, named \`thunderbolt0\` and so on, configured with \`ip\`. So Mac to Linux does work on a Linux box with a Thunderbolt or USB4 controller and \`CONFIG_USB4_NET\`.
 
-What it is not is a solution for a rack. Thunderbolt controllers live in laptops and small desktops, not in 1U machines with redundant power supplies, and my Linux servers have no Thunderbolt ports at all. The practical rule holds: treat it as a link between two nearby Apple machines, and reach for Ethernet the moment a third device or a switch enters the picture.
+What it is not is a solution for a rack. Thunderbolt controllers live in laptops and small desktops, not in 1U machines, and my Linux servers have no Thunderbolt ports at all. The practical rule holds: two nearby Apple machines, and Ethernet the moment a third device enters the picture.
 
 ## It is PCIe on a cable
 
-Thunderbolt tunnels PCIe, and PCIe means direct memory access. A malicious device on the far end of that cable is, at the hardware level, asking to read and write your RAM. This class of attack has a history: DMA attacks generally, and Thunderspy in 2020, which demonstrated firmware-level bypasses of Thunderbolt's own device authorization.
-
-The mitigations are real but they are mitigations. Modern Macs sit the controller behind an IOMMU so a device only reaches memory it was granted, and macOS prompts before allowing a new accessory to connect. Linux exposes security levels (\`none\`, \`dponly\`, \`user\`, \`secure\`) and a per-device \`authorized\` attribute in sysfs. None of it helps if you click Allow on whatever someone hands you, so I do not plug unknown Thunderbolt devices into anything I care about.
+Thunderbolt tunnels PCIe, and PCIe means direct memory access. A device on the far end of that cable is, at the hardware level, asking to read and write your RAM. That is the DMA attack class, and Thunderspy in 2020 demonstrated firmware-level bypasses of Thunderbolt's own device authorization. The mitigations are real but they are mitigations: modern Macs sit the controller behind an IOMMU so a device only reaches memory it was granted, macOS prompts before allowing a new accessory, and Linux exposes security levels (\`none\`, \`dponly\`, \`user\`, \`secure\`) plus a per-device \`authorized\` attribute in sysfs. None of it helps if you click Allow on whatever someone hands you.
 
 ## What breaks
 
@@ -19995,17 +20186,17 @@ The mitigations are real but they are mitigations. Modern Macs sit the controlle
 
 **A USB-C cable that is not a Thunderbolt cable.** Same connector, and a charge-only or USB 2.0 cable links the ports electrically without ever bringing up a tunnel. Symptom: no \`member:\` line, \`status: inactive\`. Fix: use a cable marked with the lightning bolt, and on Thunderbolt 4 cables the number 4.
 
-**An MTU mismatch after enabling jumbo frames.** Raising the MTU on one end only gives you the classic black hole: \`ping\` and DNS work, large transfers hang partway and time out. Fix: set the same MTU on both ends or neither, and confirm with \`ifconfig bridge0\` on both machines before trusting it.
+**An MTU mismatch after enabling jumbo frames.** Raising the MTU on one end only gives the classic black hole: \`ping\` and DNS work, large transfers hang partway and time out. Fix: set the same MTU on both ends or neither, and confirm with \`ifconfig bridge0\` on both before trusting it.
 
-**Judging the link on a single TCP stream.** One stream is limited by one core pushing packets through the ThunderboltIP path. Fix: test with \`iperf3 -P 4\` or more. If single-stream really is your workload, take that number as the honest answer for that application rather than blaming the cable.
+**Judging the link on a single TCP stream.** One stream is limited by one core pushing packets through the ThunderboltIP path. Fix: test with \`iperf3 -P 4\` or more. If single-stream is genuinely your workload, take that number as the honest answer rather than blaming the cable.
 
-**Assuming the interface survives sleep.** Sleep either Mac and the tunnel drops. On wake the interface returns, but long-lived TCP sessions, mounted SMB shares, and \`ssh\` connections do not. Fix: disable sleep on machines that must hold a session, and remount shares on wake instead of trusting a stale mount.
+**Assuming the interface survives sleep.** Sleep either Mac and the tunnel drops. On wake the interface returns, but long-lived TCP sessions and mounted SMB shares do not. Fix: disable sleep on machines that must hold a session, and remount shares on wake instead of trusting a stale mount.
 
 ## My take
 
 Thunderbolt networking is a great tool for specific problems, and a terrible general-purpose networking solution. I use it when I need fast direct connections between Apple devices, and I use 10GbE for everything else.
 
-The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE card for connecting to the general network and a Thunderbolt port for direct connections when I need the extra speed. The Ethernet side is the network. The Thunderbolt side is a very fast piece of string between two specific machines, and understanding it that way keeps me from asking it to be something it is not.
+The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE card for connecting to the general network and a Thunderbolt port for direct connections when I need the extra speed. The Ethernet side is the network. The Thunderbolt side is a very fast piece of string between two machines, and thinking of it that way keeps me from asking it to be something it is not.
 
 ## References
 
@@ -20567,6 +20758,7 @@ Always test from the perspective of the client that is having the problem. DNS i
     slug: "xserve-apple-server-legacy",
     title: "The Apple Xserve: A Look at Apple's Server Legacy",
     date: "2025-11-12",
+    updated: "2026-08-25",
     tags: ["apple", "servers", "hardware", "history"],
     excerpt:
       "Apple used to make rack-mount servers. Here is why the Xserve mattered, why Apple killed it, and what it means for the Mac Pro.",
@@ -20578,37 +20770,111 @@ Always test from the perspective of the client that is having the problem. DNS i
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg",
     },
     content: `
-## What Was the Xserve
+## The problem
+
+Either you found a 1U Apple server on eBay for the price of a keyboard and want to know whether it is worth racking, or you need macOS in a rack for iOS build machines and are wondering why the obvious product does not exist. Both questions run through the same piece of history. Apple built a genuine datacenter server for nine years, walked away from it, and never replaced it, and the gap that left is why racking Macs in 2026 is still awkward.
+
+## What was the Xserve
 
 The Apple Xserve was a 1U rack-mount server that Apple sold from 2002 to 2011. It was a real server: rack-mountable, hot-swappable drives, dual processors, ECC memory, and server-grade management tools. Apple paired it with macOS Server and Xsan (a clustered filesystem) to provide a complete Apple-native server stack.
 
-## Why It Mattered
+Announced in May 2002, it was the first machine Apple ever designed for a rack rather than a desk. The generations went roughly like this: dual PowerPC G4 at the start, the Xserve G5 in 2004 with PowerPC 970FX processors and ECC DDR memory, then the switch to Intel in 2006 with dual dual-core Xeons, a quad-core Xeon refresh in early 2008, and a final Nehalem-generation Xeon model in early 2009. Apple announced the end on 5 November 2010 and took the last orders on 31 January 2011.
+
+Two details separated it from a Mac in a rack tray. Drives lived in Apple Drive Modules, proprietary hot-swap sleds you could pull from the front while the machine ran, up to three or four depending on generation. And there was lights-out management, reached through a management port with Apple's Server Monitor application, so you could check temperatures, fans, and power state on a machine that was not responding, which is exactly the job a BMC does on a Dell or HP box. The Intel models also offered redundant power supplies as an option. Alongside it Apple sold the Xserve RAID, a 3U 14-bay Fibre Channel array, which is what most of the big Xsan deployments were built on.
+
+## Why it mattered
 
 The Xserve was the only Apple product designed specifically for the datacenter. It ran macOS Server, which provided file sharing, directory services (Open Directory), email, web hosting, and other server functions natively on Apple hardware. For organizations running all-Apple environments, the Xserve was the obvious server choice.
 
 Creative studios, universities, and media companies adopted Xserve for render farms, file servers, and collaboration infrastructure. It integrated seamlessly with Mac workstations in ways that Windows or Linux servers could not.
 
-## Why Apple Killed It
+Worth being specific about what integrated meant here. Open Directory was OpenLDAP plus an MIT Kerberos KDC with Apple's management layer on top, so a Mac lab got single sign-on that actually worked. NetBoot and NetInstall let a room full of Macs boot from an image on the server, which is how a lot of universities reimaged labs overnight. Xsan gave multiple Macs concurrent block-level access to the same Fibre Channel volume, which is the thing a video editing team genuinely cannot fake with file sharing.
+
+The high-water mark for Apple hardware in serious computing was Virginia Tech's System X. Built in 2003 from 1,100 dual-processor Power Mac G5s, it hit roughly 10.3 teraflops and came third on the TOP500 list that November, at a fraction of the cost of the machines around it. The cluster was rebuilt the following year using Xserve G5 nodes. For a short window, Apple was a credible supercomputing vendor.
+
+## Why Apple killed it
 
 Apple discontinued the Xserve in 2011 because the server market is fundamentally different from the consumer market that Apple dominates. Server customers want long product lifecycles, extensive support contracts, standardized management tools, and competitive pricing. Apple wanted to sell premium consumer devices.
 
 The Xserve never achieved the volume needed to justify Apple's investment in server-specific engineering. Dell, HP, and IBM were selling millions of servers. Apple was selling thousands.
 
-## The Mac Pro as Spiritual Successor
+The software followed the hardware down, just slowly enough that people kept hoping. Mac OS X Server stopped being a separate operating system in 2011 and became an add-on app. In 2018 Apple stripped most of the services out of it, including DNS, DHCP, VPN, mail, and web hosting, leaving little more than Profile Manager, Open Directory, and Xsan. In 2022 Apple stopped selling macOS Server at all. Xsan survives, folded into macOS itself rather than sold separately, which tells you which customer Apple decided was worth keeping.
+
+## The Mac Pro as spiritual successor
 
 The 2019 Mac Pro in rack-mount configuration is the closest thing to a modern Xserve. It fits in a standard rack, supports ECC memory, and can run macOS server workloads. But it is designed as a workstation, not a server. It lacks the server-specific features (hot-swap drives, redundant power supplies, IPMI) that made the Xserve a real server.
 
-## What This Means
+The specifics are worth stating because they set the ceiling on what you can build. The rack Mac Pro is 4U, not 1U, so four of them fill sixteen rack units where sixteen Xserves once fit. The Intel version takes ECC DDR4 up to 1.5 TB in the top configurations. The 2023 Apple silicon version replaced that with unified memory that is soldered to the package and capped far lower, and its PCIe slots will not take a GPU. There is no out-of-band management on either one. No IPMI, no Redfish, no serial console redirection, no way to watch the boot process from another building.
+
+## Racking Macs today, and what that actually takes
+
+If you need macOS in a rack now, you are choosing between a rack Mac Pro, Mac minis or Mac Studios on shelves, or renting from a provider. Almost everyone doing iOS or macOS CI at scale ends up on the second or third option, because Xcode requires macOS and macOS requires Apple hardware. Apple's own license permits only a limited number of macOS virtual machines per host, and on Apple silicon the Virtualization framework enforces a limit of two macOS VMs running at once, so you cannot solve density with virtualization the way you would on Linux. Cloud providers work around the physical-hardware requirement with dedicated hosts; AWS EC2 Mac instances, for example, allocate a whole Mac to you with a 24-hour minimum.
+
+For a machine you own, the first hour after it goes in the rack should be spent making it survivable without a monitor. These are the settings that matter:
+
+\`\`\`bash
+sudo systemsetup -setremotelogin on
+sudo systemsetup -setrestartpowerfailure on
+sudo pmset -a sleep 0 disksleep 0 autorestart 1
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \\
+  -activate -configure -access -on -restart -agent -privs -all
+\`\`\`
+
+Then verify, because half of these silently do nothing on some models:
+
+\`\`\`bash
+systemsetup -getremotelogin
+systemsetup -getrestartpowerfailure
+pmset -g | grep -E 'sleep|autorestart'
+\`\`\`
+
+Correct output looks like this:
+
+\`\`\`
+Remote Login: On
+Restart After Power Failure: On
+ sleep                0
+ disksleep            0
+ autorestart          1
+\`\`\`
+
+If \`autorestart\` is missing from \`pmset -g\` output entirely, that model does not support it and a power cut means someone drives to the rack. That is the moment to buy a network-controlled PDU, which is the closest thing to remote power management a modern Mac will give you.
+
+One more thing that only shows up after the machine is installed: a 1U server with small high-RPM fans is loud by design, and an Xserve pulled out of storage will run its fans hard whether or not it is doing any work. That is a closet-with-a-door problem, and it applies to any surplus enterprise gear, not just Apple's.
+
+## What breaks
+
+**Expecting out-of-band management.** No BMC means no remote console, no remote power on from a dead state, and no firmware recovery over the network. Fix: pair every headless Mac with a switched PDU and a KVM-over-IP dongle, and accept that a DFU restore on Apple silicon needs a second Mac and a cable in a specific port.
+
+**FileVault on a headless machine.** A FileVault volume will not finish booting to the network without someone unlocking it at the screen, so a routine reboot takes the server offline until a human arrives. Fix: use \`sudo fdesetup authrestart\` for planned reboots, which unlocks the volume for exactly one restart, and decide deliberately whether full-disk encryption or unattended boot matters more for that box.
+
+**Buying a 2009 Xserve and expecting a current OS.** The last Intel Xserve tops out at OS X 10.11 El Capitan, which stopped receiving security updates in 2018. Every browser, every TLS stack, and every package manager on it is a museum piece. Fix: run a current Linux on it and treat macOS on that hardware as a nostalgia exercise, or keep it on an isolated VLAN with no route to anything you care about.
+
+**Assuming replacement drive sleds are available.** Apple Drive Modules are keyed proprietary carriers, and a bare SATA disk will not simply drop into the chassis. Fix: buy the sleds at the same time as the machine, not after a disk dies.
+
+**Planning new infrastructure around Apple server software.** People still design around Open Directory or Profile Manager because the documentation is out there and reads as current. It is not; macOS Server is gone. Fix: put directory and device management on something still supported, bind Macs to standard LDAP or Active Directory, and use a current MDM for policy.
+
+## What this means
 
 Apple has effectively exited the server market. If you need macOS in a rack, the Mac Pro is your only option, and it is an expensive, imperfect one. For everything else, Dell, HP, and Supermicro offer better value, better management, and better support.
 
-The Xserve was ahead of its time in build quality and design. But it was in a market that Apple was never willing to commit to fully. That tension is the story of Apple in the enterprise.
+The Xserve was ahead of its time in build quality and design. But it was in a market that Apple was never willing to commit to fully. That tension is the story of Apple in the enterprise. The useful lesson for anyone building a lab is narrower: buy Apple hardware when the workload genuinely requires macOS, build everything else on hardware whose vendor wants to be in the rack, and never plan capacity around a product line that a consumer company keeps alive out of politeness.
+
+## References
+
+- https://en.wikipedia.org/wiki/Xserve
+- https://en.wikipedia.org/wiki/Xsan
+- https://en.wikipedia.org/wiki/MacOS_Server
+- https://en.wikipedia.org/wiki/Apple_Open_Directory
+- https://en.wikipedia.org/wiki/System_X_(supercomputer)
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 `,
   },
   {
     slug: "raid-levels-comparison",
     title: "RAID Levels Explained: When to Use Each One",
     date: "2025-11-08",
+    updated: "2026-08-25",
     tags: ["storage", "servers", "hardware"],
     excerpt:
       "A practical comparison of RAID levels with real performance and reliability tradeoffs from my lab experience.",
@@ -20620,37 +20886,134 @@ The Xserve was ahead of its time in build quality and design. But it was in a ma
       sourceUrl: "https://commons.wikimedia.org/wiki/File:FSC_Primergy_TX200_S2_0012.JPG",
     },
     content: `
-## What RAID Does
+## What RAID does
+
+You have a pile of drives and a choice to make, and every guide you find either lists the levels without telling you which to pick or tells you to pick one without explaining why. The decision comes down to three things you are trading against each other: usable capacity, how many drives can die, and what happens to write performance. Once you can see those three numbers for each level, the choice usually makes itself.
 
 RAID (Redundant Array of Independent Disks) combines multiple physical drives into a logical unit for performance, redundancy, or both. The RAID level determines how data is distributed across the drives and how many drives can fail before data is lost.
 
-## RAID 0: Speed, No Safety
+One thing to fix in your head before anything else: RAID gives you availability, not safety. It keeps a machine running through a hardware failure. It does not protect you from deleting a file, from ransomware, from a bad write, or from the building burning down, because every one of those changes gets faithfully replicated to every drive in the array.
+
+## RAID 0: speed, no safety
 
 RAID 0 stripes data across all drives with no redundancy. You get the combined capacity and performance of all drives, but if any single drive fails, all data is lost. I use RAID 0 for temporary scratch space where speed matters and the data is expendable.
 
-## RAID 1: Simple Mirror
+Worth internalising how the risk scales: RAID 0 is less reliable than a single drive, and it gets worse with every drive you add, because the array dies if any member dies. Four drives in RAID 0 have roughly four times the annual failure probability of one drive.
+
+## RAID 1: simple mirror
 
 RAID 1 mirrors data across two drives. You get the capacity of one drive with the read performance of two. If either drive fails, the other has a complete copy. I use RAID 1 for boot drives on my servers because simplicity and reliability matter more than capacity.
 
-## RAID 5: Balance
+Reads can be served from either member, so read throughput scales. Writes go to both members and complete when the slower one finishes, so write throughput is roughly that of a single drive. Recovery is the fastest of any level because it is a straight copy with no parity to compute.
+
+## RAID 5: balance
 
 RAID 5 stripes data across three or more drives with one drive's worth of parity. Any single drive can fail without data loss. You lose one drive's worth of capacity to parity. RAID 5 is popular but has a dangerous weakness: during a rebuild after a drive failure, a second failure means total data loss. With modern large drives, rebuilds take hours or days.
 
-## RAID 6: Better Safety
+The parity is nothing exotic. For each stripe, the parity block is the XOR of the data blocks in that stripe, and the parity blocks are distributed across all the drives rather than concentrated on one. Losing a drive means every read of the missing block has to reconstruct it by XORing everything else in the stripe, which is why a degraded RAID 5 array is dramatically slower as well as dramatically more fragile.
+
+The cost shows up on small writes. Changing one block requires reading the old data block and the old parity block, computing the new parity, then writing both back. Four I/O operations for one logical write, the classic read-modify-write penalty.
+
+## RAID 6: better safety
 
 RAID 6 is like RAID 5 but with double parity. Any two drives can fail simultaneously without data loss. I prefer RAID 6 over RAID 5 for any array larger than four drives because the probability of a second failure during a rebuild is higher than most people realize.
 
-## RAID 10: Performance and Redundancy
+The second parity block is not a second XOR, because that would carry no new information. It is a Reed-Solomon syndrome computed over a Galois field, which is what allows the array to solve for two unknowns instead of one. The practical costs are more CPU during writes and a six operation penalty per small write instead of four.
+
+Here is the argument for RAID 6 stated properly, because the numbers are checkable. Drives are specified with an unrecoverable read error rate, commonly one sector per 10^14 bits read on consumer class drives and one per 10^15 or better on enterprise class. 10^14 bits is 12.5 terabytes. A rebuild has to read every remaining sector on every surviving drive, so a five drive array of 8 TB consumer disks asks for something on the order of 32 TB of flawless reading at exactly the moment you have no redundancy left. You do not need a whole second drive to fail. One unreadable sector in the wrong place is enough with single parity. RAID 6 tolerates that, which is the real reason to use it.
+
+## RAID 10: performance and redundancy
 
 RAID 10 combines mirroring and striping. Pairs of drives are mirrored, and the mirrors are striped together. You get excellent read and write performance with the ability to survive at least one drive failure per mirror pair. The downside is that you lose 50% of your total capacity.
 
 I use RAID 10 for VM storage where I/O performance is the priority. Random read and write performance on RAID 10 is significantly better than RAID 5 or 6.
 
-## Software RAID vs Hardware RAID
+Note the "at least" carefully. A RAID 10 across six drives can survive three failures if they land in three different mirror pairs, or die from two failures if both hit the same pair. It is not a guaranteed two drive tolerance, it is luck weighted in your favour. The upside is that rebuilds only read one drive, the surviving partner, so they are fast and they do not stress the whole array.
+
+## The comparison in one place
+
+For an array of N identical drives:
+
+| Level | Usable capacity | Drives that can fail | Small write penalty | Min drives |
+| --- | --- | --- | --- | --- |
+| RAID 0 | N | 0 | 1 | 2 |
+| RAID 1 | 1 drive | N-1 | 2 | 2 |
+| RAID 5 | N-1 | 1 | 4 | 3 |
+| RAID 6 | N-2 | 2 | 6 | 4 |
+| RAID 10 | N/2 | 1 per mirror pair | 2 | 4 |
+
+The write penalty column is the one people skip and then get surprised by. If you need a certain number of write IOPS from the array, divide the raw drive IOPS by that penalty before you decide whether the drives are fast enough.
+
+## A worked example: building and checking a RAID 6
+
+Linux software RAID with mdadm is the version worth learning, because you can inspect every part of it. Six drives, double parity, default 512 KiB chunk:
+
+\`\`\`bash
+sudo mdadm --create /dev/md0 --level=6 --raid-devices=6 \\
+  --chunk=512 /dev/sd[b-g]
+cat /proc/mdstat
+\`\`\`
+
+\`\`\`
+Personalities : [raid6] [raid5] [raid4]
+md0 : active raid6 sdg[5] sdf[4] sde[3] sdd[2] sdc[1] sdb[0]
+      15627544576 blocks super 1.2 level 6, 512k chunk, algorithm 2 [6/6] [UUUUUU]
+      [>....................]  resync =  1.3% (51372544/3906886144) finish=412.1min speed=157832K/sec
+      bitmap: 30/30 pages [120KB], 65536KB chunk
+\`\`\`
+
+Read that status line carefully, because it is the whole health summary. \`[6/6]\` means six devices expected and six present. \`[UUUUUU]\` is one character per member, \`U\` for up. A failed drive shows as \`[6/5]\` and \`[U_UUUU]\`, and the underscore tells you which slot. The initial resync is normal on a new array and the array is usable while it runs, just slower.
+
+Persist the configuration so the array assembles at boot, and confirm the detail view:
+
+\`\`\`bash
+sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
+sudo mdadm --detail /dev/md0
+\`\`\`
+
+The detail output should show \`State : clean\`, \`Active Devices : 6\`, and \`Failed Devices : 0\` once the resync completes.
+
+Then set up scrubbing, which is the part most people never do. A scrub reads every stripe and verifies parity, so latent bad sectors are found while you still have redundancy rather than during a rebuild:
+
+\`\`\`bash
+echo check | sudo tee /sys/block/md0/md/sync_action
+cat /sys/block/md0/md/mismatch_cnt
+\`\`\`
+
+\`mismatch_cnt\` should be 0 on a healthy array. A non-zero count on RAID 1 or RAID 10 is sometimes benign, because unused blocks can legitimately differ, but on RAID 5 or 6 it means parity did not agree with data and you should investigate the drives. Most distributions ship a monthly scrub timer already; check that yours is enabled rather than assuming.
+
+## Software RAID vs hardware RAID
 
 Hardware RAID controllers (like Dell's PERC cards) handle RAID in dedicated hardware. Software RAID (like Linux mdadm or ZFS RAIDZ) does it in the CPU. Modern CPUs are fast enough that software RAID performs comparably to hardware RAID for most workloads, and software RAID gives you more flexibility and visibility into what the array is doing.
 
+The one thing a hardware controller still brings is a battery or supercapacitor backed write cache, which lets it acknowledge writes before they reach the platters and survive a power cut. That is a genuine advantage for small synchronous writes. It is also conditional: if the battery is dead or in a learn cycle, most controllers silently drop from write-back to write-through and your array gets slower with no obvious cause. Not every card has cache at all, and an entry level controller without one gives you the lock-in of hardware RAID with none of the benefit.
+
+The lock-in is real. Array metadata is written in the controller's own format, so recovering the array generally means finding another controller from the same family. With mdadm or ZFS, any machine that can see the drives can import the array.
+
 I use ZFS RAIDZ2 (which is conceptually similar to RAID 6) for my bulk storage and hardware RAID 1 for boot drives.
+
+## What breaks
+
+**The write hole eats a stripe during a power cut.** In parity RAID a stripe update is not atomic: data and parity are separate writes, and if power fails between them the stripe is internally inconsistent. Worse, you cannot tell which half is wrong, so a later rebuild reconstructs garbage confidently. Hardware controllers solve this with a protected cache, mdadm offers a write journal or partial parity log, and ZFS RAIDZ sidesteps it entirely with copy-on-write and variable width stripes. If you run parity RAID with none of those, add a UPS and mean it.
+
+**A drive failed weeks ago and nobody knew.** An array in degraded state keeps serving data perfectly, so there is no user visible symptom until the second failure. \`mdadm --monitor\` with an email address, or a check that alerts on anything other than \`[UUUU]\` in \`/proc/mdstat\`, costs ten minutes and is the single highest value thing on this list.
+
+**All the drives came from the same batch.** Identical drives, manufactured in the same week, spun up on the same day, in the same thermal environment, wear at the same rate. Correlated failure is exactly the assumption RAID's reliability math does not make. Buy from different batches or different vendors, and treat a second failure during a rebuild as likely rather than as bad luck.
+
+**No hot spare, so the degraded window is however long shipping takes.** The dangerous period is between failure and the completed rebuild. A hot spare shrinks that from days to hours by starting the rebuild automatically. Add one with \`mdadm --add\`, and remember it does nothing unless monitoring confirms the rebuild actually started.
+
+**Filesystem alignment does not match the stripe geometry.** A misaligned filesystem turns one logical write into a read-modify-write across two stripes, and the array performs far below what the drives can do. When you make the filesystem, tell it the geometry: for ext4, \`mkfs.ext4 -E stride=<chunk/block>,stripe-width=<stride * data disks>\`, and for XFS, \`mkfs.xfs -d su=512k,sw=4\` on the six drive RAID 6 above.
+
+**Someone expands the array and assumes the filesystem grew too.** Growing an array with \`mdadm --grow\` changes the block device, not the filesystem on it. Until you run \`resize2fs\` or \`xfs_growfs\`, the extra space is invisible, and the reshape itself is a long, fully exposed operation that you should have a current backup before starting.
+
+## References
+
+- https://en.wikipedia.org/wiki/Standard_RAID_levels
+- https://en.wikipedia.org/wiki/Nested_RAID_levels
+- https://man7.org/linux/man-pages/man8/mdadm.8.html
+- https://man7.org/linux/man-pages/man4/md.4.html
+- https://wiki.archlinux.org/title/RAID
+- https://openzfs.github.io/openzfs-docs/Basic%20Concepts/RAIDZ.html
 `,
   },
   {
@@ -22690,6 +23053,7 @@ For a homelab or small lab environment, Proxmox is the clear winner. You get all
     slug: "nvme-vs-sata-enterprise-storage",
     title: "NVMe vs SATA in Enterprise Storage",
     date: "2026-02-24",
+    updated: "2026-08-25",
     tags: ["storage", "hardware", "servers"],
     excerpt: "The performance gap between NVMe and SATA is real and significant. Here is when it matters and when it does not.",
     coverImage: "/images/blog/nvme-vs-sata-enterprise-storage.jpg",
@@ -22700,13 +23064,29 @@ For a homelab or small lab environment, Proxmox is the clear winner. You get all
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Intel_P3608_NVMe_flash_SSD,_PCI-E_add-in_card.jpg",
     },
     content: `
-## The Numbers
+## The numbers
+
+You are filling drive bays and you have to decide whether the NVMe premium is real or marketing. The spec sheets are not much help, because the sequential numbers everyone quotes describe a workload almost no server actually runs. Here is what the difference is made of, where it shows up in practice, and how to measure it on your own hardware instead of trusting anyone's chart.
 
 A typical SATA SSD tops out at around 550 MB/s sequential read. A modern NVMe SSD reaches 5,000 MB/s or more on PCIe 4.0, and enterprise NVMe drives designed for consistent random I/O push even harder. The gap is not marginal. It is an order of magnitude.
 
 But raw speed is only part of the story. The more important metric for servers is IOPS (input/output operations per second) for random small-block reads and writes. That is where NVMe really pulls ahead.
 
-## Where NVMe Wins Clearly
+## Why the gap exists
+
+SATA and NVMe are not two speeds of the same thing. They are different protocols with different assumptions about what is on the other end.
+
+SATA III signals at 6 Gbit/s. After 8b/10b line encoding that leaves about 600 MB/s of payload on the wire, and real drives land near 550 MB/s. That ceiling is fixed, it is per port, and no drive can beat it. It also sets a hard limit on small random I/O: at 4 KiB per operation, 550 MB/s is roughly 135,000 IOPS no matter how good the flash is.
+
+The protocol on top of SATA is AHCI, which was designed when the thing at the end of the cable was a spinning platter with one arm. AHCI gives you a single command queue, 32 commands deep. That was generous for a mechanical disk that could service one request at a time anyway. For a flash device with dozens of parallel NAND channels, it is a funnel.
+
+NVMe threw that model out. It talks to the drive over PCIe directly, with no host bus adapter translating between protocols, and it is built around many deep queues instead of one shallow one: the specification allows up to 65,535 I/O queues with up to 65,536 entries each. In practice a driver creates one submission and completion queue pair per CPU core, so each core talks to the drive without taking a lock shared with the other cores. The command set itself is smaller, the register interface is a doorbell write rather than a legacy port sequence, and completions arrive as MSI-X interrupts steered back to the core that issued the request.
+
+Bandwidth follows from PCIe rather than from a fixed cable speed. A PCIe 3.0 x4 link carries roughly 3.9 GB/s, PCIe 4.0 x4 roughly 7.9 GB/s, and PCIe 5.0 x4 roughly 15.8 GB/s. Want more, add lanes.
+
+The result is that the interesting number is not throughput, it is latency under concurrency. A SATA SSD at queue depth 32 is already saturated and every additional request just waits. An enterprise NVMe drive at queue depth 32 is barely awake.
+
+## Where NVMe wins clearly
 
 **VM storage:** Virtual machines doing lots of random I/O benefit enormously from NVMe. Boot times drop, responsiveness improves, and you can run more VMs per storage device before hitting I/O bottlenecks.
 
@@ -22714,17 +23094,98 @@ But raw speed is only part of the story. The more important metric for servers i
 
 **Live migrations:** Moving a running VM between hosts over NVMe-backed storage is smoother and faster than SATA.
 
-## Where SATA Is Still Fine
+The common thread is concurrency. Ten VMs each doing modest random I/O do not add up to a nice sequential stream at the drive; they add up to a blender. That is the exact case where the queueing model matters more than the headline bandwidth, and it is why a single NVMe drive can replace a small shelf of SATA SSDs in a virtualisation host.
+
+## Where SATA is still fine
 
 **Bulk storage and archives:** If you are storing backup files, logs, or large media files that are written once and read occasionally, SATA is perfectly adequate. Sequential throughput on SATA is more than sufficient for these workloads.
 
 **Cold data tiers:** Many storage systems implement tiering, where hot data lives on NVMe and cold data moves to SATA or spinning disk. SATA fits naturally in this architecture.
 
-## Enterprise NVMe Specifics
+Add a third: anything gated by something slower than the drive. A backup target fed by a 1 GbE uplink cannot absorb more than about 118 MB/s, so a SATA SSD there is idling and an NVMe drive would idle harder. Before paying for NVMe, find the actual bottleneck. If it is the network, the CPU, or a single threaded application that never issues more than one request at a time, faster storage changes nothing you can measure.
+
+SATA also wins on lanes and on ports. A cheap HBA gives you sixteen SATA ports. Sixteen U.2 NVMe drives want 64 PCIe lanes, which on most platforms means a PCIe switch, a more expensive backplane, and a real look at your slot budget.
+
+## Enterprise NVMe specifics
 
 Consumer NVMe drives are not designed for 24/7 server duty. Enterprise NVMe drives have features like power loss protection (capacitors that complete writes if power fails), consistent latency profiles under sustained load, and much higher endurance ratings.
 
+Power loss protection deserves the most attention, because it changes correctness and not just speed. A drive with PLP can acknowledge a write once it is in the drive's own volatile buffer, knowing the onboard capacitors hold enough charge to flush that buffer to NAND if the rack loses power. A drive without PLP either has to write through to flash before acknowledging, which is slow, or lie about durability, which is worse. This is why consumer NVMe drives post terrible numbers for synchronous small writes, and why they are a bad choice for a ZFS log device or a database write-ahead log.
+
+Endurance is quoted as drive writes per day over a warranty period, usually five years. Read-intensive enterprise parts sit around 1 DWPD, mixed-use around 3 DWPD, and write-intensive around 10 DWPD, achieved mostly by overprovisioning more spare NAND. Match the tier to the workload rather than buying the biggest number: a backup target that is written once a night does not need write-intensive flash.
+
+Form factor matters too. M.2 was designed for laptops. It has no hot-swap story, limited surface area for heat, and in a hot server chassis it will thermally throttle. U.2 and the EDSFF formats are the server answer: front loading, hot swappable, and built to be cooled by chassis airflow.
+
 In my lab, I run NVMe for VM storage pools and SATA SSDs for secondary storage. The performance difference is obvious in daily use, and the cost difference has narrowed enough that NVMe is the right choice for anything performance-sensitive.
+
+## A worked example: measure it yourself
+
+Do not trust the sticker. Measure with fio, using direct I/O so the page cache is out of the way, and a queue depth that reflects your real concurrency. Read-only tests against a raw device are safe. A write test against a raw device destroys the data on it, so point write tests at a file inside a filesystem unless the drive is genuinely empty.
+
+\`\`\`bash
+fio --name=randread --filename=/dev/nvme0n1 --rw=randread --bs=4k \\
+    --ioengine=libaio --direct=1 --iodepth=32 --numjobs=4 \\
+    --group_reporting --runtime=60 --time_based
+\`\`\`
+
+The line that matters in the output looks like this:
+
+\`\`\`
+   read: IOPS=612k, BW=2392MiB/s (2508MB/s)(140GiB/60001msec)
+    clat (usec): min=41, max=2287, avg=207.44, stdev=51.02
+\`\`\`
+
+Run the identical command against a SATA SSD and the shape of the answer changes completely. Expect somewhere in the region of 90,000 IOPS, hard capped by the 6 Gbit/s link long before the flash gives up, with completion latency about an order of magnitude higher and much more variable. That variance is the part that shows up as a laggy VM.
+
+Two settings worth checking before you conclude anything. NVMe devices should be using the multi-queue block layer with no I/O scheduler, since reordering requests for a device with no seek penalty just adds latency:
+
+\`\`\`bash
+cat /sys/block/nvme0n1/queue/scheduler
+\`\`\`
+
+\`\`\`
+[none] mq-deadline kyber bfq
+\`\`\`
+
+And check the drive's own health and wear counters, which is the closest thing to an honest opinion you will get out of the hardware:
+
+\`\`\`bash
+sudo nvme smart-log /dev/nvme0
+\`\`\`
+
+\`\`\`
+critical_warning                    : 0
+temperature                         : 36 C
+available_spare                     : 100%
+available_spare_threshold           : 10%
+percentage_used                     : 2%
+media_errors                        : 0
+\`\`\`
+
+\`percentage_used\` is the controller's estimate of consumed endurance, and it is allowed to exceed 100. \`available_spare\` dropping toward its threshold means the drive is running out of replacement blocks, which is the signal to replace it. Note that \`data_units_read\` and \`data_units_written\`, if you print the full log, are counted in thousands of 512-byte units, so each unit is 512 KB. People routinely misread that field by three orders of magnitude.
+
+## What breaks
+
+**The drive is in an x4 slot electrically wired for x1.** Physical slot length tells you nothing about the lane count behind it, and cheap risers and some backplanes silently drop you to x1 or x2. Your 7 GB/s drive then benchmarks at a quarter of that and everything looks like a driver problem. Check with \`sudo lspci -vv -s <bdf> | grep LnkSta\` and compare the negotiated width and speed against \`LnkCap\`.
+
+**M.2 drives throttle in server chassis.** A drive that starts at 6,000 MB/s and settles at 900 MB/s two minutes into a copy is not defective, it is hot. Watch \`nvme smart-log\` temperature during a sustained run, and if it is climbing into the drive's throttle range, the fix is airflow or a different form factor, not firmware.
+
+**Benchmarking with queue depth 1 and concluding NVMe is not worth it.** A single threaded \`dd\` sees the latency of one request at a time, which is the one measurement where SATA looks respectable. It also is not how anything on a server behaves. Test at the concurrency your workload actually generates, and if you do not know what that is, look at \`avgqu-sz\` in \`iostat -x 1\` on the live system.
+
+**Consumer drives fall off a cliff after the SLC cache fills.** Client NVMe drives write incoming data into a fast pseudo-SLC region and fold it into denser cells later. Benchmarks under a minute never leave that cache, so the drive looks fantastic. Write 200 GB continuously and throughput can collapse to well below SATA speeds. Always run sustained-write tests long enough to exhaust the cache before you believe a number.
+
+**Discard is never issued, so the drive slowly gets slower.** Without TRIM the controller does not know which blocks are free and garbage collection has to relocate data it could have thrown away, driving up write amplification. Confirm the path works end to end: \`lsblk --discard\` should show non-zero discard granularity and maximum, and a periodic \`fstrim -av\` should report bytes trimmed. On thin-provisioned or virtualised storage, discard also has to be enabled at every layer in between or it stops at the first one that ignores it.
+
+**Mixing a SATA SSD into an NVMe pool and wondering why the pool is slow.** A striped or mirrored set runs at the pace of its slowest member for anything that has to touch all members. This shows up most painfully when someone adds a leftover SATA drive as a mirror partner for an NVMe device.
+
+## References
+
+- https://en.wikipedia.org/wiki/NVM_Express
+- https://en.wikipedia.org/wiki/Serial_ATA
+- https://en.wikipedia.org/wiki/Advanced_Host_Controller_Interface
+- https://en.wikipedia.org/wiki/PCI_Express
+- https://www.kernel.org/doc/html/latest/block/blk-mq.html
+- https://fio.readthedocs.io/en/latest/fio_doc.html
 `,
   },
   {
