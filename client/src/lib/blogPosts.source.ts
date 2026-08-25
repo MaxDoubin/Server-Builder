@@ -25200,6 +25200,16 @@ Logs on individual devices are hard to search across, get lost when devices fail
 
 A central log server lets you search across all your infrastructure from one place, retain logs longer than individual devices can store, and preserve logs even if a device is compromised or fails.
 
+## Facilities, Severities, and the PRI Number
+
+Every syslog message begins with a priority value in angle brackets, and understanding it makes filtering rules stop feeling arbitrary. The PRI is a single number computed as \`facility * 8 + severity\`.
+
+Severity runs 0 to 7: emerg, alert, crit, err, warning, notice, info, debug. Note that lower is more urgent, which is the opposite of what most people guess, and that \`*.info\` in a selector means "info and everything more severe," not "info only." Facility identifies the subsystem: kern is 0, user 1, mail 2, daemon 3, auth 4, syslog 5, cron 9, authpriv 10, and local0 through local7 occupy 16 to 23. Network gear almost always lets you pick a local facility, which is the clean way to separate switch logs from server logs on arrival.
+
+So \`<34>\` decodes to facility 4 and severity 2: an authentication subsystem critical message. Setting a device's logging level to \`informational\` and wondering why the log server is drowning is usually a severity misunderstanding, since informational is 6 and pulls in everything above it.
+
+Two formats coexist. RFC 3164 is an informational document that describes what BSD syslog implementations were already doing in 2001, with a 1024 byte message limit and a timestamp carrying no year and no timezone. RFC 5424 is the actual standard: RFC 3339 timestamps with fractional seconds and offset, explicit app-name and procid fields, and structured data key-value pairs. Receivers must accept at least 480 octets and should accept 2048. Most network appliances still emit 3164, most modern Linux daemons can emit 5424, and your server has to handle both.
+
 ## Setting Up rsyslog as a Central Server
 
 On the log server (Ubuntu):
@@ -25217,6 +25227,16 @@ template(name="RemoteLogs" type="string" string="/var/log/remote/%HOSTNAME%/%PRO
 *.* ?RemoteLogs
 \`\`\`
 
+Add one thing to the UDP input before you rely on it:
+
+\`\`\`bash
+module(load="imudp" rcvbufSize="16m")
+\`\`\`
+
+UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. Raise \`net.core.rmem_max\` on the host to match, or the request for a 16 MB buffer is quietly clamped.
+
+Put \`/var/log/remote\` on its own filesystem. A log server that fills its root partition stops logging and frequently stops working, and the classic version of this outage is one misbehaving host emitting debug output at ten thousand lines per second overnight.
+
 ## Configuring Clients
 
 On each server you want to log centrally:
@@ -25230,6 +25250,29 @@ On each server you want to log centrally:
 
 Network devices (switches, firewalls) send syslog natively. Configure the syslog server IP and severity level in the device's management interface.
 
+Windows does not speak syslog at all. It writes to the Event Log, so a Windows host needs either a forwarder that translates events to syslog or Windows Event Forwarding into a collector that does. Budget for that; discovering it after building the rest is a common surprise.
+
+## UDP, TCP, and What Reliable Actually Means
+
+The double \`@@\` is TCP and the single \`@\` is UDP, and people reasonably assume TCP means the messages arrive. It does not quite mean that.
+
+TCP guarantees delivery into the receiver's kernel buffer. It does not guarantee the receiving daemon read the message, and it certainly does not guarantee the message reached disk. If the log server is killed with data in its socket buffer, those messages are gone and the sender's TCP stack reported success. For genuine end-to-end acknowledgement you need RELP, rsyslog's own protocol, which acknowledges at the application layer after the message is accepted.
+
+TCP framing is its own trap. RFC 6587 documents two ways to delimit messages on a stream: octet-counting, where each message is prefixed by its length, and non-transparent framing, where messages are separated by a trailing newline. rsyslog uses non-transparent framing by default. If one end expects octet counts and the other sends newline-delimited text, you get messages concatenated into one giant line or split at every embedded newline, and the symptom looks like corruption rather than a protocol mismatch.
+
+For anything crossing an untrusted network, use TLS. RFC 5425 defines syslog over TLS on port 6514, and mutual certificate authentication is the only mechanism in the whole stack that actually authenticates a sender.
+
+The other half of reliability is what happens when the log server is down. By default rsyslog buffers in a bounded memory queue and starts discarding when it is full. Give the forwarding action a disk-assisted queue so an hour of maintenance does not become an hour of missing logs:
+
+\`\`\`bash
+action(type="omfwd" target="192.168.1.50" port="514" protocol="tcp"
+       queue.type="LinkedList" queue.filename="fwd-server"
+       queue.maxdiskspace="1g" queue.saveOnShutdown="on"
+       action.resumeRetryCount="-1")
+\`\`\`
+
+\`action.resumeRetryCount="-1"\` means retry forever instead of giving up, and \`queue.saveOnShutdown\` writes the queue to disk on a clean restart rather than dropping it.
+
 ## Loki and Grafana for Search
 
 rsyslog handles collection and storage. Grafana Loki provides a log aggregation and query system that integrates natively with Grafana dashboards. The combination gives you:
@@ -25239,9 +25282,32 @@ rsyslog handles collection and storage. Grafana Loki provides a log aggregation 
 - Log alerts that trigger when specific patterns appear
 - Correlation between metrics spikes and log events
 
+Understand how Loki achieves that cheaply, because it changes how you configure it. Loki does not build a full-text inverted index. It indexes only the label set of each stream and stores the log lines themselves as compressed chunks. A query first selects streams by label, then brute-force scans the matching chunks for your pattern. A query with a tight selector like \`{host="sw-core-1", job="syslog"}\` is fast. A query that scans everything is a linear read of your entire retention window.
+
+The failure mode that follows is cardinality. Every unique combination of label values is a separate stream, so putting a client IP, a session ID, or a request ID in a label multiplies your streams into the millions and Loki falls over. Labels are for things with a small, bounded set of values: host, job, facility, severity, environment. Everything else stays in the log line and gets filtered at query time.
+
 ## Log Retention and Security
 
 Define a log retention policy. Security logs often need to be kept for 90 days or longer for compliance. Protect the log server: logs are forensic evidence, and they must be trustworthy. Use a dedicated network path for syslog traffic, restrict write access to log files, and consider sending logs offsite or to an immutable storage destination for high-security environments.
+
+Where the numbers come from matters. PCI DSS requires audit log history to be retained for at least 12 months with the most recent three months immediately available for analysis, and NIST SP 800-92 is the general guide for building a log management program rather than a specific number. Pick your retention from whichever regime actually applies to you and write down why, because "90 days" repeated without a source is how policies end up unsatisfiable.
+
+Three security properties are worth being blunt about.
+
+**The hostname field is not authenticated.** Over plain UDP or TCP, any host that can reach port 514 can send a message claiming to be your domain controller. Firewall the port to known sources, and use TLS client certificates where the logs will be used as evidence.
+
+**Log injection is real.** A message containing an embedded newline can forge what looks like an additional log line from another program. rsyslog escapes control characters on receipt by default, and people disable that setting to make multi-line Java stack traces readable. Understand the trade you are making.
+
+**Absence is a signal.** An attacker who gets root on a host stops its logging before doing anything interesting. A log pipeline that only alerts on bad messages will never notice. Alert on a source that has gone quiet: if a host normally sends a few hundred messages an hour and sends zero for thirty minutes, that is worth a page.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://www.rfc-editor.org/rfc/rfc3164
+- https://www.rfc-editor.org/rfc/rfc5425
+- https://www.rfc-editor.org/rfc/rfc6587
+- https://www.rsyslog.com/doc/configuration/modules/imudp.html
+- https://csrc.nist.gov/pubs/sp/800/92/final
 `,
   },
   {
@@ -25552,11 +25618,17 @@ I use NFS for VM storage and Linux data shares in my lab. Windows VMs that need 
 
 Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. DNSSEC and many security protocols depend on accurate time.
 
+The five minute figure is not folklore, it is the default maximum clock skew configured in MIT Kerberos and in Active Directory, and it exists to bound replay attacks on authenticators. Cross it and users get "clock skew too great" rather than anything that hints at the real cause.
+
 ## How NTP Works
 
 NTP (Network Time Protocol) synchronizes clocks using a hierarchy called stratum. Stratum 0 devices are atomic clocks or GPS receivers. Stratum 1 servers connect directly to Stratum 0 sources. Stratum 2 servers sync from Stratum 1, and so on.
 
 NTP measures the round-trip delay to the time server and uses statistical algorithms to estimate clock offset and drift. It then adjusts the local clock gradually rather than jumping, which prevents the kind of time discontinuities that break applications.
+
+The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is \`(T4 - T1) - (T3 - T2)\` and offset is \`((T2 - T1) + (T3 - T4)) / 2\`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
+
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronised, and a server advertising 16 is telling you it does not know the time. If \`chronyc tracking\` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -25567,9 +25639,17 @@ The recommended pattern:
 
 \`\`\`bash
 # /etc/chrony.conf on the internal NTP server
-server pool.ntp.org iburst prefer
+pool pool.ntp.org iburst
 allow 192.168.0.0/16  # Allow clients in this range
 \`\`\`
+
+Use \`pool\`, not \`server\`, for a pool hostname. This matters more than it looks. \`server pool.ntp.org\` resolves the name once and uses a single address, so you end up with exactly one upstream source and none of the redundancy the pool exists to provide. The \`pool\` directive resolves the name to multiple addresses and keeps a working set of them, replacing members that go unreachable.
+
+How many upstream sources you need comes from the selection algorithm rather than taste. With one source you cannot detect that it is wrong. With two you learn they disagree but not which one to believe. Three lets a majority outvote a single falseticker, and four means you still have a majority after one source fails. RFC 8633, the NTP best current practices document, recommends at least four. Your internal servers should each have four or more upstreams even though your clients only need the two or three internal ones.
+
+\`iburst\` sends a short burst of packets at startup instead of one per poll interval, which brings a fresh machine into sync in a few seconds rather than several minutes. There is no reason to omit it.
+
+If you are pointing significant numbers of devices at the public pool, read its usage guidelines first. The pool is donated capacity, and vendors shipping products that hammer it are a recurring problem the project has had to deal with.
 
 ## Configuring Clients
 
@@ -25578,10 +25658,14 @@ allow 192.168.0.0/16  # Allow clients in this range
 server 192.168.1.10 iburst prefer  # Internal NTP server 1
 server 192.168.1.11 iburst          # Internal NTP server 2
 
+makestep 1.0 3
+
 # Check synchronization status
 chronyc tracking
 chronyc sources -v
 \`\`\`
+
+\`makestep 1.0 3\` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes days. \`makestep 1.0 3\` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
 
 ## Network Devices
 
@@ -25592,9 +25676,53 @@ ntp server 192.168.1.10 prefer
 ntp server 192.168.1.11
 \`\`\`
 
+Remember that many embedded devices source their NTP queries from UDP port 123 rather than an ephemeral port. Stateful firewall rules written for a normal client/server pattern sometimes drop the replies, and the symptom is a switch that never leaves stratum 16 while a Linux host on the same VLAN syncs fine.
+
+## Reading chronyc Output
+
+\`chronyc sources -v\` prefixes each source with a state character, and knowing them turns a wall of numbers into an answer:
+
+- \`*\` the source currently being used
+- \`+\` an acceptable source being combined with the selected one
+- \`-\` excluded by the combining algorithm
+- \`x\` a falseticker, meaning its time disagrees with the majority
+- \`~\` too variable to trust
+- \`?\` unreachable
+
+An \`x\` next to a source is the interesting one, because it means the sources are voting and this one lost. A row of \`?\` means the packets are not getting through at all, which is a firewall question, not a time question.
+
+From \`chronyc tracking\`, the fields to alert on are **System time**, which is the current offset from the selected source, **Frequency**, the rate correction in parts per million being applied to the local oscillator, and **Leap status**, which should read Normal. A healthy LAN client sits in the tens of microseconds. A frequency of more than about 50 ppm suggests a genuinely poor oscillator or, more often, a virtual machine.
+
+## What Goes Wrong
+
+**The hypervisor and chrony fight over the clock.** VMware Tools, Hyper-V Integration Services, and the QEMU guest agent can all periodically set the guest clock from the host. Running that alongside chronyd produces an oscillating offset that never settles, because two controllers are correcting the same variable. Pick one. Inside a VM, disabling the hypervisor's periodic sync and letting chrony do the work is normally correct.
+
+**A stratum 16 server that clients happily use.** Some devices will sync to a server regardless of what stratum it advertises, so a broken internal NTP server can propagate its own wrong idea of the time across a site. Monitor the internal servers' stratum and offset directly rather than assuming a reachable server is a correct one.
+
+**Leap smear mixed with real leap seconds.** Several large public providers spread a leap second across roughly 24 hours instead of inserting it, and a smeared server and an unsmeared server disagree by up to half a second during the smear window. Mixing the two in one source list means the selection algorithm marks somebody a falseticker at exactly the moment you would rather it did not. Use all smeared or all unsmeared sources, never a blend. This is a shrinking problem, since the 27th CGPM resolved in 2022 to stop inserting leap seconds by 2035, but it is not gone yet.
+
+**NTP as a DDoS amplifier.** The old \`monlist\` query returned up to 600 recent client addresses in response to one small packet, which made unpatched ntpd an amplifier with a gain in the hundreds and drove a wave of large attacks in 2013 and 2014. If you expose NTP at all, expose the time service only. chrony's \`allow\` directive grants time service and nothing else, while remote command access is a separate \`cmdallow\` that defaults to localhost, which is the right shape.
+
+**No authentication.** Plain NTP has none in practice, so anyone who can intercept or spoof the traffic can move your clocks, and moving clocks defeats certificate expiry checks and Kerberos ticket lifetimes. Network Time Security, specified in RFC 8915, fixes this by establishing keys over TLS on port 4460 and then authenticating the NTP packets themselves. chrony supports it with a single keyword on the server line, and it is worth using for any source outside your own network.
+
+## When NTP Is Not Enough
+
+NTP over a LAN with chrony realistically holds tens of microseconds; over the internet, single digit milliseconds is a good result. That is ample for logs, Kerberos, and certificates.
+
+It is not ample for everything. Financial trade timestamping regimes, telecom synchronisation, and industrial control can require sub-microsecond alignment, and getting there means PTP (IEEE 1588) with hardware timestamping in the NICs and switches, or a local GPS-disciplined clock. If someone hands you a requirement measured in microseconds, NTP over ordinary switches is not the tool, and no amount of tuning will make it one.
+
 ## Monitoring Time
 
 Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause subtle, hard-to-diagnose failures. Track the offset and jitter of your internal NTP servers and alert if they fall out of acceptable ranges.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc5905
+- https://www.rfc-editor.org/rfc/rfc8633
+- https://www.rfc-editor.org/rfc/rfc8915
+- https://chrony-project.org/doc/4.6/chrony.conf.html
+- https://man.archlinux.org/man/chronyc.1
+- https://www.ntppool.org/en/use.html
 `,
   },
   {
@@ -26085,6 +26213,8 @@ BGP route leaks and hijacks happen because many networks do not filter what they
 
 The internet is more stable when every AS filters aggressively. And your network is more secure when you only accept routes you expect from each peer.
 
+RFC 4271 is worth knowing here for what it does not say. BGP as specified has no mechanism for verifying that the AS originating a prefix is entitled to it, and no mechanism for verifying that an AS path was actually traversed. Every protection described below is bolted on top. RFC 7454 collects the operational practices into a BCP, and RFC 7908 gives route leaks a formal taxonomy, which is useful because "leak" gets used for at least six structurally different failures.
+
 ## Prefix Lists
 
 Prefix lists filter routes based on the network prefix and prefix length. Use them to whitelist specific prefixes from peers and to control what you advertise:
@@ -26101,6 +26231,21 @@ router bgp 65001
   neighbor 10.0.0.2 prefix-list MY-PREFIXES out
 \`\`\`
 
+The \`ge\` and \`le\` keywords are where most people go wrong, so be precise about them. A bare \`permit 192.0.2.0/24\` matches that prefix and that prefix only. It does not match 192.0.2.0/25 or 192.0.2.128/25. Adding \`le 32\` widens the match to the /24 and everything more specific inside it, and \`ge 25 le 32\` matches only the more specifics without the /24 itself. Which one you want depends entirely on whether your customer deaggregates, and getting it backwards produces either a dropped legitimate announcement or an accepted hijack of a more specific.
+
+Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
+
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behaviour differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+
+## The Filter That Saves You When the Others Fail
+
+\`\`\`
+router bgp 65001
+  neighbor 10.0.0.2 maximum-prefix 100 90 restart 15
+\`\`\`
+
+A maximum prefix limit is the cheapest protection in BGP. It warns at 90 percent of the limit and shuts the session down when the limit is crossed, so a peer that suddenly starts announcing the full table hits a wall instead of blackholing your traffic. Size it from what the peer actually sends, with headroom, and revisit it. For context on scale: the global IPv4 routing table is on the order of a million prefixes and IPv6 is a couple hundred thousand, so a peer that should be sending you twelve prefixes and starts sending 400,000 is unambiguous.
+
 ## Bogon Filtering
 
 Never accept or advertise bogon prefixes: RFC 1918 private addresses, loopback addresses, documentation ranges, or prefixes shorter than /8 or longer than /24.
@@ -26114,15 +26259,51 @@ ip prefix-list BOGONS deny 0.0.0.0/8 le 32
 ip prefix-list BOGONS permit 0.0.0.0/0 le 32
 \`\`\`
 
+That list is incomplete in a way worth fixing. RFC 6890 maintains the authoritative registry of IPv4 special-purpose addresses, and the ones missing above show up in the wild: 100.64.0.0/10 (carrier-grade NAT), 169.254.0.0/16 (link-local), 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24 (documentation), 198.18.0.0/15 (benchmarking), 224.0.0.0/4 (multicast), and 240.0.0.0/4 (reserved). Add \`deny 0.0.0.0/0 ge 25\` to catch prefixes longer than /24, which the DFZ generally will not carry anyway.
+
+Be honest about the distinction between two things that both get called bogons. Special-purpose ranges like the above are static and safe to hardcode. Unallocated address space is not: it changes as the RIRs issue blocks, and a hand-maintained "full bogon" list becomes a filter that blackholes legitimate new allocations. Either subscribe to a maintained feed or restrict your static filter to the special-purpose registry and let RPKI handle the rest.
+
 ## RPKI
 
 RPKI (Resource Public Key Infrastructure) provides cryptographic validation that a prefix is authorized to be advertised by a specific AS. Route Origin Authorizations (ROAs) are published by IP address holders and validated by routers. Invalid prefixes (where the announcing AS does not match the ROA) can be dropped.
 
 RPKI is one of the most effective tools for preventing BGP hijacking. Major ISPs and cloud providers now validate RPKI. If you run BGP, enable RPKI validation.
 
+Mechanically, the router does no cryptography. A separate relying-party validator fetches and verifies the ROA set, then feeds the router a list of validated prefix-to-origin pairs over the RTR protocol from RFC 6810 and RFC 8210. RFC 6811 defines the three outcomes the router then computes for each announcement: **Valid** (a ROA covers the prefix and the origin AS matches), **Invalid** (a ROA covers the prefix and the origin does not match, or the prefix is longer than the ROA's maxLength), and **NotFound** (no ROA covers it at all).
+
+Drop Invalid. Do not drop NotFound. A large share of the table still has no ROA, and more importantly, if your validator becomes unreachable every route in the world degrades to NotFound. A policy that drops NotFound turns a dead validator into a total outage.
+
+The mistake that undoes the whole exercise is maxLength. A ROA covers a prefix plus a maximum length, and setting maxLength to /24 on a /20 you announce as a single /20 means a hijacker announcing your 203.0.113.0/24 with your AS number produces an announcement that is RPKI Valid and more specific than yours, so it wins. RFC 9319 is explicit: set maxLength equal to the prefix length unless you genuinely announce the more specifics yourself.
+
+And be clear on the boundary. RPKI origin validation validates the origin, nothing else. An attacker who prepends your AS at the end of a forged path produces an announcement that validates cleanly. Path validation is what BGPsec (RFC 8205) was designed for, and BGPsec is essentially undeployed. The practical partial answer today is RFC 9234, which adds a peering role to the OPEN message and an Only-to-Customer attribute that lets a leak be detected automatically rather than filtered by hand.
+
 ## AS Path Filtering
 
 Limit the AS path length you accept. An AS path longer than a reasonable maximum (like 10 or 20 hops) is likely bogus or part of a route leak.
+
+Pick that maximum carefully, because AS path prepending is a normal traffic engineering technique and a legitimate route from a multihomed network prepending itself five times can genuinely exceed 15 hops. Typical paths in the DFZ are four or five ASes long, and Cisco's \`bgp maxas-limit\` is conventionally set around 50 to 75. That catches the pathological announcements, some of which carry hundreds of ASes and have historically crashed router software, without discarding a customer who is prepending to steer traffic.
+
+Two other path filters earn their place. Reject any path containing a private AS number, since 64512 to 65534 and the 32-bit range 4200000000 to 4294967294 defined in RFC 6996 should never appear in the DFZ, and neither should 23456, the AS_TRANS placeholder from RFC 6793. And reject any path containing your own AS number on inbound from a peer, which is a loop you did not create.
+
+\`\`\`
+ip as-path access-list 10 deny _(6451[2-9]|645[2-9][0-9]|64[6-9][0-9][0-9]|65[0-9][0-9][0-9])_
+ip as-path access-list 10 permit .*
+\`\`\`
+
+## What Filtering Cannot Fix
+
+None of this authenticates the data plane. Every mechanism here constrains what routes are accepted; none of it verifies that traffic actually followed the path the routes described. A transit provider that accepts your announcement correctly can still route your packets wherever it likes.
+
+Filtering also cannot protect you from your own upstream. If your transit provider accepts a hijack of your prefix from someone else, your inbound traffic is diverted before it ever reaches a router you control. That is why the useful framing is not "protect my network" but "everyone filters their customers." The MANRS actions codify this: filter customer announcements, prevent source address spoofing, keep routing data in the IRR and RPKI current, and be reachable when someone needs to tell you about a leak. Publishing accurate ROAs is the single highest-value thing a small network can do, because it lets everyone else's filters protect you.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc4271
+- https://www.rfc-editor.org/rfc/rfc7454
+- https://www.rfc-editor.org/rfc/rfc7908
+- https://www.rfc-editor.org/rfc/rfc6811
+- https://www.rfc-editor.org/rfc/rfc9319
+- https://www.rfc-editor.org/rfc/rfc6890
 `,
   },
   {

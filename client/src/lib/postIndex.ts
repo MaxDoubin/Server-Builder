@@ -2137,7 +2137,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Centralized logging gives you visibility across your infrastructure and is foundational to both operations and security. Here is how to set it up properly.",
     coverImage: "/images/blog/syslog-centralized-logging.jpg",
     coverCredit: {"author":"Klapi","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Kibana_demo_screenshot.jpg"},
-    wordCount: 288,
+    wordCount: 1434,
   },
   {
     slug: "container-networking-fundamentals",
@@ -2177,7 +2177,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Accurate time is foundational to authentication, logging, and troubleshooting. Here is how NTP works and how to deploy it properly.",
     coverImage: "/images/blog/ntp-enterprise-networks.jpg",
     coverCredit: {"author":"US Air Force","license":"Public domain","licenseUrl":"https://commons.wikimedia.org/wiki/Commons:Licensing#Public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Usno-amc.jpg"},
-    wordCount: 308,
+    wordCount: 1610,
   },
   {
     slug: "nginx-reverse-proxy-setup",
@@ -2237,7 +2237,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "BGP without proper filtering is dangerous. Here is how to implement route filtering to protect your network and the internet.",
     coverImage: "/images/blog/bgp-route-filtering-security.jpg",
     coverCredit: {"author":"Stefan Funke from Frankfurt, Germany","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DE-CIX_GERMANY_-_Switch_Rack_(6218137120).jpg"},
-    wordCount: 329,
+    wordCount: 1504,
   },
   {
     slug: "secure-network-design-principles",
