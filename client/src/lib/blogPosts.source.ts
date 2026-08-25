@@ -22933,6 +22933,10 @@ You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start
 
 The FortiGate GUI is well designed and handles most tasks fine. But when you are troubleshooting a production issue under pressure, the CLI is faster, more precise, and more scriptable. It also gives you access to diagnostic tools and detailed output that the GUI does not expose.
 
+Before anything else, learn the difference between the three command families, because mixing them up is the source of most beginner confusion. \`get\` displays current operational state including defaults and live values. \`show\` displays only configuration that differs from the factory default, which is why \`show firewall policy\` on a fresh unit prints almost nothing. \`diagnose\` reaches into the running system for debugging, and \`execute\` performs an immediate action that cannot be undone. \`execute factoryreset\` does not ask twice.
+
+When \`show\` output looks suspiciously short, run \`show full-configuration\` for the same object. That prints every setting including defaults, and it is how you find the one option somebody changed three years ago.
+
 ## Essential Show Commands
 
 \`\`\`bash
@@ -22955,6 +22959,23 @@ get router info bgp summary
 get system status
 \`\`\`
 
+Two of those need a warning attached.
+
+\`diagnose sys session list\` with no filter dumps the entire session table to your terminal. On a busy firewall that is hundreds of thousands of entries, and the output will run for many minutes while your SSH session is effectively unusable. Always set a filter first:
+
+\`\`\`bash
+diagnose sys session filter clear
+diagnose sys session filter dst 192.168.1.100
+diagnose sys session filter dport 443
+diagnose sys session list
+\`\`\`
+
+The same filter applies to \`diagnose sys session clear\`, and that is the dangerous one. Run \`diagnose sys session clear\` without a filter and you flush every session on the firewall, dropping every established connection through it. That is a self-inflicted outage in one command with no confirmation prompt. Type the filter, run \`diagnose sys session stat\` to confirm the match count looks sane, then clear.
+
+For \`get router info bgp summary\`, the column you care about is \`State/PfxRcd\`. A peer that is working shows a number, which is the count of prefixes received. Anything else, \`Idle\`, \`Active\`, \`Connect\`, \`OpenSent\`, is a peer that is not up, and \`Active\` in particular means the local side is trying and failing to establish TCP 179, not that everything is fine. RFC 4271 defines the state machine those names come from.
+
+There is also a distinction worth knowing between \`get router info routing-table all\`, which shows the RIB (what the routing protocols decided), and \`get router info kernel\`, which shows the FIB (what is actually programmed into the forwarding path). When traffic goes somewhere the routing table says it should not, compare the two.
+
 ## Packet Capture
 
 FortiGate has a built-in packet sniffer that is invaluable for troubleshooting:
@@ -22963,8 +22984,23 @@ FortiGate has a built-in packet sniffer that is invaluable for troubleshooting:
 # Capture traffic on port1 matching a host
 diagnose sniffer packet port1 "host 192.168.1.100" 4 0 l
 
-# The parameters: interface, filter, verbosity (4 = full packet), count (0 = unlimited), timestamp format
+# The parameters: interface, filter, verbosity, count (0 = unlimited), timestamp format
 \`\`\`
+
+The verbosity levels documented by Fortinet are:
+
+- \`1\` prints the packet header only
+- \`2\` prints the header and the data from the IP layer
+- \`3\` prints the header and the data from the Ethernet layer
+- \`4\` prints the header of packets with the interface name
+
+Levels \`5\` and \`6\` are the interface-name variants of \`2\` and \`3\`. So \`4\` is not a full packet capture, which is a common misreading. If you need the actual payload bytes, use \`3\` or \`6\`; if you only need to know which interface a packet arrived on and left through, \`4\` is exactly right and much easier to read.
+
+The timestamp argument takes \`a\` for absolute UTC, \`l\` for absolute local time, and anything else gives you time relative to the start of the capture. Use \`l\` when you need to correlate the capture against a log entry.
+
+The filter is standard BPF syntax, the same language \`tcpdump\` uses, so \`host\`, \`net\`, \`port\`, \`and\`, \`or\`, and \`not\` all work as expected. \`diagnose sniffer packet any "host 10.0.0.5" 4 0 l\` captures across all interfaces, which is the fastest way to see whether a packet reached the firewall at all.
+
+Now the failure mode that wastes the most time: on models with NP6 or NP7 network processors, established sessions are offloaded to hardware and never touch the CPU. The sniffer runs on the CPU. So you will see the first few packets of a session and then nothing, and conclude that traffic stopped when it is actually flowing fine at line rate. If a capture goes quiet on a session you know is active, disable offload for the test with \`set auto-asic-offload disable\` on the relevant firewall policy, or accept that you are only going to see session setup.
 
 ## Debug Flow
 
@@ -22980,6 +23016,12 @@ diagnose debug flow trace start 10
 
 This output tells you which policy matches the traffic, whether NAT is applied, and whether the packet is allowed or dropped. It is the fastest way to diagnose connectivity problems.
 
+Read the output for a small number of specific lines. \`allocate a new session\` means this is the first packet of a new session and you are about to see the full decision path. \`find a route\` tells you the egress interface and gateway that were chosen; if that is the wrong interface, your problem is routing, not policy. \`Allowed by Policy-N\` names the policy ID that matched, and \`Denied by forward policy check\` means nothing matched and the implicit deny caught it. \`reverse path check fail, drop\` is the FortiGate's RPF check rejecting a packet that arrived on an interface the routing table would not use to reach that source, which is the classic symptom of asymmetric routing.
+
+Debug flow has the same offload blind spot as the sniffer, and one more limitation on top: it traces packets that create or modify a session. Packets on an already-established session take the fast path and produce no output. So if you start the debug after the user reproduced the problem, you will see nothing. Start the debug, then have them retry.
+
+\`diagnose debug flow trace start 10\` limits the trace to ten packets, which is almost always what you want. Without a count on a busy interface the console fills faster than you can read it. Add \`diagnose debug console timestamp enable\` when you need to line the trace up against a session table or a log.
+
 ## HA Status
 
 \`\`\`bash
@@ -22990,9 +23032,28 @@ diagnose sys ha status
 get system ha status
 \`\`\`
 
+When two units refuse to form a cluster, the checks in order are: identical hardware model, identical firmware build (not just version, the build number), matching group name and group ID, and heartbeat interfaces that are actually connected. FGCP heartbeat traffic uses its own Ethernet types (0x8890, 0x8891, 0x8893) rather than IP, so it will not traverse a router and any switch doing aggressive filtering can silently break it.
+
+When the cluster is formed but behaving oddly, \`diagnose sys ha checksum show\` is the tool. It prints a checksum of the configuration on each member; if they differ, the units are out of sync and the secondary is running a configuration you did not intend. Forcing a resync is \`execute ha synchronize start\` on the secondary.
+
 ## Tips
 
 Always run \`diagnose debug disable\` and \`diagnose debug reset\` when you are done debugging. Leaving debug enabled affects performance. And document any changes you make in the CLI, because the GUI does not always show CLI-only configurations clearly.
+
+Two more habits worth building. First, run \`execute backup config tftp <filename> <server-ip>\` before any risky change. FortiOS has no equivalent of the IOS \`reload in 5\` safety net, so if you lock yourself out of a remote firewall your only recovery is a console cable or somebody on site. Local revisions via \`execute revision list config\` help, but only if the unit is still reachable.
+
+Second, if the CLI is producing \`command parse error\` on a command you know exists, check your scope. On a unit with VDOMs enabled, most \`config system\` settings live in the global scope and firewall objects live inside each VDOM. \`config global\` and \`config vdom\` then \`edit <name>\` move you between them, and the same command is genuinely invalid in the wrong place.
+
+Two operational numbers worth remembering: \`get system performance status\` reports CPU and memory alongside a 1, 10, 30, and 60 minute average, and the memory figure is what drives conserve mode. When memory use crosses the red threshold (88 percent by default) the FortiGate enters conserve mode and stops accepting new sessions that require proxy-based inspection. Users experience that as "some websites do not load" while ping and the firewall itself look completely healthy.
+
+## References
+
+- https://docs.fortinet.com/document/fortigate/7.0.2/administration-guide/680228/performing-a-sniffer-trace-cli-and-packet-capture
+- https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/54688/debugging-the-packet-flow
+- https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference
+- https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/63913/check-ha-synchronization-status
+- https://www.tcpdump.org/manpages/pcap-filter.7.html
+- https://www.rfc-editor.org/rfc/rfc4271
 `,
   },
   {
@@ -23767,7 +23828,22 @@ Router(config)# interface GigabitEthernet0/0
 Router(config-if)#   # Interface config submode
 \`\`\`
 
-\`\`\`end\`\` or \`Ctrl+Z\`\` returns to privileged EXEC from any config mode.
+\`end\` or \`Ctrl+Z\` returns to privileged EXEC from any config mode. \`exit\` is different: it goes up exactly one level, so from interface config it lands you in global config, not at the prompt.
+
+The prompt character tells you where you are, and reading it correctly saves a lot of confusion. \`>\` is user EXEC, privilege level 1, where you can look at very little. \`#\` is privileged EXEC, privilege level 15, where you can see everything and reload the device. IOS actually supports privilege levels 0 through 15 and you can assign individual commands to intermediate levels, which is how you give a helpdesk read access to interface counters without handing over level 15.
+
+The passwords behind those modes are worth getting right on day one. \`enable password\` stores the string with Type 7 encryption, which is a Vigenere cipher that any online decoder reverses in a second; it exists for shoulder-surfing, not for security. \`enable secret\` stores a hash instead. \`service password-encryption\` only upgrades plaintext passwords to Type 7, so it does not help. Use \`enable secret\` and, on modern IOS, \`enable algorithm-type scrypt secret <password>\` for a Type 9 hash.
+
+Two lines belong in every device you will ever type on:
+
+\`\`\`
+no ip domain-lookup
+line con 0
+  logging synchronous
+  exec-timeout 15 0
+\`\`\`
+
+\`no ip domain-lookup\` stops IOS from treating a mistyped command as a hostname and trying to resolve it, which hangs your session for several seconds while it queries DNS. \`logging synchronous\` stops log messages from interleaving with the command you are typing. Without it, an interface flapping mid-command makes the line unreadable. \`exec-timeout 15 0\` logs you out after fifteen idle minutes; \`exec-timeout 0 0\` disables the timeout entirely and is how forgotten console sessions become an audit finding.
 
 ## Essential Show Commands
 
@@ -23783,6 +23859,21 @@ show spanning-tree     # STP state
 show log               # System log
 \`\`\`
 
+\`show ip interface brief\` has two status columns and the combination is a diagnosis, not just a status:
+
+- \`up / up\` is working.
+- \`up / down\` means layer 1 is fine and layer 2 is not: an encapsulation mismatch on a serial link, or keepalives not being answered.
+- \`down / down\` is physical: no cable, wrong cable, or the far end is off.
+- \`administratively down / down\` means somebody typed \`shutdown\`. Every Cisco router interface ships shut down by default, which is why a brand new interface with a correct IP address passes no traffic until you type \`no shutdown\`.
+
+\`show interfaces\` gives you the error counters, and the two that actually mean something specific are CRC errors and late collisions. A handful of CRCs over months is cable noise. CRC errors climbing steadily on one side plus late collisions on the other is a duplex mismatch, which happens when one end is hard-coded to full duplex and the other autonegotiated to half. The link works, throughput is terrible, and nothing reports an error. Fix it by setting both ends to autonegotiate, or both ends hard-coded, never one of each.
+
+Remember that all of those counters are cumulative since boot or since the last \`clear counters\`. A device with 400 CRC errors and 300 days of uptime is fine. Run \`clear counters\`, wait five minutes, and look again if you want to know whether the problem is happening now.
+
+\`show cdp neighbors\` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run \`no cdp enable\` on ports facing users or untrusted networks. LLDP, standardised as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type \`lldp run\`.
+
+The output filters are the other half of the help system. \`show run | include ip address\` greps, \`show run | section interface\` prints whole configuration blocks, and \`show run | begin router bgp\` starts output at the first match. \`terminal length 0\` turns off the \`--More--\` paging so you can capture a full config into a terminal log.
+
 ## Basic Interface Configuration
 
 \`\`\`
@@ -23791,6 +23882,10 @@ interface GigabitEthernet0/0
   ip address 10.0.0.1 255.255.255.0
   no shutdown
 \`\`\`
+
+The \`description\` is not decoration. It is the only place the answer to "what is plugged into this port" lives, and it shows up in \`show ip interface brief\` output on modern IOS and in most monitoring tools.
+
+Interface naming differs between platforms and it trips people up. On a router, \`GigabitEthernet0/0\` is slot/port. On a stackable switch, \`GigabitEthernet1/0/1\` is switch-number/module/port, so the leading \`1\` is the stack member, not the slot. Type the wrong form and IOS reports an invalid interface rather than telling you the naming scheme changed.
 
 ## VLAN Configuration on Switches
 
@@ -23807,6 +23902,14 @@ interface GigabitEthernet1/0/24
   switchport trunk allowed vlan 100,200,300
 \`\`\`
 
+The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
+
+The 802.1Q tag adds four bytes to the frame, taking the maximum from 1518 to 1522. Any device in the path that does not accept these baby giants drops full-size tagged frames while small ones pass, producing the maddening symptom where ping works and file transfers hang.
+
+Now the line in that config block that causes real outages: \`switchport trunk allowed vlan 100,200,300\` **replaces** the entire allowed list. Type it on a live trunk that was carrying VLANs 10, 20, and 30 and you have just cut those three VLANs off the link. The command you want when adding is \`switchport trunk allowed vlan add 400\`, and there is a matching \`remove\` keyword. Check with \`show interfaces trunk\` before and after, every time.
+
+Two more trunk facts. First, the Cisco default on many switch ports is \`switchport mode dynamic auto\`, which negotiates via DTP. Two \`dynamic auto\` ports both wait for the other to start and never form a trunk. Always configure both ends explicitly and add \`switchport nonegotiate\` on the trunk so DTP frames stop leaving the port at all. Second, the native VLAN, VLAN 1 by default, is the one carried untagged across a trunk. If the two ends disagree about which VLAN that is, untagged traffic silently lands in the wrong VLAN on the far side. CDP detects and logs this as a native VLAN mismatch, which is one of the few times CDP earns its keep.
+
 ## Saving Configuration
 
 \`\`\`
@@ -23815,9 +23918,36 @@ copy running-config startup-config
 
 Or the shortcut: \`write\`. Always save after making changes. The running config is what is active; the startup config is what loads on boot. They are separate files.
 
+Specifically, the running config lives in RAM and the startup config lives in NVRAM. Every command you type takes effect the instant you press Enter and is gone on the next power cycle until you copy it. There is no "apply" step and no confirmation, which is the opposite of how NX-OS, IOS XR, and Junos work with their candidate configurations and explicit \`commit\`.
+
+The practical consequence is that a mistake on a remote device locks you out immediately, and this is where the classic IOS safety net comes in:
+
+\`\`\`
+reload in 10
+! make your risky change, verify you still have access
+reload cancel
+\`\`\`
+
+If the change breaks your connectivity, you cannot type \`reload cancel\`, the device reboots in ten minutes, and it comes back on the last saved startup config. Nobody has to drive to the site. Do not save the config until you have cancelled the reload.
+
+For a real rollback capability rather than a blunt reboot, \`archive\` with \`path\` configured plus \`configure replace\` lets you roll back to a stored configuration file, but it only works if you set it up before you needed it. Config register \`0x2102\` is the normal default and means boot from flash and load the startup config; \`0x2142\` tells the router to skip the startup config, which is the password recovery procedure and also a good way to accidentally boot a blank device.
+
 ## The IOS Help System
 
 Type \`?\` at any point to see available commands. This works in all modes. \`show ip ?\` shows all sub-commands of \`show ip\`. Learning to use the help system is as important as memorizing specific commands.
+
+The spacing before \`?\` changes what you get. \`show ip?\` with no space lists commands starting with "ip". \`show ip ?\` with a space lists the arguments that can follow \`show ip\`. Tab completes a partial keyword, and IOS accepts any abbreviation that is unambiguous, which is why \`sh ip int br\` works and \`s\` alone does not.
+
+From inside configuration mode you do not need to leave to run a show command: \`do show ip interface brief\` works from any config prompt. And when IOS answers a command with \`% Invalid input detected at '^' marker\`, the caret points at the exact character where parsing failed. Read the caret position before you retype the whole line.
+
+## References
+
+- https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9500/software/release/17-16/command_reference/b_1716_9500_cr/using_the_command_line_interface.html
+- https://www.cisco.com/c/en/us/td/docs/ios/fundamentals/command/reference/cf_book/cf_c1.html
+- https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_cm-config-files-0.html
+- https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/software/release/15-0_2_se/configuration/guide/scg2960/swvlan.html
+- https://en.wikipedia.org/wiki/IEEE_802.1Q
+- https://en.wikipedia.org/wiki/Cisco_Discovery_Protocol
 `,
   },
   {
@@ -24073,6 +24203,8 @@ Traditional WAN routing uses static routes or simple metrics to decide how traff
 
 SD-WAN adds active performance measurement and policy-based routing. The FortiGate constantly measures latency, jitter, and packet loss on each WAN link and makes routing decisions based on actual conditions.
 
+The word "silently" is the key one. A static route only reacts to the interface going down. A DSL line that is up but dropping 8 percent of packets, or a cable link whose jitter has climbed to 90 ms because the neighbourhood got home from work, looks perfectly healthy to a static route and terrible to anyone on a voice call. Measuring the link rather than the interface is the whole idea.
+
 ## Basic SD-WAN Setup
 
 First, create an SD-WAN zone and add your WAN interfaces:
@@ -24098,6 +24230,28 @@ config system sdwan
 end
 \`\`\`
 
+If you are following an older guide and the CLI rejects this, it is because the command tree was renamed. \`config system virtual-wan-link\` became \`config system sdwan\` in FortiOS 6.4.1, and zones did not exist before that. A large fraction of the SD-WAN tutorials on the internet were written for 6.0 and 6.2 and will not paste into a current unit.
+
+The gateway addresses above use RFC 5737 documentation ranges, so substitute your ISP's next hop. On a DHCP or PPPoE WAN you leave \`gateway\` unset and the member learns it dynamically.
+
+Three ordering constraints will stop you cold:
+
+- The interface must not already be referenced by a firewall policy or a static route. FortiOS returns \`Interface is being used\` and refuses. Remove the references first, add the member, then rebuild the policies against the zone.
+- Once an interface is an SD-WAN member, firewall policies address the **zone**, not the raw interface. A policy with \`wan1\` as the outgoing interface stops being valid. This is the single most common reason a working firewall loses all internet access thirty seconds after SD-WAN is enabled.
+- You still need a route. SD-WAN does not create one. Add a static default via the zone:
+
+\`\`\`
+config router static
+  edit 1
+    set dst 0.0.0.0 0.0.0.0
+    set distance 1
+    set sdwan-zone "virtual-wan-link"
+  next
+end
+\`\`\`
+
+Skip that and every SLA can be green while no traffic moves, because the routing table has nowhere to send it.
+
 ## Performance SLAs
 
 Define what acceptable performance looks like for each type of traffic:
@@ -24119,6 +24273,16 @@ config system sdwan
 end
 \`\`\`
 
+The Fortinet defaults for the timing values are \`interval\` 500 ms (range 20 to 3600000), \`failtime\` 5 (range 1 to 3600), and \`recoverytime\` 5. The config above sets \`failtime 3\`, which is deliberately faster than default: detection time is \`interval\` multiplied by \`failtime\`, so 500 ms times 3 is 1.5 seconds to declare a member down, versus 2.5 seconds at the default. Recovery stays at 5 because you want a link to prove itself before traffic returns to it. Asymmetric fail and recover values are the standard anti-flap technique.
+
+Tightening \`interval\` to 100 ms buys you sub-second detection and costs you ten probes per second per member per health check, on the CPU and on the link. On a 4-member SD-WAN with six health checks that is 240 probes per second of pure overhead. Measure before you tune.
+
+The thresholds are the part people misunderstand. \`latency-threshold 150\` and friends do not cause anything on their own; they define what "meets SLA" means for rules that reference this health check. \`0\` disables a threshold. And crossing a threshold does not take the member down: the member is still up and usable, it simply stops satisfying the SLA, so rules configured to require the SLA move elsewhere while rules that only care about the member being alive stay put.
+
+\`failtime\` being exceeded is different. When a member fails the health check outright, the FortiGate withdraws every static route associated with that interface. That is the mechanism by which failover actually happens, and it is also why an unrelated static route out that interface will disappear during a WAN blip.
+
+Now the honest part about \`8.8.8.8\`. Probing a public DNS resolver tells you whether the general internet is reachable, and nothing about whether your application is. If the SaaS app your users need is having a bad day, the SLA stays green and SD-WAN keeps sending traffic into the problem. Public resolvers also deprioritise ICMP under load, so you can see phantom loss that has nothing to do with your circuit. Better options, in rough order: probe the actual far end of your overlay tunnel with \`protocol ping\`, probe the application with \`protocol http\` and \`set http-get\`, or use \`protocol twamp\` against a TWAMP responder, which is RFC 5357 and is designed for exactly this measurement rather than borrowed from a diagnostic tool.
+
 ## Rules
 
 SD-WAN rules define which traffic uses which links based on the performance SLAs:
@@ -24136,9 +24300,54 @@ config system sdwan
 end
 \`\`\`
 
+\`set mode\` controls the selection strategy, and the default is \`manual\`, meaning it simply uses \`priority-members\` in the order listed. The options that matter:
+
+- \`manual\` uses the first listed member, period. No SLA awareness.
+- \`priority\` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behaviour.
+- \`sla\` uses any member meeting the SLA, load balancing across them, and falls back to the best available when none qualify.
+- \`load-balance\` distributes across members regardless of quality.
+- \`best-quality\` picks the single best member by whichever metric \`set quality-link\` or \`sla-compare-method\` names.
+
+Rules are evaluated top to bottom by sequence number and the first match wins, exactly like firewall policies. If a rule is never taking effect, check whether a broader rule above it is catching the traffic first. Traffic that matches no rule falls through to the implicit rule, which uses the global \`load-balance-mode\`, defaulting to \`source-ip-based\`.
+
+Add \`set hold-down-time\` to any rule you care about. It defaults to 0 seconds, which means the instant a preferred member recovers, traffic snaps back to it. If that member is marginal, you get sessions bouncing between links every few seconds. Setting \`hold-down-time 30\` makes a recovered link wait half a minute before it is preferred again.
+
+For visibility, \`set sla-fail-log-period 30\` and \`set sla-pass-log-period 30\` on the health check write SLA transitions to the log every thirty seconds. Both default to 0, meaning disabled, which is why a new SD-WAN deployment has no history of why traffic moved last Tuesday.
+
 ## The Result
 
 Traffic automatically routes over the best-performing link. When a link degrades below your SLA thresholds, traffic shifts to the healthier link without manual intervention. You get visibility into link performance through the FortiGate dashboard and can build detailed reports on WAN utilization over time.
+
+With one large caveat that catches everybody: **SD-WAN decisions are made per session, at session setup.** An existing session does not move. A user on a two hour SSH session, a 40 GB file transfer, or an active video call stays on the degraded link until that session ends. New sessions go the new way immediately, which is why the dashboard shows the link change while the person complaining sees no improvement at all. If you need existing sessions to move, that is \`set snat-route-change enable\` in \`config system global\` for SNAT sessions, and even then it only applies when the route is actually withdrawn.
+
+Useful verification commands:
+
+\`\`\`
+diagnose sys sdwan health-check
+diagnose sys sdwan service
+diagnose sys sdwan member
+\`\`\`
+
+The first shows current latency, jitter, and loss per member per health check plus the SLA pass or fail state. The second shows which members each rule is currently selecting and why.
+
+## What SD-WAN Cannot Do
+
+It cannot create bandwidth. If both links are saturated, moving traffic between them changes which users are unhappy, not how many. Saturation is a traffic shaping problem, and on FortiGate that is \`config firewall shaping-policy\`, a separate feature.
+
+It cannot beat physics. A path with 180 ms of latency because it crosses an ocean will not improve because you measured it. SD-WAN picks the best of the paths you have.
+
+It does not load balance a single session across links. Splitting one TCP flow packet-by-packet over paths with different latencies causes reordering, which TCP interprets as loss, which collapses throughput. Per-session distribution is a correctness requirement, not a limitation somebody forgot to fix. The consequence is that one large transfer gets one link's bandwidth, no matter how many links you own.
+
+And it does nothing at a single-WAN site. If there is one circuit, there is no decision to make. What helps there is FEC over an IPsec overlay, which trades bandwidth for resilience against packet loss, and that is a different feature with a different set of tradeoffs.
+
+## References
+
+- https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/584396/sd-wan-performance-sla
+- https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/580649/link-health-monitor
+- https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/942095/sd-wan-members-and-zones
+- https://docs.fortinet.com/document/fortigate/8.0.0/administration-guide/413288/sd-wan-rules-overview
+- https://docs.fortinet.com/document/fortigate/7.4.3/administration-guide/256518/configuring-sd-wan-in-the-cli
+- https://www.rfc-editor.org/rfc/rfc5357
 `,
   },
   {
@@ -24754,6 +24963,8 @@ Without port authentication, anyone who can physically plug into a network jack 
 
 802.1X requires every device to authenticate before it receives network access. Until authenticated, the port only allows RADIUS traffic. After authentication, the port is placed in the appropriate VLAN for that device.
 
+That description needs one correction, because getting it wrong leads to a broken deployment. The unauthenticated port does not carry RADIUS traffic; the client cannot reach the RADIUS server at all. What crosses the port before authentication is EAPOL, EAP over LAN, which is a layer 2 frame with EtherType 0x888E sent to the reserved multicast address 01:80:C2:00:00:03. The switch is the one that talks RADIUS, from its own management IP to the server, translating the EAP conversation as it goes. Cisco switches also permit CDP and STP through an unauthorized port, and nothing else.
+
 ## The Three Components
 
 **Supplicant:** The device trying to connect. Must have an 802.1X client (built into Windows, macOS, and Linux).
@@ -24761,6 +24972,14 @@ Without port authentication, anyone who can physically plug into a network jack 
 **Authenticator:** The network switch or wireless AP. It enforces the authentication requirement and relays credentials to the RADIUS server.
 
 **Authentication Server (RADIUS):** Validates credentials and tells the switch what access to grant. FreeRADIUS is the standard open-source option.
+
+Those three names come straight out of IEEE 802.1X, and the EAP framework they exchange is RFC 3748. Worth understanding: EAP is a container, not an authentication method. The switch has no idea whether the inner method is a password, a certificate, or a token; it copies EAP payloads between the EAPOL frames on one side and the RADIUS \`EAP-Message\` attribute on the other. That is why you can change from PEAP to EAP-TLS without touching a single switch configuration line.
+
+The methods you will actually meet:
+
+- **EAP-TLS** (RFC 5216) uses a client certificate. It is the strongest option, gives mutual authentication, and needs a working PKI with certificate distribution and revocation. That PKI, not the 802.1X part, is the hard bit.
+- **PEAP** and **EAP-TTLS** build a TLS tunnel using only a server certificate, then carry a password inside. Far easier to deploy because clients need no certificate of their own.
+- **EAP-MD5** is a plain password challenge with no server authentication and no key derivation. It is trivially subject to a man in the middle and is unusable on wireless. Do not build anything new on it.
 
 ## Basic FreeRADIUS Setup
 
@@ -24780,6 +24999,14 @@ client switch1 {
 jsmith  Cleartext-Password := "password123"
 \`\`\`
 
+The \`ipaddr\` in \`clients.conf\` must be the source address the switch actually uses, which is not always the one you think. A switch with several SVIs picks a source by routing table unless you pin it with \`ip radius source-interface Vlan10\`. When the source does not match, FreeRADIUS logs \`Ignoring request from unknown client\` and the switch reports a timeout, so the two ends describe completely different problems.
+
+Do not debug this from the log files. Stop the service and run \`freeradius -X\` to get full debug output in the foreground. It prints the incoming packet, every module it runs, the attributes it decides to return, and the exact reason for a reject. It is the single most useful troubleshooting tool in the stack and most people find it a year late.
+
+Take the shared secret seriously. RADIUS is defined in RFC 2865, and its only protection is that secret: the \`User-Password\` attribute is obscured with an MD5 keystream derived from the secret and the request authenticator, and every other attribute, including the username and the VLAN assignment coming back, travels in cleartext UDP. A short or reused secret undoes the whole design. Use a long random string, a different one per switch, and put the RADIUS traffic on a management VLAN.
+
+Two more RADIUS numbers worth memorising. The modern ports are UDP 1812 for authentication and 1813 for accounting (RFC 2866); the legacy 1645 and 1646 still appear in old documentation and in the defaults of some ancient gear, and a mismatch there is a silent timeout. And a RADIUS packet maxes out at 4096 octets, with any single attribute capped at 253 bytes of data. EAP messages larger than that get split across multiple \`EAP-Message\` attributes. This is why EAP-TLS with a long certificate chain fails when smaller methods work: the fragmented exchange is more sensitive to MTU problems and to intermediate devices that do not reassemble properly.
+
 ## Cisco Switch Configuration
 
 \`\`\`
@@ -24796,11 +25023,58 @@ interface GigabitEthernet1/0/1
   dot1x pae authenticator
 \`\`\`
 
+\`aaa new-model\` is the command that changes everything else, and it is the one that will lock you out. The moment you type it, the switch switches to the AAA authentication model, and if you have not already configured a fallback for console and VTY lines, your next login attempt fails. Configure the fallback in the same session, before you disconnect:
+
+\`\`\`
+aaa authentication login default local
+username admin privilege 15 secret <password>
+\`\`\`
+
+\`aaa authentication login default group radius local\` is the usual production form, meaning try RADIUS and fall back to the local account if the server is unreachable. Without that \`local\` keyword, a RADIUS outage means nobody can log into any switch, which turns a server problem into a network-wide one.
+
+Also add \`aaa authorization network default group radius\`. Without it the switch will authenticate users correctly and then ignore every attribute the server sends back, including the VLAN. Authentication succeeding while dynamic VLAN assignment does nothing is almost always this line missing.
+
+Note that \`authentication port-control auto\` is the older IOS syntax. Current IOS XE uses Identity-Based Networking Services with \`access-session port-control auto\` and policy maps. Both appear in current documentation, so match your platform rather than the first guide you find.
+
 ## Dynamic VLAN Assignment
 
 The real power of 802.1X is RADIUS-based VLAN assignment. Employees get the corporate VLAN; contractors get the guest VLAN. This happens automatically based on credentials, without manual VLAN configuration per port.
 
 Configure RADIUS to return VLAN attributes in the Access-Accept response, and the switch automatically places the port in the correct VLAN.
+
+The attributes are standardised, and RFC 3580 spells out exactly which three you need together:
+
+\`\`\`
+jsmith  Cleartext-Password := "password123"
+        Tunnel-Type = VLAN,
+        Tunnel-Medium-Type = IEEE-802,
+        Tunnel-Private-Group-Id = "100"
+\`\`\`
+
+\`Tunnel-Type\` must be \`VLAN\` (value 13), \`Tunnel-Medium-Type\` must be \`IEEE-802\` (value 6), and \`Tunnel-Private-Group-Id\` carries the VLAN number or name. Send only \`Tunnel-Private-Group-Id\` and the switch ignores it entirely, which is the most common reason "VLAN assignment does not work" while authentication succeeds. All three, or none of them count. The attributes themselves come from RFC 2868.
+
+## The Failure Modes That Matter
+
+**Devices with no supplicant.** Printers, IP cameras, badge readers, and older embedded gear have no 802.1X client at all and will never authenticate. Cisco's default timers give them 30 seconds per attempt with two retries, so roughly 90 seconds of nothing before the port gives up. The answers are MAC Authentication Bypass, which authenticates the device's MAC address as a username against RADIUS, and a guest VLAN for ports where nothing ever speaks EAPOL. MAB is weak by design, since a MAC address is readable off a label and trivially spoofed, so put MAB devices in a tightly restricted VLAN rather than treating a MAB pass as trust.
+
+**Deploying in enforcement mode first.** Turning on 802.1X across a campus without a discovery phase takes out every device you did not know about, and you find out at 8 a.m. Every serious deployment starts in monitor mode, Cisco's \`authentication open\`, where the port authenticates and logs but permits traffic regardless of outcome. Run that for weeks, read the RADIUS logs, fix or MAB everything that fails, and only then close the ports.
+
+**IP phones with a PC behind them.** One switch port, two devices, two VLANs. That needs multi-domain authentication, \`authentication host-mode multi-domain\`, so the phone authenticates into the voice VLAN and the PC into the data VLAN independently. Single-host mode allows exactly one MAC address and will shut the port when it sees the second.
+
+**Certificate expiry.** With EAP-TLS or PEAP, the RADIUS server's own certificate has an expiry date. When it passes, every client on the network fails authentication simultaneously. Put that date in a calendar and monitor it, because the outage is total and the error clients report is unhelpful.
+
+**Physical layer bypass.** 802.1X authenticates once, at link-up. An attacker who inserts a small hub or bridge between an already-authenticated legitimate device and the wall jack can inject traffic onto the authenticated port. MACsec (IEEE 802.1AE) encrypts and authenticates each frame and closes this hole; plain 802.1X does not. It also does nothing about a compromised machine that authenticated legitimately, which is the case for pairing it with posture assessment or a NAC platform rather than treating it as the whole answer.
+
+On the supplicant side, plan for the client experience. Windows has a \`Wired AutoConfig\` service that is set to manual start by default, so a correctly configured Windows machine will fail 802.1X until that service runs. Linux uses \`wpa_supplicant\` for wired 802.1X too, not just wireless, and it needs an explicit config file. These are not exotic edge cases; they are what your first week of monitor-mode logs will be full of.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc3748
+- https://www.rfc-editor.org/rfc/rfc2865
+- https://www.rfc-editor.org/rfc/rfc3580
+- https://www.rfc-editor.org/rfc/rfc5216
+- https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-9/configuration_guide/sec/b_179_sec_9300_cg/configuring_ieee_802_1x_port_based_authentication.html
+- https://en.wikipedia.org/wiki/IEEE_802.1X
 `,
   },
   {

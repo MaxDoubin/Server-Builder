@@ -86,6 +86,6 @@ export const FAQS: Faq[] = [
   },
   {
     q: "How do you contact Max Doubin?",
-    a: "Email is the best route, at max@maxdoubin.com. There is also a contact form at maxdoubin.com/contact. He is on GitHub as MaxFromYT and on Instagram as @maxdoubin.",
+    a: "Email is the best route, at max@maxdoubin.com. There is also a contact form at maxdoubin.com/contact. He is on GitHub as MaxDoubin and on Instagram as @maxdoubin.",
   },
 ];

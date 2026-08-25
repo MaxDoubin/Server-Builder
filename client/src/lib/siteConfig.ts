@@ -32,8 +32,8 @@ export const siteConfig = {
       url: "https://instagram.com/maxdoubin",
     },
     github: {
-      handle: "MaxFromYT",
-      url: "https://github.com/MaxFromYT",
+      handle: "MaxDoubin",
+      url: "https://github.com/MaxDoubin",
     },
   },
   siteUrl: "https://maxdoubin.com",

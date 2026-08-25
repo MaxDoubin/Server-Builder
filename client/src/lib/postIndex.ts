@@ -1882,7 +1882,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The FortiGate GUI is useful, but the CLI is where real control happens. Here are the commands that matter most in production environments.",
     coverImage: "/images/blog/fortigate-cli-essentials.jpg",
     coverCredit: {"author":"Premeditated","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Fortinet_FortiGate_6501F.png"},
-    wordCount: 302,
+    wordCount: 1555,
   },
   {
     slug: "kvm-proxmox-esxi-comparison",
@@ -1965,7 +1965,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "IOS is the language of enterprise networking. These are the foundational commands and concepts that every network engineer needs in their toolkit.",
     coverImage: "/images/blog/cisco-ios-fundamentals.jpg",
     coverCredit: {"author":"Robert","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_2800_series_router_(1).jpg"},
-    wordCount: 252,
+    wordCount: 1724,
   },
   {
     slug: "storage-area-networks-explained",
@@ -1995,7 +1995,7 @@ export const postIndex: PostMeta[] = [
     tags: ["fortinet","networking","firewall"],
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
-    wordCount: 272,
+    wordCount: 1591,
   },
   {
     slug: "network-security-zones-dmz",
@@ -2076,7 +2076,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "802.1X port authentication ensures that only authorized devices can connect to your network. Here is how to implement it with a RADIUS server.",
     coverImage: "/images/blog/network-access-control-8021x.jpg",
     coverCredit: {"author":"VictorMasivi","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:IEEE_8021x_Network_Diagram_Example.png"},
-    wordCount: 275,
+    wordCount: 1629,
   },
   {
     slug: "vxlan-network-virtualization",
