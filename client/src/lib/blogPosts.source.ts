@@ -19535,6 +19535,7 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
     slug: "backup-strategy-321-rule",
     title: "The 3-2-1 Backup Rule and How I Implement It",
     date: "2025-12-12",
+    updated: "2026-08-25",
     tags: ["storage", "servers", "homelab"],
     excerpt:
       "A practical guide to implementing a real backup strategy using the 3-2-1 rule with enterprise hardware.",
@@ -19546,13 +19547,27 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Typical_External_Hard_Drive.JPG",
     },
     content: `
-## The Rule
+## The rule
 
-The 3-2-1 rule is simple: keep at least 3 copies of your data, on at least 2 different types of media, with at least 1 copy offsite. It has been the gold standard for backup strategy for decades, and it works.
+You have data you cannot lose, you have a RAID array, and somewhere in the back of your head you know that is not actually a backup. You are right. The question is what a real backup looks like when you are running it yourself, on your own hardware, with no budget for a vendor to hold your hand.
+
+The 3-2-1 rule is simple: keep at least 3 copies of your data, on at least 2 different types of media, with at least 1 copy offsite. It has been the gold standard for backup strategy for decades, and it works. The phrasing comes from photographer Peter Krogh, who wrote it down for digital asset management in the mid 2000s, and it has survived because the arithmetic behind it does not care what decade you are in.
 
 In practice, this means your data exists on your primary storage, a local backup, and a remote backup. If any single thing fails (a drive, a server, a fire), you still have copies.
 
-## My Implementation
+## Why three copies and not two
+
+Each number in the rule kills a specific class of failure, and it helps to name them.
+
+**Three copies** protects against independent failure. Two copies sounds like enough until you realise that the moment one fails you are running with no redundancy at all, and you have to rebuild while exposed. Three copies means a single loss is annoying, not an emergency.
+
+**Two media types** protects against correlated failure. Eight drives from the same production batch, in the same chassis, on the same power supply, at the same temperature, are not eight independent things. They fail in the same way at around the same time. Different media, different controller, different chassis, and ideally a different vendor breaks that correlation.
+
+**One offsite** protects against site loss. Fire, flood, theft, a burst pipe over the rack, a power event that takes out everything plugged into the same circuit. No amount of on-premises redundancy survives the building.
+
+A modern extension you will see written as 3-2-1-1-0 adds one copy that is offline or immutable, and zero errors on verification. Both additions exist because of ransomware and silent corruption respectively, and both are worth adopting.
+
+## My implementation
 
 **Copy 1: Primary storage.** My data lives on ZFS pools across my Dell servers. ZFS provides checksumming and RAIDZ2 redundancy, so it handles drive failures gracefully. But RAID is not a backup. If I accidentally delete a file, RAID will happily delete it from every drive.
 
@@ -19560,17 +19575,106 @@ In practice, this means your data exists on your primary storage, a local backup
 
 **Copy 3: Offsite backup.** Critical data is replicated to an offsite location using ZFS send/receive over an encrypted SSH tunnel. This handles the scenario where my entire lab is physically destroyed (fire, theft, natural disaster).
 
-## Testing Backups
+## How the local backups actually work
+
+Proxmox Backup Server is a chunk store. It splits data into content addressed chunks, hashes each one, and only stores a chunk it has not seen before. Virtual machine disk images are split at a fixed chunk size of 4 MiB, and file level archives use variable sized chunks so that inserting a byte near the front of a file does not shift every chunk boundary after it.
+
+The practical consequence is that a "full" backup every night is not a full backup on disk. If a 200 GB VM changes 3 GB of blocks in a day, the second night writes roughly 3 GB of new chunks and references the rest. That is why daily retention for a month is affordable on hardware a student can actually own.
+
+Two details catch people out. The PBS web interface and API listen on TCP 8007, not 8006 like Proxmox VE. And pruning a backup does not free space by itself: prune removes the snapshot's index, and a separate garbage collection pass is what deletes chunks that no index references any more. If you never schedule garbage collection, your datastore grows forever and your prune policy is decorative.
+
+## A worked example: the offsite leg
+
+The offsite copy is a ZFS incremental replication over SSH. First take the snapshot, recursively so child datasets are captured at the same point:
+
+\`\`\`bash
+zfs snapshot -r tank/vm@2026-08-25
+\`\`\`
+
+The very first run has to send everything:
+
+\`\`\`bash
+zfs send -R tank/vm@2026-08-25 \\
+  | ssh backup@offsite.example.net "zfs receive -F backup/vm"
+\`\`\`
+
+Every run after that sends only the difference between two snapshots. The uppercase \`-I\` includes every intermediate snapshot, so the far side ends up with the same snapshot history as the source, not just the endpoints:
+
+\`\`\`bash
+zfs send -RI tank/vm@2026-08-24 tank/vm@2026-08-25 \\
+  | ssh backup@offsite.example.net "zfs receive -F backup/vm"
+\`\`\`
+
+Add \`-v\` to the send and it prints a size estimate and a progress line to stderr before it starts pushing bytes. What correct looks like is a send that estimates a plausible delta, transfers, and exits 0 with no output from \`zfs receive\`. Silence from receive is success.
+
+Then verify on the far side rather than trusting the exit code alone:
+
+\`\`\`bash
+ssh backup@offsite.example.net "zfs list -t snapshot -o name,used,refer backup/vm"
+\`\`\`
+
+\`\`\`
+NAME                       USED  REFER
+backup/vm@2026-08-23      1.42G   612G
+backup/vm@2026-08-24      1.08G   613G
+backup/vm@2026-08-25       856M   613G
+\`\`\`
+
+The snapshot you just sent is present, and \`USED\` on the older snapshots is the amount of data unique to each one. If today's snapshot is missing, the pipeline failed somewhere even if your script reported success, which is exactly why the check is a separate command.
+
+For anything with encrypted datasets, \`zfs send -w\` sends the raw encrypted blocks so the offsite machine never needs the key. That is the right default for a location you do not physically control.
+
+## Testing backups
 
 A backup you have never tested is not a backup. I schedule quarterly restore tests where I pick a random VM backup and restore it to a test environment. If the restore works and the VM boots cleanly, the backup is valid. If it does not, I fix the backup process immediately.
+
+The mechanical version of that test is short. Point the client at the datastore, list what is there, and pull one archive back to scratch space:
+
+\`\`\`bash
+export PBS_REPOSITORY='backup@pbs@10.0.20.5:8007:main'
+proxmox-backup-client snapshot list
+proxmox-backup-client restore vm/101/2026-08-24T02:15:00Z \\
+  drive-scsi0.img.fidx /mnt/restore/disk.raw
+\`\`\`
+
+Correct output from \`snapshot list\` is a table of backup IDs with their timestamps, sizes, and the archive names inside each one. Correct output from the restore is a progress readout that finishes without a checksum error and leaves a file whose size matches the original disk. Then boot it. A restored image that will not boot is a failed test, not a partial success.
+
+Write down two numbers before you design any of this: your recovery point objective, which is how much data you are willing to lose, and your recovery time objective, which is how long you can be down. Daily backups mean an RPO of up to 24 hours. If that is unacceptable for a particular dataset, that dataset needs replication or hourly snapshots, and no amount of nightly job tuning fixes it.
 
 ## Retention
 
 I keep daily backups for 30 days, weekly backups for 12 weeks, and monthly backups for 12 months. This gives me flexibility to recover from problems that are discovered long after they occurred. A ransomware infection that encrypted files two weeks ago would need a backup from before the infection.
 
+That pattern is the classic grandfather-father-son rotation. The reason it beats "keep everything for 90 days" is that the failures you discover late are usually slow ones: a corrupted database that has been quietly writing bad rows, a sync job that has been deleting the wrong directory, an intrusion that predates anything you noticed. Long tail retention costs almost nothing on a deduplicating store and buys you months of hindsight.
+
 ## Automation
 
 All of this is automated. Backups run on schedules, retention policies are enforced automatically, and I get email alerts if a backup fails. The only manual part is the quarterly restore test, and even that could be automated if I wanted to invest the time.
+
+The alerting detail that matters: alert on the age of the last successful backup, not only on job failure. A job that fails sends you an email. A job that stopped being scheduled at all sends you nothing, forever, and that is the silence you need to notice.
+
+## What breaks
+
+**The offsite copy is reachable and writable from the machine being backed up.** If your primary server can mount, delete, or overwrite the backup target, then anything running as root on the primary can too, including ransomware. Make the backup side pull rather than push where you can, and where you must push, lock the SSH key down with a forced command in \`authorized_keys\` so that key can only run the receive, not an arbitrary shell.
+
+**Snapshots get counted as one of the three copies.** A ZFS snapshot is not a copy. It lives in the same pool, shares the same blocks, and dies with the pool. Snapshots are superb for undoing mistakes in seconds and useless against controller failure, a bad flash, or a dropped chassis. Count them as a convenience layer on copy 1, never as copy 2.
+
+**Prune runs, garbage collection does not, and the datastore fills up.** The symptom is confusing: your retention policy looks correct in the UI, the old snapshots are gone from the list, and the disk keeps growing until backups start failing for lack of space. Schedule garbage collection as its own recurring job and check that it reports removed chunks.
+
+**Backups are crash consistent when the workload needed application consistency.** Snapshotting a running VM captures its disk the way a power cut would. Filesystems survive that; a database mid transaction often does not restore cleanly. Install the QEMU guest agent so the hypervisor can freeze the filesystem before the snapshot, and for databases, take a real dump on a schedule and back up the dump file too.
+
+**The encryption key or the restore credentials live only on the machine that died.** This is the failure that turns a good backup into a museum piece. If the PBS encryption key exists only on the host you are trying to rebuild, every chunk on the backup server is unreadable noise. Keep the key material somewhere separate from the systems it protects, print it if you have to, and include "find the key" as a step in the restore test so you notice when you cannot.
+
+**Everything is on one power circuit and one uplink.** Two servers in the same rack, on the same UPS, behind the same switch, are two copies with a lot of shared fate. When you audit the design, ask what single component is upstream of more than one copy, and move something.
+
+## References
+
+- https://pbs.proxmox.com/docs/index.html
+- https://openzfs.github.io/openzfs-docs/man/master/8/zfs-send.8.html
+- https://openzfs.github.io/openzfs-docs/man/master/8/zfs-snapshot.8.html
+- https://man7.org/linux/man-pages/man1/rsync.1.html
+- https://en.wikipedia.org/wiki/Backup_rotation_scheme
+- https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final
 `,
   },
   {
@@ -19762,6 +19866,7 @@ The layout rule I follow is that the top row answers "is anything on fire right 
     slug: "thunderbolt-networking",
     title: "Thunderbolt Networking: Apple's Approach to High-Speed Connectivity",
     date: "2025-12-05",
+    updated: "2026-08-25",
     tags: ["apple", "networking", "hardware"],
     excerpt:
       "How Thunderbolt networking works, where it fits, and why it is both brilliant and frustrating for mixed environments.",
@@ -19773,29 +19878,143 @@ The layout rule I follow is that the top row answers "is anything on fire right 
       sourceUrl: "https://commons.wikimedia.org/wiki/File:ThunderboltIO.jpg",
     },
     content: `
-## What Thunderbolt Networking Is
+## The problem
+
+You have two Macs sitting a metre apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you already plugged in the cable, macOS created something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that cannot reach anything and may have broken your internet. Here is what Thunderbolt networking is underneath, how to set it up and prove it is carrying traffic, and where it stops being the right tool.
+
+## What Thunderbolt networking is
 
 Thunderbolt supports native IP networking when you connect two Macs with a Thunderbolt cable. The connection appears as a standard network interface, and you get speeds up to 10 Gbps (Thunderbolt 3/4) with extremely low latency. No switches, no transceivers, no configuration beyond plugging in a cable.
 
-For direct Mac-to-Mac file transfers, it is the fastest option available. Thunderbolt Bridge in macOS makes it completely transparent to applications.
+For direct Mac-to-Mac file transfers, it is the fastest option available. Thunderbolt Bridge in macOS makes it completely transparent to applications. Finder copies, \`rsync\`, SMB, NFS, \`scp\`, and Screen Sharing all use it the moment the routing table points that way.
 
-## Where It Works
+## How it works underneath
+
+Thunderbolt is a tunnelling protocol, not a network protocol. The link carries PCIe packets, DisplayPort packets, and since Thunderbolt 3 also USB packets, each in its own tunnel over the same wire. That is why one port can drive a monitor, an SSD, and a keyboard at once.
+
+Host-to-host is the awkward case. Normally one side is a host and the other is a PCIe endpoint, but when you join two Macs neither is willing to be the peripheral. Instead the two controllers negotiate a direct DMA path between host memory on each side, and each operating system presents that path to its network stack as an ordinary Ethernet NIC. Apple's protocol for this is called ThunderboltIP, which is why the link shows up with a MAC address and an MTU like any other interface. macOS then wraps it in a real layer 2 bridge, \`bridge0\`, whose members are the machine's Thunderbolt ports. That detail matters later.
+
+The link rates, in order: Thunderbolt 1 in 2011 at 10 Gbps per channel, Thunderbolt 2 in 2013 aggregating two channels to 20 Gbps, Thunderbolt 3 in 2015 at 40 Gbps on USB-C, Thunderbolt 4 in 2020 at the same 40 Gbps with stricter mandatory minimums, and Thunderbolt 5 raising it to 80 Gbps bidirectional with an asymmetric mode reaching 120 Gbps in one direction. Do not expect the link rate to be your transfer rate. That 40 Gbps is the whole link, shared with display and USB tunnels, and IP traffic crosses the ThunderboltIP path with the host CPU in the loop on both ends.
+
+## Setting it up, with commands
+
+Plug a Thunderbolt cable between two powered-on Macs, then look for the interface.
+
+\`\`\`bash
+networksetup -listallhardwareports
+\`\`\`
+
+You want this block in the output:
+
+\`\`\`
+Hardware Port: Thunderbolt Bridge
+Device: bridge0
+Ethernet Address: 36:1a:4c:2f:88:01
+\`\`\`
+
+If it is missing, the Thunderbolt Bridge service was deleted from Network settings and has to be added back. If it is present, check that the cable actually came up:
+
+\`\`\`bash
+ifconfig bridge0
+\`\`\`
+
+Correct output has a \`member:\` line per Thunderbolt port, \`status: active\`, and an address:
+
+\`\`\`
+bridge0: flags=8863<UP,BROADCAST,SMART,RUNNING,SIMPLEX,MULTICAST> mtu 1500
+	member: en5 flags=3<LEARNING,DISCOVER>
+	member: en6 flags=3<LEARNING,DISCOVER>
+	inet 169.254.212.44 netmask 0xffff0000 broadcast 169.254.255.255
+	status: active
+\`\`\`
+
+The 169.254 address is not an error. With no DHCP on a two-node link, each side self-assigns an IPv4 link-local address out of 169.254.0.0/16 as described in RFC 3927, and the two will talk happily on it. Add multicast DNS (RFC 6762) and \`ping othermac.local\` works with zero configuration.
+
+I still prefer static addresses on a lab link, because link-local addresses move and I want the same target every time:
+
+\`\`\`bash
+# On Mac A
+sudo networksetup -setmanual "Thunderbolt Bridge" 10.99.0.1 255.255.255.0
+# On Mac B
+sudo networksetup -setmanual "Thunderbolt Bridge" 10.99.0.2 255.255.255.0
+\`\`\`
+
+There is no router argument, deliberately. Leave the gateway empty. This is a private segment between two machines and should never carry a default route.
+
+## Proving it is actually working
+
+\`\`\`bash
+route get 10.99.0.2
+netstat -ib | grep -E '^bridge0'
+\`\`\`
+
+The \`interface:\` line from \`route get\` must say \`bridge0\`. If it says \`en0\`, traffic is going out the wrong door and anything you measure after that is a test of your switch. The \`netstat -ib\` counters are the check that cannot be faked by a friendly-looking \`ping\`: run it before and after a copy, and Ibytes and Obytes should climb by roughly the size of what you moved.
+
+For throughput, \`iperf3\` is not part of macOS, so install it with Homebrew or MacPorts:
+
+\`\`\`bash
+# Mac A
+iperf3 -s
+# Mac B
+iperf3 -c 10.99.0.1 -P 4 -t 20
+\`\`\`
+
+Use \`-P 4\` rather than a single stream. One TCP stream here is usually bounded by one core, and parallel streams give a more honest picture of the link. Then compare \`ping -c 20 10.99.0.1\` over the bridge against the same host over Wi-Fi. The Thunderbolt figures should be smaller and, more importantly, far less variable. Consistency is the real win, not the peak number.
+
+## Where it works
 
 Thunderbolt networking is fantastic for specific scenarios: editing teams working with shared storage, direct transfers between workstations, and high-speed connections between a Mac Pro and a NAS. In a creative studio environment, it solves a real problem elegantly.
 
-In my lab, I have used Thunderbolt networking between my Mac Pro and a Mac Mini for fast data transfers during media processing workflows. The speed is impressive and the latency is nearly zero.
+In my lab, I have used Thunderbolt networking between my Mac Pro and a Mac Mini for fast data transfers during media processing workflows. The speed is impressive and the latency is nearly zero. Other cases where I reach for it: seeding a new machine's disk image, running a backup that would otherwise saturate the switch for an hour, and giving a headless Mac a management link that survives me breaking its Wi-Fi config.
 
-## Where It Falls Short
+## Where it falls short
 
 Thunderbolt networking is point-to-point. You cannot build a network fabric with Thunderbolt. There are no Thunderbolt switches. If you need to connect more than two devices, you need to use standard Ethernet.
 
-It is also Apple-only in practice. While Thunderbolt is technically an Intel/Apple standard that is now part of USB4, the native networking feature is a macOS thing. You cannot use Thunderbolt networking between a Mac and a Linux server.
+One partial exception is worth knowing, because \`bridge0\` really is a bridge. A Mac with two Thunderbolt ports connected to two other Macs will forward frames between them at layer 2, so a three-node chain is technically possible. I do not build anything on it. The middle machine becomes a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop by cabling the third machine back to the first gives you a broadcast storm unless spanning tree is enabled on the bridge.
 
-## My Take
+Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a metre, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
+
+## Apple-first, not quite Apple-only
+
+Thunderbolt began as an Intel and Apple collaboration and is now folded into USB4, but the networking feature grew up on Apple's side and it shows. On macOS it configures itself. Everywhere else you are doing work.
+
+To be accurate about Linux, since this comes up every time: the kernel ships a \`thunderbolt-net\` driver implementing Apple's ThunderboltIP. The kernel documentation states that if the other host runs macOS or Windows, connecting the cable is enough and the driver loads automatically, and that it creates one virtual interface per port named \`thunderbolt0\` and so on, configured with \`ip\` like any other NIC. So Mac to Linux does work, on a Linux box that has a Thunderbolt or USB4 controller and \`CONFIG_USB4_NET\`.
+
+What it is not is a solution for a rack. Thunderbolt controllers live in laptops and small desktops, not in 1U machines with redundant power supplies, and my Linux servers have no Thunderbolt ports at all. The practical rule holds: treat it as a link between two nearby Apple machines, and reach for Ethernet the moment a third device or a switch enters the picture.
+
+## It is PCIe on a cable
+
+Thunderbolt tunnels PCIe, and PCIe means direct memory access. A malicious device on the far end of that cable is, at the hardware level, asking to read and write your RAM. This class of attack has a history: DMA attacks generally, and Thunderspy in 2020, which demonstrated firmware-level bypasses of Thunderbolt's own device authorization.
+
+The mitigations are real but they are mitigations. Modern Macs sit the controller behind an IOMMU so a device only reaches memory it was granted, and macOS prompts before allowing a new accessory to connect. Linux exposes security levels (\`none\`, \`dponly\`, \`user\`, \`secure\`) and a per-device \`authorized\` attribute in sysfs. None of it helps if you click Allow on whatever someone hands you, so I do not plug unknown Thunderbolt devices into anything I care about.
+
+## What breaks
+
+**Thunderbolt Bridge above your real network in the service order.** Give the bridge a manually configured router and macOS can promote it to the primary service, sending your default route into a dead two-node link. Symptom: DNS and internet die the moment the cable goes in. Fix: never set a router on the bridge, and drag Thunderbolt Bridge below Wi-Fi and Ethernet in Set Service Order.
+
+**A USB-C cable that is not a Thunderbolt cable.** Same connector, and a charge-only or USB 2.0 cable links the ports electrically without ever bringing up a tunnel. Symptom: no \`member:\` line, \`status: inactive\`. Fix: use a cable marked with the lightning bolt, and on Thunderbolt 4 cables the number 4.
+
+**An MTU mismatch after enabling jumbo frames.** Raising the MTU on one end only gives you the classic black hole: \`ping\` and DNS work, large transfers hang partway and time out. Fix: set the same MTU on both ends or neither, and confirm with \`ifconfig bridge0\` on both machines before trusting it.
+
+**Judging the link on a single TCP stream.** One stream is limited by one core pushing packets through the ThunderboltIP path. Fix: test with \`iperf3 -P 4\` or more. If single-stream really is your workload, take that number as the honest answer for that application rather than blaming the cable.
+
+**Assuming the interface survives sleep.** Sleep either Mac and the tunnel drops. On wake the interface returns, but long-lived TCP sessions, mounted SMB shares, and \`ssh\` connections do not. Fix: disable sleep on machines that must hold a session, and remount shares on wake instead of trusting a stale mount.
+
+## My take
 
 Thunderbolt networking is a great tool for specific problems, and a terrible general-purpose networking solution. I use it when I need fast direct connections between Apple devices, and I use 10GbE for everything else.
 
-The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE card for connecting to the general network and a Thunderbolt port for direct connections when I need the extra speed.
+The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE card for connecting to the general network and a Thunderbolt port for direct connections when I need the extra speed. The Ethernet side is the network. The Thunderbolt side is a very fast piece of string between two specific machines, and understanding it that way keeps me from asking it to be something it is not.
+
+## References
+
+- https://en.wikipedia.org/wiki/Thunderbolt_(interface)
+- https://en.wikipedia.org/wiki/USB4
+- https://www.kernel.org/doc/html/latest/admin-guide/thunderbolt.html
+- https://www.rfc-editor.org/rfc/rfc3927
+- https://www.rfc-editor.org/rfc/rfc6762
+- https://en.wikipedia.org/wiki/DMA_attack
 `,
   },
   {
