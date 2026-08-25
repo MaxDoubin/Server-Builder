@@ -4922,7 +4922,11 @@ Once you think of it that way, the diagnostic path is obvious. Find out what sig
       author: "nordique",
       license: "CC BY 2.0",
       licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
-      sourceUrl: "https://www.flickr.com/photos/28435100@N00/7805224296",
+      sourceUrl: "https://www.flickr.com/photos/28435100@N00/",
+      // The individual photo page is gone from Flickr; the photographer's
+      // stream is not. CC BY 2.0 is irrevocable once granted, so the licence
+      // still holds, and crediting the author with a link that resolves beats
+      // pointing at a 404.
     },
     content: `
 ## Compute Is Easy to Buy, Watts Are Not
@@ -22885,17 +22889,31 @@ BGP (Border Gateway Protocol) is the routing protocol that connects autonomous s
 
 If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
 
+The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behaviour. First, it runs over TCP on port 179, which means it inherits TCP's reliability and its slowness: peers must be able to reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol. It does not build a map of the network the way OSPF does. Each speaker advertises the paths it has chosen to use, along with the list of autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
+
 ## Key Concepts
 
 **Autonomous Systems (AS):** Every network that participates in BGP has an AS number (ASN). This is how BGP identifies routing domains. Large ISPs, cloud providers, and universities all have their own ASNs.
 
+ASNs were originally 16 bits, giving 0 through 65535, and that space ran out. RFC 6793 extended them to 32 bits. For labs and for internal use, RFC 6996 reserves 64512 through 65534 in the 16-bit range and 4200000000 through 4294967294 in the 32-bit range as private, which is what the configuration below uses.
+
 **eBGP vs iBGP:** External BGP (eBGP) runs between different autonomous systems. Internal BGP (iBGP) runs within the same AS, typically to distribute routes learned from eBGP peers throughout the network.
+
+The difference is not cosmetic and it is where most beginners lose a weekend. Because AS_PATH does not change inside an AS, iBGP cannot use it for loop prevention, so the rule is: **a route learned from one iBGP peer is never advertised to another iBGP peer.** That is why classic iBGP needs a full mesh, and why the session count grows as n(n-1)/2, which is 45 sessions for ten routers. Route reflectors (RFC 4456) and confederations (RFC 5065) exist to break that scaling wall.
+
+The second iBGP trap is the next hop. When a route learned over eBGP is passed to iBGP peers, the next-hop attribute stays as the external peer's address, which your interior routers usually have no route to. The route appears in the table marked inaccessible and nothing works. The fix is one line, \`neighbor x.x.x.x next-hop-self\`, and remembering it separates people who have run BGP from people who have read about it.
 
 **BGP Attributes:** BGP uses path attributes to make routing decisions. The most important ones are:
 - **AS Path:** The list of AS numbers a route has traversed. Shorter is generally preferred.
 - **Local Preference:** Used internally to prefer one exit point over another.
 - **MED:** Multi-Exit Discriminator, used to suggest preferred ingress points to external peers.
 - **Next Hop:** The next-hop IP for reaching a destination.
+
+Those attributes are consulted in a fixed order, and knowing that order is the difference between predicting what BGP will do and guessing. On Cisco the sequence is: highest weight (a Cisco-only local value, default 32768 for routes you originate), then highest local preference (default 100), then locally originated routes, then shortest AS path, then lowest origin type, then lowest MED, then eBGP over iBGP, then lowest IGP metric to the next hop, and finally tiebreakers on age, router ID, and peer address. Notice that AS path is fourth. Local preference beats it every time, which is exactly why local preference is the knob you use to steer outbound traffic.
+
+Steering inbound traffic is much harder, and this is the honest limitation nobody tells you up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbour that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times to make a path look longer, and it works only in the crude sense that other people's routers are also running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look less attractive and hope.
+
+Two more attributes matter in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as \`ASN:value\`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviours like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit. And **next hop** deserves repeating: on eBGP it is rewritten to the advertising router, on iBGP it is not.
 
 ## Basic Configuration
 
@@ -22906,13 +22924,52 @@ router bgp 65001
   network 10.0.0.0 mask 255.255.255.0
 \`\`\`
 
+Read that \`network\` statement carefully, because it does not do what it looks like. It does not advertise a range you would like to announce; it says "if an exactly matching route for 10.0.0.0/24 is already in the routing table, put it into BGP". Get the mask wrong by one bit, or have no matching route because nothing is up yet, and BGP silently announces nothing. The standard trick is a static route to Null0 for the aggregate so the prefix always exists.
+
+## Reading a Session That Will Not Come Up
+
+BGP's state machine has six states, and the useful thing is that each one points at a different layer. **Idle** means BGP is not even trying, usually because there is no route to the peer. **Connect** and **Active** are both TCP problems: Active in particular sounds positive and is not, it means the router keeps trying to open a TCP session and keeps failing, which is almost always a firewall blocking 179 or a wrong peer address. **OpenSent** and **OpenConfirm** mean TCP worked and the peers are arguing about parameters, so check for an AS number mismatch or an authentication mismatch. **Established** is the only good state.
+
+Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 default hold time is 180 seconds with keepalives every 60, and the negotiated hold time is the lower of the two peers' values. That means the default time to notice a dead peer whose link stayed up is three minutes, which is an eternity. Bidirectional Forwarding Detection (RFC 5880) is the standard answer, dropping detection into the sub-second range by running a lightweight hello outside BGP itself.
+
+## What Actually Goes Wrong
+
+**The session is up and no routes appear.** On any implementation that follows RFC 8212, and FRR does by default, an eBGP peer with no configured import and export policy exchanges nothing at all. This is deliberate: the old default of announcing everything was how accidental leaks happened. If you have configured a peer and both sides show Established with zero prefixes, you are missing a route-map or a prefix-list, not a neighbor statement.
+
+**Somebody sends you the whole internet.** The global IPv4 table is now around a million prefixes. If a customer or a lab peer accidentally re-announces the full table to you, a software router runs out of memory and a hardware router runs out of FIB space, which is a much worse failure because forwarding breaks while the control plane looks healthy. This is not theoretical: in 2014 the table crossed 512,000 routes and knocked over a generation of Cisco 6500 and 7600 platforms whose TCAM was partitioned for exactly that many. Configure \`neighbor x maximum-prefix\` on every peer with a number appropriate to what that peer should send you, which for a single-homed customer is a handful.
+
+**A route leak.** Taking routes from one provider and announcing them to another turns you into a transit provider for traffic you cannot carry. RFC 7908 catalogues the shapes this takes, and the historical examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defence is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so that routers can detect the leak themselves rather than relying on everyone's filters being right.
+
+**Origin hijacking.** BGP has no built-in way to know whether an AS is entitled to announce a prefix. RPKI route origin validation (RFC 6811) is the deployed partial answer: prefix holders publish signed objects, and your router marks received routes Valid, Invalid, or NotFound so you can drop the Invalids. Be clear on what it does not cover. It validates the *origin* AS only, not the rest of the path, so an attacker who prepends the legitimate origin still passes. RFC 7454, published as BCP 194, is the practical checklist for all of this and is the single most useful document to read after RFC 4271.
+
+**Flapping and slow convergence.** BGP is deliberately not fast. Cisco's default minimum route advertisement interval is 30 seconds for eBGP, so a prefix that changes repeatedly is not re-announced immediately. Combined with a 180 second hold time, an unstable link can leave the internet with a stale view of your network for minutes. That damping is a feature at global scale and a nuisance in a lab, where it looks like your configuration did not take effect.
+
 ## Why It Matters in the Real World
 
 Even if you work in enterprise networking rather than ISP networking, BGP comes up constantly. Cloud providers use it for connecting on-premises networks to AWS, Azure, or GCP via Direct Connect or ExpressRoute. SD-WAN solutions often use BGP internally. Understanding BGP makes you a much more effective network engineer.
 
+It has also moved inside the data centre. RFC 7938 describes using eBGP as the only routing protocol in a large Clos fabric, giving every switch its own private ASN, and that design is now common enough that plenty of engineers meet BGP on a top-of-rack switch before they ever meet it on a border router.
+
+## Where BGP Is The Wrong Tool
+
+BGP knows about reachability and policy. It knows nothing about latency, bandwidth, jitter, or load. AS path length counts networks crossed, not distance or speed, so a two-AS path over a congested transatlantic link beats a three-AS path over an idle domestic one every time. If your problem is "pick the fastest path right now", BGP will not solve it and you are looking for SD-WAN, a traffic engineering overlay, or performance-based routing that measures paths and manipulates BGP from outside.
+
+Do not reach for it inside a small network either. In a campus or a small enterprise, OSPF converges in seconds where BGP takes minutes, and it needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organisations, or a fabric large enough that link-state flooding becomes the problem.
+
 ## Where to Practice
 
 You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start with a simple two-AS topology, peer them, and watch the route tables populate. Then add filters and attributes to see how routing decisions change.
+
+Containerlab with FRR is the lightest way in now: a full multi-AS topology defined in a YAML file, running as containers on a laptop, coming up in seconds. Build the two-AS lab, break it deliberately, and learn to read \`show bgp summary\` and \`show bgp ipv4 unicast <prefix>\` until the best-path selection above stops being a list you memorised and starts being something you can see in the output.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc4271
+- https://www.rfc-editor.org/rfc/rfc4456
+- https://www.rfc-editor.org/rfc/rfc8212
+- https://www.rfc-editor.org/rfc/rfc7454
+- https://www.rfc-editor.org/rfc/rfc6811
+- https://docs.frrouting.org/en/latest/bgp.html
 `,
   },
   {
@@ -23260,11 +23317,13 @@ media_errors                        : 0
 
 Commercial network monitoring tools are expensive and often overkill for a lab or small environment. Building your own gives you deep understanding of how monitoring works and exactly the visibility you need without paying for features you never use.
 
+The honest counterpoint: you are also signing up to maintain it. A turnkey system like LibreNMS or Zabbix will auto-discover a switch, pick sane graphs, and be useful in an afternoon. A Prometheus stack will not do any of that for you. Build your own when the learning is part of the point, or when you have a specific question the packaged tools answer badly. Do not build your own because it looked cheaper.
+
 ## The Stack
 
 My monitoring stack uses four main components:
 
-**SNMP polling with Prometheus SNMP Exporter:** Collects interface statistics, CPU and memory utilization, and other metrics from network devices via SNMP. Prometheus scrapes these metrics on a schedule and stores them.
+**SNMP polling with Prometheus SNMP Exporter:** Collects interface statistics, CPU and memory utilization, and other metrics from network devices via SNMP. Prometheus scrapes these metrics on a schedule and stores them. SNMP itself lives on UDP 161 for polling and UDP 162 for traps, and the exporter sits between Prometheus and the device, translating an HTTP scrape into an SNMP walk.
 
 **Grafana for visualization:** Grafana connects to Prometheus and renders dashboards. You can build exactly the views you need: interface utilization graphs, device health panels, and alert history.
 
@@ -23294,11 +23353,72 @@ scrape_configs:
         replacement: localhost:9116
 \`\`\`
 
+Those \`relabel_configs\` are the part people copy without reading, and they are the whole trick. Prometheus normally scrapes the target address directly. Here the first rule copies the device IP into the \`target\` URL parameter, and the second rewrites the address Prometheus actually connects to so it points at the exporter on port 9116. Delete either rule and Prometheus will try to fetch \`http://192.168.1.10/snmp\` from the switch itself, get nothing, and mark the target down. Most "my SNMP exporter returns no data" problems are this.
+
+On the security side, be clear-eyed about SNMPv2c: the community string is sent in cleartext in every request. Anyone who can see the traffic can read your entire device MIB tree, which includes interface descriptions, ARP tables, and often the running configuration path. The default community on far too much gear is still \`public\`. SNMPv3 fixes this properly with the User-based Security Model in RFC 3414, but only in \`authPriv\` mode. Configuring SNMPv3 with \`noAuthNoPriv\` gets you the complexity of v3 with the security of v1.
+
+## The Counter32 Trap
+
+This is the single most common way a homegrown SNMP dashboard produces confident, wrong numbers.
+
+RFC 2863 defines \`ifInOctets\` and \`ifOutOctets\` in the interface table as Counter32. A 32-bit counter holds 4,294,967,296 values. A 1 Gbps interface running at line rate moves 125,000,000 bytes per second, so that counter wraps in about 34 seconds. At 10 Gbps it wraps in roughly 3.4 seconds.
+
+Prometheus \`rate()\` detects a counter reset by noticing the value went down, and compensates by adding the pre-reset value back. That works for one wrap. With a 60 second scrape interval on a busy gigabit link you get two wraps between samples, and there is no way to recover the missing laps from two data points. Your graph will show a plausible number that is silently too low.
+
+The fix is in the same RFC. The \`ifXTable\` provides \`ifHCInOctets\` and \`ifHCOutOctets\` as Counter64, which will not wrap in any human timeframe. Counter64 does not exist in SNMPv1, so you must poll with v2c or v3 to get them, and the \`if_mib\` module in snmp_exporter already walks the high-capacity table. Verify with \`snmpwalk\` that your device actually populates it, because some low-end gear exposes the OIDs and leaves them at zero.
+
+The same RFC is also why your graphs sometimes swap ports after a reboot. \`ifIndex\` is not guaranteed stable across a reload or a module insertion on many platforms, so the series you labelled "uplink" can quietly become a different physical port. Label your metrics by \`ifName\` or \`ifAlias\` rather than index, and set a real description on every port so \`ifAlias\` is worth reading.
+
+## Scrape Timeouts and Holes in Graphs
+
+Prometheus defaults to \`scrape_interval: 1m\` and \`scrape_timeout: 10s\`, and the timeout can never exceed the interval. A full \`if_mib\` walk against a 48-port switch is a lot of SNMP round trips, and on a device with a slow management CPU it can take longer than ten seconds. The symptoms are a \`context deadline exceeded\` line in the exporter log, \`up\` flipping to 0, and gaps in every panel.
+
+Three fixes, in the order I try them. Raise \`scrape_timeout\` toward the interval. Reduce what you walk: the snmp_exporter generator lets you build a module with only the tables you actually graph, and a smaller walk is a faster walk. Finally, tune \`max_repetitions\`, which controls how many rows a single GetBulk request asks for. GetBulk is defined in RFC 3416 and exists precisely so you do not need one round trip per row, but a high value can overflow a small device's UDP buffer and a low value costs round trips.
+
+Remember that SNMP runs over UDP. A dropped response and a slow device look identical to the poller. Aggressive polling of cheap switches is a real way to spike the management plane and cause the very timeouts you are debugging, so start at 60 seconds and only go faster where you can prove you need it.
+
+## Alert Rules That Do Not Wake You For Nothing
+
+An alert that fires on a single bad scrape will flap. Put a \`for:\` duration on every rule so the condition has to persist. Then understand the Alertmanager timers, because they decide what your phone actually does: \`group_wait\` defaults to 30s, so the first notification for a new group is held briefly to collect related alerts, \`group_interval\` defaults to 5m for subsequent notifications about that group, and \`repeat_interval\` defaults to 4h before an unresolved alert nags you again.
+
+The beginner mistake is alerting on every interface going down. On an access port, "down" means a user unplugged a laptop. Alert on uplinks and infrastructure links by name, alert on error and discard counters that are increasing, and alert on the monitoring system itself. If the exporter dies, every device looks healthy, which is the worst possible failure mode for a monitoring stack.
+
 ## What to Monitor
 
 Focus first on the things that cause outages or degraded service: interface utilization and error rates, device CPU and memory, BGP session state if applicable, and power supply status. Add more metrics over time as you understand your environment better.
 
 The goal is not to collect everything. It is to make sure you find out about real problems before your users do.
+
+## Sizing the TSDB
+
+Capacity planning here is easy arithmetic and worth doing once. The Prometheus documentation gives the formula directly: \`needed_disk_space = retention_time_seconds * ingested_samples_per_second * bytes_per_sample\`, and states that Prometheus averages only 1 to 2 bytes per sample after compression.
+
+Work an example. A 48-port switch under the \`if_mib\` module produces roughly 15 series per interface once you count octets, packets, errors, discards, speed, and status, so call it 700 series per switch. Ten devices is 7,000 series. At a 60 second scrape that is about 117 samples per second. Over the default 15 day retention, 1,296,000 seconds times 117 times 2 bytes is around 300 MB. A lab monitoring stack is not a storage problem. It becomes one when someone enables a module that walks every routing table entry.
+
+## Syslog Is Two Formats Pretending To Be One
+
+Loki will happily ingest whatever your devices send, which hides the fact that "syslog" means two different things. RFC 5424 is the modern format with RFC 3339 timestamps that include a timezone, structured data fields, and a defined message length that receivers must support to at least 480 octets and should support to 2048. The older BSD format described in RFC 3164 has no year and no timezone in its timestamp and caps the whole packet at 1024 bytes.
+
+Two symptoms follow. Logs from a device still emitting the old format land with the collector's guess at the year, which is why people find January log entries dated to last year. And long messages, exactly the verbose ones a firewall emits during an incident, get truncated mid-field. Set devices to RFC 5424 where the platform supports it.
+
+The other thing to get right in Loki is label cardinality. Loki indexes labels, not log content. A label whose value is a source IP or a request ID creates a separate stream per value, and streams are the unit of cost. Keep labels to host, job, facility, and severity, then filter on everything else with LogQL at query time.
+
+## What This Stack Cannot Tell You
+
+Polling every 60 seconds averages away microbursts. A queue that overflowed for 200 milliseconds and dropped frames will not move a one minute utilization average at all. It will move \`ifOutDiscards\`, which is a counter and therefore remembers. Watch discards and errors, not just utilization, and treat a nonzero discard rate on a link that looks 30 percent utilized as the interesting signal it is.
+
+SNMP also tells you that a link is full without telling you who filled it. For that you need flow export: NetFlow, sFlow, or IPFIX as standardized in RFC 7011. Those are a different pipeline with a different storage profile, and they answer a question polling structurally cannot.
+
+Finally, polling samples state at intervals, so it misses transient events entirely. A link that flaps down and back up between two scrapes leaves no trace in your metrics. The device knows it happened, and it will say so in a trap or a syslog line. That is the real reason the log pipeline sits next to the metrics pipeline rather than replacing it.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc2863
+- https://www.rfc-editor.org/rfc/rfc3414
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://prometheus.io/docs/prometheus/latest/storage/
+- https://prometheus.io/docs/alerting/latest/configuration/
+- https://grafana.com/docs/loki/latest/get-started/labels/
 `,
   },
   {
@@ -24373,9 +24493,15 @@ The classic zone model has three zones:
 - **Outside (WAN/Internet):** Untrusted external network
 - **DMZ:** Semi-trusted zone for systems that must be accessible from outside
 
+The word "zone" does two jobs at once and it helps to separate them. On the firewall, a zone is a named container that one or more interfaces or VLANs get assigned to, so you can write policy against a name instead of against interface numbers. In the design, a zone is an assertion about trust: everything in here may talk to everything else in here without inspection. The second meaning is the one that causes problems, because a zone is only as strong as the assumption that nothing inside it is hostile.
+
+Some platforms encode trust as a number. On a Cisco ASA, every interface carries a security level from 0 to 100, conventionally 0 for outside, 100 for inside, and something in between such as 50 for the DMZ. Traffic from a higher security level to a lower one is permitted by default and the return traffic is allowed by the state table, while traffic from lower to higher is dropped unless an access list says otherwise. Zone-based policy on IOS, on FortiGate, and on pfSense expresses the same idea without the number: no policy, no traffic.
+
 ## Why Zones Matter
 
 Without zones, a compromised internal host can reach any other internal system directly. Zones limit blast radius. If a web server in the DMZ is compromised, the attacker is stuck in the DMZ. They cannot reach your database servers on the internal network because the firewall blocks DMZ-to-LAN traffic.
+
+Concretely, the chain an attacker wants is: exploit the public web app, land a shell on the web server, scan the local subnet, find a file server or a domain controller, reuse credentials, move laterally. Zones break that chain at step three. The scan comes back empty because the internal ranges are not routable from the DMZ, or they are routable but the firewall drops every SYN. What was going to be a full-network incident becomes one rebuilt web server.
 
 ## Designing a DMZ
 
@@ -24387,6 +24513,24 @@ Key firewall rules:
 - **Inside to DMZ:** Allow for administration, deny for general browsing
 - **Inside to Outside:** Allow with inspection
 
+There are two physical shapes for this. The three-legged design uses one firewall with three interfaces, one per zone. It is cheaper, simpler to reason about, and it is what almost every homelab and small business runs. The screened subnet design uses two firewalls in series, ideally from different vendors, with the DMZ in the gap between them. It costs twice as much and doubles the change management, and it buys you exactly one thing: a single firewall bug or misconfiguration no longer exposes the internal network. Unless you have a specific reason to distrust one vendor's code, the three-legged design plus real rule hygiene is the better use of your time.
+
+The rule set that matters most is the one nobody writes: **DMZ to Outside**. Leaving that open is how an implant reaches its command-and-control server and how data leaves the building. A web server needs to resolve DNS against one specific resolver, sync time against one specific NTP source, and pull packages through a proxy or a local mirror. That is three rules. Everything else outbound should be denied and logged. The moment your DMZ egress policy is \`any any allow\`, the DMZ has stopped being a containment boundary and become a staging area with a nice name.
+
+Add anti-spoofing while you are in there. Ingress filtering, described in BCP 38 (RFC 2827) and extended for multihomed networks in RFC 3704, means dropping packets whose source address could not legitimately have arrived on that interface. A packet claiming a 10.0.0.0/8 source arriving on the outside interface is forged, and there is no reason to let it into the state table.
+
+## What Actually Goes Wrong
+
+**The DMZ host gets joined to the internal domain.** Somebody wants single sign-on for the web server, so the ticket asks for the DMZ host to join Active Directory. Doing that means opening Kerberos on 88, LDAP on 389 and 636, SMB on 445, the RPC endpoint mapper on 135, and then a dynamic high port range back to the domain controllers, which on modern Windows is 49152 to 65535. You have just written a rule that lets a compromised DMZ box talk to your domain controllers on almost every port. The symptom is that nobody notices, because everything works. The fix is a read-only domain controller placed in the DMZ, or local accounts on the DMZ host, or terminating authentication at a reverse proxy in the DMZ so the app never needs to see the domain at all.
+
+**Somebody writes rules in both directions.** A stateful firewall tracks flows. When the rule permitting outside to DMZ on 443 lets a SYN through, the return packets are matched against the state table, not against the rule base. Adding a matching DMZ to outside rule "so the replies work" does nothing for the replies and everything for the attacker, because it permits new connections originating from the DMZ. If you find symmetric rule pairs in a policy, that is a strong sign the person who wrote it did not understand stateful inspection.
+
+**A second NIC bypasses the firewall.** A DMZ server with one interface in the DMZ and a second interface on the management VLAN for backups is a bridge between two zones that the firewall never sees. From the firewall's point of view the policy is perfect. From the attacker's point of view there is a route around it. Backups from the DMZ should be pulled through the firewall on a specific port to a specific host, or written to a target that lives in the DMZ and gets replicated inward, never done by giving the box a foot in both zones.
+
+**A VLAN is treated as a zone when nothing enforces it.** Two VLANs on the same layer 3 switch with SVIs configured will route between each other at line rate, inside the switch, without the packets ever reaching the firewall. Putting cameras on VLAN 40 and calling it an isolated zone means nothing until either the SVI carries an ACL or the inter-VLAN routing happens on the firewall. Test this by pinging across from a host, not by reading the VLAN table.
+
+**Private addressing is mistaken for trust.** The RFC 1918 ranges, 10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16, are not routable on the internet, which is a reachability property and not a security property. A DMZ host on 10.20.0.0/24 is exactly as compromised as it would be on a public address.
+
 ## Beyond the Basic DMZ
 
 More mature environments add additional zones:
@@ -24396,6 +24540,21 @@ More mature environments add additional zones:
 - **IoT:** Isolated from trusted systems
 
 Each additional zone adds security but also adds management complexity. Start with the basics and add complexity only when you have a clear reason for it.
+
+The management zone deserves particular care because it is the one that ignores your other boundaries. A BMC can power cycle a server, mount virtual media, and give console access below the operating system, so reaching the management VLAN is close to physical access. It should be reachable only from a jump host, never from a user VLAN, and never from the DMZ.
+
+Where zones stop working is worth stating plainly. Zones are a network-layer control, and they only see addresses and ports. They do not stop an attacker who abuses a flow you deliberately permitted: SQL injection arriving over the allowed 443 to the app server, then reaching the database over the allowed 1433, is a textbook incident that a perfect zone policy does nothing about. They do not help with stolen credentials, they do not inspect encrypted payloads without a decryption point you have to build and maintain, and they do nothing about east-west traffic inside a zone. When those are your real risks, the answer is not another VLAN. It is per-workload identity, mutual TLS, application-layer authorization, and host firewalls, which is broadly what NIST SP 800-207 describes as zero trust architecture. Zones remain useful underneath all of that, as the cheap coarse filter that keeps the expensive controls from having to handle internet background noise.
+
+Finally, verify from inside the zone rather than from the rule table. Put a laptop or a container in the DMZ and run a scan toward your internal ranges. If anything answers that should not, you have found a rule you forgot. Turn on logging for the default deny in every direction, then actually read those logs for a week after any change, because a rule that is silently blocking something legitimate and a rule that is silently permitting something dangerous look identical until you look.
+
+## References
+
+- https://en.wikipedia.org/wiki/DMZ_(computing)
+- https://en.wikipedia.org/wiki/Screened_subnet
+- https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-41r1.pdf
+- https://csrc.nist.gov/pubs/sp/800/207/final
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://www.rfc-editor.org/rfc/rfc2827
 `,
   },
   {
@@ -24416,13 +24575,21 @@ Each additional zone adds security but also adds management complexity. Start wi
 
 Power over Ethernet delivers electrical power over standard Ethernet cabling, allowing devices like IP phones, wireless access points, and security cameras to operate without a separate power supply. A PoE switch powers the device through the same cable that carries data.
 
+The power is DC, injected at roughly 48 V, and it travels on the same twisted pairs as the data using a technique called phantom power: the voltage is applied common-mode across a pair while the data rides differentially on that same pair. The two do not interfere because they occupy different modes, which is why PoE could be retrofitted onto cabling installed years before anyone thought of it.
+
 ## The Standards
 
 **PoE (IEEE 802.3af):** Original standard, up to 15.4W per port. Sufficient for basic IP phones and low-power APs.
 
 **PoE+ (IEEE 802.3at):** Up to 30W per port. Handles most access points and PTZ cameras.
 
-**PoE++ (IEEE 802.3bt):** Up to 60W (Type 3) or 100W (Type 4) per port. Powers high-performance APs, thin clients, and even small displays.
+**PoE++ (IEEE 802.3bt):** Up to 60W (Type 3) or 90W (Type 4) per port. Powers high-performance APs, thin clients, and even small displays.
+
+Two numbers matter for every one of these, and vendors quote whichever one flatters them. The first is what the switch puts out at the port. The second is what the device is guaranteed to receive after cable losses, which the standard budgets at up to 12.5 percent over a full 100 m run. So 802.3af is 15.4 W at the port and 12.95 W guaranteed at the device. 802.3at is 30 W out and 25.5 W in. 802.3bt Type 3 is 60 W out and 51 W in, and Type 4 is 90 W out and 71.3 W in. If a product page advertises "100 W PoE", that is marketing rather than 802.3bt, because Type 4 tops out at 90 W from the source. Cisco's UPOE and UPOE+ are 60 W and 90 W respectively.
+
+The other split is how many pairs are used. 802.3af and 802.3at power two pairs. The standard defines Alternative A, which uses the data pairs (1/2 and 3/6), and Alternative B, which uses the spare pairs (4/5 and 7/8) on 100BASE-TX. The switch picks one and a compliant device has to accept either. 802.3bt uses all four pairs, which is how it reaches 90 W without exceeding the per-conductor current limit. This is why a run that works fine for a phone can fail for a Type 3 access point: if a pair is broken, or a cheap patch cable only landed two pairs, 100 Mbps data still works and 4-pair PoE does not.
+
+Power classes are how the switch learns how much to reserve. Classes 0 through 4 come from 802.3af and 802.3at, with Class 4 meaning 30 W. 802.3bt added Classes 5 through 8, with Class 8 being the 71.3 W device. Class 0 is the "I did not tell you" class and makes the switch reserve a full 15.4 W whether the device needs it or not.
 
 ## Planning PoE Budgets
 
@@ -24430,9 +24597,29 @@ Every PoE switch has a total power budget shared across all ports. A 24-port swi
 
 Calculate your power requirements before deploying. Group high-power devices carefully and check the switch's documentation for per-port power limits and total budget.
 
+That 370 W figure is not arbitrary. It is a switch sized so that 24 ports of Class 3 802.3af, at 15.4 W each for 369.6 W total, fit exactly. The same switch supports only 12 ports at full PoE+, and if you are deploying Wi-Fi 6E or Wi-Fi 7 access points that want Type 3 power, it supports six. Vendors sell the same chassis with different power supplies for exactly this reason, so check the installed PSU part number rather than the datasheet's maximum.
+
+What happens when you exceed the budget is worth knowing before it happens to you. The switch does not brown out every port. It allocates by port priority, which on Cisco gear you set with \`power inline port priority\`, and denies power to the lowest priority ports still asking for it. Those devices simply never come up. Leave 15 to 20 percent headroom, because a camera with its infrared illuminators on at night draws considerably more than the same camera at noon, and the budget is evaluated live.
+
 ## How It Works
 
 The switch (PSE - Power Sourcing Equipment) applies a small voltage to the cable and checks for a signature resistor in the connected device (PD - Powered Device). If the signature matches an IEEE 802.3 profile, power is enabled. This prevents accidents with non-PoE equipment.
+
+Concretely, detection means the PSE applies a low voltage in the region of 2.8 to 10 V and measures the slope of current against voltage, looking for a 25 kilohm signature resistance. Only if it finds one does it move to classification, applying a higher voltage around 15.5 to 20.5 V and measuring the current the device draws to read its class. Only then does the full 48 V appear. The whole handshake takes well under a second, and it is why you can plug a laptop into a PoE port without destroying it.
+
+After power is up, negotiation can continue in software. LLDP, specifically the 802.3 power-via-MDI TLV, lets the device and the switch refine the allocation: a device that classified as Class 4 but only needs 18 W can say so and hand the rest back to the budget. This is why enabling LLDP on a PoE switch often frees more capacity than expected, and why disabling it can make a marginal deployment stop working.
+
+## What Actually Goes Wrong
+
+**The access point reboots in a loop.** Every two or three minutes the AP drops off and comes back. This is almost always power, not the network. Either the switch budget is exhausted and the port is being denied, or the device negotiated 802.3af when it wanted 802.3at. Many APs will boot on af power but disable a radio, disable the USB port, or run the radios at reduced transmit power, so a second symptom is an AP that comes up with one band missing. Run \`show power inline\` on the switch and compare what is allocated against what the device is asking for.
+
+**Passive PoE meets a standards-compliant device.** Consumer and older prosumer gear sometimes ships passive injectors that put 24 V on the spare pairs with no detection handshake at all. Plugging a compliant 802.3af device into one of those, or a 24 V passive device into a proper PoE switch, ranges from "does not work" to "releases smoke". Passive PoE and 802.3af are not the same technology and share only the connector.
+
+**Copper-clad aluminium cable.** CCA patch and bulk cable is sold cheaply and looks identical to the real thing. Its DC resistance is substantially higher than solid copper, so voltage drop over a long run is worse, more of the budget turns into heat inside the wall, and it is a genuine fire concern at Type 3 and Type 4 current levels. Buy solid copper, and be suspicious of any bulk cable priced well under the going rate.
+
+**Heat in cable bundles.** Current through copper makes heat, and a bundle of forty-eight cables all delivering 802.3bt power in a warm ceiling void gets hot enough to raise insertion loss and shorten cable life. TIA's TSB-184-A exists specifically to give derating guidance for bundle size and ambient temperature. Cat6A, with its larger conductors, runs cooler under the same load than Cat5e and is the sane choice for new high-power installs.
+
+**Marginal terminations.** A punch-down with a partially seated conductor passes a wire-map test and shows link. Under 600 mA of PoE current it heats, resistance rises, the voltage at the device sags, and the device resets. The symptom is hardware that works at low load and fails under load, which reads like a software problem and is not.
 
 ## Practical Considerations
 
@@ -24440,8 +24627,25 @@ The switch (PSE - Power Sourcing Equipment) applies a small voltage to the cable
 - Use cable testers that can verify PoE voltage and current
 - Consider inline PoE injectors for individual devices in environments without PoE switches
 - Monitor per-port power consumption in the switch management interface for troubleshooting
+- Ground and surge-protect anything outdoors, because a copper run to a rooftop camera is a path for a nearby strike straight into your switch
+- Put cameras and APs you care about on a switch that is itself on a UPS, since PoE means the switch is now their power supply too
 
-PoE simplifies physical deployments significantly. The ability to mount an AP or camera anywhere you can run a cable, without running power separately, is a real advantage.
+## Where PoE Stops
+
+The 100 m limit is Ethernet's, not PoE's, but it binds all the same. PoE extenders exist and work by regenerating the signal mid-run, at the cost of latency, another failure point, and often half the available power on the far side. Past that distance the right answer is fiber to a small remote enclosure with local power, not a chain of extenders.
+
+There is also a ceiling on power. Type 4 at 90 W covers access points, small displays, thin clients, and door controllers. It does not cover a workstation, a NAS, or anything with a spinning disk array, and stretching for it means paying a switch premium to solve a problem an outlet solves for nothing.
+
+PoE simplifies physical deployments significantly. The ability to mount an AP or camera anywhere you can run a cable, without running power separately, is a real advantage. It is at its best exactly where mains power is expensive to install: ceilings, exterior walls, poles, anywhere an electrician would otherwise have to be involved. Inside a rack, where every device is a foot from a PDU, it mostly just moves your single point of failure into the switch.
+
+## References
+
+- https://en.wikipedia.org/wiki/Power_over_Ethernet
+- https://standards.ieee.org/ieee/802.3/7071/
+- https://en.wikipedia.org/wiki/Ethernet_over_twisted_pair
+- https://en.wikipedia.org/wiki/Category_5_cable
+- https://en.wikipedia.org/wiki/Twisted_pair
+- https://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol
 `,
   },
   {
@@ -24801,17 +25005,47 @@ The way that works is worth spelling out, because it is the answer to the sharin
 
 DNS translates domain names to IP addresses. If an attacker can manipulate DNS responses, they can redirect traffic to malicious servers, intercept credentials, or block legitimate services entirely. DNS cache poisoning, DNS hijacking, and DNS-based data exfiltration are all real attack categories.
 
+The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The 2008 Kaminsky attack made this cheap by attacking many names at once, and the response, described in RFC 5452, was source port randomisation, which pushes the attacker's guessing space from 16 bits to roughly 32. That raised the cost enormously without making the attack impossible. It is a mitigation, not a fix, and DNSSEC is the fix.
+
 ## DNSSEC
 
 DNSSEC (DNS Security Extensions) adds cryptographic signatures to DNS records. When a resolver queries a DNSSEC-enabled zone, it verifies that the response is signed by the correct key. This prevents an attacker from injecting fake responses.
 
 DNSSEC creates a chain of trust from the root zone down to individual domains. Each level signs the next level's keys. If you are querying \`example.com\`, the resolver verifies the \`com\` zone's signature on the \`example.com\` key, and the root zone's signature on \`com\`.
 
+Four record types carry the whole scheme. **DNSKEY** holds a zone's public keys. **RRSIG** holds a signature over a record set, together with the inception and expiration times of that signature. **DS** lives in the *parent* zone and is a hash of the child's key, which is the link in the chain. **NSEC** or **NSEC3** proves that a name genuinely does not exist, so an attacker cannot forge a denial.
+
+In practice zones use two keys. The key signing key (KSK) signs only the DNSKEY record set, and the DS record in the parent is a hash of it. The zone signing key (ZSK) signs everything else. The split exists because updating the DS record in the parent requires talking to your registrar, which is slow and manual, so you keep the KSK stable for a year or more and rotate the shorter ZSK on your own schedule. RFC 7344 defines CDS and CDNSKEY records, which let a child publish the DS it wants and have a cooperating parent pick it up automatically. Use that if your registrar supports it, because manual DS updates are where rollovers go wrong.
+
 To verify DNSSEC is working:
 \`\`\`bash
 dig +dnssec example.com
 # Look for the AD (Authenticated Data) flag in the response
 \`\`\`
+
+Read that flag carefully, because this is the detail beginners get wrong. The AD bit means *the resolver you asked* says it validated the answer. It says nothing about the path between you and that resolver, which is plain UDP that anyone on the way can rewrite, AD bit and all. Seeing AD only tells you something if you trust the resolver and the channel to it. If you want to validate locally, run a validating resolver on the machine or use \`delv\`, which does the chain verification itself rather than taking a flag's word for it.
+
+## What Breaks
+
+**Expired signatures.** Every RRSIG carries an expiry timestamp, commonly 30 days out with re-signing every week or two. If the signing automation stops, nothing appears wrong for weeks and then the entire zone goes dark for every validating resolver on the internet, all at once. This is not a degradation, it is a total outage, and it is the single largest operational risk DNSSEC introduces. Monitor the time remaining on your RRSIGs as a first-class alert, with a threshold measured in days, not hours.
+
+**A DS record that no longer matches.** After a KSK rollover, the parent's DS still hashes the old key while the zone publishes the new one. The chain is broken and the zone is unreachable through every validating resolver, while continuing to work perfectly for anyone who is not validating. Do rollovers by publishing both keys, waiting out the parent's DS TTL plus a margin, and only then withdrawing the old one.
+
+**The symptom is always SERVFAIL.** A validation failure does not return a helpful error, it returns SERVFAIL, which looks identical to the server being down. The one-command diagnosis is \`dig +cd example.com\`, where \`+cd\` sets checking disabled and tells the resolver to skip validation. If it answers with \`+cd\` and SERVFAILs without, the problem is DNSSEC and not the network.
+
+**Clock skew.** Signature validity is a comparison against the system clock. A resolver whose time is wrong by more than the signature's validity margin rejects perfectly good signatures. Worse, there is a bootstrapping trap: if your NTP servers are configured by hostname, a machine with a bad clock cannot resolve them to fix the clock. Configure at least one time source by IP address on validating resolvers.
+
+**Responses that no longer fit.** Signatures make responses large, which is why DNSSEC requires EDNS0 (RFC 6891) to negotiate a UDP payload larger than the original 512-byte limit. Advertise too large a buffer and the reply gets IP-fragmented, and fragments are widely dropped by middleboxes, giving you intermittent timeouts on exactly the largest responses. The DNS Flag Day 2020 recommendation is to advertise 1232 bytes and let truncation push the query to TCP, so make sure port 53 is open on TCP as well as UDP. RFC 7766 makes TCP support mandatory, but firewall rules written in 2005 often disagree.
+
+**Zone enumeration.** NSEC proves a name does not exist by pointing at the next name that does, which means walking the chain dumps every name in the zone. NSEC3 hashes the names instead, but the hashes are still crackable offline for anything short or dictionary-based, and the iteration count that was supposed to help mostly just costs the resolver CPU. RFC 9276 now recommends NSEC3 with zero extra iterations and an empty salt. If hiding your hostnames is the goal, DNSSEC is the wrong tool and you should not be publishing them.
+
+**Algorithm choice.** RFC 8624 sets out what to implement. In practice, use algorithm 13 (ECDSA P-256 with SHA-256) rather than algorithm 8 (RSA with SHA-256) for a new zone. The signatures are 64 bytes instead of 256 for a 2048-bit RSA key, which meaningfully reduces response size and the fragmentation problem above. Anything based on SHA-1, algorithms 5 and 7, is deprecated and should be rolled off.
+
+## What DNSSEC Does Not Do
+
+DNSSEC provides origin authentication and integrity. It does not provide confidentiality. Every query and every signed answer is still sent in the clear, so an observer learns exactly what you are looking up. It does not tell you whether the address you got back belongs to a good actor, only that the zone's owner really published it: a phishing domain can be perfectly signed. It does nothing about denial of service against the name servers themselves, and it makes DNS a slightly better amplification reflector, since DNSKEY responses are large. That is part of why RFC 8482 replaced sprawling ANY responses with a minimal synthesised answer, and why authoritative servers run response rate limiting.
+
+It also stops at the resolver unless you extend it. The last hop from your machine to the resolver is unprotected by DNSSEC, which is what the next section is for.
 
 ## DNS over HTTPS (DoH) and DNS over TLS (DoT)
 
@@ -24822,11 +25056,30 @@ Traditional DNS queries are sent in plaintext. Anyone on the network path can se
 
 Both improve privacy by preventing passive observation of DNS queries. In enterprise environments, DoT is often preferred because it is easier to manage at the network level.
 
+There is now a third, DNS over QUIC on port 853 (RFC 9250), which gets DoT's properties without TCP head-of-line blocking. And there are two very different security postures available, set out in RFC 8310: opportunistic privacy, which encrypts if it can and silently falls back to plaintext if it cannot, and strict privacy, which authenticates the resolver's certificate and fails closed. Opportunistic mode protects you against a passive eavesdropper and not against an active one, since anyone who can block port 853 can force the fallback. If encryption is a requirement rather than a nicety, configure strict mode and accept that resolution breaks when the resolver is unreachable.
+
+Understand what these protocols authenticate. DoT and DoH secure the channel to the resolver and prove you are talking to the resolver you meant. They say nothing about whether the resolver is telling the truth. DNSSEC secures the data regardless of who hands it to you. They solve different halves of the problem and the complete answer is both.
+
+The operational surprise with DoH is that applications can turn it on without asking the network. A browser configured for DoH bypasses your DHCP-supplied resolver entirely, which breaks split-horizon DNS for internal names and silently defeats DNS-layer filtering. Firefox checks a canary domain, \`use-application-dns.net\`, and disables its DoH by default if a network answers NXDOMAIN for it, which gives network operators a documented opt-out. That canary is a convention, not a guarantee, and it does not apply to other clients.
+
 ## DNS Filtering
 
 DNS-layer filtering blocks connections to known-malicious domains before a TCP connection is even attempted. Tools like Pi-hole block ad and tracking domains. Enterprise platforms like Cisco Umbrella provide threat intelligence and policy-based filtering.
 
 Implementing DNS filtering is one of the highest-value, lowest-cost security controls you can deploy. Block domains associated with malware command-and-control, phishing, and known-bad infrastructure at the DNS layer and you stop a significant portion of threats before they get started.
+
+Be clear-eyed about the ways around it. Malware that connects to a hardcoded IP address never asks a question you can block. Devices with a hardcoded resolver, which is common in IoT and consumer streaming hardware, ignore whatever you handed out over DHCP, and the usual answer is a NAT rule that redirects outbound port 53 to your own resolver. Neither of those helps against DoH, which is why filtering deployments increasingly need to block known DoH endpoints as well.
+
+There is also a direct conflict between filtering and validation, and it is worth knowing before you hit it. Filtering works by lying: returning NXDOMAIN or a sinkhole address for a name that really exists. If that name is in a DNSSEC-signed zone and the client validates for itself, the lie fails validation and the client gets SERVFAIL instead of a clean block. Between a resolver that both filters and validates and a client that trusts it, this works fine. The moment a validating stub or a DoH-enabled browser is in the picture, the block turns into an unexplained failure.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc9364
+- https://www.rfc-editor.org/rfc/rfc4033
+- https://www.rfc-editor.org/rfc/rfc5155
+- https://www.rfc-editor.org/rfc/rfc7858
+- https://www.rfc-editor.org/rfc/rfc8484
+- https://man.archlinux.org/man/dig.1
 `,
   },
   {
@@ -25429,19 +25682,31 @@ Most runbooks fail for the same reasons. They are written once and never updated
 
 Good runbooks are written for an engineer who is stressed at 2 AM and needs to solve a specific problem without having to think about things they should not need to think about.
 
+Each of those failures has a recognizable shape, and once you can name the shape you can avoid it.
+
+**The stale command.** The runbook says \`service payment restart\`. Since it was written, the host was rebuilt on a distribution where \`service\` is a thin shim, or the workload moved into a container and there is no init script at all. The symptom is nasty: a command that exits 0 and changes nothing, and an operator who now believes the restart happened and starts looking somewhere else. The fix is to name the exact tool and the exact expected output for every command, so a no-op is visible instead of silent.
+
+**The hardcoded hostname.** \`payment-server-01.prod\` was the only one when the runbook was written. There are four now, behind a load balancer. The operator restarts one, the alert does not clear, and the next fifteen minutes go into deciding whether the runbook is wrong or the diagnosis is wrong. Write the step against an inventory query that returns the current set, and include the query itself.
+
+**The prose runbook.** Someone wrote three good paragraphs explaining how the queue drains. That is real documentation, and it is not a runbook. Nobody reads paragraphs at 2 AM. Split it: background lives in a design doc the runbook links to, and the runbook is numbered steps.
+
+**The unfindable runbook.** The document is excellent and the on-call engineer has never seen it. The fix is mechanical. Put the runbook link in the alert itself. Prometheus alerting rules carry an \`annotations\` block, and a \`runbook_url\` annotation rides through Alertmanager into the notification, so the page that wakes you up contains the link to the page that tells you what to do.
+
+There is a fifth failure that only shows up in the worst incidents: the runbook hosted on the infrastructure that is currently broken. If the wiki runs on the cluster that is down, or sits behind the identity provider that is the outage, you have no runbook. Keep an exported copy in a different failure domain. A PDF on a laptop is unglamorous and it works.
+
 ## The Structure That Works
 
 **Title and purpose:** One sentence. "Restart the payment processing service when it becomes unresponsive." Not "Payment Service Runbook."
 
-**When to use this:** What symptoms trigger this runbook? High latency on checkout? A specific alert firing? Be specific.
+**When to use this:** What symptoms trigger this runbook? High latency on checkout? A specific alert firing? Be specific. Name the alert by its exact alertname so a search for the alert text finds this document.
 
-**Prerequisites:** What access does the engineer need? What tools? Is there a maintenance window required?
+**Prerequisites:** What access does the engineer need? What tools? Is there a maintenance window required? Name the exact group or role that grants the access, not "prod access", because the person reading this at 2 AM may need to request it and cannot guess what to ask for.
 
 **Steps:** Numbered, specific, and actionable. Not "check the service health" but "run \`systemctl status payment-service\` and verify it shows Active: active (running)."
 
-**Validation:** How does the engineer know it worked? What output or metric confirms success?
+**Validation:** How does the engineer know it worked? What output or metric confirms success? Prefer a metric with a threshold over a vibe. "Checkout p99 latency back under 400 ms on the dashboard" beats "site feels fine."
 
-**Escalation:** If the runbook does not resolve the issue, who do you contact? What information do you gather before escalating?
+**Escalation:** If the runbook does not resolve the issue, who do you contact? What information do you gather before escalating? Escalate to a rotation, never to a named person. People change teams and the runbook does not.
 
 ## Example Step Format
 
@@ -25458,11 +25723,60 @@ Active: active (running) since ...
 If the service fails to start, see Step 6 (Escalation).
 \`\`\`
 
+The expected output block is the part that carries the weight. Without it, "restart the service" is a hope. With it, the operator has a decision point: matched or did not match, continue or escalate.
+
+Real systems have branches, and the branches are worth writing down because they are where people get stuck. Two systemd behaviors account for a surprising share of confused restarts. First, a unit that ignores SIGTERM does not stop instantly. systemd waits \`TimeoutStopSec\` and then sends SIGKILL, and the shipped default from \`systemd-system.conf\` is 90 seconds. So a restart that appears hung for a minute and a half is often just working. Second, systemd rate limits restarts: the defaults are \`DefaultStartLimitBurst=5\` within \`DefaultStartLimitIntervalSec=10s\`. Trip that and the unit refuses to start at all, with a message about the start request being repeated too quickly and a result of \`start-limit-hit\`. The service is not broken in a new way. It is locked out.
+
+\`\`\`
+Step 4: If the restart is refused
+
+systemctl status payment-service
+  -> "start request repeated too quickly" / result 'start-limit-hit'
+
+sudo systemctl reset-failed payment-service
+sudo systemctl start payment-service
+
+Do NOT loop on restart. Five failed starts in ten seconds
+is what put the unit in this state. If it fails again after
+reset-failed, go to Step 6 and take the journal with you:
+
+journalctl -u payment-service --since '-15 min' --no-pager
+\`\`\`
+
+That last line matters more than it looks. Half of a good escalation is arriving with the evidence already collected, because the person you escalate to will ask for exactly that and the logs may have rotated by the time they do.
+
+## When Not To Write a Runbook
+
+Runbooks are for known failure modes with known fixes. That boundary is real and it is worth respecting.
+
+If a step in your document says "investigate the root cause", you are not writing a runbook. You are writing a diagnostic guide. Both are valuable, they get used at different moments, and mixing them produces a document that is too long to follow under pressure and too shallow to actually debug with. Label them separately.
+
+If a runbook has been executed five times and every execution was byte-for-byte identical, it should be a script or an automated remediation, not a document a human retypes at 2 AM. If there is a reason it cannot be automated, and there often is, that reason is the most important sentence in the runbook and it belongs at the top. "This cannot be automated because the failover is destructive if the primary is actually alive" tells the operator why they are being asked to think.
+
+A runbook that ends in "open a vendor case" is a perfectly good runbook. Say so in the first line so nobody burns forty minutes before making the call.
+
+The one thing a runbook genuinely cannot supply is judgment about whether the documented fix is safe right now. A restart procedure that is correct during a normal Tuesday can be the wrong move during a partial data corruption event. The best runbooks state their own preconditions, and the best operators still check them.
+
 ## Keeping Runbooks Current
 
 A runbook is only useful if it matches reality. Assign ownership. When the system changes, the runbook changes. After every incident where a runbook was used, update it to reflect what actually worked. Run through runbooks in tabletop exercises before you need them in production.
 
+Make the currency visible. Put a "last verified" line at the top with a date and the name of the person who verified it, and treat a runbook that has not been executed or walked through in a year as untested, because it is. Tie the review to change, not to a calendar reminder: the pull request that renames a service is the pull request that fixes the runbook.
+
+Exercises are worth the time. NIST SP 800-84 is a whole publication on building a test, training, and exercise program, and its core point applies at any scale: the discussion-based tabletop is cheap, it finds the wrong assumptions, and it does it before the wrong assumptions cost you an outage. NIST SP 800-61 makes the companion point that lessons-learned activity is part of the incident lifecycle rather than an optional extra.
+
+The most honest quality metric I know for a runbook library is small and slightly uncomfortable: of the runbooks executed this quarter, how many needed to be corrected mid-incident? If that number is not near zero, the library is decoration.
+
 Runbooks are living documentation. Treat them that way.
+
+## References
+
+- https://sre.google/sre-book/managing-incidents/
+- https://sre.google/workbook/incident-response/
+- https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf
+- https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-84.pdf
+- https://man7.org/linux/man-pages/man5/systemd-system.conf.5.html
+- https://prometheus.io/docs/practices/alerting/
 `,
   },
   {
@@ -25610,6 +25924,8 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
 
 iDRAC (Integrated Dell Remote Access Controller) ships with every current Dell PowerEdge server and provides a level of remote management that goes far beyond a simple console. If you are only using it for KVM and power control, you are missing most of what it can do.
 
+Before anything else, know which iDRAC you have and what license is on it, because half of the "iDRAC cannot do that" complaints online are really licensing. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. Express gives you health monitoring, power control, the Lifecycle Controller, and the full Redfish API. Virtual console and virtual media, the two features people actually want, require Enterprise. Datacenter adds streaming telemetry and thermal controls that matter at fleet scale and almost nowhere else. Check under iDRAC Settings, then Licenses, before you conclude a feature is broken.
+
 ## Lifecycle Controller
 
 The Lifecycle Controller is a firmware-based management environment that runs independently of the OS. You can:
@@ -25620,6 +25936,10 @@ The Lifecycle Controller is a firmware-based management environment that runs in
 - Run hardware diagnostics
 
 Access it by pressing F10 during POST or from the iDRAC web interface under Maintenance.
+
+Two features inside it are worth knowing by name. **Part Replacement** stores the firmware version and configuration of components, so when you swap a PERC card or a NIC the replacement is automatically flashed to the version the old one ran and given the old one's settings. Turn it on before you need it, not after. **Repository update** points the server at a Dell catalog, compares every installed component against it, and stages only the updates that apply. You can run it against downloads.dell.com directly, or against a local repository built with Dell Repository Manager, which is what you want if the servers have no internet egress.
+
+The Lifecycle Controller also keeps its own log, which is not the same thing as the System Event Log. The SEL records hardware events from sensors. The LC log records configuration and firmware activity: who changed what, which job ran, which update succeeded. When you are reconstructing "why did this server reboot at 3am", you need both.
 
 ## SupportAssist and Proactive Monitoring
 
@@ -25639,13 +25959,61 @@ curl -k -u admin:password -X POST   -H "Content-Type: application/json"   -d '{"
 
 This enables automation: deploy scripts that configure servers, update firmware, and verify health checks without human interaction.
 
+Redfish is a DMTF standard, DSP0266, so the same scripts largely work against HPE iLO and Lenovo XCC with different resource IDs. The service root at \`/redfish/v1\` is reachable without authentication by design, which makes it a useful reachability test and also means anyone who can route to the BMC learns what it is. Everything below the root needs credentials.
+
+Two details will bite you. First, that \`-k\` is disabling TLS verification, and it is fine on a lab bench and wrong in a script you run every night. iDRAC ships with a self-signed certificate; issue it one from your internal CA, install it under iDRAC Settings, and drop the flag. Second, basic auth on every request makes iDRAC create and tear down a session each time, and a tight loop will hit the concurrent session limit. Create one session, keep the token, and delete it when you are done:
+
+\`\`\`bash
+# Open a session and capture the token
+curl -s -D - -o /dev/null https://idrac-ip/redfish/v1/SessionService/Sessions \\
+  -H "Content-Type: application/json" \\
+  -d '{"UserName":"admin","Password":"password"}' | grep -i x-auth-token
+\`\`\`
+
+Configuration changes are asynchronous. A POST or PATCH that modifies BIOS or RAID settings returns 202 Accepted with a \`Location\` header pointing at a task, and the change is staged rather than applied. Scripts that assume the setting took effect because the call returned 2xx are the most common Redfish bug there is. Poll the task until it reports Completed, and remember that BIOS attribute changes only apply at the next reboot, which Redfish expresses through \`@Redfish.SettingsApplyTime\` with a value of \`OnReset\`.
+
+When a staged job wedges, the giveaway is that new jobs are rejected because the Lifecycle Controller reports itself in use. Clearing the queue with \`racadm jobqueue delete -i JID_CLEARALL\` and then a \`racadm racreset\` fixes it, and a soft reset of the controller does not touch the running host.
+
 ## Group Manager
 
 In environments with multiple Dell servers, iDRAC Group Manager provides a unified view of all servers from a single interface. Monitor health, deploy firmware updates, and export inventory data across your entire fleet from one pane.
 
+The catch is that Group Manager discovers members using IPv6 link-local multicast, so every member has to sit on the same layer 2 segment as the group. That is fine when all your iDRACs share one management VLAN and useless the moment they are in different racks on different subnets. It is also iDRAC9 only, and Dell scopes it to fleets in the low hundreds. Past that, or across subnets, you are looking at OpenManage Enterprise, which is a separate appliance you have to run and patch.
+
 ## Alert Configuration
 
 Configure iDRAC alerts to notify you immediately when hardware events occur. Options include email, SNMP traps, and syslog. Set up alerts for: drive failures, PSU failures, temperature warnings, memory errors, and POST errors. Do not wait to find out about hardware failures through a monitoring system with a five-minute polling interval.
+
+Of those transports, remote syslog is the one to configure first, because it gets the SEL and the LC log off the BMC and into the same place as everything else you search. SNMP traps are useful if you already run a trap receiver. Redfish EventService subscriptions are the modern option and push JSON to an HTTP endpoint you control. Email works and is worth setting up for exactly one category: events that mean a part is dead.
+
+Set NTP on the controller while you are in there. A BMC with a drifting clock timestamps its own event log wrongly, which makes correlating a hardware event against an application log much harder than it needs to be, and it will also break certificate validation once you stop using the self-signed cert.
+
+## Locking It Down
+
+The BMC is a small computer with its own network stack that can power cycle the host, mount virtual media, and give you console access underneath the operating system. Anyone who reaches it has something very close to physical access, so treat the management network accordingly.
+
+Older PowerEdge servers shipped with the famous \`root\` and \`calvin\` default. Current ones ship with a unique factory password printed on the pull-out information tag on the front of the chassis, which is better but still means the credential is written on the outside of the box. Change it, and do not put the BMC on a routable path from user VLANs, let alone the internet.
+
+Turn IPMI over LAN off if you are not using it. It listens on UDP 623, and the IPMI 2.0 RAKP authentication exchange hands back a salted hash of a user's password to anyone who asks with a valid username, which can then be cracked offline. That is a protocol design flaw rather than a Dell bug, and no patch fixes it. Redfish over HTTPS does everything IPMI does, so on a modern PowerEdge there is rarely a reason to leave 623 open. If you do need IPMI, for instance because a fencing agent or an older monitoring tool speaks nothing else, restrict it to the management VLAN and never allow cipher suite 0, which disables authentication entirely.
+
+Use the dedicated management port rather than shared LOM. Shared LOM puts BMC traffic on the same physical NIC as the host's production traffic, which means your management plane rides your data plane and a compromised host is one VLAN away from the controller that owns it.
+
+## What iDRAC Will Not Do For You
+
+It watches hardware, and only hardware. iDRAC will tell you a DIMM took correctable errors and a fan is out of spec. It has no idea that your application is returning 500s, that a filesystem is full, or that a service failed to start. Out-of-band management and OS-level monitoring are two different jobs and you need both.
+
+Virtual media is also weaker than it looks over a slow link. Mounting a 5 GB ISO from your laptop over a home connection and running an OS install through it takes hours and fails partway through more often than it succeeds. Stage the image on something close to the server, or use PXE, and keep virtual media for rescue work and small drivers.
+
+Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell firmware and supports the sort of detect-and-recover behaviour described in NIST SP 800-193, but that only helps if you keep it updated. A BMC three years behind on firmware, reachable from a user VLAN, with IPMI enabled, is a worse security position than having no out-of-band management at all, because it is a permanent way into every server you own that nobody is watching.
+
+## References
+
+- https://en.wikipedia.org/wiki/Dell_DRAC
+- https://redfish.dmtf.org/
+- https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.22.0.pdf
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://man.archlinux.org/man/ipmitool.1
+- https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-193.pdf
 `,
   },
   {
@@ -26024,6 +26392,8 @@ Until you get there, keep an inventory. A key with no owner recorded is a key no
 
 NFS (Network File System) is a Unix/Linux protocol. SMB (Server Message Block, also called CIFS) is a Windows protocol. Both allow clients to mount remote filesystems as if they were local, but they have different strengths and trade-offs.
 
+The version you are running matters more than the protocol family. NFSv3 is specified in RFC 1813 and is stateless, with locking bolted on as a separate service. NFSv4.0 (RFC 7530) folded locking, mounting, and ACLs into a single stateful protocol on one port. NFSv4.1 (RFC 8881) added sessions and exactly-once semantics, and NFSv4.2 (RFC 7862) added server-side copy and sparse file support. SMB1 is dead and disabled by default in Windows since 1709. SMB 3.1.1, the version in current Windows, added AES-GCM encryption and pre-authentication integrity. If someone says "we use NFS" without a version number, you do not yet know what you are dealing with.
+
 ## When to Use NFS
 
 NFS is the right choice for Linux-to-Linux file sharing. It is the standard for NAS shares in Linux environments, VM storage, and shared filesystems in HPC (high-performance computing) clusters.
@@ -26046,6 +26416,36 @@ mount -t nfs 192.168.1.50:/data /mnt/data
 192.168.1.50:/data  /mnt/data  nfs  defaults,_netdev  0  0
 \`\`\`
 
+The \`_netdev\` flag in that fstab line is not decoration. It tells the init system this mount needs the network, so systemd orders it after \`network-online.target\` instead of trying to mount during early boot and failing. A machine that boots to an emergency shell after you add an NFS mount is usually missing it.
+
+## Ports, and Why NFSv3 Hates Firewalls
+
+NFSv4 uses exactly one port: TCP 2049. That is the whole conversation, and it makes firewall rules trivial.
+
+NFSv3 is a different story. It needs rpcbind on port 111 to find everything else, and then \`mountd\`, \`statd\`, and \`lockd\` bind to whatever ports the portmapper hands them at startup. Those change across reboots. The symptom is a share that mounts fine today and hangs after the NAS reboots, with the mount succeeding but every file operation blocking. If you are stuck on v3, pin the ports explicitly in \`/etc/nfs.conf\` so you can write firewall rules that stay true.
+
+SMB is simpler: TCP 445. The legacy NetBIOS ports 137 through 139 are only needed for pre-SMB2 name resolution, and blocking them outright is usually correct.
+
+## The nobody:nobody Problem
+
+This is the single most common NFSv4 support question, and it looks like the filesystem is broken. You mount the share, run \`ls -l\`, and every file is owned by \`nobody:nobody\` even though the UIDs match on both machines.
+
+NFSv4 identifies users as \`user@domain\` strings rather than raw numbers, and the domain comes from the \`Domain\` setting in \`/etc/idmapd.conf\`. If the client and server disagree, the mapping fails and the client falls back to the anonymous user. Setting the same \`Domain\` on both ends fixes it.
+
+Modern Linux sidesteps this for the common case: with \`sec=sys\`, both the client and server default to \`nfs4_disable_idmapping=Y\` and pass numeric IDs directly. That is why Linux-to-Linux usually just works and why the problem reappears the moment you introduce Kerberos or a non-Linux server. When it does, the fix is the domain setting, not \`chown\`.
+
+The other permission surprise is \`root_squash\`, which is on by default in \`exports(5)\`. Root on the client is mapped to the anonymous account, conventionally uid 65534, so root cannot read a 0600 file it does not own and files it creates come out owned by nobody. This is correct behavior and you should think hard before setting \`no_root_squash\`, because that option means root on any client machine is root on your storage.
+
+## Security Is the Real Difference
+
+This is the trade-off the feature comparisons skip, and it should probably drive the decision more than throughput does.
+
+NFS with \`sec=sys\` uses AUTH_SYS, which means the client simply asserts its own UID and GID in each request, and the server believes it. Anyone with root on any machine that can reach port 2049 can become any user and read any file on the export. There is no authentication in the protocol at all. The \`/etc/exports\` host list is the only control, and IP addresses are not an authentication mechanism.
+
+That is not a reason to avoid NFS, but it is a reason to be deliberate. Either put NFS on a storage VLAN that only trusted hosts reach, or use \`sec=krb5p\`, which authenticates with Kerberos and encrypts the payload. \`sec=krb5\` authenticates only, and \`sec=krb5i\` adds integrity checking.
+
+SMB has the opposite default posture. Every connection authenticates a user, and SMB 3.1.1 supports AES-128-GCM encryption per share. Recent Windows releases also require SMB signing by default: a NAS or Samba server with signing disabled will stop accepting connections from an updated Windows client, and the error message rarely says why.
+
 ## When to Use SMB
 
 SMB is the right choice when Windows clients are involved. It is the native protocol for Windows file sharing and is well-supported on macOS as well. Samba implements SMB on Linux, allowing Linux servers to serve files to Windows clients.
@@ -26059,13 +26459,52 @@ SMB is the right choice when Windows clients are involved. It is the native prot
 - Higher overhead than NFS for Linux-only environments
 - Active Directory integration requires additional configuration
 
+The case sensitivity mismatch deserves its own warning. Linux filesystems are case sensitive and Windows clients assume they are not. Samba defaults to \`case sensitive = no\`, which makes it scan the directory to find a case-insensitive match, so a large directory gets slower on every miss. Worse, if both \`Report.txt\` and \`report.txt\` exist in one directory, Windows clients can only ever see one of them.
+
+## Mount Options That Matter
+
+\`hard\` is the default and it is the right default. A hard mount retries forever when the server is unreachable, so an interrupted NFS server produces a paused application rather than a corrupted file. \`soft\` returns an I/O error after the timeout instead, and \`nfs(5)\` warns directly that this risks data corruption on anything but read-only mounts. The \`intr\` option people still recommend has been a no-op since kernel 2.6.25.
+
+The cost of \`hard\` is the classic hung-NFS symptom: processes stuck in D state, uninterruptible sleep, load average climbing into double digits with zero CPU usage, and \`df\` hanging along with them. \`umount -l\` on the mount point is the escape hatch that does not require a reboot.
+
+The performance option most people miss is \`nconnect\`. A single NFS mount uses exactly one TCP connection by default, which means a single client cannot exceed what one connection and one server thread can push, no matter how many NICs it has. \`nconnect=8\` opens multiple connections for the same mount, and \`nfs(5)\` caps it at 16. On the SMB side, SMB Multichannel does the equivalent automatically.
+
+Leave \`rsize\` and \`wsize\` alone unless you have measured something. The Linux client negotiates up to 1 MiB and picks the largest value the server supports, and shrinking them to numbers copied from a 2008 forum post is a common way to make things slower.
+
+One export option to avoid: \`async\`. It lets the server acknowledge writes before they reach stable storage, which is a real speedup and which \`exports(5)\` warns will cause data corruption if the server crashes. The default is \`sync\`, and the default is right.
+
 ## Performance Comparison
 
 For pure Linux workloads, NFS consistently outperforms SMB for large sequential reads and writes. For random I/O with many small files, the difference narrows. For mixed environments with Windows clients, SMB is the practical choice regardless of the performance difference.
 
+It helps to know why small files are slow on both, because the instinct is to buy a faster link. A 10 GbE link carries about 1.1 GB/s of payload, and a large sequential read will get close to that. A small-file workload is not bandwidth-bound, it is round-trip-bound. Every file costs several operations: LOOKUP, OPEN, READ, CLOSE. At a modest 0.2 ms of round-trip latency per operation, one thread tops out near 5,000 operations per second, which is a few hundred files per second no matter what the link speed is.
+
+The consequence: to go faster with small files you add concurrency, not bandwidth. More threads, \`nconnect\`, or restructuring the workload to move a tar archive instead of 100,000 individual files. Upgrading from 1 GbE to 10 GbE will do almost nothing for that workload.
+
+Server restarts have a latency of their own. The Linux NFS server's default v4 lease time is 90 seconds, and after a reboot it observes a grace period of the same length during which clients reclaim their locks and no new locks are granted. So a NAS that reboots in 40 seconds still gives clients well over a minute of stalled I/O.
+
+## What Neither Protocol Does Well
+
+Neither NFS nor SMB is a cluster filesystem. Two hosts writing to the same file at the same time is coordinated only as well as the applications coordinate themselves, and byte-range locking over the network is advisory in practice. If you need genuine concurrent shared-block access, that is CephFS, GFS2, or OCFS2 territory.
+
+Databases over network filesystems are possible and are a support minefield. The problem is that correctness depends on the write actually being durable when \`fsync()\` returns, and that guarantee crosses the server's export options, the client's mount options, and the storage's own cache. Vendors publish exact supported configurations for a reason. If you are not going to follow one, use block storage.
+
+And neither protocol likes the WAN. Both are chatty and latency-sensitive. At 60 ms of round-trip latency, an operation that takes seconds on a LAN takes minutes. Object storage or a sync tool is the right tool across a WAN, not a mounted share.
+
 ## My Setup
 
 I use NFS for VM storage and Linux data shares in my lab. Windows VMs that need shared storage use SMB served from TrueNAS, which supports both protocols from the same storage pool.
+
+Serving the same dataset over both protocols at once is the one thing I would tell people to be careful with. The permission models do not map cleanly onto each other, and a directory whose ownership is being rewritten by both a POSIX client and a Windows ACL client will eventually confuse one of them. I keep the datasets separate by protocol and accept the small duplication.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc8881
+- https://www.rfc-editor.org/rfc/rfc1813
+- https://man7.org/linux/man-pages/man5/nfs.5.html
+- https://man7.org/linux/man-pages/man5/exports.5.html
+- https://learn.microsoft.com/en-us/windows-server/storage/file-server/file-server-smb-overview
+- https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html
 `,
   },
   {
@@ -26478,6 +26917,8 @@ Beyond that, the failures that actually recur:
 
 Consumer WiFi routers are designed for home use: a small number of devices, low density, non-technical users. Enterprise APs are designed for high-density environments with many concurrent users, centralized management, and predictable performance.
 
+The mechanism behind that difference is worth stating up front, because it explains every feature below. Wi-Fi is a half-duplex shared medium governed by CSMA/CA: on a given channel, exactly one radio transmits at a time and everyone else waits. The scarce resource is not bandwidth, it is airtime. Enterprise gear is mostly a set of tools for spending airtime well.
+
 ## What Enterprise APs Do Better
 
 **Centralized management:** Enterprise systems (Cisco Meraki, Ubiquiti UniFi, Aruba Instant) provide a single pane of glass for all APs. Push a configuration change and it deploys to every AP in seconds. See per-client statistics, channel utilization, and interference maps from one interface.
@@ -26490,15 +26931,86 @@ Consumer WiFi routers are designed for home use: a small number of devices, low 
 
 **Seamless roaming (802.11r/k/v):** Clients can move between APs without dropping connections, which matters for voice and video applications.
 
+One honest qualification on the density figure. Association count and usable density are different numbers. An enterprise AP will happily hold 200 associations, and it will do so comfortably if most of those clients are phones sitting in pockets. For clients doing real work, WLAN design guides generally plan 25 to 50 active devices per radio, and that ceiling comes from airtime rather than from any table in the AP.
+
+## Airtime Is the Resource
+
+Two things dominate airtime waste, and neither is fixable on a consumer router.
+
+The first is slow clients. A client transmitting at 6 Mbps occupies the channel roughly a hundred times longer than one at 600 Mbps to move the same frame, and while it does, nobody else transmits. One distant laptop clinging to a low data rate degrades everyone on that AP. Enterprise APs let you disable the low data rates entirely: set the minimum basic rate to 12 or 24 Mbps and the 802.11b rates (1, 2, 5.5, and 11 Mbps) disappear, which both stops the airtime bleed and pushes distant clients to roam to a closer AP.
+
+The second is beacons, and this one surprises people. Every SSID on every radio sends a beacon frame at the lowest configured basic rate, once per beacon interval. The default beacon interval is 100 time units, and a TU is 1024 microseconds, so that is a beacon every 102.4 ms, just under ten per second. Now run eight SSIDs across three radios on twenty APs with 1 Mbps still enabled as a basic rate, and a genuinely significant fraction of your airtime is consumed announcing networks before a single byte of user data moves. This is why WLAN designers argue about SSID counts and why three per band is a common ceiling.
+
+## Channel Width Is a Trade, Not an Upgrade
+
+The most common self-inflicted wound in a small deployment is setting every AP to the widest channel available.
+
+The channel budget is fixed. In North America, 2.4 GHz has 11 channels and only three that do not overlap at 20 MHz: 1, 6, and 11. There is no configuration that changes this. 5 GHz gives about 25 non-overlapping 20 MHz channels in the US, but most of them are DFS channels, and bonding them into 80 MHz leaves you six, while 160 MHz leaves two. 6 GHz is the genuine relief, adding 1200 MHz of spectrum in the US, which is 59 channels at 20 MHz or seven at 160 MHz.
+
+Width also costs signal quality. Doubling channel width spreads the same transmit power across twice the spectrum and raises the noise floor by about 3 dB, so every doubling costs roughly 3 dB of effective SNR at the receiver. Wider channels are therefore shorter-range channels.
+
+Put those together and the rule for a dense deployment inverts the marketing: 20 or 40 MHz channels usually deliver more aggregate throughput across a floor than 80 MHz, because more APs can transmit simultaneously without stepping on each other. Use 80 MHz where you have few APs and lots of spectrum, and never on 2.4 GHz at all.
+
+DFS deserves its own warning. On DFS channels, the AP must monitor for radar, and on detection it has to vacate the channel within 10 seconds and stay off it for a 30 minute non-occupancy period. Near an airport or a weather radar the symptom is unmistakable: every client on one AP drops simultaneously, repeatedly, at unpredictable intervals. The fix is to exclude the affected channels, and finding out which ones is a job for the controller's event log.
+
+## Roaming Is a Client Decision
+
+This is the single most misunderstood thing about enterprise Wi-Fi, and it is worth being blunt: the access point does not decide when a client roams. The client does.
+
+802.11k gives the client a neighbor report so it knows where to look instead of scanning every channel. 802.11v lets the AP send a BSS transition management request, which is a polite suggestion the client is free to ignore. 802.11r Fast BSS Transition is the one that actually saves time on the handoff: it pre-distributes key material so reassociation skips a full 802.1X exchange. A complete EAP re-authentication can take hundreds of milliseconds, long enough to be audible on a call, while an FT roam typically lands under 50 ms, which is roughly the threshold where a voice handoff stops being noticeable.
+
+What none of that gives you is control. The classic sticky client, a laptop holding an association at -80 dBm while standing under a different AP, is a client driver making a bad decision. Minimum RSSI thresholds and band steering are the mitigations: the AP effectively refuses to keep serving the client so it is forced to look elsewhere. They are blunt instruments, and setting the threshold too aggressively produces disconnects instead of roams.
+
+The design targets that make roaming work are unglamorous: plan for about -67 dBm at the edge of each cell for voice, keep SNR at 25 dB or better where calls happen and 20 dB for data, and make sure a co-channel neighbor is heard below roughly -85 dBm. Those numbers come from voice-over-WLAN design guides and they are the reason a proper deployment starts with a site survey rather than a shopping list.
+
+## PoE Budgets Bite
+
+The PoE standards define power at both ends, and the difference matters because cable loses some. 802.3af Type 1 supplies 15.4 W at the switch and guarantees 12.95 W at the device. 802.3at, PoE+, is 30 W and 25.5 W. 802.3bt Type 3 is 60 W and 51 W, and Type 4 is 90 W and 71.3 W.
+
+Modern tri-radio APs frequently need PoE+ at minimum, and some Wi-Fi 6E and Wi-Fi 7 models want 802.3bt. Plugged into an af-only switch, they usually still boot, which is the trap. They come up in a reduced power mode with a radio disabled, fewer spatial streams, or the secondary Ethernet port dead. The symptom is an AP that shows as online and healthy in the controller while delivering a fraction of its rated throughput, and the 6 GHz radio simply missing from the list.
+
+Check the switch's total budget as well as its per-port class. A 24-port PoE+ switch with a 370 W power budget cannot deliver 30 W to all 24 ports, because that would be 720 W. Oversubscribe it and ports drop by priority order, which looks like random APs rebooting.
+
+## Security Is a Real Dividing Line
+
+A consumer router gives you a pre-shared key. One secret, shared by everyone, and rotating it after someone leaves means touching every device you own.
+
+Enterprise gear gives you 802.1X with a RADIUS server, so every user or device authenticates individually and can be revoked individually. EAP-TLS, specified in RFC 5216, does this with certificates instead of passwords, which removes the phishable credential entirely.
+
+WPA3 is the other line. It replaces the WPA2 four-way handshake with SAE, which kills the offline dictionary attack against a captured handshake, and it makes Protected Management Frames (802.11w) mandatory, which blocks the trivial deauthentication attacks that have worked against WPA2 for a decade. The 6 GHz band goes further and simply does not permit WPA2-Personal or open networks at all: it is WPA3, OWE, or 802.1X. That is the actual reason an older phone cannot see your 6 GHz SSID. It is not broken, it is not allowed.
+
 ## The UniFi Middle Ground
 
 Ubiquiti UniFi occupies an interesting position: professional hardware and management at prices between consumer and full enterprise. For a homelab or small office, UniFi provides most of the enterprise capabilities without the enterprise price tag.
 
 I run UniFi in my lab. The controller software manages all APs from a single interface, provides detailed statistics, and handles automatic firmware updates.
 
+Worth knowing about controller-based systems generally: the controller is a management plane, not a data plane. UniFi APs keep forwarding traffic and keep authenticating clients when the controller is offline. What you lose is configuration changes, statistics collection, and the guest portal. People assume a dead controller means a dead network, and for this architecture it does not.
+
+## What Enterprise Gear Cannot Fix
+
+Placement. An AP in a wiring closet behind a metal door serves the closet. Ceiling-mounted in the open, in the middle of the space, beats a better AP in a worse spot every time, and a survey beats a spec sheet.
+
+Backhaul. A Wi-Fi 6 AP capable of well over a gigabit aggregate on a 1 GbE uplink is capped by the wire. Multi-gig uplinks exist for a reason.
+
+Non-Wi-Fi interference. Microwave ovens, some wireless cameras, and older cordless phones transmit in 2.4 GHz and do not participate in CSMA/CA at all. Wi-Fi cannot negotiate with them, it can only lose airtime to them, and no amount of channel planning helps because your AP cannot see them as interference. A spectrum analyzer can.
+
+Building materials. Concrete, brick, and especially low-emissivity window glass, which carries a thin metallic coating, attenuate RF hard. This is why a floor plan predicts coverage badly and a walk with a survey tool predicts it well.
+
 ## When Consumer Is Fine
 
 For a home with a handful of devices and no performance-sensitive applications, a good consumer router is perfectly adequate. The investment in enterprise hardware only makes sense when you need the density, management, or reliability features.
+
+The specific trigger points I would use: more than one AP, because that is when roaming and channel planning start to matter; any need for per-user credentials rather than a shared password; voice or video that has to survive walking down a hallway; or a client count where you can actually observe airtime contention. Short of those, a single well-placed consumer router on a clean channel will outperform a badly placed enterprise AP, and it will cost a tenth as much.
+
+## References
+
+- https://en.wikipedia.org/wiki/List_of_WLAN_channels
+- https://en.wikipedia.org/wiki/IEEE_802.11r-2008
+- https://en.wikipedia.org/wiki/Dynamic_frequency_selection
+- https://en.wikipedia.org/wiki/Power_over_Ethernet
+- https://www.wi-fi.org/discover-wi-fi/security
+- https://www.rfc-editor.org/rfc/rfc5216
 `,
   },
   {
@@ -27661,9 +28173,21 @@ The network engineer of five years ago spent most of their time on physical infr
 
 Today, a significant portion of enterprise networking happens in software. Cloud networking, overlay fabrics, SD-WAN, and software-defined controllers mean that network configuration is increasingly declarative, API-driven, and version-controlled.
 
+Concretely, that means a set of interfaces that did not exist in most job descriptions a decade ago. NETCONF, standardized in RFC 6241, runs over SSH on TCP 830 and exchanges structured configuration with an explicit candidate-commit-rollback model instead of a terminal session. RESTCONF (RFC 8040) exposes the same data over HTTPS for anyone who would rather write against a REST API. Both are shaped by YANG data models, which is what makes "the interface description field" a typed, validated path rather than a position in a text file.
+
+Telemetry moved too. SNMP polls on an interval and gives you whatever the device felt like counting. gNMI and the OpenConfig models push subscriptions: the device streams a value when it changes, at subsecond resolution, without you asking every sixty seconds. On a fabric with thousands of interfaces, that difference is not incremental.
+
+The campus and data center designs changed underneath all of it. Large Layer 2 domains held together by spanning tree are giving way to routed access and EVPN-VXLAN fabrics, where the loop prevention is a routing protocol rather than a protocol whose job is to break links on purpose.
+
 ## What Has Not Changed
 
 The fundamentals remain completely relevant. If you do not understand IP routing, BGP, spanning tree, and firewall policy design, you cannot be effective regardless of what tools are in use. The abstractions built on top of these fundamentals require understanding what is underneath to troubleshoot effectively.
+
+Take BGP, which is now the control plane for the data center fabric, the WAN, the internet edge, and half the cloud interconnects you will ever build. The timers in RFC 4271 have not moved: the default Hold Time is 90 seconds and the keepalive interval is one third of that, 30 seconds. That means a session can be dead for a minute and a half before the protocol notices, which is why BFD exists and why anyone who tells you BGP converges instantly has not watched it fail.
+
+The operational hazards have not moved either. RFC 7454 collects the practices that keep BGP from ruining your afternoon: filter what you accept, filter what you announce, and set maximum-prefix limits so a neighbor's mistake becomes their outage rather than yours. Origin validation with RPKI, specified in RFC 6811, is now normal rather than exotic, and it exists because "trust the AS path" was never a security model.
+
+The physical layer did not go anywhere either. Somebody still has to know which fiber is which, that a bad optic can produce corrupt frames instead of a clean link failure, and that the answer to a mystery is sometimes a patch cable.
 
 ## Skills That Are Growing in Importance
 
@@ -27673,11 +28197,48 @@ The fundamentals remain completely relevant. If you do not understand IP routing
 
 **Security integration:** The boundary between network engineering and network security has blurred. Network engineers are expected to understand and implement security controls, not just hand off to a separate security team.
 
+## The Details People Get Wrong
+
+Cloud networking looks like traditional networking with new names, which is exactly the trap. Three specifics account for a lot of wasted time.
+
+AWS reserves five IP addresses in every subnet: the network address, the VPC router, the DNS address, one held for future use, and the broadcast address. A /28 therefore gives you 11 usable addresses, not 14, and the smallest subnet AWS permits is a /28. Size subnets on that arithmetic or watch an autoscaling group fail to launch.
+
+A VPC's primary CIDR block cannot be changed after creation. You can attach additional CIDR blocks later, but you cannot resize the original, so the ten minutes you spend on addressing at the start is the cheapest ten minutes in the project.
+
+VPC peering is not transitive. If A peers with B and B peers with C, A cannot reach C. People discover this after building a hub-and-spoke topology out of peerings and wondering why the spokes cannot talk. Transit Gateway exists for that, and it costs money per attachment and per gigabyte, which is a design input.
+
+And the rule that applies everywhere: overlapping address space cannot be routed between. An on-premises 10.0.0.0/16 and a VPC 10.0.0.0/16 will never talk to each other properly no matter what you buy. Address planning is still the most valuable unglamorous skill in this job.
+
+On the security side, NIST SP 800-207 is worth reading properly rather than absorbing through vendor slides. Its core assertion is that network location is not a trust signal, which has a specific consequence for network engineers: the perimeter firewall stops being the control and per-session, per-identity policy becomes the control. Segmentation still matters, but it is a blast-radius tool now, not an authentication mechanism.
+
+## What Automation Cannot Fix
+
+Automating a broken design does not fix it. It applies it faster, to more devices, at three in the morning.
+
+The specific technical skill that separates a working automation practice from a dangerous one is idempotence. A playbook that appends a line to a config is not idempotent, and running it twice produces a device that does not match the model you think you have. A playbook that declares intent and converges toward it can run a hundred times safely. Config drift detection matters for the same reason: your repository is only the source of truth if something checks that reality agrees with it.
+
+The failure mode of a junior engineer who learned automation before protocols is that they cannot tell when the tool is lying. The module reports \`changed: true\`, the device rejected the line, and the playbook is green. You need enough of the underlying protocol to look at the device and know what right looks like.
+
+The 2026 version of this problem is generated configuration. A model will produce an ACL that is syntactically perfect, well commented, and wrong in an ordering-dependent way that only fails under a specific traffic pattern. Plausible and wrong is worse than obviously wrong, and it moves the valuable work toward verification: config analysis before deployment, lab validation, and tests that assert reachability rather than assert that a command was accepted.
+
 ## What I Am Focusing On
 
 The combination of deep fundamentals with automation and cloud skills is the most valuable place to be. A network engineer who can troubleshoot a BGP route leak AND write an Ansible playbook to fix it AND understand how that routing decision propagates in a cloud environment is solving genuinely hard problems.
 
 That combination is not common, which makes it worth investing in.
+
+For me at this stage that means the boring order: protocols first, because they are the part that does not get deprecated. Then packet captures, because every abstraction eventually fails in a way that only the wire explains. Then automation on top, applied to a lab I actually run, because a playbook that has never touched real hardware has never been tested.
+
+The thing I keep reminding myself is that the tooling turns over every few years and the fundamentals do not. A person who learned subnetting, TCP behavior, and routing loop prevention in 2010 can read a 2026 EVPN fabric. A person who only learned one vendor's CLI in 2010 cannot.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc4271
+- https://www.rfc-editor.org/rfc/rfc6241
+- https://www.rfc-editor.org/rfc/rfc7454
+- https://www.rfc-editor.org/rfc/rfc6811
+- https://csrc.nist.gov/pubs/sp/800/207/final
+- https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html
 `,
   },
   {
@@ -27949,6 +28510,8 @@ Physical servers are expensive to buy, expensive to power, and expensive to mana
 
 Virtualization consolidates many workloads onto fewer physical hosts. The same compute, done on fewer machines, with lower cost, lower power, and less physical complexity.
 
+The power argument is stronger than it looks, because an idle server is not a cheap server. A typical two-socket machine draws somewhere between 30 and 50 percent of its peak wattage doing nothing at all, so twenty boxes at 15 percent utilization burn most of the electricity of twenty boxes at full load while doing a fraction of the work. Every watt is also a watt of heat that cooling has to remove, which is why the real saving is always larger than the difference in the servers' own power draw.
+
 ## Planning the Consolidation
 
 Start with an inventory of what you are consolidating. For each physical server:
@@ -27960,11 +28523,23 @@ Start with an inventory of what you are consolidating. For each physical server:
 
 A server running at 20 percent CPU average with 30 percent peak can share a physical host with several other similar workloads. A server running at 80 percent CPU peak needs a dedicated host or careful co-placement planning.
 
+Collect this over at least a full month, and record percentiles rather than averages. A monthly average hides the payroll run, the overnight backup, and the quarter-end report, and those are exactly the events that make a consolidated host fall over. The 95th percentile of a five-minute sample, plus the observed absolute peak, is a far more honest input than a mean. On Linux hosts the data is probably already there if sysstat has been running: \`sar\` reads daily binary files under \`/var/log/sa\` and keeps several weeks of them by default.
+
+Two things belong in the inventory that people usually leave out. The first is *when* each workload peaks. Two servers that both peak at 80 percent are a fine pair if one peaks at 09:00 and the other at 02:00, and a disaster if they peak together. The second is what each workload is licensed under, which is discussed at the end and which has killed more consolidation projects than capacity ever has.
+
 ## Sizing the New Infrastructure
 
 Rule of thumb: plan for 4:1 to 8:1 VM-to-physical-core ratios for typical workloads, 2:1 for compute-intensive, and 1:1 or even less for databases.
 
 For memory, there is no overcommitment that is safe for production. VM memory should sum to less than physical host memory, with headroom for the hypervisor.
+
+Hypervisors do offer memory reclamation, and it is worth knowing why it does not change that rule. Ballooning has a driver inside the guest allocate pages and hand them back to the host, which works but depends on the guest cooperating and reacting in time. Kernel same-page merging on KVM scans memory for identical pages and collapses them, which genuinely helps when you run forty near-identical virtual desktops and helps almost nothing when you run twelve different server workloads, because their pages are not the same. Both burn CPU to save RAM, and both degrade exactly when the host is already under pressure. Once a host starts swapping guest memory to disk, performance does not degrade gracefully, it falls off a cliff, and the hypervisor rather than you decides which VMs suffer.
+
+Budget the hypervisor's own footprint too. Reserve roughly 10 to 15 percent of host RAM for the hypervisor kernel, the per-VM device model and page tables, and enough free memory that the host is never the thing that runs out.
+
+NUMA is the sizing detail beginners miss entirely. On a two-socket host each CPU owns its own memory, and a core reaching across the interconnect to the other socket's memory pays a latency penalty commonly in the range of 1.5 to 2 times local access. A VM whose vCPU count or memory size exceeds one NUMA node gets split across both and its performance becomes unpredictable. Check the node layout with \`lscpu\`, then size VMs to fit inside a node wherever you can. A 12 vCPU VM on a host with 16 cores per socket is fine. The same VM on a host with 8 cores per socket is a problem you will spend a week not diagnosing.
+
+The last sizing constraint is the failure domain, and it is the one that actually determines your host count. Consolidating 20 servers onto 2 hosts means one host failure takes out half the estate. If you want N+1, meaning any single host can fail and the survivors absorb its VMs, then across three hosts your steady-state ceiling is about 66 percent utilization, and across four hosts about 75 percent. Sizing three hosts to run at 85 percent each and calling it a cluster produces a cluster that cannot survive the failure it exists to survive.
 
 ## Migration Strategy
 
@@ -27974,9 +28549,36 @@ For memory, there is no overcommitment that is safe for production. VM memory sh
 
 P2V (physical-to-virtual) tools can automate the lift and shift conversion. VMware vCenter Converter and the open-source Clonezilla are common options.
 
+Be clear about what each tool actually does. \`virt-v2v\`, part of the libguestfs project, is the actively maintained open-source path for converting a physical machine or a VMware guest into a KVM, Proxmox, or oVirt guest, and it does the important part: it inspects the guest operating system and injects the drivers the new virtual hardware needs. Clonezilla, by contrast, is a disk imaging tool. It will faithfully copy your disk into a virtual one and it will not touch the drivers, which means the copy may well be unbootable.
+
+That driver problem is the number one lift-and-shift failure and it has two recognisable faces. On Windows the VM boots to a bugcheck reading INACCESSIBLE_BOOT_DEVICE, because the image has drivers for a PERC or LSI controller and is now looking at a virtio or LSI Logic SAS device it has never heard of. On Linux the machine drops to an initramfs prompt because \`virtio_blk\` or \`virtio_scsi\` was never built into the initrd on a machine that had no use for it. Both are fixable afterwards and both are much easier to avoid: install the virtio drivers on the physical machine before you image it, or let \`virt-v2v\` do the injection.
+
+Three smaller things reliably bite. The NIC gets a new MAC address, so anything licensed to a MAC stops working and any distribution that pins interface names to hardware comes up with no network. Vendor hardware agents such as OpenManage keep running, keep polling hardware that no longer exists, and fill logs with errors, so uninstall them as part of the cutover. And anything physically plugged into the old machine, a USB license dongle, a serial device, a fax card, either needs passthrough configured or needs a different plan, and passthrough will stop that VM from live migrating.
+
 ## Post-Consolidation Monitoring
 
 After consolidation, monitor CPU ready time (VMs waiting to be scheduled), memory balloon and swap activity, and storage latency. These metrics reveal whether your sizing was correct and where you need to rebalance workloads.
+
+Put numbers on those. CPU ready, shown as %RDY in esxtop, is time a vCPU was runnable but had no physical core to run on. Under 5 percent per vCPU is normal, 5 to 10 percent means you are oversubscribed, and above 10 percent means guests are visibly slow for reasons nothing inside the guest can explain. On KVM and Proxmox the equivalent signal is visible from inside the guest as steal time, the \`st\` column in \`vmstat\` output, and anything consistently above a few percent means the same thing. Steal time is the metric to teach application owners, because it is the one that answers "the server is slow but the CPU graph looks fine".
+
+Storage is where consolidation surprises people. Ten physical servers each doing tidy sequential reads become, at the array, ten interleaved streams that look like pure random I/O. This is the I/O blender effect, and it is why a datastore that benchmarked beautifully in isolation posts terrible numbers in production. Watch latency rather than IOPS: above roughly 20 ms on spinning disks, or above 2 ms on flash, something is queued behind something else.
+
+Network needs the same rethink. Ten servers with one gigabit each are not replaced by one host with one gigabit. Give consolidated hosts 10 GbE or a LACP bundle, and give backup, live migration, and storage traffic their own capacity rather than letting a migration saturate the link your applications are using.
+
+## When Not To Consolidate
+
+Some workloads should stay on iron. Anything needing a physical device that cannot be passed through cleanly, anything with hard real-time or jitter requirements such as telephony media processing, and anything whose licence makes virtualization ruinous.
+
+That last one is not a technical objection but it is a real one. Windows Server Standard entitles you to run two virtualized instances per licensed host while Datacenter entitles you to unlimited instances, so the crossover point is a specific number of VMs per host that you can calculate before you buy anything. Some database vendors have historically insisted that you license every core a VM could theoretically migrate to, not just the cores it runs on, which turns a four-host cluster into a four-host bill. Work out the licence cost before the hardware cost, because occasionally the answer is that the old physical box was the cheap option all along.
+
+## References
+
+- https://en.wikipedia.org/wiki/Virtualization
+- https://en.wikipedia.org/wiki/Non-uniform_memory_access
+- https://www.kernel.org/doc/html/latest/admin-guide/mm/ksm.html
+- https://pve.proxmox.com/pve-docs/pve-admin-guide.html
+- https://libguestfs.org/virt-v2v.1.html
+- https://man7.org/linux/man-pages/man8/vmstat.8.html
 `,
   },
   {

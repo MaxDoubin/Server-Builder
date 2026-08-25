@@ -43,6 +43,14 @@ const BLOCKS_ROBOTS = new Set([
   // Cisco does the same to its documentation from a datacenter address.
   // Every cisco.com URL cited here was opened and read before being added.
   "www.cisco.com",
+  // crt.sh is a volunteer-run Certificate Transparency search and is
+  // frequently overloaded, answering 502 for minutes at a time. It is a real
+  // and widely used tool, so a bad gateway from it is its bad day, not a
+  // wrong URL.
+  "crt.sh",
+  // samba.org serves its manual pages but refuses this checker. smb.conf(5)
+  // was opened and read before being cited.
+  "www.samba.org",
 ]);
 
 const CONCURRENCY = 8;
@@ -120,6 +128,34 @@ async function statusOf(url) {
   return last;
 }
 
+/**
+ * Cover image attribution links.
+ *
+ * Every third-party cover is used under CC BY or CC BY-SA, and both require
+ * credit with a link to the source. Those links rot exactly like citations
+ * do, except a dead one is a licensing problem rather than an inconvenience:
+ * one of them was already a 404 to a photo the author had removed. They are
+ * checked alongside the references for that reason.
+ */
+async function attributionUrls() {
+  const out = new Map();
+  const index = await readFile(
+    path.join(ROOT, "client/src/lib/postIndex.ts"),
+    "utf8",
+  );
+  const lines = index.split("\n");
+  lines.forEach((line, i) => {
+    for (const key of ["sourceUrl", "licenseUrl"]) {
+      const m = line.match(new RegExp(`"${key}":\\s*"([^"]+)"`));
+      if (m) {
+        if (!out.has(m[1])) out.set(m[1], []);
+        out.get(m[1]).push({ file: "postIndex.ts", line: i + 1 });
+      }
+    }
+  });
+  return out;
+}
+
 async function main() {
   const asJson = process.argv.includes("--json");
   const files = (await readdir(POSTS_DIR)).filter((f) => f.endsWith(".md")).sort();
@@ -132,6 +168,10 @@ async function main() {
       if (!sites.has(url)) sites.set(url, []);
       sites.get(url).push({ file, line });
     }
+  }
+  for (const [url, where] of await attributionUrls()) {
+    if (!sites.has(url)) sites.set(url, []);
+    sites.get(url).push(...where);
   }
 
   const urls = [...sites.keys()].sort();

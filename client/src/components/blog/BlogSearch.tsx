@@ -155,7 +155,22 @@ function Highlight({ text, tokens }: { text: string; tokens: string[] }) {
 
 export function BlogSearch({ posts, onResults, className = "" }: Props) {
   const [, setLocation] = useLocation();
-  const [query, setQuery] = useState("");
+  /**
+   * Seed from ?q= in the URL.
+   *
+   * The WebSite schema in index.html declares a SearchAction whose target is
+   * /blog?q={search_term_string}. That is what lets Google offer a sitelinks
+   * search box for the site, and it is a promise: whatever a searcher types
+   * arrives here as a query parameter. Nothing read it, so every such search
+   * landed on the unfiltered archive.
+   *
+   * Read once, lazily, so the initial render already has the term rather than
+   * flashing the full list and then filtering.
+   */
+  const [query, setQuery] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("q")?.slice(0, 120) ?? "";
+  });
   const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -168,6 +183,25 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
     const timer = window.setTimeout(() => setDebounced(query), DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [query]);
+
+  /*
+    Mirror the settled query back into the URL so a search can be linked,
+    bookmarked and shared, and so reloading keeps the results.
+
+    replaceState rather than pushState: one history entry per keystroke would
+    make the back button useless, and this runs on the debounced value rather
+    than on every character for the same reason. Only ever touches ?q=, so
+    any other parameter on the URL survives.
+  */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const current = url.searchParams.get("q") ?? "";
+    if (current === debounced) return;
+    if (debounced) url.searchParams.set("q", debounced);
+    else url.searchParams.delete("q");
+    window.history.replaceState(window.history.state, "", url.toString());
+  }, [debounced]);
 
   const haystacks = useMemo<Haystack[]>(
     () =>

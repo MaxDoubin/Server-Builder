@@ -2,7 +2,7 @@
  * A small SM-2-style spaced-repetition scheduler.
  *
  * The algorithm is an adaptation of SuperMemo's SM-2 (P.A. Wozniak, 1990,
- * https://super-memory.com/english/ol/sm2.htm) to the four-button grading
+ * https://www.supermemo.com/en/blog/application-of-a-computer-to-improve-the-results-obtained-in-working-with-the-supermemo-method) to the four-button grading
  * interface popularised by Anki: again / hard / good / easy. SM-2 proper
  * takes a recall quality of 0 to 5; we map the four buttons onto that scale
  * and keep SM-2's ease-factor update and interval progression.
