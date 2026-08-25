@@ -47,6 +47,10 @@ async function buildAll() {
   console.log("prerendering pages for SEO...");
   execSync("npx tsx script/prerender.ts", { stdio: "inherit" });
 
+  console.log("building data pack...");
+  const { generateDataPack } = await import("./generateDataPack.ts");
+  await generateDataPack();
+
   console.log("building search index...");
   const { generateSearchIndex } = await import("./generateSearchIndex.ts");
   await generateSearchIndex();

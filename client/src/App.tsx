@@ -216,6 +216,9 @@ const CinematicChangelog = lazyWithRetry(() =>
 const SubnetCalculator = lazyWithRetry(() =>
   import("@/pages/tools/SubnetCalculator").then((m) => ({ default: m.SubnetCalculator })),
 );
+const RackBudget = lazyWithRetry(() =>
+  import("@/pages/tools/RackBudget").then((m) => ({ default: m.RackBudget })),
+);
 const VlsmPractice = lazyWithRetry(() =>
   import("@/pages/tools/VlsmPractice").then((m) => ({ default: m.VlsmPractice })),
 );
@@ -277,6 +280,10 @@ const CinematicFlashcards = lazyWithRetry(() =>
 );
 const CinematicCerts = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCerts").then((m) => ({ default: m.CinematicCerts })),
+);
+
+const CinematicData = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicData").then((m) => ({ default: m.CinematicData })),
 );
 
 const CinematicStudy = lazyWithRetry(() =>
@@ -744,6 +751,11 @@ function AnimatedRoutes() {
               <HashIdentifier />
             </Suspense>
           </Route>
+          <Route path="/tools/rack-budget">
+            <Suspense fallback={<RackBudget />}>
+              <RackBudget />
+            </Suspense>
+          </Route>
           <Route path="/tools/subnet-calculator">
             <Suspense fallback={<RouteLoading />}>
               <SubnetCalculator />
@@ -817,6 +829,11 @@ function AnimatedRoutes() {
           <Route path="/tools/classical-ciphers">
             <Suspense fallback={<RouteLoading />}>
               <ClassicalCiphers />
+            </Suspense>
+          </Route>
+          <Route path="/data">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicData />
             </Suspense>
           </Route>
           <Route path="/study">

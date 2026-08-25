@@ -172,6 +172,14 @@ export const TOOLS: ToolEntry[] = [
     category: "networking",
     keywords: ["mac", "oui", "vendor", "ethernet", "multicast", "locally administered"],
   },
+  {
+    slug: "rack-budget",
+    name: "Rack power and cooling budget",
+    category: "infrastructure",
+    blurb:
+      "Size a data center floor: IT load, PUE, facility power, heat in BTU and tons, how many CRAH units, and what the electricity costs per year.",
+    keywords: ["power", "cooling", "pue", "btu", "crah", "capacity", "datacenter", "rack", "kw", "tons", "budget"],
+  },
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {

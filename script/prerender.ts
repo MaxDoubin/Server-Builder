@@ -729,6 +729,24 @@ ${TAG_PAGES.map(
 </main>`,
   });
 
+  // ── open dataset ──
+  await writePage("data", base, {
+    title: "Open rack hardware dataset | Max Doubin",
+    description:
+      "An openly licensed table of 28 rack-mount devices with power draw, heat output, rack units, port count and indicative cost, as JSON and CSV under CC BY 4.0.",
+    canonical: `${SITE_URL}/data`,
+    rootContent: `
+<main>
+  <h1>Rack hardware dataset</h1>
+  <p>28 rack-mount devices with power draw, heat output, rack units, port count and indicative cost, licensed CC BY 4.0.</p>
+  <p>These are modelling figures, not vendor specifications and not measurements. powerDraw is representative for the class of hardware named. heatOutput is derived as watts multiplied by 3.412142. price is order of magnitude. Do not cite them as manufacturer data.</p>
+  <ul>
+    <li><a href="${SITE_URL}/data/equipment-catalog.json">equipment-catalog.json</a></li>
+    <li><a href="${SITE_URL}/data/equipment-catalog.csv">equipment-catalog.csv</a></li>
+  </ul>
+</main>`,
+  });
+
   // ── certification study index and one page per exam domain ──
   // These answer high-intent objective queries, so they have to exist as
   // static HTML rather than only after hydration.
@@ -828,6 +846,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/contact`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/game`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/study`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/data`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/topics`, lastmod: today, changefreq: "weekly", priority: "0.8" },
     { loc: `${SITE_URL}/archive`, lastmod: today, changefreq: "weekly", priority: "0.8" },
     { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },

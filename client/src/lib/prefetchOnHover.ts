@@ -47,6 +47,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   // "/" is CinematicHome, a static import in App.tsx. Already in the entry
   // chunk, so there is nothing to fetch.
   "/blog": { load: () => import("@/pages/cinematic/CinematicBlog") },
+  "/data": { load: () => import("@/pages/cinematic/CinematicData") },
   "/study": { load: () => import("@/pages/cinematic/CinematicStudy") },
   "/topics": { load: () => import("@/pages/cinematic/CinematicTopics") },
   "/roadmap": { load: () => import("@/pages/cinematic/CinematicRoadmap") },
@@ -88,6 +89,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/tools/mac-lookup": { load: () => import("@/pages/tools/MacLookup") },
   "/tools/packet-headers": { load: () => import("@/pages/tools/PacketHeaders") },
   "/tools/port-reference": { load: () => import("@/pages/tools/PortReference") },
+  "/tools/rack-budget": { load: () => import("@/pages/tools/RackBudget") },
   "/tools/regex-tester": { load: () => import("@/pages/tools/RegexTester") },
   "/tools/subnet-calculator": { load: () => import("@/pages/tools/SubnetCalculator") },
   "/tools/vlsm-practice": { load: () => import("@/pages/tools/VlsmPractice") },
