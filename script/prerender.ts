@@ -21,6 +21,7 @@ import { Marked } from "marked";
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
 const { pageTitle } = await import("../client/src/lib/pageTitle.ts");
+const { NCL_GUIDES: NCL_GUIDE_DATA } = await import("../client/src/lib/nclGuides.ts");
 const { getTagPage } = await import("../client/src/lib/tagPages.ts");
 const { EXAMS } = await import("../client/src/lib/examObjectives.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
@@ -88,12 +89,59 @@ function injectBeforeHead(html: string, injection: string): string {
   return html.replace("</head>", `${injection}\n</head>`);
 }
 
+/**
+ * Site navigation, appended to every prerendered page.
+ *
+ * The real footer is a React component, so it exists only after hydration.
+ * A crawler on its first pass sees the prerendered body and nothing else,
+ * which meant nine pages were linked from nowhere at all: /now, /uses,
+ * /projects, /paths, /timeline, /links, /subscribe, /roadmap and
+ * /study-timer were each reachable only from themselves. They were in the
+ * sitemap, so Google knew the URLs existed, but a URL with no inbound link
+ * is a URL nothing vouches for, and it is crawled last if at all.
+ *
+ * This is the same set of destinations the rendered footer offers. It is
+ * replaced by React on hydration like the rest of the prerendered body, so
+ * readers never see it and it cannot drift visually from the real footer.
+ */
+const SITE_NAV = `
+<nav aria-label="Site">
+  <a href="${SITE_URL}/">Home</a>
+  <a href="${SITE_URL}/blog">Field Notes</a>
+  <a href="${SITE_URL}/topics">Topics</a>
+  <a href="${SITE_URL}/archive">Archive</a>
+  <a href="${SITE_URL}/projects">Projects</a>
+  <a href="${SITE_URL}/tools">Tools</a>
+  <a href="${SITE_URL}/study">Study</a>
+  <a href="${SITE_URL}/data">Open data</a>
+  <a href="${SITE_URL}/game">Simulator</a>
+  <a href="${SITE_URL}/ncl">National Cyber League</a>
+  <a href="${SITE_URL}/cyber-club">Cyber Club</a>
+  <a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>
+  <a href="${SITE_URL}/coding-camps">Coding camps</a>
+  <a href="${SITE_URL}/certifications">Certifications</a>
+  <a href="${SITE_URL}/paths">Paths</a>
+  <a href="${SITE_URL}/roadmap">Roadmap</a>
+  <a href="${SITE_URL}/resume">Resume</a>
+  <a href="${SITE_URL}/timeline">Timeline</a>
+  <a href="${SITE_URL}/now">Now</a>
+  <a href="${SITE_URL}/uses">Uses</a>
+  <a href="${SITE_URL}/verify">Verify these claims</a>
+  <a href="${SITE_URL}/faq">FAQ</a>
+  <a href="${SITE_URL}/links">Links</a>
+  <a href="${SITE_URL}/subscribe">Subscribe</a>
+  <a href="${SITE_URL}/study-timer">Study timer</a>
+  <a href="${SITE_URL}/changelog">Changelog</a>
+  <a href="${SITE_URL}/colophon">Colophon</a>
+  <a href="${SITE_URL}/contact">Contact</a>
+</nav>`;
+
 function injectRootContent(html: string, content: string): string {
   // Replace the spinner placeholder with pre-rendered content.
   // React's createRoot overwrites this on hydration. Purely for crawlers.
   return html.replace(
     /<div id="root">[\s\S]*?<\/div>\s*<style>/,
-    `<div id="root">${content}</div>\n    <style>`,
+    `<div id="root">${content}${SITE_NAV}</div>\n    <style>`,
   );
 }
 
@@ -158,7 +206,10 @@ function buildPageHtml(base: string, meta: PageMeta): string {
   }
 
   if (schema) html = injectBeforeHead(html, schema);
-  if (rootContent) html = injectRootContent(html, rootContent);
+  // Always inject, even with no body: the nav has to reach every page, and
+  // the pages with no body of their own are exactly the ones that were
+  // otherwise linked from nowhere.
+  html = injectRootContent(html, rootContent ?? "");
 
   return html;
 }
@@ -405,6 +456,47 @@ async function main(): Promise<void> {
   const base = await readFile(path.join(DIST, "index.html"), "utf-8");
   const posts = postIndex.filter((p) => !p.draft);
 
+  /*
+    The home page had no prerendered body at all.
+
+    Every other page goes through writePage, which injects content and the
+    site nav. index.html is the Vite output that those pages are built FROM,
+    so it never went through that path: a crawler's first pass at
+    maxdoubin.com found an empty div and a spinner. That is the most
+    important page on the site.
+
+    Written last, after the base has been used as the template for everything
+    else, so this content cannot leak into the other 332 pages.
+  */
+  const homeContent = `
+<main>
+  <h1>Max Doubin</h1>
+  <p>
+    Cybersecurity student in Las Vegas. This site is a working notebook:
+    ${posts.length} articles on enterprise networking, servers, storage and
+    security, each one sourced, plus browser tools, exam study material and an
+    openly licensed hardware dataset.
+  </p>
+  <h2>Start here</h2>
+  <ul>
+    <li><a href="${SITE_URL}/blog">Field Notes</a>, ${posts.length} articles on infrastructure and security.</li>
+    <li><a href="${SITE_URL}/topics">Topics</a>, the same archive grouped by subject.</li>
+    <li><a href="${SITE_URL}/tools">Browser tools</a>, subnet and VLSM calculators, packet header references, hash identification and more.</li>
+    <li><a href="${SITE_URL}/study">Certification study</a>, mapped to the published Security+, Network+ and CCNA exam objectives.</li>
+    <li><a href="${SITE_URL}/data">Open rack hardware dataset</a>, power, heat, rack units and port counts as JSON and CSV under CC BY 4.0.</li>
+    <li><a href="${SITE_URL}/game">Hyperscale</a>, a datacenter simulator running on real power and cooling maths.</li>
+    <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all seven scored categories.</li>
+    <li><a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>, a free twelve week plan for starting a school cybersecurity club.</li>
+  </ul>
+  <h2>About</h2>
+  <ul>
+    <li><a href="${SITE_URL}/resume">Resume</a> and <a href="${SITE_URL}/timeline">timeline</a>.</li>
+    <li><a href="${SITE_URL}/verify">Verify these claims</a>, every claim on this site graded by the evidence behind it.</li>
+    <li><a href="${SITE_URL}/projects">Projects</a>, <a href="${SITE_URL}/uses">uses</a> and <a href="${SITE_URL}/now">what I am working on now</a>.</li>
+    <li><a href="${SITE_URL}/contact">Contact</a>.</li>
+  </ul>
+</main>`;
+
   // ── blog posts ──
   console.log(`Prerendering ${posts.length} blog posts...`);
   for (let i = 0; i < posts.length; i += BATCH) {
@@ -610,6 +702,32 @@ ${JSON.stringify({
       description:
         "What the National Cyber League is, how scoring works, how to prepare, and guides to all seven challenge categories, from a top 1 percent competitor.",
       canonical: `${SITE_URL}/ncl`,
+      // The seven guides were reachable from nowhere: this index rendered its
+      // list client side, so a crawler saw an empty page with no links out.
+      rootContent: `
+<main>
+  <h1>National Cyber League study guide</h1>
+  <p>
+    The National Cyber League scores seven categories. Each guide below covers
+    what that category tests, the tools worth knowing, a worked example, and
+    the mistakes that cost the most time.
+  </p>
+  <ul>
+${[...NCL_GUIDE_DATA]
+  .sort((a, b) => a.order - b.order)
+  .map(
+    (g) =>
+      `    <li><a href="${SITE_URL}/ncl/${g.slug}">${esc(g.category)}</a>: ${esc(g.tagline)}</li>`,
+  )
+  .join("\n")}
+  </ul>
+  <p>
+    The competition itself is covered in the
+    <a href="${SITE_URL}/blog">Field Notes archive</a>, and the
+    <a href="${SITE_URL}/tools">browser tools</a> cover several of the same
+    techniques.
+  </p>
+</main>`,
     },
     {
       dir: "certifications",
@@ -746,10 +864,53 @@ ${JSON.stringify({
   ];
   for (const [slug, name, description] of NCL_GUIDES) {
     const url = `${SITE_URL}/ncl/${slug}`;
+    /*
+      Give the guide a body a crawler can read.
+
+      These seven pages were prerendering ten characters: the loading
+      placeholder. Everything a reader sees is rendered from nclGuides.ts
+      after hydration, so to Google they were seven empty pages in the
+      sitemap, which is worse than not listing them. The data was already
+      there; it just was not being written into the HTML.
+    */
+    const guide = NCL_GUIDE_DATA.find((g) => g.slug === slug);
+    const guideContent = guide
+      ? `
+<main>
+  <h1>${esc(guide.category)}</h1>
+  <p>${esc(guide.tagline)}</p>
+  <h2>What it tests</h2>
+  <ul>
+${guide.whatItTests.map((t) => `    <li>${esc(t)}</li>`).join("\n")}
+  </ul>
+  <h2>How to think about it</h2>
+${guide.mentalModel.map((m) => `  <p>${esc(m)}</p>`).join("\n")}
+  <h2>Tools</h2>
+  <ul>
+${guide.tools.map((t) => `    <li><strong>${esc(t.name)}</strong>: ${esc(t.use)}</li>`).join("\n")}
+  </ul>
+  <h2>Worked example</h2>
+  <p>${esc(guide.walkthrough.scenario)}</p>
+  <ol>
+${guide.walkthrough.steps.map((st) => `    <li><strong>${esc(st.label)}</strong>: ${esc(st.detail)}</li>`).join("\n")}
+  </ol>
+  <p>Answer: ${esc(guide.walkthrough.answer)}</p>
+  <h2>Common mistakes</h2>
+  <ul>
+${guide.mistakes.map((m) => `    <li>${esc(m)}</li>`).join("\n")}
+  </ul>
+  <h2>References</h2>
+  <ul>
+${guide.resources.map((r) => `    <li><a href="${r.url}">${esc(r.label)}</a>: ${esc(r.detail)}</li>`).join("\n")}
+  </ul>
+  <p><a href="${SITE_URL}/ncl">All National Cyber League category guides</a></p>
+</main>`
+      : undefined;
     await writePage(`ncl/${slug}`, base, {
       title: pageTitle(`${name} | NCL Guide`),
       description,
       canonical: url,
+      rootContent: guideContent,
       schema: `<script type="application/ld+json">
 ${JSON.stringify({
   "@context": "https://schema.org",
@@ -1052,6 +1213,15 @@ ${matched
   // post, so anything published since was invisible to crawlers.
   await writeSitemap(posts);
   await writeFeed(posts);
+
+  // Home page last: everything above uses `base` as its template, so giving
+  // it a body any earlier would put the home page's content on all of them.
+  await writeFile(
+    path.join(DIST, "index.html"),
+    injectRootContent(base, homeContent),
+    "utf-8",
+  );
+  console.log("index.html: home page body written");
 
   // Served with a real 404 by Cloudflare Pages for anything that matches
   // neither a prerendered file nor a rewrite in _redirects.
