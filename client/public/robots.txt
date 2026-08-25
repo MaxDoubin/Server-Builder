@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 
 Sitemap: https://maxdoubin.com/sitemap.xml
+
+# A plain-text map of what this site holds, for anything reading it to
+# answer a question rather than to render it: https://maxdoubin.com/llms.txt

@@ -17496,34 +17496,135 @@ Those habits translate directly to real-world troubleshooting. When a network go
     slug: "mac-pro-rack-mount-homelab",
     title: "Running a Rack-Mount Mac Pro in a Homelab",
     date: "2026-02-18",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "servers", "homelab"],
     excerpt:
       "Why I added a rack-mount Mac Pro to my server infrastructure and what it actually brings to the table alongside Dell PowerEdge systems.",
     coverImage: "/images/blog/mac-pro-rack-mount-homelab.jpg",
     content: `
-## Why a Mac Pro in a Server Rack
+## The problem
+
+You need macOS in a rack. Maybe it is a build machine, maybe it is a transcode node, maybe you just want to know whether Apple hardware can live alongside real servers. The rack-mount Mac Pro is the only first-party answer, and almost everything written about it is either a review of the tower or a price complaint. This is what it is actually like to run one next to PowerEdges.
+
+## Why a Mac Pro in a server rack
 
 Most people do not think of Apple hardware when they think of server rooms. But the 2019 Mac Pro in rack-mount configuration is a legitimate piece of enterprise hardware. It is designed to be mounted in a standard 19-inch rack, it supports ECC memory, and it was built for sustained heavy workloads.
 
 I picked one up because I wanted to see how it holds up in a real lab environment next to my Dell PowerEdge systems. The short answer: it is excellent at certain things and completely wrong for others.
 
-## The Hardware
+## The hardware
 
 The rack-mount Mac Pro I run has a 28-core Intel Xeon W, 384 GB of ECC DDR4, and dual AMD Radeon Pro Vega II GPUs. Apple designed the internal layout around airflow, with three massive fans pulling air across the entire system. It is quiet for what it is, and thermals stay very manageable even under sustained loads.
 
 The build quality is on another level compared to typical server hardware. Everything about the chassis feels overengineered. The handles, the mounting rails, the internal PCIe card cages. It is clearly built for a different audience than a PowerEdge, but the precision is impressive.
 
-## Where It Fits
+Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the EIA-310 standard, so at 8.58 inches tall this machine occupies five of them. That is two and a half times the height of a 2U server, which is the first thing to plan for. In a 42U cabinet you fit eight of these where you would fit twenty R740s. Airflow is front-to-back, which is the right direction and lines up correctly with hot and cold aisle layout, so at least it plays well with the rest of the rack thermally.
+
+## Where it fits
 
 The Mac Pro handles media-heavy workloads that my Dell servers would struggle with. Video transcoding, Xcode builds, and GPU-accelerated compute tasks all benefit from the hardware. If you are running Final Cut Pro pipelines or Compressor jobs in a production environment, the rack-mount Mac Pro makes a lot of sense.
 
+The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's licence permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
+
 For general server workloads like virtualization, storage, and networking, Dell wins every time. The PowerEdge line is designed for exactly that, and the price-to-performance ratio is not even close. But the Mac Pro fills a gap that Dell cannot, and having both in the same rack gives me flexibility.
 
-## The Reality
+## Making it survive without a keyboard
 
-Running macOS Server alongside Linux VMs is not as smooth as you might hope. Apple has been slowly pulling back from the server space for years. There is no iDRAC equivalent, no IPMI, and remote management is limited compared to what Dell offers. You are also locked into Apple's hardware ecosystem for upgrades.
+Everything below is what turns a workstation into something you can leave alone. Run it once, on the console, before you rack the machine.
 
-But for specific use cases, the rack-mount Mac Pro is hard to beat. It is the best way to run macOS workloads in a rack, and if you need that, nothing else really competes.
+\`\`\`bash
+sudo systemsetup -setremotelogin on
+sudo systemsetup -setwakeonnetworkaccess on
+sudo systemsetup -setusingnetworktime on
+sudo pmset -a sleep 0 disksleep 0 displaysleep 0 womp 1 autorestart 1
+\`\`\`
+
+\`autorestart 1\` is the important one. It tells the machine to power itself back on after a power failure, which is the default behaviour you get for free on every server and do not get here. \`womp 1\` enables wake on LAN. \`sleep 0\` stops macOS from suspending a machine that looks idle because nobody is typing on it.
+
+Verify:
+
+\`\`\`bash
+pmset -g | grep -E 'sleep|womp|autorestart'
+\`\`\`
+
+Correct output has zeros for the sleep values and ones for the other two:
+
+\`\`\`
+ sleep                0
+ disksleep            0
+ displaysleep         0
+ womp                 1
+ autorestart          1
+\`\`\`
+
+Then turn on remote screen access, which is a single documented command rather than a trip through System Settings:
+
+\`\`\`bash
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \\
+  -activate -configure -access -on -restart -agent -privs -all
+\`\`\`
+
+Confirm both services are actually listening:
+
+\`\`\`bash
+sudo lsof -nP -iTCP -sTCP:LISTEN | grep -E ':(22|5900)'
+\`\`\`
+
+You should see \`sshd\` bound to port 22 and a screen sharing process bound to port 5900. Those two ports are your entire management surface. There is no third one.
+
+## Watching thermals and fans
+
+There is no BMC to ask, but the SMC exposes the same sensors macOS uses:
+
+\`\`\`bash
+sudo powermetrics --samplers smc -i 1000 -n 1
+\`\`\`
+
+Correct output looks like this:
+
+\`\`\`
+**** SMC sensors ****
+
+CPU Thermal level: 0
+IO Thermal level: 0
+Fan: 793 rpm
+CPU die temperature: 45.12 C
+\`\`\`
+
+A thermal level of 0 means no throttling. If you see a non-zero thermal level under sustained load, check \`pmset -g therm\`, which reports the scheduler and speed limits macOS is applying. On my machine the fans sit under 1000 rpm at idle and the die stays comfortable under load, which is the whole payoff of the oversized cooling design. Log that command from \`launchd\` on an interval and you have crude but real trend data.
+
+## The reality
+
+Running macOS Server alongside Linux VMs is not as smooth as you might hope. Apple has been slowly pulling back from the server space for years. The Server app had most of its services stripped out in 2018 and Apple stopped selling it entirely in 2022, so "macOS Server" is now just macOS with file sharing and a caching service.
+
+There is no iDRAC equivalent, no IPMI, and remote management is limited compared to what Dell offers. This is the difference that shapes daily operations. On a PowerEdge, iDRAC has its own network port, its own processor, and its own power domain, so I can watch POST, mount an ISO over the network, read hardware logs, and force a power cycle while the operating system is completely dead. On the Mac Pro, every one of those capabilities requires macOS to be running and on the network. When it is not, someone walks to the rack.
+
+The workaround I use is to rebuild the pieces out of separate boxes. A switched PDU gives me remote power cycling per outlet, which covers the single most common recovery action. A KVM-over-IP appliance on the Mac's HDMI output and a USB port gives me console access at boot. Neither is as good as a BMC and together they cost rack space and money, but they turn "drive to the rack" into "open a browser".
+
+The other thing to internalise is that the power supply is single and not hot-swappable. Every server in the rack next to it has two supplies fed from two different circuits. The Mac Pro has one. If that supply dies, the machine is down until a part arrives.
+
+You are also locked into Apple's hardware ecosystem for upgrades. But for specific use cases, the rack-mount Mac Pro is hard to beat. It is the best way to run macOS workloads in a rack, and if you need that, nothing else really competes.
+
+## What breaks
+
+**FileVault on a headless machine.** This is the one that catches everybody. After an unplanned power loss, a FileVault-encrypted Mac boots to the unlock screen before the network stack comes up, so it is unreachable and \`autorestart\` has not helped you at all. For a planned reboot, \`sudo fdesetup authrestart\` stores the key for exactly one restart and gets you back. For a power cut, someone needs hands on it. Decide deliberately whether the rack is physically secure enough to run without FileVault.
+
+**Treating Screen Sharing as out-of-band.** It is in-band. It dies with the OS, with the network stack, and with a kernel panic. Do not build a recovery plan on it.
+
+**Forgetting \`autorestart\`.** Default behaviour after a power cut is to stay off. The UPS does its job, the power comes back, the PowerEdges boot, and the Mac sits there dark. One \`pmset\` flag, easy to miss, very annoying to discover remotely.
+
+**Unattended OS updates.** There is no \`unattended-upgrades\` equivalent that reliably survives a major macOS release. Updates want a reboot, sometimes want a click, and can leave a headless machine sitting at a setup or migration prompt. Schedule macOS patching as attended work.
+
+**Power planning on a 120 V circuit.** The supply is rated at 1.4 kW. A 15 A, 120 V branch circuit carries 1440 VA continuously under the 80 percent rule, so one loaded Mac Pro can effectively own a circuit. Check what else is on that breaker before you rack it.
+
+## References
+
+- https://en.wikipedia.org/wiki/19-inch_rack
+- https://en.wikipedia.org/wiki/Rack_unit
+- https://en.wikipedia.org/wiki/Mac_Pro
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://en.wikipedia.org/wiki/Virtual_Network_Computing
+- https://developer.apple.com/documentation/virtualization
 `,
   },
   {
@@ -18057,6 +18158,7 @@ For a homelab, ECC is a strong recommendation but not an absolute requirement. I
     slug: "mac-pro-vs-poweredge-comparison",
     title: "Mac Pro vs Dell PowerEdge: An Honest Comparison",
     date: "2026-01-20",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "dell", "servers"],
     excerpt:
       "Two very different approaches to rack-mount hardware. Here is how the Mac Pro and PowerEdge compare for real workloads.",
@@ -18068,15 +18170,33 @@ For a homelab, ECC is a strong recommendation but not an absolute requirement. I
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg",
     },
     content: `
-## Different Tools for Different Jobs
+## The problem
+
+You are trying to decide between a rack-mount Mac Pro and a used PowerEdge, and every comparison you find is either an Apple review or a server spec sheet. Neither tells you what it is like to operate both. I have one of each in the same rack, on the same UPS, on the same management VLAN. Here is where each one actually wins.
+
+## Different tools for different jobs
 
 Comparing a Mac Pro to a Dell PowerEdge is a bit like comparing a sports car to a truck. They are both vehicles, but they are designed for fundamentally different purposes. That said, they both live in my rack, so I have direct experience with each.
 
-## Build Quality
+The short version, before the details:
+
+| | Mac Pro (2019, rack) | PowerEdge R740 |
+| --- | --- | --- |
+| Height | 5U | 2U |
+| Sockets | 1 | 2 |
+| DIMM slots | 12, up to 1.5 TB | 24, up to 3 TB |
+| Drive bays | none | up to 16 |
+| Power supplies | one, not hot-swap | two, hot-swap, redundant |
+| Out-of-band management | none | iDRAC9 |
+| Runs macOS | yes | no, and not legally |
+
+## Build quality
 
 The Mac Pro wins here, and it is not close. The aluminum chassis, the precision machining, the slide-in handles, everything about the physical hardware feels premium. Dell servers are built to be functional and cost-effective. They get the job done, but nobody is going to admire the craftsmanship of a PowerEdge chassis.
 
 That said, the Mac Pro costs five to ten times more than an equivalent PowerEdge, so the build quality better be exceptional.
+
+There is a category of quality the Dell wins outright, though, and it is the one that matters at 2am: serviceability under load. Drives, power supplies, and fans on an R740 are all hot-swap and tool-less. A failed disk is a walk to the rack and a click. A failed power supply does not even take the machine down. Nothing on the Mac Pro is hot-swap. Every repair is a shutdown.
 
 ## Expandability
 
@@ -18084,23 +18204,90 @@ The PowerEdge R740 supports up to 3 TB of RAM across 24 DIMM slots. The Mac Pro 
 
 Storage is similar. The R740 supports up to 16 drives in a 2U chassis. The Mac Pro has limited internal storage, and expanding it means using PCIe NVMe cards or external storage.
 
+The lopsided part is what you get per rack unit. The Mac Pro is 5U and gives you one socket and 12 DIMM slots. The R740 is 2U and gives you two sockets and 24. Per unit of rack height, that is roughly a factor of five in memory capacity. In a 42U cabinet the difference between eight machines and twenty is not a rounding error, it is a different lab.
+
 ## Management
 
 iDRAC versus nothing. Dell gives you full out-of-band management with remote console, hardware monitoring, firmware updates, and alerting. The Mac Pro has none of this. You manage it through macOS, and if macOS crashes, you need physical access.
 
 This is probably the biggest practical difference for server use. iDRAC means I can manage my Dell servers from anywhere. The Mac Pro requires me to be in front of it (or use VNC when macOS is running, which is not the same thing).
 
+Worth spelling out what "out-of-band" buys you, because the phrase gets thrown around loosely. iDRAC is a small computer with its own processor, its own network port, and its own power rail, running whether or not the host is powered on. It exposes IPMI over UDP port 623 and the DMTF Redfish REST API over HTTPS on 443. Through those you get remote console from POST onward, virtual media so you can boot an ISO sitting on your laptop, sensor readings, hardware event logs, and firmware updates.
+
+Concretely, this is me checking a server's health without any cooperation from its operating system:
+
+\`\`\`bash
+curl -sk -u root:"$IDRAC_PW" \\
+  https://10.0.10.20/redfish/v1/Systems/System.Embedded.1 \\
+  | python3 -m json.tool | grep -E '"(Model|PowerState|Health|TotalSystemMemoryGiB)"'
+\`\`\`
+
+Correct output:
+
+\`\`\`
+    "Model": "PowerEdge R740",
+    "PowerState": "On",
+            "Health": "OK",
+            "TotalSystemMemoryGiB": 512.0,
+        "Health": "OK",
+\`\`\`
+
+And this is me power cycling it from a different building:
+
+\`\`\`bash
+curl -sk -u root:"$IDRAC_PW" -H 'Content-Type: application/json' \\
+  -X POST -d '{"ResetType":"ForceRestart"}' \\
+  https://10.0.10.20/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset
+\`\`\`
+
+A successful reset returns HTTP 204 with no body. The Mac Pro's equivalent of both of those commands is \`ssh\`, which requires the machine to be up and networked, which is precisely the condition under which you did not need remote management in the first place.
+
+Firmware is the quiet second half of this. Dell publishes update packages that the Lifecycle Controller can apply from iDRAC with the host off. Apple ships Mac firmware inside macOS updates only. You cannot patch a Mac Pro's firmware without booting macOS on it, which means you cannot patch a Mac that will not boot.
+
 ## Performance
 
-For CPU-heavy server workloads, the PowerEdge with dual Xeon Platinum processors outperforms the Mac Pro's single Xeon W. For GPU-accelerated workloads, the Mac Pro's Radeon Pro Vega II cards are better suited for Apple's Metal framework and media processing pipelines.
+For CPU-heavy server workloads, the PowerEdge with dual Xeon Scalable processors outperforms the Mac Pro's single Xeon W. Two sockets means twice the cores, twice the memory channels, and twice the PCIe lanes, and the Mac Pro has no path to a second socket at all.
+
+For GPU-accelerated workloads, the Mac Pro's Radeon Pro Vega II cards are better suited for Apple's Metal framework and media processing pipelines. And the Mac Pro's MPX bays feed a high-power GPU through a single blind-mate connector, where the Dell needs cabled auxiliary power and a GPU-capable riser and airflow kit.
+
+Single-threaded performance is closer than the core counts suggest. Xeon W parts clock higher than the equivalent-core Xeon Scalable parts, so a workload that does not parallelise can land in the Mac's favour. That is a narrow window, but it is a real one.
+
+## Noise and power
+
+Nobody puts this in a spec table and it decides where the rack goes. A 2U server can only fit 40 mm and 60 mm fans, so it has to spin them very fast to move air, and noise rises far faster than linearly with fan tip speed. An R740 under load is not something you sit next to. The Mac Pro is a 5U box with large, slow impellers moving the same volume of air much more quietly. That is the real reason the Mac Pro takes up two and a half times the height: the extra space is being spent on acoustics and thermal margin.
+
+On power, the R740 has two hot-swap supplies you can feed from separate circuits. The Mac Pro has one 1.4 kW supply. Redundant power is not a feature Apple offers at any price.
 
 ## Cost
 
 A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, the Mac Pro is the only option.
 
-## My Recommendation
+That "only option" is a licence question, not a technical one. Apple's software licence permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
+
+## What breaks
+
+**Buying a used R740 without iDRAC Enterprise.** The Express licence that ships on many secondhand servers gives you the web UI and sensors but locks virtual console and virtual media behind the Enterprise tier. People buy the server, discover they cannot get a remote screen, and assume iDRAC is broken. Check the licence level before you buy.
+
+**Leaving iDRAC on the flat network with its factory password.** Older units shipped \`root\` / \`calvin\`; newer ones ship a unique password printed on the pull-out service tag. Either way, a BMC is a full out-of-band computer with power control over your server. It belongs on an isolated management VLAN with its own firewall policy, never on the same subnet as user devices.
+
+**Third-party PCIe cards and Dell fan tables.** Install a card the BIOS has no thermal profile for and the R740 can decide to run its fans at a fixed high speed permanently as a safety response. The machine works fine and sounds like a jet. This surprises a lot of people adding HBAs or NICs to a home unit.
+
+**Calling two power supplies redundant when both are on one circuit.** Dual PSUs protect against a supply failing, not against a breaker tripping. If both cords go to the same PDU on the same circuit, you have bought half the redundancy you think you have.
+
+**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's licence terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
+
+## My recommendation
 
 Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific macOS requirement that justifies the cost. In my lab, the PowerEdges do 90% of the work. The Mac Pro handles the 10% that requires macOS or Apple's GPU ecosystem.
+
+## References
+
+- https://en.wikipedia.org/wiki/Dell_PowerEdge
+- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://en.wikipedia.org/wiki/Mac_Pro
+- https://en.wikipedia.org/wiki/Rack_unit
+- https://en.wikipedia.org/wiki/Registered_memory
 `,
   },
   {
@@ -18379,6 +18566,7 @@ The IPS features have also caught real threats. Even in a homelab, there is scan
     slug: "server-cpu-selection-guide",
     title: "Choosing the Right Server CPU: Xeon, EPYC, and Apple",
     date: "2026-01-10",
+    updated: "2026-08-25",
     tags: ["hardware", "servers", "apple"],
     excerpt:
       "A guide to picking the right processor for your server workload, covering Intel Xeon, AMD EPYC, and Apple's approach.",
@@ -18390,9 +18578,27 @@ The IPS features have also caught real threats. Even in a homelab, there is scan
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Xeon_Beckton_with_and_without_heat_spreader.jpg",
     },
     content: `
+## The problem
+
+You are staring at a used server listing, or a configurator, and trying to work out whether 24 cores at 3.0 GHz beats 32 cores at 2.4 GHz for what you actually run. Every spec sheet gives you core counts and cache sizes and none of them tell you which number matters for your workload. Here is how I decide, and how to check the machine in front of you rather than guessing.
+
+## Three questions before you look at any part number
+
+**How does your workload parallelise?** If it splits cleanly across many independent tasks, cores win. If it is one long dependency chain, clock speed and per-core cache win, and buying 64 cores just gets you 63 idle ones.
+
+**How much memory bandwidth does it need?** This is the one people skip. Cores share memory channels, so a high-core-count part with the same channel count feeds each core less bandwidth. A streaming workload can saturate the memory controller long before it saturates the cores.
+
+**How many PCIe lanes do you need?** NICs, HBAs, NVMe, and GPUs all consume lanes, and lane counts differ enormously between platforms. Add up what you plan to install before you pick a socket, not after.
+
+Everything below is really just those three questions applied to specific families.
+
 ## Intel Xeon
 
 Xeon has been the default server CPU for decades. The current Xeon Scalable lineup (Sapphire Rapids and beyond) offers high core counts, massive memory support, and a mature ecosystem. Every server vendor, every hypervisor, and every enterprise application is tested and certified on Xeon.
+
+The generational shape matters when you are shopping used. First and second generation Scalable (Skylake-SP in 2017, Cascade Lake in 2019) gave you six memory channels and 48 PCIe 3.0 lanes per socket, up to 28 cores. Ice Lake-SP moved to eight channels and 64 PCIe 4.0 lanes. Sapphire Rapids moved again to eight channels of DDR5 and 80 PCIe 5.0 lanes, up to 60 cores, and added the AMX matrix extensions for AI work. Granite Rapids widened memory to twelve channels.
+
+That progression is the whole story: Intel has been steadily fixing the two things AMD beat it on, channels and lanes.
 
 For a homelab, used Xeon processors from the previous generation (Cascade Lake, Skylake-SP) offer incredible value. A 24-core Xeon Gold that cost thousands new can be found for a fraction of that on the used market.
 
@@ -18400,31 +18606,113 @@ The Xeon ecosystem also means broad compatibility. BIOS updates, driver support,
 
 ## AMD EPYC
 
-EPYC has disrupted the server market significantly. The current generation offers more cores per socket, more PCIe lanes, and better performance per watt than Xeon in many workloads. AMD's chiplet architecture lets them scale core counts without the yields problems that monolithic designs face.
+EPYC has disrupted the server market significantly. The current generation offers more cores per socket, more PCIe lanes, and better performance per watt than Xeon in many workloads. AMD's chiplet architecture lets them scale core counts without the yield problems that monolithic designs face.
+
+The lane count is the standout. A single-socket EPYC has provided 128 PCIe lanes since the Rome generation, which is more than two Cascade Lake sockets combined. That means a one-socket EPYC box can carry more NVMe and more NICs than a two-socket Intel box of the same era, with no NUMA hop at all. Genoa moved to twelve channels of DDR5 and PCIe 5.0 with up to 96 Zen 4 cores, and the dense Bergamo and Turin parts push core counts far higher still. Genoa-X adds stacked cache for workloads that live and die on L3 hit rate.
+
+The chiplet design has a consequence worth knowing about. The cores live on multiple compute dies talking to a central I/O die, so memory latency is not perfectly uniform even within one socket. AMD exposes this through an NPS (nodes per socket) BIOS setting that can present one socket as one, two, or four NUMA domains. For a hypervisor host, NPS1 keeps things simple. For a latency-sensitive database pinned to specific cores, more domains can help. It is a real tuning knob, and it is invisible if you do not know to look.
 
 The downside is that EPYC is newer in the server space, and some enterprise software vendors are still catching up with certification and optimization. That gap is closing fast, but it is worth checking if your specific workloads are validated on EPYC.
 
-For homelabs, EPYC is harder to find used and the platforms (motherboards, etc.) are less common on the secondary market. But if you are buying new, EPYC offers better value than Xeon at most price points.
+For homelabs, EPYC is harder to find used and the platforms (motherboards, and so on) are less common on the secondary market. But if you are buying new, EPYC offers better value than Xeon at most price points.
 
 ## Apple Xeon W
 
 The Mac Pro uses Intel's Xeon W processors, which are essentially workstation-class Xeons. They offer high single-threaded performance and large cache sizes, making them good for workloads that do not scale perfectly across many cores.
 
-The limitation is that the Mac Pro only supports a single socket. For workloads that benefit from dual-socket configurations (massive memory capacity, high core counts), Dell and HP platforms with dual Xeon or EPYC chips are the better choice.
+The W-3200 series in the 2019 Mac Pro gives you six memory channels of DDR4-2933 and 64 PCIe 3.0 lanes, which is more lanes than a contemporary Xeon Gold socket, and explains how Apple fits eight PCIe slots into a single-socket machine. The limitation is that the Mac Pro only supports a single socket. For workloads that benefit from dual-socket configurations (massive memory capacity, high core counts), Dell and HP platforms with dual Xeon or EPYC chips are the better choice.
 
-## What I Run
+Apple Silicon changes the shape of this question entirely rather than answering it. Unified memory delivers very high bandwidth but is soldered and capped, there are no DIMM slots, and there is no documented ECC reporting. It is a workstation architecture, not a server one.
 
-My main workloads are virtualization and storage, which benefit from high core counts and memory capacity. I run dual Xeon Gold 6248R processors in my primary R740, giving me 48 cores and 96 threads total. For my workloads, this is more than enough.
+## Reading the machine you actually have
+
+Before buying anything, know what you are running. On Linux:
+
+\`\`\`bash
+lscpu | grep -E '^(Model name|Socket|Core|Thread|CPU\\(s\\)|NUMA|L3)'
+\`\`\`
+
+Correct output for a dual Xeon Gold 6248R host:
+
+\`\`\`
+CPU(s):                  96
+Thread(s) per core:      2
+Core(s) per socket:      24
+Socket(s):               2
+Model name:              Intel(R) Xeon(R) Gold 6248R CPU @ 3.00GHz
+NUMA node(s):            2
+NUMA node0 CPU(s):       0-23,48-71
+NUMA node1 CPU(s):       24-47,72-95
+L3 cache:                71.5 MiB
+\`\`\`
+
+Read the NUMA lines carefully. CPUs 0 to 23 and 48 to 71 are the same 24 physical cores, counted once as cores and once as hyperthreads. Pinning a workload to "0 to 47" therefore straddles both sockets, which is almost never what someone means to do.
+
+\`\`\`bash
+numactl --hardware
+\`\`\`
+
+\`\`\`
+available: 2 nodes (0-1)
+node 0 size: 262144 MB
+node 0 free: 231045 MB
+node 1 size: 262144 MB
+node 1 free: 240118 MB
+node distances:
+node   0   1
+  0:  10  21
+  1:  21  10
+\`\`\`
+
+The distance matrix is the point. Local memory is 10, remote is 21, and that ratio is roughly the latency penalty a thread pays for reaching across the socket. A VM sized larger than one node's 256 GB is guaranteed to pay it.
+
+Two more checks that change how a used server actually performs:
+
+\`\`\`bash
+grep -o 'avx512[a-z0-9_]*' /proc/cpuinfo | sort -u
+grep . /sys/devices/system/cpu/vulnerabilities/*
+\`\`\`
+
+The first tells you which vector extensions you have. The second lists every speculative execution mitigation the kernel has enabled, and on a Skylake or Cascade Lake part that list is long. Those mitigations are not free, and they are the reason a used 2019 server benchmarks slower today than it did in its launch reviews.
+
+## What I run
+
+My main workloads are virtualization and storage, which benefit from high core counts and memory capacity. I run dual Xeon Gold 6248R processors in my primary R740, giving me 48 cores and 96 threads total. Each is a 24-core part with a 3.0 GHz base clock and a 205 W TDP. For my workloads, this is more than enough.
 
 If I were building from scratch today, I would seriously consider EPYC for the core count and memory bandwidth advantages. But the used Xeon market is hard to beat on price, and the Dell PowerEdge ecosystem makes it easy to get started.
 
-## The Decision Framework
+## The decision framework
 
 Pick your CPU based on your actual workload:
-- **Virtualization with many VMs:** High core counts matter. EPYC or dual Xeon.
-- **Database workloads:** Single-threaded performance matters. Xeon with high boost clocks.
-- **Media processing on macOS:** Xeon W in a Mac Pro (or wait for Apple Silicon Mac Pro).
+
+- **Virtualization with many VMs:** High core counts matter. EPYC or dual Xeon. Size individual VMs to fit inside one NUMA node.
+- **Database workloads:** Single-threaded performance matters. Xeon with high boost clocks, and enough L3 per core to hold the working set.
+- **Storage servers:** Memory channels and PCIe lanes matter more than cores. ZFS wants RAM bandwidth and NVMe wants lanes. A single-socket EPYC is often the right answer here.
+- **Media processing on macOS:** Xeon W in a Mac Pro, or Apple Silicon if the software supports it.
 - **Budget homelab:** Used Xeon Gold on a Dell platform. Best value per dollar.
+
+## What breaks
+
+**Licensing costs more than the CPU.** Windows Server is licensed per core with a minimum of 8 cores per processor and 16 per server, and VMware moved vSphere to per-core licensing with a per-CPU minimum. Doubling your core count can double a recurring bill that dwarfs the hardware. Work out the licence cost before you pick the part.
+
+**Unbalanced memory population.** Six channels per socket on Cascade Lake means DIMMs go in sixes. Install eight per socket because it seemed like a round number and two channels carry double load while others sit idle. You lose bandwidth silently, and nothing in the BIOS complains.
+
+**Ignoring NUMA when sizing VMs.** A VM with more vCPUs than one socket has cores, or more RAM than one node has, gets scheduled across both and pays the remote memory penalty on a large fraction of its accesses. Size guests to fit a node, or configure vNUMA so the guest OS at least knows the topology.
+
+**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behaviour, not a fault.
+
+**Assuming TDP is power draw.** TDP is a thermal design figure for sizing a cooler, not a wattmeter reading. Real draw depends on the power limits configured in firmware and on the workload. Size your UPS and your circuit from measured wall power, not from adding up TDP numbers.
+
+**Fitting a high-TDP CPU under the wrong heatsink.** Vendors ship different heatsink and fan SKUs for high-TDP parts. Drop a 205 W chip onto a chassis built for 125 W and it will either refuse to boot or thermally throttle constantly. Check the vendor's configuration rules before you buy the CPU.
+
+## References
+
+- https://man7.org/linux/man-pages/man1/lscpu.1.html
+- https://man7.org/linux/man-pages/man8/numactl.8.html
+- https://www.kernel.org/doc/html/latest/admin-guide/pm/cpufreq.html
+- https://en.wikipedia.org/wiki/Non-uniform_memory_access
+- https://en.wikipedia.org/wiki/Xeon
+- https://en.wikipedia.org/wiki/Epyc
 `,
   },
   {
@@ -19631,6 +19919,7 @@ This is how I configure iDRAC on new servers. Run the script, and every setting 
     slug: "mac-pro-storage-expansion",
     title: "Expanding Storage on the Mac Pro",
     date: "2025-11-25",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "storage", "hardware"],
     excerpt:
       "The options for adding storage to a Mac Pro, from internal NVMe to Thunderbolt expansion and network-attached storage.",
@@ -19642,35 +19931,127 @@ This is how I configure iDRAC on new servers. Run the script, and every setting 
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Mac_Pro_Two_2.8GHz_Quad-Core_Intel_Xeon_(59695).jpg",
     },
     content: `
-## The Challenge
+## The problem
+
+You need more storage on a Mac Pro and there are no drive bays to put it in. Apple's own SSD modules are expensive and capped, the PCIe route involves adapter cards with compatibility footnotes, and every forum thread ends in somebody arguing about Thunderbolt bandwidth. Here is how the options actually differ, what each one costs you in speed, and which of them will quietly fail to work in a slot you expected it to work in.
+
+## The challenge
 
 The Mac Pro does not have traditional drive bays like a PowerEdge. Internal storage options are limited to Apple's proprietary SSD modules and PCIe NVMe cards. If you need significant storage capacity, you need to look beyond the chassis.
 
-## Internal Options
+## Internal options
 
-The Mac Pro has two proprietary SSD slots that support Apple's T2-connected SSDs up to 8 TB. These are fast (around 2.8 GB/s read) but expensive. You can also install standard M.2 NVMe drives using PCIe adapter cards in the Mac Pro's PCIe slots. I use a Sonnet M.2 4x4 adapter that holds four NVMe drives in a single PCIe slot.
+The Mac Pro has two proprietary SSD slots that support Apple's T2-connected SSDs up to 8 TB total, sold as two 4 TB modules. These are fast (around 2.8 GB/s read) but expensive.
 
-This gives me fast local storage for active projects without paying Apple's premium for their proprietary modules.
+The thing to understand about those modules is that they are not really drives. They are raw NAND. The flash controller lives in the T2 chip on the logic board, not on the module, and the T2 encrypts everything written through it whether or not you have FileVault turned on. The practical consequence is that the modules are cryptographically bound to that specific machine. You cannot move them to another Mac Pro and read them, and you cannot replace one without putting the machine into DFU and running a restore from a second Mac with Apple Configurator. Plan for that before you order a capacity upgrade.
 
-## Thunderbolt Storage
+You can also install standard M.2 NVMe drives using PCIe adapter cards in the Mac Pro's PCIe slots. I use a Sonnet M.2 4x4 adapter that holds four NVMe drives in a single PCIe slot. This gives me fast local storage for active projects without paying Apple's premium for their proprietary modules.
+
+## Bifurcation, the detail nobody mentions
+
+A four-drive M.2 card in one x16 slot only works if something splits that slot's sixteen lanes into four independent x4 links. There are two ways to get that.
+
+A passive card has no chip on it at all. It wires the four M.2 sockets straight to lanes 0 to 3, 4 to 7, 8 to 11, and 12 to 15, and it depends entirely on the host being configured to present the slot as x4x4x4x4. If the host does not bifurcate, you get exactly one visible drive, the one wired to the first four lanes, and the other three are invisible with no error message anywhere.
+
+An active card carries a PCIe switch chip that presents itself as a single endpoint and fans out to the drives behind it. Those cards work in any slot but cost more, draw more power, and add a little latency.
+
+If you are buying a multi-drive M.2 card, find out which kind it is and which Mac Pro slots support bifurcation before you order. This single question accounts for most of the "only one of my four drives shows up" posts on the internet.
+
+Once the drives appear, macOS handles NVMe natively:
+
+\`\`\`bash
+diskutil list
+system_profiler SPNVMeDataType | grep -E 'Model|Capacity|TRIM'
+\`\`\`
+
+Correct output names each drive and, importantly, shows \`TRIM Support: Yes\`. If a third-party SSD reports no TRIM support, \`sudo trimforce enable\` turns it on globally after a confirmation prompt and a reboot. Without TRIM, a full SSD's write performance degrades over months in a way that looks like the drive is dying.
+
+## RAID on macOS, and what is missing from it
+
+Disk Utility and \`diskutil\` expose AppleRAID, which does striping (RAID 0), mirroring (RAID 1), and concatenation. That is the complete list. There is no parity RAID in macOS. No RAID 5, no RAID 6, nothing that survives a disk failure while still giving you most of the capacity. If you want parity on internal drives, you need third-party software or a hardware controller.
+
+Building a stripe across four NVMe drives for scratch space looks like this:
+
+\`\`\`bash
+diskutil appleRAID create stripe scratch JHFS+ disk4 disk5 disk6 disk7
+diskutil appleRAID list
+\`\`\`
+
+Correct output from the list command shows the set with a \`Status: Online\` line and each member listed as \`Online\`. A stripe has no redundancy at all, so this is only appropriate for data you can regenerate. That is genuinely the right call for a render cache and completely the wrong call for anything else.
+
+## Thunderbolt storage
 
 For larger capacity, Thunderbolt 3 external enclosures provide high-speed connectivity. A multi-bay Thunderbolt enclosure with RAID can deliver sustained read/write speeds of 1.5 GB/s or more, which is fast enough for most production workloads.
 
-I use a Thunderbolt RAID enclosure with four 18 TB drives in RAID 5 for media storage. It connects to the Mac Pro at full Thunderbolt 3 speed and appears as a local volume in macOS.
+I use a Thunderbolt RAID enclosure with four 18 TB drives in RAID 5 for media storage. The parity there is done by the enclosure's own controller, not by macOS, which is exactly why I am willing to run RAID 5 on it. It connects to the Mac Pro at full Thunderbolt 3 speed and appears as a local volume in macOS.
 
-## Network Storage
+Thunderbolt 3 carries 40 Gbps of total link bandwidth, but that is shared between the PCIe tunnel and DisplayPort, and there is protocol overhead on top. Sustained PCIe throughput in practice tops out somewhere around 2.5 to 2.8 GB/s per bus, which is well above what four spinning disks can produce and well below what four NVMe drives can. The other thing to know is that Thunderbolt ports come in pairs behind a shared controller. Two fast enclosures on the same controller compete for the same bandwidth. Spread them across different port pairs.
 
-For bulk storage that needs to be accessible from multiple machines, NFS and SMB shares from my Dell servers are the best option. The Mac Pro connects to my ZFS storage server over 10GbE, which provides close to 1 GB/s sustained throughput.
+You can measure the real number rather than trusting the marketing one:
 
-macOS works well with NFS shares if you configure the mount options correctly. I use automount with specific NFS options tuned for performance:
+\`\`\`bash
+dd if=/dev/zero of=/Volumes/media/ddtest bs=1m count=20000 conv=sync
+rm /Volumes/media/ddtest
+\`\`\`
+
+Correct output is a line like \`20971520000 bytes transferred in 13.204 secs (1588234 bytes/sec)\` scaled to whatever your array does. Treat \`dd\` as a rough sequential figure only. It writes zeros in one thread, so it tells you nothing about random I/O or about a filesystem that compresses. For anything you plan to make a decision on, install \`fio\` and run a mixed workload.
+
+## Network storage
+
+For bulk storage that needs to be accessible from multiple machines, NFS and SMB shares from my Dell servers are the best option. The Mac Pro connects to my ZFS storage server over 10GbE, which provides close to 1 GB/s sustained throughput. Two 10GBASE-T ports are built into the Mac Pro, so no card is needed.
+
+macOS works well with NFS shares if you configure the mount options correctly. Testing a mount by hand first is the fastest way to find out whether the server side is right:
+
+\`\`\`bash
+sudo mkdir -p /Volumes/media
+sudo mount -t nfs -o rw,resvport,nfc,hard,intr,tcp 10.0.20.10:/storage/media /Volumes/media
+mount | grep nfs
+\`\`\`
+
+Correct output echoes the mount with your options attached:
 
 \`\`\`
-nfs://10.0.20.10/storage/media -o rw,resvport,nfc,hard,intr
+10.0.20.10:/storage/media on /Volumes/media (nfs, nodev, nosuid, mounted by max)
 \`\`\`
 
-## The Hierarchy
+Those options are not decoration. \`resvport\` makes the client bind a source port below 1024, which most NFS servers require and which is the reason an otherwise correct mount fails with a permission error. \`nfc\` normalises filenames to composed Unicode form, because macOS historically stored decomposed names and a Linux server stores composed ones, which is how you end up with two directories that look identical. \`hard\` makes the client retry forever instead of returning errors to applications, which is what you want for data. \`soft\` will hand an application a partial read during a network blip and let it write the result out.
+
+For a permanent mount I use automount rather than a boot script, with the same options. In \`/etc/auto_nfs\`:
+
+\`\`\`
+/System/Volumes/Data/mnt/media -fstype=nfs,rw,resvport,nfc,hard,intr nfs://10.0.20.10/storage/media
+\`\`\`
+
+and a line in \`/etc/auto_master\` pointing at it, then \`sudo automount -vc\` to reload. The share mounts on first access and unmounts when idle.
+
+For SMB, the equivalent diagnostic is \`smbutil statshares -a\`, which prints the negotiated dialect and whether signing is on. Signing costs real throughput on a 10 Gb link.
+
+## The hierarchy
 
 My storage hierarchy mirrors what you would see in a professional post-production environment: fast internal NVMe for active projects, Thunderbolt RAID for near-line storage, and network storage for archive and bulk data. Each tier balances speed, capacity, and cost differently.
+
+The rule I hold to is that the tier with the integrity guarantees is the authoritative one. Internal NVMe is fast and disposable. The Thunderbolt array has parity but no checksums. The ZFS pool at the far end has both, plus snapshots and a scrub schedule, so that is where the copy that matters lives. Speed goes at the top of the pyramid and trust goes at the bottom.
+
+## What breaks
+
+**Swapping an internal SSD module.** The modules are paired to the T2 and encrypted by it. A swap requires a DFU restore driven from a second Mac running Apple Configurator, and the previous contents are gone. This is not a data recovery path, it is a reprovisioning path.
+
+**Trying to boot from a PCIe NVMe drive.** The T2 treats PCIe-attached storage as external boot media. Until you go into Startup Security Utility from Recovery and allow booting from external media, the drive is a perfectly good data volume that simply will not appear as a startup disk.
+
+**A passive M.2 card in a slot that does not bifurcate.** One drive appears, three do not, and nothing logs an error. Check the card type and the slot before you buy.
+
+**Mistaking a Disk Utility stripe for redundancy.** People build a four-disk set in Disk Utility, see a big single volume, and assume it is protected. AppleRAID striping has no parity and no mirror. One drive dies and the whole set is gone. There is no parity RAID in macOS at all.
+
+**Letting disks sleep under an external array.** \`disksleep\` spinning down a Thunderbolt enclosure mid-write, or the Mac sleeping with the array mounted, produces ejection warnings and occasionally a dirty filesystem. On a machine that hosts storage, set \`sudo pmset -a sleep 0 disksleep 0\` and leave it there.
+
+## References
+
+- https://en.wikipedia.org/wiki/Thunderbolt_(interface)
+- https://en.wikipedia.org/wiki/NVM_Express
+- https://en.wikipedia.org/wiki/Standard_RAID_levels
+- https://www.rfc-editor.org/rfc/rfc1813
+- https://www.rfc-editor.org/rfc/rfc7530
+- https://en.wikipedia.org/wiki/Apple_File_System
 `,
   },
   {
@@ -20510,6 +20891,7 @@ The default recovery interval is 300 seconds. Leave the cause disabled entirely 
     slug: "mac-pro-afterburner-card",
     title: "The Apple Afterburner Card: Hardware Video Acceleration",
     date: "2025-10-25",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "What Apple's Afterburner accelerator card does, how it works, and why hardware-accelerated ProRes decoding matters.",
@@ -21019,6 +21401,7 @@ The competition format rewards the same habit that works at work: read the quest
     slug: "apple-t2-security-chip",
     title: "Apple's T2 Security Chip in the Mac Pro",
     date: "2025-10-12",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "security", "hardware"],
     excerpt:
       "What the T2 chip does in the Mac Pro, how it affects server use, and the tradeoffs between security and flexibility.",
@@ -21030,21 +21413,78 @@ The competition format rewards the same habit that works at work: read the quest
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_T2_APL1027.jpg",
     },
     content: `
-## What the T2 Does
+## The problem you probably arrived with
+
+You have a T2 era Mac and you want to do something normal with it: boot another operating system, pull the SSD to recover data, rack it as a server, or just understand why it refuses to boot from the USB stick in your hand. The T2 is the reason. It is not a bug and not a setting buried in System Settings; it is a second computer inside the machine deciding what the main computer may run.
+
+## What the T2 does
 
 The T2 chip in the 2019 Mac Pro is a custom Apple silicon processor that handles several security and utility functions: Secure Boot, encrypted storage, audio processing, and the system management controller. It is essentially a separate computer inside your Mac that runs its own OS (bridgeOS) and manages hardware security.
+
+The jobs it absorbed from discrete parts:
+
+- The SSD controller. On a T2 Mac the NVMe storage sits behind the T2, not attached directly to the Intel platform.
+- The Secure Enclave, which holds keys and handles Touch ID on the machines that have it.
+- The system management controller, which is why an SMC reset on these machines is really a T2 operation.
+- The audio controller and, on machines with a built in camera, the image signal processor.
+- Secure Boot policy and the firmware password.
+
+That consolidation is the whole story: every constraint below follows from storage and boot policy living on a chip that runs its own signed OS and takes no instructions from yours.
 
 ## Secure Boot
 
 The T2 enforces Secure Boot, which means the Mac will only boot from a cryptographically signed operating system. By default, this means macOS. You can adjust the security level to "No Security" through the Startup Security Utility, which allows booting from external drives and non-Apple operating systems.
 
+The Startup Security Utility lives in macOS Recovery. Reboot, hold Command-R until the Apple logo appears, then pick Utilities and Startup Security Utility from the menu bar. It asks for an administrator password from an install on the internal disk first, which is the point: you cannot relax the policy without already having credentials on the machine.
+
+Two independent settings live there. The first is the secure boot level:
+
+- **Full Security.** The machine verifies the operating system it is about to boot against Apple's signature, and will check online if it has never seen that version before. This is the shipping default.
+- **Medium Security.** The machine verifies that the operating system was signed by Apple at some point, without requiring it to be a currently trusted version. This is what lets you boot an older macOS you have already installed.
+- **No Security.** No signature enforcement. Required for anything Apple did not sign, which includes every Linux distribution.
+
+The second setting controls external media, and it is separate from the first. Even at No Security you must explicitly allow booting from external media or the machine will still ignore your USB stick. People flip one and not the other and conclude the utility is broken.
+
 For server use, Secure Boot is a double-edged sword. It prevents rootkit-style attacks that modify the boot process, but it also makes it harder to run alternative operating systems or boot from custom recovery media.
 
-## Encrypted Storage
+## Encrypted storage
 
 The T2 encrypts all data on the internal SSD using hardware AES-256 encryption. The encryption keys are tied to the T2 chip itself, which means the SSD cannot be read if removed from the Mac Pro and placed in a different machine.
 
 This is great for security but terrible for data recovery. If the T2 chip fails, the data on the SSD is unrecoverable. This is why backups are non-negotiable on any T2-equipped Mac.
+
+There is a nuance here, and it is the most common misconception about these machines. Hardware encryption is always on, but with FileVault turned off the key needed to unwrap the volume is available to the machine automatically at boot. That protects you against someone stealing the storage modules. It does not protect you against someone stealing the whole computer, because the whole computer can decrypt itself. FileVault is what binds the unwrap step to a user passphrase. If the threat you care about is a stolen machine rather than a stolen chip, enable FileVault on top.
+
+The 2019 Mac Pro takes this a step further than the laptops. Its storage is on removable modules, but those modules are cryptographically paired to the T2 in that specific machine. Swapping them in is not a plug and play operation, it requires a restore over USB with Apple Configurator to re-pair the new modules. Treat the SSD as part of the logic board, not as a drive.
+
+## Checking the state from the command line
+
+Two commands cover most of it.
+
+\`\`\`bash
+system_profiler SPiBridgeDataType
+fdesetup status
+\`\`\`
+
+On a T2 machine, the first prints a short block naming the controller and its firmware, in this shape:
+
+\`\`\`
+Controller:
+
+      Model Name: Apple T2 Security Chip
+      Firmware Version: 22.16.10353.0.0,0
+      Boot UUID: 0F1C2D3E-4A5B-6C7D-8E9F-0A1B2C3D4E5F
+\`\`\`
+
+If that section is empty or the data type is not recognised, you are not on a T2 Mac. On Apple silicon these functions live in the main SoC and this profiler type does not apply.
+
+The second command tells you whether the volume key is bound to a passphrase:
+
+\`\`\`
+FileVault is On.
+\`\`\`
+
+If it says \`FileVault is Off\`, the disk is still encrypted at the hardware level, but see the section above for why that is a weaker statement than it sounds. You can also confirm at the container level with \`diskutil apfs list\`, which reports \`FileVault: Yes (Unlocked)\` against the data volume when it is enabled.
 
 ## Impact on Linux
 
@@ -21052,11 +21492,40 @@ Running Linux on a T2-equipped Mac is possible but requires additional effort. T
 
 For the Mac Pro specifically, the T2's role is less intrusive because the Mac Pro does not have a touch bar. But Secure Boot configuration and SSD encryption still need to be considered.
 
-## The Tradeoff
+The practical sequence, if you want to try it, is: set secure boot to No Security, allow booting from external media, shrink the macOS volume from within macOS rather than from the Linux installer, then boot your installer. Expect the internal SSD to need a T2 aware NVMe driver, expect the built in Wi-Fi and Bluetooth to need firmware extracted from the macOS install, and expect audio to need work. A generic distribution image will frequently boot to an installer that cannot see the internal disk at all. That is the T2 in the storage path, not a broken installer.
+
+Keep a wired keyboard and a wired network adapter on hand. Debugging a machine where the input devices and the network both depend on the thing you are configuring is miserable.
+
+## What breaks
+
+**Pulling the SSD for recovery.** The modules are paired to the T2. Out of the machine they are ciphertext with no path to the key. The fix is upstream of the failure: a real backup, taken before the machine dies. Time Machine, a clone, or an offsite copy, but something that exists outside that chassis.
+
+**Setting a firmware password and losing it.** On a T2 Mac the firmware password is held by the T2. There is no jumper, no battery pull, and no PRAM reset that clears it. Recovery means an appointment with Apple and proof of purchase, so record it somewhere that survives the machine being dead.
+
+**Assuming No Security is enough to boot a USB stick.** The external media setting is a separate toggle in the same utility. Change both, or nothing will happen and you will suspect the stick.
+
+**Leaving No Security enabled after you finish experimenting.** That setting persists. A machine left at No Security with external boot allowed will boot whatever a person with physical access plugs into it. If the reason you enabled it has passed, put it back to Full Security.
+
+**A machine that panics with a message about being unable to communicate with the T2.** This is bridgeOS itself failing rather than macOS. An SMC reset is the first move. If that fails, the recovery path is a revive over USB using Apple Configurator on a second Mac, which reinstalls the T2 firmware and leaves your data alone. A restore, as opposed to a revive, erases the internal storage, so be certain which one you are running.
+
+**Treating always on encryption as a backup or as an anti-theft feature.** It is neither. It is protection against offline access to the storage medium. Backups and FileVault are separate controls and you need both.
+
+## The tradeoff
 
 The T2 chip represents Apple's philosophy of security through hardware control. It makes the Mac Pro more secure by default but less flexible. For a personal workstation, the security benefits probably outweigh the flexibility costs. For a server that might need to boot different operating systems or have its storage transplanted for recovery, the T2 adds constraints that traditional server hardware does not have.
 
-In my lab, I keep the Mac Pro on its default macOS configuration and use my Dell servers for anything that needs OS flexibility. The T2 is a non-issue when you use the Mac Pro for what it was designed to do.
+The industry direction is the same, just with different branding. A TPM plus UEFI Secure Boot gives you measured boot and a hardware key store from separate components, and the firmware resiliency guidance from NIST describes the same protect, detect, recover model Apple implemented in one chip. Apple got there earlier and more aggressively, and paid for it in flexibility.
+
+In my lab, I keep the Mac Pro on its default macOS configuration and use my Dell servers for anything that needs OS flexibility. The T2 is a non-issue when you use the Mac Pro for what it was designed to do. The failure mode is not the chip, it is buying a T2 machine expecting it to behave like a generic x86 box and discovering the difference during a recovery.
+
+## References
+
+- https://en.wikipedia.org/wiki/Apple_T2
+- https://en.wikipedia.org/wiki/Mac_Pro
+- https://en.wikipedia.org/wiki/FileVault
+- https://en.wikipedia.org/wiki/Trusted_Platform_Module
+- https://csrc.nist.gov/publications/detail/fips/197/final
+- https://csrc.nist.gov/publications/detail/sp/800-193/final
 `,
   },
   {
@@ -21212,6 +21681,7 @@ I occasionally create intentional incidents in my lab environment to practice re
     slug: "mac-pro-gpu-compute",
     title: "GPU Compute on the Mac Pro: Metal and Beyond",
     date: "2025-09-28",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "How the Mac Pro's dual Vega II GPUs handle compute workloads and where they fit in the GPU computing landscape.",
@@ -21223,33 +21693,163 @@ I occasionally create intentional incidents in my lab environment to practice re
       sourceUrl: "https://commons.wikimedia.org/wiki/File:AMD@14nm@GCN_5th_gen@Vega10@Radeon_RX_Vega_64@ES-Sample@_DSC01129.jpg",
     },
     content: `
-## The Hardware
+## The problem
+
+You have serious GPU hardware sitting in a Mac and you want to run compute on it, not just draw pixels. Then you find out that every tutorial assumes CUDA, half the frameworks you know silently expect NVIDIA, and the APIs you were told to use got deprecated. Here is what actually works on this hardware, how to drive it, and where the honest limits are.
+
+## The hardware
 
 My Mac Pro has dual AMD Radeon Pro Vega II GPUs, each with 32 GB of HBM2 (High Bandwidth Memory). Together, that is 64 GB of GPU memory with massive bandwidth. These are workstation GPUs designed for sustained compute loads, not gaming.
 
+The Vega II is built on AMD's Vega 20 die, which is GCN generation 5 with 64 compute units and 4096 shader cores, rated at roughly 14 teraflops of FP32. The memory is the interesting part. HBM2 stacks DRAM dies vertically next to the GPU on the same interposer and talks to them over an extremely wide bus, which is how you get about a terabyte per second of bandwidth from a part that draws less power than a GDDR-based card of the same class. For compute kernels that stream large arrays, bandwidth matters more than flops, and this is where these cards are strong.
+
 The Infinity Fabric Link between the two GPUs allows them to share memory and work together on compute tasks, which is unusual for consumer/workstation hardware. This effectively gives you a single 64 GB GPU address space for workloads that support it.
 
-## Metal for Compute
+That last clause is doing real work, so be clear about it. Infinity Fabric Link is a direct peer-to-peer path between the two dies that is several times faster than going out over PCIe 3.0 x16 and back. It means GPU A can read GPU B's memory without a round trip through host RAM. It does not mean the operating system presents one 64 GB device. Metal still enumerates two devices with 32 GB each, and your code has to explicitly split work across them. Nothing pools automatically.
+
+## Metal for compute
 
 Apple's Metal API is the primary way to access GPU compute on macOS. Metal Performance Shaders (MPS) provide optimized implementations of common operations like matrix multiplication, convolution, and image processing. These are the building blocks for machine learning inference and media processing.
 
+Metal is also now the only supported way. OpenCL and OpenGL were both deprecated in macOS 10.14 Mojave. They still run, but they are frozen, and anything new should target Metal.
+
 For video work, the GPUs accelerate ProRes encoding/decoding, color grading, and effects rendering in Final Cut Pro and DaVinci Resolve. The HBM2 memory bandwidth means large frames can be processed without bottlenecking on memory access.
 
-## Machine Learning
+## Writing an actual Metal kernel
 
-The Mac Pro can run machine learning inference workloads through Core ML and Metal. For training, it is limited compared to NVIDIA GPUs because the ML ecosystem (PyTorch, TensorFlow) is built primarily around CUDA. AMD's ROCm framework provides some compatibility, but it is not at parity with CUDA.
+Metal compute is less intimidating than it looks. The kernel is written in Metal Shading Language, which is C++14 with some restrictions and some GPU-specific attributes. Put this in \`add.metal\`:
 
-For inference, the Mac Pro performs well. Apple has invested heavily in optimizing Core ML for their hardware, and many pre-trained models can be converted to Core ML format and run efficiently on the Vega II GPUs.
+\`\`\`metal
+#include <metal_stdlib>
+using namespace metal;
 
-## The NVIDIA Gap
+kernel void vector_add(device const float* a [[buffer(0)]],
+                       device const float* b [[buffer(1)]],
+                       device float* out     [[buffer(2)]],
+                       uint i [[thread_position_in_grid]])
+{
+    out[i] = a[i] + b[i];
+}
+\`\`\`
+
+Compile it ahead of time with the Metal toolchain that ships with the Xcode command line tools:
+
+\`\`\`bash
+xcrun -sdk macosx metal -c add.metal -o add.air
+xcrun -sdk macosx metallib add.air -o add.metallib
+\`\`\`
+
+Then the host side in \`gpu.swift\`:
+
+\`\`\`swift
+import Metal
+
+let n = 1 << 20
+for d in MTLCopyAllDevices() {
+    print(d.name, d.recommendedMaxWorkingSetSize / (1 << 30), "GB")
+}
+
+let device = MTLCreateSystemDefaultDevice()!
+let lib = try device.makeLibrary(URL: URL(fileURLWithPath: "add.metallib"))
+let pipeline = try device.makeComputePipelineState(
+    function: lib.makeFunction(name: "vector_add")!)
+
+let bytes = n * MemoryLayout<Float>.stride
+let a = device.makeBuffer(length: bytes, options: .storageModeShared)!
+let b = device.makeBuffer(length: bytes, options: .storageModeShared)!
+let out = device.makeBuffer(length: bytes, options: .storageModeShared)!
+let ap = a.contents().bindMemory(to: Float.self, capacity: n)
+let bp = b.contents().bindMemory(to: Float.self, capacity: n)
+for i in 0..<n { ap[i] = Float(i); bp[i] = Float(2 * i) }
+
+let queue = device.makeCommandQueue()!
+let cmd = queue.makeCommandBuffer()!
+let enc = cmd.makeComputeCommandEncoder()!
+enc.setComputePipelineState(pipeline)
+enc.setBuffer(a, offset: 0, index: 0)
+enc.setBuffer(b, offset: 0, index: 1)
+enc.setBuffer(out, offset: 0, index: 2)
+let w = pipeline.maxTotalThreadsPerThreadgroup
+enc.dispatchThreads(MTLSize(width: n, height: 1, depth: 1),
+                    threadsPerThreadgroup: MTLSize(width: w, height: 1, depth: 1))
+enc.endEncoding()
+cmd.commit()
+cmd.waitUntilCompleted()
+
+let op = out.contents().bindMemory(to: Float.self, capacity: n)
+print("running on:", device.name)
+print(op[0], op[1], op[n - 1])
+\`\`\`
+
+Build and run:
+
+\`\`\`bash
+swiftc -O gpu.swift -o gpu && ./gpu
+\`\`\`
+
+Correct output on a dual Vega II machine:
+
+\`\`\`
+AMD Radeon Pro Vega II 32 GB
+AMD Radeon Pro Vega II 32 GB
+running on: AMD Radeon Pro Vega II
+0.0 3.0 3145725.0
+\`\`\`
+
+Two things to read out of that. First, both cards enumerate separately with 32 GB each, which is the point made above about pooling. Second, \`MTLCreateSystemDefaultDevice()\` picked one of them for you. If you want both, you iterate \`MTLCopyAllDevices()\` and build a pipeline per device.
+
+One tuning note specific to this hardware: GCN executes in wavefronts of 64 threads, so threadgroup sizes on Vega should be multiples of 64. Apple's own GPUs use SIMD groups of 32. Code tuned for one is not automatically tuned for the other, and \`pipeline.threadExecutionWidth\` will tell you which you are on.
+
+## Watching the GPU actually work
+
+Activity Monitor has a GPU History window under the Window menu, which is fine for a glance. For a number you can log, this reads the driver's own counters:
+
+\`\`\`bash
+sudo powermetrics --samplers gpu_power -i 1000 -n 3
+\`\`\`
+
+Correct output includes a \`GPU Power\` line in milliwatts and per-GPU frequency residency. If you fire the kernel above in a loop and that power figure does not move, your work is not reaching the GPU.
+
+## Machine learning
+
+The Mac Pro can run machine learning inference workloads through Core ML and Metal. For training, it is limited compared to NVIDIA GPUs because the ML ecosystem (PyTorch, TensorFlow) is built primarily around CUDA.
+
+Be precise about the AMD side, because this is where people waste a weekend. ROCm is AMD's compute stack and it is Linux only. It does not run on macOS at all, so on a Mac Pro it is not a fallback, it is a non-option. Similarly, PyTorch's MPS backend is shipped in the arm64 macOS builds for Apple silicon; on an Intel Mac Pro with AMD cards it is not the path. The route that does exist on this hardware is Apple's \`tensorflow-metal\` plugin, which registers the GPU as a TensorFlow PluggableDevice, and Core ML for inference.
+
+For inference, the Mac Pro performs well. Apple has invested heavily in optimizing Core ML for their hardware, and many pre-trained models can be converted to Core ML format with \`coremltools\` and run efficiently on the Vega II GPUs. Under the hood, Core ML is dispatching to Metal Performance Shaders and MPSGraph, which are the same primitives you would call yourself.
+
+## The NVIDIA gap
 
 The elephant in the room is that most GPU compute workloads are optimized for NVIDIA CUDA. The Mac Pro does not support NVIDIA GPUs (Apple and NVIDIA parted ways years ago). This means the Mac Pro is excluded from the dominant GPU computing ecosystem.
 
+The specifics: NVIDIA's last macOS web drivers targeted macOS 10.13 High Sierra, and CUDA 10.2 was the final release with any macOS support at all. There is no version of macOS on the 2019 Mac Pro that can load an NVIDIA driver. This is not a configuration problem with a workaround.
+
 For specific Apple-optimized workloads (media processing, Core ML inference, Metal compute), the Mac Pro is excellent. For general-purpose GPU computing (CUDA-based ML training, scientific computing), an NVIDIA-equipped server is the better choice.
 
-## My Use
+## What breaks
 
-I use the Mac Pro's GPUs primarily for video processing and as a learning platform for Metal compute programming. For anything that needs CUDA, I run it on my Dell servers with passthrough GPUs or on cloud instances. The right tool for the right job.
+**Assuming 64 GB is one pool.** Two devices, 32 GB each. A model that needs 40 GB does not fit, Infinity Fabric Link or not. You have to shard it yourself, and most framework code will not do that for you.
+
+**Building a pipeline for the wrong device.** Buffers, pipeline states, and command queues all belong to a specific \`MTLDevice\`. Pass a buffer from GPU A into a command encoder on GPU B and you get a crash, not a helpful message. If you enumerate devices, keep every object grouped by the device that created it.
+
+**Reaching for OpenCL.** It is deprecated, it is unmaintained, and performance on modern macOS is not representative of what the hardware can do. Old OpenCL benchmarks of this machine are measuring a dead code path, not the GPU.
+
+**Using \`storageModePrivate\` buffers and then trying to read them from the CPU.** Private buffers live only in GPU memory. \`contents()\` on one returns nothing useful. Use \`.storageModeShared\` while you are developing, then move hot buffers to private and blit results out with a \`MTLBlitCommandEncoder\` once it works.
+
+**Forgetting \`waitUntilCompleted()\`.** Command buffers are asynchronous. Read the output buffer before the GPU has finished and you get whatever was there before, usually zeros, with no error at all. This is the single most common reason a correct kernel appears to do nothing.
+
+## My use
+
+I use the Mac Pro's GPUs primarily for video processing and as a learning platform for Metal compute programming. Writing kernels by hand has taught me more about how GPUs actually schedule work than any amount of calling into a framework did. For anything that needs CUDA, I run it on my Dell servers with passthrough GPUs or on cloud instances. The right tool for the right job.
+
+## References
+
+- https://developer.apple.com/documentation/metal
+- https://developer.apple.com/documentation/metalperformanceshaders
+- https://en.wikipedia.org/wiki/Metal_(API)
+- https://en.wikipedia.org/wiki/High_Bandwidth_Memory
+- https://en.wikipedia.org/wiki/Graphics_Core_Next
+- https://en.wikipedia.org/wiki/CUDA
 `,
   },
   {
@@ -22148,15 +22748,26 @@ Two additions worth the time. Set the secondary root explicitly too, so a failur
     slug: "ssh-hardening-linux-servers",
     title: "SSH Hardening: Locking Down Remote Access",
     date: "2026-02-28",
+    updated: "2026-08-25",
     tags: ["linux", "security", "servers"],
     excerpt: "Default SSH configuration is functional but not secure. Here is how to harden it against the most common attack vectors.",
     coverImage: "/images/blog/ssh-hardening-linux-servers.jpg",
     content: `
-## Why Default SSH Is Not Enough
+## Why default SSH is not enough
+
+You stood up a server, opened port 22 so you could reach it, and the auth log is now thousands of lines of strangers trying to log in as root. Nothing has gone wrong yet. The question is what to change, in what order, without locking yourself out of a machine you may not have console access to.
 
 A server with SSH exposed on port 22 will see hundreds or thousands of brute-force login attempts per day. Most of them come from automated bots scanning the internet. Default SSH configuration allows password authentication, which means a weak password is all that separates your server from unauthorized access.
 
-## Key-Based Authentication
+## What is actually happening when you connect
+
+Worth understanding before you change settings, because the settings map onto the phases.
+
+SSH runs two protocols in sequence. The transport layer, specified in RFC 4253, negotiates algorithms, performs a key exchange to derive session keys, and proves the server's identity with its host key. Your client checks that host key against \`~/.ssh/known_hosts\` and refuses to continue if it changed. That check is the only thing standing between you and a machine in the middle, and it is why the scary warning about a changed host key deserves an actual investigation rather than deleting the line.
+
+Then the authentication layer, RFC 4252, runs inside that encrypted channel. The \`publickey\` method is not "send the key and hope". The client signs a blob that includes the session identifier from the key exchange, so the signature is bound to this connection and cannot be replayed against another server. That is the structural reason keys beat passwords: a password is a secret you hand to whatever is on the other end, and a signature is not reusable by whoever receives it.
+
+## Key-based authentication
 
 The most important change is disabling password authentication and requiring key pairs. Generate a key pair on your workstation and copy the public key to the server:
 
@@ -22173,7 +22784,9 @@ PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
 \`\`\`
 
-## Other Critical Settings
+Ed25519 is specified for SSH in RFC 8709 and is the sensible default on anything modern. Test that the key works before you disable passwords. That order is not optional, and reversing it is the single most common way people lock themselves out.
+
+## Other critical settings
 
 \`\`\`
 # Disable root login entirely
@@ -22198,9 +22811,68 @@ AllowUsers admin deployer
 X11Forwarding no
 \`\`\`
 
-## Port Change and Fail2Ban
+Some numbers behind those, so you know what you are changing from. \`MaxAuthTries\` defaults to 6. \`LoginGraceTime\` defaults to 120 seconds, which is how long a connection may sit unauthenticated before the server drops it. \`MaxStartups\` defaults to \`10:30:100\`, meaning that beyond 10 concurrent unauthenticated connections the server starts randomly refusing new ones at a 30 percent probability, rising to certain refusal at 100. That last one explains the mysterious intermittent "connection reset" during a scan or a mass deployment: it is the server defending itself, not a network fault.
+
+\`PermitRootLogin\` deserves a note. Current OpenSSH defaults it to \`prohibit-password\`, so root cannot use a password but can still use a key. Setting it to \`no\` is a real change, not a restatement of the default.
+
+## Verify the running configuration, not the file
+
+Modern distributions put \`Include /etc/ssh/sshd_config.d/*.conf\` at the top of the main config, and for most keywords sshd takes the first value it encounters. A drop-in file that sorts early can quietly override the edit you just made lower down in the main file. Cloud images ship exactly such a file, and it often enables password authentication.
+
+Ask the daemon instead:
+
+\`\`\`bash
+sshd -t && sshd -T | grep -E '^(permitrootlogin|passwordauthentication|pubkeyauthentication|maxauthtries|port|allowusers)'
+\`\`\`
+
+Correct output on a hardened server:
+
+\`\`\`
+port 2222
+permitrootlogin no
+pubkeyauthentication yes
+passwordauthentication no
+maxauthtries 3
+allowusers admin deployer
+\`\`\`
+
+\`sshd -t\` returns silently when the config parses and prints a file and line number when it does not. Never restart sshd without running it first.
+
+Then prove the lockout works from the client side, from a machine that has no key installed:
+
+\`\`\`bash
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@server
+\`\`\`
+
+The correct result is an immediate \`Permission denied (publickey).\` If you get a password prompt, password authentication is still enabled somewhere and \`sshd -T\` will tell you where to look.
+
+Restarting the daemon does not kill established sessions, because each session is a forked child process. Keep your current connection open anyway and test the new configuration from a second terminal. If the new one fails, you still have the old one to fix it with.
+
+## Port change and Fail2Ban
 
 Changing SSH to a non-standard port (e.g., 2222) reduces automated scanning noise significantly. It is security by obscurity and not a substitute for real controls, but it is a low-cost way to reduce log clutter.
+
+Two things bite people here. On distributions that start SSH through systemd socket activation, the \`Port\` directive in \`sshd_config\` is ignored entirely, because systemd owns the listening socket. You change it with a socket override instead:
+
+\`\`\`bash
+systemctl edit ssh.socket
+# add:
+# [Socket]
+# ListenStream=
+# ListenStream=2222
+systemctl daemon-reload
+systemctl restart ssh.socket
+\`\`\`
+
+The empty \`ListenStream=\` matters. Without it you add a port rather than replacing the default. Confirm with \`ss -tlnp | grep sshd\` or, under socket activation, \`systemctl status ssh.socket\`.
+
+On SELinux systems, the policy only permits sshd to bind the ports labelled \`ssh_port_t\`. Add yours before restarting:
+
+\`\`\`bash
+semanage port -a -t ssh_port_t -p tcp 2222
+\`\`\`
+
+Skip that and sshd fails to start with a permission denied on bind, which reads like a firewall problem and is not.
 
 Fail2ban monitors failed login attempts and automatically blocks IPs after a configurable number of failures:
 
@@ -22209,7 +22881,51 @@ apt install fail2ban
 systemctl enable fail2ban
 \`\`\`
 
+The shipped defaults ban for 10 minutes after 5 failures inside a 10 minute window. Raise \`bantime\` well beyond that on an internet-facing box; a 10 minute ban barely inconveniences a patient scanner. Check that the jail is actually running and catching things:
+
+\`\`\`bash
+fail2ban-client status sshd
+\`\`\`
+
+\`\`\`
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed: 2
+|  |- Total failed:     1394
+|  \`- File list:        /var/log/auth.log
+\`- Actions
+   |- Currently banned: 7
+   |- Total banned:     212
+\`\`\`
+
+A \`Total failed\` of 0 on a server that has been up for a week means the filter is reading the wrong place, not that nobody has tried.
+
 With key-based auth, a changed port, and fail2ban in place, your SSH attack surface is dramatically reduced.
+
+## What breaks
+
+**MaxAuthTries counts every key your agent offers.** If your agent holds five identities and the right one is fourth in line, a server set to \`MaxAuthTries 3\` disconnects you before it is tried, and the error says too many authentication failures rather than anything useful. Fix it on the client with \`IdentitiesOnly yes\` and an explicit \`IdentityFile\` in \`~/.ssh/config\`, so only the relevant key is offered.
+
+**Port changed in sshd_config on a socket-activated system.** The daemon restarts cleanly, reports no error, and keeps listening on 22. Edit the socket unit, not the config file.
+
+**Port changed without updating SELinux.** sshd refuses to start and the message points at the bind, not at policy. \`semanage port -a\` first.
+
+**Replacing the algorithm lists instead of amending them.** A bare \`Ciphers\` line replaces the default list outright, so anything you left out is gone, including whatever your backup appliance or older switch needs. Prefixing with \`-\` removes specific algorithms from the default and \`+\` appends, which is usually what you actually want. Check what your build supports with \`ssh -Q cipher\` and \`ssh -Q kex\` before you paste a list from anywhere.
+
+**Fail2ban reading a log file that no longer exists.** Several distributions have stopped installing rsyslog by default, so there is no \`/var/log/auth.log\` and the sshd jail silently catches nothing. Set the jail to the systemd backend so it reads the journal, then confirm with \`fail2ban-client status sshd\`.
+
+**Banning yourself.** Fat-finger a passphrase from the office a few times and your own address is in the ban list. Put your management network in \`ignoreip\`, and know that \`fail2ban-client set sshd unbanip 10.0.10.22\` exists before you need it from a phone.
+
+**Disabling password auth on a machine with no other way in.** If the key is wrong and the console is a data centre two hours away, this is your whole evening. Confirm key login works, confirm a second administrator's key works, and only then set \`PasswordAuthentication no\`.
+
+## References
+
+- https://man7.org/linux/man-pages/man5/sshd_config.5.html
+- https://man7.org/linux/man-pages/man8/sshd.8.html
+- https://www.rfc-editor.org/rfc/rfc4252
+- https://www.rfc-editor.org/rfc/rfc4253
+- https://www.rfc-editor.org/rfc/rfc8709
+- https://wiki.archlinux.org/title/OpenSSH
 `,
   },
   {
@@ -23913,17 +24629,22 @@ Understanding this rewrite is key to debugging connectivity problems in Kubernet
     slug: "ssh-key-based-authentication",
     title: "SSH Key-Based Authentication: Setup and Best Practices",
     date: "2026-03-21",
+    updated: "2026-08-25",
     tags: ["linux", "security", "servers"],
     excerpt: "Key-based SSH authentication is more secure than passwords and more convenient with proper setup. Here is how to do it right.",
     coverImage: "/images/blog/ssh-key-based-authentication.jpg",
     content: `
-## Why Keys Are Better Than Passwords
+## Why keys are better than passwords
+
+You are typing the same password into six servers a day, or you set up a key once and it works on one host and silently falls back to a password prompt on another, and you have no idea why. Key authentication is not complicated, but it fails quietly, and quiet failures are the hard kind.
 
 A password is a shared secret. It can be guessed, phished, or leaked. An SSH key pair is asymmetric. The private key never leaves your machine. The server only holds your public key. Even if the server is compromised, your private key is not exposed.
 
 Keys are also more convenient at scale. You can authorize a key on hundreds of servers, and logging in to any of them requires no passwords or prompts.
 
-## Generating a Key Pair
+The mechanism, briefly, because it explains the failure modes. Under the \`publickey\` method in RFC 4252, the client signs a blob that includes the session identifier negotiated during key exchange. The server verifies that signature against the public key it has on file. The signature is bound to that one session, so a server that receives it cannot turn around and use it to log in somewhere else as you. A password can be replayed by whoever catches it. A signature cannot.
+
+## Generating a key pair
 
 \`\`\`bash
 # Generate an Ed25519 key (modern, fast, secure)
@@ -23935,7 +24656,23 @@ ssh-keygen -t rsa -b 4096 -C "admin@workstation" -f ~/.ssh/id_rsa
 
 Always set a passphrase. The passphrase encrypts the private key on disk, so even if someone steals your laptop, they cannot use the key without the passphrase.
 
-## Distributing the Public Key
+Ed25519 is EdDSA over Curve25519, standardised for SSH in RFC 8709. Its key size is fixed by the curve, so \`-b\` does nothing for that type; passing it is harmless but pointless. The public key is short enough to fit comfortably on one line, which matters more than it sounds like it should, for reasons in the failure section below.
+
+Two files come out. \`id_ed25519\` is the private key and never leaves the machine. \`id_ed25519.pub\` is the public key and is safe to paste anywhere. Learn to recognise which is which at a glance, because the mistake of installing the wrong one is common and confusing.
+
+The fingerprint is how you refer to a key without pasting it:
+
+\`\`\`bash
+ssh-keygen -lf ~/.ssh/id_ed25519.pub
+\`\`\`
+
+\`\`\`
+256 SHA256:5xB9pmBqQ0oq5Vp3z1EhZ9kK8b0Wc2y0oQnDh4Zk8pM admin@workstation (ED25519)
+\`\`\`
+
+Keep that fingerprint. When a server logs \`Accepted publickey for admin from 10.0.10.22 port 52118 ssh2: ED25519 SHA256:5xB9...\`, that string is how you prove which key was used, which is the only way to audit key usage after the fact.
+
+## Distributing the public key
 
 \`\`\`bash
 # Copy to a server (simplest method)
@@ -23944,6 +24681,43 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub user@server
 # Or manually append to authorized_keys
 cat ~/.ssh/id_ed25519.pub | ssh user@server "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
 \`\`\`
+
+Permissions decide whether this works. sshd runs strict mode checks by default and refuses any key whose file or containing directories are writable by anyone but the owner:
+
+\`\`\`bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/id_ed25519
+\`\`\`
+
+The home directory itself counts too. A home directory that is group writable, which happens on systems where every user shares a primary group, causes sshd to reject the key with nothing shown to the client except a password prompt.
+
+Each line in \`authorized_keys\` is one key and may carry options in front of it. This is the part most people never use and it is where the real value is:
+
+\`\`\`
+from="10.0.10.0/24",restrict ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH... admin@workstation
+restrict,command="/usr/local/bin/backup-receive" ssh-ed25519 AAAAC3Nz... backup@nas
+\`\`\`
+
+\`from=\` limits which source addresses may use that key. \`command=\` forces one command regardless of what the client asks for, which is how you give an automated job exactly one capability. \`restrict\` disables port forwarding, agent forwarding, X11, and PTY allocation all at once, and you re-enable individually with options like \`pty\` if you need them. A deployment key with no restrictions is a full interactive shell for anyone who copies the file.
+
+## Verifying it worked
+
+Do not trust the absence of a password prompt. Ask the client what it did:
+
+\`\`\`bash
+ssh -v admin@server exit 2>&1 | grep -E 'Offering|Server accepts|Authenticated'
+\`\`\`
+
+Correct output names the key file and the method:
+
+\`\`\`
+debug1: Offering public key: /home/max/.ssh/id_ed25519 ED25519 SHA256:5xB9...
+debug1: Server accepts key: /home/max/.ssh/id_ed25519 ED25519 SHA256:5xB9...
+Authenticated to server ([10.0.10.50]:22) using "publickey".
+\`\`\`
+
+If the last line says \`using "password"\` or \`using "keyboard-interactive"\`, key authentication failed and you fell back. On the server, the reason is in the auth log or journal, and it is usually explicit: \`Authentication refused: bad ownership or modes for directory /home/admin\`.
 
 ## Using ssh-agent
 
@@ -23954,7 +24728,20 @@ eval $(ssh-agent)
 ssh-add ~/.ssh/id_ed25519
 \`\`\`
 
-## SSH Config for Multiple Keys and Hosts
+Check what the agent currently holds with \`ssh-add -l\`, which prints one line per loaded key in the same fingerprint format as before, or \`The agent has no identities.\` when it is empty.
+
+Two refinements worth adopting. \`ssh-add -t 3600\` loads a key that the agent forgets after an hour, which limits the window in which a stolen laptop is a live credential. And \`AddKeysToAgent yes\` in \`~/.ssh/config\` loads a key on first use instead of requiring you to remember \`ssh-add\`, which stops the habit of running \`eval $(ssh-agent)\` in every terminal and accumulating a dozen orphan agents that each hold your key.
+
+Agent forwarding deserves a warning. \`ForwardAgent yes\` exposes your agent socket on the remote host, and anyone with root there can use it to authenticate as you to anything your key opens, for as long as you are connected. Use \`ProxyJump\` instead, which tunnels through the intermediate host without ever exposing the agent to it:
+
+\`\`\`
+Host prod-db
+  Hostname 10.0.30.15
+  User admin
+  ProxyJump bastion.example.net
+\`\`\`
+
+## SSH config for multiple keys and hosts
 
 \`\`\`
 # ~/.ssh/config
@@ -23970,9 +24757,46 @@ Host lab-server
   Port 2222
 \`\`\`
 
-## Key Rotation
+Add \`IdentitiesOnly yes\` to any block with an explicit \`IdentityFile\`. Without it, the client offers every key in the agent before the one you named, and a server with \`MaxAuthTries 3\` will disconnect you before it reaches the right key. The error, "Too many authentication failures", describes the symptom and hides the cause.
+
+Check what the client will actually do for a given host with \`ssh -G lab-server\`, which prints the fully merged configuration the same way \`sshd -T\` does on the server side. First match wins in this file, so a broad \`Host *\` block at the top overrides everything below it.
+
+## Key rotation
 
 Rotate SSH keys periodically. When an employee leaves, remove their public key from authorized_keys on every server. This is why centralized key management (via LDAP, Teleport, or HashiCorp Vault SSH) makes sense at scale. Manual key management across hundreds of servers is error-prone.
+
+The structural fix is SSH certificates. You create a certificate authority key once, sign user public keys with a validity window, and configure servers to trust the CA instead of individual keys:
+
+\`\`\`bash
+ssh-keygen -s ca_key -I max@example -n admin,deploy -V +8h ~/.ssh/id_ed25519.pub
+\`\`\`
+
+That produces \`id_ed25519-cert.pub\`, valid for eight hours, listing the principals it may log in as. The server needs one line, \`TrustedUserCAKeys /etc/ssh/ca.pub\`, and no per-user key distribution at all. Revocation stops being a search across every host, because the certificate expires on its own. Inspect one with \`ssh-keygen -L -f id_ed25519-cert.pub\`, which prints the principals, the validity window, and the extensions.
+
+Until you get there, keep an inventory. A key with no owner recorded is a key nobody will ever dare remove.
+
+## What breaks
+
+**Permissions, silently.** A group writable home directory or a \`.ssh\` at 755 makes sshd ignore the key and fall through to the next method. The client shows a password prompt and no explanation. The server log says exactly what is wrong, so read it there.
+
+**Installing the private key by mistake.** Pasting \`id_ed25519\` instead of \`id_ed25519.pub\` into \`authorized_keys\` never works, and it has now put your private key on the server. Regenerate the pair, do not just delete the line.
+
+**A wrapped key line.** Each entry in \`authorized_keys\` must be on exactly one line. Copying a public key through a chat window or a text editor with hard wrapping inserts newlines that turn one valid key into several invalid ones. Count lines with \`wc -l\` and compare against the number of keys you expect.
+
+**Too many identities offered.** The agent offers keys in its own order and the server counts each as an attempt. Set \`IdentitiesOnly yes\` with an explicit \`IdentityFile\` per host.
+
+**Removing a key from one file and calling it revoked.** People accumulate access in places you forget to check: \`root\`'s own \`authorized_keys\`, a shared service account, the legacy \`authorized_keys2\` file that some sshd builds still read, and a second key that person generated on their home machine. Audit by fingerprint across every account, not by name.
+
+**Passphrase-free keys for automation with no restrictions.** A CI runner needs an unattended key, which is fine, but that key should carry \`from=\` and \`command=\` in \`authorized_keys\` so it can do one thing from one place. An unrestricted automation key is a root shell that nobody rotates.
+
+## References
+
+- https://man7.org/linux/man-pages/man1/ssh-keygen.1.html
+- https://man7.org/linux/man-pages/man1/ssh-agent.1.html
+- https://man7.org/linux/man-pages/man5/ssh_config.5.html
+- https://man7.org/linux/man-pages/man8/sshd.8.html
+- https://www.rfc-editor.org/rfc/rfc4252
+- https://www.rfc-editor.org/rfc/rfc8709
 `,
   },
   {
@@ -24795,6 +25619,7 @@ The lab is a place to practice and learn. Let it teach you through failures in c
     slug: "firewall-log-analysis",
     title: "Firewall Log Analysis: Finding What Matters",
     date: "2026-04-01",
+    updated: "2026-08-25",
     tags: ["security", "firewall", "operations"],
     excerpt: "Firewall logs contain enormous volumes of data. Here is how to analyze them effectively to find real security events without drowning in noise.",
     coverImage: "/images/blog/firewall-log-analysis.jpg",
@@ -24805,11 +25630,26 @@ The lab is a place to practice and learn. Let it teach you through failures in c
       sourceUrl: "https://www.flickr.com/photos/8558461@N08/5212583486",
     },
     content: `
-## The Volume Problem
+## The volume problem
+
+Your firewall has been logging for months and you have never read any of it. You suspect that if something bad happened the evidence is in there, but opening the file gives you a wall of key-value pairs scrolling past faster than you can read. That is the actual problem: not a lack of data, an inability to reduce it.
 
 A firewall in a medium-sized network generates millions of log entries per day. Looking at raw logs is not practical. Effective log analysis means knowing what to look for, reducing noise, and using tools to surface anomalies automatically.
 
-## Start with Denies
+## What is actually in a log line
+
+Before you can filter, you need to know what fields you have. Almost every firewall logs some version of the same core record:
+
+- The five tuple: source IP, source port, destination IP, destination port, protocol.
+- The action taken: accept, deny, drop, reset, timeout.
+- Which rule or policy matched, usually by ID or name.
+- Ingress and egress interface, which tells you the direction through the box.
+- Session bytes and packets in each direction, and how long the session lasted.
+- The translated addresses, if NAT applied.
+
+Different vendors name these differently. FortiGate writes key-value pairs like \`srcip=10.0.10.5 dstport=443 action=deny policyid=17\`. iptables writes a kernel message with \`SRC=\` and \`DPT=\`. pfSense writes comma separated fields. The shape of the analysis is the same either way, and the first hour with any new log source should be spent identifying which field holds which value, so you are not grepping blind.
+
+## Start with denies
 
 Allowed traffic is mostly expected. Denied traffic is interesting. Start your analysis there. What is being blocked, and why? Is something trying to reach a destination it should not? Is internal traffic trying to reach an external IP that looks suspicious?
 
@@ -24818,7 +25658,42 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
-## Identify Traffic Patterns
+There is a caveat that took me a while to internalise. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
+
+## Reducing a day of logs to something readable
+
+Here is a worked example against an inbound deny log, ranking sources by how many distinct internal addresses they touched. That distinct count is the useful number, not the raw hit count, because one noisy source hammering a single port on a single host is boring and one source touching forty hosts is a scan.
+
+\`\`\`bash
+grep 'action=deny' /var/log/fortigate/traffic.log \\
+  | grep -o 'srcip=[0-9.]* dstip=[0-9.]*' \\
+  | sort -u \\
+  | awk '{print $1}' \\
+  | uniq -c \\
+  | sort -rn \\
+  | head -10
+\`\`\`
+
+Reading that pipeline in order: pull the denied lines, extract just the source and destination address fields, deduplicate so a thousand attempts against one host count once, then count how many distinct destinations remain per source. Correct output looks like this:
+
+\`\`\`
+     47 srcip=45.155.205.233
+     44 srcip=193.32.162.7
+      2 srcip=10.0.20.31
+      1 srcip=10.0.10.5
+\`\`\`
+
+Two external sources touching forty plus internal addresses each is a horizontal scan, which is what MITRE ATT&CK tracks as network service discovery. From the internet it is also completely routine background noise. The line that should stop you is the third one: an internal host generating denies at all. Internal hosts are supposed to know where they are going. When one starts probing addresses it has no business touching, that is either a misconfiguration or a foothold, and both are worth ten minutes.
+
+To verify the pipeline works before you trust it, generate the event yourself. From a host you control, scan a segment the firewall protects:
+
+\`\`\`bash
+sudo nmap -sS -p 22,445,3389 10.0.30.0/24
+\`\`\`
+
+Then rerun the pipeline. Your scanning host should appear at the top with a distinct destination count close to the size of the subnet. If it does not appear at all, the problem is not your analysis, it is that the rule which dropped the traffic has logging disabled.
+
+## Identify traffic patterns
 
 Look for traffic patterns that do not match business activity:
 
@@ -24827,9 +25702,19 @@ Look for traffic patterns that do not match business activity:
 - **Repeated authentication failures:** Brute force attempts against exposed services
 - **DNS tunneling indicators:** Unusually long DNS queries or high query volumes to a single domain
 
-## Baseline Normal
+Two more are worth adding once the basics are in place. **Beaconing** is a host connecting to the same external destination at a very regular interval, often with small and consistent session sizes. Humans and normal software produce irregular timing; a scheduled callback does not. **Asymmetric egress** is a session where the bytes sent out are far larger than the bytes received, on a host whose job does not involve uploading anything. Both of those live entirely in the allowed traffic, which is why you eventually have to log it.
+
+## Baseline normal
 
 You cannot identify anomalies without knowing what normal looks like. Spend time understanding your baseline: which servers connect to the internet, on which ports, at what volumes. When something deviates from baseline, investigate.
+
+The cheapest way to build a baseline is to write down the answers to a few questions per server and then check them against the logs: which destinations should this host talk to, on which ports, and at roughly what volume. A file server that suddenly opens outbound sessions on port 443 to an address in a country you do not do business with is only obviously wrong if you previously wrote down that it should never open outbound sessions at all.
+
+## Getting the logs off the box intact
+
+Analysis is worthless if the transport loses records. Classic syslog runs over UDP port 514, described in RFC 3164 and standardised in RFC 5424. UDP has no retransmission and no flow control, so under a burst the collector silently drops messages, and the burst is the moment you care about. Use TCP where the device supports it, or TLS on port 6514 as defined in RFC 5425 if the logs cross an untrusted segment.
+
+Clock sync matters just as much. Correlating a firewall log against a server auth log is impossible if the two disagree about what time it is, and firewalls in particular love to log in local time with no offset while everything else logs UTC. Point every device at the same NTP source and configure timestamps with an explicit offset. The RFC 5424 format carries an RFC 3339 timestamp, which solves this; the older BSD format in RFC 3164 has no year and no timezone, which is a good reason to move off it.
 
 ## Automation with SIEM
 
@@ -24839,9 +25724,36 @@ Manual log analysis does not scale. Feed firewall logs into a SIEM (Wazuh, Splun
 - Any traffic from an internal server to a known-malicious IP
 - Multiple failed authentications followed by a successful one
 
-## The Follow-Through
+Write each rule with an explicit threshold, an explicit time window, and an explicit exclusion list, and record why each number was chosen. A rule with no documented rationale gets loosened every time it fires until it never fires at all.
+
+## What breaks
+
+**Logging only denies.** The deny log is cheap and gives you the illusion of coverage. When a host is actually compromised, the investigation needs the allowed egress sessions, and they were never recorded. Log accepts on the internet-facing policies at minimum, and accept the storage cost.
+
+**Syslog over UDP under load.** Records vanish exactly during the event you are investigating, and nothing anywhere reports an error. Switch to TCP or TLS, and monitor the collector for gaps.
+
+**No logging on the implicit deny.** Most firewalls have a final catch-all rule, and on many platforms it does not log by default. If that rule is silent, "there were no denies" is not evidence of anything. Enable logging on it and confirm by generating a deny you can predict.
+
+**Reading the post-NAT address as the host.** Outbound logs frequently record the translated source, so every internal host looks like the firewall's external address. You will spend an hour attributing an alert to the wrong machine. Make sure the log includes both the original and translated addresses, and check which field your parser is using.
+
+**Alerting on raw counts.** A threshold like "500 denies from one source" pages you every night for the backup job hitting a decommissioned target. Count distinct destinations or distinct ports instead, and always exclude the sources you have already explained.
+
+**Timestamps in local time with no offset.** Two devices, two timezones, one incident timeline that makes no sense. Normalise to UTC at ingest and verify by comparing a known event across two sources.
+
+## The follow-through
 
 An alert is only valuable if someone acts on it. Build a workflow: alerts generate tickets, tickets get investigated, findings get documented. Close the loop on every alert, even if the finding is "false positive, tuned rule."
+
+The documentation is not bureaucracy. Six months from now, when the same alert fires, the note explaining that it was the vulnerability scanner is what saves you the second investigation. A detection rule with no written rationale and no history of dispositions is a rule nobody trusts, and rules nobody trusts get ignored, which is the same as not having them.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://www.rfc-editor.org/rfc/rfc3164
+- https://www.rfc-editor.org/rfc/rfc5425
+- https://man7.org/linux/man-pages/man1/grep.1.html
+- https://attack.mitre.org/techniques/T1046/
+- https://en.wikipedia.org/wiki/Security_information_and_event_management
 `,
   },
   {
@@ -25490,6 +26402,7 @@ It is also the fastest way I know to find the gaps in your own understanding. Ex
     slug: "teaching-youth-to-code",
     title: "What I've Learned Teaching Youth to Code",
     date: "2026-04-09",
+    updated: "2026-08-25",
     tags: ["community", "education", "coding"],
     excerpt: "Running coding camps for youth in the Las Vegas Valley has taught me as much as it has taught the students. Here is what actually works when introducing young people to technology.",
     coverImage: "/images/blog/teaching-youth-to-code.jpg",
@@ -25500,13 +26413,15 @@ It is also the fastest way I know to find the gaps in your own understanding. Ex
       sourceUrl: "https://www.flickr.com/photos/58297778@N04/5431970803",
     },
     content: `
-## Why It Matters
+## Why it matters
+
+You have two hours, a room of twelve to fifteen year olds with wildly different experience, laptops you do not control, and no idea whether the wifi will hold. The goal is not to teach them a language. It is to get every single person to the end of the session having made something work, because that is what decides whether they come back.
 
 Technical education changes life trajectories. A student who discovers they are good at programming at 13 has years of compounding learning ahead of them before they ever start a career. Someone who finds out at 22 has to move faster with less time. Getting the exposure early makes a real difference.
 
 The Las Vegas Valley has a lot of students who would thrive in technical careers but who have not yet encountered the right context or the right encouragement. The coding camps try to close that gap.
 
-## What I Have Learned About Teaching
+## What I have learned about teaching
 
 **The first hour is everything.** If a student does not have a successful experience in the first hour, they disengage. The first project has to work, has to be interesting, and has to feel achievable. I design every camp to put something working in front of students within the first 30 minutes.
 
@@ -25514,15 +26429,122 @@ The Las Vegas Valley has a lot of students who would thrive in technical careers
 
 **The right level of difficulty.** Too easy and it is boring. Too hard and it is discouraging. The sweet spot is something that requires real thinking but is achievable in the session. Finding that balance for a room with varied experience levels is the hardest part of teaching.
 
-## What Students Teach Me
+That last one has a name in education research: the zone of proximal development, the band of tasks a learner cannot do alone but can do with support. Everything below it is busywork and everything above it is a wall. Practically, this means every activity needs a floor and a ceiling written before the session: the minimum that counts as done, and two extensions for whoever finishes in ten minutes.
+
+## Solve the environment before you solve anything else
+
+The single biggest destroyer of a first session is installation. School laptops without administrator rights, a filtered network that blocks the package index, twenty students downloading the same installer over one access point. You can lose ninety minutes and teach nothing.
+
+Pick one of three approaches and commit to it:
+
+- **Browser based.** Nothing to install, works on a Chromebook, survives a locked-down image. This is the default choice for a one-off session.
+- **Pre-imaged machines.** Only viable if you control the hardware and can set it up the day before. Test by logging in as a student account, not as yourself, because your account has permissions theirs does not.
+- **One shared server.** Everyone connects to a machine you already configured. It works well for older students and it teaches something real about remote systems, but it dies completely if the network does.
+
+Whatever you choose, do a full dry run on the actual equipment in the actual room. "It works on my laptop" is the most expensive sentence in teaching.
+
+## The first thirty minutes, concretely
+
+Here is the shape of an opener that reliably works. Give students a file that already runs, have them run it, then have them change one number.
+
+\`\`\`python
+import turtle
+
+t = turtle.Turtle()
+t.shape("turtle")
+
+for _ in range(4):
+    t.forward(100)
+    t.right(90)
+
+turtle.done()
+\`\`\`
+
+Correct output is a window that opens and a small turtle drawing a square, one side at a time, slowly enough to watch. That visible movement is doing a lot of work: the loop is not an abstraction, it is a thing walking around the screen four times.
+
+Then ask one question: change it to draw a triangle. Most students change the 4 to a 3 and get an open shape with a wrong angle, which is exactly the productive failure you want. The rule they discover is that the turn is 360 divided by the number of sides. Nobody who works that out themselves forgets it, and nobody who is told it remembers it past lunch.
+
+For a group that has seen loops before, I move to something with a security hook, because that is the door most of these students eventually walk through:
+
+\`\`\`python
+def shift(text, key):
+    out = ""
+    for ch in text:
+        if ch.isalpha():
+            base = ord("A") if ch.isupper() else ord("a")
+            out += chr((ord(ch) - base + key) % 26 + base)
+        else:
+            out += ch
+    return out
+
+print(shift("Meet me at noon", 3))
+print(shift("Phhw ph dw qrrq", -3))
+\`\`\`
+
+Correct output:
+
+\`\`\`
+Phhw ph dw qrrq
+Meet me at noon
+\`\`\`
+
+Then the real exercise: break it without the key. There are only 25 possibilities, so loop over all of them and read the one that makes sense. Students who have never thought about cryptography arrive at brute force on their own in about four minutes, and the conversation about why that works here and does not work on a modern cipher writes itself.
+
+## Teach reading errors, not avoiding them
+
+The skill that separates students who keep going from students who quit is not syntax. It is what they do in the ten seconds after red text appears. Most beginners read an error as a verdict on themselves rather than as information.
+
+So I teach the shape of a traceback explicitly, early, with a bug I introduce on purpose:
+
+\`\`\`
+Traceback (most recent call last):
+  File "cipher.py", line 12, in <module>
+    print(shift("Meet me at noon", "3"))
+  File "cipher.py", line 6, in shift
+    out += chr((ord(ch) - base + key) % 26 + base)
+TypeError: unsupported operand type(s) for +: 'int' and 'str'
+\`\`\`
+
+Read it bottom up. The last line says what went wrong: something tried to add a number and a piece of text. The line above it says where the failure happened. The lines above that say how the program got there. In this case the fix is at line 12, not line 6: the key was passed as \`"3"\` in quotes instead of \`3\`.
+
+Every student who learns to read that block stops needing me for a whole category of problem. That is the actual goal.
+
+## What students teach me
 
 Teaching forces you to understand things more deeply. When a student asks why we use a for loop instead of copying code three times, you have to explain clearly and completely. If your explanation is confusing, it usually means your own understanding has a gap.
 
 I have refined my understanding of basic programming, logic, and systems concepts by having to explain them simply to people who have no context at all. That kind of clarity is useful far beyond the classroom.
 
-## Looking Forward
+The questions that expose gaps are almost never the advanced ones. They are things like why counting starts at zero, or why the computer cares about the difference between \`=\` and \`==\`, or what a variable actually is if it is not a box. Answering those honestly, without hand waving, is harder than it looks and it improves how you write code.
+
+## Common mistakes
+
+**Letting setup consume the session.** Twenty students installing anything at once will not finish together. Pre-install, pre-image, or use a browser, and have a fallback ready for the three machines that will fail anyway.
+
+**No plan for the student who finishes first.** They will get bored in ten minutes and then they will help their neighbour in the least helpful way possible, by taking the keyboard. Write two extension tasks per activity in advance and hand them out without ceremony.
+
+**Making students copy code off a projector.** Every typo becomes a debugging session about the typo instead of the concept, and the slow typists fall a full activity behind. Give them a file that already runs and have them modify it.
+
+**Smart quotes.** Code pasted from a slide deck or a shared document arrives with typographic quotation marks instead of straight ones, and Python rejects it with a syntax error that points at a character that looks correct on screen. Distribute code as plain text files, never through a word processor.
+
+**Assuming a confused student will say so.** Most will not, in front of their peers. Use a visible non-verbal signal, a sticky note on the screen edge or a card flipped to red, and circulate constantly rather than waiting at the front.
+
+**Ending with nothing to take home.** A student who cannot show a parent what they built had a fun afternoon and nothing more. Budget the last five minutes for saving the file somewhere they can reach it and taking a screenshot of what it does.
+
+## Looking forward
 
 I want to expand what we cover in the camps beyond basic coding. Networking fundamentals, cybersecurity basics, and systems thinking are all approachable at a high school level and are genuinely valuable career skills. The foundation we build early shapes what people pursue later.
+
+The bridge is already there in the material. The Caesar cipher exercise is a cryptography lesson wearing a loop exercise as a disguise. A session on how a web page reaches a browser is a networking lesson. Students do not need the vocabulary first; they need something on the screen that behaves in a way they can poke at, and the vocabulary attaches itself afterwards.
+
+## References
+
+- https://docs.python.org/3/tutorial/index.html
+- https://docs.python.org/3/library/turtle.html
+- https://docs.python.org/3/tutorial/errors.html
+- https://en.wikipedia.org/wiki/Scratch_(programming_language)
+- https://en.wikipedia.org/wiki/Zone_of_proximal_development
+- https://en.wikipedia.org/wiki/Pair_programming
 `,
   },
 ];

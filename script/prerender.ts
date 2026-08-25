@@ -25,6 +25,9 @@ const { EXAMS } = await import("../client/src/lib/examObjectives.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
+const { FAQS } = await import("../client/src/lib/faqs.ts");
+const { CLAIM_GROUPS, CLAIM_STATUS_LABEL } = await import("../client/src/lib/claims.ts");
+const { KIT_SESSIONS, KIT_RULES, KIT_RESOURCES } = await import("../client/src/lib/clubKit.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -563,8 +566,107 @@ ${JSON.stringify({
     },
   ];
 
+  /*
+    The FAQ needs its schema and its answers in the first response.
+
+    FAQPage markup that only appears after React runs is markup Google may
+    never see, which made the rich result it was written for unreachable.
+    Both are built from the same array the page renders, so they cannot
+    disagree.
+  */
+  const faqSchema = `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": `${SITE_URL}/faq#faq`,
+  url: `${SITE_URL}/faq`,
+  inLanguage: "en-US",
+  about: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+  mainEntity: FAQS.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+})}
+</script>`;
+  const faqContent = `
+<main>
+  <h1>Questions and answers</h1>
+  <p>Straight answers to what people actually ask about Max Doubin.</p>
+  ${FAQS.map(
+    (item) => `<section><h2>${esc(item.q)}</h2><p>${esc(item.a)}</p></section>`,
+  ).join("\n  ")}
+  <nav><a href="${SITE_URL}/verify">Verify these claims</a> · <a href="${SITE_URL}/resume">Resume</a> · <a href="${SITE_URL}/blog">Field Notes</a> · <a href="${SITE_URL}/contact">Contact</a></nav>
+</main>`;
+
+  /*
+    The claim ledger and the club plan are the two pages most likely to be
+    read by something that does not run JavaScript: a crawler deciding
+    whether the site is credible, or an assistant answering "is this real".
+    Both were empty shells on the first response. These mirror what the
+    React pages render.
+  */
+  const verifyContent = `
+<main>
+  <h1>Verify these claims</h1>
+  <p>Every substantive claim this site makes, graded by the evidence behind it. The weak ones are marked weak.</p>
+  ${CLAIM_GROUPS.map(
+    (group) => `<section>
+    <h2>${esc(group.title)}</h2>
+    <p>${esc(group.note)}</p>
+    <dl>${group.claims
+      .map(
+        (claim) =>
+          `<dt>${esc(claim.claim)} (${esc(CLAIM_STATUS_LABEL[claim.status])})</dt><dd>${esc(claim.evidence)}${
+            claim.url ? ` <a href="${claim.url}">${esc(claim.url)}</a>` : ""
+          }</dd>`,
+      )
+      .join("")}</dl>
+  </section>`,
+  ).join("\n  ")}
+  <nav><a href="${SITE_URL}/resume">Resume</a> · <a href="${SITE_URL}/faq">FAQ</a> · <a href="${SITE_URL}/changelog">Changelog</a> · <a href="${SITE_URL}/contact">Contact</a></nav>
+</main>`;
+
+  const kitContent = `
+<main>
+  <h1>Start a cyber club</h1>
+  <p>Twelve meetings, from a room where nobody has opened a terminal to a team registered for the National Cyber League. Free, CC BY 4.0, and downloadable in full at <a href="${SITE_URL}/data/cyber-club-kit.md">cyber-club-kit.md</a>.</p>
+  <section>
+    <h2>Rules of engagement, before week one</h2>
+    <ol>${KIT_RULES.map((rule) => `<li>${esc(rule)}</li>`).join("")}</ol>
+  </section>
+  ${KIT_SESSIONS.map(
+    (session) => `<section>
+    <h2>Week ${session.week}: ${esc(session.title)}</h2>
+    <p>${esc(session.goal)}</p>
+    <p>Before the meeting: ${esc(session.prep)}</p>
+    <ol>${session.run.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
+    <p>How you know it worked: ${esc(session.evidence)}</p>
+  </section>`,
+  ).join("\n  ")}
+  <section>
+    <h2>Tools the plan uses</h2>
+    <ul>${KIT_RESOURCES.map(
+      (r) => `<li><a href="${r.url}">${esc(r.name)}</a> (${esc(r.cost)}): ${esc(r.what)}</li>`,
+    ).join("")}</ul>
+  </section>
+  <nav><a href="${SITE_URL}/cyber-club">South CTA Cyber Club</a> · <a href="${SITE_URL}/ncl">National Cyber League notes</a> · <a href="${SITE_URL}/tools">Browser tools</a></nav>
+</main>`;
+
   for (const page of STANDALONE) {
     const { dir, ...meta } = page;
+    if (dir === "verify") {
+      await writePage(dir, base, { ...meta, rootContent: verifyContent });
+      continue;
+    }
+    if (dir === "cyber-club/kit") {
+      await writePage(dir, base, { ...meta, rootContent: kitContent });
+      continue;
+    }
+    if (dir === "faq") {
+      await writePage(dir, base, { ...meta, schema: faqSchema, rootContent: faqContent });
+      continue;
+    }
     await writePage(dir, base, meta);
   }
 

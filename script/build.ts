@@ -67,6 +67,10 @@ async function buildAll() {
   const { generateClubKit } = await import("./generateClubKit.ts");
   await generateClubKit();
 
+  console.log("building llms.txt...");
+  const { generateLlmsTxt } = await import("./generateLlmsTxt.ts");
+  await generateLlmsTxt();
+
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));
   const allDeps = [
