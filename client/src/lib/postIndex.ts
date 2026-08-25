@@ -1570,7 +1570,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I set up a full Active Directory domain in my lab to practice enterprise identity management.",
     coverImage: "/images/blog/active-directory-homelab.jpg",
     coverCredit: {"author":"Alan Levine","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg"},
-    wordCount: 372,
+    wordCount: 1902,
   },
   {
     slug: "sfp-transceivers-explained",

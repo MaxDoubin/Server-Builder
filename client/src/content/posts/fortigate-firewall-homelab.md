@@ -88,6 +88,6 @@ The discipline that transferred best is the one NIST spells out in SP 800-41: a 
 - https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf
 - https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/803637/firewall-policies
 - https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/565222/vlans
-- https://csrc.nist.gov/pubs/sp/800/41/r1/final
+- https://docs.fortinet.com/document/fortigate/7.4.0/best-practices/598577/ssl-tls-deep-inspection
 - https://www.rfc-editor.org/rfc/rfc1918
 - https://www.rfc-editor.org/rfc/rfc5424
