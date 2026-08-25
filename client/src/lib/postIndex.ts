@@ -1373,7 +1373,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A deep dive into the PowerEdge R740 and why it is still one of the best platforms for a serious home lab environment.",
     coverImage: "/images/blog/dell-poweredge-r740-deep-dive.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg"},
-    wordCount: 401,
+    wordCount: 1968,
   },
   {
     slug: "apple-silicon-server-future",
@@ -1426,7 +1426,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Good cable management is not about aesthetics. It is about airflow, troubleshooting speed, and not hating yourself six months from now.",
     coverImage: "/images/blog/server-rack-cable-management.jpg",
     coverCredit: {"author":"ShakataGaNai","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cable_Management_Dell_1950.jpg"},
-    wordCount: 2482,
+    wordCount: 1981,
   },
   {
     slug: "proxmox-vs-esxi",
@@ -1436,7 +1436,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "I have run both Proxmox and VMware ESXi in my lab. Here is how they compare for real workloads.",
     coverImage: "/images/blog/proxmox-vs-esxi.jpg",
     coverCredit: {"author":"Proxmox Server Solutions GmbH","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Proxmox-VE-8-0-Cluster-Summary.png"},
-    wordCount: 415,
+    wordCount: 1237,
   },
   {
     slug: "ecc-ram-explained",

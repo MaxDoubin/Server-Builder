@@ -17798,15 +17798,47 @@ The Dell PowerEdge R740 is a 2U rack server that hits a sweet spot between perfo
 
 The R740 supports dual Intel Xeon Scalable processors, up to 3 TB of DDR4 ECC memory across 24 DIMM slots, and has room for up to 16 2.5-inch drives or 8 3.5-inch drives depending on the chassis configuration. For a homelab, that kind of flexibility is exactly what you want.
 
+It is a 14th generation PowerEdge, introduced in 2017 on the LGA 3647 socket. First generation Xeon Scalable (Skylake-SP) works out of the box, and second generation (Cascade Lake) works with a BIOS update, which is worth knowing because Cascade Lake parts are often cheaper per core on the used market now.
+
+## Memory: The Part People Get Wrong
+
+Twenty-four DIMM slots sounds like "put memory anywhere". It is not.
+
+Each CPU has six memory channels and twelve slots, six channels times two slots per channel. Bandwidth scales with populated channels, so you populate in multiples of six per socket. The single most common used-server mistake is buying four or eight sticks because that is what desktops use. Eight DIMMs across six channels means two channels carry double the load, the memory controller runs the whole set at the pace of the imbalance, and you leave a measurable chunk of bandwidth on the floor for no saving. Buy six, or twelve.
+
+The second thing: with only one CPU installed, half the DIMM slots and several of the PCIe slots are electrically dead, because they hang off the second socket. A single-CPU R740 is a twelve-slot machine, not a twenty-four-slot machine. Check what you are actually buying.
+
+Third, this takes registered ECC memory. RDIMMs, or LRDIMMs if you are chasing the 3 TB ceiling with 128 GB modules. Unbuffered desktop DDR4 will not post. And the advertised speed is a ceiling, not a promise: the actual clock is the lowest of what the DIMMs support, what the CPU's memory controller supports, and what the population rules allow. A Xeon Gold 6130 caps at 2666 MT/s no matter what the sticks are rated for.
+
+Fourth, and the one that survives correct population: memory attached to socket 1 is remote to socket 0, and reaching it crosses the interconnect at higher latency. That is NUMA. A VM sized larger than one socket's share of memory can be markedly slower than the same VM that fits inside a single node, so size guests to fit a NUMA node where the workload allows it.
+
 ## iDRAC: The Killer Feature
 
 One of the things that separates enterprise servers from consumer hardware is out-of-band management. Dell's iDRAC (Integrated Dell Remote Access Controller) gives you full remote control over the server, even when the OS is not running. You can monitor hardware health, view real-time power consumption, access the console remotely, and even mount virtual media for OS installations.
 
 I cannot overstate how much this matters in a lab environment. When you are testing things and inevitably break an OS installation, being able to remotely access the console and reinstall without physically touching the machine saves hours.
 
+Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the licence is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
+
+Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use \`root\` / \`calvin\`; anything shipped after Dell moved to per-unit credentials has a unique default password printed on the pull-out service tag at the front of the chassis. Change it immediately either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
+
+For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. IPMI over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
+
+\`\`\`bash
+# Chassis power state and sensor readings over IPMI, once enabled.
+ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' chassis status
+ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' sdr type temperature
+\`\`\`
+
 ## Storage Configuration
 
 I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P RAID controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
+
+That last experiment deserves a warning, because it is where the R740 and ZFS genuinely fight each other. The H740P is a RAID controller with 8 GB of battery-backed cache, and it has no true IT mode. It offers "Non-RAID" disks, which present the drive to the OS, but the I/O still traverses the RAID stack and its cache. ZFS assumes it owns the write path: it needs SMART data to pass through unmodified, and it needs a write to be on stable media when the drive says it is. A write cache it cannot see or flush undermines the guarantee ZFS exists to provide. Putting each disk in a single-drive RAID 0 to fake passthrough is not the same thing and does not help. If you are running ZFS on an R740, the right part is the HBA330, which is a plain SAS host bus adapter in IT mode, and it is inexpensive on the used market. Swap the controller rather than fighting the H740P.
+
+The backplane is the other trap. The R740 ships in several backplane configurations: 8 or 12 by 3.5 inch, and 8, 16, or 24 by 2.5 inch. NVMe support is not a property of the drive bay, it is a property of the backplane plus the PCIe extender cables and risers that feed it. You cannot put a U.2 NVMe drive into a SAS/SATA bay and have it work. Confirm the backplane part before you buy NVMe drives for it.
+
+Same story with PCIe: the R740 supports up to eight PCIe 3.0 slots, but those slots live on riser cards that are separate, frequently missing from used systems, and specific to a configuration. A server sold "with 8 slots available" and no risers in the box has zero slots available.
 
 ## Noise and Power
 
@@ -17814,9 +17846,38 @@ The honest truth about running enterprise servers at home is that they are loud 
 
 If you are considering one for a homelab, plan for the power bill and the noise. It is worth it for the capabilities, but go in with realistic expectations.
 
+Some numbers to plan against. Idle is much better than load: a modestly configured R740 with two mid-range Xeons and a handful of drives sits around 100 to 150 watts doing nothing. The 400 to 600 watt figure is real work. At 130 watts idle and typical residential rates, you are looking at a meaningful but survivable monthly line item, and the delta between idle and load is what your UPS sizing has to cover.
+
+Power supplies come in 495 W, 750 W, 1100 W, 1600 W, 2000 W, and 2400 W flavors, all 80 PLUS Platinum or Titanium, normally installed as a redundant pair. The gotcha for anyone in North America: the high-wattage units require 200 to 240 V input to deliver their rated output. On a 120 V circuit a 2000 W supply derates to roughly half. If you are on standard household 120 V, the 750 W or 1100 W supplies are the sensible choice and the big ones buy you nothing.
+
+**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to decide fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data, so it falls back to a conservative high fan baseline and the server howls at idle forever. This is not a fault. There is a "Third Party PCIe Card Default Cooling Response" setting exposed through iDRAC and IPMI that turns the baseline back down. Know it exists before you conclude the server is broken.
+
+One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
+
+Finally, POST is slow. Memory training and controller initialization mean two to four minutes from power button to boot device, and the screen is blank for much of it. It is not dead. It is counting your DIMMs.
+
+On the power figure: 400 to 600 watts under load is the honest range, and at 3.412142 BTU per hour per watt that is roughly 1,400 to 2,050 BTU/hr from one machine. Two of them is a small room heater running continuously, which is the part that decides whether a closet works.
+
+## What It Cannot Do
+
+Be clear-eyed about the ceiling. This is PCIe 3.0 throughout, so a modern NVMe drive capable of 7 GB/s will deliver about half that. It is DDR4, not DDR5. Per-core performance from a 2017 to 2019 Xeon is well behind a current desktop CPU, so a workload that needs fast single threads will be slower here than on a machine that cost less. And no amount of tuning makes a 2U chassis with 60 mm fans quiet enough for a bedroom.
+
+The R740 is the right answer when you want many cores, a lot of ECC memory, real out-of-band management, and hot-swap drive bays for less than the price of one modern workstation. It is the wrong answer when you want low idle power, silence, or the fastest possible single thread. For those, a mini PC or a modern desktop board wins, and it is not close.
+
 ## Getting One
 
 Used R740s are available from resellers and auction sites. Prices vary a lot based on configuration, but you can get a solid base system for a reasonable price and add memory and drives over time. Buy from reputable sellers, check the service tag for warranty status, and inspect the drive backplane before committing.
+
+A checklist I now run through before buying, all of which come from the sections above: how many CPUs are installed, how many DIMMs and in what population, which iDRAC license, which storage controller, which backplane, are the risers present, which PSUs and at what voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, they are frequently missing, and buying them separately costs more than you expect.
+
+## References
+
+- https://en.wikipedia.org/wiki/Dell_PowerEdge
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://en.wikipedia.org/wiki/Registered_memory
+- https://en.wikipedia.org/wiki/Non-uniform_memory_access
+- https://man.archlinux.org/man/ipmitool.1
 `,
   },
   {
@@ -18357,87 +18418,73 @@ Cable management in a server rack is one of those things that seems optional unt
 
 I have seen racks where every cable was a mystery. Nobody knew what connected where, and pulling one cable meant risking disconnecting something important. That is what bad cable management looks like in practice.
 
-The airflow half of that is not hyperbole, and it has a number attached. Rack-mount servers pull cool air in the front and exhaust it out the back, and the ASHRAE guidance most equipment is designed around recommends an inlet temperature between 18 and 27 degrees Celsius. A dense cable bundle sitting in the rear exhaust path raises the back-pressure the fans work against. The server responds by spinning them faster, which costs power and makes the rack louder, and if the exhaust genuinely cannot escape it recirculates around to the front and raises the inlet temperature directly. You do not get an alert that says "cables are blocking airflow." You get higher fan speeds, higher inlet temps, and eventually thermal throttling that looks like a performance problem.
+The airflow half of that is not hyperbole, and it has numbers attached. Rack-mount servers pull cool air in the front and exhaust it out the back, and the ASHRAE guidance most equipment is designed around recommends an inlet temperature between 18 and 27 degrees Celsius. A dense cable bundle sitting in the rear exhaust path raises the back-pressure the fans work against, and the fans answer by spinning faster. Fan power rises roughly with the cube of speed, so a server fighting its own cabling draws measurably more power and makes measurably more noise to move the same air. If the exhaust genuinely cannot escape, it recirculates around to the front and raises the inlet temperature directly.
+
+You never get an alert that says "cables are blocking airflow." You get higher fan speeds, higher inlet temperatures, and eventually thermal throttling that presents as a performance problem. The worst single offender is coiled slack: a loop of excess cable behind a 2U server is a solid object sitting in the exhaust stream, and it is the most common flaw in racks that otherwise look tidy.
 
 The related habit is blanking panels. Every empty U in a populated rack is a hole through which hot rear air flows straight back to the front intakes. Blanking panels cost a few dollars each and are the cheapest cooling improvement available to anyone.
-
-## The airflow claim, made specific
-
-The overheating point at the top is not rhetorical. A bundle of cables across the back of a chassis sits directly in the exhaust path, and the fans answer the added resistance by spinning faster. Fan power rises roughly with the cube of speed, so a server fighting its own cabling is measurably louder and drawing measurably more power to move the same air.
-
-The worst offender is coiled slack. A loop of excess cable hanging behind a 2U server is a solid object in the exhaust stream, and it is the single most common thing I see in photographs of otherwise tidy racks.
 
 ## My Approach
 
 Every cable in my rack serves a documented purpose. I label both ends of every cable with a label maker, using a consistent naming scheme. The label includes the source device, port, destination device, and port. It takes a few extra minutes during installation, and it saves hours during troubleshooting.
 
-A naming scheme is worth more than neat labels. Mine encodes device, port, destination and destination port, so a label is readable without a diagram and stays correct if the cable is reseated in the same place. The scheme matters more than the label maker: any consistent convention beats beautiful labels that each describe things differently.
-
 I route power cables on one side of the rack and data cables on the other. This keeps things organized and reduces electromagnetic interference, though at these distances EMI is rarely a real problem.
 
-Labeling both ends is the part people skip, and it is the part that matters. A label on one end tells you what a cable is when you are already looking at the right end. The reason to label both is that tracing a cable in a populated rack otherwise means unplugging one end and watching for a link light to go out, which means taking something down to learn something a sticker could have told you. There is an actual standard for this administration, ANSI/TIA-606, and its useful idea is that every label references an identifier that also exists in your documentation, so the sticker and the spreadsheet agree.
+That hedge is worth expanding, because the usual justification for the split is mostly wrong. Twisted pair rejects common mode noise by construction, so at rack distances a power cord running parallel to a patch cable is not a realistic cause of Ethernet errors. The real reasons are practical: tracing is faster, and you never want to be shifting live power cords to reach a network cable.
 
-Color coding multiplies the value of labels because it works from across the room. Assign a color per function and never reuse it: red for out-of-band management (iDRAC, IPMI, console), blue for general server data, yellow for switch-to-switch uplinks, green for storage. Then a red cable plugged into a data switch port is visibly wrong before anyone reads a label.
+Labeling both ends is the part people skip, and it is the part that matters. Without both, tracing a cable in a populated rack means unplugging one end and watching for a link light to go out, which means taking something down to learn what a sticker could have told you. There is a standard for this, ANSI/TIA-606, and its useful idea is that every label references an identifier that also exists in your documentation, so the sticker and the spreadsheet agree. The convention matters more than the label maker: any consistent scheme beats labels that each describe things differently.
 
-The physical rack itself is standardized by EIA-310, which is where the numbers come from: the rails are 19 inches apart, and one rack unit is 1.75 inches, or 44.45 mm. The hole spacing inside a U is not even, it repeats in a 0.5, 0.625, 0.625 inch pattern, which is why a cage nut placed one hole off leaves your rail ears misaligned by an amount that looks like the equipment is defective.
+Color coding multiplies the value of labels because it works from across the room. Assign a color per function and never reuse it: red for out-of-band management, blue for general server data, yellow for switch-to-switch uplinks, green for storage. Then a red cable in a data switch port is visibly wrong before anyone reads a label.
 
-Separating power from data is worth doing, but the reason usually given for it is wrong, and I said so above without saying why. Twisted pair rejects common mode noise by construction, which is the entire point of the twist, and shielded cable adds another layer. At rack distances and mains frequencies, interference from a power cord running parallel to a patch cable is not a real failure mode for Ethernet.
-
-The real reasons to separate them are practical. Power and data cables have different bend and service characteristics, keeping them apart makes tracing faster, and you never want to be moving live power cords to reach a network cable. Fibre is the case where physical separation genuinely matters, and there it is about crush and bend radius rather than about electrical noise.
+The rack itself is standardized by EIA-310: the rails are 19 inches apart and one rack unit is 1.75 inches, or 44.45 mm. The hole spacing inside a U is not even, repeating in a 0.5, 0.625, 0.625 inch pattern, which is why a cage nut placed one hole off leaves your rail ears misaligned by an amount that looks like the equipment is defective.
 
 ## Velcro Over Zip Ties
 
 I use velcro straps exclusively, never zip ties. Zip ties seem convenient until you need to add or remove a cable. Then you are cutting zip ties, potentially nicking other cables in the process, and replacing them all. Velcro straps can be opened, adjusted, and resealed in seconds.
 
-There is an electrical reason on top of the practical one. Twisted pair works because the two conductors in a pair are twisted at a controlled rate, which gives the pair a consistent characteristic impedance and lets noise cancel. Crushing a bundle with an over-tightened zip tie deforms that geometry. The result is increased return loss and near-end crosstalk, which at gigabit is usually invisible and at 10GBASE-T is not. That is the classic version of this failure: a cable that has worked perfectly for years starts failing when you upgrade the link to 10 Gbps, and the cable itself never changed. Only the margin did.
+There is a second reason beyond convenience, and it is the one that actually damages things. Twisted pair works because the two conductors in a pair are twisted at a controlled rate, which gives the pair a consistent characteristic impedance and lets noise cancel. Crushing a bundle with an over-tightened zip tie deforms that geometry, and the result is increased return loss and near-end crosstalk. At gigabit that is usually invisible. At 10GBASE-T it is not. The classic version of this failure is a cable that worked perfectly for years and starts failing when you upgrade the link to 10 Gbps: the cable never changed, only the margin did. On fiber, over-tightening violates the minimum bend radius and attenuates the signal outright.
 
 Velcro is not a free pass either. The rule is the same: you should be able to slide the bundle within the strap. If the strap is holding the cables in a fixed shape, it is too tight.
 
-While on the subject of physical abuse, two more limits worth knowing. TIA-568 installation practice puts the minimum bend radius for four-pair UTP at four times the cable's outer diameter, which for typical Cat6 is about an inch, and it caps pulling tension at 25 pounds-force (about 110 newtons). Fiber is stricter, generally ten times the outer diameter unloaded and twenty times while under pulling tension, though modern bend-insensitive fiber tolerates far more than the old stuff. A cable that got kinked around a rail corner during installation is a fault waiting for a reason to appear.
-
-There is a second reason beyond convenience, and it is the one that actually damages things. A zip tie pulled tight deforms the jacket and can change the geometry of the twisted pairs inside, which is exactly what the twist rate is controlling. On copper that shows up as degraded performance at the top end of the category rather than as an outright failure, which makes it hard to diagnose. On fibre, overtightening violates the minimum bend radius and attenuates the signal. Velcro cannot be overtightened in the same way.
+Two more physical limits are worth knowing. TIA-568 puts the minimum bend radius for four-pair UTP at four times the cable's outer diameter, about an inch for typical Cat6, and caps pulling tension at 25 pounds-force (about 110 newtons). Fiber is stricter: ten times the outer diameter unloaded, twenty under tension, though bend-insensitive fiber tolerates far more. A cable kinked around a rail corner is a fault waiting for a reason to appear.
 
 ## Patch Panels
 
 For Ethernet, I run all connections through a patch panel at the top of the rack. The servers connect to the rear of the patch panel with short cables, and the front of the patch panel connects to the switch with color-coded patch cables. This means I never need to reach behind a server to change a network connection.
 
-The budget that governs this layout is the 100 metre channel from TIA-568, and it is not 100 metres of any cable you like. It is 90 metres of permanent link, meaning the fixed horizontal run terminated at both ends, plus 10 metres total of patch cords across both ends combined. Long patch cords eat that budget, and stranded patch cable has higher attenuation per metre than the solid-core cable used in permanent links, which is why the allowance is small. Inside a single rack you are nowhere near the limit, but the moment a run leaves the room, count it.
+The budget governing the layout is the 100 metre channel from TIA-568, and it is not 100 metres of any cable you like. It is 90 metres of permanent link, the fixed horizontal run terminated at both ends, plus 10 metres total of patch cords across both ends combined. Stranded patch cable has higher attenuation per metre than the solid-core cable used in permanent links, which is why the allowance is small. Inside one rack you are nowhere near the limit, but the moment a run leaves the room, count it.
 
-Termination is where patch panels actually go wrong. Two rules:
+Termination is where patch panels actually go wrong, and there are two rules.
 
-Pick T568A or T568B and use it on every jack in the building. The two standards simply swap the orange and green pairs; either works, and mixing them end to end produces a crossover cable that gigabit auto MDI-X will silently correct, which is worse than a clean failure because now your building has two conventions and nobody knows which.
+Pick T568A or T568B and use it on every jack in the building. The two standards simply swap the orange and green pairs; either works, and mixing them end to end produces a crossover that gigabit auto MDI-X silently corrects. That is worse than a clean failure, because now your building has two conventions and nobody knows which is where.
 
-Respect the untwist limit. TIA-568 allows no more than 13 mm (half an inch) of untwisted conductor at a Cat5e termination, and Cat6 is tighter still. Untwisting an inch of pair to make the punchdown easier is the single most common installation error, and it is invisible: the link comes up, the wiremap test passes, and the crosstalk margin is gone.
+Respect the untwist limit. TIA-568 allows no more than 13 mm, half an inch, of untwisted conductor at a Cat5e termination, and Cat6 is tighter still. Untwisting an inch of pair to make the punchdown easier is the most common installation error, and it is invisible: the link comes up, the wiremap test passes, and the crosstalk margin is gone.
 
-Which leads to the tool most people own and misunderstand. A cheap continuity tester checks wiremap, meaning it confirms that pin 1 goes to pin 1 and so on. It does not measure insertion loss, return loss, or crosstalk. The failure it cannot see is a split pair, where each end is wired to the correct pin number but using conductors from two different twisted pairs. Continuity is perfect. Wiremap passes. The pairs are no longer twisted with their partners, crosstalk goes through the roof, and the link either negotiates down to 100 Mbps or throws errors under load. If you are terminating your own cable and something is mysteriously slow, suspect this before you suspect the switch.
-
-This is structured cabling in miniature, and the value is the same at both scales: the permanent link never moves. Cables into the back of a patch panel get terminated once and then left alone, and all the churn happens on short patch leads at the front, where a mistake costs nothing and a change takes seconds. The failure mode it prevents is the one where changing a network connection means disturbing a run that was working.
+Which leads to the tool most people own and misunderstand. A cheap continuity tester checks wiremap, confirming pin 1 goes to pin 1 and so on. It does not measure insertion loss, return loss, or crosstalk. The failure it cannot see is a split pair, where each end is on the correct pin but using conductors from two different twisted pairs. Wiremap passes, the signal pairs are no longer twisted with their partners, crosstalk goes through the roof, and the link either negotiates down to 100 Mbps or throws errors under load. If you terminated your own cable and something is mysteriously slow, suspect this before the switch.
 
 ## Service Loops
 
 I leave a small service loop of excess cable at each connection point. This gives me enough slack to pull a server forward on its rails for maintenance without disconnecting anything. It also means I can reroute cables if I rearrange equipment.
 
-The amount of slack to leave is set by how far the rails extend, not by how it looks. A 2U server on full-extension rails comes forward far enough that roughly a metre of slack per cable is the working figure. Test it once with the server empty: pull the chassis out to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, at speed, with the system running.
+Size the loop to the rail travel, not by eye. A four-post rail kit pulls a server most of its own depth out of the rack, so roughly a metre of slack per cable is the working figure for a 2U chassis. Test it once with the server empty: extend the chassis to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, with the system running.
 
-Cable management arms are the vendor's answer to this, and they deserve an honest note. A CMA holds the slack neatly and lets the server slide out with everything connected, which is genuinely useful. It also sits directly in the rear exhaust path and adds resistance to the airflow you spent the first section of this article protecting. Plenty of people remove them for exactly that reason and manage slack in the vertical channel instead. Either choice is defensible; not deciding is what leaves you with a CMA blocking airflow and cables that still pull tight.
-
-Size the loop to the rail travel, not by eye. A four post rail kit typically pulls a server most of its own depth out of the rack, so the slack has to cover that full extension plus a margin, or the cable becomes the thing that stops the server sliding. Test it once with the server actually extended rather than assuming.
+Cable management arms deserve an honest note. A CMA holds the slack neatly and lets the server slide out with everything connected, which is genuinely useful. It also sits in the rear exhaust path and adds resistance to the airflow the first section was about protecting. Plenty of people remove them for that reason and manage slack in the vertical channel instead. Either choice is defensible. Not deciding leaves you with a CMA blocking airflow and cables that still pull tight.
 
 ## Power
 
 Power cables get their own vertical cable manager on the right side of the rack. Each PDU (Power Distribution Unit) is mounted vertically, and power cables run straight from the PDU to the server's power supply. I use C13/C14 cables cut to the right length rather than coiling excess cable.
 
-Those connector names come from IEC 60320, and the ratings are worth knowing when you are choosing cords: C13/C14 is rated 10 A at 250 V under IEC and 15 A under the North American UL variant, while C19/C20 is 16 A IEC and 20 A UL. Cords are not interchangeable upward. A C13 physically cannot be substituted for a C19 on a high-draw device.
+Those letters are not arbitrary. They come from IEC 60320, and the pairing is always inlet and connector: the C14 inlet sits on the equipment, the C13 connector on the cord. C19 and C20 are the larger version used by high-draw equipment and by most rack PDUs for their own feed. C13/C14 is rated 10 A at 250 V under IEC and 15 A under the North American UL variant; C19/C20 is 16 A IEC and 20 A UL. They are not interchangeable upward, and no adapter is the right answer to a cord that does not fit.
 
-Two practices that pay off. First, cross the feeds deliberately. If each server has two power supplies, one goes to the left PDU and one to the right, and the labeling should make that obvious at a glance so nobody "tidies up" both cords onto the same strip. Second, use locking cords, the IEC Lock or P-Lock style, for anything you cannot afford to have vibrate loose. A standard C13 is held in only by friction, and it will walk out of the socket over months of fan vibration and rail movement.
-
-Worth naming the connectors, because the letters are not arbitrary. C13 and C14 are the common pair: the C14 inlet is on the equipment, the C13 connector is on the cord. C19 and C20 are the larger 16A version, used by higher draw equipment and by most rack PDUs for their own feed. Getting the pairing wrong is the usual reason a cable does not fit, and no adapter is the right answer.
+Two practices pay off. Cross the feeds deliberately: if each server has two power supplies, one goes to the left PDU and one to the right, and the labeling should make that obvious at a glance so nobody "tidies up" both cords onto the same strip. And use locking cords, the IEC Lock or P-Lock style, for anything you cannot afford to have vibrate loose. A standard C13 is held in by friction alone, and it will walk out of the socket over months of fan vibration and rail movement.
 
 ## What Cable Management Cannot Fix
 
 Neat cabling is a maintainability property, not a performance one. It will not make a link faster, it will not fix a bad transceiver, and a rack that looks beautiful can still be wired wrong. The value shows up on the day something breaks, in how long it takes to answer "what is plugged into port 14."
 
-It also cannot substitute for documentation. Labels tell you what a cable is; they do not tell you why it exists, what depends on it, or whether it is safe to remove. That belongs in a port map you maintain alongside the rack, and the labels should carry identifiers that match it. A rack with immaculate cabling and no documentation is still a rack nobody but you can work on.
+It also cannot substitute for documentation. Labels tell you what a cable is; they do not tell you why it exists or whether it is safe to remove. That belongs in a port map maintained alongside the rack, with labels carrying identifiers that match it.
+
+The test that settles whether any of this worked is simple: could someone who did not build the rack trace a connection end to end without unplugging anything? If not, the cabling is documentation debt no matter how good the photographs look.
 
 ## References
 
@@ -18447,9 +18494,6 @@ It also cannot substitute for documentation. Labels tell you what a cable is; th
 - https://en.wikipedia.org/wiki/Structured_cabling
 - https://en.wikipedia.org/wiki/Data_center_environmental_control
 - https://en.wikipedia.org/wiki/IEC_60320
-- https://en.wikipedia.org/wiki/Category_6_cable
-- https://en.wikipedia.org/wiki/Patch_panel
-- https://en.wikipedia.org/wiki/Electromagnetic_interference
 `,
   },
   {
@@ -18471,23 +18515,59 @@ It also cannot substitute for documentation. Labels tell you what a cable is; th
 
 VMware ESXi has been the gold standard for enterprise virtualization for years. Proxmox VE is the open-source alternative that has been gaining traction, especially in the homelab community. I have run both extensively, and the choice between them depends on what you are optimizing for.
 
+They are also less alike underneath than the feature comparisons suggest, and that difference explains most of the rest.
+
+## What each one actually is
+
+ESXi is a type 1 hypervisor with its own purpose-built kernel, the VMkernel. There is no general purpose operating system underneath it. That is the source of both its strengths, a small attack surface and predictable behaviour, and its limits: you get exactly the features VMware ships, through the interfaces VMware provides.
+
+Proxmox VE is Debian with KVM and LXC on top. KVM turns the Linux kernel itself into the hypervisor, so this is also type 1 in the sense that matters for performance, with the guest running on hardware virtualization extensions rather than being emulated. What sits alongside it is a complete Linux system.
+
+That is the real fork in the road. Proxmox gives you a hypervisor and a Linux box; ESXi gives you a hypervisor and an API.
+
+## Containers, which the comparison usually skips
+
+Proxmox runs two kinds of guest. KVM virtual machines get their own kernel and can run anything. LXC containers share the host kernel, so they start in about a second, and idle at tens of megabytes instead of the gigabyte a VM reserves before it has done anything.
+
+For a homelab that matters more than any benchmark. Most of what runs in a lab is a Linux service that does not need its own kernel, and putting thirty of those in containers rather than thirty VMs is the difference between a machine that is comfortable and one that is full. The tradeoff is that a container shares the host kernel, so it cannot run a different one and the isolation boundary is weaker than a VM's.
+
+ESXi has no equivalent. Containers there mean a VM running a container runtime.
+
 ## ESXi: The Enterprise Standard
 
 ESXi is polished. The vSphere client is fast and well-organized. vMotion (live migration) works flawlessly. The ecosystem of third-party tools and integrations is massive. If you are studying for VMware certifications or want to match what most enterprises run, ESXi is the obvious choice.
 
+Worth being precise about what is free and what is not, because most of the good parts are not. Bare ESXi manages one host. vMotion, the distributed switch, DRS and the rest are vCenter features and require licences. A single free ESXi host is a hypervisor, not a cluster, and much of what people admire about VMware is the cluster.
+
 The downside is licensing. VMware's free tier has become increasingly limited, and the paid licenses are expensive for a homelab. The acquisition by Broadcom has added uncertainty about future pricing and availability. For a lab where you are experimenting freely, licensing friction is a real concern.
+
+There is a second friction that bites homelabs harder than it bites enterprises: the hardware compatibility list. ESXi ships drivers for hardware VMware supports, which is enterprise hardware. A consumer NIC or a desktop SATA controller may simply not be seen. Proxmox, being Debian, drives anything Linux drives, which is most things.
 
 ## Proxmox: The Open-Source Powerhouse
 
 Proxmox VE is built on Debian Linux with KVM for virtual machines and LXC for containers. It is completely free to use with no feature limitations. The web interface is functional, and you get full command-line access to the underlying Linux system, which means you can do anything the OS can do.
 
+"No feature limitations" is the part worth dwelling on. Clustering, live migration, high availability and replication are all in the free product. The paid subscription buys the enterprise package repository and support, not features. That is the opposite of the VMware model, and for a lab it is the whole argument.
+
 Proxmox also has native ZFS support, which is a big deal if you care about data integrity and storage flexibility. You can create ZFS pools directly from the Proxmox interface and use them for VM storage.
+
+Native means the installer will build a root ZFS pool, and the web UI manages datasets and snapshots directly. Combined with KVM, that gives you snapshots that are genuinely cheap and replication between nodes that ships only changed blocks. ESXi's answer is VMFS or vSAN, and neither gives you end to end checksumming on commodity disks.
+
+## Clustering, and the part that surprises people
+
+Proxmox clusters use Corosync for membership and quorum, and quorum is majority based. Two nodes is therefore a trap: lose either and the survivor has one vote out of two, which is not a majority, so it stops. Run three nodes, or add a lightweight quorum device as the third vote. Every "my two node Proxmox cluster froze" story is this.
+
+Live migration also needs shared or replicated storage, as noted below. Corosync additionally wants a low latency network to itself; sharing it with storage traffic is the usual cause of a cluster that fences nodes under load.
 
 ## My Experience
 
 I ran ESXi for a year before switching most of my lab to Proxmox. The switch was driven by three things: licensing costs, ZFS support, and the flexibility of having a full Linux system underneath.
 
 Proxmox handles my workloads just as well as ESXi did. VM performance is effectively identical (both use hardware virtualization). Live migration works, though it requires a shared storage backend. Backups are straightforward with Proxmox Backup Server, which is another free tool from the same team.
+
+Performance being "effectively identical" is not hand-waving. Both run guests on the CPU's virtualization extensions, with second level address translation handling memory in hardware. The hypervisor is not in the path for ordinary instructions. Where they differ is in the paravirtualized device drivers, virtio on KVM and VMXNET3 and PVSCSI on VMware, and both are good. Use them: a guest left on emulated e1000 or IDE will be slow on either platform, and that misconfiguration is the source of most benchmark posts claiming one destroys the other.
+
+Proxmox Backup Server deserves more than a clause. It does deduplicated, incremental, client side encrypted backups with verification, and restores individual files out of a VM image. It is the piece that closed the last real gap for me.
 
 ## What I Miss from ESXi
 
@@ -18496,6 +18576,17 @@ The vSphere client is genuinely better than the Proxmox web UI. It is more respo
 ## Bottom Line
 
 For a homelab, Proxmox wins on value. You get enterprise-class virtualization with no licensing restrictions, native ZFS, and full Linux flexibility. For enterprise environments or certification study, ESXi remains the standard. There is no wrong choice. Pick the one that matches your goals.
+
+If you want the decision as a rule: pick ESXi when the goal is to practise what an employer runs, or when something you need only exists in the VMware ecosystem. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
+
+## References
+
+- https://pve.proxmox.com/pve-docs/pve-admin-guide.html
+- https://pve.proxmox.com/pve-docs/chapter-pvecm.html
+- https://linux-kvm.org/page/Main_Page
+- https://en.wikipedia.org/wiki/LXC
+- https://en.wikipedia.org/wiki/VMware_ESXi
+- https://en.wikipedia.org/wiki/Second_Level_Address_Translation
 `,
   },
   {
