@@ -20605,11 +20605,34 @@ The mirror-image mistake is saving too early. Before any remote change touching 
 
 Most people use iDRAC for its virtual console and power controls. But iDRAC 9 has features that make server management significantly easier if you take the time to set them up.
 
+Before any of it: check your license tier, because it decides what you actually have. iDRAC9 ships in Basic, Express, and Enterprise, with a Datacenter tier above that. **Virtual Console and Virtual Media require Enterprise.** A used PowerEdge bought off eBay very often arrives with Express, which means the two features people assume are built in simply are not there, and the buttons in the web UI are greyed out with no explanation of why. Dell offers a 30 day Enterprise trial you can activate from the licensing page to confirm that is what you are looking at before you go buy a license.
+
+Two more things to get right on day one. Newer PowerEdge systems no longer ship with the old \`root\` / \`calvin\` default; they generate a unique password at the factory and print it on the pull-out information tag on the front of the chassis. And if the chassis has a dedicated iDRAC network port, use it rather than shared-LOM mode. In shared mode the iDRAC rides on a host NIC, so the day you reconfigure bonding or a VLAN on the host you lose out-of-band access to the machine you were trying to fix, which defeats the entire point of out-of-band management.
+
 ## Virtual Media
 
 Virtual Media lets you mount an ISO file from your workstation to the server's virtual optical drive. This means you can install an operating system remotely without burning a disc or plugging in a USB drive. I use this constantly for OS installations and recovery boot media.
 
 To use it, open the virtual console, go to Virtual Media, and map your local ISO file. The server sees it as a physical DVD drive.
+
+It works, but understand the data path: every block the server reads travels from your workstation's disk, through the browser, across the network to the iDRAC, and into the emulated drive. Over a LAN that is tolerable. Over a VPN or a slow uplink a Windows Server installation can genuinely take hours, and if your laptop sleeps or the browser tab closes, the mount drops and the install dies partway through.
+
+The fix is Remote File Share, which tells the iDRAC to mount the ISO itself from an NFS or CIFS share, taking your workstation out of the loop entirely:
+
+\`\`\`bash
+racadm -r 10.0.10.31 -u lab-admin -p '...' remoteimage -c \\
+  -l //10.0.10.20/isos/ubuntu-24.04-live-server-amd64.iso
+\`\`\`
+
+Pair it with a one-shot boot override so you do not have to catch F11 on the console:
+
+\`\`\`bash
+racadm set iDRAC.serverboot.FirstBootDevice VCD-DVD
+racadm set iDRAC.serverboot.BootOnce Enabled
+racadm serveraction powercycle
+\`\`\`
+
+\`BootOnce\` matters. Without it the server boots the virtual CD on every restart, including the one at the end of the installer, and you get to watch the installation start over.
 
 ## Automated Alerts
 
@@ -20617,19 +20640,47 @@ iDRAC can send email alerts for hardware events: disk failures, memory errors, t
 
 I have alerts configured for anything that indicates a hardware problem. Getting an email about a predictive disk failure gives me time to order a replacement before the drive actually dies.
 
+The configuration is layered, and missing a layer is why people report that alerts "do not work." You need the global alert switch on, the SMTP server configured, at least one destination email address enabled, and the specific event category and severity selected in the alert filter grid. All four. Turning on the SMTP server and adding an address does nothing if the category filter is still empty.
+
+The other trap is authentication. Older iDRAC9 firmware had no SMTP authentication or TLS at all, so it could only relay through a server that accepted unauthenticated mail from its IP. Support for SMTP authentication and SSL/TLS arrived in later 4.x firmware. If you are on older firmware, or you just want this to be reliable, point iDRAC at a small Postfix or msmtp relay on your LAN and let that host deal with Gmail or your provider. That also means one place to fix when a provider changes its rules, rather than one per server.
+
+Note that IPMI Platform Event Traps and email alerts are separate mechanisms. \`iDRAC.IPMILan.AlertEnable\` governs the former and is unrelated to whether email goes out, which is a common source of confusion when copying racadm snippets around.
+
 ## Firmware Updates
 
 iDRAC can update server firmware (BIOS, iDRAC itself, drive firmware, NIC firmware) from its web interface. Dell hosts a firmware catalog that iDRAC can check against your current versions and identify what needs updating.
 
 I schedule firmware reviews quarterly. Keeping firmware current prevents known bugs and closes security vulnerabilities.
 
+Order matters. Update the iDRAC and Lifecycle Controller firmware **first**, then BIOS, then everything else. The iDRAC is what applies the other updates, so an old iDRAC applying a new BIOS package is the combination most likely to fail. Updates that require a host reboot are staged into the Lifecycle Controller and applied during the next boot, which can leave the machine sitting at a blank screen for 20 to 40 minutes. Do not power cycle it there. Interrupting an iDRAC flash is one of the few ways to genuinely brick a PowerEdge. iDRAC keeps exactly one previous version available for rollback, so you can back out one bad update but not two.
+
+When an update does fail, the classic symptom is that everything you schedule afterward sits at "Scheduled" forever and nothing ever runs. A stuck job at the head of the queue blocks every job behind it. The fix is one command and it is the single most useful piece of racadm trivia there is:
+
+\`\`\`bash
+racadm jobqueue view
+racadm jobqueue delete -i JID_CLEARALL_FORCE
+\`\`\`
+
+While you are collecting recovery commands: \`racadm racreset\` soft-resets the iDRAC itself in about two minutes without touching the running host. An iDRAC that has been up for a year and has become slow, or whose web UI has stopped loading, is almost always fixed by that, and it is safe to run on a production machine.
+
 ## Performance Monitoring
 
 The built-in performance monitoring shows real-time and historical CPU, memory, I/O, and power usage. This data is useful for capacity planning and for correlating performance issues with specific hardware events.
 
+For anything beyond eyeballing a graph, pull the data out over Redfish rather than scraping the GUI. Redfish is the DMTF's standard management API: HTTPS and JSON, and the same resource paths work against HPE iLO and Lenovo XCC, so what you learn is not Dell-specific.
+
+\`\`\`bash
+curl -sk -u lab-admin:'...' \\
+  https://10.0.10.31/redfish/v1/Chassis/System.Embedded.1/Power | jq .
+\`\`\`
+
+That returns power supply state, voltages, and the current wattage reading as structured data you can graph. Continuous telemetry streaming, as opposed to polling, is a Datacenter license feature.
+
 ## Lifecycle Controller
 
 The Lifecycle Controller is a separate environment built into iDRAC that provides hardware diagnostics, OS deployment tools, and RAID configuration. It boots independently of the OS and does not require any installed software. It is essentially a built-in recovery environment that is always available.
+
+You reach it with F10 during POST. Two caveats: it can be disabled in BIOS, in which case F10 does nothing and you will assume the feature is missing; and the Part Replacement feature, which automatically restores firmware and configuration onto a newly installed component, only works if it was enabled *before* you swapped the part. Turn it on now, on every server, so it is there when you need it.
 
 ## RACADM
 
@@ -20642,6 +20693,19 @@ racadm set iDRAC.Users.2.Password NewSecurePassword
 \`\`\`
 
 This is how I configure iDRAC on new servers. Run the script, and every setting is applied consistently.
+
+One security note about that third line and about remote racadm generally: **a password on the command line is visible in your shell history and to any user on the box via \`ps\`.** For remote invocations use a credentials file instead of \`-p\`, or upload an SSH public key with \`racadm sshpkauth\` and drive the firmware racadm over SSH with key authentication.
+
+Which brings up the part of iDRAC that matters most for anyone studying security. Leave IPMI over LAN disabled unless something specifically needs it. IPMI 2.0's RAKP handshake will hand a password hash for any valid username to an unauthenticated remote attacker for offline cracking (CVE-2013-4786), and cipher suite 0 permits outright authentication bypass on implementations that allow it. Dell's own iDRAC had a critical IPMI flaw of its own in CVE-2014-8272, where predictable session IDs let an attacker inject commands into a privileged session. These are protocol-level problems, not bugs you patch away, which is why Redfish exists. Put every iDRAC on a dedicated management VLAN with no route to the internet, and go look at how many are publicly exposed on Shodan if you want a reason to take that seriously.
+
+## References
+
+- https://downloads.dell.com/topicspdf/idrac_3_31_ug_en-us.pdf
+- https://downloads.dell.com/topicspdf/v4_00_cliguide_en-us.pdf
+- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://www.cve.org/CVERecord?id=CVE-2013-4786
+- https://www.kb.cert.org/vuls/id/843044
 `,
   },
   {
@@ -21932,6 +21996,10 @@ Every firewall policy should allow exactly what is needed and nothing more. This
 
 In practice, this means starting with a policy that blocks everything, then adding rules one at a time as you identify what needs to be allowed. It is more work upfront, but it is dramatically more secure than starting with allow-all and trying to block bad traffic.
 
+NIST SP 800-41 Rev 1 says the same thing more formally: firewall policy should block all inbound and outbound traffic, with exceptions made for desired traffic. Worth restating, because "deny by default" produces a specific kind of outage. You enable it and something nobody documented stops working. The way to avoid that is to run the deny rule in a logging-only posture first and read what it would have dropped. In a homelab a week catches most of it, but the things that break are monthly cron jobs, certificate renewals, and quarterly backup verification, so a month is safer.
+
+The other half of least privilege is what "nothing more" means at the field level. A policy has at least four dimensions: source, destination, service, and time or user. Tightening three of them and leaving the fourth as \`any\` is not least privilege. The field people leave open is service. A rule that says "Users zone to Servers zone, service ALL" is a wide open door with a narrow-looking name.
+
 ## My Methodology
 
 Before writing any policies, I map out every traffic flow I need to support:
@@ -21942,6 +22010,18 @@ Before writing any policies, I map out every traffic flow I need to support:
 4. Does it need deep packet inspection?
 
 I document each flow in a table, then translate each row into a firewall policy.
+
+A fifth question earns its place after you have been burned once: is this a long-lived connection that will sit idle? That determines whether the flow needs session timeout handling, which is covered below.
+
+The table is the artifact that matters; the ruleset is a compilation target. Reviewing policy six months later means reading the table and asking whether each row is still true, not reverse-engineering intent from a list of address objects. A row looks like this:
+
+| Source | Destination | Service | Direction | Why |
+| --- | --- | --- | --- | --- |
+| Users | Servers | TCP/445 | one-way | File shares |
+| Servers | Internet | TCP/443 | one-way | Package updates |
+| Management | All | TCP/22, TCP/443 | one-way | Admin access |
+
+Object naming pays for itself here. \`SRV-FILE01\` and \`SVC-SMB\` read the same way in the policy list and in the table. Raw IP addresses in policies are how you end up with rules nobody dares to touch.
 
 ## Zone-Based Design
 
@@ -21955,19 +22035,64 @@ Example zones in my FortiGate:
 - Guest
 - Internet
 
+Check the intra-zone setting on every zone you create. When two interfaces belong to the same zone, whether traffic between them is permitted is a per-zone toggle, and it is not always set to deny. The symptom of getting this wrong is genuinely confusing: two VLANs you believe are isolated can reach each other, and no policy in the list explains why, because the traffic never gets evaluated against a policy at all.
+
+Zones also have a hard limit: they enforce at the boundary and can do nothing about traffic that never crosses it. If a switch access port is misconfigured and drops an IoT device into the Servers VLAN, that device is inside the segment and the firewall never sees its traffic. Policy design assumes the segmentation underneath it is correct. Port security, private VLANs, and 802.1X are what make that assumption true, and none of them live on the firewall.
+
+## Stateful Means You Only Write Half the Rules
+
+A stateful firewall keeps a session table. When you allow the initial SYN from client to server, the reply traffic is matched against that session entry and permitted automatically. You do not write a return rule.
+
+The beginner mistake is writing one anyway. A mirrored reverse policy doubles the size of your ruleset and, worse, actually opens a hole, because that reverse rule permits unsolicited inbound connections, not just replies.
+
+The corollary is that sessions expire, and the timeouts are where the real failures come from. Linux netfilter defaults, documented in the kernel's conntrack sysctl reference, are 432,000 seconds (5 days) for an established TCP connection, 30 seconds for UDP, 120 seconds for a detected UDP stream, and 600 seconds for unknown layer 4 protocols. Most commercial firewalls are far more aggressive on TCP, commonly reaping idle sessions after about an hour.
+
+Here is the failure that costs people an afternoon. An SSH session or a database connection pool sits idle longer than the firewall's TCP idle timeout, so the firewall silently deletes the session entry and tells neither endpoint. The next packet either vanishes or draws an RST, and the application reports a hang or a "connection reset by peer" that looks random because it only happens after lunch. Linux does not send its first TCP keepalive until \`net.ipv4.tcp_keepalive_time\`, which defaults to 7200 seconds, two hours. If the firewall reaps at one hour, the keepalive never gets a chance. Fix it with an application-level keepalive shorter than the firewall's timeout, or lower \`tcp_keepalive_time\` below it.
+
+Session tables are also finite. When a Linux box exhausts \`nf_conntrack_max\`, the kernel logs \`nf_conntrack: table full, dropping packet\` and new connections fail while existing ones keep working perfectly. The symptom is a server that serves current users fine and refuses everyone new.
+
 ## Policy Order
 
 FortiGate (and most firewalls) evaluates policies top to bottom and applies the first match. This means specific rules must come before general rules. A common mistake is putting a broad allow rule above a specific deny rule, which effectively makes the deny rule useless.
 
 I organize my policies in groups: inter-zone allow rules first, then zone-to-internet rules, then the implicit deny-all at the bottom.
 
+The name for the mistake above is a shadowed rule: one that can never match because something broader above it always matches first. Nothing warns you. It is not a syntax error, and the GUI renders it exactly like a working rule. You find shadowed rules two ways: a policy shows a zero hit counter when it should be busy, or you check before you deploy. FortiGate exposes Policy Lookup in the GUI and \`diagnose firewall iprope lookup\` in the CLI. Give it a source address, destination address, port, and protocol, and it returns the policy ID that will actually handle that traffic.
+
+One field to leave alone: source port. The client picks its source port from the ephemeral range, which on Linux defaults to 32768 through 60999 (\`net.ipv4.ip_local_port_range\`). A policy that pins a source port is either wrong today or will be wrong after a kernel upgrade.
+
 ## Logging
 
 Every policy should log traffic, at minimum for session start. Logging lets you verify that policies are working as intended and provides forensic data for security investigations. I enable full logging on security policies and session-start logging on routine traffic policies.
 
+The most valuable log is the one that is off by default. On FortiGate the implicit deny is policy ID 0, and logging for it is disabled out of the box. That means the record of everything the firewall blocked, which is exactly the data you need when someone reports that X cannot reach Y, does not exist until you enable it. Turn it on first, before you need it.
+
+Budget for the volume. A syslog record for one session runs roughly 300 to 500 bytes. At a sustained 100 sessions per second that is 30 to 50 KB/s, or 2.6 to 4.3 GB per day, before compression. Either size retention for that or accept that your logs roll over before you go looking.
+
+Session-start and session-end records answer different questions. End records carry byte counts, which is what you want for capacity planning and for spotting a host suddenly uploading gigabytes. Start records prove an attempt happened even when the session never established, which is why deny rules log on start: there is no session to end. For transport, RFC 5424 defines the modern syslog format and RFC 3164 the older BSD format a lot of gear still emits. Plain syslog over UDP 514 offers no delivery guarantee and no authentication, which is tolerable on a dedicated management VLAN and nowhere else.
+
+## What Firewall Policy Cannot Do
+
+Blocking all ICMP is the most common self-inflicted wound in this whole discipline. Path MTU Discovery depends on ICMP type 3 code 4, "fragmentation needed and DF set." Drop it and you create an MTU black hole: the TCP handshake succeeds, small requests work, and any response large enough to need fragmenting hangs forever. The signature symptom is "SSH connects fine but listing a large directory freezes." RFC 4821 describes the packetization-layer workaround that exists precisely because so many networks broke this. On IPv6 there is no workaround worth relying on: block Packet Too Big (type 2) or Neighbor Discovery (types 133 through 136) and IPv6 simply stops working. RFC 4890 lists which ICMPv6 messages must be permitted.
+
+A firewall policy is also just a decision about a 5-tuple. It cannot distinguish an authorized user from a compromised account using the same credentials from the same host, it sees nothing inside TLS unless you deliberately configured inspection, and it does not constrain lateral movement within a segment at all. That gap is the argument NIST SP 800-207 makes for zero trust architectures. Separately, RFC 2827 ingress filtering is cheap and worth doing: drop packets arriving on an interface whose source address could not legitimately originate there.
+
 ## Regular Review
 
 Firewall policies are not set-and-forget. I review my policies monthly to remove stale rules, tighten overly broad rules, and verify that the policy set matches the current network design. This discipline prevents policy bloat, where rules accumulate over time and nobody knows what half of them do.
+
+Hit counters are the evidence that makes review possible rather than theoretical. A policy with zero matching sessions across a full cycle is a removal candidate. The trap is that a full cycle is longer than a month. Quarterly reporting jobs, annual certificate renewals, and the disaster recovery test somebody runs once a year all look like dead rules until you delete them.
+
+So the sequence is: enable logging on the suspect rule, watch it for a cycle, disable it, wait another cycle, then delete. Disabling is reversible in seconds. Reconstructing a deleted rule from memory at 2 AM is not. And back up the configuration before every change, because the fastest rollback is always restoring a known-good config rather than undoing edits one at a time.
+
+## References
+
+- https://csrc.nist.gov/pubs/sp/800/41/r1/final
+- https://www.rfc-editor.org/rfc/rfc2827
+- https://www.rfc-editor.org/rfc/rfc4890
+- https://www.kernel.org/doc/html/latest/networking/nf_conntrack-sysctl.html
+- https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
+- https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/163385/policy-views-and-policy-lookup
 `,
   },
   {
@@ -22561,9 +22686,20 @@ You cannot optimize what you do not measure. I use three levels of power monitor
 
 Together, these give me a complete picture of where power is going.
 
+Know the limits of each tool before you trust a number. A Kill A Watt is rated to 15 A and about 1875 W, so it cannot legally or safely sit in front of a rack pulling more than that, and consumer meters lose accuracy badly at low loads. A metered PDU is typically specified to around 1 percent accuracy and does not care about load level. iDRAC's reading comes from the power supply's own instrumentation and is the number to trust for a single server. Also watch the units: a Kill A Watt reports both watts and volt-amps, and only watts is what you are billed for. Modern server supplies use active power factor correction and run above 0.95 power factor, so the two numbers are close, but a cheap UPS rated in VA will have a lower watt rating and the watt rating is the one that binds.
+
+For the per-server number without leaving the shell, IPMI exposes it directly:
+
+\`\`\`bash
+# Instantaneous system power draw, in watts
+ipmitool -I lanplus -H 10.0.10.31 -U root -P '...' dcmi power reading
+\`\`\`
+
 ## What I Found
 
 When I first measured, my rack was drawing about 1,600 watts continuously. At my electricity rate, that works out to roughly $140 per month. Not trivial.
+
+The arithmetic is worth internalizing because it makes every future decision fast. There are 8,760 hours in a year, so about 730 hours in an average month, which gives you a one-line rule: **kilowatts times 730 equals kilowatt-hours per month.** So 1.6 kW times 730 is roughly 1,170 kWh per month, and at about $0.12 per kWh that is $140. Your own rate is the variable that matters most here; US residential rates vary by more than a factor of three between states, so a rack that costs $140 a month in one place costs $350 in another.
 
 Breaking it down:
 - Dell R740 #1: ~500W (heavily loaded with VMs)
@@ -22572,9 +22708,17 @@ Breaking it down:
 - Networking equipment: ~80W
 - UPS overhead: ~60W
 
+That 60 W of UPS overhead is not a rounding error, it is the conversion loss. A double-conversion (online) UPS rectifies AC to DC and inverts it back continuously, and that costs 3 to 8 percent of throughput power the entire time it is running. A line-interactive UPS passes utility power through untouched until it needs to intervene, so its idle loss is far lower. If you do not have equipment that genuinely needs a perfectly conditioned sine wave, line-interactive is the cheaper choice to run.
+
+Before going further, check your circuit. A standard NEMA 5-15 outlet on a 15 A, 120 V branch circuit is 1,800 VA nominal, but the National Electrical Code limits a **continuous** load, defined as three hours or more, to 80 percent of the breaker rating. That is 12 A, or 1,440 VA. A rack pulling 1,600 W continuously is over the limit for a single 15 A circuit. It needs a 20 A circuit (16 A continuous, 1,920 VA) or it needs to be split across two circuits. This is the part of homelab power that is a safety issue rather than a cost issue, and it is the reason to know your total draw even if you do not care about the bill.
+
 ## Optimizations
 
 **BIOS power profiles:** Switching from "Performance" to "Performance Per Watt (OS)" on both R740s saved about 80W total with no noticeable performance impact.
+
+The reason that works is C-states. Dell's "Performance" system profile disables processor C-states and C1E and pins the CPU to its maximum P-state, so the cores never drop into a low-power idle even when they have nothing to do. "Performance Per Watt (OS)" hands control to the operating system's governor instead. On Linux with the \`intel_pstate\` driver that means the \`powersave\` governor, and here is the misconception that costs people this saving: \`powersave\` on \`intel_pstate\` is not slow. It still ramps to turbo frequencies under load within microseconds; it just does not hold maximum frequency while idle. Check what you actually have with \`cpupower frequency-info\`, and confirm the cores are reaching deep C-states with \`turbostat\`, which reports package power from the CPU's own RAPL counters alongside C-state residency.
+
+**Redundant power supplies:** the one I would add to this list. Power supply efficiency is a curve, not a constant. An 80 PLUS Platinum unit is certified at roughly 94 percent efficiency at 50 percent load but only around 90 percent at 20 percent load, and efficiency falls off a cliff below that. Two redundant 1,100 W supplies sharing a 300 W server load are each running at about 14 percent, in the worst part of the curve. Dell's Hot Spare mode puts one supply into standby and loads the other into its efficient band, typically recovering 15 to 30 W per server, while still keeping the standby unit ready. It is enabled in iDRAC under power configuration and it is free.
 
 **Idle server management:** The Mac Pro was drawing 280W while barely being used. I configured it to sleep when idle and wake on network access. Average draw dropped to about 40W.
 
@@ -22582,15 +22726,39 @@ Breaking it down:
 
 **After optimization:** Total rack draw dropped from 1,600W to about 1,100W. That is a 30% reduction and saves roughly $40 per month.
 
+Check that against the rule: 0.5 kW saved times 730 hours is 365 kWh per month, which at $0.12 is about $44. The numbers line up, which is how you know the meter and the math agree.
+
 ## Temperature and Power
 
 Server power draw is closely linked to cooling. Higher ambient temperatures cause fans to spin faster, which uses more power, which generates more heat. Keeping the rack area cool (below 75F) helps keep fan speeds and power draw lower.
 
 I added better ventilation to the closet housing my rack, which dropped ambient temperature by about 5 degrees and resulted in measurably lower fan speeds and power consumption.
 
+Fans are a bigger lever than they look, because fan power follows the affinity laws: airflow scales linearly with RPM but **power scales with the cube of RPM.** Dropping fan speed by 20 percent cuts fan power roughly in half. That is why a handful of degrees of ambient temperature shows up so clearly on the meter, and it is why the single worst power regression in a PowerEdge homelab is the third-party PCIe card problem. Install an HBA, NIC, or NVMe drive that iDRAC does not recognize and it loses thermal telemetry for that slot, assumes the worst, and pins the chassis fans to a high fixed floor. On an R740 that can add well over 100 W and make the server audibly unbearable. The fix is one line:
+
+\`\`\`bash
+# Stop iDRAC from ramping fans for unrecognized PCIe cards
+racadm set system.thermalsettings.ThirdPartyPCIeCardFanResponse 0
+\`\`\`
+
+Use it only if you know the card actually has adequate airflow, because the safety behavior exists for a reason.
+
+The other half of the thermal story is the cost of removing the heat. Essentially 100 percent of the electrical power a server consumes becomes heat in the room. Converting units, 1 W is 3.412 BTU per hour, so a 1,600 W rack dumps about 5,460 BTU/hr into a closet. Air conditioning that away is not free either: a window unit with a coefficient of performance around 3 spends roughly a third of the heat load in additional electricity, so the true marginal cost of the rack in a cooled space is closer to 1.3 times its own draw. ASHRAE's recommended inlet air envelope for data center equipment is 18 to 27 degrees C (64 to 81 F), and the top of that range is warmer than most people run their labs. You do not need it cold, you need it inside the envelope and you need the hot exhaust not to recirculate back to the intakes.
+
 ## The Long-Term View
 
 Power costs add up over years. A 500W reduction saves over $500 per year at typical electricity rates. When evaluating new equipment, I now factor in power consumption alongside purchase price, performance, and features. A server that costs less but draws more power may actually cost more over its lifetime.
+
+The check: 500 W times 8,760 hours is 4,380 kWh a year, about $525 at $0.12 per kWh. Compare that against a used server's purchase price and the conclusion is uncomfortable. A $300 R720 that idles 120 W higher than a $700 R740 costs you roughly $126 more per year to run, so the cheaper server is the more expensive one inside three years, before counting the extra cooling and the extra noise. Get an idle wattage figure for anything you are considering, not just a peak figure, because a homelab spends the overwhelming majority of its life idle. If you can only measure one number on a piece of equipment, measure idle draw.
+
+## References
+
+- https://en.wikipedia.org/wiki/80_Plus
+- https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
+- https://man.archlinux.org/man/ipmitool.1
+- https://man.archlinux.org/man/turbostat.8
+- https://en.wikipedia.org/wiki/National_Electrical_Code
+- https://www.eia.gov/energyexplained/electricity/prices-and-factors-affecting-prices.php
 `,
   },
   {
@@ -22610,33 +22778,88 @@ No matter how well you design and maintain your infrastructure, things will brea
 
 I follow a structured approach based on established incident response frameworks:
 
+### 0. Prepare
+
+This step comes before the pager goes off, which is exactly why it gets skipped. NIST SP 800-61 Rev 2 puts Preparation first in its four-phase lifecycle (Preparation; Detection and Analysis; Containment, Eradication, and Recovery; Post-Incident Activity) and it is first for a reason. Almost everything that determines how badly an incident goes is decided beforehand: whether you have logs from the affected host, whether you know what "normal" looks like, whether your backups restore, and whether the credentials you need are stored somewhere that is still reachable when the thing that broke is your identity provider.
+
+Concretely, preparation is a short list: centralized logs with enough retention to cover the gap between an incident starting and someone noticing, an out-of-band path to every device (iDRAC, a console server, a cellular hotspot), a current network diagram, and a restore that you have actually tested this quarter. Revision 3 of SP 800-61 restructures the guidance around the CSF 2.0 functions rather than a linear lifecycle, and one of the reasons is that preparation is continuous rather than a phase you complete.
+
 ### 1. Detect and Identify
 
 The first step is knowing that something is wrong and understanding what is affected. Monitoring and alerting handle detection. Identification means determining the scope: what service is down, who is affected, and what is the business impact.
+
+Two disciplines make this step fast rather than frantic. First, classify by impact, not by cause. "Database is slow" is not a severity; "checkout fails for all users" is. You do not know the cause yet, and waiting to know it before deciding how hard to push is how thirty minutes disappear. Second, get the clock right immediately. Note the time you were paged and the time the first symptom appears in the logs, and record both in UTC with an explicit offset (RFC 3339 format). Correlating four systems with three different local timezones is a genuinely common way to lose an hour, and it is entirely avoidable if your hosts run NTP and your notes are in one zone.
 
 ### 2. Contain
 
 Stop the problem from getting worse. If a server is compromised, isolate it from the network. If a configuration change broke connectivity, roll it back. If a process is consuming all system resources, kill it. Containment is about limiting damage while you figure out the root cause.
 
+Containment is a decision, not a reflex, and NIST frames it as one: choose a strategy by weighing potential damage, the need to preserve evidence, service availability, the resources the strategy costs, and how long it will hold. Pulling a compromised host off the network stops the bleeding and also tells the attacker you noticed, destroys any chance of observing live command and control, and takes the service down. Sometimes that is right. Sometimes moving the host to an isolated VLAN where you can watch it is better.
+
+The mistake to avoid here is rebooting. Rebooting a suspicious host is the single most destructive thing an inexperienced responder does, because it erases exactly the evidence that identifies the problem. RFC 3227 lays out the order of volatility, and the top of the list is everything a reboot destroys: CPU registers and cache, then the routing table, ARP cache, process table, kernel statistics, and memory, then temporary filesystems, and only then disk. If there is any chance this is a security incident, capture the volatile layers first. In practice that means \`ps auxf\`, \`ss -tanp\`, \`lsof -n\`, \`ip neigh\`, and a memory image if you have the tooling, saved somewhere off the host, before you touch anything else.
+
 ### 3. Diagnose
 
 Find the root cause. This is where log analysis, packet captures, and systematic troubleshooting come in. Start with what changed recently. Most incidents are caused by recent changes, even if the relationship is not immediately obvious.
+
+"What changed" is the right first question, and if you cannot answer it in under a minute, that is your actual finding. Package upgrade logs, \`git log\` on your config repository, and your firewall's change history are all cheap sources.
+
+When nothing changed, bisect the problem along dimensions rather than guessing:
+
+- Is it one host or every host? One VLAN or all of them? One user or all users?
+- Did it start at a specific timestamp? Round timestamps point at scheduled work. A failure at exactly midnight UTC is log rotation or a cron job. A failure that starts and never recovers, on a service that was fine for months, is very often a certificate expiring. Public TLS certificates are capped at 398 days by the CA/Browser Forum baseline requirements, and Let's Encrypt issues 90-day certificates, so "it worked for exactly 90 days" is a diagnosis.
+- Does it fail the same way every time, or intermittently? Intermittent points at load, at one member of a pool, or at something with a timeout.
+
+A few symptom-to-cause pairs worth memorizing because they mislead beginners:
+
+- "No space left on device" with \`df -h\` showing free space is inode exhaustion. Check \`df -i\`. Millions of tiny session or cache files will do it.
+- A service that vanished with no error in its own log was probably killed by the kernel. \`dmesg -T | grep -i 'killed process'\` confirms the OOM killer. The application never gets to write a crash log because it was sent SIGKILL.
+- Small requests succeed and large transfers hang forever is an MTU black hole, not a bandwidth problem, and it is usually ICMP being filtered somewhere in the path.
 
 ### 4. Resolve
 
 Fix the problem. Apply the patch, replace the hardware, correct the configuration, or restore from backup. Verify that the fix actually works and that the service is fully restored.
 
+It is worth separating two things the word "resolve" hides. Eradication removes the cause: the attacker's persistence mechanism, the bad config, the failing disk. Recovery restores service and then watches it. Those are different jobs and skipping the first produces the incident that comes back in three days. If the host was compromised, eradication realistically means rebuilding it from a known-good image rather than cleaning it, because you cannot prove you found everything.
+
+Verification means checking from the user's position, not from the server. A service that responds to \`curl localhost\` and nothing else is not restored. And keep monitoring after you declare it fixed; the window right after recovery is when a partial fix reveals itself.
+
 ### 5. Document
 
 Write down what happened, when it happened, what caused it, how it was fixed, and what will prevent it from happening again. This is the step most people skip, and it is arguably the most important one. Good incident documentation prevents recurring problems and helps you respond faster next time.
+
+A postmortem that is worth writing has six parts: impact (who was affected and for how long), a timeline in absolute timestamps, the trigger (what set it off), the root cause (why the trigger had that effect), how it was detected, and action items. Separating trigger from root cause matters. "A switch reboot" is a trigger. "Spanning tree had no redundant path because both uplinks were on the same switch" is a root cause, and only the second one generates useful work.
+
+Action items need an owner and a date or they are not action items, they are regrets. The Google SRE book's chapter on postmortem culture makes the other essential point: the document is blameless. The moment a postmortem can be used against someone, people stop writing down the parts that matter, and you lose the only mechanism you had for finding systemic problems.
 
 ## Communication
 
 During an incident, clear communication matters. Even in a homelab where I am the only user, I keep a running log of what I have tried, what I have found, and what I plan to do next. This prevents going in circles and provides a record for the post-incident review.
 
+With more than one person involved, the thing that scales is separating roles. Google's incident management model splits the incident commander (who decides and delegates, and does not debug), the operations lead (who actually touches systems), and communications. The failure mode without that split is three people independently changing things on the same host, which makes the system state unknowable and turns one incident into two.
+
+Update on a cadence even when there is nothing new. Silence reads as "nobody is working on it," and it generates interruptions that slow down the people who are.
+
+## What This Framework Will Not Do
+
+It will not help if you have no telemetry. A methodology for analyzing logs is worthless against a host that never shipped any, which is why preparation is phase zero rather than an afterthought.
+
+It also does not solve the real constraint in a one-person lab, which is that you will be tired and you will be the person who caused the problem. Knowing the framework does not make you follow it at 2 AM. What actually works is writing the runbook while calm, so the tired version of you is reading a checklist instead of improvising. Every incident you handle should end with a slightly better checklist for that class of failure.
+
 ## Practice
 
 I occasionally create intentional incidents in my lab environment to practice response procedures. Breaking something on purpose and then fixing it under time pressure is the closest thing to real-world incident response training you can get without actual production incidents.
+
+The exercises with the best return are the boring ones. Fill a disk to 100 percent and see what breaks first, which is usually logging, and then everything that logs. Pull one power supply. Revoke a certificate. Kill the DNS server and time how long until the failures look like something unrelated. Restore a backup to a scratch VM and diff it against production, because a backup you have never restored is a hypothesis, not a backup.
+
+## References
+
+- https://csrc.nist.gov/pubs/sp/800/61/r2/final
+- https://csrc.nist.gov/pubs/sp/800/61/r3/final
+- https://www.rfc-editor.org/rfc/rfc3227
+- https://csrc.nist.gov/pubs/sp/800/86/final
+- https://sre.google/sre-book/managing-incidents/
+- https://sre.google/sre-book/postmortem-culture/
 `,
   },
   {

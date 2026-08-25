@@ -1,5 +1,11 @@
 # Cloudflare Pages rewrites.
 #
+# NOTE ON REWRITE TARGETS: never point one at /index.html. Pages strips the
+# .html extension from a target the same way it does from a request path, so
+# `/noc /index.html 200` becomes a 308 to / and the rewrite never happens.
+# That shipped once: every simulator dashboard and the whole legacy site
+# redirected to the home page. The target is `/`.
+#
 # This file used to be one line: `/* /index.html 200`. That is the standard
 # single-page-app fallback, and on this site it was actively harmful.
 #
@@ -34,16 +40,16 @@ https://www.maxdoubin.com/* https://maxdoubin.com/:splat 301
 # prerender, and noindex in _headers so crawl budget goes to the writing.
 # /game itself IS prerendered now: it is one of the most distinctive things
 # here and deserves a real shot at ranking.
-/noc             /index.html   200
-/network         /index.html   200
-/floor           /index.html   200
-/incidents       /index.html   200
-/build           /index.html   200
+/noc             /             200
+/network         /             200
+/floor           /             200
+/incidents       /             200
+/build           /             200
 
 # The pre-redesign site, kept reachable for old inbound links.
-/legacy          /index.html   200
-/legacy/game     /index.html   200
-/legacy/blog     /index.html   200
-/legacy/blog/*   /index.html   200
-/legacy/projects /index.html   200
-/legacy/contact  /index.html   200
+/legacy          /             200
+/legacy/game     /             200
+/legacy/blog     /             200
+/legacy/blog/*   /             200
+/legacy/projects /             200
+/legacy/contact  /             200

@@ -1633,7 +1633,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Advanced iDRAC features that most people overlook, from virtual console to automated alerts and firmware management.",
     coverImage: "/images/blog/dell-idrac-tips-tricks.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg"},
-    wordCount: 370,
+    wordCount: 1552,
   },
   {
     slug: "mac-pro-storage-expansion",
@@ -1750,7 +1750,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I approach firewall policy design, with practical examples from my FortiGate configuration.",
     coverImage: "/images/blog/firewall-policy-design.jpg",
     coverCredit: {"author":"ShakataGaNai","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_ASA_5510.jpg"},
-    wordCount: 367,
+    wordCount: 1894,
   },
   {
     slug: "virtualization-networking-concepts",
@@ -1802,7 +1802,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I monitor power usage in my rack and the settings that made the biggest difference in my electricity bill.",
     coverImage: "/images/blog/power-consumption-monitoring.jpg",
     coverCredit: {"author":"Robert.Harker","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:UPS_PDU_Open.jpg"},
-    wordCount: 351,
+    wordCount: 1580,
   },
   {
     slug: "incident-response-methodology",
@@ -1811,7 +1811,7 @@ export const postIndex: PostMeta[] = [
     tags: ["cybersecurity","networking","servers"],
     excerpt: "My approach to handling infrastructure incidents, from detection through resolution and documentation.",
     coverImage: "/images/blog/incident-response-methodology.jpg",
-    wordCount: 367,
+    wordCount: 1730,
   },
   {
     slug: "mac-pro-gpu-compute",
