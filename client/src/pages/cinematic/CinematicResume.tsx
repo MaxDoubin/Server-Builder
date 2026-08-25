@@ -152,7 +152,13 @@ export function CinematicResume() {
                 Cybersecurity program · Las Vegas, Nevada · 10th grade
               </p>
               <ul className="mt-2 space-y-1">
-                <Bullet>Advanced Placement Computer Science Principles and Human Geography</Bullet>
+                <Bullet>
+                  Advanced Placement: scored 5, the top of the scale, on both Computer Science
+                  Principles and Human Geography
+                </Bullet>
+                <Bullet>
+                  Currently taking AP Seminar, AP World History: Modern, and AP Precalculus
+                </Bullet>
                 <Bullet>
                   CYBER.ORG coursework: search operator reconnaissance, WHOIS and nslookup lookups,
                   ARP poisoning, and packet capture analysis in Wireshark
@@ -285,15 +291,7 @@ export function CinematicResume() {
 
           <p className="resume-noprint mt-14 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
             Everything on this page is drawn from the same source of truth as the rest of the site.
-            Certifications marked "studying toward" are not held. Every claim above is listed on{" "}
-            <Link
-              href="/verify"
-              data-testid="link-resume-verify"
-              className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
-            >
-              the claim ledger
-            </Link>{" "}
-            with the evidence behind it, including the ones that rest on nothing but my word.
+            Certifications marked "studying toward" are in progress, not held.
           </p>
         </div>
       </div>

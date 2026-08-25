@@ -1,12 +1,11 @@
 /**
  * Certification progress data.
  *
- * This is a status board, and the single most important thing about it is
- * honesty: Max is studying toward Security+, Network+, and CCNA and has not
- * yet passed any of them. Misrepresenting a credential on a portfolio is a
- * serious problem, so the status fields below say "in progress" plainly and
- * the page renders that unambiguously. CompTIA Tech+ is included separately
- * as an already-earned credential, which is the honest contrast.
+ * This is a status board. Misrepresenting a credential on a portfolio is a
+ * serious problem, so an exam that has not been sat carries status
+ * "in-progress" and the page renders that unambiguously. CompTIA Tech+ is
+ * held today and is listed under "earned". Keep the distinction exact: the
+ * copy should read as confident and current, never as an apology.
  *
  * The exam objective domains are public and stable per exam version, so they
  * are reproduced here with the version code that defines them. Weightings can
@@ -69,7 +68,7 @@ const securityPlus: Cert = {
   status: "in-progress",
   statusLabel: "In progress",
   statusDetail:
-    "Currently studying toward Security+. Not yet taken and not yet certified.",
+    "Working through the SY0-701 objectives. Exam not yet sat.",
   covers:
     "The baseline of practical security: core concepts, threats and mitigations, secure architecture, day-to-day operations, and governance. It is broad and vendor-neutral, aimed at validating hands-on security fundamentals.",
   worth:
@@ -133,7 +132,7 @@ const networkPlus: Cert = {
   status: "in-progress",
   statusLabel: "In progress",
   statusDetail:
-    "Currently studying toward Network+. Not yet taken and not yet certified.",
+    "Working through the N10-009 objectives. Exam not yet sat.",
   covers:
     "Core networking: addressing and the OSI model, implementing wired and wireless networks, operating and monitoring them, network security basics, and a heavy emphasis on troubleshooting methodology.",
   worth:
@@ -197,7 +196,7 @@ const ccna: Cert = {
   status: "in-progress",
   statusLabel: "In progress",
   statusDetail:
-    "Currently studying toward the CCNA. Not yet taken and not yet certified.",
+    "Working through the CCNA 200-301 objectives. Exam not yet sat.",
   covers:
     "A broad associate-level foundation in networking: fundamentals, switching and wireless access, IP connectivity and routing, IP services, security fundamentals, and an introduction to automation and programmability.",
   worth:

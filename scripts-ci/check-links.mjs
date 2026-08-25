@@ -78,7 +78,7 @@ function resolves(urlPath) {
   if (!target.startsWith(DIST)) return false;
 
   if (existsSync(target) && statSync(target).isFile()) return true;
-  // Prerendered pages are flat files: /verify is served from verify.html.
+  // Prerendered pages are flat files: /resume is served from resume.html.
   // The directory form is still accepted for anything copied in as-is.
   if (existsSync(`${target}.html`)) return true;
   return existsSync(path.join(target, "index.html"));

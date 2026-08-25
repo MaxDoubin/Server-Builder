@@ -2361,7 +2361,7 @@ export const postIndex: PostMeta[] = [
  * Unique external reference URLs in the article text.
  *
  * Generated, along with the two counts below. The claim ledger at
- * /verify quotes these, and a number that goes stale on the page about
+ * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
 export const CITATION_COUNT = 858;

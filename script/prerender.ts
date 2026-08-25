@@ -28,7 +28,6 @@ const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
 const { FAQS } = await import("../client/src/lib/faqs.ts");
-const { CLAIM_GROUPS, CLAIM_STATUS_LABEL } = await import("../client/src/lib/claims.ts");
 const { KIT_SESSIONS, KIT_RULES, KIT_RESOURCES } = await import("../client/src/lib/clubKit.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
@@ -126,7 +125,6 @@ const SITE_NAV = `
   <a href="${SITE_URL}/timeline">Timeline</a>
   <a href="${SITE_URL}/now">Now</a>
   <a href="${SITE_URL}/uses">Uses</a>
-  <a href="${SITE_URL}/verify">Verify these claims</a>
   <a href="${SITE_URL}/faq">FAQ</a>
   <a href="${SITE_URL}/links">Links</a>
   <a href="${SITE_URL}/subscribe">Subscribe</a>
@@ -491,7 +489,6 @@ async function main(): Promise<void> {
   <h2>About</h2>
   <ul>
     <li><a href="${SITE_URL}/resume">Resume</a> and <a href="${SITE_URL}/timeline">timeline</a>.</li>
-    <li><a href="${SITE_URL}/verify">Verify these claims</a>, every claim on this site graded by the evidence behind it.</li>
     <li><a href="${SITE_URL}/projects">Projects</a>, <a href="${SITE_URL}/uses">uses</a> and <a href="${SITE_URL}/now">what I am working on now</a>.</li>
     <li><a href="${SITE_URL}/contact">Contact</a>.</li>
   </ul>
@@ -634,13 +631,6 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/cyber-club/kit`,
     },
     {
-      dir: "verify",
-      title: "Verify these claims | Max Doubin",
-      description:
-        "Every claim on this site graded by evidence: which have a public document, which have a record available on request, and which rest on nothing but my word.",
-      canonical: `${SITE_URL}/verify`,
-    },
-    {
       dir: "coding-camps",
       title: "Youth Coding Camps | Max Doubin",
       description:
@@ -778,7 +768,7 @@ ${JSON.stringify({
   ${FAQS.map(
     (item) => `<section><h2>${esc(item.q)}</h2><p>${esc(item.a)}</p></section>`,
   ).join("\n  ")}
-  <nav><a href="${SITE_URL}/verify">Verify these claims</a> · <a href="${SITE_URL}/resume">Resume</a> · <a href="${SITE_URL}/blog">Field Notes</a> · <a href="${SITE_URL}/contact">Contact</a></nav>
+  <nav><a href="${SITE_URL}/resume">Resume</a> · <a href="${SITE_URL}/blog">Field Notes</a> · <a href="${SITE_URL}/contact">Contact</a></nav>
 </main>`;
 
   /*
@@ -788,27 +778,6 @@ ${JSON.stringify({
     Both were empty shells on the first response. These mirror what the
     React pages render.
   */
-  const verifyContent = `
-<main>
-  <h1>Verify these claims</h1>
-  <p>Every substantive claim this site makes, graded by the evidence behind it. The weak ones are marked weak.</p>
-  ${CLAIM_GROUPS.map(
-    (group) => `<section>
-    <h2>${esc(group.title)}</h2>
-    <p>${esc(group.note)}</p>
-    <dl>${group.claims
-      .map(
-        (claim) =>
-          `<dt>${esc(claim.claim)} (${esc(CLAIM_STATUS_LABEL[claim.status])})</dt><dd>${esc(claim.evidence)}${
-            claim.url ? ` <a href="${claim.url}">${esc(claim.url)}</a>` : ""
-          }</dd>`,
-      )
-      .join("")}</dl>
-  </section>`,
-  ).join("\n  ")}
-  <nav><a href="${SITE_URL}/resume">Resume</a> · <a href="${SITE_URL}/faq">FAQ</a> · <a href="${SITE_URL}/changelog">Changelog</a> · <a href="${SITE_URL}/contact">Contact</a></nav>
-</main>`;
-
   const kitContent = `
 <main>
   <h1>Start a cyber club</h1>
@@ -837,10 +806,6 @@ ${JSON.stringify({
 
   for (const page of STANDALONE) {
     const { dir, ...meta } = page;
-    if (dir === "verify") {
-      await writePage(dir, base, { ...meta, rootContent: verifyContent });
-      continue;
-    }
     if (dir === "cyber-club/kit") {
       await writePage(dir, base, { ...meta, rootContent: kitContent });
       continue;
@@ -1264,7 +1229,6 @@ async function writeSitemap(
     { loc: `${SITE_URL}/timeline`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/cyber-club`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/cyber-club/kit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/verify`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/coding-camps`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/certifications`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },

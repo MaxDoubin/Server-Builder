@@ -109,8 +109,13 @@ jobs:
         run: node scripts-ci/check-image-budget.mjs
       - name: Prefetch map
         run: node scripts-ci/check-prefetch-map.mjs
-      - name: Claim ledger coverage
-        run: node scripts-ci/check-claims-coverage.mjs
+
+      # An in-view threshold above viewportHeight / elementHeight can never
+      # fire, so the content it gates stays at opacity 0 while still taking up
+      # its full scroll height. The whole blog index shipped invisible on
+      # phones that way. Source-only, so it runs before the build.
+      - name: Reveal thresholds
+        run: node scripts-ci/check-inview-clamp.mjs
 
       # vite build, then the prerenderer over 200+ posts, then the server
       # bundle. The heap bump is for the prerender pass, which holds the whole

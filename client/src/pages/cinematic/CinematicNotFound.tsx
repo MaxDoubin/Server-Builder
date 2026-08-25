@@ -140,7 +140,7 @@ export function CinematicNotFound() {
             </h2>
             <p className="mt-3 max-w-[58ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Over two hundred technical articles on networking, security, Linux, storage, and
-              operations. If you arrived looking for something specific, it is probably in there.
+              operations. If you arrived looking for something specific, start here.
             </p>
 
             <form onSubmit={handleSearch} role="search" className="mt-5">

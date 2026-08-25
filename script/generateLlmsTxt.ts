@@ -27,7 +27,6 @@ const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/tools", label: "Browser tools", note: "17 utilities that run entirely client side: subnetting, CIDR, packet headers, hashing, encoding, cron, regex, rack power budgeting" },
   { path: "/data", label: "Open rack hardware dataset", note: "power draw, heat output, rack units, port count and indicative cost for rack-mount equipment, CC BY 4.0, as JSON and CSV" },
   { path: "/cyber-club/kit", label: "Cyber Club in a Box", note: "a free twelve week plan for starting a high school cybersecurity club, CC BY 4.0, downloadable as markdown" },
-  { path: "/verify", label: "Claim ledger", note: "every claim the site makes about its author, graded by the strength of the evidence behind it" },
   { path: "/ncl", label: "National Cyber League notes", note: "competition write-ups by category" },
   { path: "/resume", label: "Resume", note: "" },
   { path: "/uses", label: "Uses", note: "the software behind the work, with reasons" },

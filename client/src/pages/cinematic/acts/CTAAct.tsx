@@ -19,6 +19,7 @@ import {
   PulseGlow,
   Breathing,
   ParallaxFloat,
+  useClampedInView,
 } from "@/lib/framer-animations";
 
 const ctaButtonVariants = {
@@ -38,7 +39,7 @@ export function CTAAct() {
   const subRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const sigRef = useRef<HTMLDivElement>(null);
-  const sectionInView = useInView(rootRef, { once: true, amount: 0.2 });
+  const sectionInView = useClampedInView(rootRef, 0.2, true);
 
   useScrollReveal(
     rootRef,

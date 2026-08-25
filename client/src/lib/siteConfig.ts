@@ -75,7 +75,8 @@ export const siteConfig = {
     {
       category: "Academics & Coursework",
       items: [
-        "AP Computer Science Principles and AP Human Geography",
+        "Scored 5, the highest score on the scale, on both AP Computer Science Principles and AP Human Geography",
+        "Currently taking AP Seminar, AP World History: Modern, and AP Precalculus",
         "CYBER.ORG coursework including Google Dorking, WHOIS/nslookup recon, ARP poisoning, and Wireshark or PCAP analysis",
         "Preferred languages: Python and JavaScript",
       ],
@@ -139,8 +140,11 @@ export const siteConfig = {
         "CompTIA Security+ (in progress)",
         "CompTIA Network+ (in progress)",
         "Cisco CCNA (in progress)",
-        "AP Computer Science Principles",
-        "AP Human Geography",
+        "AP Computer Science Principles (scored 5)",
+        "AP Human Geography (scored 5)",
+        "AP Seminar",
+        "AP World History: Modern",
+        "AP Precalculus",
         "CYBER.ORG Coursework",
       ],
     },
