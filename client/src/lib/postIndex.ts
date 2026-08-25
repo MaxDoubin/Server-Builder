@@ -2310,7 +2310,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Understanding how penetration testing works helps defenders build better controls. Here is what pen testers actually do and what it means for defense.",
     coverImage: "/images/blog/penetration-testing-basics.jpg",
     coverCredit: {"author":"gaudiramone","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/31112252@N00/14096358745"},
-    wordCount: 267,
+    wordCount: 1487,
   },
   {
     slug: "tls-modern-encryption",

@@ -1051,7 +1051,7 @@ ${matched
  * actually changed instead of re-reading the whole archive.
  */
 async function writeSitemap(
-  posts: Array<{ slug: string; date: string; tags: string[]; draft?: boolean }>,
+  posts: Array<{ slug: string; date: string; updated?: string; tags: string[]; draft?: boolean }>,
 ) {
   const live = posts.filter((p) => !p.draft);
   const newest = live.reduce((a, p) => (p.date > a ? p.date : a), "1970-01-01");
@@ -1144,7 +1144,11 @@ async function writeSitemap(
   for (const post of live) {
     urls.push({
       loc: `${SITE_URL}/blog/${post.slug}`,
-      lastmod: post.date,
+      // A rewritten article is new information, and lastmod is the only way
+      // to tell a crawler that. 45 posts here went from a 300 word stub to a
+      // sourced 1500 word article while still reporting their original
+      // publication date, which gave Google no reason to come back and look.
+      lastmod: post.updated ?? post.date,
       changefreq: "monthly",
       priority: "0.7",
     });
