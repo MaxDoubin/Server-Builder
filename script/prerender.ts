@@ -521,14 +521,14 @@ ${JSON.stringify({
       dir: "cyber-club/kit",
       title: "Cyber Club in a Box: a free 12 week plan | Max Doubin",
       description:
-        "A free twelve week plan for starting a high school cybersecurity club: meeting by meeting sessions, written rules of engagement, a zero budget materials list, and the failure modes that kill clubs in month two.",
+        "A free twelve week plan for starting a high school cybersecurity club: meeting plans, rules of engagement, a no budget materials list, and what kills clubs.",
       canonical: `${SITE_URL}/cyber-club/kit`,
     },
     {
       dir: "verify",
       title: "Verify these claims | Max Doubin",
       description:
-        "Every claim on this site, graded by evidence: which ones have a public document, which ones have a record available on request, and which ones rest on nothing but Max Doubin's word.",
+        "Every claim on this site graded by evidence: which have a public document, which have a record available on request, and which rest on nothing but my word.",
       canonical: `${SITE_URL}/verify`,
     },
     {
@@ -904,7 +904,7 @@ ${TAG_PAGES.map(
   await writePage("game", base, {
     title: pageTitle("Hyperscale, a data center simulator"),
     description:
-      "A browser data center simulator that models real power and cooling: 3.412142 BTU per hour per watt, 3516.85 watts to a cooling ton, and a PUE that rises with rack count. Build from 1 to 500 racks.",
+      "A browser data center simulator with real power and cooling maths: 3.412142 BTU per hour per watt, and a PUE that rises with rack count. Build 1 to 500 racks.",
     canonical: `${SITE_URL}/game`,
     rootContent: `
 <main>
@@ -998,7 +998,7 @@ ${EXAMS.map(
       });
       await writePage(`study/${exam.slug}/${domain.slug}`, base, {
         title: pageTitle(`${domain.name} | ${exam.name} ${exam.code}`),
-        description: `${domain.summary} Mapped to ${matched.length} posts and free tools covering ${exam.name} ${exam.code}.`,
+        description: `${domain.name} for ${exam.name} ${exam.code}: ${matched.length} articles and free tools mapped to this exam objective.`,
         canonical: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
         rootContent: `
 <main>

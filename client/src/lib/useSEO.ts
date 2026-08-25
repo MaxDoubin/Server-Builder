@@ -5,7 +5,7 @@ const SITE_URL = "https://maxdoubin.com";
 const DEFAULT_TITLE =
   "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
 const DEFAULT_DESC =
-  "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.";
+  "Max Doubin, cybersecurity student in Las Vegas. Top 1 percent National Cyber League, CompTIA Tech plus, and field notes on networking, servers, and security.";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.jpg`;
 const DEFAULT_CANONICAL = SITE_URL;
 const DEFAULT_OG_TYPE = "profile";

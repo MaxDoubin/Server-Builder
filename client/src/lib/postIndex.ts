@@ -2046,7 +2046,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "iSCSI delivers block storage over standard Ethernet, making enterprise-grade shared storage accessible without specialized hardware.",
     coverImage: "/images/blog/iscsi-storage-protocol.jpg",
     coverCredit: {"author":"KorP","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:NetApp_E5700.jpg"},
-    wordCount: 307,
+    wordCount: 1785,
   },
   {
     slug: "dns-security-dnssec",
@@ -2066,7 +2066,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Pacemaker and Corosync provide Linux HA clustering that can automatically restart services and VMs after node failures.",
     coverImage: "/images/blog/high-availability-clustering.jpg",
     coverCredit: {"author":"Leon Brooks","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Linux_supercomputing_cluster.jpg"},
-    wordCount: 264,
+    wordCount: 1556,
   },
   {
     slug: "network-access-control-8021x",
@@ -2118,7 +2118,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "OSPF is the most common interior gateway protocol in enterprise environments. Here is how it works and how to configure it correctly.",
     coverImage: "/images/blog/ospf-routing-protocol.jpg",
     coverCredit: {"author":"EidenNor","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:OSPF-NSSA_figur.drawio.png"},
-    wordCount: 299,
+    wordCount: 1677,
   },
   {
     slug: "idrac-advanced-features",
@@ -2187,7 +2187,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Nginx as a reverse proxy centralizes access to multiple backend services, handles TLS termination, and simplifies the architecture of a homelab or small production environment.",
     coverImage: "/images/blog/nginx-reverse-proxy-setup.jpg",
     coverCredit: {"author":"PauleMiranda","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Home_Server_Debian.jpg"},
-    wordCount: 241,
+    wordCount: 1499,
   },
   {
     slug: "lacp-link-aggregation",
@@ -2227,7 +2227,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Prometheus and Grafana together provide powerful, flexible infrastructure monitoring. Here is how to get a production-quality monitoring setup running.",
     coverImage: "/images/blog/prometheus-server-monitoring.jpg",
     coverCredit: {"author":"Joel Kennedy","license":"Public domain","licenseUrl":"https://commons.wikimedia.org/wiki/Commons:Licensing#Public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Grafana_screenshot_(2018).png"},
-    wordCount: 243,
+    wordCount: 1421,
   },
   {
     slug: "bgp-route-filtering-security",
@@ -2290,7 +2290,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","automation","operations"],
     excerpt: "Ansible's network modules allow you to configure routers, switches, and firewalls programmatically. Here is how to get started with network automation.",
     coverImage: "/images/blog/ansible-network-automation.jpg",
-    wordCount: 250,
+    wordCount: 1438,
   },
   {
     slug: "network-engineer-role-2026",

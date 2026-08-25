@@ -46,7 +46,7 @@ const STATUS_STYLE: Record<ClaimStatus, string> = {
 };
 
 const DESCRIPTION =
-  "Every claim on this site, graded by evidence: which ones have a public document, which ones have a record available on request, and which ones rest on nothing but Max Doubin's word.";
+  "Every claim on this site graded by evidence: which have a public document, which have a record available on request, and which rest on nothing but my word.";
 
 const VERIFY_SCHEMA = {
   "@context": "https://schema.org",

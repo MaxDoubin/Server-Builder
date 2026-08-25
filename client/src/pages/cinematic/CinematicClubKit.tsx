@@ -29,7 +29,7 @@ const CANONICAL = `${SITE_URL}/cyber-club/kit`;
 const DOWNLOAD = "/data/cyber-club-kit.md";
 
 const DESCRIPTION =
-  "A free twelve week plan for starting a high school cybersecurity club: session by session meeting plans, written rules of engagement, a zero budget materials list, and the failure modes that kill clubs in month two.";
+  "A free twelve week plan for starting a high school cybersecurity club: meeting plans, rules of engagement, a no budget materials list, and what kills clubs.";
 
 const KIT_SCHEMA = {
   "@context": "https://schema.org",
