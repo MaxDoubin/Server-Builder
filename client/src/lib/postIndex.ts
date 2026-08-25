@@ -1405,7 +1405,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I moved from gigabit to 10 gigabit Ethernet across my lab and what actually changed in practice.",
     coverImage: "/images/blog/10gbe-networking-homelab.jpg",
     coverCredit: {"author":"Dmitry Nosachev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Intel_X540-T2.jpg"},
-    wordCount: 386,
+    wordCount: 1690,
   },
   {
     slug: "ipmi-remote-management",
@@ -1426,7 +1426,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Good cable management is not about aesthetics. It is about airflow, troubleshooting speed, and not hating yourself six months from now.",
     coverImage: "/images/blog/server-rack-cable-management.jpg",
     coverCredit: {"author":"ShakataGaNai","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cable_Management_Dell_1950.jpg"},
-    wordCount: 384,
+    wordCount: 2482,
   },
   {
     slug: "proxmox-vs-esxi",
@@ -1468,7 +1468,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A practical guide to choosing the right UPS for your servers, including how to calculate your actual power needs.",
     coverImage: "/images/blog/ups-sizing-homelab.jpg",
     coverCredit: {"author":"MiNe","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:APC_BR700G-TW_20140114.jpg"},
-    wordCount: 440,
+    wordCount: 1407,
   },
   {
     slug: "vlan-segmentation-guide",
@@ -1509,7 +1509,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The principles behind datacenter cooling and how I apply hot/cold aisle concepts even in a homelab environment.",
     coverImage: "/images/blog/hot-cold-aisle-containment.jpg",
     coverCredit: {"author":"Hugovanmeijeren","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cern_datacenter.jpg"},
-    wordCount: 427,
+    wordCount: 1006,
   },
   {
     slug: "pdu-selection-guide",
@@ -1570,7 +1570,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I set up a full Active Directory domain in my lab to practice enterprise identity management.",
     coverImage: "/images/blog/active-directory-homelab.jpg",
     coverCredit: {"author":"Alan Levine","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Home_server_equipment.jpg"},
-    wordCount: 1902,
+    wordCount: 1882,
   },
   {
     slug: "sfp-transceivers-explained",
@@ -1665,7 +1665,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The BIOS settings I configure on every server and why each one makes a difference for performance and reliability.",
     coverImage: "/images/blog/server-bios-configuration.jpg",
     coverCredit: {"author":"Paul Schultz from Kenmore, Washington, USA","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:BIOS_Setup_First_Time.jpg"},
-    wordCount: 384,
+    wordCount: 1915,
   },
   {
     slug: "dns-fundamentals-infrastructure",
@@ -1675,7 +1675,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Why DNS is the most critical piece of network infrastructure and how I run it in my lab.",
     coverImage: "/images/blog/dns-fundamentals-infrastructure.jpg",
     coverCredit: {"author":"Bas van Schaik","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Ams-ix.k.root-servers.net.jpg"},
-    wordCount: 400,
+    wordCount: 1888,
   },
   {
     slug: "xserve-apple-server-legacy",
@@ -1718,7 +1718,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I planned and organized my server rack, from choosing the right size to power distribution and cooling.",
     coverImage: "/images/blog/server-rack-planning.jpg",
     coverCredit: {"author":"Derrick Coetzee from Berkeley, CA, USA","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:UPS_Power_Management_Module,_racks_with_network_cabling_in_NERSC_data_center.jpg"},
-    wordCount: 386,
+    wordCount: 1270,
   },
   {
     slug: "stp-troubleshooting",
