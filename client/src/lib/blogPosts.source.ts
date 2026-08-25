@@ -17877,14 +17877,7 @@ errors: No known data errors
 
 Correct output is \`ONLINE\` everywhere, zeros in all three error columns, a recent scrub, and the final line reading "No known data errors". Non-zero CKSUM on one disk with zeros elsewhere is the classic signature of a failing drive or a bad cable, and it is a warning you get long before the drive drops out.
 
-Scrubs are what surface latent corruption. Start one manually and watch it:
-
-\`\`\`bash
-zpool scrub tank
-zpool status tank
-\`\`\`
-
-While it runs the status shows a progress line with a percentage and an estimated completion time. Monthly is a reasonable cadence for spinning disks; most distributions ship a systemd timer or cron entry for it already, and you should confirm it is enabled rather than assume.
+Scrubs surface latent corruption. Start one with \`zpool scrub tank\` and \`zpool status\` gains a progress line with a percentage and an estimated finish time. Monthly is a reasonable cadence for spinning disks, and most distributions already ship a timer for it, so confirm yours is enabled rather than assume.
 
 Check that compression is doing something useful:
 
@@ -17911,7 +17904,7 @@ LZ4 also has an early abort: it gives up quickly on incompressible data, so alre
 
 Snapshots are the other game changer. I take automated snapshots every hour and keep daily snapshots for 30 days. Rolling back a VM or recovering a deleted file takes seconds instead of hours.
 
-Snapshots are nearly free at creation because copy-on-write means the snapshot is just a reference to blocks that already exist. They cost space only as the live data diverges from them. Two things follow. Deleting a large file inside a filesystem that has snapshots frees nothing, because the snapshots still reference those blocks. And a snapshot is not a backup, because it lives in the same pool as the data it protects. Use \`zfs send\` to get a copy onto different hardware.
+Snapshots are nearly free at creation, because copy-on-write means a snapshot is just a reference to blocks that already exist, and they cost space only as live data diverges from them. Two consequences: deleting a large file frees nothing while a snapshot still references its blocks, and a snapshot is not a backup, because it dies with the pool. Use \`zfs send\` to get a copy onto other hardware.
 
 ## Lessons learned
 
@@ -17921,15 +17914,15 @@ On the RAM question, the widely repeated "1 GB per TB" rule is folklore that cam
 
 ## What breaks
 
-**A pool built with the wrong ashift.** If you create a vdev on 512e drives without setting \`ashift=12\`, ZFS uses 512 byte sectors and every write becomes a read-modify-write inside the drive. Performance is poor from day one and there is no fix short of destroying and recreating the pool. Always pass \`-o ashift=12\` explicitly rather than trusting autodetection, which relies on the drive telling the truth about its physical sector size.
+**A pool built with the wrong ashift.** Create a vdev on 512e drives without \`ashift=12\` and ZFS uses 512 byte sectors, turning every write into a read-modify-write inside the drive. Performance is poor from day one and there is no fix short of recreating the pool. Pass \`-o ashift=12\` explicitly rather than trusting autodetection, which relies on the drive telling the truth about its physical sector size.
 
-**Someone types \`zpool add\` when they meant \`zpool attach\`.** \`attach\` adds a mirror to an existing device. \`add\` creates a brand new top level vdev. Run \`zpool add tank /dev/sdi\` on a raidz2 pool and you have just striped your carefully protected pool with a single unprotected disk, and until recently there was no way to remove it. Use \`zpool add -n\` first, which prints exactly what the command would do without doing it.
+**Someone types \`zpool add\` when they meant \`zpool attach\`.** \`attach\` adds a mirror to an existing device. \`add\` creates a brand new top level vdev. Run \`zpool add tank /dev/sdi\` on a raidz2 pool and you have just striped your carefully protected pool with a single unprotected disk. Use \`zpool add -n\` first, which prints exactly what the command would do without doing it.
 
-**The pool fills past about 80 percent and everything gets slow.** ZFS allocates from free space, and as a copy-on-write filesystem it needs contiguous free space to write efficiently. As the pool fills, the allocator switches to a slower best-fit strategy and fragmentation rises. Plan capacity so the pool stays comfortably below 80 percent, and watch \`zpool list\` for the \`CAP\` and \`FRAG\` columns.
+**The pool fills past about 80 percent and everything gets slow.** As a copy-on-write filesystem, ZFS needs contiguous free space to write efficiently. As the pool fills, the allocator switches to a slower best-fit strategy and fragmentation rises. Plan capacity to stay below 80 percent and watch the \`CAP\` and \`FRAG\` columns in \`zpool list\`.
 
-**An SLOG is added expecting a general write cache.** The separate log device only accelerates synchronous writes, which are mostly NFS with sync exports, iSCSI, and databases. Asynchronous writes never touch it. Worse, a consumer SSD without power loss protection as an SLOG is actively harmful, because the entire point of the device is to survive a power cut. If your workload is asynchronous, an SLOG changes nothing at all.
+**An SLOG is added expecting a general write cache.** The separate log device only accelerates synchronous writes, which means NFS with sync exports, iSCSI, and databases. Asynchronous writes never touch it. A consumer SSD without power loss protection is actively harmful here, since surviving a power cut is the entire point of the device.
 
-**Snapshots accumulate forever and the pool runs out of space with no obvious culprit.** Every hourly snapshot pins the blocks that existed when it was taken, so a busy dataset can hold many times its apparent size in snapshot history. Check with \`zfs list -t snapshot -o name,used -s used\` and put an automatic pruning policy in place from the start, not after the pool is full.
+**Snapshots accumulate forever and the pool fills with no obvious culprit.** Every hourly snapshot pins the blocks that existed when it was taken, so a busy dataset can hold many times its apparent size in history. Check with \`zfs list -t snapshot -o name,used -s used\` and set an automatic pruning policy from the start, not after the pool is full.
 
 ## References
 
@@ -24465,6 +24458,20 @@ The habits transfer directly. Narrowing a time window, aggregating before readin
 
 iSCSI encapsulates SCSI commands in TCP/IP packets, allowing servers to access block storage devices over a standard network. From the operating system's perspective, an iSCSI volume looks and behaves like a locally attached disk. You can format it with any filesystem, use it for VMs, or run a database directly on it.
 
+The protocol is specified in RFC 7143, which consolidated the original RFC 3720 and its several updates into one document. It listens on TCP port 3260 by default. The word "block" in "block storage" is the whole story: iSCSI moves numbered 512-byte or 4096-byte blocks and nothing else. It has no concept of a file, a directory, or a user. Everything above the block layer, including the filesystem and its cache, lives on the initiator.
+
+## IQNs and Discovery
+
+Every initiator and target has a name. The usual form is an iSCSI Qualified Name, defined in RFC 3721:
+
+\`\`\`
+iqn.2024-01.com.truenas:data
+\`\`\`
+
+Read it as four parts: the literal \`iqn.\`, a year and month during which the naming authority owned the domain, the domain name reversed, and a colon plus whatever string the owner likes. The date is not the date you created the LUN, it is there so that a domain changing hands does not create name collisions. Nothing enforces any of it, but two devices with the same IQN on one target will confuse the target's session tracking, which is a genuinely miserable thing to debug. Your initiator's name lives in \`/etc/iscsi/initiatorname.iscsi\`, and cloning a VM template without changing it is the usual way to end up with duplicates.
+
+Discovery is a separate step from login. \`-t st\` is short for SendTargets, in which the initiator asks a portal "what targets do you have?" and gets a list back. The results are cached under \`/etc/iscsi/nodes\`, which matters because a target you removed from the server keeps being retried by the initiator until you delete the node record with \`iscsiadm -m node -o delete\`.
+
 ## Setting Up a Target (TrueNAS)
 
 TrueNAS is a popular option for an iSCSI target in a homelab:
@@ -24476,6 +24483,10 @@ TrueNAS is a popular option for an iSCSI target in a homelab:
 5. Create a target and associate it with the portal
 6. Create an extent linked to your zvol
 7. Associate the extent with the target
+
+Set the extent's logical block size deliberately. A zvol created with a 16K volblocksize serving a LUN advertised as 512-byte blocks means every small write from the guest turns into a read-modify-write of a 16K record. For general VM storage, a 16K volblocksize with a 4096-byte logical block size on the extent is a reasonable starting point, and matching the guest filesystem's block size to it is better than guessing.
+
+If the zvol is thin provisioned, watch the pool. When a ZFS pool fills, writes fail, and the initiator experiences that as SCSI errors on a disk it believes is perfectly healthy. ZFS also slows down noticeably as it approaches full, so treat roughly 80 percent pool capacity as the point where you act rather than the point where you start worrying.
 
 ## Connecting from Linux
 
@@ -24493,6 +24504,18 @@ iscsiadm -m node -T iqn.2024-01.com.truenas:data -p 192.168.10.50:3260 --login
 lsblk
 \`\`\`
 
+Two configuration items in \`/etc/iscsi/iscsid.conf\` decide how this behaves after a reboot. \`node.startup = automatic\` logs the session back in at boot. And any filesystem on an iSCSI LUN needs \`_netdev\` in its \`/etc/fstab\` options, or systemd will try to mount it before the network exists and drop the machine into emergency mode. That single missing option is the most common way a working iSCSI setup becomes an unbootable server.
+
+## The Timeout That Decides Everything
+
+The default \`node.session.timeo.replacement_timeout\` is 120 seconds. When the path to the target drops, the initiator queues I/O silently for two minutes before it returns errors upward. Path failure itself is detected faster: \`node.conn[0].timeo.noop_out_interval\` and \`noop_out_timeout\` both default to 5 seconds, so a dead connection is noticed in about ten.
+
+Which value you want depends entirely on whether you have multipath.
+
+With multipath, set it low, commonly 5 seconds. The point is to fail the path quickly so device-mapper can route I/O down the surviving path. Leaving it at 120 means a two minute stall on every path failure, which defeats the purpose of having two paths.
+
+Without multipath, leave it high. A single path with a 5 second timeout turns a brief switch reboot into I/O errors, and I/O errors on a mounted filesystem are not gentle: ext4 defaults to \`errors=remount-ro\` and XFS shuts the filesystem down entirely. The VM does not pause, it goes read-only mid-write.
+
 ## Performance Considerations
 
 iSCSI performance depends heavily on network quality. Use a dedicated storage network, enable jumbo frames (MTU 9000) consistently across the path, and consider multipath for both performance and redundancy.
@@ -24503,13 +24526,52 @@ apt install multipath-tools
 systemctl enable multipathd
 \`\`\`
 
+"Consistently across the path" is doing a lot of work in that sentence. Every switch port, every VLAN interface, and both hosts have to agree on 9000, and one device left at 1500 produces a link that passes pings and small I/O perfectly and stalls on large transfers. Verify with an unfragmentable ping sized for the payload:
+
+\`\`\`bash
+ping -M do -s 8972 192.168.10.50
+\`\`\`
+
+8972 is 9000 minus the 20 byte IP header and the 8 byte ICMP header. If that fails and \`ping -s 1472\` succeeds, you have a jumbo frame gap somewhere in the middle.
+
+Know what the ceiling is before you tune. A 1 GbE link tops out around 110 to 118 MB/s of payload, and no amount of jumbo frames or queue depth changes that; if you want more, the answer is 10 GbE or bonding with multipath, not tuning. On 10 GbE you can expect roughly 1.1 GB/s. Latency is the part people forget: an iSCSI round trip over a healthy 10 GbE LAN adds something in the region of a tenth of a millisecond to a few tenths, against a local NVMe drive well under that. For streaming throughput the difference is invisible. For a database doing small synchronous writes it is the entire performance story.
+
+Note also that LACP does not help a single iSCSI session, because one TCP connection hashes to one physical link. Linux open-iscsi does not implement multiple connections per session, so the way to use two links is two sessions and device-mapper multipath on top, not a bigger bond.
+
+For multipath, two settings matter. Blacklist your local disks so \`multipathd\` does not claim the boot device, and choose \`no_path_retry\` on purpose: a number retries that many times then fails I/O, while \`queue\` blocks forever, which protects data during a long outage and can also wedge every process touching the filesystem, including the ones you need to fix it.
+
 ## CHAP Authentication
 
 CHAP (Challenge Handshake Authentication Protocol) adds authentication to iSCSI connections. Configure CHAP credentials on both the target and the initiator. Always use CHAP in any shared environment.
 
+Be precise about what it protects. CHAP, from RFC 1994, is a challenge and response over a shared secret, so the secret is not sent in the clear. Everything else in the session is: the SCSI commands and every block of your data cross the wire unencrypted and unauthenticated. RFC 3723 specifies IPsec as the mechanism for confidentiality and integrity for block storage over IP, and if the traffic leaves a trusted segment that is what you need, not CHAP.
+
+Two practical notes. One-way CHAP authenticates the initiator to the target; mutual CHAP additionally authenticates the target to the initiator, which is the half that stops a rogue target from impersonating your storage. And the secret has a length requirement: the specification calls for at least 96 bits when IPsec is not in use, which is why the Microsoft initiator refuses anything shorter than 12 characters. Discovery authentication and session authentication are configured separately in \`iscsid.conf\`, under \`discovery.sendtargets.auth.*\` and \`node.session.auth.*\`, so setting one and not the other produces a login that succeeds and a discovery that fails, or the reverse.
+
+## What iSCSI Cannot Do
+
+**It cannot be shared between two hosts with an ordinary filesystem.** This is the mistake that destroys data. Mount the same LUN read-write on two machines running ext4, XFS, or NTFS and both will cache metadata independently, both will write to the same blocks, and the filesystem is corrupt within seconds. There is no lock, no warning, and no recovery. Sharing a LUN requires a cluster-aware filesystem such as GFS2, OCFS2, or VMFS, or a layer above that arbitrates ownership.
+
+**It cannot give you per-user permissions or file locking.** Access control is per-LUN, granted to an initiator. If what you want is a shared home directory or a departmental file share, NFS or SMB are the right protocols and iSCSI is not.
+
+**It cannot hide the network.** iSCSI runs over TCP, so a lossy or congested link produces retransmissions, and retransmissions on a storage path look like a slow disk to everything above. Sharing the storage VLAN with user traffic is a reliable way to make your storage mysteriously slow at 4pm.
+
+When the SCSI translation overhead itself is the bottleneck, NVMe over Fabrics, particularly NVMe/TCP, is the modern answer for flash-backed storage. It runs on the same Ethernet and skips a protocol layer designed around spinning disks.
+
 ## Practical Uses in a Lab
 
 I use iSCSI to provide shared storage for my Proxmox cluster. All nodes can access the same iSCSI volumes from TrueNAS, which enables live VM migration and HA failover. The setup takes about an hour to configure properly, and once it is running it is very reliable.
+
+The way that works is worth spelling out, because it is the answer to the sharing problem above. Proxmox does not put a normal filesystem on the shared LUN. It puts LVM on it and uses the cluster's own locking to make sure only one node has a given logical volume active at a time, so each VM disk has exactly one writer. That gets you live migration, and it costs you snapshots: LVM on a shared LUN in Proxmox is thick provisioned and does not support VM snapshots. If snapshots matter more than shared block storage, NFS from the same TrueNAS box with qcow2 images is the trade to consider instead.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc7143
+- https://www.rfc-editor.org/rfc/rfc3721
+- https://www.rfc-editor.org/rfc/rfc3723
+- https://www.rfc-editor.org/rfc/rfc1994
+- https://man.archlinux.org/man/iscsiadm.8
+- https://man.archlinux.org/man/multipath.conf.5
 `,
   },
   {
@@ -24576,10 +24638,16 @@ Implementing DNS filtering is one of the highest-value, lowest-cost security con
 
 A high availability cluster monitors services and nodes. When a service crashes or a node fails, the cluster automatically restarts the service or moves it to another node. The goal is minimizing downtime without manual intervention.
 
+Be clear about what that buys you. A cluster reduces the time a service is down after a failure; it does not reduce how often failures happen, and it adds a new class of failure of its own. A two node Pacemaker cluster configured badly is genuinely less available than one well-monitored server, because now a Corosync hiccup can take down a service that was working fine. Build the cluster because you have measured that a few minutes of manual failover is unacceptable, not because clustering sounds more professional.
+
 ## The Stack
 
 - **Corosync:** Handles cluster communication, membership, and quorum. Nodes use Corosync to know who is alive in the cluster.
 - **Pacemaker:** The cluster resource manager. It decides what to do when failures are detected. Start this service on that node, move this IP address to another node.
+
+Corosync passes a token around the ring on UDP port 5405 by default. The \`token\` timeout defaults to 3000 milliseconds, and \`consensus\`, the time allowed to reach agreement on a new membership, defaults to 3600 milliseconds. Those two numbers set your floor for failure detection: a node that stops answering is not declared dead for at least three seconds, and the resource move happens after that.
+
+This is why Corosync is latency sensitive and why you do not run it across a WAN. A link with 200 ms of jitter will produce spurious token losses, spurious membership changes, and resources bouncing between nodes for no reason. If your cluster "randomly" fails over at night, look at the switch, the NIC, and anything doing bulk backup traffic on the same link before you look at the application. Corosync with knet supports multiple links, so give it a dedicated interface or at least a second one for redundancy.
 
 ## Installation (RHEL/Rocky Linux)
 
@@ -24588,6 +24656,8 @@ dnf install pacemaker corosync pcs
 systemctl enable pcsd
 passwd hacluster  # Set the hacluster user password
 \`\`\`
+
+\`pcsd\` listens on TCP 2224 and is how \`pcs\` on one node talks to the others. The \`hacluster\` password must be identical on every node, and it is not the same thing as the cluster password prompt you will see later. On RHEL family systems, \`firewall-cmd --permanent --add-service=high-availability\` opens the whole set at once: 2224/tcp for pcsd, 3121/tcp for Pacemaker Remote, 5403/tcp for the quorum device, 5404 and 5405/udp for Corosync, and 21064/tcp for DLM. Forgetting the firewall produces a cluster where \`pcs host auth\` succeeds and \`pcs cluster start\` hangs.
 
 ## Creating a Cluster
 
@@ -24600,6 +24670,12 @@ pcs cluster setup ha-cluster node1 node2
 pcs cluster start --all
 pcs cluster enable --all
 \`\`\`
+
+\`pcs host auth\` is the pcs 0.10 syntax used on RHEL 8 and later. Older guides written for RHEL 7 use \`pcs cluster auth\` and \`pcs cluster setup --name ha-cluster node1 node2\`. Copying a RHEL 7 tutorial onto a RHEL 9 box gives you \`Error: Unknown command\` and nothing more helpful, so check which pcs you have with \`pcs --version\` before you follow anything.
+
+Two nodes is the case that needs special handling. Quorum in Corosync's votequorum is a simple majority: 50 percent of the votes plus one. With two nodes and one vote each, quorum is two, so losing either node means the survivor is inquorate and stops all resources. That is the opposite of what you wanted. \`pcs cluster setup\` writes \`two_node: 1\` into \`corosync.conf\` for you, which artificially sets quorum to 1 and automatically enables \`wait_for_all\` so a cold-booted cluster waits until it has seen both nodes at least once before starting anything.
+
+\`two_node: 1\` makes fencing mandatory rather than optional. Both nodes can now be quorate alone, so a network partition leaves two nodes each convinced they own the floating IP and the shared filesystem. The clean alternative is a third vote: either a real third node, or \`corosync-qdevice\` talking to a \`corosync-qnetd\` arbiter running on any small always-on machine. Odd node counts (3, 5) avoid the whole problem.
 
 ## Configuring Resources
 
@@ -24614,13 +24690,48 @@ pcs resource create nginx systemd:nginx   op monitor interval=30s
 pcs resource group add web-group virtual-ip nginx
 \`\`\`
 
+\`IPaddr2\` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbours update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to \`pcs status\` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
+
+Three defaults cause most of the confusing behaviour after a first cluster is running:
+
+- The default operation timeout is 20 seconds. An \`op monitor interval=30s\` on a service whose status check occasionally takes 25 seconds will be recorded as a monitor failure, and Pacemaker will restart a perfectly healthy service. Set the timeout explicitly: \`op monitor interval=30s timeout=60s\`.
+- \`resource-stickiness\` defaults to 0, so when a failed node comes back the cluster may move resources back to it immediately, causing a second outage you did not ask for. Set \`pcs resource defaults update resource-stickiness=100\` unless you have a reason to want automatic failback.
+- \`start-failure-is-fatal\` defaults to \`true\`. One failed start pins the failcount to infinity and the resource will not be tried on that node again until you run \`pcs resource cleanup <resource>\`. This is why a resource sometimes refuses to start on a node that is obviously healthy now.
+
+Groups are a shortcut for two constraints at once: colocation (everything in the group runs on the same node) and ordering (start in listed order, stop in reverse). If you only want ordering without colocation, write the constraints directly with \`pcs constraint order\` and \`pcs constraint colocation\`, because a group gives you both whether you wanted them or not.
+
 ## Fencing
 
-Fencing (STONITH - Shoot The Other Node In The Head) ensures that a failed node is truly offline before resources are moved. Without fencing, two nodes might both believe they are authoritative, leading to data corruption. Configure IPMI-based fencing so the cluster can power-cycle a node it cannot reach.
+Fencing (STONITH, Shoot The Other Node In The Head) ensures that a failed node is truly offline before resources are moved. Without fencing, two nodes might both believe they are authoritative, leading to data corruption. Configure IPMI-based fencing so the cluster can power-cycle a node it cannot reach.
 
 \`\`\`bash
 pcs stonith create ipmi-node1 fence_ipmilan   ipaddr=192.168.10.101 username=admin password=secret   pcmk_host_list=node1
 \`\`\`
+
+\`stonith-enabled\` defaults to \`true\`, and Pacemaker will refuse to start resources on a cluster with no working fence device. The standard bad advice on forums is \`pcs property set stonith-enabled=false\`. That does silence the error, and it converts your data corruption risk from theoretical to scheduled. On shared storage, two nodes mounting the same non-cluster filesystem at once destroys it, and there is no fsck that puts it back.
+
+Two fencing mistakes are specific to small setups. First, the fence race: in a two node cluster a network partition makes each node try to fence the other, and depending on timing you can lose both. Add \`pcmk_delay_base=5\` to one node's fence device so there is a deterministic winner. Second, a fence device that shares a failure domain with the thing it fences is not a fence device. An IPMI BMC on the same power supply as the node cannot power-cycle it after a PSU failure, and a network-controlled PDU on the same switch as the cluster ring is unreachable in exactly the partition you needed it for. Put the BMC network and the PDU somewhere independent.
+
+Test fencing before you need it. \`pcs stonith fence node2\` should power-cycle node2 within a few seconds. If you have never run that command, you do not have fencing, you have a fence configuration.
+
+## What a Cluster Will Not Do
+
+Pacemaker moves services. It does not move data. If node1 dies with the only copy of your database on its local disk, Pacemaker will start the database on node2 against an empty volume. You need shared storage, DRBD replication, or application-level replication underneath, and getting that right is usually harder than the cluster itself.
+
+It is also not a load balancer. A floating IP is active on exactly one node at a time; the other node is idle. If you want both nodes serving traffic, that is HAProxy, keepalived with multiple VIPs, or DNS round robin, not Pacemaker.
+
+And it cannot fix an application that crashes on bad input. Pacemaker will dutifully restart it, hit \`migration-threshold\`, move it to the other node, watch it crash there too, and end up with the resource stopped everywhere. When \`pcs status\` shows a resource stopped after bouncing between nodes, read the application log, not the cluster log.
+
+For a homelab or a single service where a few minutes of downtime is tolerable, a systemd unit with \`Restart=always\` plus a monitoring alert solves 90 percent of what a cluster solves, with about 2 percent of the operational surface. Reach for Pacemaker when you have genuinely outgrown that.
+
+## References
+
+- https://clusterlabs.org/projects/pacemaker/doc/2.1/Pacemaker_Explained/html/fencing.html
+- https://clusterlabs.org/projects/pacemaker/doc/2.1/Clusters_from_Scratch/html/
+- https://www.mankier.com/5/corosync.conf
+- https://www.mankier.com/5/votequorum
+- https://www.mankier.com/8/pcs
+- https://www.rfc-editor.org/rfc/rfc5227
 `,
   },
   {
@@ -25098,13 +25209,21 @@ Runbooks are living documentation. Treat them that way.
 
 OSPF (Open Shortest Path First) is a link-state routing protocol. Every router running OSPF builds a complete map of the network topology (the Link State Database) and uses Dijkstra's algorithm to calculate the shortest path to every destination. This is different from distance-vector protocols like RIP, where routers only know what their neighbors tell them.
 
+OSPFv2 is defined in RFC 2328 and runs directly over IP as protocol number 89, not over TCP or UDP. Packets go to the multicast addresses 224.0.0.5 (all OSPF routers) and 224.0.0.6 (the designated routers), both of which are link-local and never forwarded. That is worth knowing when you write an ACL on a transit interface: filtering protocol 89 kills the adjacency, and filtering it in one direction only produces a much more confusing failure than filtering it in both.
+
 ## Key Concepts
 
 **Areas:** OSPF divides networks into areas to limit the scope of topology information. Area 0 is the backbone. All other areas must connect to Area 0. This design keeps routing databases from growing too large in big networks.
 
 **DR and BDR:** On multi-access networks like Ethernet, OSPF elects a Designated Router (DR) and Backup DR (BDR). These routers reduce OSPF traffic by acting as a hub for LSA flooding. Routers form adjacencies with the DR/BDR rather than with every other router.
 
+The election takes the highest OSPF interface priority, default 1, and breaks ties on the highest router ID. A priority of 0 makes a router ineligible. The part that catches people is that the election is not preemptive: bring up a router with priority 255 on a segment that already has a DR and it will not take over, it waits until the current DR disappears. If you want a specific DR, set the priorities before the segment comes up, or clear the process afterwards.
+
 **Metric (Cost):** OSPF uses cost as its metric, calculated as a reference bandwidth divided by interface bandwidth. By default, the reference bandwidth is 100 Mbps, which means gigabit and faster interfaces all get cost 1. Always configure the reference bandwidth to match your fastest links.
+
+The default comes straight from Cisco's implementation of RFC 2328's guidance that cost should be inversely proportional to bandwidth, with 10^8 bits per second as the numerator. That was a reasonable choice in 1998. Today it means a 1 Gbps link, a 10 Gbps link, and a 100 Gbps link all have cost 1, and OSPF load balances across them equally.
+
+**Router ID:** A 32-bit value written like an IPv4 address, chosen in a fixed order: an explicit \`router-id\` statement, else the highest IP on a loopback, else the highest IP on an active physical interface. Always set it explicitly, because the fallback means a router picks a new identity when an interface changes. Changing it later needs \`clear ip ospf process\`, which is disruptive, so set it on day one. Two routers sharing a router ID produce adjacencies that form and immediately drop, over and over.
 
 ## Basic Configuration (Cisco)
 
@@ -25116,6 +25235,27 @@ router ospf 1
   passive-interface GigabitEthernet0/1  ! Don't send hellos on this interface
 \`\`\`
 
+The reference bandwidth has to be identical on every router in the domain. Set it on some routers and not others and the two groups compute different costs for the same links, which produces asymmetric routing and occasionally loops during convergence. It is a domain-wide constant, not a per-router tuning knob.
+
+\`passive-interface\` stops hellos on an interface but still advertises that interface's network. That is exactly what you want facing servers and users. The safer idiom in a real network is to invert it:
+
+\`\`\`
+router ospf 1
+  passive-interface default
+  no passive-interface GigabitEthernet0/0
+\`\`\`
+
+Now a new interface is passive until someone deliberately enables OSPF on it, rather than shouting hellos at whatever is plugged in.
+
+One more line worth adding on every router-to-router link that is genuinely point to point:
+
+\`\`\`
+interface GigabitEthernet0/0
+  ip ospf network point-to-point
+\`\`\`
+
+Ethernet defaults to the broadcast network type even on a /30 between two routers, which means a pointless DR election, a type 2 network LSA nobody needs, and a slower recovery when the link comes back. Declaring it point to point removes all three.
+
 ## Tuning Hello and Dead Intervals
 
 OSPF uses hello packets to detect neighbor failures. The default hello interval is 10 seconds, dead interval 40 seconds. In a lab or point-to-point environment, you can reduce these for faster convergence:
@@ -25126,6 +25266,28 @@ interface GigabitEthernet0/0
   ip ospf dead-interval 15
 \`\`\`
 
+Both values must match on both ends of the link or the adjacency never forms, and changing the hello interval on Cisco silently changes the dead interval to four times the new value unless you set it yourself. On NBMA network types the defaults are different again, 30 and 120 seconds.
+
+There is a limit to how far this scales. Hellos are processed by the control plane, so aggressive timers turn a brief CPU spike, a software upgrade, or a burst of punted traffic into a false neighbor loss and a full reconvergence. When you need sub-second detection, use BFD instead. BFD (RFC 5880) runs a lightweight dedicated session, often offloaded to hardware, and tells OSPF to tear the adjacency down the moment the path fails:
+
+\`\`\`
+interface GigabitEthernet0/0
+  bfd interval 300 min_rx 300 multiplier 3
+  ip ospf bfd
+\`\`\`
+
+## The Neighbor State Machine Is Your Debugger
+
+\`show ip ospf neighbor\` prints a state, and each stuck state means something specific. This is the fastest diagnostic path in the protocol.
+
+**Stuck in INIT.** This router hears the neighbor's hellos, but the neighbor is not listing this router's ID in its own hellos. Communication is one-way. Look for an ACL applied in one direction, a unidirectional fiber fault, or multicast being filtered on one side.
+
+**Stuck in 2-WAY.** Usually not a problem at all. On a broadcast segment, routers that are neither DR nor BDR deliberately stay at 2-WAY with each other and only go Full with the DR and BDR. If you see two DROther routers at 2-WAY, that is the protocol working. If you see 2-WAY on a point-to-point link, that is a real fault.
+
+**Stuck in EXSTART or EXCHANGE.** This is an MTU mismatch, nearly every time. Database Description packets carry the sending interface's MTU, and RFC 2328 says a router must reject a DD packet whose MTU exceeds its own. So a 1500-byte side and a 9000-byte side exchange hellos happily, form a neighbor relationship, and then hang forever at ExStart. Fix the MTU on both interfaces. \`ip ospf mtu-ignore\` will paper over it, and then large LSAs get dropped and you get a much worse intermittent problem later.
+
+**Adjacency never forms at all.** Area ID, hello and dead intervals, authentication type and key, stub or NSSA flags, and (on broadcast networks) subnet mask must all match. \`debug ip ospf adj\` names the specific mismatch, which is faster than comparing configs by eye.
+
 ## OSPF Authentication
 
 Always configure OSPF authentication in production to prevent unauthorized routers from injecting routes:
@@ -25135,6 +25297,31 @@ interface GigabitEthernet0/0
   ip ospf authentication message-digest
   ip ospf message-digest-key 1 md5 secretpassword
 \`\`\`
+
+Be aware of what that gives you. OSPFv2's cryptographic authentication as originally specified is keyed MD5 from RFC 2328 Appendix D, not HMAC, and MD5 is no longer considered strong. RFC 5709 adds HMAC-SHA-1 through HMAC-SHA-512 to OSPFv2, and where the platform supports it you should use SHA. This authenticates the packets on the wire; it does not authorize what a legitimately keyed router says. A neighbor with the key can still inject anything into the area.
+
+OSPFv3 is a different story. As originally published in RFC 5340 it dropped its own authentication fields entirely and relied on IPsec (RFC 4552), which is painful to deploy. RFC 7166 later added an authentication trailer that works much like OSPFv2's, and that is what you want on modern kit.
+
+## What OSPF Cannot Do
+
+**It cannot filter routes inside an area.** Every router in an area must hold an identical link state database, or SPF produces inconsistent results and loops. That is not a limitation of any implementation, it is the definition of link state. So there is no way to stop one router in area 10 from learning a prefix another router in area 10 advertises. Filtering only exists at boundaries: \`area X range\` and \`area X filter-list\` at an ABR for type 3 summaries, and \`distribute-list\`/route maps on redistribution at an ASBR. When someone asks you to hide a subnet from one router in the same area, the honest answer is to change the area design.
+
+**It cannot do policy.** There is no equivalent of BGP communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
+
+**It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analogue, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
+
+**It cannot carry IPv6 in v2 form.** OSPFv2 is IPv4 only. IPv6 needs OSPFv3, which is a separate protocol instance with its own database and its own adjacencies, even though RFC 5838 lets one OSPFv3 process carry both address families.
+
+**It does not scale by adding routers to area 0.** The practical constraint is not a router count, it is the rate of change: every link flap floods LSAs to every router in the area and triggers SPF on all of them. A quiet area with a hundred routers is fine. A noisy area with thirty flapping DSL links is not. When SPF run counts climb, look for the unstable interface before redesigning the areas, and put \`ip ospf dead-interval\` and flap damping on the offender.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc2328
+- https://www.rfc-editor.org/rfc/rfc5340
+- https://www.rfc-editor.org/rfc/rfc5709
+- https://www.rfc-editor.org/rfc/rfc7166
+- https://www.rfc-editor.org/rfc/rfc5880
+- https://docs.frrouting.org/en/latest/ospfd.html
 `,
   },
   {
@@ -25207,6 +25394,16 @@ Logs on individual devices are hard to search across, get lost when devices fail
 
 A central log server lets you search across all your infrastructure from one place, retain logs longer than individual devices can store, and preserve logs even if a device is compromised or fails.
 
+## Facilities, Severities, and the PRI Number
+
+Every syslog message begins with a priority value in angle brackets, and understanding it makes filtering rules stop feeling arbitrary. The PRI is a single number computed as \`facility * 8 + severity\`.
+
+Severity runs 0 to 7: emerg, alert, crit, err, warning, notice, info, debug. Note that lower is more urgent, which is the opposite of what most people guess, and that \`*.info\` in a selector means "info and everything more severe," not "info only." Facility identifies the subsystem: kern is 0, user 1, mail 2, daemon 3, auth 4, syslog 5, cron 9, authpriv 10, and local0 through local7 occupy 16 to 23. Network gear almost always lets you pick a local facility, which is the clean way to separate switch logs from server logs on arrival.
+
+So \`<34>\` decodes to facility 4 and severity 2: an authentication subsystem critical message. Setting a device's logging level to \`informational\` and wondering why the log server is drowning is usually a severity misunderstanding, since informational is 6 and pulls in everything above it.
+
+Two formats coexist. RFC 3164 is an informational document that describes what BSD syslog implementations were already doing in 2001, with a 1024 byte message limit and a timestamp carrying no year and no timezone. RFC 5424 is the actual standard: RFC 3339 timestamps with fractional seconds and offset, explicit app-name and procid fields, and structured data key-value pairs. Receivers must accept at least 480 octets and should accept 2048. Most network appliances still emit 3164, most modern Linux daemons can emit 5424, and your server has to handle both.
+
 ## Setting Up rsyslog as a Central Server
 
 On the log server (Ubuntu):
@@ -25224,6 +25421,16 @@ template(name="RemoteLogs" type="string" string="/var/log/remote/%HOSTNAME%/%PRO
 *.* ?RemoteLogs
 \`\`\`
 
+Add one thing to the UDP input before you rely on it:
+
+\`\`\`bash
+module(load="imudp" rcvbufSize="16m")
+\`\`\`
+
+UDP has no flow control, so when the receive socket buffer fills, the kernel discards datagrams silently and the sender never learns. The bursts that overflow it are precisely the ones you care about: a switch storming, a service crash-looping, a brute force attempt. Raise \`net.core.rmem_max\` on the host to match, or the request for a 16 MB buffer is quietly clamped.
+
+Put \`/var/log/remote\` on its own filesystem. A log server that fills its root partition stops logging and frequently stops working, and the classic version of this outage is one misbehaving host emitting debug output at ten thousand lines per second overnight.
+
 ## Configuring Clients
 
 On each server you want to log centrally:
@@ -25237,6 +25444,29 @@ On each server you want to log centrally:
 
 Network devices (switches, firewalls) send syslog natively. Configure the syslog server IP and severity level in the device's management interface.
 
+Windows does not speak syslog at all. It writes to the Event Log, so a Windows host needs either a forwarder that translates events to syslog or Windows Event Forwarding into a collector that does. Budget for that; discovering it after building the rest is a common surprise.
+
+## UDP, TCP, and What Reliable Actually Means
+
+The double \`@@\` is TCP and the single \`@\` is UDP, and people reasonably assume TCP means the messages arrive. It does not quite mean that.
+
+TCP guarantees delivery into the receiver's kernel buffer. It does not guarantee the receiving daemon read the message, and it certainly does not guarantee the message reached disk. If the log server is killed with data in its socket buffer, those messages are gone and the sender's TCP stack reported success. For genuine end-to-end acknowledgement you need RELP, rsyslog's own protocol, which acknowledges at the application layer after the message is accepted.
+
+TCP framing is its own trap. RFC 6587 documents two ways to delimit messages on a stream: octet-counting, where each message is prefixed by its length, and non-transparent framing, where messages are separated by a trailing newline. rsyslog uses non-transparent framing by default. If one end expects octet counts and the other sends newline-delimited text, you get messages concatenated into one giant line or split at every embedded newline, and the symptom looks like corruption rather than a protocol mismatch.
+
+For anything crossing an untrusted network, use TLS. RFC 5425 defines syslog over TLS on port 6514, and mutual certificate authentication is the only mechanism in the whole stack that actually authenticates a sender.
+
+The other half of reliability is what happens when the log server is down. By default rsyslog buffers in a bounded memory queue and starts discarding when it is full. Give the forwarding action a disk-assisted queue so an hour of maintenance does not become an hour of missing logs:
+
+\`\`\`bash
+action(type="omfwd" target="192.168.1.50" port="514" protocol="tcp"
+       queue.type="LinkedList" queue.filename="fwd-server"
+       queue.maxdiskspace="1g" queue.saveOnShutdown="on"
+       action.resumeRetryCount="-1")
+\`\`\`
+
+\`action.resumeRetryCount="-1"\` means retry forever instead of giving up, and \`queue.saveOnShutdown\` writes the queue to disk on a clean restart rather than dropping it.
+
 ## Loki and Grafana for Search
 
 rsyslog handles collection and storage. Grafana Loki provides a log aggregation and query system that integrates natively with Grafana dashboards. The combination gives you:
@@ -25246,9 +25476,32 @@ rsyslog handles collection and storage. Grafana Loki provides a log aggregation 
 - Log alerts that trigger when specific patterns appear
 - Correlation between metrics spikes and log events
 
+Understand how Loki achieves that cheaply, because it changes how you configure it. Loki does not build a full-text inverted index. It indexes only the label set of each stream and stores the log lines themselves as compressed chunks. A query first selects streams by label, then brute-force scans the matching chunks for your pattern. A query with a tight selector like \`{host="sw-core-1", job="syslog"}\` is fast. A query that scans everything is a linear read of your entire retention window.
+
+The failure mode that follows is cardinality. Every unique combination of label values is a separate stream, so putting a client IP, a session ID, or a request ID in a label multiplies your streams into the millions and Loki falls over. Labels are for things with a small, bounded set of values: host, job, facility, severity, environment. Everything else stays in the log line and gets filtered at query time.
+
 ## Log Retention and Security
 
 Define a log retention policy. Security logs often need to be kept for 90 days or longer for compliance. Protect the log server: logs are forensic evidence, and they must be trustworthy. Use a dedicated network path for syslog traffic, restrict write access to log files, and consider sending logs offsite or to an immutable storage destination for high-security environments.
+
+Where the numbers come from matters. PCI DSS requires audit log history to be retained for at least 12 months with the most recent three months immediately available for analysis, and NIST SP 800-92 is the general guide for building a log management program rather than a specific number. Pick your retention from whichever regime actually applies to you and write down why, because "90 days" repeated without a source is how policies end up unsatisfiable.
+
+Three security properties are worth being blunt about.
+
+**The hostname field is not authenticated.** Over plain UDP or TCP, any host that can reach port 514 can send a message claiming to be your domain controller. Firewall the port to known sources, and use TLS client certificates where the logs will be used as evidence.
+
+**Log injection is real.** A message containing an embedded newline can forge what looks like an additional log line from another program. rsyslog escapes control characters on receipt by default, and people disable that setting to make multi-line Java stack traces readable. Understand the trade you are making.
+
+**Absence is a signal.** An attacker who gets root on a host stops its logging before doing anything interesting. A log pipeline that only alerts on bad messages will never notice. Alert on a source that has gone quiet: if a host normally sends a few hundred messages an hour and sends zero for thirty minutes, that is worth a page.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://www.rfc-editor.org/rfc/rfc3164
+- https://www.rfc-editor.org/rfc/rfc5425
+- https://www.rfc-editor.org/rfc/rfc6587
+- https://www.rsyslog.com/doc/configuration/modules/imudp.html
+- https://csrc.nist.gov/pubs/sp/800/92/final
 `,
   },
   {
@@ -25559,11 +25812,17 @@ I use NFS for VM storage and Linux data shares in my lab. Windows VMs that need 
 
 Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. DNSSEC and many security protocols depend on accurate time.
 
+The five minute figure is not folklore, it is the default maximum clock skew configured in MIT Kerberos and in Active Directory, and it exists to bound replay attacks on authenticators. Cross it and users get "clock skew too great" rather than anything that hints at the real cause.
+
 ## How NTP Works
 
 NTP (Network Time Protocol) synchronizes clocks using a hierarchy called stratum. Stratum 0 devices are atomic clocks or GPS receivers. Stratum 1 servers connect directly to Stratum 0 sources. Stratum 2 servers sync from Stratum 1, and so on.
 
 NTP measures the round-trip delay to the time server and uses statistical algorithms to estimate clock offset and drift. It then adjusts the local clock gradually rather than jumping, which prevents the kind of time discontinuities that break applications.
+
+The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is \`(T4 - T1) - (T3 - T2)\` and offset is \`((T2 - T1) + (T3 - T4)) / 2\`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
+
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronised, and a server advertising 16 is telling you it does not know the time. If \`chronyc tracking\` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -25574,9 +25833,17 @@ The recommended pattern:
 
 \`\`\`bash
 # /etc/chrony.conf on the internal NTP server
-server pool.ntp.org iburst prefer
+pool pool.ntp.org iburst
 allow 192.168.0.0/16  # Allow clients in this range
 \`\`\`
+
+Use \`pool\`, not \`server\`, for a pool hostname. This matters more than it looks. \`server pool.ntp.org\` resolves the name once and uses a single address, so you end up with exactly one upstream source and none of the redundancy the pool exists to provide. The \`pool\` directive resolves the name to multiple addresses and keeps a working set of them, replacing members that go unreachable.
+
+How many upstream sources you need comes from the selection algorithm rather than taste. With one source you cannot detect that it is wrong. With two you learn they disagree but not which one to believe. Three lets a majority outvote a single falseticker, and four means you still have a majority after one source fails. RFC 8633, the NTP best current practices document, recommends at least four. Your internal servers should each have four or more upstreams even though your clients only need the two or three internal ones.
+
+\`iburst\` sends a short burst of packets at startup instead of one per poll interval, which brings a fresh machine into sync in a few seconds rather than several minutes. There is no reason to omit it.
+
+If you are pointing significant numbers of devices at the public pool, read its usage guidelines first. The pool is donated capacity, and vendors shipping products that hammer it are a recurring problem the project has had to deal with.
 
 ## Configuring Clients
 
@@ -25585,10 +25852,14 @@ allow 192.168.0.0/16  # Allow clients in this range
 server 192.168.1.10 iburst prefer  # Internal NTP server 1
 server 192.168.1.11 iburst          # Internal NTP server 2
 
+makestep 1.0 3
+
 # Check synchronization status
 chronyc tracking
 chronyc sources -v
 \`\`\`
+
+\`makestep 1.0 3\` is the line most people leave out and then regret. By default chronyd corrects the clock by slewing, which adjusts the rate rather than jumping, and the maximum slew rate is bounded. Correcting a one hour error by slewing takes days. \`makestep 1.0 3\` says: for the first three updates after startup, if the offset exceeds one second, step the clock instead. That covers the cases that actually happen, which are a VM restored from a snapshot, a machine with a dead CMOS battery, and a device that booted before the network came up.
 
 ## Network Devices
 
@@ -25599,9 +25870,53 @@ ntp server 192.168.1.10 prefer
 ntp server 192.168.1.11
 \`\`\`
 
+Remember that many embedded devices source their NTP queries from UDP port 123 rather than an ephemeral port. Stateful firewall rules written for a normal client/server pattern sometimes drop the replies, and the symptom is a switch that never leaves stratum 16 while a Linux host on the same VLAN syncs fine.
+
+## Reading chronyc Output
+
+\`chronyc sources -v\` prefixes each source with a state character, and knowing them turns a wall of numbers into an answer:
+
+- \`*\` the source currently being used
+- \`+\` an acceptable source being combined with the selected one
+- \`-\` excluded by the combining algorithm
+- \`x\` a falseticker, meaning its time disagrees with the majority
+- \`~\` too variable to trust
+- \`?\` unreachable
+
+An \`x\` next to a source is the interesting one, because it means the sources are voting and this one lost. A row of \`?\` means the packets are not getting through at all, which is a firewall question, not a time question.
+
+From \`chronyc tracking\`, the fields to alert on are **System time**, which is the current offset from the selected source, **Frequency**, the rate correction in parts per million being applied to the local oscillator, and **Leap status**, which should read Normal. A healthy LAN client sits in the tens of microseconds. A frequency of more than about 50 ppm suggests a genuinely poor oscillator or, more often, a virtual machine.
+
+## What Goes Wrong
+
+**The hypervisor and chrony fight over the clock.** VMware Tools, Hyper-V Integration Services, and the QEMU guest agent can all periodically set the guest clock from the host. Running that alongside chronyd produces an oscillating offset that never settles, because two controllers are correcting the same variable. Pick one. Inside a VM, disabling the hypervisor's periodic sync and letting chrony do the work is normally correct.
+
+**A stratum 16 server that clients happily use.** Some devices will sync to a server regardless of what stratum it advertises, so a broken internal NTP server can propagate its own wrong idea of the time across a site. Monitor the internal servers' stratum and offset directly rather than assuming a reachable server is a correct one.
+
+**Leap smear mixed with real leap seconds.** Several large public providers spread a leap second across roughly 24 hours instead of inserting it, and a smeared server and an unsmeared server disagree by up to half a second during the smear window. Mixing the two in one source list means the selection algorithm marks somebody a falseticker at exactly the moment you would rather it did not. Use all smeared or all unsmeared sources, never a blend. This is a shrinking problem, since the 27th CGPM resolved in 2022 to stop inserting leap seconds by 2035, but it is not gone yet.
+
+**NTP as a DDoS amplifier.** The old \`monlist\` query returned up to 600 recent client addresses in response to one small packet, which made unpatched ntpd an amplifier with a gain in the hundreds and drove a wave of large attacks in 2013 and 2014. If you expose NTP at all, expose the time service only. chrony's \`allow\` directive grants time service and nothing else, while remote command access is a separate \`cmdallow\` that defaults to localhost, which is the right shape.
+
+**No authentication.** Plain NTP has none in practice, so anyone who can intercept or spoof the traffic can move your clocks, and moving clocks defeats certificate expiry checks and Kerberos ticket lifetimes. Network Time Security, specified in RFC 8915, fixes this by establishing keys over TLS on port 4460 and then authenticating the NTP packets themselves. chrony supports it with a single keyword on the server line, and it is worth using for any source outside your own network.
+
+## When NTP Is Not Enough
+
+NTP over a LAN with chrony realistically holds tens of microseconds; over the internet, single digit milliseconds is a good result. That is ample for logs, Kerberos, and certificates.
+
+It is not ample for everything. Financial trade timestamping regimes, telecom synchronisation, and industrial control can require sub-microsecond alignment, and getting there means PTP (IEEE 1588) with hardware timestamping in the NICs and switches, or a local GPS-disciplined clock. If someone hands you a requirement measured in microseconds, NTP over ordinary switches is not the tool, and no amount of tuning will make it one.
+
 ## Monitoring Time
 
 Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause subtle, hard-to-diagnose failures. Track the offset and jitter of your internal NTP servers and alert if they fall out of acceptable ranges.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc5905
+- https://www.rfc-editor.org/rfc/rfc8633
+- https://www.rfc-editor.org/rfc/rfc8915
+- https://chrony-project.org/doc/4.6/chrony.conf.html
+- https://man.archlinux.org/man/chronyc.1
+- https://www.ntppool.org/en/use.html
 `,
   },
   {
@@ -25623,6 +25938,8 @@ Monitor your NTP infrastructure. A drifted clock that goes unnoticed can cause s
 Without a reverse proxy, every service in your lab needs its own port. Accessing Grafana is port 3000, Proxmox is 8006, your web apps are on random ports. A reverse proxy sits in front of all these services and routes traffic based on the hostname in the request. You access everything on port 443 with a proper domain name.
 
 It also centralizes TLS. Instead of managing certificates on each service, you terminate TLS at the proxy and forward unencrypted traffic internally.
+
+That last sentence hides a real security decision. Traffic between the proxy and the backend is now plaintext on the wire. On a single host where the backend listens on \`127.0.0.1\` that is fine, because the packets never leave the loopback interface. Across a VLAN shared with anything you do not fully control, it is not, and you either need \`proxy_pass https://...\` to a backend with its own certificate or a network segment you trust.
 
 ## Basic Nginx Configuration
 
@@ -25648,6 +25965,20 @@ server {
 }
 \`\`\`
 
+Those four \`proxy_set_header\` lines are not optional decoration. By default nginx sends \`Host: $proxy_host\`, which is the literal \`127.0.0.1:3000\` from the \`proxy_pass\` line. A backend that builds absolute URLs, and Grafana is one, will then redirect your browser to \`http://127.0.0.1:3000/login\` and the login loop begins. Setting \`Host $host\` fixes it. Note that \`$host\` is the hostname without the port and \`$http_host\` is the raw header including the port, so use \`$http_host\` only if the backend genuinely needs to see a non-standard port.
+
+\`X-Forwarded-Proto\` matters for the same reason. Without it the backend sees a plain HTTP request, decides the user is not on HTTPS, and either redirects to HTTPS (a loop, since the proxy already terminated it) or refuses to set a \`Secure\` cookie.
+
+\`X-Forwarded-For\` deserves a warning. \`$proxy_add_x_forwarded_for\` appends \`$remote_addr\` to whatever the client already sent, and nginx does not validate any of it. If your nginx is directly internet-facing, a client can send a forged \`X-Forwarded-For\` header and your backend will happily log or trust it. At the trust boundary, overwrite rather than append: \`proxy_set_header X-Forwarded-For $remote_addr;\`. The \`X-\` headers are also de-facto convention, not a standard. RFC 7239 defines a single standardized \`Forwarded\` header that carries the same information; most software still expects the \`X-\` versions.
+
+Three defaults will bite you before anything else does:
+
+- \`proxy_read_timeout\` defaults to \`60s\`. Any long-poll, streaming response, or slow report generation dies at exactly sixty seconds with a 504. If failures cluster suspiciously around one minute, this is why.
+- \`proxy_connect_timeout\` also defaults to \`60s\`, and the nginx documentation notes it "cannot usually exceed 75 seconds" because of the operating system's own TCP connect timeout. Raising it past 75 does nothing.
+- \`client_max_body_size\` defaults to \`1m\`. Uploads larger than a megabyte return \`413 Request Entity Too Large\` from nginx, which never reaches the backend, so the backend logs are empty and you waste an hour looking in the wrong place.
+
+Learn to read the two error codes. A \`502 Bad Gateway\` means nginx could not get a usable response: the backend is down, refused the connection, or sent something malformed. A \`504 Gateway Timeout\` means the backend accepted the connection and then did not answer in time. They point at completely different problems.
+
 ## WebSocket Support
 
 Some services (Proxmox console, Grafana live updates) use WebSockets. Add these lines to the location block:
@@ -25658,6 +25989,12 @@ proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection "upgrade";
 \`\`\`
 
+All three are required. nginx proxies with HTTP/1.0 by default, and the \`Upgrade\` mechanism that RFC 6455 uses to turn an HTTP request into a WebSocket only exists in HTTP/1.1. Miss \`proxy_http_version 1.1\` and the handshake fails with a \`400\` or the connection just closes.
+
+The symptom of a half-configured WebSocket proxy is distinctive: the page loads perfectly and then nothing updates. The Proxmox noVNC console shows a black rectangle, Grafana dashboards render once and freeze. Check the browser console for a failed \`wss://\` connection before you suspect the application.
+
+Even with the handshake working, \`proxy_read_timeout 60s\` closes an idle WebSocket after a minute. Raise it in the WebSocket location, or make sure the application sends pings.
+
 ## Internal PKI
 
 For a homelab, create your own Certificate Authority. Add its certificate to your browser's trusted CAs, and all your internal services get valid HTTPS without certificate warnings.
@@ -25666,6 +26003,25 @@ For a homelab, create your own Certificate Authority. Add its certificate to you
 # Create a CA key and certificate
 openssl req -x509 -nodes -newkey rsa:4096 -keyout ca.key   -out ca.crt -days 3650 -subj "/CN=Lab CA"
 \`\`\`
+
+That gives you the CA. The certificate you actually serve is a separate one, signed by it, and here is where nearly everyone gets stuck: a \`/CN=grafana.lab.internal\` subject is not enough. Chrome stopped honouring Common Name for hostname matching in 2017 and every current browser requires a \`subjectAltName\` extension. A certificate without SAN produces \`ERR_CERT_COMMON_NAME_INVALID\` no matter how correctly you installed the CA.
+
+\`\`\`bash
+# Server key and CSR
+openssl req -nodes -newkey rsa:2048 -keyout grafana.key \\
+  -out grafana.csr -subj "/CN=grafana.lab.internal"
+
+# Sign it, with a SAN, valid under 398 days
+openssl x509 -req -in grafana.csr -CA ca.crt -CAkey ca.key \\
+  -CAcreateserial -out grafana.crt -days 397 \\
+  -extfile <(printf "subjectAltName=DNS:grafana.lab.internal")
+\`\`\`
+
+The 397 day figure is not arbitrary. Apple platforms reject TLS server certificates with a validity period longer than 398 days, so a lab certificate issued for ten years works in Firefox on your desktop and fails on every iPhone in the house. Ten years is fine for the CA itself, which is not subject to that limit.
+
+One more nginx-specific detail: \`ssl_certificate\` must point at the leaf certificate followed by any intermediates, concatenated into one file, leaf first. If you serve only the leaf, browsers that have cached the intermediate from another site will succeed while \`curl\`, \`openssl s_client\`, and Java clients fail with an unknown-issuer error. An inconsistent failure across clients almost always means an incomplete chain.
+
+Finally, \`ssl_ciphers HIGH:!aNULL:!MD5\` is the nginx default and is looser than it looks; it still permits CBC and 3DES suites on many OpenSSL builds. It also has no effect on TLS 1.3, whose cipher suites are configured separately in OpenSSL. Use the Mozilla intermediate list if you want a defensible setting.
 
 ## Rate Limiting
 
@@ -25681,6 +26037,29 @@ location /api/ {
     proxy_pass http://backend;
 }
 \`\`\`
+
+\`limit_req_zone\` has to live in the \`http\` block; \`limit_req\` goes in \`http\`, \`server\`, or \`location\`. Putting the zone directive inside a \`server\` block is a config-test failure, not a runtime one, so always run \`nginx -t\` before \`systemctl reload nginx\`.
+
+The \`10m\` is a shared memory zone, and the documentation gives you the arithmetic: a state occupies 64 bytes on 32-bit platforms and 128 bytes on 64-bit, so one megabyte holds about 16 thousand 64-byte states or about 8 thousand 128-byte states. On a 64-bit server, \`10m\` tracks roughly 80,000 source addresses. When the zone fills, the least recently used entry is evicted. \`$binary_remote_addr\` rather than \`$remote_addr\` is deliberate: it stores the raw 4 or 16 bytes instead of the text form.
+
+\`rate=10r/s\` is enforced as a leaky bucket at millisecond resolution, meaning one request per 100 ms, not ten requests at the top of each second. \`burst=20\` allows a queue of twenty excess requests, and \`nodelay\` serves those immediately rather than spacing them out. Past the burst, nginx returns \`503\` by default; \`limit_req_status 429;\` gives clients the more accurate status.
+
+The failure mode that matters: if nginx sits behind Cloudflare, another proxy, or a NAT gateway, \`$binary_remote_addr\` is the address of that intermediary. Every one of your users shares a single bucket, and legitimate traffic starts getting 503s at ten requests per second in total. The fix is the real IP module, \`set_real_ip_from <proxy CIDR>;\` plus \`real_ip_header X-Forwarded-For;\`, which rewrites \`$remote_addr\` to the true client before the limit is evaluated.
+
+## Where Nginx Stops
+
+Open source nginx has passive upstream health checking only. \`max_fails\` (default 1) and \`fail_timeout\` (default 10s) mark a backend unavailable after a failed real request, which means one user eats an error before the backend is taken out. Active health checks that probe a backend before sending it traffic are an nginx Plus feature. HAProxy does active checks in its free version, and that is a legitimate reason to pick it instead.
+
+Nginx is also not a web application firewall, not an identity provider, and not a certificate manager. For request inspection you add ModSecurity or run something purpose-built in front; for authentication you use \`auth_request\` with a service like oauth2-proxy; for certificates you run certbot or use Caddy, which does ACME automatically. Reaching for nginx configuration to solve those is how you end up with a thousand-line config nobody can safely change.
+
+## References
+
+- https://nginx.org/en/docs/http/ngx_http_proxy_module.html
+- https://nginx.org/en/docs/http/ngx_http_limit_req_module.html
+- https://nginx.org/en/docs/http/websocket.html
+- https://nginx.org/en/docs/http/configuring_https_servers.html
+- https://www.rfc-editor.org/rfc/rfc7239
+- https://docs.openssl.org/3.0/man1/openssl-req/
 `,
   },
   {
@@ -25701,7 +26080,17 @@ location /api/ {
 
 Link Aggregation (also called bonding on Linux, or an EtherChannel on Cisco) combines multiple physical Ethernet links into a single logical interface. The benefits are increased bandwidth and redundancy. If one physical link fails, traffic automatically flows through the remaining links.
 
-LACP (Link Aggregation Control Protocol, IEEE 802.3ad) is the standard protocol for negotiating link aggregation between two devices. Both ends send LACP PDUs to establish and maintain the aggregate.
+LACP (Link Aggregation Control Protocol, IEEE 802.3ad) is the standard protocol for negotiating link aggregation between two devices. Both ends send LACP PDUs to establish and maintain the aggregate. The specification moved out of 802.3 and into its own document in 2008, so modern datasheets often say 802.1AX instead. They mean the same protocol, and a switch advertising either will interoperate with the other.
+
+The upper limit is 8 active member links in a single aggregation group. Cisco platforms let you configure up to 16 interfaces in a channel group, but only 8 of them bundle at any moment; the rest sit in hot standby and take over when an active member drops.
+
+## How LACP Negotiates
+
+LACPDUs are sent to the multicast address 01:80:C2:00:00:02 with EtherType 0x8809, the Slow Protocols EtherType. That address is in the reserved range that switches never forward, which is deliberate: an LACPDU is only ever meaningful to the device on the other end of the wire.
+
+Each side describes itself as the actor and describes what it hears as the partner. The fields that matter are the system ID (a priority plus the device MAC), the operational key (which member ports on the same device are allowed to bundle together), and the port ID. Two links join the same aggregator only when both ends agree on all of it. This is why the protocol is safe: a cable moved to the wrong switch produces a mismatched partner system ID, the link drops out of the bundle, and nothing loops.
+
+There are exactly two timer rates. Slow rate sends an LACPDU every 30 seconds; fast rate sends one every second. The timeout in both cases is three missed PDUs, so a dead partner is detected in 90 seconds on slow and 3 seconds on fast. Slow is the default nearly everywhere. Set fast when you want fast failover, but understand what you are asking for: the switch now processes an extra control-plane packet per second per member, and a supervisor failover or a control-plane policing drop that stalls LACPDUs for three seconds will tear the bundle down on a link that was physically fine.
 
 ## How Hashing Works
 
@@ -25712,6 +26101,10 @@ Link aggregation does not actually bond the links into a single higher-speed pip
 - **Layer 4 (src/dst IP + port):** Best distribution for high-traffic flows between few hosts
 
 A single TCP connection always flows over a single physical link. You cannot exceed the speed of one link for a single stream. The benefit is total throughput across many flows.
+
+Two properties of the hash surprise people. First, each end hashes independently, so traffic from A to B can ride a different physical link than the return traffic from B to A. That is normal behaviour, not a fault, and it means a one-sided packet capture on a member link often shows only half a conversation. Second, the hash result is reduced modulo the number of active members. With 2, 4, or 8 members the buckets divide evenly. With 3, 5, 6, or 7 members some links receive measurably more buckets than others, and a heavily loaded 3-member bundle can sit at 60 percent on one link and 20 percent on the others while the aggregate reports plenty of headroom.
+
+Layer 3+4 hashing has a caveat the Linux bonding documentation states directly: it is not fully 802.3ad compliant, because IP fragments after the first carry no port numbers. Those fragments hash differently from the head fragment and can arrive out of order. For normal TCP traffic that never happens, since TCP avoids fragmentation. For UDP applications that send large datagrams, it can.
 
 ## Cisco Configuration
 
@@ -25726,6 +26119,10 @@ interface GigabitEthernet1/0/1
 interface GigabitEthernet1/0/2
   channel-group 1 mode active
 \`\`\`
+
+\`mode active\` sends LACPDUs; \`mode passive\` only answers them. \`mode on\` is different in kind: it forces the ports into a static bundle with no protocol at all. Static bundling is the one configuration that can genuinely loop a network, because a miscabled member gets forwarded onto rather than removed from the group. Use \`active\` unless you have a specific device that cannot speak LACP.
+
+Verify with \`show etherchannel summary\` and read the flag letters next to each port. \`P\` means bundled in the port channel, which is what you want. \`s\` means suspended (the port is a member but is not passing traffic), \`I\` means stand-alone, and \`D\` means down. A member showing \`s\` on a channel where everything else is \`P\` is nearly always a configuration mismatch on that one interface. \`show lacp neighbor\` tells you whether the partner is answering at all, and at what timer rate.
 
 ## Linux Configuration (systemd-networkd)
 
@@ -25749,9 +26146,44 @@ Address=192.168.1.100/24
 Gateway=192.168.1.1
 \`\`\`
 
+Each member interface needs its own \`.network\` file with \`Bond=bond0\` and no address of its own. Giving a member an IP is a common first mistake and produces a bond that comes up but carries almost nothing.
+
+The file to read when something is wrong is \`/proc/net/bonding/bond0\`. It prints the aggregator ID, the actor and partner state bytes, and the churn counters for every member. Two lines matter most. \`Aggregator ID\` should be identical for every member: if two members show different aggregator IDs, only one aggregator is active and the other members are silently idle. \`Partner Mac Address\` of 00:00:00:00:00:00 means no LACPDUs are being received at all, which points at the switch side or at a port that was never added to the channel group.
+
+Note that \`Mode=802.3ad\` is the only bonding mode that requires switch configuration. Round-robin (mode 0) needs none, which is why tutorials reach for it, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. \`active-backup\` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
+
+## What LACP Cannot Do
+
+It cannot make one flow faster. A single iSCSI session, a single SMB copy, or a single backup stream between two hosts uses one member link and one member link only. If that is your workload, the answer is not a bigger bundle; it is multipath at a higher layer (MPIO for iSCSI, SMB Multichannel for SMB) or a faster single link.
+
+It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that spanning tree will have to block.
+
+It cannot merge links of different speeds usefully. A 1 Gbps and a 10 Gbps member get different operational keys and land in different aggregators, and only one aggregator forwards. You do not get 11 Gbps, you get whichever aggregator won.
+
 ## Troubleshooting
 
 Check that both sides are in the same LACP mode (active/active or active/passive, not passive/passive which will not negotiate). Verify speed and duplex match on all member links. Check that the switch port channel is up and members are showing as bundled.
+
+Beyond that, the failures that actually recur:
+
+**Mismatched trunk configuration on one member.** The allowed VLAN list, native VLAN, and switchport mode must be identical across every port in the group. Cisco's EtherChannel misconfig guard will err-disable the port rather than bundle it. The tell is one port in \`s\` or \`err-disabled\` while the rest are \`P\`.
+
+**MTU mismatch.** The bond and every member need the same MTU. A member at 1500 in a jumbo bundle passes small packets perfectly and drops large ones, which looks like an application bug rather than a network one until you test with \`ping -M do -s 8972\`.
+
+**One end configured as static \`on\`, the other as LACP.** The LACP side never receives PDUs, refuses to bundle, and leaves its ports individual; the static side forwards on all of them regardless. The result is duplicate frames and MAC flapping, not a clean failure.
+
+**Traffic arriving on a member the capture is not on.** Before concluding a link is dead, confirm with per-interface counters rather than a capture. \`ethtool -S enp1s0f0\` gives the driver's own transmit and receive counts, and comparing those across members tells you immediately whether the hash is distributing or one link is doing all the work.
+
+**A bundle that works until you reboot the switch.** If the Linux side is set to fast rate and the switch is set to slow, the negotiated rate follows what each side asks its partner for, and marginal setups survive at slow but tear down at fast during control-plane churn. When a bundle flaps only during maintenance windows, drop back to the 30 second rate and see if the flapping stops.
+
+## References
+
+- https://en.wikipedia.org/wiki/Link_aggregation
+- https://en.wikipedia.org/wiki/IEEE_802.1AX
+- https://www.kernel.org/doc/html/latest/networking/bonding.html
+- https://man7.org/linux/man-pages/man5/systemd.netdev.5.html
+- https://man7.org/linux/man-pages/man8/ethtool.8.html
+- https://www.rfc-editor.org/rfc/rfc7424
 `,
   },
   {
@@ -25817,6 +26249,8 @@ For a home with a handful of devices and no performance-sensitive applications, 
 
 Both attacks enable man-in-the-middle interception of traffic without detection.
 
+Neither is an implementation bug. ARP was published in 1982 as RFC 826 and contains no notion of identity: a host that receives a reply for an address it asked about is expected to believe it. DHCP, specified in RFC 2131, has the same property in the other direction, since a client that has just broadcast a DHCPDISCOVER has no way to distinguish the real server's offer from anyone else's. Both protocols assume the local segment is trustworthy. DHCP snooping and Dynamic ARP Inspection are the switch enforcing that assumption on the protocols' behalf.
+
 ## DHCP Snooping
 
 DHCP snooping builds a binding table: which MAC address received which IP address on which port. It marks ports as trusted or untrusted. DHCP server responses from untrusted ports are dropped.
@@ -25834,6 +26268,25 @@ interface range GigabitEthernet1/0/1-47
   ip dhcp snooping limit rate 15
 \`\`\`
 
+Specifically, an untrusted port is not allowed to source the four server-side message types: DHCPOFFER, DHCPACK, DHCPNAK, and DHCPLEASEQUERY. A client port that sends one is either running a DHCP server or attacking you, and either way the frame does not deserve forwarding. The switch also drops a DHCPRELEASE or DHCPDECLINE whose source MAC does not match the binding for that address, which stops one host from tearing down another host's lease.
+
+The two global commands are both required. \`ip dhcp snooping\` on its own enables the feature and inspects nothing. Nothing happens until \`ip dhcp snooping vlan\` names the VLANs. This is the single most common reason someone configures snooping, tests it with a rogue server, and finds it does not work.
+
+## The Binding Table Is the Whole Thing
+
+Every entry holds a MAC, an IP, a lease time, a VLAN, and an interface. Verify it with \`show ip dhcp snooping binding\`. Everything downstream depends on it, which makes one detail important: by default the table lives only in RAM.
+
+Reload the switch and the bindings are gone. If Dynamic ARP Inspection is enabled on the same VLANs, every client that still holds a perfectly valid lease now has no binding, so its ARP is dropped, and the VLAN goes dark until each client happens to renew. That renewal is at 50 percent of the lease by default, so with an eight day lease you can be looking at days of intermittent breakage.
+
+The fix is to persist the table:
+
+\`\`\`
+ip dhcp snooping database flash:/dhcp-snooping.db
+ip dhcp snooping database write-delay 300
+\`\`\`
+
+A TFTP or FTP URL works too, and is better on a switch whose flash you do not want to write to every five minutes. The default write delay is 300 seconds, so a reload within five minutes of the last change still loses the newest entries.
+
 ## Dynamic ARP Inspection
 
 DAI uses the DHCP snooping binding table to validate ARP packets. If a host claims to be an IP address that DHCP snooping assigned to a different MAC, the ARP is dropped.
@@ -25850,11 +26303,67 @@ interface range GigabitEthernet1/0/1-47
   ip arp inspection limit rate 100
 \`\`\`
 
+DAI works by punting ARP frames on untrusted ports to the switch CPU for inspection, which is exactly why rate limits exist and why the default on an untrusted port is 15 packets per second whether or not you type the command. Exceed it and the port is err-disabled. The trusted side has no limit by default. If you are going to raise the limit on an access port, raise it deliberately, because the number is protecting the control plane rather than the network.
+
+Add the optional consistency checks:
+
+\`\`\`
+ip arp inspection validate src-mac dst-mac ip
+\`\`\`
+
+\`src-mac\` and \`dst-mac\` compare the Ethernet header addresses against the ARP payload's sender and target hardware addresses, and \`ip\` rejects invalid or unexpected sender addresses such as 0.0.0.0 and 255.255.255.255. One trap: this is a single command with a keyword list, not three commands. Entering it again with only one keyword replaces the whole list rather than adding to it.
+
+Hosts with static IP addresses have no DHCP binding, so DAI drops their ARP and they disappear from the network. Servers, printers, and the firewall itself are the usual casualties. Give them an ARP ACL:
+
+\`\`\`
+arp access-list STATIC-HOSTS
+  permit ip host 10.20.0.10 mac host 0050.56aa.bb01
+
+ip arp inspection filter STATIC-HOSTS vlan 20
+\`\`\`
+
+## What Breaks When You Turn This On
+
+**Every client stops getting an address, immediately.** This is the Option 82 problem and it catches almost everyone. By default, Cisco switches running DHCP snooping insert the relay agent information option from RFC 3046 into client packets on untrusted ports, but they leave giaddr as 0.0.0.0 because the switch is not the relay. Many DHCP servers, including Windows Server and IOS itself, discard a packet that carries Option 82 with a zero giaddr, because that combination should not exist. Either turn the insertion off with \`no ip dhcp snooping information option\`, or tell the relay to accept it with \`ip dhcp relay information trust-all\` on the SVI.
+
+**Ports err-disable after a power outage.** Hundreds of clients booting at once produce a burst of DHCP that trips a 15 pps limit. Configure automatic recovery rather than walking the building:
+
+\`\`\`
+errdisable recovery cause dhcp-rate-limit
+errdisable recovery cause arp-inspection
+errdisable recovery interval 300
+\`\`\`
+
+**A whole VLAN loses DHCP after adding a second switch.** The link between two snooping switches has to be trusted on both ends. An untrusted interswitch link drops the server's replies as they cross it, and the symptom looks exactly like a dead DHCP server.
+
+**Rate limiting the uplink.** Do not put \`ip dhcp snooping limit rate\` on the trusted port toward the server. All of the site's DHCP traffic crosses it, and err-disabling that port takes the whole VLAN down.
+
+## What These Do Not Cover
+
+DHCP snooping and DAI protect the VLANs you name, on the switches where they are enabled, for IPv4 only. Three gaps follow from that.
+
+An attacker on a switch that does not run snooping is unaffected, and if the link from that switch is trusted, their rogue server's replies pass straight through. The trust boundary has to be drawn at the real edge of the network, not at the edge of the switch you happened to configure.
+
+IPv6 is untouched. There is no ARP in IPv6; address resolution and default gateway discovery both run over ICMPv6 Neighbor Discovery, and the equivalent attack is a spoofed Router Advertisement. That needs RA Guard, DHCPv6 Guard, and IPv6 Source Guard, which are separate features. A dual-stack network with DAI and no RA Guard is still trivially man-in-the-middled, and the attacker gets preference because hosts favour the IPv6 path.
+
+Neither feature stops a host from simply sending IPv4 packets with a forged source address once it has an address. That is IP Source Guard, the third feature in the set, which uses the same binding table to filter the data plane rather than just the control messages.
+
 ## What to Watch
 
 Both features generate logs for violations. Review these periodically. A device frequently triggering DHCP snooping violations might be misconfigured, but it could also be a malicious device. Unexpected ARP inspection violations could indicate an active attack.
 
+\`show ip arp inspection statistics vlan 20\` gives per-VLAN counters for forwarded, dropped, and each class of failed validation. A steadily climbing DHCP drop count on one access port is usually a home router someone plugged in backwards, with its LAN side facing the network. A burst of ARP drops naming several IP addresses from one port is the shape of an actual poisoning attempt, because a tool sweeping the subnet claims many addresses in quick succession rather than one.
+
 These features are lightweight and should be standard configuration on access layer switches in any environment where you do not fully trust every connected device.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc826
+- https://www.rfc-editor.org/rfc/rfc2131
+- https://www.rfc-editor.org/rfc/rfc3046
+- https://www.rfc-editor.org/rfc/rfc7513
+- https://en.wikipedia.org/wiki/ARP_spoofing
+- https://en.wikipedia.org/wiki/DHCP_snooping
 `,
   },
   {
@@ -25877,6 +26386,8 @@ Prometheus is a time-series database and monitoring system designed for dynamic 
 
 The query language (PromQL) is powerful and expressive. You can aggregate, transform, and calculate derived metrics that reveal system behavior not visible in raw numbers.
 
+The pull model also gives you something free that push systems have to build: a synthetic \`up\` metric. For every target in every scrape job, Prometheus records \`up\` as \`1\` if the scrape succeeded and \`0\` if it did not. That single series is the most valuable alert in a new deployment, because a target that stops responding is invisible in a push system until somebody notices the silence.
+
 ## Setting Up Prometheus
 
 \`\`\`yaml
@@ -25894,6 +26405,10 @@ scrape_configs:
       - targets: ['proxmox:9090']
 \`\`\`
 
+If you omit \`scrape_interval\`, Prometheus defaults to \`1m\`. The related default is \`scrape_timeout: 10s\`, and the documentation is explicit that the timeout cannot be greater than the interval. That constraint bites the first time somebody sets \`scrape_interval: 5s\` on a slow exporter: the config either refuses to load or the scrapes start timing out, and the target flaps between up and down. \`evaluation_interval\`, which controls how often recording and alerting rules run, also defaults to \`1m\`.
+
+One detail in the config above is a trap worth naming. Port 9090 is Prometheus's own listening port. If the exporter you are scraping runs on the same host as Prometheus, both processes will try to bind 9090 and the second one loses. Node Exporter is 9100, Alertmanager is 9093, and Pushgateway is 9091. Look up the documented port for any exporter instead of assuming.
+
 ## Node Exporter
 
 Install the Prometheus Node Exporter on every Linux server you want to monitor. It exposes hundreds of system metrics including CPU, memory, disk I/O, network, and filesystem usage.
@@ -25906,6 +26421,10 @@ systemctl enable prometheus-node-exporter
 # Verify it is running
 curl http://localhost:9100/metrics
 \`\`\`
+
+Node Exporter does not measure anything itself. It reads \`/proc\` and \`/sys\` and reformats what the kernel already publishes, which is why it is cheap to run and why its numbers match \`top\` and \`iostat\`. \`node_cpu_seconds_total\` is \`/proc/stat\`, \`node_memory_*\` is \`/proc/meminfo\`, and \`node_filesystem_*\` comes from a \`statfs\` on each mount.
+
+That also explains its main failure mode in containers. Run Node Exporter in Docker without mounting the host paths and it reports the container's view of the world: the wrong root filesystem, and often the host's CPU count with the container's cgroup limits invisible. Either run it on the host directly, or mount \`/proc\`, \`/sys\`, and \`/\` read-only and pass the matching \`--path.procfs\`, \`--path.sysfs\`, and \`--path.rootfs\` flags.
 
 ## Useful PromQL Queries
 
@@ -25923,6 +26442,12 @@ rate(node_disk_io_time_seconds_total[5m]) * 100
 rate(node_network_receive_bytes_total[5m])
 \`\`\`
 
+Every one of those uses \`rate()\`, and \`rate()\` is where beginners lose the most time. It only works on counters, it needs at least two samples inside the range to return anything at all, and the recommendation is to choose a range of at least four times the scrape interval. With \`scrape_interval: 15s\`, a \`[5m]\` range gives you twenty samples of headroom, which is why \`[5m]\` is the conventional choice. Write \`rate(x[15s])\` on a 15 second scrape and you get an empty result with no error, because a single sample is not a rate. An empty result in a graph looks identical to "nothing is wrong."
+
+Use \`rate()\` for anything that feeds an alert. \`irate()\` uses only the last two samples in the range, so it reacts instantly and is great for a dashboard of a spiky metric, and terrible for alerting because one unlucky pair of samples can trip a threshold.
+
+The memory query above deliberately uses \`MemAvailable\` rather than \`MemFree\`. Linux uses spare RAM for page cache, so \`MemFree\` on a healthy busy server is close to zero and an alert built on it fires constantly. \`MemAvailable\` is the kernel's own estimate of how much memory a new workload could actually claim, and it is the number you want.
+
 ## Alerting with Alertmanager
 
 \`\`\`yaml
@@ -25931,7 +26456,7 @@ groups:
   - name: servers
     rules:
       - alert: HighCPU
-        expr: cpu_usage > 90
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
         for: 5m
         labels:
           severity: warning
@@ -25939,7 +26464,44 @@ groups:
           summary: "High CPU on {{ $labels.instance }}"
 \`\`\`
 
+Write that \`expr\` as \`cpu_usage > 90\` and the rule is syntactically valid, loads without complaint, and never fires, because no exporter publishes a metric called \`cpu_usage\`. PromQL returns an empty vector for an unknown metric name rather than an error. This is the single most common way a homelab ends up with an alerting config that has never once alerted. Before you commit a rule, paste the \`expr\` into the Prometheus expression browser and confirm it returns rows right now.
+
+\`for: 5m\` means the alert goes to the \`pending\` state on the first evaluation where the expression is true and only becomes \`firing\` if it is still true five minutes later. This suppresses the momentary spikes that make people mute a channel. The cost is that your detection time is \`for\` plus up to one \`evaluation_interval\`.
+
+Alertmanager then handles grouping, silencing, and delivery. Its defaults are worth knowing because they are what you will be debugging: \`group_wait\` is \`30s\` (how long to hold the first notification for a group, hoping siblings arrive), \`group_interval\` is \`5m\` (how long before sending an update about a group that already notified), and \`repeat_interval\` is \`4h\` (how long before re-nagging about an alert that is still firing). If your first alert took thirty seconds longer to arrive than you expected, \`group_wait\` is why.
+
 Pair Alertmanager with routing rules to send alerts to email, Slack, or PagerDuty based on severity and team ownership.
+
+## Sizing the Disk
+
+Prometheus writes samples into two-hour blocks, then compacts them in the background into larger blocks covering up to 10 percent of the retention time or 31 days, whichever is smaller. If you set neither \`--storage.tsdb.retention.time\` nor \`--storage.tsdb.retention.size\`, retention defaults to \`15d\`.
+
+The capacity formula from the storage documentation is:
+
+\`\`\`
+needed_disk_space = retention_time_seconds * ingested_samples_per_second * bytes_per_sample
+\`\`\`
+
+Prometheus averages 1 to 2 bytes per sample after compression. A Node Exporter target publishes roughly a thousand series, so ten servers at a 15 second interval is about 670 samples per second, which is roughly 1.7 GB at 15 days retention using 2 bytes per sample. That is small. What is not small is cardinality: every unique combination of label values is a separate time series, held in memory in the index. Put a request ID, a client IP, or a full URL path into a label and you can go from a thousand series to a million without changing the sample rate at all. Cardinality, not sample volume, is what kills Prometheus servers.
+
+## What Prometheus Is Not For
+
+Prometheus samples. It does not record every event, and it explicitly does not guarantee it captured every one. That makes it wrong for billing, for audit trails, and for anything where a missing data point is a correctness bug rather than a gap in a graph. Use logs or an event pipeline for those.
+
+It has no clustering. A single Prometheus server is a single point of failure, and the standard answer is not a cluster but two identical servers scraping the same targets independently. Alertmanager does gossip into a cluster and deduplicate, so two Prometheus servers pointed at one Alertmanager cluster will not double-page you.
+
+Local storage is also not durable long-term storage. If you need years of history or a global view across sites, you send data out via remote write to Thanos, Mimir, or a hosted backend. And Prometheus does not do distributed tracing: it will tell you the 99th percentile latency got worse, not which span caused it.
+
+Finally, a stale target simply stops producing samples. Prometheus looks back a default of five minutes for the most recent sample when you query an instant, so a dead exporter leaves its last value visible on dashboards for five minutes before series vanish. Alert on \`up == 0\`, not on the absence of a graph.
+
+## References
+
+- https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+- https://prometheus.io/docs/prometheus/latest/querying/functions/
+- https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+- https://prometheus.io/docs/alerting/latest/configuration/
+- https://prometheus.io/docs/prometheus/latest/storage/
+- https://man7.org/linux/man-pages/man5/proc.5.html
 `,
   },
   {
@@ -25962,6 +26524,8 @@ BGP route leaks and hijacks happen because many networks do not filter what they
 
 The internet is more stable when every AS filters aggressively. And your network is more secure when you only accept routes you expect from each peer.
 
+RFC 4271 is worth knowing here for what it does not say. BGP as specified has no mechanism for verifying that the AS originating a prefix is entitled to it, and no mechanism for verifying that an AS path was actually traversed. Every protection described below is bolted on top. RFC 7454 collects the operational practices into a BCP, and RFC 7908 gives route leaks a formal taxonomy, which is useful because "leak" gets used for at least six structurally different failures.
+
 ## Prefix Lists
 
 Prefix lists filter routes based on the network prefix and prefix length. Use them to whitelist specific prefixes from peers and to control what you advertise:
@@ -25978,6 +26542,21 @@ router bgp 65001
   neighbor 10.0.0.2 prefix-list MY-PREFIXES out
 \`\`\`
 
+The \`ge\` and \`le\` keywords are where most people go wrong, so be precise about them. A bare \`permit 192.0.2.0/24\` matches that prefix and that prefix only. It does not match 192.0.2.0/25 or 192.0.2.128/25. Adding \`le 32\` widens the match to the /24 and everything more specific inside it, and \`ge 25 le 32\` matches only the more specifics without the /24 itself. Which one you want depends entirely on whether your customer deaggregates, and getting it backwards produces either a dropped legitimate announcement or an accepted hijack of a more specific.
+
+Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
+
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behaviour differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+
+## The Filter That Saves You When the Others Fail
+
+\`\`\`
+router bgp 65001
+  neighbor 10.0.0.2 maximum-prefix 100 90 restart 15
+\`\`\`
+
+A maximum prefix limit is the cheapest protection in BGP. It warns at 90 percent of the limit and shuts the session down when the limit is crossed, so a peer that suddenly starts announcing the full table hits a wall instead of blackholing your traffic. Size it from what the peer actually sends, with headroom, and revisit it. For context on scale: the global IPv4 routing table is on the order of a million prefixes and IPv6 is a couple hundred thousand, so a peer that should be sending you twelve prefixes and starts sending 400,000 is unambiguous.
+
 ## Bogon Filtering
 
 Never accept or advertise bogon prefixes: RFC 1918 private addresses, loopback addresses, documentation ranges, or prefixes shorter than /8 or longer than /24.
@@ -25991,15 +26570,51 @@ ip prefix-list BOGONS deny 0.0.0.0/8 le 32
 ip prefix-list BOGONS permit 0.0.0.0/0 le 32
 \`\`\`
 
+That list is incomplete in a way worth fixing. RFC 6890 maintains the authoritative registry of IPv4 special-purpose addresses, and the ones missing above show up in the wild: 100.64.0.0/10 (carrier-grade NAT), 169.254.0.0/16 (link-local), 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24 (documentation), 198.18.0.0/15 (benchmarking), 224.0.0.0/4 (multicast), and 240.0.0.0/4 (reserved). Add \`deny 0.0.0.0/0 ge 25\` to catch prefixes longer than /24, which the DFZ generally will not carry anyway.
+
+Be honest about the distinction between two things that both get called bogons. Special-purpose ranges like the above are static and safe to hardcode. Unallocated address space is not: it changes as the RIRs issue blocks, and a hand-maintained "full bogon" list becomes a filter that blackholes legitimate new allocations. Either subscribe to a maintained feed or restrict your static filter to the special-purpose registry and let RPKI handle the rest.
+
 ## RPKI
 
 RPKI (Resource Public Key Infrastructure) provides cryptographic validation that a prefix is authorized to be advertised by a specific AS. Route Origin Authorizations (ROAs) are published by IP address holders and validated by routers. Invalid prefixes (where the announcing AS does not match the ROA) can be dropped.
 
 RPKI is one of the most effective tools for preventing BGP hijacking. Major ISPs and cloud providers now validate RPKI. If you run BGP, enable RPKI validation.
 
+Mechanically, the router does no cryptography. A separate relying-party validator fetches and verifies the ROA set, then feeds the router a list of validated prefix-to-origin pairs over the RTR protocol from RFC 6810 and RFC 8210. RFC 6811 defines the three outcomes the router then computes for each announcement: **Valid** (a ROA covers the prefix and the origin AS matches), **Invalid** (a ROA covers the prefix and the origin does not match, or the prefix is longer than the ROA's maxLength), and **NotFound** (no ROA covers it at all).
+
+Drop Invalid. Do not drop NotFound. A large share of the table still has no ROA, and more importantly, if your validator becomes unreachable every route in the world degrades to NotFound. A policy that drops NotFound turns a dead validator into a total outage.
+
+The mistake that undoes the whole exercise is maxLength. A ROA covers a prefix plus a maximum length, and setting maxLength to /24 on a /20 you announce as a single /20 means a hijacker announcing your 203.0.113.0/24 with your AS number produces an announcement that is RPKI Valid and more specific than yours, so it wins. RFC 9319 is explicit: set maxLength equal to the prefix length unless you genuinely announce the more specifics yourself.
+
+And be clear on the boundary. RPKI origin validation validates the origin, nothing else. An attacker who prepends your AS at the end of a forged path produces an announcement that validates cleanly. Path validation is what BGPsec (RFC 8205) was designed for, and BGPsec is essentially undeployed. The practical partial answer today is RFC 9234, which adds a peering role to the OPEN message and an Only-to-Customer attribute that lets a leak be detected automatically rather than filtered by hand.
+
 ## AS Path Filtering
 
 Limit the AS path length you accept. An AS path longer than a reasonable maximum (like 10 or 20 hops) is likely bogus or part of a route leak.
+
+Pick that maximum carefully, because AS path prepending is a normal traffic engineering technique and a legitimate route from a multihomed network prepending itself five times can genuinely exceed 15 hops. Typical paths in the DFZ are four or five ASes long, and Cisco's \`bgp maxas-limit\` is conventionally set around 50 to 75. That catches the pathological announcements, some of which carry hundreds of ASes and have historically crashed router software, without discarding a customer who is prepending to steer traffic.
+
+Two other path filters earn their place. Reject any path containing a private AS number, since 64512 to 65534 and the 32-bit range 4200000000 to 4294967294 defined in RFC 6996 should never appear in the DFZ, and neither should 23456, the AS_TRANS placeholder from RFC 6793. And reject any path containing your own AS number on inbound from a peer, which is a loop you did not create.
+
+\`\`\`
+ip as-path access-list 10 deny _(6451[2-9]|645[2-9][0-9]|64[6-9][0-9][0-9]|65[0-9][0-9][0-9])_
+ip as-path access-list 10 permit .*
+\`\`\`
+
+## What Filtering Cannot Fix
+
+None of this authenticates the data plane. Every mechanism here constrains what routes are accepted; none of it verifies that traffic actually followed the path the routes described. A transit provider that accepts your announcement correctly can still route your packets wherever it likes.
+
+Filtering also cannot protect you from your own upstream. If your transit provider accepts a hijack of your prefix from someone else, your inbound traffic is diverted before it ever reaches a router you control. That is why the useful framing is not "protect my network" but "everyone filters their customers." The MANRS actions codify this: filter customer announcements, prevent source address spoofing, keep routing data in the IRR and RPKI current, and be reachable when someone needs to tell you about a leak. Publishing accurate ROAs is the single highest-value thing a small network can do, because it lets everyone else's filters protect you.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc4271
+- https://www.rfc-editor.org/rfc/rfc7454
+- https://www.rfc-editor.org/rfc/rfc7908
+- https://www.rfc-editor.org/rfc/rfc6811
+- https://www.rfc-editor.org/rfc/rfc9319
+- https://www.rfc-editor.org/rfc/rfc6890
 `,
   },
   {
@@ -26607,9 +27222,15 @@ On the switch itself, \`show policy-map interface GigabitEthernet0/1\` gives you
 
 Manual configuration is slow, error-prone, and does not scale. When you have ten switches and need to add a new VLAN, logging into each one individually and repeating the same commands ten times is tedious and introduces inconsistency. Automation makes configuration changes fast, consistent, and repeatable.
 
+The consistency argument is the important one. Ten hand-configured switches drift: one has a typo in the VLAN name, one never got the change because the session dropped, one has an extra \`switchport trunk allowed vlan\` line from a project two years ago. Drift is invisible until the day it causes an outage. A playbook that can be re-run turns "we think they match" into "we verified they match this morning."
+
 ## How Ansible Connects to Network Devices
 
 Unlike servers where Ansible pushes changes via SSH and runs commands on the remote host, network devices are typically managed by connecting from the Ansible control node and issuing CLI commands over SSH. Ansible uses connection plugins like \`network_cli\` for this.
+
+The distinction matters more than it sounds. On a Linux server Ansible copies a Python module to the target, runs it, and collects JSON. A Catalyst switch has no Python and no writable filesystem you can drop a module into, so with \`network_cli\` the module executes on the control node and only the resulting CLI text crosses the SSH session. Everything is therefore screen scraping: Ansible sends \`show vlan\`, parses the output, works out the delta, and sends configuration lines.
+
+Two consequences follow. First, \`gather_facts: no\` belongs in every network play, because the default fact gathering tries to run \`setup\`, which needs Python on the target and will fail or hang. Use \`cisco.ios.ios_facts\` when you actually want device facts. Second, the control node needs the collection installed (\`ansible-galaxy collection install cisco.ios\`) plus \`paramiko\` or \`ansible-pylibssh\`. The most common first error, \`Unable to automatically determine host network os\`, means \`ansible_network_os\` is missing or misspelled, not that the device is unreachable.
 
 ## Basic Inventory
 
@@ -26629,6 +27250,26 @@ all:
           ansible_host: 192.168.1.11
           ansible_network_os: ios
 \`\`\`
+
+Note that \`core-sw-02\` inherits nothing here: every variable is set per host, so the second switch has no \`ansible_network_os\`, no user, and no connection plugin, and the play will fail on it. Put shared settings in a group \`vars\` block instead:
+
+\`\`\`yaml
+    switches:
+      vars:
+        ansible_network_os: cisco.ios.ios
+        ansible_connection: ansible.netcommon.network_cli
+        ansible_user: ansible
+        ansible_password: "{{ vault_switch_password }}"
+      hosts:
+        core-sw-01:
+          ansible_host: 192.168.1.10
+        core-sw-02:
+          ansible_host: 192.168.1.11
+\`\`\`
+
+The fully qualified collection names (\`cisco.ios.ios\`, \`ansible.netcommon.network_cli\`) are the current form. The short names \`ios\` and \`network_cli\` still resolve through the collection redirect, but FQCNs are unambiguous when two collections define the same short name.
+
+If the device requires an enable password, add \`ansible_become: yes\`, \`ansible_become_method: enable\`, and \`ansible_become_password\`. Without it, every configuration task fails with a permission error while \`show\` commands work fine, which is a confusing pair of symptoms until you know the cause.
 
 ## Simple VLAN Playbook
 
@@ -26653,9 +27294,40 @@ all:
           - write memory
 \`\`\`
 
+The \`state: merged\` on the module is doing critical work and is easy to get wrong. The resource modules accept several states and they are not variations on a theme:
+
+- \`merged\` adds what you listed and leaves everything else alone. This is what you want almost always.
+- \`replaced\` rewrites the listed objects to match your config exactly, removing attributes you did not specify on those objects.
+- \`overridden\` makes the entire VLAN database on the device match your list, which means it deletes every VLAN you did not mention. Running \`overridden\` with a single VLAN in \`config\` against a production switch removes all the others. This has taken down real networks.
+- \`gathered\`, \`rendered\`, and \`parsed\` produce data without touching the device, and are how you build the initial config from what is already there.
+
+Also be careful with the VLAN ID itself. Cisco standard-range VLANs are 1 to 1005, with 1002 to 1005 reserved for legacy Token Ring and FDDI, and extended range is 1006 to 4094. VTP version 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch in a VTP domain will not appear on the others and the playbook will look like it silently did nothing on some hosts.
+
+\`write memory\` runs unconditionally in this playbook, including on hosts where nothing changed, which produces a "changed" result every run and makes it impossible to tell real changes from noise. Gate it:
+
+\`\`\`yaml
+    - name: Save configuration
+      cisco.ios.ios_config:
+        save_when: modified
+\`\`\`
+
+\`save_when: modified\` compares the running and startup configs and only writes when they differ.
+
 ## Idempotency
 
 Ansible is designed to be idempotent: running a playbook multiple times produces the same result. If the VLAN already exists, the playbook skips creating it. This makes automation safe to run repeatedly and makes it practical to run on a schedule as a configuration compliance check.
+
+Idempotency comes from the module, not from Ansible. \`ios_vlans\` and the other resource modules read the current state, compute a diff, and send only the missing lines, so a second run reports \`ok\` instead of \`changed\`. \`ios_command\` has no idea what it is sending, so it reports \`changed\` every single time. \`ios_config\` sits in between: it compares the lines you give it against the running config and pushes only the differences.
+
+This is why a playbook full of \`ios_command\` tasks is not automation, it is a slower version of copying and pasting. If you cannot tell from \`ansible-playbook\` output whether anything actually changed, you cannot use the playbook as a compliance check.
+
+The compliance-check pattern is \`--check\` plus \`--diff\`:
+
+\`\`\`bash
+ansible-playbook add_vlan.yml --check --diff
+\`\`\`
+
+\`--check\` runs without applying changes and \`--diff\` prints the configuration lines that would be sent. Run that on a schedule and any output at all means a device has drifted. Note that \`--check\` support depends on the module: resource modules and \`ios_config\` handle it properly, \`ios_command\` cannot and will simply skip.
 
 ## Ansible Vault
 
@@ -26668,6 +27340,31 @@ ansible-vault encrypt_string 'mypassword' --name vault_switch_password
 # Run playbook with vault password
 ansible-playbook add_vlan.yml --ask-vault-pass
 \`\`\`
+
+Vault encrypts with AES-256 and the ciphertext is safe to commit. What is not safe is the surrounding habit. Three things go wrong:
+
+- Encrypting the value but leaving the plaintext in your shell history. \`ansible-vault encrypt_string 'mypassword'\` puts the password in \`~/.bash_history\`. Run it without the value argument and type the secret at the prompt instead.
+- Debug tasks that print the decrypted variable. \`no_log: true\` on any task that touches a credential keeps it out of the output and out of CI logs.
+- Committing a vault password file. Use \`--vault-password-file\` pointing somewhere outside the repository, or \`--ask-vault-pass\` interactively, and put the path in \`.gitignore\` either way.
+
+Vault does not solve key rotation, does not give you an audit trail of who decrypted what, and one shared vault password means everyone with the repo has every credential. Past a couple of people, move to HashiCorp Vault or CyberArk and have Ansible look up secrets at run time.
+
+## Where CLI Scraping Runs Out
+
+\`network_cli\` is parsing text meant for humans. A firmware upgrade that changes the column widths of \`show interfaces status\` can break a parser, and error handling is limited to matching prompts and known error strings. It is also slow: every task is a round trip over an interactive SSH session, so a play across fifty switches spends most of its time waiting. \`strategy: free\` and raising \`forks\` in \`ansible.cfg\` help, since the default of 5 forks means fifty devices run in ten sequential batches.
+
+Where the platform supports it, the structured alternatives are better. NETCONF (RFC 6241) exchanges XML over SSH with real transactions, candidate configurations, and commit and rollback. RESTCONF (RFC 8040) exposes the same YANG models over HTTP. Ansible reaches those through the \`ansible.netcommon.netconf\` connection plugin and the \`netconf_config\` module. On IOS XE, IOS XR, and Junos, prefer them.
+
+Finally, Ansible is push-based and stateless. It has no continuous reconciliation loop and no memory of what it did last time, so it will not notice that somebody logged into a switch at 2 a.m. and changed something. The scheduled \`--check --diff\` run is how you close that gap, and it only works if you actually read the output.
+
+## References
+
+- https://www.mankier.com/1/ansible-playbook
+- https://www.mankier.com/1/ansible-vault
+- https://github.com/ansible-collections/cisco.ios
+- https://www.rfc-editor.org/rfc/rfc6241
+- https://www.rfc-editor.org/rfc/rfc8040
+- https://en.wikipedia.org/wiki/Ansible_(software)
 `,
   },
   {
@@ -26729,9 +27426,19 @@ Defense is most effective when you understand what you are defending against. A 
 
 Understanding attacker methodology helps you prioritize controls, identify gaps, and detect attacks by recognizing their telltale patterns.
 
+## Authorization Comes First
+
+Everything below is legal in exactly one circumstance: you have written permission from the owner of the system. Not verbal, not implied, not "it is my school's network and I am on the IT club." Unauthorized scanning and access are prosecutable under the Computer Fraud and Abuse Act in the United States and equivalent laws elsewhere, and intent to be helpful is not a defense.
+
+For practice, that means your own lab, a deliberately vulnerable target you installed yourself, or a service that publishes an explicit invitation. \`scanme.nmap.org\` exists for exactly this and says so on the page. Public bug bounty programs publish scope. Everything else is off limits.
+
+A real engagement is governed by a rules of engagement document, and NIST SP 800-115 describes what belongs in one. At minimum: the exact CIDR ranges and hostnames in scope, the hosts explicitly excluded, the testing window, whether social engineering and denial of service are permitted, a named technical contact who can be woken up, and the stop condition that ends the test early. Write down how you will store and destroy any credentials or data you recover, because you will recover some.
+
 ## The Penetration Testing Phases
 
 **Reconnaissance:** Gathering information without active exploitation. OSINT, DNS enumeration, certificate transparency logs, LinkedIn scraping. The goal is understanding the target's attack surface before touching it.
+
+Certificate transparency is the underrated one. Every publicly trusted TLS certificate is logged, so querying CT logs for an organization's domain returns internal hostnames that were never meant to be discoverable: \`vpn-test\`, \`jira-staging\`, \`old-mail\`. Nobody has to misconfigure anything for this to work. It is a consequence of how the Web PKI is designed, which is why the defensive answer is wildcard certificates for internal names rather than trying to hide.
 
 **Scanning:** Active discovery of systems, ports, and services. Nmap is the standard tool.
 
@@ -26743,17 +27450,60 @@ nmap -sV -sC -O 192.168.1.0/24
 nmap -p 22,80,443,3389,5985 192.168.1.0/24
 \`\`\`
 
+Know what those flags actually do before you run them anywhere that matters.
+
+Nmap does not scan all 65535 ports by default. It scans the top 1000 by frequency, drawn from its own \`nmap-services\` data. If you need everything, \`-p-\` is the flag, and it will take considerably longer. When run with root privileges Nmap defaults to a SYN scan (\`-sS\`), which sends a SYN and tears the connection down on the SYN/ACK; without privileges it falls back to a full TCP connect (\`-sT\`), which is slower and lands in the target's application logs.
+
+Host discovery runs first and can silently discard hosts. The default probe set on a privileged local scan is an ICMP echo request, a TCP SYN to 443, a TCP ACK to 80, and an ICMP timestamp request. A host that filters all four is treated as down and never scanned, which is why the results on a firewalled network look implausibly clean. \`-Pn\` skips discovery and scans everything you named, at the cost of a much longer run.
+
+UDP is the part beginners abandon. \`-sU\` infers a closed port from an ICMP port unreachable, and Linux rate limits those to roughly one per second by default. A full 65535 port UDP scan against one Linux host can therefore take upwards of 18 hours. Scan the UDP ports you care about (53, 123, 161, 500, 1900) and accept that a comprehensive UDP picture is expensive.
+
+Save everything. \`-oA basename\` writes normal, greppable, and XML output at once, and the XML is what you will want three weeks later when you are writing up a finding and cannot remember which host had the old OpenSSH.
+
 **Exploitation:** Attempting to exploit discovered vulnerabilities. Metasploit is the standard framework for public exploits. Custom exploits require significantly more skill.
+
+The honest picture is less cinematic than the framework suggests. In real intrusions the dominant initial access techniques are valid accounts and exploitation of internet-facing applications, catalogued in MITRE ATT&CK as T1078 and T1190. Memory corruption exploits against hardened modern targets are rare and expensive. A reused password from a breach dump, an exposed management interface, and a service six months behind on patches will get you further than any exploit you write.
 
 **Post-exploitation:** What can you do once you have a foothold? Enumerate local system, dump credentials, escalate privileges, move laterally to other systems.
 
+This phase is where a test proves impact, and impact is what turns a finding into a fixed finding. "Port 445 is open" changes nothing. "Port 445 is open, the local administrator password is identical on 340 workstations, and from any one of them I reach the domain controller" gets budget approved.
+
 **Reporting:** A penetration test without a clear report is useless. The report must describe what was found, how it was found, what the impact is, and how to fix it.
+
+## Scoring and Reporting Honestly
+
+Most reports attach a CVSS score. The v3.1 base score runs 0.0 to 10.0 and the standard qualitative bands are Low at 0.1 to 3.9, Medium at 4.0 to 6.9, High at 7.0 to 8.9, and Critical at 9.0 to 10.0. Those bands come from the FIRST specification, not from any individual vendor.
+
+What the base score deliberately does not include is your environment. It says nothing about whether the host is internet-facing, whether a compensating control blocks the attack path, or what the machine is worth. A 9.8 on an isolated lab VM matters less than a 5.3 on the box holding the student records, and a report that sorts purely by base score will send the remediation team at the wrong thing first. Use the score as one input and rank by exploitability in this network plus what is behind the host.
+
+Two habits make a report usable. Include the exact command and its output for every finding, so the reader can reproduce it and can verify the fix afterwards. And write the remediation as a specific action on a specific system, not as "apply security best practices."
+
+## What a Pen Test Cannot Tell You
+
+It cannot tell you that you are secure. A test finds what one person found in the time available against the systems in scope on the day it ran. Absence of a finding is not evidence of absence.
+
+It is not vulnerability management. A scanner enumerating known CVEs across every host, continuously, catches far more of the routine exposure than an annual test does, and it is much cheaper. NIST SP 800-115 treats scanning and penetration testing as different activities for a reason. If you can only afford one, patch management and continuous scanning beat one week of manual testing.
+
+It is not a red team exercise. A pen test measures whether vulnerabilities exist. A red team exercise measures whether your detection and response actually work, which means the defenders are not told it is happening. Those answer different questions, and buying one when you needed the other is a common and expensive mistake.
+
+Finally, the practical warnings. Port scans crash things. Printers, IP cameras, building management controllers, and older industrial equipment have TCP stacks that do not survive an aggressive scan, and \`-T5\` across a WAN will hand you false results from timeouts even when it does not break anything. Start slow, exclude fragile hosts by IP in the rules of engagement, and treat \`-T4\` as the fastest setting that is still honest on most networks.
 
 ## What This Means for Defense
 
 Every pen test phase has a defensive countermeasure. Limit public information exposure. Minimize exposed ports and services. Patch known vulnerabilities. Monitor for scanning patterns and post-exploitation techniques.
 
+Each phase also has a signature. Reconnaissance shows up as certificate transparency lookups and DNS zone-walk attempts. Scanning shows up as SYN packets to hundreds of ports from one source inside a few seconds, connections that open and immediately reset, and a spike in ICMP port unreachable messages leaving the host. Post-exploitation shows up as processes reading LSASS memory, new services created remotely, and one workstation authenticating to dozens of others in a short window. Those last two are far more valuable to alert on than the scan, because scanning is constant background noise on the internet and lateral movement inside your own network is not.
+
 The MITRE ATT&CK framework maps attacker techniques to defensive detections. If you know what techniques pen testers use, you can build detection rules for exactly those techniques.
+
+## References
+
+- https://csrc.nist.gov/pubs/sp/800/115/final
+- https://nmap.org/book/man.html
+- https://nmap.org/book/host-discovery.html
+- https://attack.mitre.org/
+- https://www.first.org/cvss/v3-1/specification-document
+- https://owasp.org/www-project-web-security-testing-guide/
 `,
   },
   {

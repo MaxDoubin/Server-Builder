@@ -125,6 +125,11 @@ jobs:
       - name: Post archive in sync
         run: node scripts-ci/check-post-sync.mjs
 
+      # Every route must be prerendered or listed in _redirects, and the
+      # catch-all must stay gone so unknown URLs get a real 404.
+      - name: Routes reachable
+        run: node scripts-ci/check-spa-routes.mjs
+
       - name: Bundle budget
         run: node scripts-ci/check-bundle-budget.mjs
 

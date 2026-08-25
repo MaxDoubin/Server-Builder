@@ -20,6 +20,7 @@ import { Marked } from "marked";
 // cleanly here. lib/blogPosts.ts cannot: it reaches for the bodies through
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
+const { pageTitle } = await import("../client/src/lib/pageTitle.ts");
 const { getTagPage } = await import("../client/src/lib/tagPages.ts");
 const { EXAMS } = await import("../client/src/lib/examObjectives.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
@@ -162,6 +163,7 @@ function buildPageHtml(base: string, meta: PageMeta): string {
   return html;
 }
 
+
 // ─── write helpers ────────────────────────────────────────────────────────────
 
 async function writePage(
@@ -173,6 +175,51 @@ async function writePage(
   await mkdir(dir, { recursive: true });
   const html = buildPageHtml(base, meta);
   await writeFile(path.join(dir, "index.html"), html, "utf-8");
+}
+
+/**
+ * The 404 document, served by Cloudflare Pages with a real 404 status.
+ *
+ * Pages looks for 404.html at the output root when a request matches neither
+ * a static file nor a rewrite in _redirects. It has to sit at the root as
+ * 404.html rather than 404/index.html, which is why this does not go through
+ * writePage.
+ *
+ * It carries the app shell, so React boots and the client router renders the
+ * real not-found page. The crawler gets the status code it needs before any
+ * of that runs.
+ */
+async function writeNotFoundPage(base: string): Promise<void> {
+  const html = buildPageHtml(base, {
+    title: "Page not found | Max Doubin",
+    description:
+      "That page does not exist on maxdoubin.com. The writing is in Field Notes and everything else is linked from the home page.",
+    // Stripped again below. buildPageHtml requires one, but a page that does
+    // not exist has no canonical URL to point at, and claiming one that also
+    // does not exist just leaves a dead reference in the HTML.
+    canonical: `${SITE_URL}/404`,
+    noindex: true,
+    rootContent: `
+<main>
+  <h1>Page not found</h1>
+  <p>
+    There is nothing at this address. It may have been renamed, or the link
+    that brought you here may have been wrong.
+  </p>
+  <ul>
+    <li><a href="${SITE_URL}/">Home</a></li>
+    <li><a href="${SITE_URL}/blog">Field Notes, the writing archive</a></li>
+    <li><a href="${SITE_URL}/topics">Topics</a></li>
+    <li><a href="${SITE_URL}/tools">Browser tools</a></li>
+    <li><a href="${SITE_URL}/sitemap.xml">Sitemap</a></li>
+  </ul>
+</main>`,
+  });
+  await writeFile(
+    path.join(DIST, "404.html"),
+    html.replace(/\s*<link rel="canonical"[^>]*>/i, ""),
+    "utf-8",
+  );
 }
 
 // ─── blog post pre-render ─────────────────────────────────────────────────────
@@ -319,7 +366,7 @@ ${JSON.stringify({
 </main>`;
 
   await writePage(`blog/${post.slug}`, base, {
-    title: `${post.title} | Max Doubin`,
+    title: pageTitle(post.title),
     description: post.excerpt,
     canonical: url,
     ogType: "article",
@@ -474,14 +521,14 @@ ${JSON.stringify({
       dir: "cyber-club/kit",
       title: "Cyber Club in a Box: a free 12 week plan | Max Doubin",
       description:
-        "A free twelve week plan for starting a high school cybersecurity club: meeting by meeting sessions, written rules of engagement, a zero budget materials list, and the failure modes that kill clubs in month two.",
+        "A free twelve week plan for starting a high school cybersecurity club: meeting plans, rules of engagement, a no budget materials list, and what kills clubs.",
       canonical: `${SITE_URL}/cyber-club/kit`,
     },
     {
       dir: "verify",
       title: "Verify these claims | Max Doubin",
       description:
-        "Every claim on this site, graded by evidence: which ones have a public document, which ones have a record available on request, and which ones rest on nothing but Max Doubin's word.",
+        "Every claim on this site graded by evidence: which have a public document, which have a record available on request, and which rest on nothing but my word.",
       canonical: `${SITE_URL}/verify`,
     },
     {
@@ -683,7 +730,7 @@ ${JSON.stringify({
   for (const [slug, name, description] of NCL_GUIDES) {
     const url = `${SITE_URL}/ncl/${slug}`;
     await writePage(`ncl/${slug}`, base, {
-      title: `${name} | NCL Guide | Max Doubin`,
+      title: pageTitle(`${name} | NCL Guide`),
       description,
       canonical: url,
       schema: `<script type="application/ld+json">
@@ -721,7 +768,7 @@ ${TOOLS.map(
   for (const tool of TOOLS) {
     const url = `${SITE_URL}/tools/${tool.slug}`;
     await writePage(`tools/${tool.slug}`, base, {
-      title: `${tool.name} | Max Doubin`,
+      title: pageTitle(tool.name),
       description: tool.blurb,
       canonical: url,
       schema: `<script type="application/ld+json">
@@ -781,7 +828,7 @@ ${JSON.stringify({
       )
       .join("\n");
     await writePage(`topics/${topic.tag}`, base, {
-      title: `${topic.title} | Max Doubin`,
+      title: pageTitle(topic.title),
       description: topic.description,
       canonical: url,
       schema: `<script type="application/ld+json">
@@ -848,6 +895,53 @@ ${TAG_PAGES.map(
 </main>`,
   });
 
+  // ── the simulator ──
+  // /game used to be served as the bare app shell, which meant a crawler read
+  // it as a duplicate of the home page: same title, same description, and a
+  // canonical pointing at "/". It is the most distinctive thing on this site
+  // and it was invisible. The canvas cannot be prerendered, but what the
+  // simulator actually models can be, and that is what a search is for.
+  await writePage("game", base, {
+    title: pageTitle("Hyperscale, a data center simulator"),
+    description:
+      "A browser data center simulator with real power and cooling maths: 3.412142 BTU per hour per watt, and a PUE that rises with rack count. Build 1 to 500 racks.",
+    canonical: `${SITE_URL}/game`,
+    rootContent: `
+<main>
+  <h1>Hyperscale, a data center simulator</h1>
+  <p>
+    A data center you build in a browser. Place racks, fill them with real
+    hardware, and watch the power and thermal budget respond. It runs on the
+    same equipment table published as an
+    <a href="${SITE_URL}/data">open dataset</a>, and on the same physics as
+    the <a href="${SITE_URL}/tools/rack-budget">rack budget tool</a>.
+  </p>
+  <h2>What it actually models</h2>
+  <ul>
+    <li>Heat load derived from IT load at 3.412142 BTU per hour per watt, which is a definition rather than an estimate.</li>
+    <li>Cooling capacity in tons, at 3516.85 watts per ton.</li>
+    <li>Facility PUE that rises with rack count, so efficiency is something you design for rather than a constant.</li>
+    <li>CRAH capacity, in-room losses, and a design ceiling on IT load, so a floor plan can run out of cooling before it runs out of space.</li>
+    <li>Rack units, port counts and indicative cost per device, so a build has a budget and a cable plan, not just a shape.</li>
+  </ul>
+  <h2>What it is not</h2>
+  <p>
+    It is a teaching model, not a design tool. The numbers behind it are
+    representative figures for a class of hardware, not vendor specifications
+    and not measurements taken from a real facility. The
+    <a href="${SITE_URL}/data">dataset page</a> says exactly where each figure
+    comes from.
+  </p>
+  <p>
+    It needs WebGL. If your browser or machine cannot run it, the
+    <a href="${SITE_URL}/tools/rack-budget">rack budget tool</a> does the same
+    power and cooling arithmetic with no 3D at all, and the
+    <a href="${SITE_URL}/blog">Field Notes archive</a> covers the underlying
+    infrastructure in writing.
+  </p>
+</main>`,
+  })
+
   // ── open dataset ──
   await writePage("data", base, {
     title: "Open rack hardware dataset | Max Doubin",
@@ -903,8 +997,8 @@ ${EXAMS.map(
         );
       });
       await writePage(`study/${exam.slug}/${domain.slug}`, base, {
-        title: `${domain.name} | ${exam.name} ${exam.code} | Max Doubin`,
-        description: `${domain.summary} Mapped to ${matched.length} posts and free tools covering ${exam.name} ${exam.code}.`,
+        title: pageTitle(`${domain.name} | ${exam.name} ${exam.code}`),
+        description: `${domain.name} for ${exam.name} ${exam.code}: ${matched.length} articles and free tools mapped to this exam objective.`,
         canonical: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
         rootContent: `
 <main>
@@ -942,6 +1036,11 @@ ${matched
   await writeSitemap(posts);
   await writeFeed(posts);
 
+  // Served with a real 404 by Cloudflare Pages for anything that matches
+  // neither a prerendered file nor a rewrite in _redirects.
+  await writeNotFoundPage(base);
+  console.log("404.html: written");
+
   console.log("Prerender complete.");
 }
 
@@ -952,7 +1051,7 @@ ${matched
  * actually changed instead of re-reading the whole archive.
  */
 async function writeSitemap(
-  posts: Array<{ slug: string; date: string; tags: string[]; draft?: boolean }>,
+  posts: Array<{ slug: string; date: string; updated?: string; tags: string[]; draft?: boolean }>,
 ) {
   const live = posts.filter((p) => !p.draft);
   const newest = live.reduce((a, p) => (p.date > a ? p.date : a), "1970-01-01");
@@ -1045,7 +1144,11 @@ async function writeSitemap(
   for (const post of live) {
     urls.push({
       loc: `${SITE_URL}/blog/${post.slug}`,
-      lastmod: post.date,
+      // A rewritten article is new information, and lastmod is the only way
+      // to tell a crawler that. 45 posts here went from a 300 word stub to a
+      // sourced 1500 word article while still reporting their original
+      // publication date, which gave Google no reason to come back and look.
+      lastmod: post.updated ?? post.date,
       changefreq: "monthly",
       priority: "0.7",
     });

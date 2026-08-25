@@ -77,14 +77,7 @@ errors: No known data errors
 
 Correct output is `ONLINE` everywhere, zeros in all three error columns, a recent scrub, and the final line reading "No known data errors". Non-zero CKSUM on one disk with zeros elsewhere is the classic signature of a failing drive or a bad cable, and it is a warning you get long before the drive drops out.
 
-Scrubs are what surface latent corruption. Start one manually and watch it:
-
-```bash
-zpool scrub tank
-zpool status tank
-```
-
-While it runs the status shows a progress line with a percentage and an estimated completion time. Monthly is a reasonable cadence for spinning disks; most distributions ship a systemd timer or cron entry for it already, and you should confirm it is enabled rather than assume.
+Scrubs surface latent corruption. Start one with `zpool scrub tank` and `zpool status` gains a progress line with a percentage and an estimated finish time. Monthly is a reasonable cadence for spinning disks, and most distributions already ship a timer for it, so confirm yours is enabled rather than assume.
 
 Check that compression is doing something useful:
 
@@ -111,7 +104,7 @@ LZ4 also has an early abort: it gives up quickly on incompressible data, so alre
 
 Snapshots are the other game changer. I take automated snapshots every hour and keep daily snapshots for 30 days. Rolling back a VM or recovering a deleted file takes seconds instead of hours.
 
-Snapshots are nearly free at creation because copy-on-write means the snapshot is just a reference to blocks that already exist. They cost space only as the live data diverges from them. Two things follow. Deleting a large file inside a filesystem that has snapshots frees nothing, because the snapshots still reference those blocks. And a snapshot is not a backup, because it lives in the same pool as the data it protects. Use `zfs send` to get a copy onto different hardware.
+Snapshots are nearly free at creation, because copy-on-write means a snapshot is just a reference to blocks that already exist, and they cost space only as live data diverges from them. Two consequences: deleting a large file frees nothing while a snapshot still references its blocks, and a snapshot is not a backup, because it dies with the pool. Use `zfs send` to get a copy onto other hardware.
 
 ## Lessons learned
 
@@ -121,15 +114,15 @@ On the RAM question, the widely repeated "1 GB per TB" rule is folklore that cam
 
 ## What breaks
 
-**A pool built with the wrong ashift.** If you create a vdev on 512e drives without setting `ashift=12`, ZFS uses 512 byte sectors and every write becomes a read-modify-write inside the drive. Performance is poor from day one and there is no fix short of destroying and recreating the pool. Always pass `-o ashift=12` explicitly rather than trusting autodetection, which relies on the drive telling the truth about its physical sector size.
+**A pool built with the wrong ashift.** Create a vdev on 512e drives without `ashift=12` and ZFS uses 512 byte sectors, turning every write into a read-modify-write inside the drive. Performance is poor from day one and there is no fix short of recreating the pool. Pass `-o ashift=12` explicitly rather than trusting autodetection, which relies on the drive telling the truth about its physical sector size.
 
-**Someone types `zpool add` when they meant `zpool attach`.** `attach` adds a mirror to an existing device. `add` creates a brand new top level vdev. Run `zpool add tank /dev/sdi` on a raidz2 pool and you have just striped your carefully protected pool with a single unprotected disk, and until recently there was no way to remove it. Use `zpool add -n` first, which prints exactly what the command would do without doing it.
+**Someone types `zpool add` when they meant `zpool attach`.** `attach` adds a mirror to an existing device. `add` creates a brand new top level vdev. Run `zpool add tank /dev/sdi` on a raidz2 pool and you have just striped your carefully protected pool with a single unprotected disk. Use `zpool add -n` first, which prints exactly what the command would do without doing it.
 
-**The pool fills past about 80 percent and everything gets slow.** ZFS allocates from free space, and as a copy-on-write filesystem it needs contiguous free space to write efficiently. As the pool fills, the allocator switches to a slower best-fit strategy and fragmentation rises. Plan capacity so the pool stays comfortably below 80 percent, and watch `zpool list` for the `CAP` and `FRAG` columns.
+**The pool fills past about 80 percent and everything gets slow.** As a copy-on-write filesystem, ZFS needs contiguous free space to write efficiently. As the pool fills, the allocator switches to a slower best-fit strategy and fragmentation rises. Plan capacity to stay below 80 percent and watch the `CAP` and `FRAG` columns in `zpool list`.
 
-**An SLOG is added expecting a general write cache.** The separate log device only accelerates synchronous writes, which are mostly NFS with sync exports, iSCSI, and databases. Asynchronous writes never touch it. Worse, a consumer SSD without power loss protection as an SLOG is actively harmful, because the entire point of the device is to survive a power cut. If your workload is asynchronous, an SLOG changes nothing at all.
+**An SLOG is added expecting a general write cache.** The separate log device only accelerates synchronous writes, which means NFS with sync exports, iSCSI, and databases. Asynchronous writes never touch it. A consumer SSD without power loss protection is actively harmful here, since surviving a power cut is the entire point of the device.
 
-**Snapshots accumulate forever and the pool runs out of space with no obvious culprit.** Every hourly snapshot pins the blocks that existed when it was taken, so a busy dataset can hold many times its apparent size in snapshot history. Check with `zfs list -t snapshot -o name,used -s used` and put an automatic pruning policy in place from the start, not after the pool is full.
+**Snapshots accumulate forever and the pool fills with no obvious culprit.** Every hourly snapshot pins the blocks that existed when it was taken, so a busy dataset can hold many times its apparent size in history. Check with `zfs list -t snapshot -o name,used -s used` and set an automatic pruning policy from the start, not after the pool is full.
 
 ## References
 

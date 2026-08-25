@@ -67,10 +67,21 @@ for (const file of pages) {
     html.match(/<link\s+rel="canonical"\s+href="([^"]*)"/i) || []
   )[1]?.trim();
 
+  /*
+    404.html is the one page with no canonical, on purpose.
+
+    It is served for URLs that do not exist, so there is no address it could
+    honestly point at. Claiming one would either name a page that also does
+    not exist, or tell Google this content lives at some real URL. It carries
+    noindex instead, which is the correct signal, and Google ignores canonical
+    on a non-200 response anyway. It still needs a title and a description.
+  */
+  const isNotFoundPage = route === "/404.html";
+
   const absent = [];
   if (!title) absent.push("title");
   if (!description) absent.push("description");
-  if (!canonical) absent.push("canonical");
+  if (!canonical && !isNotFoundPage) absent.push("canonical");
   if (absent.length > 0) missing.push(`  ${route}  missing: ${absent.join(", ")}`);
 
   if (title) titles.set(title, [...(titles.get(title) || []), route]);

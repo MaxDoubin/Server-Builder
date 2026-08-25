@@ -1,10 +1,11 @@
 import { useEffect } from "react";
+import { trimTitle } from "@/lib/pageTitle";
 
 const SITE_URL = "https://maxdoubin.com";
 const DEFAULT_TITLE =
   "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
 const DEFAULT_DESC =
-  "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.";
+  "Max Doubin, cybersecurity student in Las Vegas. Top 1 percent National Cyber League, CompTIA Tech plus, and field notes on networking, servers, and security.";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.jpg`;
 const DEFAULT_CANONICAL = SITE_URL;
 const DEFAULT_OG_TYPE = "profile";
@@ -46,7 +47,10 @@ export function useSEO({
   noindex = false,
 }: SEOProps) {
   useEffect(() => {
-    document.title = title;
+    // Same rule the prerenderer applies, so the client does not
+    // rewrite the title a crawler was already served.
+    const shown = trimTitle(title);
+    document.title = shown;
 
     setMeta('meta[name="description"]', "content", description);
     setMeta('link[rel="canonical"]', "href", canonical);
@@ -57,7 +61,7 @@ export function useSEO({
     );
 
     // Open Graph
-    setMeta('meta[property="og:title"]', "content", title);
+    setMeta('meta[property="og:title"]', "content", shown);
     setMeta('meta[property="og:description"]', "content", description);
     setMeta('meta[property="og:url"]', "content", canonical);
     setMeta('meta[property="og:type"]', "content", ogType);

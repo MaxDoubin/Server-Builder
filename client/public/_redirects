@@ -1,1 +1,49 @@
-/* /index.html 200
+# Cloudflare Pages rewrites.
+#
+# This file used to be one line: `/* /index.html 200`. That is the standard
+# single-page-app fallback, and on this site it was actively harmful.
+#
+# Every real route here is prerendered to its own index.html by
+# script/prerender.ts, so the fallback was not needed to serve them. What it
+# did instead was answer 200 OK to every URL that does not exist. Google calls
+# that a soft 404: maxdoubin.com/asdf returned a page, so the crawler treated
+# a bottomless supply of junk URLs as real, spent crawl budget on them, and
+# had to guess which of the 331 real pages were worth indexing. A 404 that
+# says 200 is one of the few things that will stop a small site being indexed
+# properly.
+#
+# So the fallback is now enumerated. Only routes that have NO prerendered file
+# are rewritten to the shell; everything else is served as its own static
+# document, and anything matching neither falls through to 404.html, which
+# Cloudflare Pages serves with a real 404 status.
+#
+# scripts-ci/check-spa-routes.mjs fails the build if a route in App.tsx is
+# neither prerendered nor listed here, so adding a route without adding it in
+# one of those two places cannot ship a page that 404s at people.
+
+# One site, one hostname.
+#
+# www.maxdoubin.com answers 200 today, so every page exists at two addresses.
+# The canonical tag points at the apex and Google usually works it out, but
+# "usually" costs crawl budget on a site trying to get 236 articles indexed.
+# An absolute source URL makes this a host-level redirect rather than a path
+# rule, and :splat carries the rest of the path across.
+https://www.maxdoubin.com/* https://maxdoubin.com/:splat 301
+
+# The simulator's internal dashboards. Canvas-driven, nothing meaningful to
+# prerender, and noindex in _headers so crawl budget goes to the writing.
+# /game itself IS prerendered now: it is one of the most distinctive things
+# here and deserves a real shot at ranking.
+/noc             /index.html   200
+/network         /index.html   200
+/floor           /index.html   200
+/incidents       /index.html   200
+/build           /index.html   200
+
+# The pre-redesign site, kept reachable for old inbound links.
+/legacy          /index.html   200
+/legacy/game     /index.html   200
+/legacy/blog     /index.html   200
+/legacy/blog/*   /index.html   200
+/legacy/projects /index.html   200
+/legacy/contact  /index.html   200
