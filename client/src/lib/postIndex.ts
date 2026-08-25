@@ -1373,7 +1373,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A deep dive into the PowerEdge R740 and why it is still one of the best platforms for a serious home lab environment.",
     coverImage: "/images/blog/dell-poweredge-r740-deep-dive.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg"},
-    wordCount: 1968,
+    wordCount: 1908,
   },
   {
     slug: "apple-silicon-server-future",
@@ -1436,7 +1436,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "I have run both Proxmox and VMware ESXi in my lab. Here is how they compare for real workloads.",
     coverImage: "/images/blog/proxmox-vs-esxi.jpg",
     coverCredit: {"author":"Proxmox Server Solutions GmbH","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Proxmox-VE-8-0-Cluster-Summary.png"},
-    wordCount: 1237,
+    wordCount: 1899,
   },
   {
     slug: "ecc-ram-explained",
@@ -1468,7 +1468,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A practical guide to choosing the right UPS for your servers, including how to calculate your actual power needs.",
     coverImage: "/images/blog/ups-sizing-homelab.jpg",
     coverCredit: {"author":"MiNe","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:APC_BR700G-TW_20140114.jpg"},
-    wordCount: 1407,
+    wordCount: 1469,
   },
   {
     slug: "vlan-segmentation-guide",
@@ -1509,7 +1509,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The principles behind datacenter cooling and how I apply hot/cold aisle concepts even in a homelab environment.",
     coverImage: "/images/blog/hot-cold-aisle-containment.jpg",
     coverCredit: {"author":"Hugovanmeijeren","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cern_datacenter.jpg"},
-    wordCount: 1006,
+    wordCount: 1692,
   },
   {
     slug: "pdu-selection-guide",
@@ -1718,7 +1718,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I planned and organized my server rack, from choosing the right size to power distribution and cooling.",
     coverImage: "/images/blog/server-rack-planning.jpg",
     coverCredit: {"author":"Derrick Coetzee from Berkeley, CA, USA","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:UPS_Power_Management_Module,_racks_with_network_cabling_in_NERSC_data_center.jpg"},
-    wordCount: 1270,
+    wordCount: 1629,
   },
   {
     slug: "stp-troubleshooting",

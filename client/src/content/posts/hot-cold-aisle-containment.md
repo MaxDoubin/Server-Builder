@@ -5,6 +5,22 @@ Servers generate a lot of heat. A single fully loaded PowerEdge R740 can produce
 
 The number is worth putting on a firmer footing, because it is a definition rather than an estimate. Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
 
+## Turning watts into airflow
+
+Heat load tells you how big a cooling system you need. Airflow tells you whether the air is actually getting to the equipment, and those are different questions.
+
+The standard sensible-heat formula for air is:
+
+```
+CFM = BTU/hr / (1.08 x delta-T in degrees F)
+```
+
+The 1.08 is not arbitrary. It is the density of air at sea level, about 0.075 lb/ft3, times its specific heat, about 0.24 BTU per pound per degree F, times 60 minutes per hour. Servers typically run a front-to-back rise of 10 to 20 degrees C, which is 18 to 36 degrees F. So an R740 dumping 1,535 BTU/hr with a 20 degree F rise needs about 71 CFM of air moving through it, and a 1,300 W rack at 4,436 BTU/hr needs roughly 205 CFM.
+
+That number is the one to check against your room. If the fan you added to the closet door moves 100 CFM and the rack needs 205, you have not solved the problem, you have made it quieter while it gets worse.
+
+On the capacity side, cooling is often sold in tons. One ton of refrigeration is 12,000 BTU/hr, or about 3.517 kW. A 1,300 W rack is 0.37 tons, so a single 12,000 BTU portable air conditioner is nominally three times what you need. The catch is that single-hose portable units exhaust room air outdoors and therefore pull unconditioned air in through every gap in the room to replace it. A dual-hose unit does not have that problem. This is the most common reason a portable AC underperforms its rating in a server closet.
+
 The fundamental challenge is that you need to deliver cool air to server intakes and remove hot air from server exhausts without the two mixing. If hot exhaust air recirculates back to the intakes, cooling efficiency drops and servers run hotter than they should.
 
 ## Hot Aisle / Cold Aisle
@@ -37,7 +53,21 @@ The end of that loop is thermal throttling, and then a shutdown. What makes it d
 
 The number that matters is inlet temperature, measured at the front of the equipment, not the room temperature and not the temperature somewhere in the middle of the rack.
 
-Modern equipment tolerates far more than people assume. The industry guidance has moved steadily upward, and running a room at 18C to be safe is mostly wasted money: raising the setpoint is the single largest efficiency lever in a data hall, and it is why free cooling works in climates that sound too warm for it. In a homelab the practical version is simpler. Measure at the intake, know the manufacturer's stated range, and give yourself margin for the day the door is shut and the fan fails.
+Modern equipment tolerates far more than people assume. ASHRAE's thermal guidelines for data processing environments put the recommended inlet range at 18 to 27 degrees C, which is 64 to 81 degrees F, and the allowable range for the common Class A2 equipment at 10 to 35 degrees C. Recommended is where you want to live. Allowable is where the manufacturer still honours the warranty. The gap between them is your margin, and it is much wider than the folklore about keeping a server room cold suggests.
+
+Running a room at 18 C to be safe is mostly wasted money: raising the setpoint is the single largest efficiency lever in a data hall, and it is why free cooling works in climates that sound too warm for it. In a homelab the practical version is simpler. Put a probe at the front of the top server and one at the front of the bottom server, because the spread between them tells you more than either number alone. A large spread means recirculation. A small spread at a high temperature means you need more cooling, not better airflow.
+
+## What Containment Costs You
+
+Containment is not free, and three of its downsides are rarely mentioned.
+
+**It shortens your ride-through time.** An open room holds a large volume of air that buffers a cooling failure, so temperatures climb over minutes and you have time to react. A contained aisle removes that buffer. When cooling stops in a well-contained hot aisle, inlet temperatures can cross the allowable limit in well under a minute. Containment makes normal operation more efficient and makes a cooling outage more urgent. Anywhere containment is deployed, cooling needs to be on the UPS or on a generator, not just the servers.
+
+**It interacts with fire suppression.** A ceiling over an aisle sits between the sprinkler heads and the equipment. Codes generally require containment to be built so it does not defeat suppression, usually with panels that drop away or melt at a set temperature, or with suppression inside the containment. This is a real engineering requirement in a commercial space, not a formality.
+
+**Bypass and recirculation are different problems and containment fixes them differently.** Recirculation is hot exhaust reaching an intake, and it is dangerous. Bypass is cold supply air returning to the cooling unit without passing through any server, and it is merely wasteful. Cold aisle containment mostly kills bypass. Hot aisle containment mostly kills recirculation. Diagnose which one you have before you buy panels for the other.
+
+There is a fourth trap that catches homelabs specifically: not all equipment breathes front to back. Many network switches are built with the airflow running port-side-in or port-side-out, and vendors sell both variants of the same switch precisely because you must match the direction to your layout. Install a port-side-intake switch in a rack where the ports face the hot aisle and you have deliberately built a machine that inhales exhaust. Check the airflow direction on the datasheet, not the picture.
 
 ## In a Homelab
 
@@ -52,10 +82,11 @@ The second is that a single rack has the same recirculation paths as a row, just
 ## Key Takeaways
 
 Airflow management is not optional for servers. Hot air recirculation causes thermal throttling, shorter component life, and ultimately failures. Even in a single-rack homelab, filling blank spaces with panels and ensuring consistent airflow direction makes a measurable difference in temperatures.
+
 ## References
 
 - https://en.wikipedia.org/wiki/Data_center
-- https://en.wikipedia.org/wiki/Computer_cooling
+- https://www.ashrae.org/technical-resources/bookstore/datacom-series
 - https://en.wikipedia.org/wiki/British_thermal_unit
 - https://en.wikipedia.org/wiki/Ton_of_refrigeration
 - https://en.wikipedia.org/wiki/Free_cooling

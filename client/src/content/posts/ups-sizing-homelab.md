@@ -48,7 +48,7 @@ The headroom is not superstition. Batteries lose capacity as they age, so a unit
 
 Runtime is how long the UPS can keep your servers running on battery. For a homelab, you probably do not need hours of runtime. You need enough time for your servers to detect the outage and shut down gracefully. Five to ten minutes is usually sufficient.
 
-Runtime is also badly nonlinear, which trips people up. Lead acid batteries deliver less total energy the faster you discharge them, so halving the load more than doubles the runtime. A unit rated for 5 minutes at full load might give 20 at a quarter load. Read the manufacturer's runtime chart at your actual measured draw rather than interpolating from the headline number.
+Runtime is also badly nonlinear, which trips people up. Lead acid batteries deliver less total energy the faster you discharge them, an effect described by Peukert's law, so halving the load more than doubles the runtime. A unit rated for 5 minutes at full load might give 20 at a quarter load. Read the manufacturer's runtime chart at your actual measured draw rather than interpolating from the headline number.
 
 ## Talking to it
 
@@ -57,6 +57,18 @@ A UPS nobody is listening to is a battery that delays the crash by eight minutes
 I have my servers configured to start a clean shutdown when the UPS signals a power loss. The UPS communicates via USB using NUT (Network UPS Tools) on Linux. The shutdown process takes about two minutes, so my UPS needs to provide at least three to four minutes of runtime at full load.
 
 NUT splits into a driver that talks to the hardware, a network daemon, and clients that act on the state. One machine owns the USB cable and runs the daemon; everything else in the rack is a client over the network, which is what lets a single UPS shut down four machines. Set the low battery threshold well above the point of no return, and set the machine that owns the cable to shut down last.
+
+```bash
+# Confirm the driver actually sees the hardware and read live values.
+upsc myups@localhost
+
+# The two numbers that decide when your shutdown starts.
+upsc myups@localhost battery.charge
+upsc myups@localhost battery.runtime
+
+# On every client, upsmon runs the shutdown command at low battery.
+# Set FINALDELAY short and let the cable owner power down last.
+```
 
 Then test it. Pull the plug on a Saturday afternoon and watch what happens, because the failure modes only show up in a real transfer: a client that never got the credentials, a shutdown script that hangs on an NFS mount that went away with the switch, a machine set to stay off when power returns. I have found all three that way.
 
@@ -84,5 +96,5 @@ And it is not a generator. Sizing for hours of runtime on batteries is almost al
 - https://en.wikipedia.org/wiki/Power_factor
 - https://en.wikipedia.org/wiki/Volt-ampere
 - https://networkupstools.org/docs/user-manual.chunked/index.html
-- https://man.archlinux.org/man/ups.conf.5
-- https://man.archlinux.org/man/upsc.8
+- https://en.wikipedia.org/wiki/Peukert%27s_law
+- https://networkupstools.org/docs/man/upsmon.html
