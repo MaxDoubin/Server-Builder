@@ -1488,7 +1488,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","security","homelab","fortinet"],
     excerpt: "Why I chose Fortinet for my home network firewall and how I configured it for a segmented lab environment.",
     coverImage: "/images/blog/fortigate-firewall-homelab.jpg",
-    wordCount: 371,
+    wordCount: 1542,
   },
   {
     slug: "server-cpu-selection-guide",
@@ -1539,7 +1539,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I use Nmap for network discovery and security assessment, with practical examples from my lab environment.",
     coverImage: "/images/blog/nmap-scanning-techniques.jpg",
     coverCredit: {"author":"Barnacl437","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Kali-screenshot-20221021.png"},
-    wordCount: 385,
+    wordCount: 1883,
   },
   {
     slug: "mac-pro-2019-teardown-analysis",
@@ -1792,7 +1792,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I document my network infrastructure in a way that is useful during outages, not just for show.",
     coverImage: "/images/blog/network-documentation-best-practices.jpg",
     coverCredit: {"author":"R. Vogl, University of Münster (Germany), Center for Information Processing","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:WWU-network-structure-v1.png"},
-    wordCount: 345,
+    wordCount: 1525,
   },
   {
     slug: "power-consumption-monitoring",
@@ -1862,7 +1862,7 @@ export const postIndex: PostMeta[] = [
     tags: ["virtualization","servers","homelab"],
     excerpt: "How I use containers alongside virtual machines in my lab, and when each approach makes sense.",
     coverImage: "/images/blog/container-orchestration-basics.jpg",
-    wordCount: 357,
+    wordCount: 1548,
   },
   {
     slug: "bgp-for-network-engineers",
@@ -2025,7 +2025,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Server memory is more complex than desktop memory. Understanding channels, DIMM placement, and ECC is essential for getting the performance and reliability you expect.",
     coverImage: "/images/blog/server-memory-architecture.jpg",
     coverCredit: {"author":"Project Kei","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Four_SDRAM_DIMM_slots_on_a_computer_motherboard.jpg"},
-    wordCount: 336,
+    wordCount: 1782,
   },
   {
     slug: "soc-home-lab-build",
@@ -2147,7 +2147,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Container networking is built on familiar IP routing concepts, but with layers of abstraction that can make it hard to understand. Here is the foundation.",
     coverImage: "/images/blog/container-networking-fundamentals.jpg",
     coverCredit: {"author":"Dereckson","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Openfire_architecture_on_Nasqueron_Docker_PaaS.png"},
-    wordCount: 349,
+    wordCount: 1551,
   },
   {
     slug: "ssh-key-based-authentication",

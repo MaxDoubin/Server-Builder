@@ -18867,6 +18867,10 @@ I chose a FortiGate firewall for my homelab because Fortinet is widely used in e
 
 I picked up a FortiGate 60F, which is designed for small office deployments but has more than enough throughput for a homelab. It supports hardware-accelerated firewall inspection, VPN, IPS (Intrusion Prevention System), and web filtering.
 
+The throughput numbers on the datasheet are worth reading carefully, because they explain how the box actually works. Fortinet rates the 60F at 10 Gbps of raw stateful firewall throughput, 1.4 Gbps with IPS enabled, 1 Gbps in NGFW mode, and 700 Mbps with the full threat protection stack turned on. That is not marketing inconsistency. The 60F's SoC4 processor offloads plain firewall sessions to hardware, but **the moment a policy has any security profile attached, that session can no longer be offloaded and the general-purpose CPU handles every packet.** A fourteen-fold drop between line-rate filtering and full inspection is the price of inspection, and every vendor pays some version of it. For a homelab on a residential connection none of this matters. On a gigabit fiber line with deep inspection on every policy, the 60F is at its limit.
+
+There is one honest downside to buying used Fortinet gear, and it is the thing nobody mentions in the "cheap enterprise firewall" videos. IPS signatures, antivirus definitions, web filtering categories, and application control all come from FortiGuard, which is a paid subscription. A 60F with an expired contract still routes, still does stateful firewalling, still does VPN and VLANs and logging, and still runs the IPS engine, but the signature database is frozen at whatever date the contract lapsed. If you want current threat intel you are paying for it annually. Decide that before you buy.
+
 ## Initial Setup
 
 The first thing I did was configure the interfaces. The WAN port connects to my ISP modem. The internal ports are configured as a switch group that connects to my core switch. I also created sub-interfaces for each VLAN, so the FortiGate handles inter-VLAN routing and firewall policy enforcement.
@@ -18883,21 +18887,72 @@ config system interface
 end
 \`\`\`
 
+The \`vlanid\` can be anything from 1 to 4094, which is the range 802.1Q allows with its 12-bit VLAN identifier field. Leave VLAN 1 alone as a matter of habit, and remember that the native VLAN on the trunk arrives untagged, so it lands on the parent interface rather than on any sub-interface.
+
+Two things will stop you cold on a 60F specifically. First, the LAN ports ship configured as a hardware switch, and **you cannot create a VLAN sub-interface on a port that is a member of a switch group.** The GUI simply will not offer the port in the dropdown, with no explanation. You have to remove the port from the switch (or build the VLAN on the switch interface itself) before it becomes available. Second, \`set allowaccess https ssh\` on a WAN interface publishes your admin login to the internet. Anything on the perimeter should have \`allowaccess\` reduced to nothing, or at most \`ping\`, and administrative access should be restricted with \`set trusthost1 10.0.10.0 255.255.255.0\` on the admin account so even a leaked password is unusable from off-net.
+
 ## Firewall Policies
 
 FortiGate firewall policies are evaluated top-to-bottom. Each policy specifies source interface, destination interface, source address, destination address, service, and action (accept or deny). I created explicit policies for every allowed traffic flow and have an implicit deny-all at the bottom.
 
 The key policies in my setup allow management traffic to reach all VLANs, server-to-internet traffic for updates and external services, and user-to-server traffic for specific services. Everything else is denied by default.
 
+First match wins, and new policies are appended to the bottom of the list. That is the source of the most common "my rule does not work" ticket in FortiOS: you add a specific deny below an existing broad allow, and it never evaluates. Reorder with \`move\`, and check your work in **By Sequence** view rather than the default Interface Pair view. Interface Pair view groups policies by the interfaces they connect and hides the true global ordering, so two policies that look adjacent on screen can be separated by twenty others in the real evaluation order.
+
+Three more things beginners get wrong, in rough order of how much time they waste:
+
+**Forgetting to enable NAT on the outbound policy.** Traffic matches the policy, leaves the WAN interface with a private source address from RFC 1918, and never comes back. The session table shows the session, the logs show it as allowed, and nothing works. NAT is a per-policy checkbox in the default configuration, not a global setting.
+
+**Enabling a security profile globally and expecting it to apply.** IPS, antivirus, and web filtering only inspect traffic on policies where you explicitly attached the profile. An IPS profile that exists but is not referenced by any policy inspects exactly zero packets.
+
+**Turning on deep inspection without deploying the CA certificate.** Certificate inspection only reads the SNI and the certificate metadata, which is cheap and breaks nothing. Deep inspection terminates the TLS session, re-encrypts it with the FortiGate's own CA, and requires that CA to be installed and trusted on every client. Skip that step and every browser in the house throws certificate warnings, and anything using certificate pinning (most mobile apps, Windows Update, a lot of package managers) fails outright with errors that look nothing like a firewall problem.
+
+When a flow is not doing what the policy list says it should, stop guessing and trace it:
+
+\`\`\`
+diagnose debug flow filter addr 10.0.20.55
+diagnose debug flow show function-name enable
+diagnose debug flow trace start 20
+diagnose debug enable
+\`\`\`
+
+That prints the policy ID that matched, the route lookup, the NAT decision, and the reason for any drop. One caveat that costs people hours: \`diagnose sniffer packet\` cannot see traffic that has been offloaded to the SoC, so a sniffer on a fast-path session shows only the first few packets and then silence. Run \`set auto-asic-offload disable\` on the policy while you are troubleshooting, and remember to put it back.
+
 ## Logging and Monitoring
 
 FortiGate logs every session that matches a firewall policy. I review these logs regularly to understand traffic patterns and catch anything unexpected. The FortiView dashboard gives real-time visibility into what is happening on the network, including top talkers, most-used applications, and threat detections.
+
+Two defaults undercut this on a 60F. The first is that each policy's "Log Allowed Traffic" setting defaults to Security Events rather than All Sessions, so a policy that is happily passing traffic and generating no security hits produces no log lines at all. You have to set \`logtraffic all\` on the policies you actually want visibility into, and accept the extra volume. The second is that the 60F has no internal storage for logs. Logging goes to memory, which on an entry-level unit means a few thousand entries at best, wrapping constantly and lost entirely on reboot.
+
+That makes external logging mandatory rather than optional if you want to investigate anything more than an hour old. FortiAnalyzer is the native answer; a plain syslog server is the free one:
+
+\`\`\`
+config log syslogd setting
+  set status enable
+  set server "10.0.10.20"
+  set port 514
+  set facility local7
+end
+\`\`\`
+
+FortiOS speaks standard syslog, so anything that ingests RFC 5424 (rsyslog, Graylog, a Loki stack) will take it. While you are in there, confirm that the implicit deny policy at the bottom of the list has its violation logging enabled. Denied traffic is the most interesting traffic on the network, and by default it can pass without leaving a trace, which produces the very confusing situation where something is clearly being blocked and the logs are empty.
 
 ## What I Have Learned
 
 Working with a FortiGate taught me how enterprise firewall management actually works. Writing policies forces you to think about traffic flows explicitly. You cannot just allow everything and hope for the best. You have to understand what should be allowed, what should be denied, and why.
 
 The IPS features have also caught real threats. Even in a homelab, there is scanning and probing from the internet, and having a device that detects and blocks it gives you visibility into what is actually happening on your perimeter.
+
+The discipline that transferred best is the one NIST spells out in SP 800-41: a firewall ruleset should be default-deny, every rule should exist for a documented reason, and the ruleset should be reviewed periodically because rules accumulate and nobody ever deletes them. In a homelab that review takes fifteen minutes. In a real environment it is the difference between a firewall and a very expensive router. The other lesson is that most of what looks like a firewall problem is a routing problem, a NAT problem, or a policy-ordering problem, and \`diagnose debug flow\` will tell you which one in about ten seconds.
+
+## References
+
+- https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf
+- https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/803637/firewall-policies
+- https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/565222/vlans
+- https://csrc.nist.gov/pubs/sp/800/41/r1/final
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://www.rfc-editor.org/rfc/rfc5424
 `,
   },
   {
@@ -19348,6 +19403,10 @@ Pick one protocol at a time and watch it do something you already understand. Lo
 
 Nmap (Network Mapper) is a network scanning tool that discovers hosts, services, and vulnerabilities on a network. It is the standard tool for network reconnaissance in both legitimate security assessment and competitive cybersecurity.
 
+The thing to internalize before you run a single scan is what Nmap actually gives you. It sends a probe, waits, and reports what came back. Every word in the output is an inference from that reply, or from the absence of one. "Filtered" usually means nothing answered at all, which could be a firewall, a dropped packet, or a host that is simply off. Nmap is very good at the measurement and completely agnostic about what the measurement means. That interpretation is your job.
+
+The other thing to settle first is authorization. Scanning hosts you do not own or have written permission to test is, depending on where you live, a policy violation at best and a crime at worst. Scope in writing, then scan.
+
 ## Basic Scans
 
 The simplest scan discovers which hosts are up on a network:
@@ -19357,6 +19416,10 @@ nmap -sn 10.0.20.0/24
 \`\`\`
 
 This sends ICMP echo requests and ARP requests to every address in the subnet and reports which ones respond. It is fast and non-intrusive. I use it regularly to audit what devices are on each VLAN.
+
+What Nmap actually sends depends on where you are and who you are. On a local Ethernet segment, running as root, Nmap uses ARP requests and nothing else, regardless of what other ping options you passed, because a host firewall cannot silently drop ARP and still function on the network. That is why an ARP-based \`-sn\` across a /24 finishes in a second or two and is close to ground truth. Off the local segment, the default probe set is the equivalent of \`-PE -PS443 -PA80 -PP\`: an ICMP echo request, a TCP SYN to port 443, a TCP ACK to port 80, and an ICMP timestamp request. Any one reply marks the host up.
+
+The failure mode that catches everyone: run \`-sn\` against a remote subnet full of live Windows machines and get "0 hosts up." Windows Firewall drops inbound ICMP echo in the Public profile by default, and if 443 and 80 are also closed, nothing replies. The host is alive and you have concluded it is dead. The fix is \`-Pn\`, which skips discovery and treats every address as up. It is not free: Nmap then port-scans every address whether or not anything is there, and dead addresses are the slowest because Nmap retries each probe before giving up.
 
 ## Port Scanning
 
@@ -19368,6 +19431,22 @@ nmap -sS -p- 10.0.20.5
 
 The \`-sS\` flag does a SYN scan (half-open scan), which is faster and less likely to be logged than a full TCP connection. The \`-p-\` flag scans all 65,535 ports. Without it, Nmap only scans the top 1,000 ports by default.
 
+Be precise about "less likely to be logged," because people repeat it as if \`-sS\` were invisible. The handshake never completes, so the application never sees it: sshd writes no log line, nginx writes no access entry. That is the whole benefit. Any stateful firewall or IDS spots a SYN scan immediately, because a burst of SYNs to hundreds of ports from one source with no completed sessions is about the most obvious pattern on a network.
+
+Three of Nmap's six port states carry most of the information. **Open** means a SYN/ACK came back. **Closed** means an RST came back, which proves the host is up and reachable. **Filtered** means nothing came back after retries, or an ICMP unreachable arrived, which means a device in the path is dropping the probe. If your firewall rules are working, an unauthorized scan should produce filtered rather than closed, because a closed response confirms the host exists.
+
+The default 1,000 ports are not a curated list of important ports. They come from frequency data in \`nmap-services\`, recording how often each port was found open in large-scale scanning. That is a good prior for the internet and a bad one for a CTF box or an internal application, both of which routinely park services on high ports. \`-p-\` covers 1 through 65535; port 0 is excluded unless you ask for \`-p0-\`.
+
+Timing is worth understanding rather than cargo-culting. The default is \`-T3\`. \`-T4\` sets the initial round-trip timeout to 500 ms, caps the maximum at 1250 ms, drops max retries from 10 to 6, and caps the dynamic TCP scan delay at 10 ms. \`-T5\` cuts retries to 2 and imposes a 15 minute per-host timeout, so hosts can silently vanish from your results with nothing in the output saying so. That is the reason not to use \`-T5\` for work you plan to act on.
+
+UDP deserves its own warning:
+
+\`\`\`bash
+nmap -sU --top-ports 100 10.0.20.5
+\`\`\`
+
+An open UDP port usually sends nothing back, so Nmap reports \`open|filtered\` and cannot resolve the ambiguity. Closed is inferred from an ICMP port unreachable, type 3 code 3. Linux rate-limits those replies to roughly one per second by default, so a full 65,536-port UDP scan against a single Linux host takes more than 18 hours, and no scanner-side tuning fixes that. Scan the top 100 or 200 UDP ports, accept that you are sampling, and add \`-sV\` so Nmap sends real protocol payloads to well-known ports instead of empty datagrams.
+
 ## Service Detection
 
 Once you know which ports are open, service detection tells you what is actually running:
@@ -19377,6 +19456,12 @@ nmap -sV -p 22,80,443,3306 10.0.20.5
 \`\`\`
 
 This connects to each open port and analyzes the response to determine the service name and version. It is incredibly useful for inventory and for finding outdated software versions.
+
+Mechanically, \`-sV\` works off \`nmap-service-probes\`, a database of probe strings paired with regular expressions matched against the responses. Intensity runs 0 to 9 and defaults to 7; \`--version-light\` is intensity 2 and is much faster, \`--version-all\` is 9.
+
+Three failure modes matter. \`-sV\` only runs against open ports, so it says nothing about filtered ones. Behind a reverse proxy you learn about the proxy: \`-sV\` on port 443 of a load balancer reports the load balancer, not the application servers behind it. And version strings lie, which is the mistake that produces bad scan reports. Debian, Ubuntu, and Red Hat backport security fixes without changing the advertised version, so an OpenSSH banner reading 8.2p1 on Ubuntu 20.04 may have every relevant CVE patched. Concluding "vulnerable" from a banner is how you hand someone a report full of findings that are not real.
+
+\`-sV\` is also genuinely intrusive. It opens real connections and sends deliberately strange payloads to see how services react, and it has crashed printers, embedded management controllers, and old industrial equipment.
 
 ## OS Detection
 
@@ -19388,15 +19473,52 @@ nmap -O 10.0.20.5
 
 This is based on TCP/IP stack fingerprinting. Different operating systems implement TCP slightly differently, and Nmap maintains a database of these fingerprints.
 
+Specifically, Nmap sends probes with unusual TCP option and flag combinations, then compares the responses against \`nmap-os-db\` on initial window size, TCP options ordering, IP ID generation, timestamp behavior, and ICMP reply quirks. It needs raw packet access, so it requires root.
+
+The prerequisite people miss is that OS detection wants at least one open and one closed TCP port on the target for a confident result. With only open ports, or only filtered ones, the fingerprint is incomplete. \`--osscan-limit\` skips hosts that do not meet the condition rather than wasting probes.
+
+Where it breaks down:
+
+- Anything rewriting TCP options in transit, including firewalls doing normalization and most NAT devices, corrupts the fingerprint. You get "No exact OS matches" or a confident wrong answer.
+- Containers share the host kernel, so every container on a Docker host fingerprints as the host's Linux kernel. OS detection cannot see containers at all.
+- \`--osscan-guess\` prints near matches with a confidence percentage. Under roughly 90 percent is a hint, not a finding.
+
 ## In Competition
 
 NCL and similar competitions often present scenarios where you need to discover services, identify versions, and find vulnerabilities. Knowing Nmap well means you can complete the reconnaissance phase quickly and move on to the actual challenge.
 
 The most important habit is to always scan methodically. Do a host discovery first, then port scan the live hosts, then do service detection on open ports. Jumping straight to a full scan of everything wastes time and generates noise.
 
+Under a clock, run two scans in parallel. Start a fast one for immediate answers:
+
+\`\`\`bash
+nmap -Pn -n -T4 --top-ports 200 --open -oA quick 10.0.20.5
+\`\`\`
+
+\`-n\` skips DNS resolution, often the slowest single component on a large range, and \`--open\` hides the noise. Then start \`-p-\` in a second terminal under a different \`-oA\` basename and work the quick results while it runs. Competition boxes hide services on high ports specifically to punish people who only scan the top 1,000.
+
+\`-oA\` writes \`.nmap\`, \`.xml\`, and \`.gnmap\` at once, and rescanning to recover output you did not save costs more than the flag ever will. \`--reason\` is the other flag worth muscle memory: it prints the packet that decided each port state. Be careful with \`-A\`, which bundles \`-O\`, \`-sV\`, \`-sC\`, and \`--traceroute\`, four intrusive operations at once.
+
+## What Nmap Will Not Tell You
+
+Nmap is a discovery tool, not a vulnerability scanner. The NSE \`vuln\` category is a modest set of specific checks, not coverage. If the question is "which of my hosts are missing patches," the answer is authenticated scanning with Greenbone or Nessus, or reading your package manager's output. Nmap answers "what is listening," which is narrower. It also cannot resolve the ambiguity in \`filtered\`: a dropped probe and a powered-off host produce the same result. And it says nothing about whether a service is configured well. An open 443 with a modern TLS configuration and an unauthenticated admin panel behind it looks exactly like a hardened one.
+
 ## Lab Practice
 
 I regularly scan my own lab environment to practice and to verify my security posture. If a port is open that should not be, I want to know about it. Nmap is the fastest way to validate that my firewall rules are working as intended.
+
+The detail that makes this useful rather than decorative is scanning from the right place. Scanning my servers from the same VLAN tells me what the servers are running, and nothing about my firewall, because the traffic never crosses it. The scan that validates policy is the one launched from the guest VLAN, where the expected result is a wall of \`filtered\`. If I see \`closed\` instead, packets are reaching the host and my rule is a reject rather than a drop.
+
+The second habit is diffing. \`ndiff\` compares two XML outputs and prints what changed, so a monthly scan saved with \`-oX\` answers the question that matters: what is listening this month that was not listening last month. A newly open port nobody opened on purpose is the highest-value alert a homelab can generate.
+
+## References
+
+- https://nmap.org/book/man.html
+- https://nmap.org/book/synscan.html
+- https://nmap.org/book/scan-methods-udp-scan.html
+- https://nmap.org/book/osdetect.html
+- https://nmap.org/book/performance-timing-templates.html
+- https://nmap.org/book/legal-issues.html
 `,
   },
   {
@@ -22326,6 +22448,8 @@ In my lab, I keep the Mac Pro on its default macOS configuration and use my Dell
 
 Most network documentation is either nonexistent or so outdated that it is worse than useless. Outdated documentation gives you false confidence. You think you know how the network is configured, but the documentation does not match reality, and you make decisions based on wrong information.
 
+There is a cheap way to find out which one you have. Pick five specific facts out of your documentation at random, an IP address, a VLAN assignment, a port number, a firmware version, a cable run, and go verify each one against the live device. If more than one is wrong, nobody should be trusting any of it, including you. Run that audit once a quarter. It takes twenty minutes and it is the only honest measure of whether the rest of this effort is working.
+
 ## What I Document
 
 My documentation covers four categories:
@@ -22338,19 +22462,78 @@ My documentation covers four categories:
 
 **4. Runbooks.** Step-by-step procedures for common tasks: adding a new VLAN, configuring a switch port, troubleshooting a connectivity issue, failing over to a backup. Written so someone unfamiliar with the network could follow them.
 
+### Diagrams: draw three, not one
+
+The mistake almost everyone makes is trying to put physical cabling, VLANs, and IP subnets on a single canvas. By the time you have twelve devices it is unreadable and you stop updating it. Split it by layer:
+
+- **Layer 1** shows what is physically plugged into what, including patch panel port numbers and cable IDs. This is the diagram you need when a link is down.
+- **Layer 2** shows VLANs, trunk links, which VLANs are allowed on each trunk, and where the spanning tree root is. This is the diagram you need when a loop takes out a segment.
+- **Layer 3** shows subnets, gateway addresses, and routing between them. This is the diagram you need when two hosts cannot reach each other.
+
+On every diagram, label **both ends of every link with the actual interface name**. "Core switch to access switch" tells you nothing at 2 AM. "Core Gi1/0/47 to Access-2 Gi1/0/48" tells you exactly which port to check and which cable to reseat. If you take one thing from this post, take that.
+
+You can also stop the layer 1 and layer 2 diagrams from drifting by generating them instead of drawing them. Every managed switch worth owning speaks LLDP, so \`lldpcli show neighbors\` on a Linux host or the equivalent \`show lldp neighbors detail\` on a switch gives you the real adjacency table, port by port, straight from the devices. A diagram derived from LLDP output cannot be out of date, because it is a report rather than a drawing.
+
+### IPAM: document the convention, not just the entries
+
+A spreadsheet is fine up to a few hundred addresses. What it cannot do is validate anything: nothing stops you typing the same address twice, nothing records who changed a row or when, and it lives on one machine. NetBox or phpIPAM add uniqueness constraints, change history, and an API you can query from scripts, which is the point at which your documentation can start driving your automation rather than trailing behind it.
+
+Whichever you use, write down the **allocation convention** at the top, because that is the part people forget and it is the part that prevents collisions:
+
+\`\`\`
+10.0.X.1        gateway (FortiGate VLAN interface)
+10.0.X.2-.9     network infrastructure (switches, APs, PDUs)
+10.0.X.10-.99   static server assignments
+10.0.X.100-.199 DHCP pool
+10.0.X.200-.254 reserved / future
+\`\`\`
+
+Two address-space traps are worth calling out. First, RFC 1918 gives you 10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16, and you should stay well away from 192.168.0.0/24 and 192.168.1.0/24 because every consumer router on earth defaults to one of them. The day you VPN into your lab from a hotel and both ends are 192.168.1.0/24, routing collapses and there is no fix from the road. Second, 100.64.0.0/10 is carrier-grade NAT space and 169.254.0.0/16 is link-local; neither is yours to allocate, and RFC 6890 is the registry that lists every such reserved block.
+
+### Config backups: back up the right thing, and scrub it
+
+RANCID and Oxidized are the two standard tools for this. Both log into devices on a schedule, pull the running configuration, and commit it to version control, which gives you \`git diff\` between any two nights for free. That is genuinely the most valuable thing in this whole list: when something breaks after a change, the diff tells you exactly what changed instead of you trying to remember.
+
+Three failure modes to design around:
+
+**Plaintext secrets in the repo.** Device configs contain SNMP community strings, RADIUS and TACACS shared keys, VPN pre-shared keys, and local password hashes. A repository of network configs is a complete map of how to get into your network. Keep it private, and understand that adding a \`.gitignore\` later does nothing: once a secret is committed it lives in the history forever and must be treated as compromised. Scrub the secrets on the way in, or encrypt the repo with something like git-crypt or SOPS.
+
+**Diff noise.** Many devices include a timestamp, an uptime counter, or a certificate serial in their configuration output, so you get a diff every single night whether or not anything changed. If every backup produces a diff, you will stop reading them within a week. Filter those lines out at collection time.
+
+**Backups you have never restored.** A configuration file is not a backup until you have proven you can push it onto a replacement device and get a working switch. Do that once, on purpose, on a spare, and write down how long it took.
+
+### Runbooks: every one needs a rollback
+
+A runbook that only describes the forward path is a one-way door. Each procedure should have the exact commands to run, the output you expect to see if it worked, and the specific steps to undo it. Include the "how do I know it worked" line, because that is what turns a procedure into something a stressed person can follow.
+
 ## Tools
 
 I use draw.io for topology diagrams because it is free, exports to multiple formats, and runs in a browser. For IPAM, a simple spreadsheet works for my scale. For configuration backups, I use Python scripts that pull configs via SSH and commit them to a git repository.
 
 The git approach for configurations is powerful. When something breaks after a change, I can diff the current configuration against the last known good configuration and see exactly what changed.
 
+Store the draw.io files as \`.drawio\` XML in the same git repository as the configs rather than exporting a PNG and losing the source. The XML diffs badly but it version-controls fine, and it means the diagram and the configuration it describes move together.
+
 ## The Test
 
 Good documentation passes the "2 AM test": if your network goes down at 2 AM and you are half asleep, can you find the information you need to diagnose and fix the problem? If the answer is no, your documentation needs work.
 
+The version of this test that catches most people is not "can I find it" but "can I reach it." If the wiki is a VM on the cluster that just died, if the IPAM spreadsheet is on a NAS behind the switch you are trying to fix, or if the credentials are in a password manager that syncs over the VPN that is currently down, then during an outage your documentation does not exist. Keep an offline copy of the minimum set: a printed or PDF rack sheet, a local git clone on your laptop, and the out-of-band access details. Those out-of-band details are their own category worth writing down explicitly: iDRAC and IPMI addresses, console server ports, the serial console baud rate, and the local break-glass account on each device.
+
 ## Keeping It Current
 
 The hardest part of documentation is keeping it updated. I make it a rule: no infrastructure change is complete until the documentation is updated. The change log, the diagram, the IPAM spreadsheet, everything gets updated as part of the change process, not after.
+
+This is the same idea NIST formalizes in SP 800-128 as configuration management: you maintain an approved baseline, every change goes through a defined process, and the baseline is updated as part of that process rather than reconstructed afterward. The reason it is written down as a standard is that "I will document it later" fails universally, in every organization, at every scale. The only version that works is making the documentation update part of the change itself, so that skipping it means the change is not finished.
+
+## References
+
+- https://csrc.nist.gov/pubs/sp/800/128/upd1/final
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://www.rfc-editor.org/rfc/rfc6890
+- https://netboxlabs.com/docs/netbox/
+- https://www.shrubbery.net/rancid/
+- https://git-scm.com/docs/git-diff
 `,
   },
   {
@@ -23035,17 +23218,38 @@ Virtual machines emulate complete hardware. Each VM runs its own kernel, its own
 
 Containers share the host's kernel and only package the application and its dependencies. This makes them lighter, faster to start, and more resource-efficient. The tradeoff is weaker isolation compared to VMs.
 
+The mechanism underneath is worth knowing, because every limit you will hit follows from it. A container is not a thing the kernel has a data structure for. It is a normal process that has been placed into a set of namespaces (mount, PID, network, UTS, IPC, user, cgroup) and constrained by a cgroup. Namespaces control what the process can *see*; cgroups control how much it can *use*. That is the whole trick. Because there is no second kernel, startup is a fork and an exec, which is why an LXC container is usable in about a second while a VM spends 20 to 60 seconds on firmware, bootloader, and init.
+
 ## When I Use VMs
 
 VMs are my choice for anything that needs strong isolation, runs a different OS, or represents a "server" in my mental model. My Windows Server domain controllers, my pfSense firewall test instances, and my Linux servers all run as full VMs.
 
 VMs are also better for long-running services that need to survive host reboots and migrations. Proxmox's VM management (snapshots, backups, live migration) is mature and reliable.
 
+There is one hard capability difference that settles a lot of arguments: **Proxmox can live-migrate a VM, but it cannot live-migrate an LXC container.** Moving a container between cluster nodes is a restart migration: Proxmox stops it, transfers the rootfs, and starts it on the other node. If a service must survive a host going into maintenance without dropping a single connection, it has to be a VM. This is not a Proxmox shortcoming, it is a consequence of the container's processes being bound to a running kernel that cannot be checkpointed and resumed elsewhere.
+
+The security boundary is the other reason. A container escape is a kernel exploit away from being a host compromise, because the container and the host are the same kernel. A VM adds a second boundary at the hypervisor. VM escapes exist, but they are dramatically rarer. Anything that runs code I did not write, or that is exposed to the internet, goes in a VM.
+
 ## When I Use Containers
 
 Containers (specifically LXC containers on Proxmox) are my choice for lightweight services that run on Linux and do not need strong isolation from the host. DNS servers, monitoring agents, small web services, and development environments all run in LXC containers.
 
 An LXC container uses a fraction of the resources of a VM. A container running Pi-hole (DNS filtering) uses about 50 MB of RAM and negligible CPU. A VM running the same service would use 512 MB minimum just for the OS overhead.
+
+Run them unprivileged. Proxmox defaults to unprivileged containers, which map container UID 0 to host UID 100000 and give the container a 65,536-ID range from 100000 to 165535. Container root is therefore an unprivileged user on the host, and a breakout lands on a nobody account rather than on root.
+
+That UID shift is the number one thing beginners get wrong, and it always shows up the same way. You bind-mount \`/tank/media\` from the host into the container, \`chown -R root:root\` it inside, and the host now shows those files owned by UID 100000. Or you mount an existing host directory owned by root and the container cannot write to it at all, with no useful error beyond permission denied. The fix is either to \`chown 100000:100000\` the directory on the host, or to add an explicit \`lxc.idmap\` block to the container config so a specific host UID maps straight through. Pick one convention and stick to it across the whole lab.
+
+A short list of what an unprivileged LXC container simply cannot do, so you stop fighting it:
+
+- Load kernel modules. There is one kernel and it belongs to the host.
+- Mount NFS or CIFS from inside. Mount it on the host and bind-mount it in, or set the \`mount=nfs\` feature flag on a privileged container and accept the weaker isolation.
+- Run a different kernel version. If your app needs a kernel feature the Proxmox host does not have, that is a VM.
+- Run a non-Linux OS. No Windows, no BSD, ever.
+
+Two failure modes to recognize on sight. First, a container that starts and immediately stops with nothing useful in the log is usually an old template on a cgroup v2 host: Proxmox 7 and later default to the unified cgroup hierarchy, and distributions shipping systemd older than version 232 (CentOS 7, Ubuntu 16.04) cannot boot under it. Second, a container that "crashes" while the container itself stays running is the cgroup OOM killer. Exceeding the memory limit does not stop the container, it kills the largest process inside it, so you see your application vanish while \`pct status\` still says running. Check \`dmesg\` on the **host**, not inside the container, because that is where the OOM message lands.
+
+Note also that a container sees host values for some things unless lxcfs is intercepting them. Proxmox ships lxcfs, so \`free\` and \`nproc\` reflect the container's limits, but load average and much of \`/proc\` still reflect the whole host. Monitoring agents that read \`/proc\` directly will report the host's numbers from inside a container and quietly lie to your dashboards.
 
 ## Docker
 
@@ -23064,9 +23268,32 @@ volumes:
   grafana-data:
 \`\`\`
 
+One note on that file: the \`version\` key is a leftover from Compose V1 and the current Compose Specification ignores it. Docker Compose V2 will print "the attribute \`version\` is obsolete" and carry on. New files can drop the line entirely.
+
+The mental model difference is that an LXC container is a machine you maintain and a Docker container is a process you replace. LXC containers have an init system, get patched with \`apt upgrade\`, and accumulate state. Docker images are immutable layers on an overlay filesystem; you do not patch a running container, you build a new image and recreate it. Anything you write inside a Docker container that is not on a named volume or bind mount is gone the moment the container is recreated, and losing a database that way is a rite of passage.
+
+Running Docker *inside* an unprivileged LXC container is the most popular bad idea in the Proxmox community. It can be made to work with the \`nesting=1\` and \`keyctl=1\` features, but Docker's overlay2 storage driver does not work on a ZFS-backed unprivileged container, so it silently falls back to the \`vfs\` driver. \`vfs\` makes a full copy of every layer instead of stacking them, so a 400 MB image becomes several gigabytes on disk and image pulls crawl. If you want Docker on Proxmox, put it in a VM.
+
+## When You Actually Need an Orchestrator
+
+Docker Compose on a single host handles restart policies, dependency ordering, healthchecks, and a private network between services. That covers a homelab completely. You need a real orchestrator (Kubernetes, Nomad, Docker Swarm) when you need something Compose structurally cannot do: reschedule a workload onto a different host when one dies, roll out a new version without downtime, or scale a service horizontally based on load. Those three things are the entire value proposition.
+
+The cost is honest and large. A single-node Kubernetes cluster running the same Grafana adds an API server, etcd, a scheduler, a controller manager, a CNI plugin, and a kubelet, which is on the order of a gigabyte of RAM and a permanent maintenance obligation before your workload starts. If you cannot name which of the three capabilities above you need, you do not need it yet. Learning Kubernetes is a perfectly good reason to run it, but call that what it is rather than pretending it is the right architecture for four containers on one box.
+
 ## The Right Tool
 
 There is no universal answer to "containers or VMs." Both have their place. My rule of thumb: if it needs its own kernel or strong isolation, use a VM. If it is a Linux service that can share the host kernel, use a container. If it is a portable application packaged as a Docker image, use Docker.
+
+Written as a decision sequence: does it need a non-Linux OS, a different kernel, or live migration? VM. Is it hostile, untrusted, or internet-facing? VM. Is it a stateful Linux service you will maintain over years, like a DNS server or a monitoring collector? Unprivileged LXC. Is it something upstream already publishes as an image and you intend to replace rather than patch? Docker, inside a VM.
+
+## References
+
+- https://linuxcontainers.org/lxc/introduction/
+- https://pve.proxmox.com/pve-docs/chapter-pct.html
+- https://man7.org/linux/man-pages/man7/namespaces.7.html
+- https://man7.org/linux/man-pages/man7/cgroups.7.html
+- https://man7.org/linux/man-pages/man7/user_namespaces.7.html
+- https://docs.docker.com/reference/compose-file/
 `,
   },
   {
@@ -24991,11 +25218,25 @@ Modern server CPUs support multiple memory channels. Intel Xeon Scalable process
 
 To use all available channels, you need to populate DIMMs in the correct slots. The motherboard manual (or Dell's memory compatibility matrix for PowerEdge servers) specifies exactly which slots to fill first and in what combinations to maximize channel utilization.
 
+The generation matters, and the numbers are worth memorizing because they drive every purchasing decision. First and second generation Xeon Scalable (Skylake-SP and Cascade Lake-SP, which is what a PowerEdge R740 takes) have six DDR4 channels per socket with two DIMM slots per channel, so twelve slots per CPU and 24 in a dual-socket box. Third generation (Ice Lake-SP) moved to eight DDR4 channels. Fourth and fifth generation (Sapphire Rapids and Emerald Rapids) have eight DDR5 channels. On the AMD side, EPYC 7001 through 7003 have eight channels and EPYC 9004 has twelve.
+
+Channel count is a bandwidth multiplier, and the arithmetic is simple: a DDR4 channel is 64 bits wide, so it moves 8 bytes per transfer. DDR4-2666 gives 2666 x 8 = 21.3 GB/s per channel, and six channels is about 128 GB/s per socket. Populate only three of those six channels and you have cut the theoretical ceiling in half no matter how much capacity you installed.
+
 ## DIMM Placement Rules
 
 The rule of thumb: populate symmetrically. If you have a dual-socket server, put the same amount of memory in each socket. If a socket has eight memory channels, fill one DIMM per channel before adding a second DIMM to any channel.
 
 For a Dell PowerEdge R740 with two CPUs and 24 DIMM slots, filling 12 DIMMs (6 per CPU) in the correct slots gives you full channel utilization. Adding more DIMMs fills the remaining slots.
+
+The single most common real-world mistake is buying a "64 GB" kit as four 16 GB sticks and putting all four in one socket of a six-channel server. That leaves two channels empty. The memory controller cannot interleave across an odd, incomplete set, so it falls back to a reduced interleave and you lose roughly a third of your bandwidth. The server boots, the capacity reads correctly, and nothing looks wrong. Dell's BIOS will usually log a "memory configuration is not optimal" message in the System Event Log, which nobody reads. Buy DIMMs in multiples of the channel count: six or twelve per socket on an R740, not four or eight.
+
+Two more placement failures worth knowing:
+
+**Populating the second CPU's slots with no second CPU installed.** Half the DIMM slots on a dual-socket board are wired to socket 2. With one CPU installed, memory in those slots is simply invisible. There is no error, the capacity is just lower than you paid for. Dell colour-codes and numbers the slots (A1 through A12 for CPU1, B1 through B12 for CPU2) precisely so you can check this at a glance.
+
+**Filling the second slot of a channel first.** Slots are populated white first, then black, and on most Dell boards the far slot of the pair is the one that must be filled first for signal integrity. Getting this backwards can produce a machine that either refuses to POST or trains the whole channel down a speed grade.
+
+You also give up capacity if you enable the RAS features. Memory mirroring halves usable RAM outright, and single rank sparing reserves one rank per channel. Both are configured in BIOS and both are turned on by accident more often than on purpose.
 
 ## ECC Memory
 
@@ -25003,15 +25244,60 @@ ECC (Error-Correcting Code) memory detects and corrects single-bit memory errors
 
 All enterprise server platforms require ECC registered (RDIMM) or load-reduced (LRDIMM) memory. Consumer platforms typically do not support ECC at all.
 
+Mechanically, standard server ECC is SECDED: Single Error Correct, Double Error Detect. It works by storing 8 check bits alongside every 64 bits of data, which is why an ECC DIMM is 72 bits wide instead of 64 and physically carries 9 or 18 DRAM chips rather than 8 or 16. That extra chip is the entire hardware cost of ECC, and it is why ECC DIMMs run roughly 10 to 20 percent more than non-ECC.
+
+How often does this actually matter? Google's large-scale field study of its fleet, published at SIGMETRICS in 2009, found that more than 8 percent of DIMMs saw at least one correctable error per year and about a third of machines did, with roughly 1.3 percent of machines per year hitting an uncorrectable error. Those are not rare-event numbers. A homelab with 384 GB across two servers running 24/7 will see correctable errors, and without ECC it would see silent corruption instead.
+
+What ECC cannot do is worth stating plainly. SECDED corrects one bad bit per 64-bit word and detects two. Three or more flipped bits in the same word can be miscorrected into wrong data with no error reported. It does not protect against a failing memory controller, a bad CPU, or bit flips that happen in cache or on the bus after the check. And it only partially mitigates Rowhammer: hammering a row can flip multiple bits in a word, and published work has shown ECC-equipped systems can still be exploited. ECC is a very good floor, not a guarantee.
+
+Correctable errors are also a leading indicator, not a nuisance. A DIMM that logs a rising count of correctable errors is usually weeks away from producing an uncorrectable one. Dell's BIOS applies a correctable error threshold and will flag or map out the DIMM once it is crossed, and the Patrol Scrub feature (enabled by default on PowerEdge, running on a weekly schedule in Standard mode) walks memory in the background specifically to correct single-bit errors before a second bit in the same word turns them into an uncorrectable fault.
+
 ## LRDIMM vs RDIMM
 
 Registered DIMMs (RDIMMs) use a register to buffer signals between the memory controller and the DRAM chips. Load-Reduced DIMMs (LRDIMMs) buffer data signals as well, reducing electrical load and allowing higher memory capacities per server.
 
 LRDIMMs support larger capacity configurations but add a small amount of latency. For most virtualization workloads, this is an acceptable trade-off when you need maximum memory capacity.
 
+The concrete difference is rank loading. A DDR4 memory controller can drive a limited number of ranks per channel, typically eight. An RDIMM buffers only address and command lines, so every rank on it still loads the data bus. An LRDIMM's memory buffer isolates the data lines too, presenting the controller with what looks like a single rank regardless of how many are physically on the module. That is what makes 128 GB and 256 GB 3DS LRDIMMs possible at all, and why a 24-slot R740 can reach 3 TB with LRDIMMs but not with RDIMMs.
+
+The cost is about one extra clock cycle of latency, roughly 1 to 2 ns, on every access. For a database with a tight latency budget that is measurable. For a hypervisor running thirty VMs, it disappears into the noise, and the extra capacity is worth far more.
+
+The rule you cannot break: **do not mix RDIMM and LRDIMM.** Dell forbids mixing DIMM types within a channel, within a socket, or across sockets on the same system. A mixed configuration typically will not POST, and when it does it runs in a degraded mode. The same applies to mixing 64 GB and 128 GB LRDIMMs. Check the technical specifications for your exact platform before combining parts from two different pulls.
+
 ## Speed Considerations
 
 Memory speed is limited by the slowest DIMM installed and by the number of DIMMs per channel. Adding a second DIMM to a channel often drops the maximum speed. Always check the specific speed rating for your configuration in the server's documentation.
+
+Three separate ceilings apply and the lowest one wins: the DIMM's own rating from its SPD chip, the CPU's maximum supported speed for its SKU, and the platform's derating for the population you chose. On a Cascade Lake R740, DDR4-2933 is supported at one DIMM per channel, and filling the second slot of each channel drops the whole system to 2666 MT/s. Twelve 32 GB sticks at 2933 outrun 24 of them at 2666 for bandwidth, so if you need 384 GB rather than 768 GB, buy 32 GB DIMMs and stay at one per channel.
+
+The BIOS reads every module's Serial Presence Detect EEPROM at POST and trains the whole system to the lowest common denominator. One 2400 MT/s stick mixed into eleven 2933 sticks makes all twelve run at 2400. Also note that a lower-binned Xeon (the Bronze and Silver tiers, and the "Gold 51xx" line) caps memory at a lower speed regardless of what you install, so the DIMMs are not always the constraint.
+
+## NUMA, and Why a VM Suddenly Runs Half as Fast
+
+On a dual-socket server, each CPU owns its own memory controller and its own DIMMs. Memory attached to the other socket is reachable, but only across the UPI link, and remote access typically costs somewhere between 1.5x and 2x the local latency with lower bandwidth. This is Non-Uniform Memory Access, and it produces one of the most confusing symptoms in a homelab: a VM that ran fine at 64 GB becomes noticeably slower when you grow it to 200 GB, because it no longer fits inside one socket's memory and half its accesses are now remote.
+
+Check the topology with \`numactl --hardware\`, which prints the nodes, the memory attached to each, and the inter-node distance matrix. On a hypervisor, size VMs to fit inside a single NUMA node where you can, and enable NUMA passthrough for the ones that genuinely need to span sockets so the guest can make its own placement decisions.
+
+## Watching for Errors in Linux
+
+Do not wait for a crash. The kernel's EDAC subsystem exposes per-controller counters you can poll:
+
+\`\`\`bash
+# Correctable and uncorrectable error counts per memory controller
+grep -H . /sys/devices/system/edac/mc/mc*/ce_count
+grep -H . /sys/devices/system/edac/mc/mc*/ue_count
+\`\`\`
+
+Install \`rasdaemon\` if you want the errors decoded down to the specific DIMM label rather than a bare counter. A count that stays at zero for months and then starts climbing on one DIMM is your notice to order a replacement while the server is still healthy.
+
+## References
+
+- https://en.wikipedia.org/wiki/ECC_memory
+- https://en.wikipedia.org/wiki/Registered_memory
+- https://en.wikipedia.org/wiki/Multi-channel_memory_architecture
+- https://www.kernel.org/doc/html/latest/admin-guide/RAS/main.html
+- https://research.google/pubs/dram-errors-in-the-wild-a-large-scale-field-study/
+- https://downloads.dell.com/topicspdf/poweredge-r740_owners-manual2_en-us.pdf
 `,
   },
   {
@@ -26489,6 +26775,19 @@ The foundation of container networking is Linux network namespaces. Each namespa
 
 When Docker starts a container, it creates a new network namespace and connects it to the host via a virtual Ethernet pair (veth). One end lives in the container namespace; the other lives in the host namespace and connects to a bridge.
 
+A veth pair is a wire, not a switch. Whatever goes in one end comes out the other, and if one end goes down the other immediately reports NO-CARRIER. That is why a container's \`eth0\` shows as down the instant the host-side peer is deleted, and why \`ip link show type veth\` on the host prints entries like \`veth9f2a1c@if12\`: the \`@if12\` suffix is the interface index of the peer inside the container.
+
+The detail that trips up almost everyone the first time: \`ip netns list\` shows nothing for Docker containers. That command only lists namespaces that have a bind mount under \`/var/run/netns\`, and Docker does not create one. The namespace is real, it just is not named. You reach it through the container's PID instead:
+
+\`\`\`bash
+# Find the PID, then enter its network namespace
+pid=$(docker inspect -f '{{.State.Pid}}' container-name)
+sudo nsenter -t "$pid" -n ip addr
+sudo nsenter -t "$pid" -n ss -tlnp
+\`\`\`
+
+That single trick solves most "the container cannot reach anything" problems, because you can now run \`ip route\`, \`ss\`, and \`tcpdump\` from inside the container's stack without needing those tools installed in the image.
+
 ## The Docker Bridge
 
 By default, Docker creates a bridge called \`docker0\`. Every container on the default network connects to this bridge. The bridge performs NAT, translating between container IPs on the \`172.17.0.0/16\` range and the host's real IP address.
@@ -26501,6 +26800,12 @@ docker inspect container-name | grep -A 20 '"Networks"'
 ip link show type veth
 \`\`\`
 
+The NAT is a single \`MASQUERADE\` rule in the \`nat\` table's \`POSTROUTING\` chain covering \`172.17.0.0/16\`. Published ports (\`-p 8080:80\`) add \`DNAT\` rules in \`PREROUTING\`. This is where the most expensive beginner mistake in container networking lives: **Docker's published ports bypass \`ufw\` and any rules you wrote in the \`INPUT\` chain.** DNAT happens in \`PREROUTING\`, before the routing decision, so the packet is destined for the container and traverses \`FORWARD\`, never \`INPUT\`. People bind a database to \`-p 5432:5432\`, confirm \`ufw status\` says "deny incoming", and put an unauthenticated Postgres on the public internet. The fix is either to bind to a specific address (\`-p 127.0.0.1:5432:5432\`) or to write rules in the \`DOCKER-USER\` chain, which Docker guarantees is traversed before its own generated rules and never flushed on daemon restart.
+
+The second common surprise is address space. Docker's default address pool is \`172.17.0.0/12\` carved into \`/16\` blocks, so \`docker0\` gets \`172.17.0.0/16\` and each user-defined network takes the next free \`/16\`: \`172.18.0.0/16\`, \`172.19.0.0/16\`, and so on. If your corporate VPN or another lab subnet also lives in \`172.16.0.0/12\`, containers will silently blackhole traffic to it, because the more specific container route wins. Override it in \`/etc/docker/daemon.json\` with \`default-address-pools\` before you have twenty containers running.
+
+Use user-defined bridges rather than the default one. Only user-defined networks get Docker's embedded DNS resolver at \`127.0.0.11\`, which resolves container names to IPs. On the default \`docker0\` bridge there is no name resolution at all, and the old \`--link\` flag that used to paper over this is deprecated.
+
 ## Kubernetes Networking Model
 
 Kubernetes has three networking requirements:
@@ -26510,17 +26815,44 @@ Kubernetes has three networking requirements:
 
 This means no NAT between pods. Every pod gets a real routable IP. The Container Network Interface (CNI) plugins (Calico, Flannel, Cilium) implement this model.
 
+The practical consequence is that Kubernetes needs a lot of IP addresses. \`kube-controller-manager\` hands each node a slice of the cluster CIDR, and the default \`--node-cidr-mask-size\` for IPv4 is 24, so every node gets a \`/24\` with 254 usable pod addresses. The kubelet's default \`maxPods\` is 110, which is deliberately under 254 so a node cannot exhaust its own block. A \`/16\` cluster CIDR therefore caps you at 256 nodes, not 65,536 pods. Plan the CIDR at install time, because changing it later means rebuilding the cluster.
+
+CNI itself is deliberately tiny: plugins are just executables in \`/opt/cni/bin\` driven by JSON configs in \`/etc/cni/net.d\`. When you see nodes stuck \`NotReady\` with \`network plugin is not ready: cni config uninitialized\` and every pod frozen in \`ContainerCreating\`, that directory is empty or the plugin binary is missing. It is not a Kubernetes bug, it is a missing file.
+
 ## How Calico Works
 
 Calico uses BGP to distribute pod routes across nodes. Each node peers with a route reflector (or directly with other nodes) and advertises the pod CIDR it is responsible for. Packets between pods on different nodes follow the BGP-learned routes, flowing directly without encapsulation.
 
 This makes Calico extremely performant and easy to troubleshoot because the routing is standard IP routing.
 
+BGP here is ordinary BGP-4 as specified in RFC 4271, speaking TCP on port 179, and Calico defaults to private AS number 64512. Out of the box it configures a full node-to-node mesh, which means every node peers with every other node. That is \`n * (n - 1) / 2\` sessions, so 50 nodes is 1,225 TCP sessions. The mesh is fine for a lab and starts to hurt somewhere around 100 nodes, which is when you disable it and point everything at a pair of route reflectors.
+
+The honest limitation: unencapsulated BGP routing only works if the underlay will actually forward packets addressed to your pod CIDR. On a flat L2 lab network it works beautifully. Across a router that does not know about the pod CIDR, or on AWS and Azure where the fabric drops frames whose source IP is not a registered instance address, packets vanish. Calico's answer is \`ipipMode\` or \`vxlanMode\` set to \`CrossSubnet\`, which keeps native routing inside a subnet and encapsulates only when crossing one.
+
+Encapsulation is also the number one source of the weirdest failure in container networking: **small requests work, large ones hang.** SSH connects and then freezes at the banner. \`curl\` returns headers and stalls. That is an MTU mismatch. VXLAN adds 50 bytes of overhead, IP-in-IP adds 20, and WireGuard adds 60, so on a 1500 byte underlay the pod MTU must be 1450, 1480, or 1440 respectively. If the pod MTU is left at 1500 and the intermediate ICMP "fragmentation needed" messages are filtered, Path MTU Discovery never completes and every packet over the limit is silently dropped. Test it directly with \`ping -M do -s 1472\` and walk the size down until it succeeds.
+
 ## Service Networking
 
 Kubernetes Services provide stable IP addresses for groups of pods. Service IPs are virtual. When a pod sends to a service IP, kube-proxy (or eBPF with Cilium) intercepts the packet using iptables or BPF rules and rewrites the destination to one of the backing pod IPs.
 
 Understanding this rewrite is key to debugging connectivity problems in Kubernetes.
+
+A ClusterIP is not assigned to any interface anywhere. It exists only as a match in a DNAT rule. So \`ping 10.96.0.1\` fails, and that failure means nothing: ICMP has no port, there is no rule to match it, and the packet is dropped. Beginners see the failed ping and start rebuilding the CNI. Test a Service with \`curl\` against its actual port instead. The default Service CIDR for a kubeadm cluster is \`10.96.0.0/12\`, and it must not overlap the pod CIDR or the node network.
+
+kube-proxy's default \`iptables\` mode writes one chain per Service plus one per endpoint, and load balancing is a chain of statistically weighted jumps. Rule evaluation and, more importantly, full-table resync are roughly linear in the number of Services, so clusters with several thousand Services see multi-second sync times and slow endpoint convergence. IPVS mode replaces the linear chain with a hash table and stays flat as the Service count grows; the newer \`nftables\` mode does the same with maps. If your cluster is small, iptables mode is simpler and easier to read with \`iptables-save -t nat | grep <service-name>\`.
+
+The other thing that quietly breaks Services is connection tracking. Every DNAT'd flow occupies a \`nf_conntrack\` entry. When the table fills you get \`nf_conntrack: table full, dropping packet\` in \`dmesg\` and apparently random connection resets across the whole node. Check \`/proc/sys/net/netfilter/nf_conntrack_count\` against \`nf_conntrack_max\` before blaming the application.
+
+Finally, know what this model does not give you. The pod network is flat and, by default, completely open: any pod can reach any other pod in any namespace. NetworkPolicy is the fix, but NetworkPolicy is enforced by the CNI plugin, not by Kubernetes. Flannel implements no policy at all, so applying a NetworkPolicy on a Flannel cluster succeeds, reports no error, and does absolutely nothing. Calico and Cilium enforce it. Confirm your plugin supports policy before you rely on it for isolation.
+
+## References
+
+- https://man7.org/linux/man-pages/man7/network_namespaces.7.html
+- https://man7.org/linux/man-pages/man4/veth.4.html
+- https://docs.docker.com/engine/network/drivers/bridge/
+- https://kubernetes.io/docs/concepts/cluster-administration/networking/
+- https://kubernetes.io/docs/reference/networking/virtual-ips/
+- https://www.rfc-editor.org/rfc/rfc4271
 `,
   },
   {

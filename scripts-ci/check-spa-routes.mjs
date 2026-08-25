@@ -52,6 +52,8 @@ function coveredByRule(route) {
 
 function prerendered(route) {
   if (route === "/") return existsSync(path.join(DIST, "index.html"));
+  const flat = path.join(DIST, `${route.slice(1)}.html`);
+  if (existsSync(flat)) return true;
   return existsSync(path.join(DIST, route.slice(1), "index.html"));
 }
 
