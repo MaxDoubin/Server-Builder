@@ -65,6 +65,7 @@ export function CinematicHome() {
         "Top 1% · National Cyber League",
         "South CTA ranked 7th in the nation in National Cyber League competition",
         "#1 Percussionist · State of Nevada, 2024",
+        "PBS Varsity Quiz · State finalist, 2026",
         "Student of the Month · South CTA",
       ],
       hasCredential: [

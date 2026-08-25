@@ -224,6 +224,11 @@ export const siteConfig = {
         "Ranked #1 percussionist in the state of Nevada in 2024 and selected for Nevada All-State Band in 6th, 7th, and 9th grade.",
     },
     {
+      title: "2026 PBS Varsity Quiz State Finalist",
+      description:
+        "Reached the state finals of PBS Varsity Quiz in 2026 on a team made up entirely of freshmen.",
+    },
+    {
       title: "Student of the Month",
       description:
         "Recognized as Student of the Month in October at South Career Technical Academy.",

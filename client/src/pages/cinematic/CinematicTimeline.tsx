@@ -25,8 +25,8 @@ interface TimelineGroup {
 /**
  * Drawn from siteConfig only.
  *
- * siteConfig carries a date for exactly two things: the 2024 percussion
- * ranking and the press feature. Everything else has no date recorded, so it
+ * siteConfig carries a date for three things: the 2024 percussion ranking,
+ * the 2026 PBS Varsity Quiz finals, and the press feature. Everything else has no date recorded, so it
  * is grouped as undated. Do not infer a year for an entry from the year next
  * to it: an approximately right date on a portfolio is a wrong date.
  */
@@ -40,6 +40,12 @@ const GROUPS: TimelineGroup[] = [
         when: "2026/2027 school year",
         description:
           "Leads club activities, coordination, and student participation for the school year.",
+      },
+      {
+        title: "PBS Varsity Quiz state finalist",
+        when: "2026",
+        description:
+          "Reached the state finals on a team made up entirely of freshmen.",
       },
       {
         title: PRESS.headline,
