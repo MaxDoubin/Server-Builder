@@ -25694,7 +25694,17 @@ location /api/ {
 
 Link Aggregation (also called bonding on Linux, or an EtherChannel on Cisco) combines multiple physical Ethernet links into a single logical interface. The benefits are increased bandwidth and redundancy. If one physical link fails, traffic automatically flows through the remaining links.
 
-LACP (Link Aggregation Control Protocol, IEEE 802.3ad) is the standard protocol for negotiating link aggregation between two devices. Both ends send LACP PDUs to establish and maintain the aggregate.
+LACP (Link Aggregation Control Protocol, IEEE 802.3ad) is the standard protocol for negotiating link aggregation between two devices. Both ends send LACP PDUs to establish and maintain the aggregate. The specification moved out of 802.3 and into its own document in 2008, so modern datasheets often say 802.1AX instead. They mean the same protocol, and a switch advertising either will interoperate with the other.
+
+The upper limit is 8 active member links in a single aggregation group. Cisco platforms let you configure up to 16 interfaces in a channel group, but only 8 of them bundle at any moment; the rest sit in hot standby and take over when an active member drops.
+
+## How LACP Negotiates
+
+LACPDUs are sent to the multicast address 01:80:C2:00:00:02 with EtherType 0x8809, the Slow Protocols EtherType. That address is in the reserved range that switches never forward, which is deliberate: an LACPDU is only ever meaningful to the device on the other end of the wire.
+
+Each side describes itself as the actor and describes what it hears as the partner. The fields that matter are the system ID (a priority plus the device MAC), the operational key (which member ports on the same device are allowed to bundle together), and the port ID. Two links join the same aggregator only when both ends agree on all of it. This is why the protocol is safe: a cable moved to the wrong switch produces a mismatched partner system ID, the link drops out of the bundle, and nothing loops.
+
+There are exactly two timer rates. Slow rate sends an LACPDU every 30 seconds; fast rate sends one every second. The timeout in both cases is three missed PDUs, so a dead partner is detected in 90 seconds on slow and 3 seconds on fast. Slow is the default nearly everywhere. Set fast when you want fast failover, but understand what you are asking for: the switch now processes an extra control-plane packet per second per member, and a supervisor failover or a control-plane policing drop that stalls LACPDUs for three seconds will tear the bundle down on a link that was physically fine.
 
 ## How Hashing Works
 
@@ -25705,6 +25715,10 @@ Link aggregation does not actually bond the links into a single higher-speed pip
 - **Layer 4 (src/dst IP + port):** Best distribution for high-traffic flows between few hosts
 
 A single TCP connection always flows over a single physical link. You cannot exceed the speed of one link for a single stream. The benefit is total throughput across many flows.
+
+Two properties of the hash surprise people. First, each end hashes independently, so traffic from A to B can ride a different physical link than the return traffic from B to A. That is normal behaviour, not a fault, and it means a one-sided packet capture on a member link often shows only half a conversation. Second, the hash result is reduced modulo the number of active members. With 2, 4, or 8 members the buckets divide evenly. With 3, 5, 6, or 7 members some links receive measurably more buckets than others, and a heavily loaded 3-member bundle can sit at 60 percent on one link and 20 percent on the others while the aggregate reports plenty of headroom.
+
+Layer 3+4 hashing has a caveat the Linux bonding documentation states directly: it is not fully 802.3ad compliant, because IP fragments after the first carry no port numbers. Those fragments hash differently from the head fragment and can arrive out of order. For normal TCP traffic that never happens, since TCP avoids fragmentation. For UDP applications that send large datagrams, it can.
 
 ## Cisco Configuration
 
@@ -25719,6 +25733,10 @@ interface GigabitEthernet1/0/1
 interface GigabitEthernet1/0/2
   channel-group 1 mode active
 \`\`\`
+
+\`mode active\` sends LACPDUs; \`mode passive\` only answers them. \`mode on\` is different in kind: it forces the ports into a static bundle with no protocol at all. Static bundling is the one configuration that can genuinely loop a network, because a miscabled member gets forwarded onto rather than removed from the group. Use \`active\` unless you have a specific device that cannot speak LACP.
+
+Verify with \`show etherchannel summary\` and read the flag letters next to each port. \`P\` means bundled in the port channel, which is what you want. \`s\` means suspended (the port is a member but is not passing traffic), \`I\` means stand-alone, and \`D\` means down. A member showing \`s\` on a channel where everything else is \`P\` is nearly always a configuration mismatch on that one interface. \`show lacp neighbor\` tells you whether the partner is answering at all, and at what timer rate.
 
 ## Linux Configuration (systemd-networkd)
 
@@ -25742,9 +25760,44 @@ Address=192.168.1.100/24
 Gateway=192.168.1.1
 \`\`\`
 
+Each member interface needs its own \`.network\` file with \`Bond=bond0\` and no address of its own. Giving a member an IP is a common first mistake and produces a bond that comes up but carries almost nothing.
+
+The file to read when something is wrong is \`/proc/net/bonding/bond0\`. It prints the aggregator ID, the actor and partner state bytes, and the churn counters for every member. Two lines matter most. \`Aggregator ID\` should be identical for every member: if two members show different aggregator IDs, only one aggregator is active and the other members are silently idle. \`Partner Mac Address\` of 00:00:00:00:00:00 means no LACPDUs are being received at all, which points at the switch side or at a port that was never added to the channel group.
+
+Note that \`Mode=802.3ad\` is the only bonding mode that requires switch configuration. Round-robin (mode 0) needs none, which is why tutorials reach for it, but it deliberately sprays consecutive frames of one flow across links and produces out-of-order TCP segments and duplicate ACKs. \`active-backup\` (mode 1) also needs nothing from the switch and is the correct choice when you want redundancy and cannot configure the switch.
+
+## What LACP Cannot Do
+
+It cannot make one flow faster. A single iSCSI session, a single SMB copy, or a single backup stream between two hosts uses one member link and one member link only. If that is your workload, the answer is not a bigger bundle; it is multipath at a higher layer (MPIO for iSCSI, SMB Multichannel for SMB) or a faster single link.
+
+It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that spanning tree will have to block.
+
+It cannot merge links of different speeds usefully. A 1 Gbps and a 10 Gbps member get different operational keys and land in different aggregators, and only one aggregator forwards. You do not get 11 Gbps, you get whichever aggregator won.
+
 ## Troubleshooting
 
 Check that both sides are in the same LACP mode (active/active or active/passive, not passive/passive which will not negotiate). Verify speed and duplex match on all member links. Check that the switch port channel is up and members are showing as bundled.
+
+Beyond that, the failures that actually recur:
+
+**Mismatched trunk configuration on one member.** The allowed VLAN list, native VLAN, and switchport mode must be identical across every port in the group. Cisco's EtherChannel misconfig guard will err-disable the port rather than bundle it. The tell is one port in \`s\` or \`err-disabled\` while the rest are \`P\`.
+
+**MTU mismatch.** The bond and every member need the same MTU. A member at 1500 in a jumbo bundle passes small packets perfectly and drops large ones, which looks like an application bug rather than a network one until you test with \`ping -M do -s 8972\`.
+
+**One end configured as static \`on\`, the other as LACP.** The LACP side never receives PDUs, refuses to bundle, and leaves its ports individual; the static side forwards on all of them regardless. The result is duplicate frames and MAC flapping, not a clean failure.
+
+**Traffic arriving on a member the capture is not on.** Before concluding a link is dead, confirm with per-interface counters rather than a capture. \`ethtool -S enp1s0f0\` gives the driver's own transmit and receive counts, and comparing those across members tells you immediately whether the hash is distributing or one link is doing all the work.
+
+**A bundle that works until you reboot the switch.** If the Linux side is set to fast rate and the switch is set to slow, the negotiated rate follows what each side asks its partner for, and marginal setups survive at slow but tear down at fast during control-plane churn. When a bundle flaps only during maintenance windows, drop back to the 30 second rate and see if the flapping stops.
+
+## References
+
+- https://en.wikipedia.org/wiki/Link_aggregation
+- https://en.wikipedia.org/wiki/IEEE_802.1AX
+- https://www.kernel.org/doc/html/latest/networking/bonding.html
+- https://man7.org/linux/man-pages/man5/systemd.netdev.5.html
+- https://man7.org/linux/man-pages/man8/ethtool.8.html
+- https://www.rfc-editor.org/rfc/rfc7424
 `,
   },
   {
@@ -25810,6 +25863,8 @@ For a home with a handful of devices and no performance-sensitive applications, 
 
 Both attacks enable man-in-the-middle interception of traffic without detection.
 
+Neither is an implementation bug. ARP was published in 1982 as RFC 826 and contains no notion of identity: a host that receives a reply for an address it asked about is expected to believe it. DHCP, specified in RFC 2131, has the same property in the other direction, since a client that has just broadcast a DHCPDISCOVER has no way to distinguish the real server's offer from anyone else's. Both protocols assume the local segment is trustworthy. DHCP snooping and Dynamic ARP Inspection are the switch enforcing that assumption on the protocols' behalf.
+
 ## DHCP Snooping
 
 DHCP snooping builds a binding table: which MAC address received which IP address on which port. It marks ports as trusted or untrusted. DHCP server responses from untrusted ports are dropped.
@@ -25827,6 +25882,25 @@ interface range GigabitEthernet1/0/1-47
   ip dhcp snooping limit rate 15
 \`\`\`
 
+Specifically, an untrusted port is not allowed to source the four server-side message types: DHCPOFFER, DHCPACK, DHCPNAK, and DHCPLEASEQUERY. A client port that sends one is either running a DHCP server or attacking you, and either way the frame does not deserve forwarding. The switch also drops a DHCPRELEASE or DHCPDECLINE whose source MAC does not match the binding for that address, which stops one host from tearing down another host's lease.
+
+The two global commands are both required. \`ip dhcp snooping\` on its own enables the feature and inspects nothing. Nothing happens until \`ip dhcp snooping vlan\` names the VLANs. This is the single most common reason someone configures snooping, tests it with a rogue server, and finds it does not work.
+
+## The Binding Table Is the Whole Thing
+
+Every entry holds a MAC, an IP, a lease time, a VLAN, and an interface. Verify it with \`show ip dhcp snooping binding\`. Everything downstream depends on it, which makes one detail important: by default the table lives only in RAM.
+
+Reload the switch and the bindings are gone. If Dynamic ARP Inspection is enabled on the same VLANs, every client that still holds a perfectly valid lease now has no binding, so its ARP is dropped, and the VLAN goes dark until each client happens to renew. That renewal is at 50 percent of the lease by default, so with an eight day lease you can be looking at days of intermittent breakage.
+
+The fix is to persist the table:
+
+\`\`\`
+ip dhcp snooping database flash:/dhcp-snooping.db
+ip dhcp snooping database write-delay 300
+\`\`\`
+
+A TFTP or FTP URL works too, and is better on a switch whose flash you do not want to write to every five minutes. The default write delay is 300 seconds, so a reload within five minutes of the last change still loses the newest entries.
+
 ## Dynamic ARP Inspection
 
 DAI uses the DHCP snooping binding table to validate ARP packets. If a host claims to be an IP address that DHCP snooping assigned to a different MAC, the ARP is dropped.
@@ -25843,11 +25917,67 @@ interface range GigabitEthernet1/0/1-47
   ip arp inspection limit rate 100
 \`\`\`
 
+DAI works by punting ARP frames on untrusted ports to the switch CPU for inspection, which is exactly why rate limits exist and why the default on an untrusted port is 15 packets per second whether or not you type the command. Exceed it and the port is err-disabled. The trusted side has no limit by default. If you are going to raise the limit on an access port, raise it deliberately, because the number is protecting the control plane rather than the network.
+
+Add the optional consistency checks:
+
+\`\`\`
+ip arp inspection validate src-mac dst-mac ip
+\`\`\`
+
+\`src-mac\` and \`dst-mac\` compare the Ethernet header addresses against the ARP payload's sender and target hardware addresses, and \`ip\` rejects invalid or unexpected sender addresses such as 0.0.0.0 and 255.255.255.255. One trap: this is a single command with a keyword list, not three commands. Entering it again with only one keyword replaces the whole list rather than adding to it.
+
+Hosts with static IP addresses have no DHCP binding, so DAI drops their ARP and they disappear from the network. Servers, printers, and the firewall itself are the usual casualties. Give them an ARP ACL:
+
+\`\`\`
+arp access-list STATIC-HOSTS
+  permit ip host 10.20.0.10 mac host 0050.56aa.bb01
+
+ip arp inspection filter STATIC-HOSTS vlan 20
+\`\`\`
+
+## What Breaks When You Turn This On
+
+**Every client stops getting an address, immediately.** This is the Option 82 problem and it catches almost everyone. By default, Cisco switches running DHCP snooping insert the relay agent information option from RFC 3046 into client packets on untrusted ports, but they leave giaddr as 0.0.0.0 because the switch is not the relay. Many DHCP servers, including Windows Server and IOS itself, discard a packet that carries Option 82 with a zero giaddr, because that combination should not exist. Either turn the insertion off with \`no ip dhcp snooping information option\`, or tell the relay to accept it with \`ip dhcp relay information trust-all\` on the SVI.
+
+**Ports err-disable after a power outage.** Hundreds of clients booting at once produce a burst of DHCP that trips a 15 pps limit. Configure automatic recovery rather than walking the building:
+
+\`\`\`
+errdisable recovery cause dhcp-rate-limit
+errdisable recovery cause arp-inspection
+errdisable recovery interval 300
+\`\`\`
+
+**A whole VLAN loses DHCP after adding a second switch.** The link between two snooping switches has to be trusted on both ends. An untrusted interswitch link drops the server's replies as they cross it, and the symptom looks exactly like a dead DHCP server.
+
+**Rate limiting the uplink.** Do not put \`ip dhcp snooping limit rate\` on the trusted port toward the server. All of the site's DHCP traffic crosses it, and err-disabling that port takes the whole VLAN down.
+
+## What These Do Not Cover
+
+DHCP snooping and DAI protect the VLANs you name, on the switches where they are enabled, for IPv4 only. Three gaps follow from that.
+
+An attacker on a switch that does not run snooping is unaffected, and if the link from that switch is trusted, their rogue server's replies pass straight through. The trust boundary has to be drawn at the real edge of the network, not at the edge of the switch you happened to configure.
+
+IPv6 is untouched. There is no ARP in IPv6; address resolution and default gateway discovery both run over ICMPv6 Neighbor Discovery, and the equivalent attack is a spoofed Router Advertisement. That needs RA Guard, DHCPv6 Guard, and IPv6 Source Guard, which are separate features. A dual-stack network with DAI and no RA Guard is still trivially man-in-the-middled, and the attacker gets preference because hosts favour the IPv6 path.
+
+Neither feature stops a host from simply sending IPv4 packets with a forged source address once it has an address. That is IP Source Guard, the third feature in the set, which uses the same binding table to filter the data plane rather than just the control messages.
+
 ## What to Watch
 
 Both features generate logs for violations. Review these periodically. A device frequently triggering DHCP snooping violations might be misconfigured, but it could also be a malicious device. Unexpected ARP inspection violations could indicate an active attack.
 
+\`show ip arp inspection statistics vlan 20\` gives per-VLAN counters for forwarded, dropped, and each class of failed validation. A steadily climbing DHCP drop count on one access port is usually a home router someone plugged in backwards, with its LAN side facing the network. A burst of ARP drops naming several IP addresses from one port is the shape of an actual poisoning attempt, because a tool sweeping the subnet claims many addresses in quick succession rather than one.
+
 These features are lightweight and should be standard configuration on access layer switches in any environment where you do not fully trust every connected device.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc826
+- https://www.rfc-editor.org/rfc/rfc2131
+- https://www.rfc-editor.org/rfc/rfc3046
+- https://www.rfc-editor.org/rfc/rfc7513
+- https://en.wikipedia.org/wiki/ARP_spoofing
+- https://en.wikipedia.org/wiki/DHCP_snooping
 `,
   },
   {

@@ -20,6 +20,7 @@ import { Marked } from "marked";
 // cleanly here. lib/blogPosts.ts cannot: it reaches for the bodies through
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
+const { pageTitle } = await import("../client/src/lib/pageTitle.ts");
 const { getTagPage } = await import("../client/src/lib/tagPages.ts");
 const { EXAMS } = await import("../client/src/lib/examObjectives.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
@@ -161,6 +162,7 @@ function buildPageHtml(base: string, meta: PageMeta): string {
 
   return html;
 }
+
 
 // ─── write helpers ────────────────────────────────────────────────────────────
 
@@ -364,7 +366,7 @@ ${JSON.stringify({
 </main>`;
 
   await writePage(`blog/${post.slug}`, base, {
-    title: `${post.title} | Max Doubin`,
+    title: pageTitle(post.title),
     description: post.excerpt,
     canonical: url,
     ogType: "article",
@@ -728,7 +730,7 @@ ${JSON.stringify({
   for (const [slug, name, description] of NCL_GUIDES) {
     const url = `${SITE_URL}/ncl/${slug}`;
     await writePage(`ncl/${slug}`, base, {
-      title: `${name} | NCL Guide | Max Doubin`,
+      title: pageTitle(`${name} | NCL Guide`),
       description,
       canonical: url,
       schema: `<script type="application/ld+json">
@@ -766,7 +768,7 @@ ${TOOLS.map(
   for (const tool of TOOLS) {
     const url = `${SITE_URL}/tools/${tool.slug}`;
     await writePage(`tools/${tool.slug}`, base, {
-      title: `${tool.name} | Max Doubin`,
+      title: pageTitle(tool.name),
       description: tool.blurb,
       canonical: url,
       schema: `<script type="application/ld+json">
@@ -826,7 +828,7 @@ ${JSON.stringify({
       )
       .join("\n");
     await writePage(`topics/${topic.tag}`, base, {
-      title: `${topic.title} | Max Doubin`,
+      title: pageTitle(topic.title),
       description: topic.description,
       canonical: url,
       schema: `<script type="application/ld+json">
@@ -893,6 +895,53 @@ ${TAG_PAGES.map(
 </main>`,
   });
 
+  // ── the simulator ──
+  // /game used to be served as the bare app shell, which meant a crawler read
+  // it as a duplicate of the home page: same title, same description, and a
+  // canonical pointing at "/". It is the most distinctive thing on this site
+  // and it was invisible. The canvas cannot be prerendered, but what the
+  // simulator actually models can be, and that is what a search is for.
+  await writePage("game", base, {
+    title: pageTitle("Hyperscale, a data center simulator"),
+    description:
+      "A browser data center simulator that models real power and cooling: 3.412142 BTU per hour per watt, 3516.85 watts to a cooling ton, and a PUE that rises with rack count. Build from 1 to 500 racks.",
+    canonical: `${SITE_URL}/game`,
+    rootContent: `
+<main>
+  <h1>Hyperscale, a data center simulator</h1>
+  <p>
+    A data center you build in a browser. Place racks, fill them with real
+    hardware, and watch the power and thermal budget respond. It runs on the
+    same equipment table published as an
+    <a href="${SITE_URL}/data">open dataset</a>, and on the same physics as
+    the <a href="${SITE_URL}/tools/rack-budget">rack budget tool</a>.
+  </p>
+  <h2>What it actually models</h2>
+  <ul>
+    <li>Heat load derived from IT load at 3.412142 BTU per hour per watt, which is a definition rather than an estimate.</li>
+    <li>Cooling capacity in tons, at 3516.85 watts per ton.</li>
+    <li>Facility PUE that rises with rack count, so efficiency is something you design for rather than a constant.</li>
+    <li>CRAH capacity, in-room losses, and a design ceiling on IT load, so a floor plan can run out of cooling before it runs out of space.</li>
+    <li>Rack units, port counts and indicative cost per device, so a build has a budget and a cable plan, not just a shape.</li>
+  </ul>
+  <h2>What it is not</h2>
+  <p>
+    It is a teaching model, not a design tool. The numbers behind it are
+    representative figures for a class of hardware, not vendor specifications
+    and not measurements taken from a real facility. The
+    <a href="${SITE_URL}/data">dataset page</a> says exactly where each figure
+    comes from.
+  </p>
+  <p>
+    It needs WebGL. If your browser or machine cannot run it, the
+    <a href="${SITE_URL}/tools/rack-budget">rack budget tool</a> does the same
+    power and cooling arithmetic with no 3D at all, and the
+    <a href="${SITE_URL}/blog">Field Notes archive</a> covers the underlying
+    infrastructure in writing.
+  </p>
+</main>`,
+  })
+
   // ── open dataset ──
   await writePage("data", base, {
     title: "Open rack hardware dataset | Max Doubin",
@@ -948,7 +997,7 @@ ${EXAMS.map(
         );
       });
       await writePage(`study/${exam.slug}/${domain.slug}`, base, {
-        title: `${domain.name} | ${exam.name} ${exam.code} | Max Doubin`,
+        title: pageTitle(`${domain.name} | ${exam.name} ${exam.code}`),
         description: `${domain.summary} Mapped to ${matched.length} posts and free tools covering ${exam.name} ${exam.code}.`,
         canonical: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
         rootContent: `

@@ -21,9 +21,19 @@
 # neither prerendered nor listed here, so adding a route without adding it in
 # one of those two places cannot ship a page that 404s at people.
 
-# The 3D simulator and its dashboards. Canvas-driven, nothing meaningful to
-# prerender, and deliberately kept out of the index.
-/game            /index.html   200
+# One site, one hostname.
+#
+# www.maxdoubin.com answers 200 today, so every page exists at two addresses.
+# The canonical tag points at the apex and Google usually works it out, but
+# "usually" costs crawl budget on a site trying to get 236 articles indexed.
+# An absolute source URL makes this a host-level redirect rather than a path
+# rule, and :splat carries the rest of the path across.
+https://www.maxdoubin.com/* https://maxdoubin.com/:splat 301
+
+# The simulator's internal dashboards. Canvas-driven, nothing meaningful to
+# prerender, and noindex in _headers so crawl budget goes to the writing.
+# /game itself IS prerendered now: it is one of the most distinctive things
+# here and deserves a real shot at ranking.
 /noc             /index.html   200
 /network         /index.html   200
 /floor           /index.html   200

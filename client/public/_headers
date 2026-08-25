@@ -153,3 +153,41 @@
 
 /legacy/*
   Cache-Control: public, max-age=0, must-revalidate
+
+# ---------------------------------------------------------------------------
+# Crawler directives.
+#
+# X-Robots-Tag is the only way to say noindex for a route with no prerendered
+# document of its own: these are served as the app shell, which carries the
+# home page's meta tags, so without this a crawler reads /noc as a duplicate
+# of the home page. robots.txt Disallow would be weaker, since a disallowed
+# URL with inbound links can still be listed by URL alone.
+#
+# None of the /* rules above set X-Robots-Tag, so nothing is joined here.
+# ---------------------------------------------------------------------------
+
+# The simulator's internal dashboards. No prose, no standalone value, and
+# indexing them spends crawl budget that belongs to the 236 articles.
+/noc
+  X-Robots-Tag: noindex, follow
+
+/network
+  X-Robots-Tag: noindex, follow
+
+/floor
+  X-Robots-Tag: noindex, follow
+
+/incidents
+  X-Robots-Tag: noindex, follow
+
+/build
+  X-Robots-Tag: noindex, follow
+
+# The pre-redesign site. Nothing on the current site links to it, and its
+# pages duplicate /blog, /projects and /contact. Kept reachable for old
+# inbound links, kept out of the index so it cannot compete with the real one.
+/legacy
+  X-Robots-Tag: noindex, follow
+
+/legacy/*
+  X-Robots-Tag: noindex, follow

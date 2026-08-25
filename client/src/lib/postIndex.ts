@@ -2197,7 +2197,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Link aggregation combines multiple physical links into a single logical link. Here is how LACP works and how to configure it correctly.",
     coverImage: "/images/blog/lacp-link-aggregation.jpg",
     coverCredit: {"author":"JITHIN","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Network-bonding-2.png"},
-    wordCount: 266,
+    wordCount: 1582,
   },
   {
     slug: "enterprise-wifi-vs-consumer",
@@ -2217,7 +2217,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "DHCP snooping and DAI are essential Layer 2 security features that prevent common attacks on switched networks. Here is how to configure them.",
     coverImage: "/images/blog/dhcp-snooping-arp-inspection.jpg",
     coverCredit: {"author":"Dsimic","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:19-inch_rackmount_Ethernet_switches_and_patch_panels.jpg"},
-    wordCount: 308,
+    wordCount: 1460,
   },
   {
     slug: "prometheus-server-monitoring",
