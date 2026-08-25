@@ -92,4 +92,4 @@ Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell fi
 - https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.22.0.pdf
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 - https://man.archlinux.org/man/ipmitool.1
-- https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-193.pdf
+- https://csrc.nist.gov/pubs/sp/800/193/final

@@ -66,7 +66,7 @@ Finally, verify from inside the zone rather than from the rule table. Put a lapt
 
 - https://en.wikipedia.org/wiki/DMZ_(computing)
 - https://en.wikipedia.org/wiki/Screened_subnet
-- https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-41r1.pdf
+- https://csrc.nist.gov/pubs/sp/800/41/r1/final
 - https://csrc.nist.gov/pubs/sp/800/207/final
 - https://www.rfc-editor.org/rfc/rfc1918
 - https://www.rfc-editor.org/rfc/rfc2827

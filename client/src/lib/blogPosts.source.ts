@@ -17279,11 +17279,54 @@ function Rack3D({ rack, position, isSelected, onSelect }) {
 }
 \`\`\`
 
+The important thing in that snippet is what it does not do. The hover animation writes directly to \`groupRef.current.position.y\` instead of calling \`setState\`. Calling \`setState\` inside \`useFrame\` triggers a React reconciliation on every frame, and at 60 fps you have a 16.67 millisecond budget for everything: animation, physics, and the actual draw. React's diffing is fast, but not "run it sixty times a second across a scene graph of a thousand nodes" fast. The rule I follow is that anything changing every frame is a ref mutation, and anything changing when a user does something is state.
+
+## The Bug in That Lerp
+
+That code has a subtle defect I did not notice for weeks, and almost every Three.js tutorial contains it.
+
+\`lerp(current, target, 0.15)\` moves 15 percent of the remaining distance per *frame*. On a 60 Hz display the rack settles in about a fifth of a second. On a 144 Hz monitor it settles more than twice as fast, and on a laptop dropping to 30 fps it crawls. The animation speed is a function of the user's refresh rate, which is not a thing you want in your physics.
+
+\`useFrame\` hands you the delta time in seconds for exactly this reason. The frame-rate independent form of an exponential ease is:
+
+\`\`\`typescript
+useFrame((_, delta) => {
+  if (!groupRef.current) return;
+  const targetY = hovered || isSelected ? 0.05 : 0;
+  const t = 1 - Math.pow(1 - 0.15, delta * 60);  // 0.15 per 60fps frame
+  groupRef.current.position.y = THREE.MathUtils.lerp(
+    groupRef.current.position.y, targetY, t
+  );
+});
+\`\`\`
+
+One more \`useFrame\` rule: never allocate inside it. A \`new THREE.Vector3()\` in a callback that runs sixty times a second across two hundred components is 12,000 objects per second handed to the garbage collector, and the symptom is a periodic frame hitch rather than a steady slowdown. Hoist scratch vectors to module scope and reuse them.
+
+## Draw Calls Are the Budget
+
+The first version of this project rendered every 1U device as its own mesh. Twenty racks of 42U each is 840 meshes before you add rack frames, PDUs, cable runs, and floor tiles. Each unique geometry and material pair is a separate draw call, each draw call is a round trip to the GPU driver, and a browser starts visibly stuttering in the low thousands. The scene looked fine and ran at 20 fps.
+
+The fix is \`THREE.InstancedMesh\`. One geometry, one material, N transform matrices, one draw call. Every 1U server chassis in the room is the same box, so they all become instances, and per-unit variation lives in an instance color attribute rather than a separate material. Going from a mesh per device to an instanced mesh per device *type* took the scene from hundreds of draw calls to a handful.
+
+Selection needs care once you do this, because instances are not scene graph objects and do not raycast individually. Three's \`Raycaster\` also tests every object you hand it, so pointer events over a dense scene get expensive fast. The approach that worked was two-stage: raycast against one invisible bounding box per rack, and only when that hits, resolve which U slot the intersection point falls into with arithmetic. That turns a thousand intersection tests into twenty.
+
 ## Procedural Generation
 
 The most interesting challenge was procedural generation. Each rack needs realistic equipment (servers, switches, storage arrays) placed in valid U-slots with realistic power and thermal profiles.
 
 I used seeded randomization so the same seed always produces the same datacenter layout. The scene is deterministic but still feels organic and varied.
+
+Getting there required writing my own generator, because JavaScript's \`Math.random()\` cannot be seeded. The specification leaves the algorithm implementation-defined and exposes no seed parameter, so "same seed, same layout" is impossible with the built-in. Any small pure-function PRNG solves it. A 32-bit xorshift or mulberry32 is about six lines, produces the same sequence in every browser, and gives you a property that turns out to matter more than determinism itself: a layout becomes a short string you can put in a URL.
+
+The constraint solver on top is the part that makes the output look real rather than random. Equipment has a height in U and cannot straddle another device, heavy storage arrays belong low in the rack, switches belong at the top or in the middle where cable runs are shortest, and the total draw of a rack cannot exceed its circuit. Random placement without those rules produces layouts that are obviously wrong to anyone who has racked hardware.
+
+## Rack Geometry Has Real Numbers
+
+If the U grid is not exact, nothing lines up and every rack looks subtly wrong. The standard numbers are worth hardcoding correctly once.
+
+A rack unit is exactly 1.75 inches, which is 44.45 mm. The 19 inches in "19-inch rack" is the width of the mounting flanges, 482.6 mm, and the usable equipment width is narrower at about 450 mm. Mounting holes within each U repeat in a 0.5 in, 0.625 in, 0.625 in pattern rather than being evenly spaced, which is why a badly measured rack rail is off by a few millimeters and will not seat. A full-height 42U rack gives 73.5 inches, or 1867 mm, of usable vertical space.
+
+Build everything as a multiple of 44.45 mm and a 2U server is exactly 88.9 mm, with no fudge factors.
 
 ## Thermal Simulation
 
@@ -17291,9 +17334,40 @@ Every piece of equipment generates heat based on its power draw. Racks accumulat
 
 This ties directly into real datacenter concepts like hot aisle/cold aisle containment and cooling capacity planning.
 
+The model is a bulk energy balance: every watt drawn by IT equipment becomes a watt of heat, so a rack's heat output is its power draw. From there the airflow needed to carry that heat away at a given temperature rise falls out of the specific heat of air. Air is about 1.005 kJ per kg per kelvin at room temperature and about 1.2 kg per cubic meter at sea level, so roughly 1206 joules per cubic meter per kelvin. A 5 kW rack with an 11 K rise across it needs 5000 / (1206 * 11) = 0.38 cubic meters per second, which is about 800 CFM.
+
+The target range comes from the ASHRAE recommended envelope for datacenter inlet air, 18 to 27 degrees Celsius, so a rack whose modelled inlet climbs past 27 turns orange and one past 32 turns red.
+
+Blanking panels earn their place in the model too. An empty U with no panel is a hole between the hot aisle and the cold aisle, and exhaust air recirculates straight back to the inlet of the device above it. In the simulation, unblanked slots add a recirculation term to the rack's inlet temperature, which is the fastest way I know to make the point that the cheapest cooling upgrade in most rooms costs about two dollars a slot.
+
+## Power Is the Other Constraint
+
+Racks fill up on amps long before they fill up on U. A 30 A 208 V single-phase circuit is 6.24 kVA nameplate, but the continuous-load rule in the National Electrical Code means you size a circuit at 125 percent of a continuous load, so you plan against 80 percent of the breaker: 4.99 kVA usable. Twenty 250 W servers reach that before the rack is half full.
+
+The simulation tracks per-PDU load against that derated limit and refuses placements that exceed it, and it computes a rough PUE, the ratio of total facility energy to IT equipment energy. A perfect facility is 1.0, meaning every watt goes to compute. Typical enterprise rooms land well above that, and the gap is cooling.
+
+## What the Simulation Cannot Do
+
+This is not computational fluid dynamics, and it would be dishonest to imply otherwise. A bulk energy balance with a per-rack mixing term assumes air goes where the arrows say. Real airflow does not. It recirculates over the top of a short row, bypasses through gaps in a containment aisle, and forms pressure differences under a raised floor that starve the tiles at the end of a run. Predicting any of that requires meshing the room and solving Navier-Stokes, which is hours of compute in a real CFD package.
+
+The model is also steady-state. Real rooms have thermal mass, so a cooling failure gives you minutes of ride-through, not instant redline, and that ride-through window is exactly the number an operator wants during an outage. It ignores humidity, and it ignores altitude, where thinner air means the same CFM removes less heat and server vendors publish derating curves above roughly 900 meters.
+
+So the honest description is that this is a tool for layout, capacity arithmetic, and intuition. It will tell you that you cannot fit 12 kW in a rack fed by a 30 A circuit, and it will show you what a row looks like with the aisles reversed. It will not tell you your containment design is sound. Nothing that runs at 60 fps in a browser will.
+
 ## What I Learned
 
 Building this project taught me a lot about the relationship between software and physical infrastructure. Datacenter design is not just about putting servers in a room. It is about airflow, power distribution, redundancy, and monitoring. Translating those real constraints into a simulation forced me to understand them deeply.
+
+The specific thing simulation forces on you is precision. You cannot write "racks get hot" in code. You have to decide how hot, from what, in what units, and then watch the result be visibly wrong until the physics is right.
+
+## References
+
+- https://threejs.org/docs/index.html#api/en/objects/InstancedMesh
+- https://r3f.docs.pmnd.rs/getting-started/introduction
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+- https://en.wikipedia.org/wiki/Rack_unit
+- https://en.wikipedia.org/wiki/Power_usage_effectiveness
+- https://en.wikipedia.org/wiki/Table_of_specific_heat_capacities
 `,
   },
   {
@@ -17473,6 +17547,10 @@ The change log is the part people skip and the part that pays off most. When som
 
 The National Cyber League is not about memorizing textbook definitions. It tests practical skills across categories like network traffic analysis, log investigation, scanning and reconnaissance, password cracking, web application security, and cryptography. Every challenge requires you to actually do the work, not just know the theory.
 
+The season has a shape worth knowing before you sign up. There is a Gymnasium for untimed practice, a Preseason Game that calibrates you into a bracket, then the Individual Game and the Team Game. Everything runs on the Cyber Skyline platform, and afterward you get a Scouting Report that breaks your performance down by category with both a completion percentage and an accuracy percentage. Those are two different numbers on purpose. Accuracy is what exposes guessing.
+
+The published category list covers Open Source Intelligence, Cryptography, Password Cracking, Log Analysis, Network Traffic Analysis, Forensics, Scanning and Reconnaissance, Web Application Exploitation, and Enumeration and Exploitation. Nobody is strong in all nine. Knowing which two you are weakest in is more useful than a general study plan.
+
 ## How I Approach Challenges
 
 My process for each challenge follows a consistent pattern:
@@ -17482,6 +17560,8 @@ My process for each challenge follows a consistent pattern:
 3. **Work methodically.** Try the most likely explanation first, verify it, and move on.
 4. **Document what you find.** Even during a timed competition, noting your process helps you avoid repeating dead ends.
 
+Step one carries more weight than it looks. The answer format is usually specified in the last sentence of the prompt, and it is specified because it matters. Uppercase or lowercase hex. With or without the \`flag{}\` wrapper. The count as a bare integer or spelled out. A correct answer in the wrong format scores zero, and since accuracy is reported separately from completion, a burst of format guesses shows up permanently in your report.
+
 ## Tools I Use Most
 
 - **Wireshark** for packet analysis challenges. Understanding TCP flows, DNS queries, and HTTP headers at the packet level is essential.
@@ -17489,11 +17569,77 @@ My process for each challenge follows a consistent pattern:
 - **Python** for quick scripting when a challenge requires processing data or automating repetitive tasks.
 - **Linux command line** for log analysis, file manipulation, and general problem solving.
 
+## Wireshark Has Two Filter Languages
+
+This is the beginner trap that costs the most time, and it is worth stating plainly: Wireshark has two completely separate filter syntaxes and they are not interchangeable.
+
+Capture filters use BPF syntax and are set before you start capturing: \`tcp port 80\`, \`host 10.0.0.1\`, \`net 192.168.1.0/24\`. Display filters use Wireshark's own syntax and are typed into the bar above the packet list: \`tcp.port == 80\`, \`ip.addr == 10.0.0.1\`, \`http.request.method == "POST"\`. Type a capture filter into the display bar and the bar turns red, which at least tells you something is wrong.
+
+The worse case is when the bar turns yellow. That is Wireshark warning that your filter is valid but probably not what you meant, and the classic example is \`ip.addr != 10.0.0.5\`. A packet has two address fields, so that expression is true whenever *either* address differs, which is nearly every packet including the ones you were trying to exclude. The correct form is \`!(ip.addr == 10.0.0.5)\`. Yellow bar means read your filter again.
+
+Three menu items solve most capture challenges faster than any filter. Statistics then Protocol Hierarchy shows you what is actually in the file in one screen. Statistics then Conversations sorted by bytes finds the interesting flow immediately. And File then Export Objects then HTTP pulls every transferred file out of the capture as an actual file, which beats hand-carving bytes out of the hex pane. Right-clicking a packet and choosing Follow then TCP Stream sets \`tcp.stream eq N\` for you and shows the reassembled conversation.
+
+For anything repetitive, drop to the command line version:
+
+\`\`\`bash
+tshark -r capture.pcapng -Y 'http.request' \\
+  -T fields -e ip.src -e http.host -e http.request.uri
+\`\`\`
+
+## Nmap Defaults Are Not What You Assume
+
+Four defaults account for most misread scans.
+
+Nmap does not scan all 65,535 ports. It scans the top 1,000 most common TCP ports from its \`nmap-services\` frequency data. If the challenge hid a service on a high port, you need \`-p-\` and the patience that comes with it.
+
+Nmap does not scan UDP unless you ask with \`-sU\`, and UDP scanning is genuinely slow for a structural reason: an open-or-filtered determination depends on ICMP port unreachable replies, and Linux rate limits those to roughly one per second by default. A full 65,535 port UDP sweep against a Linux host can take more than 18 hours. Scan the UDP ports you care about, not all of them.
+
+Nmap picks its scan type based on privilege. As root you get \`-sS\`, a raw-socket SYN scan. Unprivileged, it silently falls back to \`-sT\`, a full connect scan that is slower and much noisier in the target's logs.
+
+Finally, if host discovery fails, the host is reported down and never scanned at all. A firewall that drops ICMP produces "Note: Host seems down" on a machine that is running fine. \`-Pn\` skips discovery and scans anyway. When a scan comes back suspiciously empty, \`-Pn\` is the first thing to try.
+
+## Read the Hash Before You Crack It
+
+Password cracking challenges are half identification. The prefix tells you almost everything: \`$1$\` is md5crypt, \`$5$\` is sha256crypt, \`$6$\` is sha512crypt, \`$2a$\` or \`$2b$\` or \`$2y$\` is bcrypt, and a bare 32 hex characters is probably MD5 while 32 hex characters in a Windows context is probably NTLM.
+
+That identification picks the hashcat mode, and the mode numbers are in hashcat's example hashes table: \`-m 0\` for MD5, \`-m 100\` for SHA1, \`-m 1000\` for NTLM, \`-m 1800\` for sha512crypt, \`-m 3200\` for bcrypt, \`-m 22000\` for WPA. Getting the mode wrong means hashcat runs happily and finds nothing.
+
+It also tells you whether the challenge is winnable in the time available. MD5 and NTLM are unsalted and fast, and a modern GPU does them in the billions per second. bcrypt is deliberately slow, with a work factor baked into the hash, and the same GPU manages tens of thousands per second. That is six orders of magnitude. A bcrypt challenge is never a brute force challenge. It is a hint that the password is in \`rockyou.txt\`, which holds roughly 14 million real passwords, or that it is reachable with a small rule set like \`best64.rule\` applied to a targeted wordlist.
+
+For encoding puzzles, learn to recognize formats on sight. Base64 output is a multiple of four characters and may end in \`=\` padding. A base64 string starting \`eyJ\` is almost always a JSON Web Token, because the bytes \`{"a\` encode to exactly \`eyJh\`. CyberChef handles the long tail of encodings faster than writing a script, and its Magic operation will often identify the chain for you.
+
+## The Mistakes That Cost Me Points
+
+Starting with the hardest challenge because it is worth the most, and finishing the game with three easy ones untouched. Sort by points per minute, not by points.
+
+Not saving intermediate output. You extract a file from a capture, close the tab, and forty minutes later need it again.
+
+Trusting a timestamp without checking its timezone. Log analysis questions about ordering and correlation are frequently timezone questions wearing a disguise.
+
+Skipping the obvious command. A surprising number of forensics challenges are answered by \`file\`, \`strings\`, and \`exiftool\` before anything clever is required.
+
 ## What Competitions Teach You
 
 The ranking is nice, but the real value is in the habits you build. Competitions force you to stay calm under pressure, verify your work, and think logically when nothing is working the way you expect.
 
 Those habits translate directly to real-world troubleshooting. When a network goes down at 2 AM, the person who stays methodical and follows evidence is the one who finds the problem.
+
+## What Competitions Do Not Teach
+
+Every CTF challenge is solvable by construction. Someone built it, tested it, and confirmed there is an answer. That single fact makes competition problems fundamentally unlike production problems, where the answer is sometimes "the vendor shipped a bug" and sometimes there is no clean answer at all. Competitions train you to keep pushing because the flag exists. Operations also requires knowing when to stop pushing and escalate.
+
+They also teach nothing about the parts of the job that happen over months: change management, capacity planning, keeping a system healthy when nobody is looking, and writing down what you did so the next person can follow it.
+
+The habit that is actively dangerous to carry out of a competition is scope. In a CTF you attack anything you can reach and destructive testing costs nothing. On a real network, scanning a host you were not authorized to scan is at best a policy violation and can be a crime depending on where you live. The rule is simple and it does not bend: written authorization, defined scope, in that order, every time. The technical skills transfer directly. The permission model does not transfer at all.
+
+## References
+
+- https://nationalcyberleague.org/
+- https://cyberskyline.com/
+- https://nmap.org/book/man.html
+- https://www.wireshark.org/docs/wsug_html_chunked/
+- https://hashcat.net/wiki/doku.php?id=example_hashes
+- https://gchq.github.io/CyberChef/
 `,
   },
   {
@@ -20224,6 +20370,8 @@ The ideal setup, which is what I have, is both. My Mac Pro has a Mellanox 10GbE 
 
 Cisco is still the most widely deployed networking vendor in enterprise environments. Learning Cisco CLI, IOS configuration, and Cisco-specific features is directly transferable to real-world jobs. I run Cisco switches in my lab for exactly this reason.
 
+Keep track of which parts are standards and which are Cisco's. 802.1Q trunking, LACP, and MSTP are standards any vendor speaks. DTP, VTP, PAgP, PVST+, and CDP are Cisco's own. Both are worth knowing, but in a mixed-vendor network the proprietary half quietly stops working, and it is easier to learn the distinction now than during a migration.
+
 ## The CLI
 
 Cisco IOS uses a hierarchical CLI with different privilege levels. You start in user EXEC mode, move to privileged EXEC mode with \`enable\`, and enter configuration mode with \`configure terminal\`. Every configuration change happens in this global configuration mode or a sub-mode.
@@ -20237,11 +20385,25 @@ LabSwitch(config)# exit
 
 The CLI is text-based and powerful. Once you learn the command structure, configuration is fast and repeatable.
 
+The detail that surprises people coming from other systems is that there is no commit step. Every line takes effect the instant you press enter, on the live device, with no confirmation and no staging. That is why \`reload in 10\` before a risky change is not paranoia.
+
+Underneath all of it, a switch does one simple job: learn which MAC address lives behind which port and forward frames accordingly. Entries age out after 300 seconds of silence by default, which explains a class of "it works after I ping it" behaviour. \`show mac address-table\` is the first command to reach for when a host cannot be found.
+
 ## Spanning Tree Protocol
 
 STP prevents loops in switched networks. Without STP, a single cable plugged into two ports on the same switch would create a broadcast storm that takes down the entire network. I have seen it happen in lab environments, and it is not subtle. The network goes from working to completely dead in seconds.
 
 Understanding STP means knowing which switch is the root bridge, how path costs determine which ports forward and which ports block, and how convergence works when the topology changes.
+
+A loop is catastrophic rather than merely inefficient because Ethernet frames have no TTL field. An IP packet caught in a routing loop dies after 64 hops. A broadcast frame caught in a switching loop circulates forever, gets duplicated at every switch, and saturates every link in the layer 2 domain within seconds.
+
+Root bridge election uses the bridge ID: a 4-bit priority field, a 12-bit VLAN identifier, then the switch's MAC address. The default priority is 32768 everywhere and is only configurable in multiples of 4096, so when every switch shares the default the tiebreaker becomes the lowest MAC address, which usually means the oldest switch in the building wins. That is how a wiring-closet access switch ends up as root for a network whose core is two floors away. Set \`spanning-tree vlan 1-4094 root primary\` on your core and \`root secondary\` on the backup, on day one.
+
+The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbour waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardised as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbour instead of waiting on timers. If you find a switch running plain PVST+, \`spanning-tree mode rapid-pvst\` is one of the highest-value single lines in the config.
+
+Path cost is the other half. In the default short mode the costs are 100 for 10 Mbps, 19 for 100 Mbps, 4 for 1 Gbps, and 2 for 10 Gbps. Notice how little separates 1 G from 10 G, and that anything faster has nowhere left to go. With 25 G or 40 G links, turn on \`spanning-tree pathcost method long\` so the 32-bit values apply and faster links actually win.
+
+Two protections belong on every access port. \`spanning-tree portfast\` skips listening and learning so a workstation gets a link immediately, and \`spanning-tree bpduguard enable\` shuts the port down if a BPDU ever arrives on it. They go together: PortFast without BPDU Guard means that if somebody plugs a switch into a desk port, it forwards straight into a loop.
 
 ## Port Security
 
@@ -20253,15 +20415,53 @@ LabSwitch(config-if)# switchport port-security maximum 2
 LabSwitch(config-if)# switchport port-security violation restrict
 \`\`\`
 
+Know the defaults before you enable it. The default maximum is 1, the default violation action is \`shutdown\`, and learned addresses never age out. Turning port security on with no other options therefore means the first device to send a frame owns that port until somebody intervenes.
+
+The three violation modes differ in ways that matter. \`protect\` silently drops frames from unknown MACs, which is the worst option because nothing is logged and you will never diagnose it. \`restrict\` drops them, increments a counter, and generates a syslog message. \`shutdown\` puts the port into the err-disabled state, which is a real outage requiring a manual \`shutdown\` followed by \`no shutdown\`, unless you have configured automatic recovery:
+
+\`\`\`
+LabSwitch(config)# errdisable recovery cause psecure-violation
+LabSwitch(config)# errdisable recovery interval 300
+\`\`\`
+
+The classic deployment mistake is an IP phone with a PC in its passthrough port. That is two MAC addresses, and the phone's own traffic sits on the voice VLAN, so the naive \`maximum 2\` is often not enough and the port err-disables during the first call. Count MAC addresses per VLAN, not per port, and test with real hardware before rolling it out to a floor.
+
+Be honest about what this buys you. A MAC address takes three seconds to change with \`ip link set dev eth0 address\`, so port security stops the intern who plugged a rogue switch into the wrong jack and does not stop anyone who is actually trying. Its more useful role is capping how many addresses a port can learn, which limits CAM table flooding, where a tool like macof fills the MAC table until the switch fails open and floods unknown unicast everywhere, turning it into a hub with a packet capture attached. For real access control the answer is 802.1X.
+
 ## EtherChannel
 
 EtherChannel bundles multiple physical links into a single logical link. This provides both increased bandwidth and redundancy. If one physical link fails, the EtherChannel continues working on the remaining links.
 
 I use LACP (Link Aggregation Control Protocol) EtherChannels between my switches to provide 2 Gbps aggregated links with automatic failover.
 
+Say the quiet part out loud, because it is the most misunderstood thing in switching: **two bonded gigabit links do not give any single transfer 2 Gbps.** Load balancing is a hash over frame headers, computed per flow so packets in a conversation never arrive out of order. A single TCP session lands on one member and is capped at that link's speed. Bundles help when there are many conversations and do nothing for one large file copy. Check the hash with \`show etherchannel load-balance\`, because a default of source MAC alone puts every flow from one router on the same member.
+
+Bundles form with LACP (\`active\` and \`passive\`), Cisco's PAgP (\`desirable\` and \`auto\`), or statically with mode \`on\`. Two rules follow. Passive on both ends never forms a bundle because nobody starts the negotiation, so put at least one end in \`active\`. And mode \`on\` skips negotiation entirely, so a miscabled or one-sided configuration produces a forwarding loop instead of a clean failure, which is exactly what LACP exists to catch.
+
+Every member port must match on speed, duplex, trunk or access mode, allowed VLAN list, and native VLAN. Any mismatch and the port is suspended rather than bundled. \`show etherchannel summary\` tells you which: \`(P)\` is bundled, \`(s)\` is suspended, \`(I)\` went individual, and either of the last two on a link you believe is up means go and diff the interface configs.
+
+## Three Failures Worth Knowing Before They Happen
+
+**A desk port negotiates itself into a trunk.** DTP runs by default on many Catalyst ports, in \`dynamic auto\` or \`dynamic desirable\`, so the port will happily form an 802.1Q trunk with whatever asks. A laptop speaking DTP can therefore turn an access port into a trunk and reach every VLAN. The related trick is double tagging, where the first switch strips a frame's outer tag and delivers it into a second VLAN, which works when the attacker's access VLAN is also the trunk's native VLAN. Three lines close both: \`switchport mode access\` on user ports, \`switchport nonegotiate\`, and a native VLAN on trunks that carries no traffic.
+
+**VTP wipes your VLANs.** VTP propagates the VLAN database across a domain and resolves conflicts by configuration revision number, with the highest number winning. Take a lab switch that has been a VTP server through two hundred edits, plug it into the production domain sitting at revision fifty, and the lab switch's empty VLAN database is now everyone's VLAN database. This has taken down real networks. Run VTP transparent mode, where the revision is always zero and the switch keeps its own VLANs, or VTP version 3 which requires an explicitly designated primary server. Before plugging any used switch into a live network, check \`show vtp status\`.
+
+**Duplex mismatch.** If one side is hardcoded to \`speed 1000 duplex full\` and the other is left on autonegotiation, the auto side cannot detect duplex and falls back to half. The link comes up, pings succeed, and throughput collapses under load. The fingerprint is late collisions on the half-duplex side and FCS errors or runts on the other, both visible in \`show interfaces\`. Either autonegotiate on both ends or hardcode both ends, never one of each.
+
 ## Saving Configuration
 
 One of the most common mistakes on Cisco switches is forgetting to save the configuration. The running configuration is in memory and will be lost if the switch reboots. Always save with \`copy running-config startup-config\` or the shorthand \`write memory\`.
+
+The mirror-image mistake is saving too early. Before any remote change touching an interface, an ACL, or a management VLAN, type \`reload in 10\`. If the change locks you out, the switch reboots in ten minutes into the last saved configuration and you get access back. If it works, \`reload cancel\`, then save. Cisco's archive feature is the fuller version: \`archive\` with a \`path\` takes automatic snapshots, and \`configure replace\` rolls back to one atomically instead of making you reverse each command by hand.
+
+## References
+
+- https://en.wikipedia.org/wiki/Cisco_IOS
+- https://www.cisco.com/c/en/us/support/docs/lan-switching/spanning-tree-protocol/5234-5.html
+- https://en.wikipedia.org/wiki/IEEE_802.1AX
+- https://en.wikipedia.org/wiki/VLAN_Trunking_Protocol
+- https://en.wikipedia.org/wiki/VLAN_hopping
+- https://en.wikipedia.org/wiki/MAC_flooding
 `,
   },
   {
@@ -22889,19 +23089,19 @@ BGP (Border Gateway Protocol) is the routing protocol that connects autonomous s
 
 If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
 
-The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behaviour. First, it runs over TCP on port 179, which means it inherits TCP's reliability and its slowness: peers must be able to reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol. It does not build a map of the network the way OSPF does. Each speaker advertises the paths it has chosen to use, along with the list of autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
+The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behaviour. First, it runs over TCP on port 179, so peers must already reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol: it builds no map of the network the way OSPF does. Each speaker advertises the paths it has chosen, along with the autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
 
 ## Key Concepts
 
 **Autonomous Systems (AS):** Every network that participates in BGP has an AS number (ASN). This is how BGP identifies routing domains. Large ISPs, cloud providers, and universities all have their own ASNs.
 
-ASNs were originally 16 bits, giving 0 through 65535, and that space ran out. RFC 6793 extended them to 32 bits. For labs and for internal use, RFC 6996 reserves 64512 through 65534 in the 16-bit range and 4200000000 through 4294967294 in the 32-bit range as private, which is what the configuration below uses.
+ASNs were originally 16 bits, giving 0 through 65535, and that space ran out. RFC 6793 extended them to 32 bits. For labs and internal use, RFC 6996 reserves 64512 through 65534 as private, which is what the configuration below uses.
 
 **eBGP vs iBGP:** External BGP (eBGP) runs between different autonomous systems. Internal BGP (iBGP) runs within the same AS, typically to distribute routes learned from eBGP peers throughout the network.
 
-The difference is not cosmetic and it is where most beginners lose a weekend. Because AS_PATH does not change inside an AS, iBGP cannot use it for loop prevention, so the rule is: **a route learned from one iBGP peer is never advertised to another iBGP peer.** That is why classic iBGP needs a full mesh, and why the session count grows as n(n-1)/2, which is 45 sessions for ten routers. Route reflectors (RFC 4456) and confederations (RFC 5065) exist to break that scaling wall.
+The difference is not cosmetic and it is where most beginners lose a weekend. Because AS_PATH does not change inside an AS, iBGP cannot use it for loop prevention, so the rule is: **a route learned from one iBGP peer is never advertised to another iBGP peer.** That is why classic iBGP needs a full mesh, and why session count grows as n(n-1)/2, or 45 sessions for ten routers. Route reflectors (RFC 4456) and confederations (RFC 5065) break that scaling wall.
 
-The second iBGP trap is the next hop. When a route learned over eBGP is passed to iBGP peers, the next-hop attribute stays as the external peer's address, which your interior routers usually have no route to. The route appears in the table marked inaccessible and nothing works. The fix is one line, \`neighbor x.x.x.x next-hop-self\`, and remembering it separates people who have run BGP from people who have read about it.
+The second iBGP trap is the next hop. A route learned over eBGP keeps the external peer's address as its next hop when passed to iBGP peers, and your interior routers usually have no route to it. The prefix shows up in the table marked inaccessible and nothing works. The fix is one line, \`neighbor x.x.x.x next-hop-self\`.
 
 **BGP Attributes:** BGP uses path attributes to make routing decisions. The most important ones are:
 - **AS Path:** The list of AS numbers a route has traversed. Shorter is generally preferred.
@@ -22911,9 +23111,9 @@ The second iBGP trap is the next hop. When a route learned over eBGP is passed t
 
 Those attributes are consulted in a fixed order, and knowing that order is the difference between predicting what BGP will do and guessing. On Cisco the sequence is: highest weight (a Cisco-only local value, default 32768 for routes you originate), then highest local preference (default 100), then locally originated routes, then shortest AS path, then lowest origin type, then lowest MED, then eBGP over iBGP, then lowest IGP metric to the next hop, and finally tiebreakers on age, router ID, and peer address. Notice that AS path is fourth. Local preference beats it every time, which is exactly why local preference is the knob you use to steer outbound traffic.
 
-Steering inbound traffic is much harder, and this is the honest limitation nobody tells you up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbour that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times to make a path look longer, and it works only in the crude sense that other people's routers are also running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look less attractive and hope.
+Steering inbound traffic is much harder, and this is the honest limitation nobody mentions up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbour that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times so the path looks longer to everyone else running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look worse and hope.
 
-Two more attributes matter in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as \`ASN:value\`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviours like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit. And **next hop** deserves repeating: on eBGP it is rewritten to the advertising router, on iBGP it is not.
+One more attribute matters in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as \`ASN:value\`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviours like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit.
 
 ## Basic Configuration
 
@@ -22924,25 +23124,25 @@ router bgp 65001
   network 10.0.0.0 mask 255.255.255.0
 \`\`\`
 
-Read that \`network\` statement carefully, because it does not do what it looks like. It does not advertise a range you would like to announce; it says "if an exactly matching route for 10.0.0.0/24 is already in the routing table, put it into BGP". Get the mask wrong by one bit, or have no matching route because nothing is up yet, and BGP silently announces nothing. The standard trick is a static route to Null0 for the aggregate so the prefix always exists.
+Read that \`network\` statement carefully, because it does not do what it looks like. It does not announce a range you would like to advertise; it says "if an exactly matching route for 10.0.0.0/24 is already in the routing table, put it into BGP". Get the mask wrong by one bit, or have no matching route yet, and BGP silently announces nothing. The standard trick is a static route to Null0 so the prefix always exists.
 
 ## Reading a Session That Will Not Come Up
 
 BGP's state machine has six states, and the useful thing is that each one points at a different layer. **Idle** means BGP is not even trying, usually because there is no route to the peer. **Connect** and **Active** are both TCP problems: Active in particular sounds positive and is not, it means the router keeps trying to open a TCP session and keeps failing, which is almost always a firewall blocking 179 or a wrong peer address. **OpenSent** and **OpenConfirm** mean TCP worked and the peers are arguing about parameters, so check for an AS number mismatch or an authentication mismatch. **Established** is the only good state.
 
-Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 default hold time is 180 seconds with keepalives every 60, and the negotiated hold time is the lower of the two peers' values. That means the default time to notice a dead peer whose link stayed up is three minutes, which is an eternity. Bidirectional Forwarding Detection (RFC 5880) is the standard answer, dropping detection into the sub-second range by running a lightweight hello outside BGP itself.
+Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 default hold time is 180 seconds with keepalives every 60, and peers negotiate down to the lower of their two values. So the default time to notice a dead peer whose link stayed up is three minutes. Bidirectional Forwarding Detection (RFC 5880) drops that into the sub-second range by running a lightweight hello outside BGP itself.
 
 ## What Actually Goes Wrong
 
 **The session is up and no routes appear.** On any implementation that follows RFC 8212, and FRR does by default, an eBGP peer with no configured import and export policy exchanges nothing at all. This is deliberate: the old default of announcing everything was how accidental leaks happened. If you have configured a peer and both sides show Established with zero prefixes, you are missing a route-map or a prefix-list, not a neighbor statement.
 
-**Somebody sends you the whole internet.** The global IPv4 table is now around a million prefixes. If a customer or a lab peer accidentally re-announces the full table to you, a software router runs out of memory and a hardware router runs out of FIB space, which is a much worse failure because forwarding breaks while the control plane looks healthy. This is not theoretical: in 2014 the table crossed 512,000 routes and knocked over a generation of Cisco 6500 and 7600 platforms whose TCAM was partitioned for exactly that many. Configure \`neighbor x maximum-prefix\` on every peer with a number appropriate to what that peer should send you, which for a single-homed customer is a handful.
+**Somebody sends you the whole internet.** The global IPv4 table is now around a million prefixes. If a customer or a lab peer re-announces the full table to you, a software router runs out of memory and a hardware router runs out of FIB space, which is the worse failure because forwarding breaks while the control plane looks healthy. In 2014 the table crossed 512,000 routes and knocked over a generation of Cisco 6500 and 7600 platforms whose TCAM was partitioned for exactly that many. Set \`neighbor x maximum-prefix\` on every peer, sized to what that peer should legitimately send.
 
-**A route leak.** Taking routes from one provider and announcing them to another turns you into a transit provider for traffic you cannot carry. RFC 7908 catalogues the shapes this takes, and the historical examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defence is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so that routers can detect the leak themselves rather than relying on everyone's filters being right.
+**A route leak.** Taking routes from one provider and announcing them to another makes you a transit provider for traffic you cannot carry. RFC 7908 catalogues the shapes this takes, and the examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defence is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so routers can spot the leak themselves rather than trusting everyone's filters.
 
-**Origin hijacking.** BGP has no built-in way to know whether an AS is entitled to announce a prefix. RPKI route origin validation (RFC 6811) is the deployed partial answer: prefix holders publish signed objects, and your router marks received routes Valid, Invalid, or NotFound so you can drop the Invalids. Be clear on what it does not cover. It validates the *origin* AS only, not the rest of the path, so an attacker who prepends the legitimate origin still passes. RFC 7454, published as BCP 194, is the practical checklist for all of this and is the single most useful document to read after RFC 4271.
+**Origin hijacking.** BGP has no built-in way to know whether an AS is entitled to announce a prefix. RPKI route origin validation (RFC 6811) is the deployed partial answer: prefix holders publish signed objects, and your router marks routes Valid, Invalid, or NotFound so you can drop the Invalids. It validates the *origin* AS only and not the rest of the path, so an attacker who prepends the legitimate origin still passes. RFC 7454, published as BCP 194, is the practical checklist and the most useful thing to read after RFC 4271.
 
-**Flapping and slow convergence.** BGP is deliberately not fast. Cisco's default minimum route advertisement interval is 30 seconds for eBGP, so a prefix that changes repeatedly is not re-announced immediately. Combined with a 180 second hold time, an unstable link can leave the internet with a stale view of your network for minutes. That damping is a feature at global scale and a nuisance in a lab, where it looks like your configuration did not take effect.
+**Slow convergence that looks like a broken config.** BGP is deliberately not fast. Cisco's default minimum route advertisement interval is 30 seconds for eBGP, so a prefix that changes repeatedly is not re-announced immediately. That damping is a feature at global scale and a nuisance in a lab, where it looks like your change did not take effect.
 
 ## Why It Matters in the Real World
 
@@ -22952,15 +23152,15 @@ It has also moved inside the data centre. RFC 7938 describes using eBGP as the o
 
 ## Where BGP Is The Wrong Tool
 
-BGP knows about reachability and policy. It knows nothing about latency, bandwidth, jitter, or load. AS path length counts networks crossed, not distance or speed, so a two-AS path over a congested transatlantic link beats a three-AS path over an idle domestic one every time. If your problem is "pick the fastest path right now", BGP will not solve it and you are looking for SD-WAN, a traffic engineering overlay, or performance-based routing that measures paths and manipulates BGP from outside.
+BGP knows about reachability and policy. It knows nothing about latency, bandwidth, jitter, or load. AS path length counts networks crossed, not distance or speed, so a two-AS path over a congested transatlantic link beats a three-AS path over an idle domestic one every time. If your problem is "pick the fastest path right now", the answer is SD-WAN or performance-based routing that measures paths and manipulates BGP from outside.
 
-Do not reach for it inside a small network either. In a campus or a small enterprise, OSPF converges in seconds where BGP takes minutes, and it needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organisations, or a fabric large enough that link-state flooding becomes the problem.
+Do not reach for it inside a small network either. In a campus, OSPF converges in seconds where BGP takes minutes and needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organisations, or a fabric large enough that link-state flooding becomes the problem.
 
 ## Where to Practice
 
 You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start with a simple two-AS topology, peer them, and watch the route tables populate. Then add filters and attributes to see how routing decisions change.
 
-Containerlab with FRR is the lightest way in now: a full multi-AS topology defined in a YAML file, running as containers on a laptop, coming up in seconds. Build the two-AS lab, break it deliberately, and learn to read \`show bgp summary\` and \`show bgp ipv4 unicast <prefix>\` until the best-path selection above stops being a list you memorised and starts being something you can see in the output.
+Containerlab with FRR is the lightest way in now: a multi-AS topology defined in a YAML file, running as containers on a laptop, up in seconds. Build the lab, break it deliberately, and read \`show bgp summary\` and \`show bgp ipv4 unicast <prefix>\` until best-path selection stops being a list you memorised and becomes something you can see in the output.
 
 ## References
 
@@ -23439,17 +23639,37 @@ Finally, polling samples state at intervals, so it misses transient events entir
 
 A server with a single power supply has a single point of failure. If that PSU fails, the server goes down. In a production environment, unplanned downtime is expensive. Redundant power supplies eliminate the PSU as a single point of failure.
 
+They are worth the money because power supplies are, statistically, among the parts most likely to fail. They contain the only electrolytic capacitors and the only fan in a component that spends its life converting mains AC into low-voltage DC while sitting in the hottest airflow path in the chassis. Capacitors dry out, fans seize, and both are wear-out failures rather than random ones, which means the risk rises the longer the server has been running.
+
 ## How Redundancy Works
 
 Enterprise servers typically support 1+1 or 2+1 redundancy. In a 1+1 configuration, two PSUs share the load equally. If one fails, the other takes the full load without interruption. The server keeps running. You get an alert, you replace the failed unit during business hours, and there is no outage.
 
 The PSUs connect to the server's power distribution board, which handles the load sharing and failover automatically. Modern enterprise PSUs support hot-swap, meaning you can remove the failed unit and install a replacement while the server is running.
 
+The load sharing is not literally a switchover. Both supplies are energised and each carries roughly half the current, so when one dies there is nothing to switch: the remaining unit simply sees its share double, and the bulk capacitance on the distribution board covers the microseconds while its regulation loop catches up. That is why the transition is invisible to the operating system.
+
+There is a subtlety in the word "redundant" that catches people. **Two power supplies are only redundant if one of them can carry the entire load on its own.** A server with two 495 W supplies drawing 600 W is not redundant, it is load-shared, and losing one drops the machine. Dell and HPE both report this: iDRAC will show the power supply state as "Redundancy Lost" or "Redundancy Degraded" rather than an outright fault, and that warning is easy to scroll past. Check it after any upgrade that adds GPUs, drives, or CPUs, because the configuration that was comfortably redundant last year may not be now.
+
+Related trap: do not mix wattages. A 750 W and a 1100 W unit in the same chassis will typically post an error and run the system in a non-redundant mode, because the firmware has no safe way to share load between supplies with different capabilities. Keep matched pairs, and keep a spare of the same part number.
+
+## The Efficiency Wrinkle
+
+Switching power supplies are not equally efficient at all loads. The 80 PLUS certification programme measures efficiency at 10, 20, 50, and 100 percent of rated load, and every tier peaks near the middle: an 80 PLUS Titanium unit in the internal redundant category is specified around 96 percent at half load but only around 90 percent at 10 percent load.
+
+That has a direct consequence for redundant pairs. Two supplies each carrying 25 percent of their rating are running further down the efficiency curve than one supply carrying 50 percent, so a redundant server is measurably less efficient than a single-supply one at the same workload. Vendors solve this with a hot spare mode, which Dell exposes in iDRAC, that puts one PSU into a low-power standby state and runs the other at a more efficient load point, waking the standby unit in milliseconds if the active one falters. It is worth enabling on a fleet and worth understanding before you enable it, because it trades a tiny amount of transition risk for a real reduction in your power bill.
+
 ## Connecting to Separate Circuits
 
 Redundant PSUs only provide real protection if they connect to independent power sources. In a data center, each PSU connects to a separate PDU on a separate circuit, ideally fed from separate UPS units and ultimately separate utility feeds.
 
 In a homelab, you can approximate this by running each PSU to a different outlet on a different circuit, ideally on different breakers. It is not full enterprise-grade redundancy, but it protects against a tripped breaker or a failed power strip.
+
+Here is the number that ruins A/B power designs: **in a true A/B rack, each side can only be loaded to 50 percent in steady state**, because when one side fails the other has to carry everything. Racks are routinely built with both PDUs at 70 or 80 percent, which looks efficient and works perfectly until an A-side maintenance window, at which point the B side inherits 160 percent of its capacity and trips its breaker. The failure of one feed then takes down the whole rack, which is the exact outcome the dual feed was purchased to prevent.
+
+Layer the branch circuit derating on top. The National Electrical Code treats anything running for three hours or more as a continuous load and requires the circuit to be sized at 125 percent of it, which in practice means never loading a circuit past 80 percent of its rating. A 20 A circuit at 120 V gives you 16 A usable, or 1920 W. The same 20 A at 208 V gives 3328 W, which is a large part of why racks are fed at higher voltages. Combine the two rules and a pair of 20 A 208 V feeds supports about 3300 W of rack load with real A/B redundancy, not 6600 W.
+
+Two more physical details. Server cords use IEC 60320 C13 and C14 connectors up to 10 A and C19 and C20 for higher current, and none of them lock by default. Use cords with retention clips or the vendor's cord locks, because the most common cause of an outage in a dual-corded server is a cord that worked loose in a rail slide, not a supply that failed. And plan for inrush: every PSU draws a large surge at power-on, so a whole rack restarting simultaneously after an outage can trip an upstream breaker. Servers have a BIOS setting for AC recovery behaviour, and staggering it across a rack rather than setting everything to power on immediately is worth the ten minutes it takes.
 
 ## Checking PSU Health
 
@@ -23460,9 +23680,40 @@ Dell iDRAC provides real-time PSU status, including input voltage, output power,
 racadm getsensorinfo | grep -i power
 \`\`\`
 
+On non-Dell hardware, or when you want one command that works across vendors, \`ipmitool\` reads the same sensors from the BMC:
+
+\`\`\`bash
+# Per-supply state and readings
+ipmitool sdr type "Power Supply"
+
+# Chassis-level power draw, useful for the redundancy math above
+ipmitool dcmi power reading
+\`\`\`
+
+The three things worth alerting on are the redundancy state itself, the input voltage of each supply, and the total chassis draw. Input voltage is the one people forget, and it is the most useful of the three: if the A feed's voltage sags or disappears, you learn that a PDU or a breaker has a problem while the server is still happily running on B. Without that alert, you find out at the same moment the B feed fails, which is far too late.
+
+## What Redundant PSUs Do Not Cover
+
+They protect against one specific failure and are sometimes mistaken for general availability. Inside the chassis, the power distribution board that the supplies plug into is itself a single point of failure, as is the motherboard, the backplane, and the RAID controller. If a workload genuinely cannot go down, the answer is two servers, not one server with two supplies.
+
+They also do nothing about correlated failures upstream. Two PSUs plugged into two PDUs that are fed by the same UPS, or the same panel, or the same utility drop, share every failure mode above the point where they diverge. Trace the path back and find where the two feeds actually become one, because that point is your real availability limit.
+
+And they do not solve the single-corded device problem. Most access switches, plenty of firewalls, and nearly all small appliances have one power inlet, so putting them in an A/B rack achieves nothing unless you add a rack-level automatic transfer switch to give them a synthetic second feed. A rack where the servers are dual-corded and the top-of-rack switch is not is a rack that loses network connectivity when the A feed drops, servers running or otherwise.
+
 ## In Practice
 
 I run all my lab servers with redundant PSUs and connect them to separate circuits. I have tested failover by unplugging one PSU while the server was running, and in every case the server continued without any interruption. The investment in a second PSU is minimal compared to the cost of an unexpected shutdown.
+
+The testing is the part that matters, and it needs a rule attached: pull the cord, not the supply. Yanking the PSU module tests the hot-swap path, which is fine, but unplugging the cord tests the whole chain including the PDU outlet, the cord, and the inlet, which is where the faults actually live. Do it once per server when it is commissioned, confirm the alert fires and reaches you, plug it back in, and confirm the redundancy state returns to normal. A redundancy alert nobody receives is the same as no redundancy at all, and the only way to know it works is to break something on purpose while you are standing there.
+
+## References
+
+- https://en.wikipedia.org/wiki/Power_supply_unit_(computer)
+- https://en.wikipedia.org/wiki/80_Plus
+- https://en.wikipedia.org/wiki/IEC_60320
+- https://en.wikipedia.org/wiki/Power_distribution_unit
+- https://en.wikipedia.org/wiki/National_Electrical_Code
+- https://man.archlinux.org/man/ipmitool.1
 `,
   },
   {
@@ -24262,15 +24513,27 @@ Be honest about the failure domain you are creating. A SAN concentrates every se
 
 A single Proxmox node is useful, but a cluster is where the platform gets interesting. With a cluster, you can live-migrate VMs between nodes, balance workloads, and configure automatic failover so that if a node fails, its VMs restart on surviving nodes.
 
+The mechanism underneath all of that is pmxcfs, the Proxmox cluster file system mounted at \`/etc/pve\`. Every guest config, storage definition, and user is a file there, replicated to every node in real time and backed by Corosync. That is why any node can manage any guest, and it is also why quorum loss is felt so immediately: when the cluster loses quorum, \`/etc/pve\` goes read-only.
+
 ## Network Requirements
 
 Before clustering, you need a plan for your networks:
 
-- **Cluster communication network:** Used for Proxmox corosync traffic (cluster heartbeats and state sync). This should be a dedicated, low-latency link. 10GbE is ideal.
+- **Cluster communication network:** Used for Proxmox corosync traffic (cluster heartbeats and state sync). This should be a dedicated, low-latency link. 10GbE is nice to have, but bandwidth is not the constraint here.
 - **VM traffic network:** Regular network for VMs.
 - **Storage network:** If you are using shared storage (Ceph or iSCSI), it needs its own network.
 
 Mixing cluster traffic with VM traffic works but is not recommended for production.
+
+The Proxmox documentation is specific about what corosync actually needs: latency under 5 milliseconds between all nodes, and it notes that above roughly 10 ms a cluster of more than three nodes is unlikely to stay stable. It also says plainly that corosync does not use much bandwidth and that a dedicated 1 Gbit NIC is enough in most situations. The failure mode is jitter, not saturation. This is why a dedicated 1 GbE link beats a shared 10 GbE link: what kills corosync is a backup job or a migration filling the queue for 400 milliseconds.
+
+Corosync 3 uses the Kronosnet transport, which supports up to 8 links. Configure at least two, on physically different networks, and set priorities so the dedicated link is preferred:
+
+\`\`\`bash
+pvecm create my-cluster --link0 10.10.10.1,priority=20 --link1 10.20.20.1,priority=15
+\`\`\`
+
+A bond is not a substitute for a second corosync link. A bond hides link failure from corosync, which sounds good until the failure mode is a switch forwarding traffic slowly rather than dropping it.
 
 ## Creating a Cluster
 
@@ -24289,11 +24552,39 @@ Verify cluster status:
 pvecm status
 \`\`\`
 
+Four things will bite you here, all documented and all easy to hit anyway.
+
+A joining node cannot hold any guests. \`pvecm add\` overwrites everything in \`/etc/pve\` on the joining node, and guest IDs would collide, so the join refuses. If the node already has VMs, back them up with \`vzdump\` and restore them under new IDs after the join.
+
+The join needs root SSH access on TCP 22 to the existing node, with the root password. All nodes should be on the same Proxmox version before you cluster them.
+
+Live migration only works between nodes whose CPUs are from the same vendor. Mixing an Intel node and an AMD node in one cluster is allowed, but you will be doing offline migrations between them.
+
+Changing a node's IP after clustering is a real procedure, not an edit. You change it in \`/etc/pve/corosync.conf\`, and you must increment \`config_version\` in the same edit or the other nodes will ignore your change.
+
 ## Quorum and Fencing
 
 Proxmox uses quorum to decide which nodes are authoritative. In a two-node cluster, you need a quorum device (a third vote, even a small VM or a NAS) to avoid split-brain scenarios. Three-node clusters have natural quorum.
 
-Fencing ensures that a failed node is truly offline before its VMs are restarted elsewhere. Without proper fencing, two instances of the same VM could run simultaneously, causing data corruption. Configure IPMI/iDRAC-based fencing so the cluster can power-cycle failed nodes.
+Each node gets one vote by default, and quorum is a simple majority. The QDevice runs \`corosync-qnetd\` and must live outside the cluster: a Raspberry Pi, a NAS, or any always-on Linux host works, but putting it on a VM inside the cluster it is arbitrating defeats the entire point.
+
+The symptom of quorum loss is distinctive and confuses people the first time. You can SSH into the node fine. The web UI loads. But you cannot start a VM, cannot edit anything, and get "cluster not ready - no quorum?" That is \`/etc/pve\` in read-only mode doing exactly what it should.
+
+There is an escape hatch, \`pvecm expected 1\`, which forces the node to consider itself quorate. It exists for recovery, mostly for removing a dead node with \`pvecm delnode\` when the survivors are below quorum. Running it on a node while the other side of a partition is still alive and serving is how you get two copies of the same VM writing to the same disk.
+
+Fencing ensures that a failed node is truly offline before its VMs are restarted elsewhere. Without proper fencing, two instances of the same VM could run simultaneously, causing data corruption.
+
+Modern Proxmox does this without any external power controller, and this is worth being precise about because a lot of older advice says otherwise. Proxmox VE 3.x used the Red Hat cluster stack and needed a configured fencing device such as IPMI or iDRAC power control. The \`ha-manager\` stack in current releases uses watchdog-based self-fencing instead. Each node's local resource manager pets a watchdog; a node that loses quorum stops petting it, and the watchdog resets that node after 60 seconds. Proxmox uses a hardware watchdog if one is available and falls back to the Linux \`softdog\` kernel watchdog otherwise. If your server exposes an IPMI watchdog timer, pointing Proxmox at it is strictly better than softdog, because softdog is a kernel timer and a sufficiently wedged kernel will not fire it.
+
+## The Failure Timeline
+
+Understanding HA means understanding that everything is a clock, and the clocks have to line up.
+
+When a node dies, the surviving nodes must form a new corosync membership. Corosync's token timeout grows with cluster size: it is a base token value plus a per-node token coefficient. That coefficient defaults to 650 milliseconds, and since Proxmox VE 9.2 new clusters are created with an explicit 125 milliseconds instead, specifically to shorten membership reformation.
+
+The reason that matters is the 60 second watchdog. Proxmox documents that with HA enabled, membership reformation must complete in under 45 seconds so the new membership exists before the failed node's watchdog fires. In a large cluster with the old 650 ms coefficient, that budget is not automatic.
+
+So the real recovery time for an HA VM is not "instant." It is the fence timeout, plus membership reformation, plus the HA manager's scheduling round, plus the guest's own boot time. Expect a couple of minutes, and design around that rather than being surprised by it.
 
 ## High Availability Groups
 
@@ -24304,9 +24595,41 @@ ha-manager add vm:100
 ha-manager set vm:100 --state started --group ha-group1
 \`\`\`
 
+Note that HA groups are deprecated as of Proxmox VE 9.0 and are migrated automatically to HA node affinity rules. New configurations should use rules, which also added resource affinity so you can keep two guests together or force them apart:
+
+\`\`\`bash
+ha-manager rules add node-affinity prefer-fast --resources vm:100 --nodes node1:2,node2:1
+ha-manager rules add resource-affinity keep-apart --affinity negative --resources vm:100,vm:101
+\`\`\`
+
+Two defaults to know: \`max_restart\` and \`max_relocate\` are both 1. A guest that fails to start gets one retry on the same node and one relocation attempt, then goes to the \`error\` state and stays there until a human clears it. That is deliberate. A guest that crashes because its storage is gone should not migrate around the cluster crashing on every node in turn.
+
 ## Shared Storage
 
 HA VM migration requires shared storage so both source and destination nodes can access the VM disk. Ceph, NFS, and iSCSI are all supported. Ceph is native to Proxmox and integrates cleanly, though it has its own complexity and resource requirements.
+
+Concretely, Ceph pools in Proxmox default to \`size = 3\` and \`min_size = 2\`. That means three replicas of every object, so usable capacity is about one third of raw, and I/O blocks entirely if fewer than two replicas are available. Blocked I/O is not a graceful degradation: guests whose disks stop responding will start throwing filesystem errors. This is the main reason Ceph wants three nodes minimum, matching the HA requirement.
+
+Give Ceph its own network and make it fast. Recovery after an OSD failure rebalances real data across that network, and if it shares a link with corosync you have built a cluster that fences itself every time a disk dies.
+
+The hardware detail that catches homelabs: Ceph issues small synchronous writes, and consumer SSDs without power loss protection handle those by flushing to NAND every time. A drive advertising 500 MB/s can deliver single-digit megabytes per second under Ceph's write pattern. Enterprise SSDs with a protected write cache are not a luxury here.
+
+## What Clustering Does Not Give You
+
+A cluster is not a backup. Corosync replicates configuration, and Ceph replicates blocks, which means it also faithfully replicates your accidental \`rm -rf\`. Run \`vzdump\` or Proxmox Backup Server regardless.
+
+HA is not zero downtime. It restarts a guest on another node, which from inside the VM is indistinguishable from someone pulling the power cord. Anything that needs true continuity needs application-level clustering inside the guests.
+
+A cluster also concentrates risk. Three standalone nodes fail one at a time. A three node cluster with a bad corosync network can fence all of them. And a stretched cluster across a WAN link fails the 5 ms latency requirement almost by definition. Two independent clusters with replication between them is the right answer for two sites, not one cluster spanning both.
+
+## References
+
+- https://pve.proxmox.com/pve-docs/chapter-pvecm.html
+- https://pve.proxmox.com/pve-docs/chapter-ha-manager.html
+- https://pve.proxmox.com/pve-docs/chapter-pveceph.html
+- https://manpages.debian.org/bookworm/corosync/corosync.conf.5.en.html
+- https://corosync.github.io/corosync/
+- https://docs.ceph.com/en/latest/rados/configuration/pool-pg-config-ref/
 `,
   },
   {
@@ -24551,7 +24874,7 @@ Finally, verify from inside the zone rather than from the rule table. Put a lapt
 
 - https://en.wikipedia.org/wiki/DMZ_(computing)
 - https://en.wikipedia.org/wiki/Screened_subnet
-- https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-41r1.pdf
+- https://csrc.nist.gov/pubs/sp/800/41/r1/final
 - https://csrc.nist.gov/pubs/sp/800/207/final
 - https://www.rfc-editor.org/rfc/rfc1918
 - https://www.rfc-editor.org/rfc/rfc2827
@@ -25005,7 +25328,7 @@ The way that works is worth spelling out, because it is the answer to the sharin
 
 DNS translates domain names to IP addresses. If an attacker can manipulate DNS responses, they can redirect traffic to malicious servers, intercept credentials, or block legitimate services entirely. DNS cache poisoning, DNS hijacking, and DNS-based data exfiltration are all real attack categories.
 
-The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The 2008 Kaminsky attack made this cheap by attacking many names at once, and the response, described in RFC 5452, was source port randomisation, which pushes the attacker's guessing space from 16 bits to roughly 32. That raised the cost enormously without making the attack impossible. It is a mitigation, not a fix, and DNSSEC is the fix.
+The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The response to the 2008 Kaminsky attack, described in RFC 5452, was source port randomisation, which pushes the attacker's guessing space from 16 bits to roughly 32. That is a mitigation, not a fix. DNSSEC is the fix.
 
 ## DNSSEC
 
@@ -25035,9 +25358,9 @@ Read that flag carefully, because this is the detail beginners get wrong. The AD
 
 **Clock skew.** Signature validity is a comparison against the system clock. A resolver whose time is wrong by more than the signature's validity margin rejects perfectly good signatures. Worse, there is a bootstrapping trap: if your NTP servers are configured by hostname, a machine with a bad clock cannot resolve them to fix the clock. Configure at least one time source by IP address on validating resolvers.
 
-**Responses that no longer fit.** Signatures make responses large, which is why DNSSEC requires EDNS0 (RFC 6891) to negotiate a UDP payload larger than the original 512-byte limit. Advertise too large a buffer and the reply gets IP-fragmented, and fragments are widely dropped by middleboxes, giving you intermittent timeouts on exactly the largest responses. The DNS Flag Day 2020 recommendation is to advertise 1232 bytes and let truncation push the query to TCP, so make sure port 53 is open on TCP as well as UDP. RFC 7766 makes TCP support mandatory, but firewall rules written in 2005 often disagree.
+**Responses that no longer fit.** Signatures make responses large, which is why DNSSEC needs EDNS0 (RFC 6891) to negotiate a UDP payload beyond the original 512-byte limit. Advertise too large a buffer and the reply gets IP-fragmented, and middleboxes drop fragments, giving intermittent timeouts on exactly the largest responses. The DNS Flag Day 2020 recommendation is to advertise 1232 bytes and let truncation push the query to TCP. RFC 7766 makes TCP support mandatory, but firewall rules written in 2005 often disagree, so check that port 53 is open on TCP too.
 
-**Zone enumeration.** NSEC proves a name does not exist by pointing at the next name that does, which means walking the chain dumps every name in the zone. NSEC3 hashes the names instead, but the hashes are still crackable offline for anything short or dictionary-based, and the iteration count that was supposed to help mostly just costs the resolver CPU. RFC 9276 now recommends NSEC3 with zero extra iterations and an empty salt. If hiding your hostnames is the goal, DNSSEC is the wrong tool and you should not be publishing them.
+**Zone enumeration.** NSEC proves a name does not exist by pointing at the next name that does, so walking the chain dumps every name in the zone. NSEC3 hashes the names instead, but they are still crackable offline for anything short or dictionary-based, and the iteration count meant to slow that down mostly just costs resolver CPU. RFC 9276 now recommends zero extra iterations and an empty salt. If hiding hostnames is the goal, DNSSEC is the wrong tool.
 
 **Algorithm choice.** RFC 8624 sets out what to implement. In practice, use algorithm 13 (ECDSA P-256 with SHA-256) rather than algorithm 8 (RSA with SHA-256) for a new zone. The signatures are 64 bytes instead of 256 for a 2048-bit RSA key, which meaningfully reduces response size and the fragmentation problem above. Anything based on SHA-1, algorithms 5 and 7, is deprecated and should be rolled off.
 
@@ -25060,7 +25383,7 @@ There is now a third, DNS over QUIC on port 853 (RFC 9250), which gets DoT's pro
 
 Understand what these protocols authenticate. DoT and DoH secure the channel to the resolver and prove you are talking to the resolver you meant. They say nothing about whether the resolver is telling the truth. DNSSEC secures the data regardless of who hands it to you. They solve different halves of the problem and the complete answer is both.
 
-The operational surprise with DoH is that applications can turn it on without asking the network. A browser configured for DoH bypasses your DHCP-supplied resolver entirely, which breaks split-horizon DNS for internal names and silently defeats DNS-layer filtering. Firefox checks a canary domain, \`use-application-dns.net\`, and disables its DoH by default if a network answers NXDOMAIN for it, which gives network operators a documented opt-out. That canary is a convention, not a guarantee, and it does not apply to other clients.
+The operational surprise with DoH is that applications turn it on without asking the network. A browser using DoH bypasses your DHCP-supplied resolver entirely, which breaks split-horizon DNS for internal names and silently defeats DNS-layer filtering. Firefox checks a canary domain, \`use-application-dns.net\`, and disables its DoH if a network answers NXDOMAIN for it. That canary is a convention, not a guarantee, and other clients ignore it.
 
 ## DNS Filtering
 
@@ -25763,7 +26086,7 @@ A runbook is only useful if it matches reality. Assign ownership. When the syste
 
 Make the currency visible. Put a "last verified" line at the top with a date and the name of the person who verified it, and treat a runbook that has not been executed or walked through in a year as untested, because it is. Tie the review to change, not to a calendar reminder: the pull request that renames a service is the pull request that fixes the runbook.
 
-Exercises are worth the time. NIST SP 800-84 is a whole publication on building a test, training, and exercise program, and its core point applies at any scale: the discussion-based tabletop is cheap, it finds the wrong assumptions, and it does it before the wrong assumptions cost you an outage. NIST SP 800-61 makes the companion point that lessons-learned activity is part of the incident lifecycle rather than an optional extra.
+Exercises are worth the time. A discussion-based tabletop is cheap, it finds the wrong assumptions, and it finds them before those assumptions cost you an outage. NIST SP 800-61 makes the companion point that lessons-learned activity is a phase of the incident lifecycle rather than an optional extra, and the SRE material on postmortem culture is the practical version of the same argument: the runbook fix is an action item with an owner and a due date, not a good intention.
 
 The most honest quality metric I know for a runbook library is small and slightly uncomfortable: of the runbooks executed this quarter, how many needed to be corrected mid-incident? If that number is not near zero, the library is decoration.
 
@@ -25773,8 +26096,8 @@ Runbooks are living documentation. Treat them that way.
 
 - https://sre.google/sre-book/managing-incidents/
 - https://sre.google/workbook/incident-response/
-- https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf
-- https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-84.pdf
+- https://sre.google/workbook/postmortem-culture/
+- https://csrc.nist.gov/pubs/sp/800/61/r2/final
 - https://man7.org/linux/man-pages/man5/systemd-system.conf.5.html
 - https://prometheus.io/docs/practices/alerting/
 `,
@@ -26013,7 +26336,7 @@ Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell fi
 - https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.22.0.pdf
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 - https://man.archlinux.org/man/ipmitool.1
-- https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-193.pdf
+- https://csrc.nist.gov/pubs/sp/800/193/final
 `,
   },
   {
@@ -26917,7 +27240,7 @@ Beyond that, the failures that actually recur:
 
 Consumer WiFi routers are designed for home use: a small number of devices, low density, non-technical users. Enterprise APs are designed for high-density environments with many concurrent users, centralized management, and predictable performance.
 
-The mechanism behind that difference is worth stating up front, because it explains every feature below. Wi-Fi is a half-duplex shared medium governed by CSMA/CA: on a given channel, exactly one radio transmits at a time and everyone else waits. The scarce resource is not bandwidth, it is airtime. Enterprise gear is mostly a set of tools for spending airtime well.
+The mechanism behind that difference explains every feature below. Wi-Fi is a half-duplex shared medium governed by CSMA/CA: on a given channel exactly one radio transmits at a time and everyone else waits. The scarce resource is not bandwidth, it is airtime, and enterprise gear is mostly a set of tools for spending it well.
 
 ## What Enterprise APs Do Better
 
@@ -26931,15 +27254,15 @@ The mechanism behind that difference is worth stating up front, because it expla
 
 **Seamless roaming (802.11r/k/v):** Clients can move between APs without dropping connections, which matters for voice and video applications.
 
-One honest qualification on the density figure. Association count and usable density are different numbers. An enterprise AP will happily hold 200 associations, and it will do so comfortably if most of those clients are phones sitting in pockets. For clients doing real work, WLAN design guides generally plan 25 to 50 active devices per radio, and that ceiling comes from airtime rather than from any table in the AP.
+One honest qualification on the density figure. Association count and usable density are different numbers. An enterprise AP will happily hold 200 associations, comfortably so if most of those clients are phones sitting in pockets. For clients doing real work, WLAN design guides generally plan 25 to 50 active devices per radio, and that ceiling comes from airtime, not from a table in the AP.
 
 ## Airtime Is the Resource
 
 Two things dominate airtime waste, and neither is fixable on a consumer router.
 
-The first is slow clients. A client transmitting at 6 Mbps occupies the channel roughly a hundred times longer than one at 600 Mbps to move the same frame, and while it does, nobody else transmits. One distant laptop clinging to a low data rate degrades everyone on that AP. Enterprise APs let you disable the low data rates entirely: set the minimum basic rate to 12 or 24 Mbps and the 802.11b rates (1, 2, 5.5, and 11 Mbps) disappear, which both stops the airtime bleed and pushes distant clients to roam to a closer AP.
+The first is slow clients. A client transmitting at 6 Mbps occupies the channel roughly a hundred times longer than one at 600 Mbps to move the same frame, and while it does, nobody else transmits. One distant laptop clinging to a low data rate degrades everyone on that AP. Enterprise APs let you disable the low data rates: set the minimum basic rate to 12 or 24 Mbps and the 802.11b rates (1, 2, 5.5, and 11 Mbps) disappear, which stops the airtime bleed and pushes distant clients to roam.
 
-The second is beacons, and this one surprises people. Every SSID on every radio sends a beacon frame at the lowest configured basic rate, once per beacon interval. The default beacon interval is 100 time units, and a TU is 1024 microseconds, so that is a beacon every 102.4 ms, just under ten per second. Now run eight SSIDs across three radios on twenty APs with 1 Mbps still enabled as a basic rate, and a genuinely significant fraction of your airtime is consumed announcing networks before a single byte of user data moves. This is why WLAN designers argue about SSID counts and why three per band is a common ceiling.
+The second is beacons. Every SSID on every radio sends a beacon at the lowest configured basic rate, once per beacon interval. The default interval is 100 time units, and a TU is 1024 microseconds, so that is a beacon every 102.4 ms, just under ten per second. Run eight SSIDs across three radios with 1 Mbps still enabled as a basic rate and a significant fraction of your airtime goes to announcing networks before a single byte of user data moves. This is why three SSIDs per band is a common ceiling.
 
 ## Channel Width Is a Trade, Not an Upgrade
 
@@ -26947,27 +27270,27 @@ The most common self-inflicted wound in a small deployment is setting every AP t
 
 The channel budget is fixed. In North America, 2.4 GHz has 11 channels and only three that do not overlap at 20 MHz: 1, 6, and 11. There is no configuration that changes this. 5 GHz gives about 25 non-overlapping 20 MHz channels in the US, but most of them are DFS channels, and bonding them into 80 MHz leaves you six, while 160 MHz leaves two. 6 GHz is the genuine relief, adding 1200 MHz of spectrum in the US, which is 59 channels at 20 MHz or seven at 160 MHz.
 
-Width also costs signal quality. Doubling channel width spreads the same transmit power across twice the spectrum and raises the noise floor by about 3 dB, so every doubling costs roughly 3 dB of effective SNR at the receiver. Wider channels are therefore shorter-range channels.
+Width also costs signal quality. Doubling the channel spreads the same transmit power across twice the spectrum and raises the noise floor about 3 dB, so each doubling costs roughly 3 dB of effective SNR. Wider channels are shorter-range channels.
 
 Put those together and the rule for a dense deployment inverts the marketing: 20 or 40 MHz channels usually deliver more aggregate throughput across a floor than 80 MHz, because more APs can transmit simultaneously without stepping on each other. Use 80 MHz where you have few APs and lots of spectrum, and never on 2.4 GHz at all.
 
-DFS deserves its own warning. On DFS channels, the AP must monitor for radar, and on detection it has to vacate the channel within 10 seconds and stay off it for a 30 minute non-occupancy period. Near an airport or a weather radar the symptom is unmistakable: every client on one AP drops simultaneously, repeatedly, at unpredictable intervals. The fix is to exclude the affected channels, and finding out which ones is a job for the controller's event log.
+DFS deserves its own warning. On DFS channels the AP must monitor for radar, and on detection it has to vacate within 10 seconds and stay off that channel for a 30 minute non-occupancy period. Near an airport or weather radar the symptom is unmistakable: every client on one AP drops at once, repeatedly, at unpredictable intervals. The fix is to exclude the affected channels, and the controller's event log tells you which.
 
 ## Roaming Is a Client Decision
 
-This is the single most misunderstood thing about enterprise Wi-Fi, and it is worth being blunt: the access point does not decide when a client roams. The client does.
+This is the most misunderstood thing about enterprise Wi-Fi: the access point does not decide when a client roams. The client does.
 
 802.11k gives the client a neighbor report so it knows where to look instead of scanning every channel. 802.11v lets the AP send a BSS transition management request, which is a polite suggestion the client is free to ignore. 802.11r Fast BSS Transition is the one that actually saves time on the handoff: it pre-distributes key material so reassociation skips a full 802.1X exchange. A complete EAP re-authentication can take hundreds of milliseconds, long enough to be audible on a call, while an FT roam typically lands under 50 ms, which is roughly the threshold where a voice handoff stops being noticeable.
 
-What none of that gives you is control. The classic sticky client, a laptop holding an association at -80 dBm while standing under a different AP, is a client driver making a bad decision. Minimum RSSI thresholds and band steering are the mitigations: the AP effectively refuses to keep serving the client so it is forced to look elsewhere. They are blunt instruments, and setting the threshold too aggressively produces disconnects instead of roams.
+What none of that gives you is control. The classic sticky client, a laptop holding an association at -80 dBm while standing under a different AP, is a client driver making a bad decision. Minimum RSSI thresholds and band steering are the mitigations: the AP effectively refuses to keep serving the client so it is forced to look elsewhere. They are blunt instruments, and too aggressive a threshold produces disconnects instead of roams.
 
 The design targets that make roaming work are unglamorous: plan for about -67 dBm at the edge of each cell for voice, keep SNR at 25 dB or better where calls happen and 20 dB for data, and make sure a co-channel neighbor is heard below roughly -85 dBm. Those numbers come from voice-over-WLAN design guides and they are the reason a proper deployment starts with a site survey rather than a shopping list.
 
 ## PoE Budgets Bite
 
-The PoE standards define power at both ends, and the difference matters because cable loses some. 802.3af Type 1 supplies 15.4 W at the switch and guarantees 12.95 W at the device. 802.3at, PoE+, is 30 W and 25.5 W. 802.3bt Type 3 is 60 W and 51 W, and Type 4 is 90 W and 71.3 W.
+PoE standards define power at both ends, and the gap is cable loss. 802.3af Type 1 supplies 15.4 W at the switch and guarantees 12.95 W at the device. 802.3at, PoE+, is 30 W and 25.5 W. 802.3bt Type 3 is 60 W and 51 W, and Type 4 is 90 W and 71.3 W.
 
-Modern tri-radio APs frequently need PoE+ at minimum, and some Wi-Fi 6E and Wi-Fi 7 models want 802.3bt. Plugged into an af-only switch, they usually still boot, which is the trap. They come up in a reduced power mode with a radio disabled, fewer spatial streams, or the secondary Ethernet port dead. The symptom is an AP that shows as online and healthy in the controller while delivering a fraction of its rated throughput, and the 6 GHz radio simply missing from the list.
+Modern tri-radio APs frequently need PoE+ at minimum, and some Wi-Fi 6E and Wi-Fi 7 models want 802.3bt. On an af-only switch they usually still boot, which is the trap: they come up in reduced power mode with a radio disabled, fewer spatial streams, or the secondary Ethernet port dead. The symptom is an AP that shows online and healthy in the controller while delivering a fraction of its rated throughput, with the 6 GHz radio missing from the list.
 
 Check the switch's total budget as well as its per-port class. A 24-port PoE+ switch with a 370 W power budget cannot deliver 30 W to all 24 ports, because that would be 720 W. Oversubscribe it and ports drop by priority order, which looks like random APs rebooting.
 
@@ -26985,17 +27308,17 @@ Ubiquiti UniFi occupies an interesting position: professional hardware and manag
 
 I run UniFi in my lab. The controller software manages all APs from a single interface, provides detailed statistics, and handles automatic firmware updates.
 
-Worth knowing about controller-based systems generally: the controller is a management plane, not a data plane. UniFi APs keep forwarding traffic and keep authenticating clients when the controller is offline. What you lose is configuration changes, statistics collection, and the guest portal. People assume a dead controller means a dead network, and for this architecture it does not.
+Worth knowing about controller-based systems generally: the controller is a management plane, not a data plane. UniFi APs keep forwarding traffic and authenticating clients when the controller is offline. You lose configuration changes, statistics, and the guest portal. People assume a dead controller means a dead network, and here it does not.
 
 ## What Enterprise Gear Cannot Fix
 
-Placement. An AP in a wiring closet behind a metal door serves the closet. Ceiling-mounted in the open, in the middle of the space, beats a better AP in a worse spot every time, and a survey beats a spec sheet.
+Placement. An AP in a wiring closet behind a metal door serves the closet. Ceiling-mounted in the open beats a better AP in a worse spot every time.
 
-Backhaul. A Wi-Fi 6 AP capable of well over a gigabit aggregate on a 1 GbE uplink is capped by the wire. Multi-gig uplinks exist for a reason.
+Backhaul. A Wi-Fi 6 AP capable of well over a gigabit aggregate is capped by a 1 GbE uplink. Multi-gig uplinks exist for a reason.
 
-Non-Wi-Fi interference. Microwave ovens, some wireless cameras, and older cordless phones transmit in 2.4 GHz and do not participate in CSMA/CA at all. Wi-Fi cannot negotiate with them, it can only lose airtime to them, and no amount of channel planning helps because your AP cannot see them as interference. A spectrum analyzer can.
+Non-Wi-Fi interference. Microwave ovens, some wireless cameras, and older cordless phones transmit in 2.4 GHz and do not participate in CSMA/CA. Wi-Fi cannot negotiate with them, only lose airtime to them, and your AP cannot even see them as interference. A spectrum analyzer can.
 
-Building materials. Concrete, brick, and especially low-emissivity window glass, which carries a thin metallic coating, attenuate RF hard. This is why a floor plan predicts coverage badly and a walk with a survey tool predicts it well.
+Building materials. Concrete, brick, and especially low-emissivity window glass with its thin metallic coating attenuate RF hard. This is why a floor plan predicts coverage badly and a walk with a survey tool predicts it well.
 
 ## When Consumer Is Fine
 

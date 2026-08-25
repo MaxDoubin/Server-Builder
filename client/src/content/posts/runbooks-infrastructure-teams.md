@@ -86,7 +86,7 @@ A runbook is only useful if it matches reality. Assign ownership. When the syste
 
 Make the currency visible. Put a "last verified" line at the top with a date and the name of the person who verified it, and treat a runbook that has not been executed or walked through in a year as untested, because it is. Tie the review to change, not to a calendar reminder: the pull request that renames a service is the pull request that fixes the runbook.
 
-Exercises are worth the time. NIST SP 800-84 is a whole publication on building a test, training, and exercise program, and its core point applies at any scale: the discussion-based tabletop is cheap, it finds the wrong assumptions, and it does it before the wrong assumptions cost you an outage. NIST SP 800-61 makes the companion point that lessons-learned activity is part of the incident lifecycle rather than an optional extra.
+Exercises are worth the time. A discussion-based tabletop is cheap, it finds the wrong assumptions, and it finds them before those assumptions cost you an outage. NIST SP 800-61 makes the companion point that lessons-learned activity is a phase of the incident lifecycle rather than an optional extra, and the SRE material on postmortem culture is the practical version of the same argument: the runbook fix is an action item with an owner and a due date, not a good intention.
 
 The most honest quality metric I know for a runbook library is small and slightly uncomfortable: of the runbooks executed this quarter, how many needed to be corrected mid-incident? If that number is not near zero, the library is decoration.
 
@@ -96,7 +96,7 @@ Runbooks are living documentation. Treat them that way.
 
 - https://sre.google/sre-book/managing-incidents/
 - https://sre.google/workbook/incident-response/
-- https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf
-- https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-84.pdf
+- https://sre.google/workbook/postmortem-culture/
+- https://csrc.nist.gov/pubs/sp/800/61/r2/final
 - https://man7.org/linux/man-pages/man5/systemd-system.conf.5.html
 - https://prometheus.io/docs/practices/alerting/

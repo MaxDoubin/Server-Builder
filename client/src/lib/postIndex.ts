@@ -1333,7 +1333,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I built an immersive 3D datacenter simulation with procedural generation, real-time thermal modeling, and React Three Fiber.",
     coverImage: "/images/blog/building-hyperscale.jpg",
     coverCredit: {"author":"DOE / National Renewable Energy Laboratory (NREL)","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Data_center_infrastructure_in_the_United_States.jpg"},
-    wordCount: 332,
+    wordCount: 1800,
   },
   {
     slug: "why-homelabs-matter",
@@ -1353,7 +1353,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "What I learned from reaching the top 1 percent in competitive cybersecurity, and why the process matters more than the ranking.",
     coverImage: "/images/blog/ncl-competition-lessons.jpg",
     coverCredit: {"author":"U.S. Air Force photo by Tech. Sgt. Robert Biermann","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Units_compete_in_NAF-wide_cyber_competition_(5470557).jpg"},
-    wordCount: 273,
+    wordCount: 1558,
   },
   {
     slug: "mac-pro-rack-mount-homelab",
@@ -1623,7 +1623,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The core switching concepts I learned on Cisco hardware and use every day in my lab environment.",
     coverImage: "/images/blog/cisco-switching-fundamentals.jpg",
     coverCredit: {"author":"Jemimus","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_2950_network_switches_in_situ_-_IMG_1076.jpg"},
-    wordCount: 349,
+    wordCount: 1829,
   },
   {
     slug: "dell-idrac-tips-tricks",
@@ -1872,7 +1872,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
     coverImage: "/images/blog/bgp-for-network-engineers.jpg",
     coverCredit: {"author":"pmsyyz","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/96671942@N00/5768497319"},
-    wordCount: 1996,
+    wordCount: 1817,
   },
   {
     slug: "fortigate-cli-essentials",
@@ -1923,7 +1923,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Redundant PSUs are a fundamental part of enterprise server design. Here is how they actually work and when they matter.",
     coverImage: "/images/blog/redundant-power-supplies.jpg",
     coverCredit: {"author":"Thesydneyknowitall at English Wikipedia","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DL380sREAR.jpg"},
-    wordCount: 332,
+    wordCount: 1624,
   },
   {
     slug: "spanning-tree-protocol-deep-dive",
@@ -1986,7 +1986,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Proxmox clustering lets multiple hosts share workloads and survive individual node failures. Here is how to set it up and what to watch out for.",
     coverImage: "/images/blog/proxmox-clustering-high-availability.jpg",
     coverCredit: {"author":"Patrick Finnegan","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:HP_s6500_chassis_with_ProLiant_SL250s_servers_and_storage.jpg"},
-    wordCount: 305,
+    wordCount: 1616,
   },
   {
     slug: "fortigate-sdwan-configuration",
@@ -2056,7 +2056,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "DNS is foundational to every network connection, which makes it a prime target for attacks. Here is how DNSSEC and encrypted DNS protect the resolution process.",
     coverImage: "/images/blog/dns-security-dnssec.jpg",
     coverCredit: {"author":"Jan Bellon","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DNSSEC_Trust_Anchor_Diagram.png"},
-    wordCount: 1864,
+    wordCount: 1809,
   },
   {
     slug: "high-availability-clustering",
@@ -2108,7 +2108,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A runbook that no one reads is just a box-checking exercise. Here is how to write documentation that engineers actually reach for during incidents.",
     coverImage: "/images/blog/runbooks-infrastructure-teams.jpg",
     coverCredit: {"author":"Steve Jurvetson from Los Altos, USA","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apollo_17_Lunar_Surface_Checklist_(4705455692).jpg"},
-    wordCount: 1444,
+    wordCount: 1454,
   },
   {
     slug: "ospf-routing-protocol",
@@ -2207,7 +2207,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Enterprise access points cost significantly more than consumer routers. Here is what you actually get for that investment.",
     coverImage: "/images/blog/enterprise-wifi-vs-consumer.jpg",
     coverCredit: {"author":"Xosema","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_Aironet_1131AG_-_Close.jpg"},
-    wordCount: 1913,
+    wordCount: 1818,
   },
   {
     slug: "dhcp-snooping-arp-inspection",
