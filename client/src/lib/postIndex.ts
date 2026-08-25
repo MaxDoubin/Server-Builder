@@ -2356,3 +2356,18 @@ export const postIndex: PostMeta[] = [
     wordCount: 1596,
   },
 ];
+
+/**
+ * Unique external reference URLs in the article text.
+ *
+ * Generated, along with the two counts below. The claim ledger at
+ * /verify quotes these, and a number that goes stale on the page about
+ * not making stale claims would be the worst possible place for one.
+ */
+export const CITATION_COUNT = 858;
+
+/** Unique cover image attribution and licence URLs. */
+export const ATTRIBUTION_URL_COUNT = 160;
+
+/** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
+export const CHECKED_URL_COUNT = 1018;

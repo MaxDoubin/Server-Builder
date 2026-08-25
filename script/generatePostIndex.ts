@@ -105,6 +105,87 @@ for (const post of blogPosts) {
 out.push("];");
 out.push("");
 
+/*
+  Citation count, generated rather than written down.
+
+  The claim ledger at /verify states how many reference URLs the archive
+  carries and how many were checked. That is the page whose entire purpose is
+  not containing stale claims, so the number cannot be a literal somebody has
+  to remember to update when a post is added. Counted the same way
+  script/checkPostLinks.mjs counts, skipping fenced code so an example
+  http://127.0.0.1:3000 in an nginx config is not mistaken for a citation.
+*/
+function countCitations(markdown: string): number {
+  const urls = new Set<string>();
+  let inFence = false;
+  for (const line of markdown.split("\n")) {
+    if (line.trimStart().startsWith("```")) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    for (const match of line.replace(/`[^`]*`/g, "").matchAll(/https?:\/\/[^\s<>"'`\]]+/g)) {
+      let url = match[0].replace(/[.,;:]+$/, "");
+      while (url.endsWith(")") && (url.split(")").length > url.split("(").length)) {
+        url = url.slice(0, -1);
+      }
+      url = url.replace(/[.,;:]+$/, "");
+      if (url) urls.add(url);
+    }
+  }
+  return urls.size;
+}
+
+const allCitations = new Set<string>();
+for (const post of blogPosts) {
+  let inFence = false;
+  for (const line of post.content.split("\n")) {
+    if (line.trimStart().startsWith("```")) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    for (const match of line.replace(/`[^`]*`/g, "").matchAll(/https?:\/\/[^\s<>"'`\]]+/g)) {
+      let url = match[0].replace(/[.,;:]+$/, "");
+      while (url.endsWith(")") && (url.split(")").length > url.split("(").length)) {
+        url = url.slice(0, -1);
+      }
+      url = url.replace(/[.,;:]+$/, "");
+      if (url) allCitations.add(url);
+    }
+  }
+}
+void countCitations;
+
+// Cover image attribution links are checked alongside the citations, because
+// a CC BY credit that 404s is a licensing problem rather than an
+// inconvenience. They are counted separately so /verify can say which is
+// which instead of quoting one total and calling it all references.
+const attributionUrls = new Set<string>();
+for (const post of blogPosts) {
+  if (!post.coverCredit) continue;
+  if (post.coverCredit.sourceUrl) attributionUrls.add(post.coverCredit.sourceUrl);
+  if (post.coverCredit.licenseUrl) attributionUrls.add(post.coverCredit.licenseUrl);
+}
+
+out.push("/**");
+out.push(" * Unique external reference URLs in the article text.");
+out.push(" *");
+out.push(" * Generated, along with the two counts below. The claim ledger at");
+out.push(" * /verify quotes these, and a number that goes stale on the page about");
+out.push(" * not making stale claims would be the worst possible place for one.");
+out.push(" */");
+out.push(`export const CITATION_COUNT = ${allCitations.size};`);
+out.push("");
+out.push("/** Unique cover image attribution and licence URLs. */");
+out.push(`export const ATTRIBUTION_URL_COUNT = ${attributionUrls.size};`);
+out.push("");
+out.push("/** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */");
+out.push(
+  `export const CHECKED_URL_COUNT = ${new Set([...allCitations, ...attributionUrls]).size};`,
+);
+out.push("");
+
 await writeFile(
   path.join(ROOT, "client/src/lib/postIndex.ts"),
   out.join("\n"),
