@@ -17798,15 +17798,47 @@ The Dell PowerEdge R740 is a 2U rack server that hits a sweet spot between perfo
 
 The R740 supports dual Intel Xeon Scalable processors, up to 3 TB of DDR4 ECC memory across 24 DIMM slots, and has room for up to 16 2.5-inch drives or 8 3.5-inch drives depending on the chassis configuration. For a homelab, that kind of flexibility is exactly what you want.
 
+It is a 14th generation PowerEdge, introduced in 2017 on the LGA 3647 socket. First generation Xeon Scalable (Skylake-SP) works out of the box, and second generation (Cascade Lake) works with a BIOS update, which is worth knowing because Cascade Lake parts are often cheaper per core on the used market now.
+
+## Memory: The Part People Get Wrong
+
+Twenty-four DIMM slots sounds like "put memory anywhere". It is not.
+
+Each CPU has six memory channels and twelve slots, six channels times two slots per channel. Bandwidth scales with populated channels, so you populate in multiples of six per socket. The single most common used-server mistake is buying four or eight sticks because that is what desktops use. Eight DIMMs across six channels means two channels carry double the load, the memory controller runs the whole set at the pace of the imbalance, and you leave a measurable chunk of bandwidth on the floor for no saving. Buy six, or twelve.
+
+The second thing: with only one CPU installed, half the DIMM slots and several of the PCIe slots are electrically dead, because they hang off the second socket. A single-CPU R740 is a twelve-slot machine, not a twenty-four-slot machine. Check what you are actually buying.
+
+Third, this takes registered ECC memory. RDIMMs, or LRDIMMs if you are chasing the 3 TB ceiling with 128 GB modules. Unbuffered desktop DDR4 will not post. And the advertised speed is a ceiling, not a promise: the actual clock is the lowest of what the DIMMs support, what the CPU's memory controller supports, and what the population rules allow. A Xeon Gold 6130 caps at 2666 MT/s no matter what the sticks are rated for.
+
+Fourth, and the one that survives correct population: memory attached to socket 1 is remote to socket 0, and reaching it crosses the interconnect at higher latency. That is NUMA. A VM sized larger than one socket's share of memory can be markedly slower than the same VM that fits inside a single node, so size guests to fit a NUMA node where the workload allows it.
+
 ## iDRAC: The Killer Feature
 
 One of the things that separates enterprise servers from consumer hardware is out-of-band management. Dell's iDRAC (Integrated Dell Remote Access Controller) gives you full remote control over the server, even when the OS is not running. You can monitor hardware health, view real-time power consumption, access the console remotely, and even mount virtual media for OS installations.
 
 I cannot overstate how much this matters in a lab environment. When you are testing things and inevitably break an OS installation, being able to remotely access the console and reinstall without physically touching the machine saves hours.
 
+Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the licence is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
+
+Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use \`root\` / \`calvin\`; anything shipped after Dell moved to per-unit credentials has a unique default password printed on the pull-out service tag at the front of the chassis. Change it immediately either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
+
+For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. IPMI over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
+
+\`\`\`bash
+# Chassis power state and sensor readings over IPMI, once enabled.
+ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' chassis status
+ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' sdr type temperature
+\`\`\`
+
 ## Storage Configuration
 
 I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P RAID controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
+
+That last experiment deserves a warning, because it is where the R740 and ZFS genuinely fight each other. The H740P is a RAID controller with 8 GB of battery-backed cache, and it has no true IT mode. It offers "Non-RAID" disks, which present the drive to the OS, but the I/O still traverses the RAID stack and its cache. ZFS assumes it owns the write path: it needs SMART data to pass through unmodified, and it needs a write to be on stable media when the drive says it is. A write cache it cannot see or flush undermines the guarantee ZFS exists to provide. Putting each disk in a single-drive RAID 0 to fake passthrough is not the same thing and does not help. If you are running ZFS on an R740, the right part is the HBA330, which is a plain SAS host bus adapter in IT mode, and it is inexpensive on the used market. Swap the controller rather than fighting the H740P.
+
+The backplane is the other trap. The R740 ships in several backplane configurations: 8 or 12 by 3.5 inch, and 8, 16, or 24 by 2.5 inch. NVMe support is not a property of the drive bay, it is a property of the backplane plus the PCIe extender cables and risers that feed it. You cannot put a U.2 NVMe drive into a SAS/SATA bay and have it work. Confirm the backplane part before you buy NVMe drives for it.
+
+Same story with PCIe: the R740 supports up to eight PCIe 3.0 slots, but those slots live on riser cards that are separate, frequently missing from used systems, and specific to a configuration. A server sold "with 8 slots available" and no risers in the box has zero slots available.
 
 ## Noise and Power
 
@@ -17814,9 +17846,38 @@ The honest truth about running enterprise servers at home is that they are loud 
 
 If you are considering one for a homelab, plan for the power bill and the noise. It is worth it for the capabilities, but go in with realistic expectations.
 
+Some numbers to plan against. Idle is much better than load: a modestly configured R740 with two mid-range Xeons and a handful of drives sits around 100 to 150 watts doing nothing. The 400 to 600 watt figure is real work. At 130 watts idle and typical residential rates, you are looking at a meaningful but survivable monthly line item, and the delta between idle and load is what your UPS sizing has to cover.
+
+Power supplies come in 495 W, 750 W, 1100 W, 1600 W, 2000 W, and 2400 W flavors, all 80 PLUS Platinum or Titanium, normally installed as a redundant pair. The gotcha for anyone in North America: the high-wattage units require 200 to 240 V input to deliver their rated output. On a 120 V circuit a 2000 W supply derates to roughly half. If you are on standard household 120 V, the 750 W or 1100 W supplies are the sensible choice and the big ones buy you nothing.
+
+**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to decide fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data, so it falls back to a conservative high fan baseline and the server howls at idle forever. This is not a fault. There is a "Third Party PCIe Card Default Cooling Response" setting exposed through iDRAC and IPMI that turns the baseline back down. Know it exists before you conclude the server is broken.
+
+One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
+
+Finally, POST is slow. Memory training and controller initialization mean two to four minutes from power button to boot device, and the screen is blank for much of it. It is not dead. It is counting your DIMMs.
+
+On the power figure: 400 to 600 watts under load is the honest range, and at 3.412142 BTU per hour per watt that is roughly 1,400 to 2,050 BTU/hr from one machine. Two of them is a small room heater running continuously, which is the part that decides whether a closet works.
+
+## What It Cannot Do
+
+Be clear-eyed about the ceiling. This is PCIe 3.0 throughout, so a modern NVMe drive capable of 7 GB/s will deliver about half that. It is DDR4, not DDR5. Per-core performance from a 2017 to 2019 Xeon is well behind a current desktop CPU, so a workload that needs fast single threads will be slower here than on a machine that cost less. And no amount of tuning makes a 2U chassis with 60 mm fans quiet enough for a bedroom.
+
+The R740 is the right answer when you want many cores, a lot of ECC memory, real out-of-band management, and hot-swap drive bays for less than the price of one modern workstation. It is the wrong answer when you want low idle power, silence, or the fastest possible single thread. For those, a mini PC or a modern desktop board wins, and it is not close.
+
 ## Getting One
 
 Used R740s are available from resellers and auction sites. Prices vary a lot based on configuration, but you can get a solid base system for a reasonable price and add memory and drives over time. Buy from reputable sellers, check the service tag for warranty status, and inspect the drive backplane before committing.
+
+A checklist I now run through before buying, all of which come from the sections above: how many CPUs are installed, how many DIMMs and in what population, which iDRAC license, which storage controller, which backplane, are the risers present, which PSUs and at what voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, they are frequently missing, and buying them separately costs more than you expect.
+
+## References
+
+- https://en.wikipedia.org/wiki/Dell_PowerEdge
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://en.wikipedia.org/wiki/Registered_memory
+- https://en.wikipedia.org/wiki/Non-uniform_memory_access
+- https://man.archlinux.org/man/ipmitool.1
 `,
   },
   {
@@ -18105,13 +18166,23 @@ Gigabit Ethernet was fine for a while. But once you start moving large VM images
 
 10GbE gives you ten times the bandwidth, obviously, but the practical improvement is even bigger than that sounds. Operations that used to take minutes now take seconds. VM live migrations that were unreliable over gigabit become smooth and fast.
 
+Here is the arithmetic that makes the difference concrete. A gigabit link carries 1,000,000,000 bits per second on the wire. After Ethernet framing, IP headers, and TCP headers, real application throughput tops out around 118 MB/s. A 40 GB VM disk image therefore takes about 5 minutes and 40 seconds at best, and that assumes nothing else is using the link. On 10GbE the same transfer has a floor around 34 seconds. The reason the improvement feels larger than 10x is that at gigabit speeds you were queueing: two transfers at once meant each got half the pipe. At 10GbE you usually stop hitting the ceiling at all, so the wait time collapses instead of just shrinking.
+
 ## The Hardware
 
 For the network side, I picked up a used Mellanox ConnectX-3 SFP+ card for each server. These are dual-port 10GbE cards that you can find for very little money on the used market. They are well-supported in Linux with the mlx4 driver and work out of the box on most distributions.
 
+Two things about ConnectX-3 that nobody tells you before you buy. First, many of these cards are VPI models, meaning each port can run either InfiniBand or Ethernet, and a lot of used cards arrive configured for InfiniBand. The symptom is that \`lspci\` shows the card, the driver loads, and no Ethernet interface ever appears. The fix is to set the port type to Ethernet in firmware with the Mellanox tooling, or to set \`mlx4_core\` module parameters, and then reboot. Second, ConnectX-3 was removed from the supported hardware list in VMware ESXi 7.0. If you are running ESXi on modern versions, this card is a dead end and you want ConnectX-4 or later. On Linux it remains fine.
+
+Also check the slot. A dual-port ConnectX-3 wants a PCIe 3.0 x8 slot. In a PCIe 2.0 x4 slot you have roughly 2 GB/s of bus bandwidth against 2.5 GB/s of card, so you will never see both ports at line rate simultaneously and you will spend an evening blaming the switch.
+
 For switching, I am using a Mikrotik CRS309-1G-8S+IN. It has eight SFP+ ports and one gigabit copper port for management. It is not a full L3 switch, but for a homelab it handles 10GbE switching at wire speed and costs a fraction of what Cisco or Arista would charge.
 
+The important caveat on cheap 10GbE switches is where the packets actually go. These boxes do layer 2 forwarding in a dedicated switch chip at wire speed, but anything the chip cannot handle falls back to a comparatively slow ARM CPU. Inter-VLAN routing done on the CPU, or a bandwidth test terminated on the switch itself, will read a few hundred megabits and look like a broken link. It is not broken. You have just left the fast path. Keep routing on a real router and let the switch switch.
+
 I am using DAC (Direct Attach Copper) cables between the switch and servers. DACs are cheaper than optical transceivers for short runs and work perfectly in a single-rack setup.
+
+Passive DAC is specified out to about 7 meters, which covers any single rack with room to spare. Past that you want active DAC or optics. The other gotcha is vendor coding: the EEPROM in an SFP+ module carries a vendor string, and some switches refuse modules that do not match. MikroTik does not care. Cisco does by default and needs \`service unsupported-transceiver\` to accept third-party optics. Buy DACs coded for whatever is at each end, or buy from a seller who will code them for you.
 
 ## Configuration
 
@@ -18119,11 +18190,61 @@ The nice thing about 10GbE with SFP+ is that it works exactly like gigabit Ether
 
 I did set up jumbo frames (MTU 9000) across the 10GbE network to reduce overhead for large transfers. This requires consistent MTU settings on every device in the path, including the switch, or you will get fragmentation issues that are painful to debug.
 
+The reason jumbo frames matter at 10 Gbps and barely mattered at 1 Gbps is packet rate. At 1500 byte MTU, saturating a 10GbE link takes roughly 812,000 packets per second in each direction. Every one of those needs header processing. At MTU 9000 the same throughput needs about 138,000 packets per second, so you cut per-packet CPU work by a factor of six.
+
+Here is the detail almost everyone gets wrong the first time. Hosts configure MTU, which is the IP payload size, so you set 9000. Switches configure maximum frame size, which includes the 14 byte Ethernet header and the 4 byte frame check sequence, so the switch needs at least 9018, and 9022 if the port carries a VLAN tag. That is why switch vendors quote numbers like 9216 while your servers say 9000, and why setting the switch to exactly 9000 silently breaks full size frames. RouterOS makes this explicit by exposing both an L2 MTU and an MTU per interface. Set L2 MTU high on every port in the path, then set host MTU.
+
+\`\`\`bash
+# Check what the link actually negotiated and which offloads are on.
+ethtool enp1s0f0 | grep -E 'Speed|Duplex|Link detected'
+ethtool -k enp1s0f0 | grep -E 'tcp-segmentation|generic-receive|scatter-gather'
+
+# Set the MTU on the host side.
+sudo ip link set dev enp1s0f0 mtu 9000
+
+# Prove the whole path carries a full size frame. 8972 payload
+# plus 8 bytes ICMP header plus 20 bytes IP header equals 9000.
+ping -M do -s 8972 -c 3 10.0.30.20
+\`\`\`
+
+Set the switch first, then the hosts. A switch still at 1500 will drop the oversize frames your host happily generates, and the resulting failure looks like an application bug rather than a network one.
+
+## The Failure Modes
+
+**Small things work, large transfers hang.** SSH connects, ping succeeds, then a file copy freezes at a few hundred kilobytes. This is an MTU mismatch every time. One device in the path is still at 1500 and the do-not-fragment ping above will tell you which side. Run it from both ends.
+
+**Single stream tops out around 3 to 4 Gbps.** This is almost never the wire. A single TCP flow is handled by a single receive queue and therefore a single CPU core, and at 10 Gbps that core runs out of headroom. Confirm it by running \`iperf3 -c <host> -P 4\` and seeing the aggregate jump. If four streams reach line rate and one does not, the network is fine and the fix is offloads, receive side scaling, or simply accepting that most real workloads use more than one connection.
+
+**Throughput is fine but the storage is not.** A single 7200 RPM SATA drive sustains roughly 150 to 200 MB/s sequential, which is about 1.6 Gbps. You cannot pull 10 Gbps out of one spinning disk no matter what the NIC does. Benchmark the array locally before blaming the network. This is the most common disappointment after a 10GbE upgrade.
+
+**The card overheats.** ConnectX-3 and similar server NICs assume forced airflow from chassis fans. In a quiet tower with a slow front fan the ASIC throttles or the link drops intermittently under load. Check \`sensors\` or the card temperature via \`ethtool -m\`. A small fan aimed at the heatsink genuinely fixes this.
+
+**Pause frames cause weird stalls.** Ethernet flow control lets a congested receiver tell the sender to stop, which sounds helpful and in practice causes head of line blocking that stalls unrelated traffic on the same port. If you see periodic multi-second freezes, check pause frame counters in \`ethtool -S\` and consider turning flow control off.
+
+## What 10GbE Does Not Fix
+
+Bandwidth is not latency. Round trip time on a 10GbE link is not meaningfully better than gigabit for small requests, because the time is dominated by switching, driver, and kernel path, not serialization. A workload that makes thousands of small synchronous requests, such as a database doing single row lookups or \`rsync\` over a tree of tiny files, will be almost exactly as slow as it was before. If that is your problem, you need fewer round trips or faster storage, not a faster NIC.
+
+10GbE also does nothing for random IOPS, nothing for single-threaded application performance, and nothing for anything crossing your internet connection. And if your bottleneck was a consumer NAS with a weak CPU, you will find the CPU is now the limit.
+
+Be honest about whether you need it. If your largest regular transfer is a few gigabytes overnight, gigabit is already sufficient and the money is better spent on SSDs. I upgraded because backup windows and live migration were measurably painful, not because the number was bigger.
+
 ## What Changed
 
 The biggest quality-of-life improvement is VM storage. I run NFS datastores for some of my virtualization hosts, and going from gigabit to 10GbE made NFS feel local. Boot times dropped, snapshot operations got faster, and I stopped worrying about storage I/O being a bottleneck.
 
 Backup windows also shrank significantly. A full backup that took 45 minutes over gigabit now finishes in about 5 minutes. That means I can take more frequent backups without impacting other workloads.
+
+The unexpected benefit was diagnostic. When the network stopped being the obvious bottleneck, every remaining slow operation had a real cause I could go find, and several of them turned out to be a badly configured NFS mount and a drive that was quietly failing.
+
+## References
+
+- https://en.wikipedia.org/wiki/10_Gigabit_Ethernet
+- https://en.wikipedia.org/wiki/Small_Form-factor_Pluggable
+- https://man7.org/linux/man-pages/man8/ethtool.8.html
+- https://man7.org/linux/man-pages/man8/ip-link.8.html
+- https://www.kernel.org/doc/html/latest/networking/segmentation-offloads.html
+- https://help.mikrotik.com/docs/spaces/ROS/pages/103841822/CRS3xx+CRS5xx+CCR2116+CCR2216+switch+chip+features
 `,
   },
   {
@@ -18297,27 +18418,82 @@ Cable management in a server rack is one of those things that seems optional unt
 
 I have seen racks where every cable was a mystery. Nobody knew what connected where, and pulling one cable meant risking disconnecting something important. That is what bad cable management looks like in practice.
 
+The airflow half of that is not hyperbole, and it has numbers attached. Rack-mount servers pull cool air in the front and exhaust it out the back, and the ASHRAE guidance most equipment is designed around recommends an inlet temperature between 18 and 27 degrees Celsius. A dense cable bundle sitting in the rear exhaust path raises the back-pressure the fans work against, and the fans answer by spinning faster. Fan power rises roughly with the cube of speed, so a server fighting its own cabling draws measurably more power and makes measurably more noise to move the same air. If the exhaust genuinely cannot escape, it recirculates around to the front and raises the inlet temperature directly.
+
+You never get an alert that says "cables are blocking airflow." You get higher fan speeds, higher inlet temperatures, and eventually thermal throttling that presents as a performance problem. The worst single offender is coiled slack: a loop of excess cable behind a 2U server is a solid object sitting in the exhaust stream, and it is the most common flaw in racks that otherwise look tidy.
+
+The related habit is blanking panels. Every empty U in a populated rack is a hole through which hot rear air flows straight back to the front intakes. Blanking panels cost a few dollars each and are the cheapest cooling improvement available to anyone.
+
 ## My Approach
 
 Every cable in my rack serves a documented purpose. I label both ends of every cable with a label maker, using a consistent naming scheme. The label includes the source device, port, destination device, and port. It takes a few extra minutes during installation, and it saves hours during troubleshooting.
 
 I route power cables on one side of the rack and data cables on the other. This keeps things organized and reduces electromagnetic interference, though at these distances EMI is rarely a real problem.
 
+That hedge is worth expanding, because the usual justification for the split is mostly wrong. Twisted pair rejects common mode noise by construction, so at rack distances a power cord running parallel to a patch cable is not a realistic cause of Ethernet errors. The real reasons are practical: tracing is faster, and you never want to be shifting live power cords to reach a network cable.
+
+Labeling both ends is the part people skip, and it is the part that matters. Without both, tracing a cable in a populated rack means unplugging one end and watching for a link light to go out, which means taking something down to learn what a sticker could have told you. There is a standard for this, ANSI/TIA-606, and its useful idea is that every label references an identifier that also exists in your documentation, so the sticker and the spreadsheet agree. The convention matters more than the label maker: any consistent scheme beats labels that each describe things differently.
+
+Color coding multiplies the value of labels because it works from across the room. Assign a color per function and never reuse it: red for out-of-band management, blue for general server data, yellow for switch-to-switch uplinks, green for storage. Then a red cable in a data switch port is visibly wrong before anyone reads a label.
+
+The rack itself is standardized by EIA-310: the rails are 19 inches apart and one rack unit is 1.75 inches, or 44.45 mm. The hole spacing inside a U is not even, repeating in a 0.5, 0.625, 0.625 inch pattern, which is why a cage nut placed one hole off leaves your rail ears misaligned by an amount that looks like the equipment is defective.
+
 ## Velcro Over Zip Ties
 
 I use velcro straps exclusively, never zip ties. Zip ties seem convenient until you need to add or remove a cable. Then you are cutting zip ties, potentially nicking other cables in the process, and replacing them all. Velcro straps can be opened, adjusted, and resealed in seconds.
+
+There is a second reason beyond convenience, and it is the one that actually damages things. Twisted pair works because the two conductors in a pair are twisted at a controlled rate, which gives the pair a consistent characteristic impedance and lets noise cancel. Crushing a bundle with an over-tightened zip tie deforms that geometry, and the result is increased return loss and near-end crosstalk. At gigabit that is usually invisible. At 10GBASE-T it is not. The classic version of this failure is a cable that worked perfectly for years and starts failing when you upgrade the link to 10 Gbps: the cable never changed, only the margin did. On fiber, over-tightening violates the minimum bend radius and attenuates the signal outright.
+
+Velcro is not a free pass either. The rule is the same: you should be able to slide the bundle within the strap. If the strap is holding the cables in a fixed shape, it is too tight.
+
+Two more physical limits are worth knowing. TIA-568 puts the minimum bend radius for four-pair UTP at four times the cable's outer diameter, about an inch for typical Cat6, and caps pulling tension at 25 pounds-force (about 110 newtons). Fiber is stricter: ten times the outer diameter unloaded, twenty under tension, though bend-insensitive fiber tolerates far more. A cable kinked around a rail corner is a fault waiting for a reason to appear.
 
 ## Patch Panels
 
 For Ethernet, I run all connections through a patch panel at the top of the rack. The servers connect to the rear of the patch panel with short cables, and the front of the patch panel connects to the switch with color-coded patch cables. This means I never need to reach behind a server to change a network connection.
 
+The budget governing the layout is the 100 metre channel from TIA-568, and it is not 100 metres of any cable you like. It is 90 metres of permanent link, the fixed horizontal run terminated at both ends, plus 10 metres total of patch cords across both ends combined. Stranded patch cable has higher attenuation per metre than the solid-core cable used in permanent links, which is why the allowance is small. Inside one rack you are nowhere near the limit, but the moment a run leaves the room, count it.
+
+Termination is where patch panels actually go wrong, and there are two rules.
+
+Pick T568A or T568B and use it on every jack in the building. The two standards simply swap the orange and green pairs; either works, and mixing them end to end produces a crossover that gigabit auto MDI-X silently corrects. That is worse than a clean failure, because now your building has two conventions and nobody knows which is where.
+
+Respect the untwist limit. TIA-568 allows no more than 13 mm, half an inch, of untwisted conductor at a Cat5e termination, and Cat6 is tighter still. Untwisting an inch of pair to make the punchdown easier is the most common installation error, and it is invisible: the link comes up, the wiremap test passes, and the crosstalk margin is gone.
+
+Which leads to the tool most people own and misunderstand. A cheap continuity tester checks wiremap, confirming pin 1 goes to pin 1 and so on. It does not measure insertion loss, return loss, or crosstalk. The failure it cannot see is a split pair, where each end is on the correct pin but using conductors from two different twisted pairs. Wiremap passes, the signal pairs are no longer twisted with their partners, crosstalk goes through the roof, and the link either negotiates down to 100 Mbps or throws errors under load. If you terminated your own cable and something is mysteriously slow, suspect this before the switch.
+
 ## Service Loops
 
 I leave a small service loop of excess cable at each connection point. This gives me enough slack to pull a server forward on its rails for maintenance without disconnecting anything. It also means I can reroute cables if I rearrange equipment.
 
+Size the loop to the rail travel, not by eye. A four-post rail kit pulls a server most of its own depth out of the rack, so roughly a metre of slack per cable is the working figure for a 2U chassis. Test it once with the server empty: extend the chassis to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, with the system running.
+
+Cable management arms deserve an honest note. A CMA holds the slack neatly and lets the server slide out with everything connected, which is genuinely useful. It also sits in the rear exhaust path and adds resistance to the airflow the first section was about protecting. Plenty of people remove them for that reason and manage slack in the vertical channel instead. Either choice is defensible. Not deciding leaves you with a CMA blocking airflow and cables that still pull tight.
+
 ## Power
 
 Power cables get their own vertical cable manager on the right side of the rack. Each PDU (Power Distribution Unit) is mounted vertically, and power cables run straight from the PDU to the server's power supply. I use C13/C14 cables cut to the right length rather than coiling excess cable.
+
+Those letters are not arbitrary. They come from IEC 60320, and the pairing is always inlet and connector: the C14 inlet sits on the equipment, the C13 connector on the cord. C19 and C20 are the larger version used by high-draw equipment and by most rack PDUs for their own feed. C13/C14 is rated 10 A at 250 V under IEC and 15 A under the North American UL variant; C19/C20 is 16 A IEC and 20 A UL. They are not interchangeable upward, and no adapter is the right answer to a cord that does not fit.
+
+Two practices pay off. Cross the feeds deliberately: if each server has two power supplies, one goes to the left PDU and one to the right, and the labeling should make that obvious at a glance so nobody "tidies up" both cords onto the same strip. And use locking cords, the IEC Lock or P-Lock style, for anything you cannot afford to have vibrate loose. A standard C13 is held in by friction alone, and it will walk out of the socket over months of fan vibration and rail movement.
+
+## What Cable Management Cannot Fix
+
+Neat cabling is a maintainability property, not a performance one. It will not make a link faster, it will not fix a bad transceiver, and a rack that looks beautiful can still be wired wrong. The value shows up on the day something breaks, in how long it takes to answer "what is plugged into port 14."
+
+It also cannot substitute for documentation. Labels tell you what a cable is; they do not tell you why it exists or whether it is safe to remove. That belongs in a port map maintained alongside the rack, with labels carrying identifiers that match it.
+
+The test that settles whether any of this worked is simple: could someone who did not build the rack trace a connection end to end without unplugging anything? If not, the cabling is documentation debt no matter how good the photographs look.
+
+## References
+
+- https://en.wikipedia.org/wiki/19-inch_rack
+- https://en.wikipedia.org/wiki/Rack_unit
+- https://en.wikipedia.org/wiki/ANSI/TIA-568
+- https://en.wikipedia.org/wiki/Structured_cabling
+- https://en.wikipedia.org/wiki/Data_center_environmental_control
+- https://en.wikipedia.org/wiki/IEC_60320
 `,
   },
   {
@@ -18339,23 +18515,59 @@ Power cables get their own vertical cable manager on the right side of the rack.
 
 VMware ESXi has been the gold standard for enterprise virtualization for years. Proxmox VE is the open-source alternative that has been gaining traction, especially in the homelab community. I have run both extensively, and the choice between them depends on what you are optimizing for.
 
+They are also less alike underneath than the feature comparisons suggest, and that difference explains most of the rest.
+
+## What each one actually is
+
+ESXi is a type 1 hypervisor with its own purpose-built kernel, the VMkernel. There is no general purpose operating system underneath it. That is the source of both its strengths, a small attack surface and predictable behaviour, and its limits: you get exactly the features VMware ships, through the interfaces VMware provides.
+
+Proxmox VE is Debian with KVM and LXC on top. KVM turns the Linux kernel itself into the hypervisor, so this is also type 1 in the sense that matters for performance, with the guest running on hardware virtualization extensions rather than being emulated. What sits alongside it is a complete Linux system.
+
+That is the real fork in the road. Proxmox gives you a hypervisor and a Linux box; ESXi gives you a hypervisor and an API.
+
+## Containers, which the comparison usually skips
+
+Proxmox runs two kinds of guest. KVM virtual machines get their own kernel and can run anything. LXC containers share the host kernel, so they start in about a second, and idle at tens of megabytes instead of the gigabyte a VM reserves before it has done anything.
+
+For a homelab that matters more than any benchmark. Most of what runs in a lab is a Linux service that does not need its own kernel, and putting thirty of those in containers rather than thirty VMs is the difference between a machine that is comfortable and one that is full. The tradeoff is that a container shares the host kernel, so it cannot run a different one and the isolation boundary is weaker than a VM's.
+
+ESXi has no equivalent. Containers there mean a VM running a container runtime.
+
 ## ESXi: The Enterprise Standard
 
 ESXi is polished. The vSphere client is fast and well-organized. vMotion (live migration) works flawlessly. The ecosystem of third-party tools and integrations is massive. If you are studying for VMware certifications or want to match what most enterprises run, ESXi is the obvious choice.
 
+Worth being precise about what is free and what is not, because most of the good parts are not. Bare ESXi manages one host. vMotion, the distributed switch, DRS and the rest are vCenter features and require licences. A single free ESXi host is a hypervisor, not a cluster, and much of what people admire about VMware is the cluster.
+
 The downside is licensing. VMware's free tier has become increasingly limited, and the paid licenses are expensive for a homelab. The acquisition by Broadcom has added uncertainty about future pricing and availability. For a lab where you are experimenting freely, licensing friction is a real concern.
+
+There is a second friction that bites homelabs harder than it bites enterprises: the hardware compatibility list. ESXi ships drivers for hardware VMware supports, which is enterprise hardware. A consumer NIC or a desktop SATA controller may simply not be seen. Proxmox, being Debian, drives anything Linux drives, which is most things.
 
 ## Proxmox: The Open-Source Powerhouse
 
 Proxmox VE is built on Debian Linux with KVM for virtual machines and LXC for containers. It is completely free to use with no feature limitations. The web interface is functional, and you get full command-line access to the underlying Linux system, which means you can do anything the OS can do.
 
+"No feature limitations" is the part worth dwelling on. Clustering, live migration, high availability and replication are all in the free product. The paid subscription buys the enterprise package repository and support, not features. That is the opposite of the VMware model, and for a lab it is the whole argument.
+
 Proxmox also has native ZFS support, which is a big deal if you care about data integrity and storage flexibility. You can create ZFS pools directly from the Proxmox interface and use them for VM storage.
+
+Native means the installer will build a root ZFS pool, and the web UI manages datasets and snapshots directly. Combined with KVM, that gives you snapshots that are genuinely cheap and replication between nodes that ships only changed blocks. ESXi's answer is VMFS or vSAN, and neither gives you end to end checksumming on commodity disks.
+
+## Clustering, and the part that surprises people
+
+Proxmox clusters use Corosync for membership and quorum, and quorum is majority based. Two nodes is therefore a trap: lose either and the survivor has one vote out of two, which is not a majority, so it stops. Run three nodes, or add a lightweight quorum device as the third vote. Every "my two node Proxmox cluster froze" story is this.
+
+Live migration also needs shared or replicated storage, as noted below. Corosync additionally wants a low latency network to itself; sharing it with storage traffic is the usual cause of a cluster that fences nodes under load.
 
 ## My Experience
 
 I ran ESXi for a year before switching most of my lab to Proxmox. The switch was driven by three things: licensing costs, ZFS support, and the flexibility of having a full Linux system underneath.
 
 Proxmox handles my workloads just as well as ESXi did. VM performance is effectively identical (both use hardware virtualization). Live migration works, though it requires a shared storage backend. Backups are straightforward with Proxmox Backup Server, which is another free tool from the same team.
+
+Performance being "effectively identical" is not hand-waving. Both run guests on the CPU's virtualization extensions, with second level address translation handling memory in hardware. The hypervisor is not in the path for ordinary instructions. Where they differ is in the paravirtualized device drivers, virtio on KVM and VMXNET3 and PVSCSI on VMware, and both are good. Use them: a guest left on emulated e1000 or IDE will be slow on either platform, and that misconfiguration is the source of most benchmark posts claiming one destroys the other.
+
+Proxmox Backup Server deserves more than a clause. It does deduplicated, incremental, client side encrypted backups with verification, and restores individual files out of a VM image. It is the piece that closed the last real gap for me.
 
 ## What I Miss from ESXi
 
@@ -18364,6 +18576,17 @@ The vSphere client is genuinely better than the Proxmox web UI. It is more respo
 ## Bottom Line
 
 For a homelab, Proxmox wins on value. You get enterprise-class virtualization with no licensing restrictions, native ZFS, and full Linux flexibility. For enterprise environments or certification study, ESXi remains the standard. There is no wrong choice. Pick the one that matches your goals.
+
+If you want the decision as a rule: pick ESXi when the goal is to practise what an employer runs, or when something you need only exists in the VMware ecosystem. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
+
+## References
+
+- https://pve.proxmox.com/pve-docs/pve-admin-guide.html
+- https://pve.proxmox.com/pve-docs/chapter-pvecm.html
+- https://linux-kvm.org/page/Main_Page
+- https://en.wikipedia.org/wiki/LXC
+- https://en.wikipedia.org/wiki/VMware_ESXi
+- https://en.wikipedia.org/wiki/Second_Level_Address_Translation
 `,
   },
   {
@@ -18649,6 +18872,20 @@ A UPS (Uninterruptible Power Supply) sits between your servers and the wall outl
 
 I learned this the hard way early on. A brief power flicker corrupted a ZFS pool that took hours to repair. After that, I invested in proper UPS protection for every piece of equipment in the rack.
 
+The flicker is the part people underestimate. A full outage is obvious and rare. A brownout, a transfer to a generator down the street, or a compressor kicking on in the same building produces a sag of a few cycles, which is far too short to notice and far too long for a power supply holding roughly 20 milliseconds of energy in its capacitors.
+
+## The three topologies, and why it matters which one you buy
+
+Not all UPS units do the same job, and the cheapest ones do the least.
+
+**Standby (offline).** The load runs straight from the wall. When the UPS detects the voltage leaving tolerance it switches to the inverter, typically in 2 to 10 milliseconds. That transfer time is usually inside what a server power supply can ride through, but only just, and the unit does nothing about voltage that is merely bad rather than absent.
+
+**Line interactive.** Same idea, plus an autotransformer that can buck or boost the incoming voltage without going to battery. This is the important upgrade for a homelab, because most real power problems are sags and swells rather than outages, and a standby unit answers every one of them by discharging the battery. A line interactive unit corrects them and saves the cycles.
+
+**Double conversion (online).** Mains is rectified to DC and inverted back to AC continuously, so the load never sees utility power directly and transfer time is zero. It is the right answer in a data hall and usually the wrong one in a house: the conversion runs at maybe 90 to 94 percent efficiency, so it burns real money as heat all year, and the fans are audible.
+
+For a rack in a house, line interactive is the sweet spot. I would not spend the extra on double conversion unless something in the rack is genuinely intolerant of a 4 millisecond gap, and almost nothing is.
+
 ## Calculating Your Needs
 
 Step one is measuring your actual power consumption. I use a Kill-A-Watt meter on each server to measure draw under normal load and under peak load. Here is what my rack pulls:
@@ -18660,23 +18897,62 @@ Step one is measuring your actual power consumption. I use a Kill-A-Watt meter o
 - Total typical load: ~1,280W
 - Total peak load: ~1,800W
 
+Measure, do not add up the labels. A power supply's nameplate is what it can deliver, not what the machine draws, and the gap is enormous: an 1,100W supply in a lightly loaded R740 might pull 150W at idle. Sizing from nameplates leads people to buy two or three times the UPS they need.
+
+Do measure at boot, though. Spinning rust is the exception to everything above, because a drive draws two to three times its running current while the platters spin up. A shelf of twelve disks starting at once is a genuine surge, which is why staggered spin-up exists in the HBA firmware and why it is worth turning on.
+
 ## VA vs Watts
 
 UPS capacity is rated in VA (Volt-Amps) and Watts. They are not the same thing. VA is apparent power, and Watts is real power. For server loads (which are mostly resistive), the power factor is typically around 0.8 to 0.9. That means a 2000VA UPS delivers about 1600 to 1800 watts of real power.
 
+Where the two diverge is power factor, the ratio of real to apparent power. A modern server supply with active power factor correction runs at 0.95 or better, which is why the old assumption of 0.6 baked into cheap UPS ratings is pessimistic for a rack full of enterprise gear and optimistic for a shelf of consumer bricks.
+
 Always size based on watts, not VA. And always leave headroom. I target 70% utilization, so for my 1,800W peak load, I need a UPS rated for at least 2,600W (or about 3,000VA).
+
+The headroom is not superstition. Batteries lose capacity as they age, so a unit sized to exactly your load on day one is undersized by year three. Running at 70 percent also keeps the inverter out of the part of its efficiency curve where it makes the most heat.
 
 ## Runtime
 
 Runtime is how long the UPS can keep your servers running on battery. For a homelab, you probably do not need hours of runtime. You need enough time for your servers to detect the outage and shut down gracefully. Five to ten minutes is usually sufficient.
 
+Runtime is also badly nonlinear, which trips people up. Lead acid batteries deliver less total energy the faster you discharge them, so halving the load more than doubles the runtime. A unit rated for 5 minutes at full load might give 20 at a quarter load. Read the manufacturer's runtime chart at your actual measured draw rather than interpolating from the headline number.
+
+## Talking to it
+
+A UPS nobody is listening to is a battery that delays the crash by eight minutes. The point is the graceful shutdown, and that needs software.
+
 I have my servers configured to start a clean shutdown when the UPS signals a power loss. The UPS communicates via USB using NUT (Network UPS Tools) on Linux. The shutdown process takes about two minutes, so my UPS needs to provide at least three to four minutes of runtime at full load.
+
+NUT splits into a driver that talks to the hardware, a network daemon, and clients that act on the state. One machine owns the USB cable and runs the daemon; everything else in the rack is a client over the network, which is what lets a single UPS shut down four machines. Set the low battery threshold well above the point of no return, and set the machine that owns the cable to shut down last.
+
+Then test it. Pull the plug on a Saturday afternoon and watch what happens, because the failure modes only show up in a real transfer: a client that never got the credentials, a shutdown script that hangs on an NFS mount that went away with the switch, a machine set to stay off when power returns. I have found all three that way.
+
+## Batteries are consumables
+
+Sealed lead acid cells last three to five years and fail closed, meaning the UPS reports itself healthy right up until the moment it is asked to do the one thing it exists for. Run the self test monthly, and replace on age rather than on symptoms. Heat is what kills them, so a UPS at the bottom of a warm rack ages faster than the datasheet suggests.
 
 ## My Setup
 
 I run an APC Smart-UPS 3000VA rack-mount unit. It provides about 8 minutes of runtime at my typical load, which is plenty for graceful shutdowns. The rack-mount form factor keeps everything neat, and the network management card lets me monitor it remotely.
 
 The total cost was significant, but it has already saved my data at least three times during power outages. That makes it one of the best investments in the entire lab.
+
+## What a UPS will not do
+
+It will not fix an undersized circuit. A 15A 120V branch is 1,800W and should be loaded to 80 percent continuous, which is 1,440W, and no UPS changes that arithmetic; it just fails differently when you exceed it.
+
+It will not run your air conditioning, so a long outage in a warm room ends in a thermal shutdown whether or not the servers still have power.
+
+And it is not a generator. Sizing for hours of runtime on batteries is almost always the wrong purchase. Buy enough minutes to shut down cleanly, spend the rest on the monitoring that makes sure the shutdown actually happens.
+
+## References
+
+- https://en.wikipedia.org/wiki/Uninterruptible_power_supply
+- https://en.wikipedia.org/wiki/Power_factor
+- https://en.wikipedia.org/wiki/Volt-ampere
+- https://networkupstools.org/docs/user-manual.chunked/index.html
+- https://man.archlinux.org/man/ups.conf.5
+- https://man.archlinux.org/man/upsc.8
 `,
   },
   {
@@ -18950,7 +19226,7 @@ The discipline that transferred best is the one NIST spells out in SP 800-41: a 
 - https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf
 - https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/803637/firewall-policies
 - https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/565222/vlans
-- https://csrc.nist.gov/pubs/sp/800/41/r1/final
+- https://docs.fortinet.com/document/fortigate/7.4.0/best-practices/598577/ssl-tls-deep-inspection
 - https://www.rfc-editor.org/rfc/rfc1918
 - https://www.rfc-editor.org/rfc/rfc5424
 `,
@@ -19127,6 +19403,8 @@ Pick your CPU based on your actual workload:
 
 Servers generate a lot of heat. A single fully loaded PowerEdge R740 can produce over 1,500 BTU per hour. In a datacenter with thousands of servers, managing that heat is the difference between reliable operation and cascading thermal shutdowns.
 
+The number is worth putting on a firmer footing, because it is a definition rather than an estimate. Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
+
 The fundamental challenge is that you need to deliver cool air to server intakes and remove hot air from server exhausts without the two mixing. If hot exhaust air recirculates back to the intakes, cooling efficiency drops and servers run hotter than they should.
 
 ## Hot Aisle / Cold Aisle
@@ -19141,15 +19419,47 @@ Taking it further, you can physically enclose either the hot aisle or the cold a
 
 In practice, hot aisle containment is more common because it lets the rest of the room stay cool, which is more comfortable for people working in the space.
 
+## Recirculation is a pressure problem
+
+It helps to stop thinking about temperature and start thinking about pressure. Server fans pull air from the front and push it out the back, which makes the cold aisle a slightly higher pressure region and the hot aisle a slightly lower one. Air moves from high pressure to low pressure through whatever path is available.
+
+Every gap is such a path. An empty U with no blanking panel, the space beside a short device in a deep rack, an unfilled cable cutout in the floor: each is a route from the hot side back to the cold side, and the fans that are supposed to be cooling the equipment are the pump driving it.
+
+That is why the fix is mechanical rather than thermal. You are not adding cooling, you are closing the short circuits. Blanking panels in every empty U, brush grommets in cable openings, and side panels present are all the same intervention.
+
+## The failure is a feedback loop
+
+Recirculation does not degrade gracefully. Hot exhaust reaching an intake raises that server's inlet temperature, so its fans speed up, so it moves more air, so it pulls more hot air through the same gap. Fan power rises roughly with the cube of speed, so the server also starts consuming meaningfully more electricity, which becomes more heat.
+
+The end of that loop is thermal throttling, and then a shutdown. What makes it dangerous in a small room is that the first symptom is usually noise rather than an alert.
+
+## What the temperature target actually is
+
+The number that matters is inlet temperature, measured at the front of the equipment, not the room temperature and not the temperature somewhere in the middle of the rack.
+
+Modern equipment tolerates far more than people assume. The industry guidance has moved steadily upward, and running a room at 18C to be safe is mostly wasted money: raising the setpoint is the single largest efficiency lever in a data hall, and it is why free cooling works in climates that sound too warm for it. In a homelab the practical version is simpler. Measure at the intake, know the manufacturer's stated range, and give yourself margin for the day the door is shut and the fan fails.
+
 ## In a Homelab
 
 I only have one rack, so traditional aisle containment does not apply. But the principle still matters. I make sure all my servers face the same direction, with intakes pulling air from the front of the rack and exhausting out the back. The back of the rack faces a wall with adequate clearance for hot air to dissipate.
 
 I also added a small exhaust fan at the top rear of the rack to pull hot air up and out. Combined with blanking panels to fill empty rack space (preventing hot air from recirculating through gaps), this keeps my equipment running at comfortable temperatures even in a closet.
 
+Two details make more difference than anything else at this scale. The first is that the rack needs somewhere for the heat to go: a closed closet reaches equilibrium with the room, and if the door stays shut the equilibrium is above the equipment's rating. Ventilation into a larger space is not optional.
+
+The second is that a single rack has the same recirculation paths as a row, just fewer of them. The gaps beside a half depth switch in a deep rack, and any unfilled U, do exactly what they do in a data hall.
+
 ## Key Takeaways
 
 Airflow management is not optional for servers. Hot air recirculation causes thermal throttling, shorter component life, and ultimately failures. Even in a single-rack homelab, filling blank spaces with panels and ensuring consistent airflow direction makes a measurable difference in temperatures.
+## References
+
+- https://en.wikipedia.org/wiki/Data_center
+- https://en.wikipedia.org/wiki/Computer_cooling
+- https://en.wikipedia.org/wiki/British_thermal_unit
+- https://en.wikipedia.org/wiki/Ton_of_refrigeration
+- https://en.wikipedia.org/wiki/Free_cooling
+- https://en.wikipedia.org/wiki/Raised_floor
 `,
   },
   {
@@ -19899,11 +20209,17 @@ Active Directory (AD) is Microsoft's directory service, and it is the backbone o
 
 I set up a full AD domain in my homelab to practice in an environment where mistakes are safe and learning is the priority.
 
+The thing that makes AD worth learning as a security topic specifically is that it is an authentication system, a configuration management system, and a database, all wearing one name. Kerberos handles the authentication (AD implements Kerberos V5, RFC 4120), LDAP is the query interface, DNS is how anything finds anything, and Group Policy is the configuration layer bolted on top. When AD breaks, it is almost never "AD" that broke. It is one of those four.
+
 ## The Setup
 
 My AD lab runs on two Windows Server 2022 VMs. One is the primary domain controller, and the other is a secondary domain controller for redundancy. Both are running DNS, which is required for AD to function.
 
 The domain is a standard .local domain (not best practice for production, but fine for a lab). I created organizational units (OUs) for servers, workstations, and users, and applied different Group Policy Objects (GPOs) to each.
+
+It is worth being specific about why \`.local\` is a bad choice, because "not best practice" undersells it. RFC 6762 reserves the \`.local\` top-level domain for Multicast DNS. Any host implementing mDNS, which means every Mac, every Linux box running Avahi, and modern Windows, is supposed to resolve \`.local\` names by multicasting to 224.0.0.251 (or ff02::fb) on UDP 5353 rather than querying your DNS server. The resulting failure is maddening because it is partial: Windows clients join the domain fine while a Mac on the same VLAN cannot resolve the domain controller at all, and nothing in the error mentions mDNS. The correct choice is a subdomain of a domain you actually own, such as \`ad.example.com\`.
+
+Two more setup details matter more than they look. Each DC should point its primary DNS at the *other* DC and its secondary at itself; a DC pointing only at itself can end up in the "island" state where it cannot locate replication partners after a reboot. And do not hand out a public resolver to domain-joined clients over DHCP. The single most common domain join failure, "An Active Directory Domain Controller for the domain could not be contacted," is almost always a client using 8.8.8.8, which has no idea your \`_ldap._tcp.dc._msdcs\` records exist. Point clients at the DCs and configure forwarders on the DCs instead.
 
 ## Group Policy
 
@@ -19917,17 +20233,64 @@ Group Policy is where AD gets powerful. GPOs let you enforce configuration acros
 
 The GPO inheritance model takes some time to understand, but once you get it, you can manage hundreds of machines from a single console.
 
+The processing order is LSDOU: Local policy, then Site, then Domain, then each OU from the top down. Later processing wins, which is why an OU-level setting beats a domain-level one. Two modifiers change this: Enforced (formerly "No Override") on a link makes that GPO win over anything processed later, and Block Inheritance on an OU stops inherited GPOs from applying. Enforced beats Block Inheritance, always.
+
+The part that reliably confuses people is link order within a single OU. When several GPOs are linked at one OU, link order 1 is applied *last*, which means it wins. The number in the GUI is a priority, not a sequence, and it reads backwards from how it behaves.
+
+Clients refresh policy on a 90 minute interval with a random offset of 0 to 30 minutes, so the real worst case is two hours. Domain controllers refresh every 5 minutes. If you change a GPO and nothing happens, that is usually all it is, and \`gpupdate /force\` on the client settles the question. Some settings, notably software installation and folder redirection, only apply at boot or logon regardless.
+
+Two failure modes worth knowing before you hit them:
+
+**Password policy on an OU does nothing.** Domain account policy comes from GPOs linked at the *domain* level and applies to the whole domain. Linking a GPO with password settings to the Users OU is a no-op, and there is no warning. The classic Default Domain Policy values are a 42 day maximum password age, a 7 character minimum length, 24 remembered passwords, and account lockout disabled. If you need different policies for different groups, the mechanism is Fine-Grained Password Policies, which are PSO objects applied to groups and require a domain functional level of Windows Server 2008 or higher.
+
+**Security filtering silently breaks after MS16-072.** Since the June 2016 update, GPOs are retrieved in the computer's security context rather than the user's. Tighten security filtering on a user-targeted GPO by removing Authenticated Users and the computer can no longer read the GPO, so the policy stops applying to everyone. The fix is to leave Authenticated Users (or Domain Computers) with Read while granting Apply only to your target group. Any guide written before mid-2016 gets this wrong.
+
+Be honest about software deployment. GPO software installation handles MSI packages only, installs at boot for computer-assigned packages, needs the client to reach the distribution share at that moment, and has no reporting worth the name. It demonstrates the concept and handles a handful of machines. Real fleets use Intune, Configuration Manager, or winget driven by something with actual state tracking.
+
 ## DNS Integration
 
 AD depends heavily on DNS. Every domain controller registers SRV records that clients use to find the DC. If DNS is broken, AD is broken. I learned this the hard way when a misconfigured DNS forwarder caused domain joins to fail. The error messages were unhelpful, and it took significant time to trace the problem back to DNS.
 
 Always check DNS first. If AD is not working, DNS is the most likely culprit.
 
+The records in question are SRV records as defined in RFC 2782, and they live in a predictable place. \`_ldap._tcp.dc._msdcs.<domain>\` lists the domain controllers, \`_kerberos._tcp.<domain>\` lists the KDCs, and \`_gc._tcp.<domain>\` lists global catalog servers. You can check them from any client without special tooling:
+
+\`\`\`
+nslookup -type=srv _ldap._tcp.dc._msdcs.ad.example.com
+\`\`\`
+
+If that returns nothing, stop troubleshooting AD and fix DNS. If it returns a DC that no longer exists, you have stale records, which happens when a DC is removed without a clean demotion.
+
+Time deserves its own paragraph because it is the second most common cause of "AD is broken" and it never announces itself. Kerberos rejects tickets whose timestamps differ from the server's clock by more than the maximum tolerance, which defaults to 5 minutes. Cross that line and authentication fails with KRB_AP_ERR_SKEW while ping, DNS, and everything else look healthy. In a virtualized lab this is a standing hazard: hypervisor guest time synchronization and the domain time hierarchy both try to set the clock, and snapshotting a DC and resuming it hours later reliably breaks logons. The domain's authoritative clock is the PDC Emulator FSMO role holder, so point that one DC at an external NTP source, let everything else follow the domain hierarchy, and disable hypervisor time sync on the DCs.
+
+While on FSMO roles: there are five, two forest-wide (Schema Master, Domain Naming Master) and three per-domain (PDC Emulator, RID Master, Infrastructure Master). Most of them can be offline for a while without anyone noticing, which is exactly why homelabs get bitten. The RID Master hands out pools of 500 relative identifiers to each DC; when a DC exhausts its pool and cannot reach the RID Master, you can no longer create users, groups, or computer accounts on it. Also note the tombstone lifetime, 180 days for any forest built on Server 2003 SP1 or later. A domain controller powered off longer than that cannot be brought back into replication. It has to be forcibly removed from the directory and rebuilt, and if you shut your lab down over a summer, that is the DC you will be rebuilding.
+
+Replication timings are worth knowing so you know when to stop waiting. Within a site, DCs use change notification with about a 15 second delay before the first partner is notified. Between sites, the default replication interval is 180 minutes. A change that has not propagated after three hours is a problem; a change that has not propagated after thirty seconds is normal.
+
 ## Security Considerations
 
 AD is a prime target in real-world attacks. Compromising a domain controller means owning the entire domain. In my lab, I practice common attack techniques (in an isolated environment) to understand how they work and how to defend against them. Kerberoasting, pass-the-hash, and DCSync are all things that work if AD is not configured carefully.
 
 Understanding the attacks makes me better at configuring the defenses.
+
+Each of those maps to a specific defense, and the defenses are more interesting than the attacks:
+
+**Kerberoasting** works because any authenticated user can request a service ticket for any account with a Service Principal Name, and that ticket is encrypted with the service account's password hash. The attacker cracks it offline at whatever rate their GPU allows, with no lockout and no failed logon events. Two things make it hard: password length and encryption type. RC4-HMAC tickets crack far faster than AES256 ones, so forcing AES on service accounts matters. The real answer is group Managed Service Accounts, where Windows generates the password itself and rotates it every 30 days by default.
+
+**Pass-the-hash** works because NTLM authentication proves you know the hash, not the password, so a hash stolen from one machine's memory authenticates elsewhere. The defenses are structural rather than technical: never log on to a workstation with Domain Admin credentials, because doing so places those credentials in that workstation's memory where any local admin can take them. That habit is the core of Microsoft's tiered administration model. Add unique local administrator passwords (LAPS) so one compromised local admin hash does not open every machine, and put admin accounts in the Protected Users group, which blocks NTLM for them, forces AES, and caps their TGT at four hours.
+
+**DCSync** is not really an exploit. It is an attacker using the replication protocol as designed, asking a DC for password hashes while claiming to be another DC. It requires the "Replicating Directory Changes" and "Replicating Directory Changes All" rights, which legitimately belong only to domain controllers and a few service accounts. The defense is an audit rather than a patch: enumerate who holds those rights on the domain object and remove anyone who should not.
+
+One rule for lab practice: the attack lab must not route to anything you care about. Tools that dump credentials and forge tickets do not know they are in a lab, and neither does a mistyped target IP. Put the domain on an isolated VLAN with no path to your real network.
+
+## References
+
+- https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview
+- https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/naming-conventions-for-computer-domain-site-ou
+- https://www.rfc-editor.org/rfc/rfc6762
+- https://www.rfc-editor.org/rfc/rfc2782
+- https://www.rfc-editor.org/rfc/rfc4120
+- https://attack.mitre.org/techniques/T1558/003/
 `,
   },
   {
@@ -21123,11 +21486,19 @@ ip route get 10.0.30.15
 
 Server BIOS settings control how the hardware behaves at the lowest level. A misconfigured BIOS can leave performance on the table, cause stability issues, or create security vulnerabilities. Most people never touch BIOS settings after initial setup, which means they are running with defaults that may not match their workload.
 
+The other reason to care is that several of these settings are invisible from inside the operating system. If NUMA is hidden by the firmware, no amount of kernel tuning brings it back. If SR-IOV is off, the virtual functions do not exist and \`lspci\` shows nothing missing. A surprising share of "why is Linux ignoring my tuning" questions are answered two layers down.
+
 ## System Profile
 
 Dell servers offer system profiles that bundle related settings. The most important choice is between "Performance" and "Performance Per Watt (OS)." Performance mode runs CPUs at maximum frequency regardless of load. Performance Per Watt lets the OS manage frequency scaling, saving power during idle periods.
 
 For virtualization workloads, I use "Performance Per Watt (OS)" because my servers are not constantly under full load. The power savings are real, and the performance impact is minimal because the OS scales frequency up instantly when load increases.
+
+There is a third option that trips people up: "Performance Per Watt (DAPC)," where DAPC stands for Dell Active Power Controller. In DAPC mode the firmware manages P-states itself and the operating system has no say. That is fine, but it means your \`cpupower frequency-set\` commands and your carefully chosen governor do nothing at all, silently. If you intend to tune frequency scaling from Linux using \`intel_pstate\` or \`acpi-cpufreq\`, you need the (OS) profile or a Custom profile with OS control enabled. Checking \`cpupower frequency-info\` after a profile change takes ten seconds and saves an afternoon.
+
+What Performance mode actually does is disable C-states and C1E, lock memory frequency to maximum, and stop the OS from scaling anything down. The reason to want that is not throughput, it is latency jitter. Waking a core from a deep C-state costs time: C1 exit is on the order of a couple of microseconds, while deeper package C-states run into the tens of microseconds. For a workload where a packet arriving on an idle core must be handled immediately, that variance is the whole problem. For a hypervisor running general-purpose VMs, the cores are rarely idle long enough for it to matter and you are paying for heat.
+
+One more thing surprises people about Performance mode: it does not give you the maximum turbo bin all the time. All-core turbo is lower than single-core turbo, and on Intel Xeon Scalable parts, AVX-512 workloads run at a separately specified, lower base and turbo frequency. A CPU advertised at 3.0 GHz base can legitimately run heavy vector code below that number, and no BIOS setting changes it.
 
 ## Memory Settings
 
@@ -21135,21 +21506,64 @@ Memory interleaving should be enabled for maximum memory bandwidth. This spreads
 
 Memory operating mode should be set to "Optimizer Mode" for best performance. "Mirror Mode" provides memory redundancy at the cost of half the usable capacity, which is only worth it for mission-critical production servers.
 
+Distinguish two settings that both have "interleave" in the name, because they pull in opposite directions. Channel interleaving, within a socket, is the one you want on: it spreads consecutive addresses across the memory channels so one stream of reads uses all of them. Node interleaving, across sockets, is the one you want off. It interleaves memory between physical CPUs and hides the NUMA topology from the operating system, making every access uniformly mediocre instead of mostly local. Every modern hypervisor and database is NUMA-aware and places memory intelligently if you let it see the topology. With node interleaving on, \`numactl --hardware\` reports a single node and you have thrown that away.
+
+The setting that costs the most performance is not a setting at all, it is how you populated the slots. Xeon Scalable processors in an R740 have six memory channels per socket, and bandwidth scales with populated channels, so filling four of six costs roughly a third of your memory bandwidth no matter how fast the DIMMs are. Populate in multiples of six per socket. Going to two DIMMs per channel also often drops the configured speed a tier, so 12 DIMMs per socket can be slower than 6 in bandwidth-bound work while giving double the capacity.
+
+Mixing DIMMs is where people lose days. The whole system clocks down to the slowest module present, mixing ranks and sizes within a channel is restricted, and some combinations will not post at all. Buy matched kits.
+
+On ECC, the distinction worth understanding is between correctable and uncorrectable errors. A correctable error is silently fixed and logged, so a rising count on one DIMM is a replace-it-soon signal, not an emergency. An uncorrectable error results in a machine check, which usually means a crash. On Linux the counters live in the EDAC subsystem under \`/sys/devices/system/edac/\`, and \`rasdaemon\` attributes them to a specific DIMM slot. Turn correctable error logging on and actually alert on it, because the entire value of ECC is the warning it gives you before the failure.
+
 ## Virtualization
 
 If you are running a hypervisor, enable Intel VT-x (or AMD-V) and VT-d (or AMD-Vi). VT-x provides hardware-assisted CPU virtualization, and VT-d enables direct device passthrough to virtual machines. Both are required for modern hypervisors to work at full performance.
+
+Two follow-ups that the checklists usually omit.
+
+First, SR-IOV is a separate switch. On Dell servers it lives under Integrated Devices as "SR-IOV Global Enable" and it ships disabled. With VT-d on and SR-IOV off, the physical function works fine and no virtual functions ever appear, which looks exactly like a driver problem and is not one.
+
+Second, on Linux the BIOS setting is necessary but not sufficient. You also need \`intel_iommu=on\` (or \`amd_iommu=on\`) on the kernel command line. After that, passthrough is constrained by IOMMU groups: every device in a group must be assigned to the same guest, because the hardware cannot isolate them from one another. Group granularity depends on whether the PCIe root ports support Access Control Services. On consumer boards a whole slot often lands in one group with the chipset; on server boards the grouping is usually clean, which is a concrete reason to use server hardware for passthrough work.
 
 ## Boot Configuration
 
 Set the boot mode to UEFI rather than Legacy BIOS. UEFI is faster, supports larger disks, and provides Secure Boot capabilities. Unless you are running a very old operating system, there is no reason to use Legacy mode.
 
+The disk size limit has a specific number behind it. Legacy boot uses an MBR partition table, whose LBA fields are 32 bits wide. With 512-byte sectors that caps addressable space at 2^32 times 512 bytes, which is 2 TiB. GPT, which UEFI uses, uses 64-bit LBAs and removes the ceiling for any drive you will ever buy. A 4 TB boot volume is simply not possible in Legacy mode.
+
+The mistake to avoid is flipping this setting on a server that already has an operating system installed. Boot mode is not cosmetic: the firmware looks for a completely different thing on disk in each mode, so switching after installation produces an unbootable system and a "no boot device found" message even though the disk is perfectly healthy. Set it before you install. Windows has \`MBR2GPT\` and Linux can usually be converted by hand, but both are more work than reinstalling a lab box.
+
+Secure Boot has a real tradeoff worth naming. It requires everything in the boot chain to be signed by a key the firmware trusts, which also means unsigned kernel modules will not load. On Linux that hits out-of-tree drivers: proprietary NVIDIA modules, ZFS built through DKMS, VirtualBox. The fix is enrolling a Machine Owner Key and signing your modules, which is worth learning and not worth discovering at 11 PM.
+
 ## Power Redundancy
 
 If your server has dual power supplies, set the power redundancy policy to "Redundant." This means the server distributes load across both PSUs and can survive the failure of either one. "Non-Redundant" uses all available power capacity but offers no protection against PSU failure.
 
+Dell also offers Hot Spare mode, which is worth knowing about. In Hot Spare the server puts one PSU into a standby state and runs the load on the other, waking the standby unit if demand rises or the active one fails. The reason this saves power is the shape of the efficiency curve: a supply is most efficient near half load, so one PSU at 40 percent beats two PSUs at 20 percent each. Redundancy is preserved because the standby comes up in milliseconds.
+
+Two caveats. Redundancy at the server means nothing if both cords go to the same PDU on the same breaker, so plan the feeds as well as the setting. And do not mix PSU wattages in one chassis; Dell will flag the mismatch, and depending on the model it will either refuse to use both or derate to the smaller one.
+
 ## Firmware Updates
 
 Keep the BIOS firmware updated. Dell releases BIOS updates that fix bugs, improve stability, and patch security vulnerabilities. Use iDRAC or the Lifecycle Controller to apply updates without needing a bootable USB drive.
+
+Order matters. Update iDRAC and the Lifecycle Controller first, then the BIOS, then everything else, because a BIOS package can fail to stage against an old Lifecycle Controller. Expect the update to add several minutes to the next boot while the Lifecycle Controller applies it, and never interrupt a flash: power loss during a BIOS write is one of the few ways to genuinely brick a server.
+
+The reason to actually track BIOS releases rather than treating them as optional is CPU microcode. Speculative execution mitigations for Spectre, Meltdown, and the various MDS variants ship as microcode inside BIOS updates, and there is no other path to them apart from the operating system's own early-load microcode package. Be aware that they are not free. Syscall-heavy and context-switch-heavy workloads take a measurable hit from these mitigations, which is a real tradeoff on an isolated lab host and not a real tradeoff on anything running untrusted code.
+
+Finally, export the configuration before you change anything. On Dell hardware, \`racadm get -f bios.xml -t xml\` or a Server Configuration Profile export from the Lifecycle Controller captures every setting in a file you can diff, version in git, and replay onto an identical machine. That turns "what did I change six months ago" into a \`git log\`, and makes building a second identical host a ten minute job.
+
+## What BIOS Settings Will Not Fix
+
+Firmware tuning is a small multiplier on hardware you already have. It will not make a 6-channel CPU with 4 populated channels perform like a fully populated one, and Performance mode will not rescue a workload that is actually waiting on disk or network. Measure first, find the real bottleneck, and only then open the setup screen. The settings that reliably matter are the handful above: NUMA visibility, channel population, IOMMU and SR-IOV, boot mode, and ECC logging. Almost everything else is a default for good reasons.
+
+## References
+
+- https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
+- https://www.kernel.org/doc/html/latest/driver-api/vfio.html
+- https://www.kernel.org/doc/html/latest/driver-api/edac.html
+- https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface
+- https://en.wikipedia.org/wiki/GUID_Partition_Table
+- https://en.wikipedia.org/wiki/Non-uniform_memory_access
 `,
   },
   {
@@ -21175,21 +21589,93 @@ If DNS is not working, nothing works. Web browsers cannot resolve domain names. 
 
 DNS translates human-readable domain names into IP addresses. When you type a URL into a browser, your computer asks a DNS resolver for the IP address. The resolver checks its cache, and if it does not have the answer, it queries authoritative DNS servers in a hierarchical process that starts at the root servers and works down through the domain hierarchy.
 
+Concretely, resolving \`www.example.com\` from a cold cache is three questions, not one. The resolver asks a root server, which does not know the answer but returns a referral to the \`.com\` nameservers. It asks a \`.com\` nameserver, which returns a referral to the nameservers for \`example.com\`. It asks one of those, which is authoritative and returns the actual A record. Each step is a full query and response, which is why the first lookup of a name is slow and every lookup after it is instant.
+
+There are 13 root server identities, \`a.root-servers.net\` through \`m.root-servers.net\`. That number is not because there are 13 machines. It is because the original priming response had to fit in a 512 byte UDP DNS message, which is the limit set in RFC 1035. Each of those 13 identities is anchored by anycast to hundreds of physical instances worldwide.
+
+That 512 byte limit is still the default. EDNS(0), defined in RFC 6891, is the mechanism that lets a resolver advertise it can receive larger UDP responses, and current practice is to advertise 1232 bytes to stay under common IPv6 fragmentation thresholds. When a response still does not fit, the server sets the truncated bit and the client retries over TCP. This is why blocking TCP port 53 on a firewall is a mistake. DNS over TCP is a required part of the protocol, not a legacy fallback, and blocking it produces failures that only appear for large responses, which means DNSSEC-signed zones and anything with many records.
+
+## Records, TTLs, and the SOA
+
+A zone is made of resource records. The ones you actually touch: A for IPv4, AAAA for IPv6, CNAME for an alias, MX for mail routing, TXT for verification and policy data, SRV for service discovery, PTR for reverse lookups, NS to delegate, and SOA at the top of every zone.
+
+The SOA record is where the operational behavior of a zone is defined, and its fields are easy to skim past:
+
+- **Serial.** A version number. Secondaries only pull a new copy of the zone when this number increases.
+- **Refresh.** How often a secondary checks the primary's serial.
+- **Retry.** How long a secondary waits after a failed check.
+- **Expire.** How long a secondary keeps serving the zone when it cannot reach the primary at all. Once this elapses the secondary stops answering, which is a hard outage.
+- **Minimum.** Originally a default TTL. RFC 2308 redefined it as the negative caching TTL, the time a resolver may cache an NXDOMAIN answer for this zone, capped by the SOA record's own TTL and recommended to be no more than 3 hours.
+
+Two TTL details that catch people out. First, RFC 2181 is clear that TTL belongs to the RRset, not to individual records. Every A record for the same name must share a TTL, and a server that is handed different ones is entitled to pick. Second, negative answers are cached too. If you query a name before you create it, the NXDOMAIN sticks around for the negative TTL and the record you just added appears to not exist. That is not a propagation delay, it is your own resolver holding a "no" it was told to remember.
+
 ## My DNS Setup
 
 I run two BIND DNS servers in my lab on separate VMs for redundancy. They serve as authoritative servers for my internal domain and as recursive resolvers for external queries.
 
 Internal DNS means I can access my servers by name instead of IP address. Instead of remembering that the Proxmox host is at 10.0.20.5, I type pve01.lab.local. When I reconfigure IP addresses, I update DNS once instead of updating every configuration file that references the old IP.
 
+### The mistake in that setup, stated plainly
+
+\`.local\` is the wrong choice, and it is the single most common naming error in homelabs. RFC 6762 reserves \`.local\` for Multicast DNS. On macOS, on Linux running Avahi or systemd-resolved, and on other mDNS-aware clients, a query for a \`.local\` name is sent to the multicast group 224.0.0.251 instead of to your unicast DNS server. The result is resolution that works on some machines and not others, works from the shell and not from an application, and changes behavior after an OS update. It is one of the most frustrating classes of DNS bug precisely because the server is configured correctly.
+
+Use a subdomain of a domain you actually own, like \`lab.example.com\`, or use \`home.arpa\`, which RFC 8375 designates for exactly this purpose. Owning the parent domain also means you can get real TLS certificates for internal names later, which you cannot do for \`.local\` or for a made-up TLD.
+
+### Two servers is not automatic failover
+
+Listing two nameservers does not give you graceful failover, and this surprises everyone. The stub resolver on Linux reads \`/etc/resolv.conf\`, tries the servers in order, and by default waits 5 seconds for a timeout and makes 2 attempts across the list. Only the first 3 \`nameserver\` lines are used at all. If your primary is down but still reachable enough to drop packets silently, every single lookup stalls for seconds before falling through to the secondary. The machine is not down. It just feels broken.
+
+\`\`\`
+# /etc/resolv.conf: fail over faster instead of waiting 5 seconds
+nameserver 10.0.20.10
+nameserver 10.0.20.11
+options timeout:1 attempts:2 rotate
+\`\`\`
+
+\`rotate\` spreads queries across the listed servers instead of hammering the first one. On systems using systemd-resolved or NetworkManager, edit the source of truth rather than \`/etc/resolv.conf\` directly, because it is a generated file and your changes will vanish.
+
 ## Split DNS
 
 I use split DNS (also called split-horizon DNS) so internal queries resolve to internal addresses and external queries resolve normally. My FortiGate handles this by directing DNS queries from internal VLANs to my internal DNS servers, while guest VLAN queries go directly to public DNS.
+
+Split DNS has a specific set of ways it goes wrong. The classic one is a name that exists internally and not externally, so the service works from inside and produces NXDOMAIN from a phone on cellular. The second is a certificate mismatch, where the internal address is reached over a name that the certificate does not cover. The third, and the modern one, is DNS over HTTPS. Browsers can be configured to send DNS queries to a public resolver over HTTPS, entirely bypassing the resolver your DHCP handed out. The symptom is unmistakable once you know it: \`dig\` resolves the internal name fine, and the browser on the same machine cannot reach it. Check the browser's secure DNS setting before you touch the server.
+
+## Do Not Leave Recursion Open
+
+If your recursive resolver answers queries from any source address, it is an open resolver, and open resolvers get used as amplifiers in reflection attacks. An attacker spoofs a victim's source address, sends a small query, and your server sends a much larger answer to the victim. In BIND the control is \`allow-recursion\`, and it should list your internal networks only.
+
+\`\`\`
+options {
+    recursion yes;
+    allow-recursion { 10.0.0.0/8; localhost; };
+    allow-query-cache { 10.0.0.0/8; localhost; };
+};
+\`\`\`
+
+Authoritative-only servers should have \`recursion no\`. Separating the authoritative and recursive roles onto different servers is the cleaner design and worth doing if you have the VMs to spare.
 
 ## Common Problems
 
 The most common DNS issue I troubleshoot is stale records. If a server gets a new IP but the DNS record still points to the old one, connections fail in confusing ways. I handle this with short TTLs (time to live) on internal records, so changes propagate quickly.
 
+Short TTLs are a real tradeoff, not a free win. A 300 second TTL means resolvers re-query 12 times an hour per name instead of once a day, which multiplies query load and makes every client more dependent on the resolver being up. The professional pattern is to lower the TTL a day before a planned change, make the change, confirm it, then raise the TTL back.
+
+**The serial number you forgot to bump.** This is the classic BIND failure. You edit the zone file, reload, and the primary serves the new record correctly. The secondary never updates, because it compares serials and yours did not increase. The symptom is a record that resolves from one nameserver and not the other, which looks like corruption and is not. Use the \`YYYYMMDDNN\` convention and let \`named-checkzone\` catch the mistake before a reload does not.
+
+\`\`\`bash
+# Validate config and zone before reloading. Catches the serial and syntax errors.
+named-checkconf
+named-checkzone lab.example.com /var/named/lab.example.com.zone
+rndc reload lab.example.com
+
+# Compare serials between primary and secondary. They should match.
+dig @10.0.20.10 lab.example.com SOA +short
+dig @10.0.20.11 lab.example.com SOA +short
+\`\`\`
+
 The second most common issue is DNS forwarding misconfiguration. If your internal DNS server cannot resolve external domains because the forwarder is misconfigured, your servers cannot reach the internet for updates, NTP, or anything else.
+
+**Forwarding loops.** If server A forwards to server B and B forwards back to A, queries bounce until they time out. The symptom is that internal names resolve instantly and external names take 5 seconds and then fail. Check that your forwarders point outward, at a real upstream resolver, and that the upstream is not your own firewall's DNS proxy pointing back at you.
 
 ## Testing DNS
 
@@ -21201,6 +21687,34 @@ nslookup pve01.lab.local 10.0.20.10
 \`\`\`
 
 Always test from the perspective of the client that is having the problem. DNS issues are often specific to which resolver a client is using.
+
+A few flags worth having in your fingers:
+
+\`\`\`bash
+# Walk the delegation from the root yourself. Shows exactly where it breaks.
+dig +trace www.example.com
+
+# Ask an authoritative server directly, no recursion. If this works and the
+# recursive path does not, the problem is the resolver, not the zone.
+dig @ns1.example.com www.example.com +norecurse
+
+# Watch a TTL count down on repeat queries. If it does, you are hitting cache.
+dig www.example.com | grep -A1 'ANSWER SECTION'
+
+# Which resolver is this client actually using right now
+resolvectl status
+\`\`\`
+
+The TTL trick is the fastest way to answer "is this cached or fresh". Query twice a few seconds apart. If the TTL in the answer decreased, you are reading a cached record, and the age of the answer is the original TTL minus what is left.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc1034
+- https://www.rfc-editor.org/rfc/rfc2181
+- https://www.rfc-editor.org/rfc/rfc2308
+- https://www.rfc-editor.org/rfc/rfc6762
+- https://bind9.readthedocs.io/en/latest/
+- https://man7.org/linux/man-pages/man5/resolv.conf.5.html
 `,
   },
   {
@@ -21696,6 +22210,18 @@ Server racks are measured in "U" units, where 1U equals 1.75 inches of vertical 
 
 Important specifications: make sure it is a standard 19-inch wide rack with a depth of at least 36 inches (preferably 40+) to accommodate deep servers. Weight capacity matters too. A fully loaded R740 weighs about 60 pounds, and a rack full of them needs a frame rated for the load.
 
+The 19 inch figure is the distance between the mounting rails, not the width of the rack, and it is the one dimension that is genuinely standard. Everything else varies. The hole spacing is the part worth knowing: rack holes come in a repeating group of three per U, spaced 0.625, 0.625 and 0.5 inches apart. That asymmetry is why a panel mounted one hole off will not line up with anything above it, and why the U boundaries are marked on good rails.
+
+Square hole, round hole and threaded rails are not interchangeable. Square hole with cage nuts is the modern default and the one to buy, because it takes any screw size and every rail kit ships for it. Threaded rails lock you to a thread pitch and strip if you overtighten them.
+
+## Depth is the specification people get wrong
+
+Width is standard. Depth is not, and it is where a rack purchase actually fails.
+
+Measure from the front rail to the back of the longest thing you own, then add space behind it for power cords, which do not bend flat. A 2U server at 29 inches wants a good 34 inches of rail-to-rail depth once the cable is in, and the four-post rail kit needs the rear posts inside its adjustment range. Rail kits usually cover something like 24 to 36 inches. Outside that they simply do not fit, and there is no workaround.
+
+Two-post racks exist and are fine for switches and patch panels. They are not fine for a 60 pound server, whatever the shelf claims.
+
 ## Layout Planning
 
 I planned my rack layout on paper before installing anything. The general rules:
@@ -21704,6 +22230,12 @@ I planned my rack layout on paper before installing anything. The general rules:
 - **Networking equipment goes at the top.** Switches, patch panels, and cable management sit at the top where cable runs are shortest.
 - **Leave space between sections.** 1U blanking panels between groups of equipment improve airflow and organization.
 - **Power distribution on the sides.** Vertical PDUs mount on the rear rack rails and keep power cables organized.
+
+Two of those deserve expanding, because the reasoning matters more than the rule.
+
+The weight rule is about the centre of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
+
+The blanking panel rule is not about organisation at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
 
 ## My Layout (Top to Bottom)
 
@@ -21719,17 +22251,50 @@ I planned my rack layout on paper before installing anything. The general rules:
 - 2U: UPS
 - Remaining: Empty (future expansion)
 
+## Airflow decides the layout more than aesthetics do
+
+Rack equipment is overwhelmingly front to back: cold in the front, hot out the back. The whole discipline of rack layout follows from keeping those two air masses apart.
+
+That is what hot aisle and cold aisle containment means at scale, and the principle does not stop applying because the rack is in a closet. If your rack faces a wall and exhausts into a corner, the hot air has nowhere to go and comes back around the side. Give the exhaust a path out of the room.
+
+Switches are the awkward exception. Many of them blow side to side, and some blow back to front, which puts their intake in the hot aisle. Check the airflow direction before choosing where a switch lives; several vendors sell the same model in both directions for exactly this reason.
+
 ## Power Planning
 
 I calculated total power draw before installing anything. Each circuit in my house is rated for 15A at 120V, which is 1,800 watts. My rack draws about 1,300 watts under typical load, leaving headroom for peaks. If I add more equipment, I will need a dedicated circuit.
+
+One correction to that arithmetic worth making explicit: a branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
+
+## Heat follows power, exactly
+
+Essentially all the electrical power a rack consumes leaves it as heat. The conversion is a definition rather than an estimate: one watt is 3.412142 BTU per hour. A 1,300W rack is therefore about 4,436 BTU/hr, continuously.
+
+For comparison, a ton of refrigeration is 3,516.85 watts, so that rack is roughly 0.37 tons of cooling load sitting in a closet. A typical bedroom window unit is 0.5 to 1 ton, which is the honest way to understand why a closet with a vent fan works for one rack and stops working for two.
 
 ## Cooling
 
 The rack is in a closet with forced-air ventilation. I added a vent fan at the top of the closet door to exhaust hot air into the room. A temperature sensor inside the rack triggers an alert if ambient temperature exceeds 85 degrees Fahrenheit.
 
+Measure at the intake, not in the middle of the rack, because intake temperature is what the equipment actually experiences and what the vendor's operating range refers to. A sensor dangling in the warm middle of a rack tells you something is hot without telling you whether anything is out of spec.
+
 ## Lessons Learned
 
 Buy more rack than you think you need. Label everything during installation, not after. And always test power and network before racking a server. Debugging a cabling issue with a 60-pound server on rails is miserable.
+
+Two more, learned since:
+
+Leave a U free above anything you expect to service. Rails let a server slide out, but hands need room above it to get the lid off, and the machine you most want to open is always the one wedged between two others.
+
+Do the weight sum before you fill the top half. Frames have a static load rating and castors have their own, usually lower, and a rack that is fine standing still can be a problem the day you try to roll it.
+
+## References
+
+- https://en.wikipedia.org/wiki/19-inch_rack
+- https://en.wikipedia.org/wiki/Rack_unit
+- https://en.wikipedia.org/wiki/Data_center
+- https://en.wikipedia.org/wiki/British_thermal_unit
+- https://en.wikipedia.org/wiki/Ton_of_refrigeration
+- https://en.wikipedia.org/wiki/Computer_cooling
 `,
   },
   {
@@ -23464,11 +24029,31 @@ This hybrid approach uses each filesystem where it is strongest.
 
 Like most people, I started with the router my ISP provided. A single device handled routing, switching, WiFi, DHCP, DNS, and firewall. It worked fine for basic internet access, but it was a black box. I could not configure VLANs, could not see detailed traffic logs, and had no visibility into what was happening on my network.
 
+Two things about that box are worth spelling out, because they explain why the upgrade path goes the way it does.
+
+The first is that "no visibility" is a hard wall, not an inconvenience. When something is slow, the diagnostic questions are which interface is dropping frames, how full the NAT table is, and what the CPU is doing. A consumer router answers none of them.
+
+The second is CGNAT, and it is the one that surprises people who think the problem is only their side of the wire. A growing number of ISPs no longer hand out a public IPv4 address at all. They give you an address from 100.64.0.0/10, the shared address space RFC 6598 set aside for carrier-grade NAT, and translate again on their side. If your WAN interface shows a 100.64.x.x address, port forwarding will never work regardless of what you configure, because the public address is not yours and thousands of subscribers share it. There is no fix at your end. The options are asking the ISP for a public address, using IPv6 (which usually is delegated properly), or terminating an outbound tunnel such as WireGuard or Tailscale on something you control. Check this before you spend a weekend debugging your own firewall rules.
+
+If you put your own router behind the ISP box without putting the ISP box in bridge or passthrough mode, you get double NAT: two layers of translation, two private ranges from RFC 1918, and inbound connections that die at the outer box. It works for browsing and breaks everything else. Bridge mode first, then build.
+
 ## Stage 2: Managed Switch and Separate Router
 
 The first upgrade was adding a managed switch and replacing the ISP router with a dedicated device. Suddenly I could create VLANs, monitor port statistics, and configure trunks. This was the moment I went from using a network to understanding how networks work.
 
 The managed switch taught me more about networking in a month than I had learned in the previous year. Being able to see MAC address tables, VLAN assignments, and port counters in real time made abstract concepts concrete.
+
+The mechanism underneath all of that is IEEE 802.1Q, which inserts a 4-byte tag into the Ethernet header. Twelve of those bits are the VLAN ID, and since 0 and 4095 are reserved, you get 4094 usable VLANs. The tag also pushes the maximum frame from 1518 to 1522 bytes, which is why some older equipment chokes on tagged traffic and calls the result a giant frame error.
+
+Three things go wrong here, in roughly this order:
+
+**Native VLAN mismatch.** A trunk carries one VLAN untagged, the native VLAN. If switch A calls it VLAN 1 and switch B calls it VLAN 99, traffic from those two VLANs silently merges. Nothing errors. Two networks you believe are separate are now one, and you find out months later. Set the native VLAN explicitly on both ends of every trunk, make it an unused VLAN, and never leave it as VLAN 1. That last part is also the defense against double-tagging VLAN hopping, where a crafted frame with two tags escapes into another VLAN when the switch strips the outer one.
+
+**DHCP stops working the moment you add a VLAN.** A \`DHCPDISCOVER\` is a broadcast, and broadcasts do not cross a layer 3 boundary. A client in the new VLAN sits there with an APIPA address while the DHCP server two VLANs away never hears it. The answer is a DHCP relay, configured on the router or the SVI as \`ip helper-address\`, which unicasts the request to the server and populates the giaddr field so the server knows which scope to answer from. RFC 2131 describes the whole exchange, and reading it once saves you from the guesswork.
+
+**Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. Effective inter-VLAN throughput is roughly 500 Mbps total, shared by every VLAN pair. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
+
+Once you have two switches, spanning tree stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
 
 ## Stage 3: Enterprise Hardware
 
@@ -23476,9 +24061,19 @@ Adding Dell PowerEdge servers was the next step. This required proper network in
 
 This is also when I started treating the network as infrastructure rather than an accessory. Documentation, change management, monitoring, and backups all became necessary.
 
+The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 metres, while Category 6A is rated for the full 100 metres because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than SFP+ and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 metres, and beyond that you are buying active cable or optics.
+
+The used-gear trap here is transceiver vendor locking. Many switches check the vendor ID in an SFP+ module's EEPROM and refuse anything that is not their own brand, and server NICs sometimes do the same. A perfectly good Dell-coded transceiver will be rejected by a Cisco switch and vice versa. Most platforms have an unsupported-transceiver override command, but find out whether yours does before the parts arrive.
+
+Also budget for what nobody photographs: noise and heat. A 1U server with 40mm fans spinning up is loud enough that it cannot share a room with people. A 2U chassis with 60mm fans is dramatically quieter for the same compute.
+
 ## Stage 4: Full Lab Environment
 
 The current state includes multiple Dell servers, a Mac Pro, enterprise networking, segmented VLANs, centralized monitoring, automated backups, and proper documentation. It is closer to a small enterprise network than a home network.
+
+What changes at this stage is what you monitor. Up/down status is the least useful metric a switch produces. The signals that predict problems are interface error counters: CRC errors on a port mean a bad cable, a bad transceiver, or a duplex mismatch, and they appear long before the link actually fails. Input discards mean the port is congested and buffers are overflowing. Both are invisible unless you are graphing them.
+
+The other change is that configuration becomes something you version rather than something you remember. Every device config gets exported into a git repository, and every change is a commit with a message explaining why. When something breaks after a change, \`git diff\` answers in seconds what would otherwise take an hour of staring at a running config.
 
 ## Mistakes I Made
 
@@ -23487,9 +24082,30 @@ The current state includes multiple Dell servers, a Mac Pro, enterprise networki
 - **Buying consumer-grade equipment.** I replaced cheap switches and routers multiple times before investing in enterprise hardware that did what I needed. Buy right once.
 - **Not planning for power.** Adding servers without considering power draw and circuit capacity caused breaker trips. Measure before you install.
 
+Each of those has a specific version worth stating.
+
+Retroactive cable labeling is not just tedious, it is unreliable. Tracing a cable in a populated rack usually means unplugging one end and watching for a link light to go out, which means taking something down to learn something you should have written on a label. Label both ends at install with source device, source port, destination device, destination port.
+
+The consumer gear problem is not that the switches were slow. It is that they had no per-port statistics, so when one link was corrupting frames there was no counter to look at. The failure presented as "the network is flaky sometimes," which is unsolvable without instrumentation. That is the real argument for managed hardware, ahead of VLANs.
+
+On power, the number that matters is the National Electrical Code's continuous load rule: a circuit supplying a load that runs three hours or more may be loaded to only 80 percent of its rating. A 20 A 120 V circuit is 2400 VA on paper and 1920 VA in practice. Breakers also trip on inrush, so eight servers restarting simultaneously after an outage can trip a circuit that carries them all day at steady state. Stagger the power-on delays.
+
 ## What I Would Do Differently
 
 Start with a managed switch and a firewall from the beginning. The consumer router phase taught me nothing. As soon as you have managed infrastructure, every addition builds on a solid foundation.
+
+The honest caveat is that "managed" and "enterprise rack-mount" are not the same purchase, and conflating them costs a lot of money for no extra learning. A used 8-port managed switch and a small x86 box running pfSense or OPNsense teaches VLANs, trunking, routing, DHCP relay, firewall policy, and spanning tree just as thoroughly as a Catalyst and a FortiGate do, at a fraction of the power draw and none of the noise. If your lab lives in a bedroom, that is the correct build, not a compromise.
+
+Buy the rack-mount servers when you have a workload that needs them: many VMs at once, real RAM capacity, out-of-band management, hot-swap drives. Buying them to learn networking is buying the wrong thing. The network skills come from the switch and the firewall, and those are the cheap parts.
+
+## References
+
+- https://en.wikipedia.org/wiki/IEEE_802.1Q
+- https://www.rfc-editor.org/rfc/rfc6598
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://www.rfc-editor.org/rfc/rfc2131
+- https://en.wikipedia.org/wiki/Spanning_Tree_Protocol
+- https://en.wikipedia.org/wiki/Category_6_cable
 `,
   },
   {
