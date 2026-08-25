@@ -175,6 +175,51 @@ async function writePage(
   await writeFile(path.join(dir, "index.html"), html, "utf-8");
 }
 
+/**
+ * The 404 document, served by Cloudflare Pages with a real 404 status.
+ *
+ * Pages looks for 404.html at the output root when a request matches neither
+ * a static file nor a rewrite in _redirects. It has to sit at the root as
+ * 404.html rather than 404/index.html, which is why this does not go through
+ * writePage.
+ *
+ * It carries the app shell, so React boots and the client router renders the
+ * real not-found page. The crawler gets the status code it needs before any
+ * of that runs.
+ */
+async function writeNotFoundPage(base: string): Promise<void> {
+  const html = buildPageHtml(base, {
+    title: "Page not found | Max Doubin",
+    description:
+      "That page does not exist on maxdoubin.com. The writing is in Field Notes and everything else is linked from the home page.",
+    // Stripped again below. buildPageHtml requires one, but a page that does
+    // not exist has no canonical URL to point at, and claiming one that also
+    // does not exist just leaves a dead reference in the HTML.
+    canonical: `${SITE_URL}/404`,
+    noindex: true,
+    rootContent: `
+<main>
+  <h1>Page not found</h1>
+  <p>
+    There is nothing at this address. It may have been renamed, or the link
+    that brought you here may have been wrong.
+  </p>
+  <ul>
+    <li><a href="${SITE_URL}/">Home</a></li>
+    <li><a href="${SITE_URL}/blog">Field Notes, the writing archive</a></li>
+    <li><a href="${SITE_URL}/topics">Topics</a></li>
+    <li><a href="${SITE_URL}/tools">Browser tools</a></li>
+    <li><a href="${SITE_URL}/sitemap.xml">Sitemap</a></li>
+  </ul>
+</main>`,
+  });
+  await writeFile(
+    path.join(DIST, "404.html"),
+    html.replace(/\s*<link rel="canonical"[^>]*>/i, ""),
+    "utf-8",
+  );
+}
+
 // ─── blog post pre-render ─────────────────────────────────────────────────────
 
 async function prerenderPost(
@@ -941,6 +986,11 @@ ${matched
   // post, so anything published since was invisible to crawlers.
   await writeSitemap(posts);
   await writeFeed(posts);
+
+  // Served with a real 404 by Cloudflare Pages for anything that matches
+  // neither a prerendered file nor a rewrite in _redirects.
+  await writeNotFoundPage(base);
+  console.log("404.html: written");
 
   console.log("Prerender complete.");
 }

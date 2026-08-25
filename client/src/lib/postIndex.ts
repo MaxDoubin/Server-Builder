@@ -1395,7 +1395,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I set up ZFS on my Dell PowerEdge servers and why it changed my approach to storage management.",
     coverImage: "/images/blog/zfs-on-enterprise-hardware.jpg",
     coverCredit: {"author":"Markus Then","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:ZFS_hardware_storage_29.jpg"},
-    wordCount: 2039,
+    wordCount: 1963,
   },
   {
     slug: "10gbe-networking-homelab",
