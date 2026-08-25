@@ -17804,11 +17804,11 @@ It is a 14th generation PowerEdge, introduced in 2017 on the LGA 3647 socket. Fi
 
 Twenty-four DIMM slots sounds like "put memory anywhere". It is not.
 
-Each CPU has six memory channels and twelve slots, six channels times two slots per channel. Bandwidth scales with populated channels, so you populate in multiples of six per socket. The single most common used-server mistake is buying four or eight sticks because that is what desktops use. Eight DIMMs across six channels means two channels carry double the load, the memory controller runs the whole set at the pace of the imbalance, and you leave a measurable chunk of bandwidth on the floor for no saving. Buy six, or twelve.
+Each CPU has six memory channels and twelve slots, two slots per channel. Bandwidth scales with populated channels, so you populate in multiples of six per socket. The most common used-server mistake is buying four or eight sticks because that is what desktops use. Eight DIMMs across six channels leaves two channels carrying double the load, the controller paces the whole set to the imbalance, and you give up bandwidth for no saving. Buy six, or twelve.
 
 The second thing: with only one CPU installed, half the DIMM slots and several of the PCIe slots are electrically dead, because they hang off the second socket. A single-CPU R740 is a twelve-slot machine, not a twenty-four-slot machine. Check what you are actually buying.
 
-Third, this takes registered ECC memory. RDIMMs, or LRDIMMs if you are chasing the 3 TB ceiling with 128 GB modules. Unbuffered desktop DDR4 will not post. And the advertised speed is a ceiling, not a promise: the actual clock is the lowest of what the DIMMs support, what the CPU's memory controller supports, and what the population rules allow. A Xeon Gold 6130 caps at 2666 MT/s no matter what the sticks are rated for.
+Third, this takes registered ECC memory: RDIMMs, or LRDIMMs if you are chasing the 3 TB ceiling with 128 GB modules. Unbuffered desktop DDR4 will not post. And the advertised speed is a ceiling, not a promise. The actual clock is the lowest of what the DIMMs, the CPU's memory controller, and the population rules allow. A Xeon Gold 6130 caps at 2666 MT/s whatever the sticks are rated for.
 
 Fourth, and the one that survives correct population: memory attached to socket 1 is remote to socket 0, and reaching it crosses the interconnect at higher latency. That is NUMA. A VM sized larger than one socket's share of memory can be markedly slower than the same VM that fits inside a single node, so size guests to fit a NUMA node where the workload allows it.
 
@@ -17820,7 +17820,7 @@ I cannot overstate how much this matters in a lab environment. When you are test
 
 Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the licence is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
 
-Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use \`root\` / \`calvin\`; anything shipped after Dell moved to per-unit credentials has a unique default password printed on the pull-out service tag at the front of the chassis. Change it immediately either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
+Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use \`root\` / \`calvin\`; later ones have a unique default password printed on the pull-out service tag at the front of the chassis. Change it either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
 
 For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. IPMI over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
 
@@ -17834,7 +17834,7 @@ ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' sdr type temperature
 
 I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P RAID controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
 
-That last experiment deserves a warning, because it is where the R740 and ZFS genuinely fight each other. The H740P is a RAID controller with 8 GB of battery-backed cache, and it has no true IT mode. It offers "Non-RAID" disks, which present the drive to the OS, but the I/O still traverses the RAID stack and its cache. ZFS assumes it owns the write path: it needs SMART data to pass through unmodified, and it needs a write to be on stable media when the drive says it is. A write cache it cannot see or flush undermines the guarantee ZFS exists to provide. Putting each disk in a single-drive RAID 0 to fake passthrough is not the same thing and does not help. If you are running ZFS on an R740, the right part is the HBA330, which is a plain SAS host bus adapter in IT mode, and it is inexpensive on the used market. Swap the controller rather than fighting the H740P.
+That last experiment deserves a warning, because it is where the R740 and ZFS genuinely fight each other. The H740P is a RAID controller with 8 GB of battery-backed cache and no true IT mode. Its "Non-RAID" disks are presented to the OS, but the I/O still crosses the RAID stack and its cache. ZFS assumes it owns the write path: it needs SMART data to pass through unmodified, and it needs a write to be on stable media when the drive says it is. A cache it cannot see or flush undermines the guarantee ZFS exists to provide, and putting each disk in a single-drive RAID 0 to fake passthrough does not help. The right part is the HBA330, a plain SAS host bus adapter in IT mode that is cheap on the used market. Swap the controller rather than fighting the H740P.
 
 The backplane is the other trap. The R740 ships in several backplane configurations: 8 or 12 by 3.5 inch, and 8, 16, or 24 by 2.5 inch. NVMe support is not a property of the drive bay, it is a property of the backplane plus the PCIe extender cables and risers that feed it. You cannot put a U.2 NVMe drive into a SAS/SATA bay and have it work. Confirm the backplane part before you buy NVMe drives for it.
 
@@ -17850,17 +17850,17 @@ Some numbers to plan against. Idle is much better than load: a modestly configur
 
 Power supplies come in 495 W, 750 W, 1100 W, 1600 W, 2000 W, and 2400 W flavors, all 80 PLUS Platinum or Titanium, normally installed as a redundant pair. The gotcha for anyone in North America: the high-wattage units require 200 to 240 V input to deliver their rated output. On a 120 V circuit a 2000 W supply derates to roughly half. If you are on standard household 120 V, the 750 W or 1100 W supplies are the sensible choice and the big ones buy you nothing.
 
-**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to decide fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data, so it falls back to a conservative high fan baseline and the server howls at idle forever. This is not a fault. There is a "Third Party PCIe Card Default Cooling Response" setting exposed through iDRAC and IPMI that turns the baseline back down. Know it exists before you conclude the server is broken.
+**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to set fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data for it, so it falls back to a conservative high fan baseline and the server howls at idle forever. This is not a fault. A "Third Party PCIe Card Default Cooling Response" setting, exposed through iDRAC and IPMI, turns the baseline back down. Know it exists before concluding the server is broken.
 
 One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
 
 Finally, POST is slow. Memory training and controller initialization mean two to four minutes from power button to boot device, and the screen is blank for much of it. It is not dead. It is counting your DIMMs.
 
-On the power figure: 400 to 600 watts under load is the honest range, and at 3.412142 BTU per hour per watt that is roughly 1,400 to 2,050 BTU/hr from one machine. Two of them is a small room heater running continuously, which is the part that decides whether a closet works.
+One last conversion worth doing before you pick a room: at 3.412 BTU per hour per watt, 400 to 600 watts is roughly 1,400 to 2,050 BTU/hr per machine. Two R740s is a small space heater running continuously, and that, not the noise, is usually what decides whether a closet works.
 
 ## What It Cannot Do
 
-Be clear-eyed about the ceiling. This is PCIe 3.0 throughout, so a modern NVMe drive capable of 7 GB/s will deliver about half that. It is DDR4, not DDR5. Per-core performance from a 2017 to 2019 Xeon is well behind a current desktop CPU, so a workload that needs fast single threads will be slower here than on a machine that cost less. And no amount of tuning makes a 2U chassis with 60 mm fans quiet enough for a bedroom.
+Be clear-eyed about the ceiling. This is PCIe 3.0 throughout, so a modern NVMe drive rated at 7 GB/s delivers about half that. It is DDR4, not DDR5. Per-core performance from a 2017 to 2019 Xeon is well behind a current desktop CPU, so a workload that needs fast single threads will be slower here than on a machine that cost less. And no amount of tuning makes a 2U chassis with 60 mm fans quiet enough for a bedroom.
 
 The R740 is the right answer when you want many cores, a lot of ECC memory, real out-of-band management, and hot-swap drive bays for less than the price of one modern workstation. It is the wrong answer when you want low idle power, silence, or the fastest possible single thread. For those, a mini PC or a modern desktop board wins, and it is not close.
 
@@ -17868,13 +17868,13 @@ The R740 is the right answer when you want many cores, a lot of ECC memory, real
 
 Used R740s are available from resellers and auction sites. Prices vary a lot based on configuration, but you can get a solid base system for a reasonable price and add memory and drives over time. Buy from reputable sellers, check the service tag for warranty status, and inspect the drive backplane before committing.
 
-A checklist I now run through before buying, all of which come from the sections above: how many CPUs are installed, how many DIMMs and in what population, which iDRAC license, which storage controller, which backplane, are the risers present, which PSUs and at what voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, they are frequently missing, and buying them separately costs more than you expect.
+The checklist I now run before buying, all of it from the sections above: how many CPUs, how many DIMMs and in what population, which iDRAC licence, which storage controller, which backplane, are the risers present, which PSUs and at what input voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, frequently missing, and cost more separately than you expect.
 
 ## References
 
 - https://en.wikipedia.org/wiki/Dell_PowerEdge
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
-- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://redfish.dmtf.org/
 - https://en.wikipedia.org/wiki/Registered_memory
 - https://en.wikipedia.org/wiki/Non-uniform_memory_access
 - https://man.archlinux.org/man/ipmitool.1
@@ -18515,8 +18515,6 @@ The test that settles whether any of this worked is simple: could someone who di
 
 VMware ESXi has been the gold standard for enterprise virtualization for years. Proxmox VE is the open-source alternative that has been gaining traction, especially in the homelab community. I have run both extensively, and the choice between them depends on what you are optimizing for.
 
-They are also less alike underneath than the feature comparisons suggest, and that difference explains most of the rest.
-
 ## What each one actually is
 
 ESXi is a type 1 hypervisor with its own purpose-built kernel, the VMkernel. There is no general purpose operating system underneath it. That is the source of both its strengths, a small attack surface and predictable behaviour, and its limits: you get exactly the features VMware ships, through the interfaces VMware provides.
@@ -18529,7 +18527,7 @@ That is the real fork in the road. Proxmox gives you a hypervisor and a Linux bo
 
 Proxmox runs two kinds of guest. KVM virtual machines get their own kernel and can run anything. LXC containers share the host kernel, so they start in about a second, and idle at tens of megabytes instead of the gigabyte a VM reserves before it has done anything.
 
-For a homelab that matters more than any benchmark. Most of what runs in a lab is a Linux service that does not need its own kernel, and putting thirty of those in containers rather than thirty VMs is the difference between a machine that is comfortable and one that is full. The tradeoff is that a container shares the host kernel, so it cannot run a different one and the isolation boundary is weaker than a VM's.
+For a homelab that matters more than any benchmark. Most of what runs in a lab is a Linux service that does not need its own kernel, and putting thirty of those in containers rather than VMs is the difference between a host that is comfortable and one that is full. The tradeoff: a container shares the host kernel, so it cannot run a different one and its isolation boundary is weaker than a VM's.
 
 ESXi has no equivalent. Containers there mean a VM running a container runtime.
 
@@ -18541,6 +18539,8 @@ Worth being precise about what is free and what is not, because most of the good
 
 The downside is licensing. VMware's free tier has become increasingly limited, and the paid licenses are expensive for a homelab. The acquisition by Broadcom has added uncertainty about future pricing and availability. For a lab where you are experimenting freely, licensing friction is a real concern.
 
+Be careful repeating any specific claim about VMware licensing, mine included. Since the Broadcom acquisition closed in late 2023 the terms have moved repeatedly: perpetual licences gave way to subscription, SKUs were consolidated into bundles, per-core minimums appeared, and the free hypervisor was discontinued and later partially reinstated. Check the current terms yourself. The stable takeaway is directional rather than numeric: VMware now designs for large enterprises, and a homelab is not a customer it targets.
+
 There is a second friction that bites homelabs harder than it bites enterprises: the hardware compatibility list. ESXi ships drivers for hardware VMware supports, which is enterprise hardware. A consumer NIC or a desktop SATA controller may simply not be seen. Proxmox, being Debian, drives anything Linux drives, which is most things.
 
 ## Proxmox: The Open-Source Powerhouse
@@ -18549,35 +18549,47 @@ Proxmox VE is built on Debian Linux with KVM for virtual machines and LXC for co
 
 "No feature limitations" is the part worth dwelling on. Clustering, live migration, high availability and replication are all in the free product. The paid subscription buys the enterprise package repository and support, not features. That is the opposite of the VMware model, and for a lab it is the whole argument.
 
+That repository split produces the first thing that will confuse you. A fresh install has the enterprise repository enabled, so your first \`apt update\` fails with a 401 from \`enterprise.proxmox.com\`. Nothing is broken and you have not been locked out. Switching to the no-subscription repository is a documented, expected step. The genuine tradeoff is that the no-subscription repo is slightly less validated than the enterprise one, and you get a nag dialog at login.
+
 Proxmox also has native ZFS support, which is a big deal if you care about data integrity and storage flexibility. You can create ZFS pools directly from the Proxmox interface and use them for VM storage.
 
 Native means the installer will build a root ZFS pool, and the web UI manages datasets and snapshots directly. Combined with KVM, that gives you snapshots that are genuinely cheap and replication between nodes that ships only changed blocks. ESXi's answer is VMFS or vSAN, and neither gives you end to end checksumming on commodity disks.
+
+Snapshot behaviour depends entirely on which storage type you picked, and this is where new users get stuck. On ZFS, Ceph and LVM-thin, snapshots are copy-on-write and effectively free. On plain thick LVM, on a raw iSCSI LUN, or on a directory holding raw images, the snapshot button is greyed out and there is no setting that enables it. Choose the storage type with snapshots in mind on day one, because changing it later means copying every disk.
+
+The contrast with VMware matters because people carry the habit across. An ESXi snapshot creates a delta file that every subsequent write lands in, so performance degrades the longer it lives and consolidation gets slower the bigger it grows. VMware's guidance is to treat snapshots as short-lived, a day or two, never as backups. A ZFS or Ceph snapshot has no such decay, which is why keeping one for a month is routine on Proxmox and a support case on VMware.
 
 ## Clustering, and the part that surprises people
 
 Proxmox clusters use Corosync for membership and quorum, and quorum is majority based. Two nodes is therefore a trap: lose either and the survivor has one vote out of two, which is not a majority, so it stops. Run three nodes, or add a lightweight quorum device as the third vote. Every "my two node Proxmox cluster froze" story is this.
 
-Live migration also needs shared or replicated storage, as noted below. Corosync additionally wants a low latency network to itself; sharing it with storage traffic is the usual cause of a cluster that fences nodes under load.
+Corosync wants a low latency network to itself, and sharing it with storage traffic is the usual cause of a cluster that fences nodes under load. A burst of backup or Ceph replication traffic delays Corosync tokens, the cluster concludes a node is gone, and the node reacts. Give it a dedicated NIC and VLAN carrying nothing else, and configure a second ring for redundancy.
+
+Understand what that reaction is before enabling HA. A node that loses quorum while running HA-managed guests hard reboots itself by watchdog after roughly a minute, so the cluster can safely start those guests elsewhere. That is correct behaviour, and it is alarming the first time you see it. The third vote that prevents it need not be a third server: a QDevice is a small daemon on any always-on Linux box, a Raspberry Pi included, holding a tie-breaking vote and running no workloads.
 
 ## My Experience
 
 I ran ESXi for a year before switching most of my lab to Proxmox. The switch was driven by three things: licensing costs, ZFS support, and the flexibility of having a full Linux system underneath.
 
-Proxmox handles my workloads just as well as ESXi did. VM performance is effectively identical (both use hardware virtualization). Live migration works, though it requires a shared storage backend. Backups are straightforward with Proxmox Backup Server, which is another free tool from the same team.
+Proxmox handles my workloads just as well as ESXi did. VM performance is effectively identical (both use hardware virtualization). Live migration works, and it does not strictly require shared storage: Proxmox can migrate a running guest along with its local disks, copying the disk in the background before the final cutover. Shared or replicated storage is still much faster and is what you want for anything you migrate often, but the local-disk path is genuinely useful for evacuating a host before maintenance. The VMware equivalent, Storage vMotion, sits at a higher licence tier. Backups are straightforward with Proxmox Backup Server, which is another free tool from the same team.
 
-Performance being "effectively identical" is not hand-waving. Both run guests on the CPU's virtualization extensions, with second level address translation handling memory in hardware. The hypervisor is not in the path for ordinary instructions. Where they differ is in the paravirtualized device drivers, virtio on KVM and VMXNET3 and PVSCSI on VMware, and both are good. Use them: a guest left on emulated e1000 or IDE will be slow on either platform, and that misconfiguration is the source of most benchmark posts claiming one destroys the other.
+"Effectively identical" is not hand-waving. Both run guests on the CPU's virtualization extensions, with second level address translation handling memory in hardware, so the hypervisor is not in the path for ordinary instructions. They differ in paravirtualized drivers, virtio on KVM against VMXNET3 and PVSCSI on VMware, and both are good. Use them. A guest left on emulated e1000 or IDE is slow on either platform, and that misconfiguration is behind most benchmark posts claiming one destroys the other.
 
-Proxmox Backup Server deserves more than a clause. It does deduplicated, incremental, client side encrypted backups with verification, and restores individual files out of a VM image. It is the piece that closed the last real gap for me.
+Proxmox Backup Server deserves more than a clause. It does deduplicated, incremental, client side encrypted backups with verification, and restores individual files out of a VM image. Incrementals use QEMU dirty bitmaps for changed block tracking, so a nightly run on a large VM reads only the blocks that changed rather than the whole disk. The comparison point matters: VMware ships no backup product with the hypervisor at all, so the equivalent is a third party tool such as Veeam, whose free tier covers a limited number of workloads. PBS is the piece that closed the last real gap for me.
 
 ## What I Miss from ESXi
 
 The vSphere client is genuinely better than the Proxmox web UI. It is more responsive, more polished, and handles large environments more gracefully. VMware's snapshot management is also more intuitive, and vMotion is slightly more reliable than Proxmox's live migration in my experience.
 
+Past the interface, there are capabilities Proxmox simply does not have. There is no DRS equivalent, so nothing rebalances guests across the cluster based on load and you place them yourself. There is no distributed virtual switch with the same feature set. Ceph is the answer to vSAN and it is more powerful, but it is also much harder to operate correctly and it wants at least three nodes with fast dedicated networking before it behaves. And the third party ecosystem for monitoring, backup and orchestration is far thinner.
+
+One more honest point, specifically for a student: VCP is a credential hiring managers recognise. Proxmox training exists and is good, and it does not carry the same weight on a resume yet. If the goal is a job in a VMware shop, keeping ESXi running somewhere in the lab is worth the friction, and nesting it as a VM on top of Proxmox is a perfectly reasonable way to have both.
+
 ## Bottom Line
 
 For a homelab, Proxmox wins on value. You get enterprise-class virtualization with no licensing restrictions, native ZFS, and full Linux flexibility. For enterprise environments or certification study, ESXi remains the standard. There is no wrong choice. Pick the one that matches your goals.
 
-If you want the decision as a rule: pick ESXi when the goal is to practise what an employer runs, or when something you need only exists in the VMware ecosystem. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
+As a rule: pick ESXi when the goal is to practise what an employer runs. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
 
 ## References
 
@@ -18915,7 +18927,7 @@ The headroom is not superstition. Batteries lose capacity as they age, so a unit
 
 Runtime is how long the UPS can keep your servers running on battery. For a homelab, you probably do not need hours of runtime. You need enough time for your servers to detect the outage and shut down gracefully. Five to ten minutes is usually sufficient.
 
-Runtime is also badly nonlinear, which trips people up. Lead acid batteries deliver less total energy the faster you discharge them, so halving the load more than doubles the runtime. A unit rated for 5 minutes at full load might give 20 at a quarter load. Read the manufacturer's runtime chart at your actual measured draw rather than interpolating from the headline number.
+Runtime is also badly nonlinear, which trips people up. Lead acid batteries deliver less total energy the faster you discharge them, an effect described by Peukert's law, so halving the load more than doubles the runtime. A unit rated for 5 minutes at full load might give 20 at a quarter load. Read the manufacturer's runtime chart at your actual measured draw rather than interpolating from the headline number.
 
 ## Talking to it
 
@@ -18924,6 +18936,18 @@ A UPS nobody is listening to is a battery that delays the crash by eight minutes
 I have my servers configured to start a clean shutdown when the UPS signals a power loss. The UPS communicates via USB using NUT (Network UPS Tools) on Linux. The shutdown process takes about two minutes, so my UPS needs to provide at least three to four minutes of runtime at full load.
 
 NUT splits into a driver that talks to the hardware, a network daemon, and clients that act on the state. One machine owns the USB cable and runs the daemon; everything else in the rack is a client over the network, which is what lets a single UPS shut down four machines. Set the low battery threshold well above the point of no return, and set the machine that owns the cable to shut down last.
+
+\`\`\`bash
+# Confirm the driver actually sees the hardware and read live values.
+upsc myups@localhost
+
+# The two numbers that decide when your shutdown starts.
+upsc myups@localhost battery.charge
+upsc myups@localhost battery.runtime
+
+# On every client, upsmon runs the shutdown command at low battery.
+# Set FINALDELAY short and let the cable owner power down last.
+\`\`\`
 
 Then test it. Pull the plug on a Saturday afternoon and watch what happens, because the failure modes only show up in a real transfer: a client that never got the credentials, a shutdown script that hangs on an NFS mount that went away with the switch, a machine set to stay off when power returns. I have found all three that way.
 
@@ -18951,8 +18975,8 @@ And it is not a generator. Sizing for hours of runtime on batteries is almost al
 - https://en.wikipedia.org/wiki/Power_factor
 - https://en.wikipedia.org/wiki/Volt-ampere
 - https://networkupstools.org/docs/user-manual.chunked/index.html
-- https://man.archlinux.org/man/ups.conf.5
-- https://man.archlinux.org/man/upsc.8
+- https://en.wikipedia.org/wiki/Peukert%27s_law
+- https://networkupstools.org/docs/man/upsmon.html
 `,
   },
   {
@@ -19405,6 +19429,22 @@ Servers generate a lot of heat. A single fully loaded PowerEdge R740 can produce
 
 The number is worth putting on a firmer footing, because it is a definition rather than an estimate. Essentially all the electrical power a server draws leaves it as heat, and one watt is 3.412142 BTU per hour. So an R740 pulling 450W is producing about 1,535 BTU/hr, continuously, and a rack drawing 1,300W is producing about 4,436. There is no efficiency term to apply and no part of it that goes somewhere else: the electricity comes in, the work is done, and the heat comes out.
 
+## Turning watts into airflow
+
+Heat load tells you how big a cooling system you need. Airflow tells you whether the air is actually getting to the equipment, and those are different questions.
+
+The standard sensible-heat formula for air is:
+
+\`\`\`
+CFM = BTU/hr / (1.08 x delta-T in degrees F)
+\`\`\`
+
+The 1.08 is not arbitrary. It is the density of air at sea level, about 0.075 lb/ft3, times its specific heat, about 0.24 BTU per pound per degree F, times 60 minutes per hour. Servers typically run a front-to-back rise of 10 to 20 degrees C, which is 18 to 36 degrees F. So an R740 dumping 1,535 BTU/hr with a 20 degree F rise needs about 71 CFM of air moving through it, and a 1,300 W rack at 4,436 BTU/hr needs roughly 205 CFM.
+
+That number is the one to check against your room. If the fan you added to the closet door moves 100 CFM and the rack needs 205, you have not solved the problem, you have made it quieter while it gets worse.
+
+On the capacity side, cooling is often sold in tons. One ton of refrigeration is 12,000 BTU/hr, or about 3.517 kW. A 1,300 W rack is 0.37 tons, so a single 12,000 BTU portable air conditioner is nominally three times what you need. The catch is that single-hose portable units exhaust room air outdoors and therefore pull unconditioned air in through every gap in the room to replace it. A dual-hose unit does not have that problem. This is the most common reason a portable AC underperforms its rating in a server closet.
+
 The fundamental challenge is that you need to deliver cool air to server intakes and remove hot air from server exhausts without the two mixing. If hot exhaust air recirculates back to the intakes, cooling efficiency drops and servers run hotter than they should.
 
 ## Hot Aisle / Cold Aisle
@@ -19437,7 +19477,21 @@ The end of that loop is thermal throttling, and then a shutdown. What makes it d
 
 The number that matters is inlet temperature, measured at the front of the equipment, not the room temperature and not the temperature somewhere in the middle of the rack.
 
-Modern equipment tolerates far more than people assume. The industry guidance has moved steadily upward, and running a room at 18C to be safe is mostly wasted money: raising the setpoint is the single largest efficiency lever in a data hall, and it is why free cooling works in climates that sound too warm for it. In a homelab the practical version is simpler. Measure at the intake, know the manufacturer's stated range, and give yourself margin for the day the door is shut and the fan fails.
+Modern equipment tolerates far more than people assume. ASHRAE's thermal guidelines for data processing environments put the recommended inlet range at 18 to 27 degrees C, which is 64 to 81 degrees F, and the allowable range for the common Class A2 equipment at 10 to 35 degrees C. Recommended is where you want to live. Allowable is where the manufacturer still honours the warranty. The gap between them is your margin, and it is much wider than the folklore about keeping a server room cold suggests.
+
+Running a room at 18 C to be safe is mostly wasted money: raising the setpoint is the single largest efficiency lever in a data hall, and it is why free cooling works in climates that sound too warm for it. In a homelab the practical version is simpler. Put a probe at the front of the top server and one at the front of the bottom server, because the spread between them tells you more than either number alone. A large spread means recirculation. A small spread at a high temperature means you need more cooling, not better airflow.
+
+## What Containment Costs You
+
+Containment is not free, and three of its downsides are rarely mentioned.
+
+**It shortens your ride-through time.** An open room holds a large volume of air that buffers a cooling failure, so temperatures climb over minutes and you have time to react. A contained aisle removes that buffer. When cooling stops in a well-contained hot aisle, inlet temperatures can cross the allowable limit in well under a minute. Containment makes normal operation more efficient and makes a cooling outage more urgent. Anywhere containment is deployed, cooling needs to be on the UPS or on a generator, not just the servers.
+
+**It interacts with fire suppression.** A ceiling over an aisle sits between the sprinkler heads and the equipment. Codes generally require containment to be built so it does not defeat suppression, usually with panels that drop away or melt at a set temperature, or with suppression inside the containment. This is a real engineering requirement in a commercial space, not a formality.
+
+**Bypass and recirculation are different problems and containment fixes them differently.** Recirculation is hot exhaust reaching an intake, and it is dangerous. Bypass is cold supply air returning to the cooling unit without passing through any server, and it is merely wasteful. Cold aisle containment mostly kills bypass. Hot aisle containment mostly kills recirculation. Diagnose which one you have before you buy panels for the other.
+
+There is a fourth trap that catches homelabs specifically: not all equipment breathes front to back. Many network switches are built with the airflow running port-side-in or port-side-out, and vendors sell both variants of the same switch precisely because you must match the direction to your layout. Install a port-side-intake switch in a rack where the ports face the hot aisle and you have deliberately built a machine that inhales exhaust. Check the airflow direction on the datasheet, not the picture.
 
 ## In a Homelab
 
@@ -19452,10 +19506,11 @@ The second is that a single rack has the same recirculation paths as a row, just
 ## Key Takeaways
 
 Airflow management is not optional for servers. Hot air recirculation causes thermal throttling, shorter component life, and ultimately failures. Even in a single-rack homelab, filling blank spaces with panels and ensuring consistent airflow direction makes a measurable difference in temperatures.
+
 ## References
 
 - https://en.wikipedia.org/wiki/Data_center
-- https://en.wikipedia.org/wiki/Computer_cooling
+- https://www.ashrae.org/technical-resources/bookstore/datacom-series
 - https://en.wikipedia.org/wiki/British_thermal_unit
 - https://en.wikipedia.org/wiki/Ton_of_refrigeration
 - https://en.wikipedia.org/wiki/Free_cooling
@@ -22222,6 +22277,12 @@ Measure from the front rail to the back of the longest thing you own, then add s
 
 Two-post racks exist and are fine for switches and patch panels. They are not fine for a 60 pound server, whatever the shelf claims.
 
+## The Two Things That Can Actually Hurt You
+
+Tip-over first. When you slide a 60 pound server out on fully extended rails you have moved that mass roughly two feet in front of the rack's front posts. If the frame is not bolted down or fitted with anti-tip feet, and especially if the heavy gear is not at the bottom, the whole rack can come forward. Extend one server at a time, and deploy the anti-tip bracket before the first time rather than after the first scare.
+
+Then the floor. A fully loaded 42U rack can exceed 1,500 pounds over a footprint of about 6 square feet, which is roughly 250 pounds per square foot. US residential floors are commonly designed around 40 pounds per square foot of live load. A slab-on-grade basement or garage is fine and this never comes up. An upstairs room over wood joists is a conversation to have with someone who understands the structure before you fill the rack, not after. Mine sits on a ground floor slab, and I still positioned it perpendicular to the joist span near a bearing wall.
+
 ## Layout Planning
 
 I planned my rack layout on paper before installing anything. The general rules:
@@ -22265,6 +22326,10 @@ I calculated total power draw before installing anything. Each circuit in my hou
 
 One correction to that arithmetic worth making explicit: a branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
 
+The other power failure mode is inrush. Servers with redundant supplies pull a large surge for the first fraction of a second at power-on. A rack that idles happily at 1,300 watts can trip its breaker the moment utility power returns after an outage and every machine tries to boot at once. The fix is staggered start: set a power-on delay in BIOS or iDRAC on each host, or use a switched PDU that sequences its outlets. I stagger mine 30 seconds apart, which costs nothing and removes the failure entirely.
+
+Know your connectors before you order anything. US wall outlets are NEMA 5-15R. Server power supplies use IEC 60320 C14 inlets and take C13 cords, and higher-draw equipment uses C20 inlets with C19 cords. The normal shape of a homelab power tree is one PDU with a 5-15P plug at the wall and a row of C13 outlets facing the servers. Counting the outlets you need, and their type, is the step people skip and then discover on install day.
+
 ## Heat follows power, exactly
 
 Essentially all the electrical power a rack consumes leaves it as heat. The conversion is a definition rather than an estimate: one watt is 3.412142 BTU per hour. A 1,300W rack is therefore about 4,436 BTU/hr, continuously.
@@ -22291,10 +22356,10 @@ Do the weight sum before you fill the top half. Frames have a static load rating
 
 - https://en.wikipedia.org/wiki/19-inch_rack
 - https://en.wikipedia.org/wiki/Rack_unit
-- https://en.wikipedia.org/wiki/Data_center
+- https://en.wikipedia.org/wiki/National_Electrical_Code
 - https://en.wikipedia.org/wiki/British_thermal_unit
 - https://en.wikipedia.org/wiki/Ton_of_refrigeration
-- https://en.wikipedia.org/wiki/Computer_cooling
+- https://en.wikipedia.org/wiki/IEC_60320
 `,
   },
   {

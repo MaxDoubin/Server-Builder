@@ -17,6 +17,12 @@ Measure from the front rail to the back of the longest thing you own, then add s
 
 Two-post racks exist and are fine for switches and patch panels. They are not fine for a 60 pound server, whatever the shelf claims.
 
+## The Two Things That Can Actually Hurt You
+
+Tip-over first. When you slide a 60 pound server out on fully extended rails you have moved that mass roughly two feet in front of the rack's front posts. If the frame is not bolted down or fitted with anti-tip feet, and especially if the heavy gear is not at the bottom, the whole rack can come forward. Extend one server at a time, and deploy the anti-tip bracket before the first time rather than after the first scare.
+
+Then the floor. A fully loaded 42U rack can exceed 1,500 pounds over a footprint of about 6 square feet, which is roughly 250 pounds per square foot. US residential floors are commonly designed around 40 pounds per square foot of live load. A slab-on-grade basement or garage is fine and this never comes up. An upstairs room over wood joists is a conversation to have with someone who understands the structure before you fill the rack, not after. Mine sits on a ground floor slab, and I still positioned it perpendicular to the joist span near a bearing wall.
+
 ## Layout Planning
 
 I planned my rack layout on paper before installing anything. The general rules:
@@ -60,6 +66,10 @@ I calculated total power draw before installing anything. Each circuit in my hou
 
 One correction to that arithmetic worth making explicit: a branch circuit should be loaded to 80 percent of its rating for a continuous load, which is anything running three hours or more. A rack is the definition of a continuous load. So a 15A circuit is 1,440 usable watts, not 1,800, and my 1,300W typical draw is much closer to the limit than the raw number suggests.
 
+The other power failure mode is inrush. Servers with redundant supplies pull a large surge for the first fraction of a second at power-on. A rack that idles happily at 1,300 watts can trip its breaker the moment utility power returns after an outage and every machine tries to boot at once. The fix is staggered start: set a power-on delay in BIOS or iDRAC on each host, or use a switched PDU that sequences its outlets. I stagger mine 30 seconds apart, which costs nothing and removes the failure entirely.
+
+Know your connectors before you order anything. US wall outlets are NEMA 5-15R. Server power supplies use IEC 60320 C14 inlets and take C13 cords, and higher-draw equipment uses C20 inlets with C19 cords. The normal shape of a homelab power tree is one PDU with a 5-15P plug at the wall and a row of C13 outlets facing the servers. Counting the outlets you need, and their type, is the step people skip and then discover on install day.
+
 ## Heat follows power, exactly
 
 Essentially all the electrical power a rack consumes leaves it as heat. The conversion is a definition rather than an estimate: one watt is 3.412142 BTU per hour. A 1,300W rack is therefore about 4,436 BTU/hr, continuously.
@@ -86,7 +96,7 @@ Do the weight sum before you fill the top half. Frames have a static load rating
 
 - https://en.wikipedia.org/wiki/19-inch_rack
 - https://en.wikipedia.org/wiki/Rack_unit
-- https://en.wikipedia.org/wiki/Data_center
+- https://en.wikipedia.org/wiki/National_Electrical_Code
 - https://en.wikipedia.org/wiki/British_thermal_unit
 - https://en.wikipedia.org/wiki/Ton_of_refrigeration
-- https://en.wikipedia.org/wiki/Computer_cooling
+- https://en.wikipedia.org/wiki/IEC_60320
