@@ -106,7 +106,7 @@ export function CinematicHome() {
         "Youth technology education",
       ],
       sameAs: [
-        "https://github.com/MaxFromYT",
+        "https://github.com/MaxDoubin",
         "https://instagram.com/maxdoubin",
       ],
       subjectOf: {

@@ -152,7 +152,7 @@ export function CinematicFooter() {
           </ScrollReveal>
           <StaggerGroup className="mt-4 grid grid-cols-1 gap-2 font-mono-tight text-sm" staggerDelay={0.08} delayChildren={0.35}>
             {[
-              { href: "https://github.com/MaxFromYT/Server-Builder", label: "GitHub · MaxFromYT/Server-Builder", testId: "link-footer-github" },
+              { href: "https://github.com/MaxDoubin/Server-Builder", label: "GitHub · MaxDoubin/Server-Builder", testId: "link-footer-github" },
               { href: "https://instagram.com/maxdoubin", label: "Instagram · @maxdoubin", testId: "link-footer-instagram" },
               { href: PRESS.url, label: `${PRESS.outlet} · Press feature`, testId: "link-footer-press" },
               { href: "mailto:max@maxdoubin.com", label: "max@maxdoubin.com", testId: "link-footer-email-2" },

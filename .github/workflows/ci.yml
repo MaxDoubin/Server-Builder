@@ -139,6 +139,11 @@ jobs:
       - name: Page metadata
         run: node scripts-ci/check-meta.mjs
 
+      # Google drops an item missing a required field, silently. An Event
+      # with no startDate shipped on all 333 pages before this existed.
+      - name: Structured data
+        run: node scripts-ci/check-structured-data.mjs
+
       # Last because it reads both the source trees and the built HTML.
       - name: Em dashes
         run: node scripts-ci/check-em-dashes.mjs

@@ -149,7 +149,7 @@ export function CTAAct() {
           <StaggerItem variants={ctaButtonVariants}>
             <Magnetic strength={0.15} radius={120}>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-                <a href="https://github.com/MaxFromYT/Server-Builder" target="_blank" rel="noreferrer noopener" data-testid="button-cta-github" className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]">
+                <a href="https://github.com/MaxDoubin/Server-Builder" target="_blank" rel="noreferrer noopener" data-testid="button-cta-github" className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]">
                   GitHub<motion.span animate={{ rotate: [0, 10, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>↗</motion.span>
                 </a>
               </motion.div>

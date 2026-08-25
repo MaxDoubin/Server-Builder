@@ -40,6 +40,9 @@ const BLOCKS_ROBOTS = new Set([
   // Oracle fronts the MySQL manual with a filter that returns 403 to
   // anything without a browser fingerprint. The pages are live.
   "dev.mysql.com",
+  // Cisco does the same to its documentation from a datacenter address.
+  // Every cisco.com URL cited here was opened and read before being added.
+  "www.cisco.com",
 ]);
 
 const CONCURRENCY = 8;
