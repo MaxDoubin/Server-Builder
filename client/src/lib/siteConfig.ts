@@ -263,7 +263,7 @@ export const siteConfig = {
         "Virtualization",
       ],
       category: "networking",
-      link: "",
+      link: "/topics/homelab",
       coverImage: "/images/projects/homelab.jpg",
     },
     {
@@ -273,7 +273,7 @@ export const siteConfig = {
         "Lead instructor for youth coding camps across the Las Vegas Valley, teaching programming and computing fundamentals to students beginning in technology.",
       tech: ["Teaching", "Curriculum", "Python", "Community"],
       category: "education",
-      link: "",
+      link: "/coding-camps",
       coverImage: "/images/projects/youth-coding-camps.jpg",
     },
     {
@@ -283,7 +283,7 @@ export const siteConfig = {
         "President of the school cybersecurity club: running practice sessions, building a lab that resets between meetings, and preparing members for competition.",
       tech: ["Leadership", "Cybersecurity", "Lab Design"],
       category: "leadership",
-      link: "",
+      link: "/cyber-club",
       coverImage: "/images/projects/cyber-club.jpg",
     },
     {
@@ -293,7 +293,7 @@ export const siteConfig = {
         "National Cyber League and Cyber Skyline competition across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation. Top 1 percent individually, with a team placing 7th nationally.",
       tech: ["OSINT", "Cryptography", "Forensics", "Web Exploitation"],
       category: "security",
-      link: "",
+      link: "/ncl",
       coverImage: "/images/projects/competition.jpg",
     },
     {

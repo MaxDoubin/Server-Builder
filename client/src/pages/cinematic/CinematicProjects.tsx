@@ -337,7 +337,13 @@ export function CinematicProjects() {
 
                           <div className="mt-0 flex items-center justify-between pt-5">
                             <span className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
-                              {project.isGame ? "interactive · 3D" : project.link ? "external" : "ongoing"}
+                              {project.isGame
+                                ? "interactive · 3D"
+                                : !project.link
+                                  ? "ongoing"
+                                  : project.link.startsWith("/")
+                                    ? "on this site"
+                                    : "external"}
                             </span>
                             {project.isGame ? (
                               <PulseGlow color="hsl(var(--brand-signal))">
@@ -355,6 +361,20 @@ export function CinematicProjects() {
                                   </Link>
                                 </Magnetic>
                               </PulseGlow>
+                            ) : project.link && !project.link.startsWith("/") ? (
+                              // Off-site: a real anchor, so the router does not
+                              // try to resolve another origin as a route.
+                              <Magnetic strength={0.15} radius={100}>
+                                <a
+                                  href={project.link}
+                                  target="_blank"
+                                  rel="noreferrer noopener"
+                                  data-testid={`link-project-${project.id}`}
+                                  className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                                >
+                                  Open project →
+                                </a>
+                              </Magnetic>
                             ) : project.link ? (
                               <Magnetic strength={0.15} radius={100}>
                                 <Link
@@ -362,12 +382,21 @@ export function CinematicProjects() {
                                   data-testid={`link-project-${project.id}`}
                                   className="inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                                 >
-                                  Open project →
+                                  See the work →
                                 </Link>
                               </Magnetic>
                             ) : (
+                              /*
+                                Four of the six cards used to land here and
+                                render "private · no link", which dead-ended
+                                the page and was not even accurate: a public
+                                coding camp and a school club are not private.
+                                Each now points at the page on this site that
+                                substantiates it, so this branch is the
+                                genuine no-evidence case only.
+                              */
                               <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
-                                private · no link
+                                no public link
                               </span>
                             )}
                           </div>
