@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { siteConfig, PRESS } from "@/lib/siteConfig";
@@ -284,7 +285,15 @@ export function CinematicResume() {
 
           <p className="resume-noprint mt-14 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
             Everything on this page is drawn from the same source of truth as the rest of the site.
-            Certifications marked "studying toward" are not held.
+            Certifications marked "studying toward" are not held. Every claim above is listed on{" "}
+            <Link
+              href="/verify"
+              data-testid="link-resume-verify"
+              className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+            >
+              the claim ledger
+            </Link>{" "}
+            with the evidence behind it, including the ones that rest on nothing but my word.
           </p>
         </div>
       </div>

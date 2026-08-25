@@ -48,6 +48,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   // chunk, so there is nothing to fetch.
   "/blog": { load: () => import("@/pages/cinematic/CinematicBlog") },
   "/data": { load: () => import("@/pages/cinematic/CinematicData") },
+  "/verify": { load: () => import("@/pages/cinematic/CinematicVerify") },
   "/study": { load: () => import("@/pages/cinematic/CinematicStudy") },
   "/topics": { load: () => import("@/pages/cinematic/CinematicTopics") },
   "/roadmap": { load: () => import("@/pages/cinematic/CinematicRoadmap") },
@@ -66,6 +67,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/coding-camps": { load: () => import("@/pages/cinematic/CinematicCamps") },
   "/colophon": { load: () => import("@/pages/cinematic/CinematicColophon") },
   "/cyber-club": { load: () => import("@/pages/cinematic/CinematicCyberClub") },
+  "/cyber-club/kit": { load: () => import("@/pages/cinematic/CinematicClubKit") },
   "/faq": { load: () => import("@/pages/cinematic/CinematicFaq") },
   "/flashcards": { load: () => import("@/pages/cinematic/CinematicFlashcards") },
   "/links": { load: () => import("@/pages/cinematic/CinematicLinks") },

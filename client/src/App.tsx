@@ -286,6 +286,14 @@ const CinematicData = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicData").then((m) => ({ default: m.CinematicData })),
 );
 
+const CinematicVerify = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicVerify").then((m) => ({ default: m.CinematicVerify })),
+);
+
+const CinematicClubKit = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicClubKit").then((m) => ({ default: m.CinematicClubKit })),
+);
+
 const CinematicStudy = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicStudy").then((m) => ({ default: m.CinematicStudy })),
 );
@@ -689,6 +697,11 @@ function AnimatedRoutes() {
               <CinematicTimeline />
             </Suspense>
           </Route>
+          <Route path="/cyber-club/kit">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicClubKit />
+            </Suspense>
+          </Route>
           <Route path="/cyber-club">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCyberClub />
@@ -752,7 +765,7 @@ function AnimatedRoutes() {
             </Suspense>
           </Route>
           <Route path="/tools/rack-budget">
-            <Suspense fallback={<RackBudget />}>
+            <Suspense fallback={<RouteLoading />}>
               <RackBudget />
             </Suspense>
           </Route>
@@ -834,6 +847,11 @@ function AnimatedRoutes() {
           <Route path="/data">
             <Suspense fallback={<RouteLoading />}>
               <CinematicData />
+            </Suspense>
+          </Route>
+          <Route path="/verify">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicVerify />
             </Suspense>
           </Route>
           <Route path="/study">

@@ -101,6 +101,32 @@ export function CinematicCyberClub() {
           </header>
 
           <section
+            aria-labelledby="club-kit-heading"
+            className="mt-12 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.06)] p-6"
+          >
+            <h2
+              id="club-kit-heading"
+              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+            >
+              Starting one at your own school
+            </h2>
+            <p className="mt-3 max-w-[64ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              Everything this club runs on is published as{" "}
+              <Link
+                href="/cyber-club/kit"
+                data-testid="link-club-kit"
+                className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+              >
+                Cyber Club in a Box
+              </Link>
+              : twelve meeting plans, written rules of engagement, a materials
+              list that assumes no budget, and the reasons clubs fall apart in
+              month two. Free, downloadable, and yours to change without
+              asking.
+            </p>
+          </section>
+
+          <section
             aria-labelledby="club-meeting-heading"
             className="mt-12 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm"
           >

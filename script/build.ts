@@ -55,6 +55,10 @@ async function buildAll() {
   const { generateSearchIndex } = await import("./generateSearchIndex.ts");
   await generateSearchIndex();
 
+  console.log("building cyber club kit...");
+  const { generateClubKit } = await import("./generateClubKit.ts");
+  await generateClubKit();
+
   console.log("building server...");
   const pkg = JSON.parse(await readFile("package.json", "utf-8"));
   const allDeps = [

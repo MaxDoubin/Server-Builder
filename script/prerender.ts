@@ -465,6 +465,20 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/cyber-club`,
     },
     {
+      dir: "cyber-club/kit",
+      title: "Cyber Club in a Box: a free 12 week plan | Max Doubin",
+      description:
+        "A free twelve week plan for starting a high school cybersecurity club: meeting by meeting sessions, written rules of engagement, a zero budget materials list, and the failure modes that kill clubs in month two.",
+      canonical: `${SITE_URL}/cyber-club/kit`,
+    },
+    {
+      dir: "verify",
+      title: "Verify these claims | Max Doubin",
+      description:
+        "Every claim on this site, graded by evidence: which ones have a public document, which ones have a record available on request, and which ones rest on nothing but Max Doubin's word.",
+      canonical: `${SITE_URL}/verify`,
+    },
+    {
       dir: "coding-camps",
       title: "Youth Coding Camps | Max Doubin",
       description:
@@ -858,6 +872,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/uses`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/timeline`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/cyber-club`, lastmod: today, changefreq: "monthly", priority: "0.7" },
+    { loc: `${SITE_URL}/cyber-club/kit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/verify`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/coding-camps`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/certifications`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },

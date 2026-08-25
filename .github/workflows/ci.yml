@@ -109,6 +109,8 @@ jobs:
         run: node scripts-ci/check-image-budget.mjs
       - name: Prefetch map
         run: node scripts-ci/check-prefetch-map.mjs
+      - name: Claim ledger coverage
+        run: node scripts-ci/check-claims-coverage.mjs
 
       # vite build, then the prerenderer over 200+ posts, then the server
       # bundle. The heap bump is for the prerender pass, which holds the whole
