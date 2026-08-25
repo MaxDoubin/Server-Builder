@@ -206,7 +206,7 @@ ${JSON.stringify({
   headline: post.title,
   description: post.excerpt,
   datePublished: post.date,
-  dateModified: post.date,
+  dateModified: post.updated ?? post.date,
   url,
   image: { "@type": "ImageObject", url: coverImage, contentUrl: coverImage },
   author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin", url: SITE_URL },
@@ -242,6 +242,9 @@ ${JSON.stringify({
     calendar date, not an instant, and should never touch a timezone.
   */
   const dateStr = formatPostDate(post.date);
+  const updatedStr = post.updated
+    ? ` · Rewritten <time datetime="${post.updated}">${formatPostDate(post.updated)}</time>`
+    : "";
   const readMins = Math.max(1, Math.ceil(post.wordCount / 200));
   // Point each tag at its topic hub where one exists. Every tag on every
   // post used to link to /blog, so roughly 700 crawler-visible links pointed
@@ -302,7 +305,7 @@ ${JSON.stringify({
   <a href="${SITE_URL}/blog">← Back to Blog</a>
   <img src="${coverImage}" alt="${esc(post.title)}" width="800" height="320" />
   <article>
-    <time datetime="${post.date}">${dateStr}</time> · ${readMins} min read
+    <time datetime="${post.date}">${dateStr}</time>${updatedStr} · ${readMins} min read
     <h1>${esc(post.title)}</h1>
     <p>${esc(post.excerpt)}</p>
     <nav>${tagLinks}</nav>

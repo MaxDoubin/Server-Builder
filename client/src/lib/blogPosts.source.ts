@@ -28,7 +28,18 @@ export interface CoverCredit {
 export interface BlogPost {
   slug: string;
   title: string;
+  /** First published, ISO date. Never changes once a post is live. */
   date: string;
+  /**
+   * Substantially rewritten on this date, ISO.
+   *
+   * Set it only when the article itself changed enough that a reader who
+   * saw the old one would want to know: a rewrite, a correction, a section
+   * added. Fixing a typo is not that. Absent means the post still says what
+   * it said on the day it went up, and the schema reports dateModified as
+   * the publication date.
+   */
+  updated?: string;
   tags: string[];
   excerpt: string;
   coverImage: string;
@@ -17285,6 +17296,7 @@ Building this project taught me a lot about the relationship between software an
     slug: "why-homelabs-matter",
     title: "Why Homelabs Matter for Learning Networking",
     date: "2026-02-10",
+    updated: "2026-08-25",
     tags: ["networking", "homelab", "servers"],
     excerpt:
       "How running real enterprise hardware at home changed the way I learn about networking, systems, and troubleshooting.",
@@ -17560,6 +17572,7 @@ Used R740s are available from resellers and auction sites. Prices vary a lot bas
     slug: "apple-silicon-server-future",
     title: "Could Apple Silicon Replace x86 in the Server Room?",
     date: "2026-02-12",
+    updated: "2026-08-25",
     tags: ["apple", "servers", "hardware", "mac-pro"],
     excerpt:
       "Apple Silicon changed the laptop game. Here is why it probably will not replace x86 in datacenters any time soon, and what would need to change.",
@@ -17571,31 +17584,102 @@ Used R740s are available from resellers and auction sites. Prices vary a lot bas
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_M1_-_APL1102_-_IHS_removed.jpg",
     },
     content: `
-## The Performance Argument
+## The problem
+
+You have used an M-series Mac, watched it chew through a build without the fans coming on, and wondered why nobody is racking these things. Then you go looking for an answer and get either Apple marketing or a forum argument. Here is the actual gap, in terms of what a server needs and what Apple Silicon provides.
+
+## The performance argument
 
 Apple Silicon delivers incredible performance per watt. The M-series chips consistently outperform Intel and AMD in single-threaded workloads while sipping power. If you have used an M-series Mac, you know the difference is real. Fans rarely spin up, battery life is outstanding, and sustained performance is genuinely impressive.
 
+The reasons are architectural, not magic. Apple runs a very wide out-of-order core with a large reorder buffer and eight-wide decode, which is easier to build on a fixed-length ARM64 instruction set than on x86's variable-length encoding. Memory sits on the package as LPDDR5, so the physical distance and the drive strength needed to reach it are both small, and a large system-level cache absorbs traffic before it ever hits DRAM. Apple also gets first access to TSMC's newest process nodes. None of that is a trick. It is just a set of choices that pay off enormously in a laptop.
+
 So why not put that efficiency into a server?
 
-## What Servers Actually Need
+## What servers actually need
 
-Server workloads are different from desktop workloads. Servers need massive memory capacity, ECC support at scale, high-bandwidth I/O, and standardized management interfaces. The current Apple Silicon lineup maxes out at 192 GB of unified memory on the M2 Ultra, which sounds like a lot until you realize that a single PowerEdge R740 can hold 3 TB.
+Server workloads are different from desktop workloads. Servers need massive memory capacity, ECC support at scale, high-bandwidth I/O, and standardized management interfaces.
 
-Servers also need PCIe lanes for network cards, storage controllers, and accelerators. Apple's approach of integrating everything into the SoC is brilliant for laptops but limiting for servers that need to be configured for specific workloads.
+Memory is the first wall. The Mac Pro's M2 Ultra tops out at 192 GB of unified memory. The Mac Studio's M3 Ultra later raised the ceiling to 512 GB, which is a real jump, but a single two-socket PowerEdge R740 can hold 3 TB across 24 DIMM slots and a current-generation two-socket box goes higher still. More to the point, Apple's memory is soldered to the package. You cannot add a stick, you cannot replace a failed stick, and the configuration you buy is the configuration you keep for the machine's life.
 
-## The Software Problem
+ECC is the second. Apple does not document ECC on unified memory and macOS exposes no correctable-error counters the way a server BMC does. On a PowerEdge, a DIMM throwing correctable errors shows up in the hardware log weeks before it fails, and you replace it during a maintenance window. There is no equivalent signal on an Apple Silicon Mac. For a laptop that is fine. For a box holding a database it is not.
+
+Servers also need PCIe lanes for network cards, storage controllers, and accelerators. Apple's approach of integrating everything into the SoC is brilliant for laptops but limiting for servers that need to be configured for specific workloads. The 2023 Mac Pro does have six open PCIe slots, which surprised people, but it explicitly does not support third-party GPUs. There is no driver model for them on Apple Silicon at all, and external GPU enclosures that worked on Intel Macs do not work here. The slots are for capture cards, audio interfaces, network adapters, and storage.
+
+## The management gap
+
+This is the part that gets least attention and matters most operationally. A server is expected to be manageable when the operating system is dead.
+
+An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardised: IPMI over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
+
+Apple Silicon has none of this. There is no BMC, no out-of-band port, no Redfish endpoint. Remote access means SSH on port 22 or Screen Sharing on TCP 5900, and both of those require macOS to be up and on the network. If the machine hangs at boot, somebody walks to the rack. Apple Silicon also does not implement UEFI or ACPI, and it does not conform to Arm's SystemReady specifications, which are the reason a Graviton or Ampere box boots a stock ARM64 Linux ISO the same way an x86 server boots one.
+
+## The software problem
 
 Even if Apple built the perfect server chip, the software ecosystem is not ready. The vast majority of server software is built and tested for x86 Linux. Yes, ARM servers exist (AWS Graviton is a great example), but Apple's ARM implementation runs macOS, not Linux. Running Linux on Apple Silicon is possible through projects like Asahi Linux, but it is not production-ready for server workloads.
 
-## What I Think Will Happen
+That said, the ARM64 argument itself is settled. Graviton has been in production at scale since 2018 and its current generation runs 96 Neoverse cores per socket. Ampere ships parts with well over a hundred cores. Debian, Ubuntu, RHEL, and Alpine all publish first-class arm64 builds, and the container registries carry arm64 images for essentially everything mainstream. The problem is not the instruction set. The problem is that Apple's implementation of it is a closed platform with a consumer operating system on top.
 
-Apple will probably never make a traditional rack-mount server again. But Apple Silicon will continue to find its way into edge computing, media processing pipelines, and development infrastructure. The Mac Pro with Apple Silicon (if and when it arrives) will likely be positioned as a workstation, not a server.
+Where Apple Silicon does run server-shaped work today, it runs it through Apple's own Virtualization framework. That gives you fast ARM64 Linux guests with paravirtualised devices, plus Rosetta available inside the Linux guest so an x86-64 binary can run in an ARM VM. It also lets you run macOS guests, but Apple's licence terms permit at most two additional macOS virtual instances per Mac. That limit is the whole business model of the macOS CI hosting industry, and it is why Apple hardware in datacenters is almost always a build farm rather than a general-purpose fleet.
+
+## Where it actually shows up in racks
+
+Apple Silicon is in datacenters right now, just not doing general-purpose work. AWS rents Mac instances as dedicated hosts, with a minimum 24-hour allocation period because Apple's licence requires the hardware to be dedicated. MacStadium and similar providers rent Mac minis and Mac Studios by the month. In every case, the workload is the same: compiling and testing software that can only be built on macOS, or media pipelines that depend on Apple's codecs and hardware engines.
+
+That is a real and valuable niche. It is not a replacement for x86.
+
+## Trying it yourself
+
+If you want to see the virtualization path rather than read about it, \`vmcli\` ships with recent macOS and Apple's \`Virtualization\` framework is the API underneath. A quicker check is what the machine reports about itself:
+
+\`\`\`bash
+sysctl -n machdep.cpu.brand_string
+sysctl hw.ncpu hw.perflevel0.logicalcpu hw.perflevel1.logicalcpu
+sysctl hw.memsize
+\`\`\`
+
+On an M2 Ultra the output looks like this, and the two \`perflevel\` counters are the part worth noticing:
+
+\`\`\`
+Apple M2 Ultra
+hw.ncpu: 24
+hw.perflevel0.logicalcpu: 16
+hw.perflevel1.logicalcpu: 8
+hw.memsize: 206158430208
+\`\`\`
+
+Sixteen performance cores and eight efficiency cores, reported as one 24-core pool. A scheduler that assumes homogeneous cores will happily put a latency-sensitive thread on an efficiency core and then look mysteriously slow. That heterogeneity is normal on phones and increasingly normal on x86 too, but a lot of server software still assumes every core is the same.
+
+## What I think will happen
+
+Apple will probably never make a traditional rack-mount server again. But Apple Silicon will continue to find its way into edge computing, media processing pipelines, and development infrastructure. The Mac Pro with Apple Silicon is positioned as a workstation, not a server, and everything about how it is built confirms that.
 
 For general-purpose server workloads, x86 (and increasingly ARM via Graviton and Ampere) will remain dominant. The economics and ecosystem are just too established for Apple to disrupt without a fundamentally different approach.
 
-## The Takeaway
+## What breaks when you try anyway
+
+**No out-of-band recovery.** A Mac that hangs before the network stack comes up is unreachable. The fix is to accept it and design around it: a switched PDU so you can power cycle remotely, and \`sudo pmset -a autorestart 1\` so it comes back on its own after a power loss.
+
+**Assuming an eGPU or a PCIe GPU will work.** It will not, on any Apple Silicon Mac, at any macOS version. There is no third-party GPU driver model. If your workload needs a discrete accelerator, this platform is the wrong answer and no amount of configuration changes that.
+
+**Hitting the two-VM macOS limit late.** People design a CI fleet around four or eight macOS runners per host, then discover the licence permits two. Plan the host count around two from the start.
+
+**Expecting a stock Linux ISO to boot.** Apple Silicon does not implement UEFI or ACPI, so the normal ARM64 server boot path does not exist. Asahi works by reverse engineering the boot chain and device tree, and it is a genuinely impressive project, but hardware support is partial and it is not something to put a production service on.
+
+**Reading unified memory as if it were RAM plus VRAM.** The CPU, GPU, and Neural Engine share one pool. A GPU job that grabs a large working set is taking it from the same 192 GB the rest of the system uses, and there is no separate VRAM to fall back on.
+
+## The takeaway
 
 Apple Silicon is incredible technology. It just solves a different problem than what most servers need. Understanding that distinction is important for anyone evaluating infrastructure decisions.
+
+## References
+
+- https://en.wikipedia.org/wiki/Apple_silicon
+- https://developer.apple.com/documentation/virtualization
+- https://en.wikipedia.org/wiki/AWS_Graviton
+- https://asahilinux.org/
+- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://en.wikipedia.org/wiki/ECC_memory
 `,
   },
   {
@@ -17693,6 +17777,7 @@ Backup windows also shrank significantly. A full backup that took 45 minutes ove
     slug: "ipmi-remote-management",
     title: "IPMI and Out-of-Band Management Explained",
     date: "2026-02-02",
+    updated: "2026-08-25",
     tags: ["servers", "hardware", "networking"],
     excerpt:
       "Why out-of-band management is essential for running servers, and how IPMI and iDRAC actually work under the hood.",
@@ -17704,21 +17789,31 @@ Backup windows also shrank significantly. A full backup that took 45 minutes ove
       sourceUrl: "https://commons.wikimedia.org/wiki/File:ASPEED_AST2400_BMC_Baseboard_management_controller.jpg",
     },
     content: `
-## What Is Out-of-Band Management
+## The problem
+
+A server stops responding. SSH times out, the web app is down, and the machine is in a closet, another building, or a colocation cage two hours away. You do not know whether the kernel panicked, a drive died, the power supply failed, or somebody unplugged the wrong cable. Without out-of-band management you are guessing, and eventually you are driving.
+
+## What is out-of-band management
 
 Out-of-band (OOB) management means you can control and monitor a server independently of the main operating system. Even if the OS is crashed, the disk is failed, or the machine is powered off, you can still access the hardware remotely. This is accomplished through a dedicated management controller that has its own network interface, its own processor, and its own firmware.
 
 On Dell servers, this is called iDRAC. On HP servers, it is iLO. On Supermicro, it is IPMI/BMC. The underlying protocol for all of them is IPMI (Intelligent Platform Management Interface), though each vendor adds their own web interface and features on top.
 
-## Why It Matters
+The generic name for the chip is the BMC, or baseboard management controller: a small system-on-chip soldered to the motherboard with its own RAM and flash. It boots when the server is plugged in, not when the server is powered on. Standby power is enough to run it, which is the whole point.
+
+## Why it matters
 
 In a production environment, walking up to a server to plug in a monitor and keyboard is not always possible. The server might be in a different building, a different city, or a colocation facility where physical access takes time.
 
 In a homelab, it still matters. My servers are in a closet, and I manage them entirely from my desk. If an OS hangs during a kernel update, I can remote into iDRAC, access the virtual console, and fix it without getting up. That might sound like a convenience, but multiply it by dozens of incidents over time and it becomes essential.
 
-## How It Works
+The other thing it buys you is evidence. The BMC keeps a system event log that survives OS crashes and reboots, so you can read what the hardware saw instead of reconstructing it from a syslog that stopped mid-sentence.
+
+## How it works
 
 The management controller sits on a dedicated ARM processor on the server motherboard. It has its own ethernet port (or shares one with the host via a feature called shared LOM). It runs its own lightweight OS and web server.
+
+Underneath the web interface, the BMC is a sensor and command bus. Temperature sensors, fan tachometers, voltage rails, and power supply controllers hang off I2C and SMBus links that the BMC polls directly. It does not ask the operating system for any of this, which is why the readings keep working when the OS is gone. Sensor readings and thresholds are published as SDRs (sensor data records), and events that cross a threshold get written to the SEL (system event log).
 
 When you connect to the iDRAC web interface, you can:
 
@@ -17729,15 +17824,103 @@ When you connect to the iDRAC web interface, you can:
 - Update firmware
 - View system event logs
 
-## Setting It Up
+There are two ways to reach the BMC. Over the network, IPMI uses RMCP and RMCP+ on UDP port 623. From the host operating system itself, the BMC is reachable over an internal interface (usually KCS, the keyboard controller style interface), which Linux exposes through the \`ipmi_si\` and \`ipmi_devintf\` drivers as \`/dev/ipmi0\`. That in-band path is how a running server reads its own sensors without touching the network at all.
+
+## A worked example with ipmitool
+
+\`ipmitool\` is the standard client. Use \`-I lanplus\` for anything modern, because that selects IPMI 2.0 RMCP+ with encryption rather than the older cleartext IPMI 1.5 session.
+
+\`\`\`bash
+# Is the machine on, and did anything trip?
+ipmitool -I lanplus -H 192.0.2.20 -U admin -P 'REDACTED' chassis status
+\`\`\`
+
+Correct output looks like this:
+
+\`\`\`
+System Power         : on
+Power Overload       : false
+Power Interlock      : inactive
+Main Power Fault     : false
+Power Control Fault  : false
+Power Restore Policy : previous
+Last Power Event     :
+Chassis Intrusion    : inactive
+Front-Panel Lockout  : inactive
+Drive Fault          : false
+Cooling/Fan Fault    : false
+\`\`\`
+
+Every line reading \`false\` or \`inactive\` is what you want. \`Drive Fault : true\` or \`Cooling/Fan Fault : true\` tells you the hardware already knows something you do not.
+
+Reading sensors and the event log:
+
+\`\`\`bash
+ipmitool -I lanplus -H 192.0.2.20 -U admin -P 'REDACTED' sdr list
+ipmitool -I lanplus -H 192.0.2.20 -U admin -P 'REDACTED' sel list
+\`\`\`
+
+\`sdr list\` prints one line per sensor with its value and an \`ok\`, \`nc\` (non-critical), or \`cr\` (critical) state. \`sel list\` prints timestamped hardware events, and that is the log that tells you a power supply dropped input at 03:14.
+
+Power control, when the OS is unreachable:
+
+\`\`\`bash
+ipmitool ... chassis power soft    # ACPI power button event, graceful
+ipmitool ... chassis power cycle   # cuts power and brings it back
+ipmitool ... chassis identify 60   # blink the chassis ID LED for 60 seconds
+\`\`\`
+
+Serial over LAN is the underrated feature. Configure the host's kernel console on a serial port, tell the BMC to bridge it, and \`ipmitool ... sol activate\` gives you a text console that works over a slow link and captures boot messages. On the Linux side that means adding something like \`console=ttyS0,115200n8 console=tty0\` to the kernel command line. Matching the baud rate to the BMC's serial configuration is the part people miss, and a mismatch shows up as a screen of garbage characters rather than an error.
+
+Locally, on the server itself, drop the network arguments entirely and run \`ipmitool sensor list\` after loading \`ipmi_si\` and \`ipmi_devintf\`. If \`/dev/ipmi0\` does not appear, the platform either has no BMC or is not exposing a KCS interface.
+
+## Setting it up safely
 
 The most important thing is to put your management interfaces on a separate, isolated network. Never put iDRAC or IPMI on the same network as your production traffic. These management interfaces have had security vulnerabilities in the past, and exposing them to the internet is asking for trouble.
 
 I have a dedicated management VLAN that only my administration workstation can reach. The iDRAC interfaces get static IPs on this VLAN, and the firewall blocks all traffic to them from any other segment.
 
-## Practical Tips
+The reason to be this strict is specific, not vague. IPMI 2.0's RAKP session setup returns a hash derived from the user's password to a requester that has not authenticated yet, which means anyone who can send a packet to UDP 623 can collect that hash and crack it offline. That is CVE-2013-4786, it is a property of the protocol rather than one vendor's bug, and the practical mitigation is network isolation plus long random passwords. Cipher suite 0, which some BMCs still accept, is worse: it disables authentication entirely. Disable it if your BMC lets you.
+
+A BMC is also, functionally, a small computer with full control of the host, and its firmware deserves the same patching discipline as anything else on your network.
+
+## Redfish, the successor
+
+IPMI is old and the specification is no longer being developed. The replacement is Redfish, a DMTF standard that does the same job over HTTPS with a JSON REST API instead of raw UDP. Modern iDRAC, iLO, and Supermicro BMCs all speak it, and it is far easier to script:
+
+\`\`\`bash
+curl -sk -u admin:'REDACTED' \\
+  https://192.0.2.20/redfish/v1/Systems/System.Embedded.1 | jq .PowerState
+\`\`\`
+
+A healthy response is a JSON document describing the system, and that one field returns \`"On"\` or \`"Off"\`. If you are writing new automation, write it against Redfish and keep \`ipmitool\` for the older boxes.
+
+## What breaks
+
+**Shared LOM steals your management access.** If the BMC shares a physical port with the host NIC and you put that port into an LACP bond or change its VLAN tagging, management traffic can stop arriving while the host keeps working. You will not notice until the day you need the console. Use the dedicated management port if the server has one, and test BMC reachability after any change to host networking.
+
+**The BMC hangs but the server keeps running.** BMC firmware is software, and it locks up. The fix is a cold reset of the controller rather than a reboot of the host: \`ipmitool mc reset cold\` from the host over the in-band interface. That restarts the management controller without touching the running OS, and it saves a trip to unplug the machine.
+
+**Virtual media dies partway through an install.** Mounting an ISO from your workstation means the installer is reading from a network share that can stall, and the symptom is a freeze at a random package. Host the image close to the server rather than serving it from a laptop on WiFi.
+
+**Default credentials outlive the deployment.** Dell historically shipped iDRAC with root/calvin, and used gear bought secondhand very often still has it. Newer PowerEdge systems ship with a unique factory password printed on a tag, which is better, but only if you change it. Change the default password before the interface ever touches a network, and audit accounts with \`ipmitool user list 1\`.
+
+**Time is wrong, so the event log lies.** BMCs frequently ship with no NTP configured and drift badly. Then you correlate a SEL entry against your syslog and the timestamps are twenty minutes apart, and you chase the wrong event. Point the BMC at the same NTP source as everything else.
+
+## Practical tips
 
 Change the default password immediately. Enable HTTPS and disable HTTP. Keep the firmware updated. Set up email alerts for hardware failures so you know about a failed drive before it becomes a failed array. And document the IP addresses and credentials somewhere secure.
+
+Two additions. Test the console before you need it, including virtual media boot, because discovering that Java-only console redirection will not run in your browser is a bad thing to learn during an outage. And script the boring parts: a loop that runs \`chassis status\` and \`sel list\` across every BMC and diffs the result against yesterday will find a failing fan long before it takes a machine down.
+
+## References
+
+- https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://en.wikipedia.org/wiki/Out-of-band_management
+- https://www.kernel.org/doc/html/latest/driver-api/ipmi.html
+- https://wiki.archlinux.org/title/IPMI
+- https://en.wikipedia.org/wiki/Redfish_(specification)
+- https://csrc.nist.gov/pubs/sp/800/193/final
 `,
   },
   {
@@ -17975,6 +18158,7 @@ The total cost was significant, but it has already saved my data at least three 
     slug: "vlan-segmentation-guide",
     title: "Network Segmentation with VLANs: A Practical Guide",
     date: "2026-01-15",
+    updated: "2026-08-25",
     tags: ["networking", "security", "homelab"],
     excerpt:
       "How I use VLANs to segment my home network into isolated zones for security, performance, and sanity.",
@@ -18337,6 +18521,7 @@ I currently run on 120V because that is what my circuit supports, but if I expan
     slug: "wireshark-packet-analysis",
     title: "Practical Packet Analysis with Wireshark",
     date: "2026-01-02",
+    updated: "2026-08-25",
     tags: ["networking", "cybersecurity", "tools"],
     excerpt:
       "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
@@ -18592,42 +18777,120 @@ I regularly scan my own lab environment to practice and to verify my security po
     slug: "mac-pro-2019-teardown-analysis",
     title: "Inside the 2019 Mac Pro: Engineering Analysis",
     date: "2025-12-25",
+    updated: "2026-08-25",
     tags: ["apple", "mac-pro", "hardware"],
     excerpt:
       "A look at what makes the 2019 Mac Pro's internal design unique compared to traditional server hardware.",
     coverImage: "/images/blog/mac-pro-2019-teardown-analysis.jpg",
     content: `
-## The Design Philosophy
+## The problem
+
+You are looking at a 2019 Mac Pro and trying to work out whether it is a real workstation or an expensive statement. Maybe you are pricing a used one, maybe you are deciding whether to put one in a rack next to real servers. The interesting question is not the price. It is what Apple's engineers actually did differently from everyone else building high-end x86 boxes, and which of those decisions hold up.
+
+## The design philosophy
 
 The 2019 Mac Pro is the most repairable and upgradeable Mac ever made, which is ironic given Apple's reputation for sealed devices. Every component is user-accessible. RAM, storage, PCIe cards, and even the processor can be replaced or upgraded. The internal layout is clean, logical, and clearly designed by engineers who care about serviceability.
 
-## Airflow System
+The mechanical decision that makes this work is the removable housing. Twist the top latch and the entire aluminium shell lifts straight off, leaving the whole machine standing exposed on all four sides with nothing to unscrew and no cable to unplug first. Compare that to a 2U server, where you slide the lid off and then work in a shallow tray with airflow shrouds in the way. Every part in the Mac Pro is reachable from outside the frame rather than down inside a box.
 
-The cooling system uses three large fans at the front of the chassis that pull air across the entire system. Air flows front-to-back, passing over the RAM, CPU, and PCIe cards in sequence. The fan speed is dynamically controlled based on thermal sensors throughout the system.
+The lattice pattern on the front and back is not decoration either. It is a machined array of hemispherical cavities drilled from both faces so the intersections form the through-holes. The shape gives a large surface area for airflow while keeping the panel structurally rigid, which is the whole reason it can be a load-bearing part of the chassis rather than a flimsy mesh grille.
+
+## The processor and socket
+
+Under the heatsink is a single Intel Xeon W-3200 series part in an LGA 3647 socket, offered in 8, 12, 16, 24, and 28 core configurations. The top part is rated at 205 W TDP. It is a workstation-class Xeon, which means it takes registered ECC memory and has server-grade PCIe lane counts, but it is single-socket only. There is no second socket, no interconnect, and no path to one.
+
+Because it is a standard LGA 3647 part rather than something soldered, the CPU genuinely is replaceable. That is unusual for Apple and it is why used 8-core machines get upgraded to 16 or 24 core parts on the secondary market.
+
+## Airflow system
+
+The cooling system uses three large fans at the front of the chassis that pull air across the entire system, plus a blower handling the power supply side. Air flows front-to-back, passing over the RAM, CPU, and PCIe cards in sequence. The fan speed is dynamically controlled based on thermal sensors throughout the system.
 
 What makes it interesting is the scale of the fans. Instead of many small fans (like you see in a Dell PowerEdge), Apple uses fewer but larger fans. Larger fans move more air at lower RPMs, which means the Mac Pro is remarkably quiet for a system of its power class.
 
-## The MPX Module System
+The physics behind that is worth stating plainly, because it explains the whole design. Airflow scales roughly with fan RPM, but noise scales far faster than linearly with tip speed, and a small fan needs enormous RPM to move the same volume as a large one. A 2U server is stuck with 40 mm and 60 mm fans because that is what fits in 3.5 inches of height, so it has to spin them hard and it screams. The Mac Pro is a full tower, so Apple could fit large impellers and run them slowly. You are not getting a quieter fan. You are getting a taller box.
+
+The other half of it is that the flow path is genuinely straight. Front intake, past the DIMMs, over the CPU heatsink, through the card cage, out the back. There is no doubling back, no shroud fighting the card layout, and the MPX modules have their own dedicated airflow channel so a GPU dumping several hundred watts is not preheating the air the CPU gets.
+
+## The MPX module system
 
 Apple's MPX (Mac Pro Expansion) module system provides both PCIe and auxiliary power through a single connector. Standard PCIe cards work in the Mac Pro, but Apple's MPX modules (like the Radeon Pro Vega II) get additional power and Thunderbolt connectivity through the custom connector.
 
 This is clever engineering. It means GPU cards can draw much more power than the standard PCIe specification allows, which enables Apple to use high-power professional GPUs without external power cables.
 
-## Memory Architecture
+The numbers make the point. A PCIe x16 slot supplies at most 75 W to the card by specification. A 6-pin auxiliary connector adds 75 W and an 8-pin adds 150 W, which is why every high-end GPU in a normal PC has a rat's nest of cables draped over it. The MPX connector carries the auxiliary power through the same blind-mate interface as the PCIe signalling, with each MPX bay provisioned for hundreds of watts. You slot the card in and you are finished. There is no cable to forget and nothing to catch in the airflow. The connector also carries DisplayPort back to the logic board so the GPU can drive the machine's Thunderbolt ports.
+
+For the standard slots that are not MPX bays, Apple did fit two 8-pin auxiliary connectors on the board so you can still power a conventional card. Combined they are rated for 300 W, which is the ceiling you have to design around if you fit a third-party GPU.
+
+## Slots, power, and what is actually there
+
+The full complement is eight PCI Express slots: four double-wide, three single-wide, and one half-length x4 slot that ships occupied by Apple's I/O card. That I/O card is where two of the Thunderbolt 3 ports and the USB-A and audio jacks live, so it is not really optional.
+
+Feeding all of that is a 1.4 kW power supply. Note that the continuous rating is lower on a 100 to 120 V circuit than on 200 to 240 V, which matters if you are in North America and planning to load the machine up. A single 15 A, 120 V branch circuit can carry 1440 VA continuously under the 80 percent rule, so a fully loaded Mac Pro is close to owning that circuit by itself.
+
+## Memory architecture
 
 The Mac Pro supports up to 1.5 TB of DDR4 ECC memory across 12 DIMM slots. The memory is arranged in a six-channel configuration, which provides massive bandwidth. Apple uses industry-standard R-DIMMs, so you can buy memory from any server memory supplier.
 
-## Compared to Traditional Servers
+Two details that catch people. The 1.5 TB ceiling requires a 12-core or higher CPU; the 8-core configuration is limited to 768 GB, because the memory controller in that part supports less. And six channels means population order matters enormously. Filling four slots instead of six leaves two channels idle and costs you a third of your memory bandwidth for no obvious reason. Populate in sixes or twelves.
+
+You can verify what the machine actually negotiated:
+
+\`\`\`bash
+system_profiler SPMemoryDataType | head -20
+sysctl hw.memsize
+\`\`\`
+
+Correct output for a properly populated machine names the type, the speed, and every slot:
+
+\`\`\`
+Memory Slots:
+      ECC: Enabled
+      Upgradeable Memory: Yes
+
+    DIMM1:
+      Size: 32 GB
+      Type: DDR4
+      Speed: 2933 MHz
+      Status: OK
+\`\`\`
+
+\`ECC: Enabled\` and \`Status: OK\` on every populated slot are the two lines that matter. A slot reporting anything else, or a speed lower than 2933 MHz on rated DIMMs, means the module is not what you think it is.
+
+## Compared to traditional servers
 
 The biggest difference is density. A PowerEdge R740 packs dual processors, 24 DIMM slots, and 16 drive bays into a 2U chassis. The Mac Pro is a full tower (or 5U in rack-mount form) with a single processor and fewer DIMM slots. You give up density for noise, thermal management, and build quality.
 
+Rack space is the honest way to score this. At 5U, the Mac Pro occupies two and a half times the height of an R740 while providing half the sockets, half the DIMM slots, and no hot-swap drive bays. In a 42U cabinet that is eight Mac Pros or twenty PowerEdges. If your metric is compute per rack unit, this is not a contest.
+
 For datacenter use where density matters, the Mac Pro loses. For a lab or studio environment where noise and quality of life matter, the Mac Pro is in a league of its own.
+
+## What breaks
+
+**Assuming the SSD is a normal drive.** The two internal SSD modules are controlled by the T2 chip and cryptographically paired to that specific machine. Pull them and put them in another Mac Pro and you get nothing. Replacing a module requires a DFU restore driven from a second Mac running Apple Configurator, and the data on the old module is unrecoverable without the original logic board.
+
+**Populating memory in fours.** Six memory channels do not care that four DIMMs is a nice number. Four modules leaves two channels empty. Bandwidth-sensitive work loses noticeably and nothing in the interface warns you.
+
+**Buying a third-party GPU without checking power.** The two board-mounted 8-pin connectors are rated for 300 W combined. A card that wants more than that has nowhere to get it, because the MPX auxiliary rail only reaches MPX bays.
+
+**Planning around a 120 V circuit.** People install a loaded Mac Pro plus monitors plus a UPS on one household 15 A circuit and trip the breaker under a render. Work out the continuous VA before you plug it in, not after.
+
+**Expecting server-style remote management.** There is no BMC, no IPMI, no out-of-band port. Everything about the hardware is serviceable and nothing about it is remotely manageable when macOS is down. That gap is the single biggest practical difference from a PowerEdge, and no amount of build quality closes it.
+
+## References
+
+- https://en.wikipedia.org/wiki/Mac_Pro
+- https://en.wikipedia.org/wiki/Apple_T2
+- https://en.wikipedia.org/wiki/PCI_Express
+- https://en.wikipedia.org/wiki/LGA_3647
+- https://en.wikipedia.org/wiki/Registered_memory
+- https://en.wikipedia.org/wiki/Rack_unit
 `,
   },
   {
     slug: "linux-server-hardening",
     title: "Linux Server Hardening: The Basics That Matter",
     date: "2025-12-22",
+    updated: "2026-08-25",
     tags: ["cybersecurity", "linux", "servers"],
     excerpt:
       "The fundamental security configurations I apply to every Linux server in my lab, and why each one matters.",
@@ -18639,7 +18902,13 @@ For datacenter use where density matters, the Mac Pro loses. For a lab or studio
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Cybersecurity.png",
     },
     content: `
-## Start with Updates
+## What hardening is actually for
+
+You have a fresh Linux install with a public IP, or a VM on a lab network that will eventually hold something you care about. The default configuration works, which is the problem: it was built to work everywhere, not to be safe in your specific situation. Hardening is the process of removing the parts you are not using and constraining the parts you are.
+
+None of what follows is clever. It is a short list of things that stop the attacks that actually happen, done the same way on every machine so you can tell at a glance when one is wrong.
+
+## Start with updates
 
 The single most important thing you can do for server security is keep it updated. Unpatched vulnerabilities are how most systems get compromised. I run unattended-upgrades on all my Debian/Ubuntu servers for security patches, and I schedule a maintenance window monthly for larger updates that require reboots.
 
@@ -18649,7 +18918,19 @@ apt install unattended-upgrades
 dpkg-reconfigure -plow unattended-upgrades
 \`\`\`
 
-## SSH Configuration
+That last command writes \`/etc/apt/apt.conf.d/20auto-upgrades\` with the two settings that matter, one to refresh the package lists on a schedule and one to actually apply upgrades. Out of the box it applies the security pocket only, which is the behaviour you want on a server: security fixes land automatically, feature updates wait for you.
+
+Verify it rather than assuming. This runs the whole process without changing anything and prints what it would have done:
+
+\`\`\`bash
+unattended-upgrade --dry-run --debug
+\`\`\`
+
+Correct output ends with a list of the packages it considered and a line confirming no packages needed upgrading, or naming the ones it would install. If it prints that unattended upgrades are disabled, the config from \`dpkg-reconfigure\` did not take.
+
+One more piece people skip: a kernel update does nothing until you reboot. The file \`/var/run/reboot-required\` exists when the system is waiting on one. Either check it from your monitoring or set \`Unattended-Upgrade::Automatic-Reboot\` and a reboot window in \`/etc/apt/apt.conf.d/50unattended-upgrades\` and let the machine handle it.
+
+## SSH configuration
 
 SSH is usually the primary way you access a server, which makes it the primary target for attackers. My SSH hardening configuration:
 
@@ -18658,6 +18939,26 @@ SSH is usually the primary way you access a server, which makes it the primary t
 - Change the default port (not security, but reduces noise)
 - Limit which users can SSH in: \`AllowUsers maxdoubin\`
 - Use fail2ban to block brute force attempts
+
+The critical habit is verifying the effective configuration rather than the file you edited. Modern distributions ship an \`Include /etc/ssh/sshd_config.d/*.conf\` line at the top of the main config, and sshd takes the first value it sees for most keywords. A drop-in file that sets \`PasswordAuthentication yes\` and sorts before your change wins, silently. Ask the daemon what it thinks:
+
+\`\`\`bash
+sshd -T | grep -E '^(permitrootlogin|passwordauthentication|pubkeyauthentication|maxauthtries|allowusers)'
+\`\`\`
+
+Correct output on a hardened box:
+
+\`\`\`
+permitrootlogin no
+pubkeyauthentication yes
+passwordauthentication no
+maxauthtries 3
+allowusers maxdoubin
+\`\`\`
+
+Everything sshd prints there is lowercase and reflects the merged configuration including drop-ins. If the file says one thing and \`sshd -T\` says another, \`sshd -T\` is right. Run \`sshd -t\` to syntax check before restarting, and keep your existing session open while you test the new one from a second terminal.
+
+For reference, the upstream default for \`MaxAuthTries\` is 6, and \`PermitRootLogin\` defaults to prohibit-password on current OpenSSH, so root cannot log in with a password but can with a key unless you set it to \`no\`.
 
 ## Firewall
 
@@ -18672,11 +18973,46 @@ ufw enable
 
 This allows SSH only from my management VLAN and blocks everything else inbound.
 
-## User Management
+Confirm with \`ufw status verbose\`, which prints the default policies and every rule. The output should show \`Default: deny (incoming), allow (outgoing)\` followed by your allow rules. If the rule list is empty and the default is deny, you are about to lose your session.
+
+Pair the firewall with a look at what is actually listening, because a closed port on the firewall and a service that should not be running at all are different problems:
+
+\`\`\`bash
+ss -tulpn
+\`\`\`
+
+Every line is a socket accepting connections, with the process name attached. Anything bound to \`0.0.0.0\` or \`[::]\` that you cannot explain is either a service to disable or a rule to write. Databases in particular ship bound to all interfaces on plenty of distributions.
+
+## Kernel network settings
+
+A handful of sysctl values close off old network tricks. Put them in a file under \`/etc/sysctl.d/\` so they survive reboots:
+
+\`\`\`
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.tcp_syncookies = 1
+kernel.dmesg_restrict = 1
+\`\`\`
+
+Apply with \`sysctl --system\` and check any single value with \`sysctl net.ipv4.tcp_syncookies\`, which should print \`net.ipv4.tcp_syncookies = 1\`. Leave \`net.ipv4.ip_forward\` at 0 unless the machine is deliberately a router; a host that forwards packets it was never meant to forward is a bridge between segments you thought were separate.
+
+## User management
 
 Every person gets their own account. No shared accounts, no sharing passwords. Sudo is configured so users can elevate privileges when needed, and all sudo usage is logged.
 
 I also disable any accounts that are not actively needed. Default service accounts that ship with the OS or installed packages get locked.
+
+Locking is where people get it wrong, so be specific about what you mean. \`passwd -l user\` prepends an exclamation mark to the password hash, which disables password login and nothing else. That account can still log in with an SSH key, still run cron jobs, and still be switched to by root. To actually stop an account, expire it and remove its shell:
+
+\`\`\`bash
+usermod --expiredate 1 olduser
+usermod --shell /usr/sbin/nologin olduser
+\`\`\`
+
+Then remove their key from every \`authorized_keys\` file, which is the step everyone forgets and the reason centralised key management exists.
+
+Sudo rules belong in files under \`/etc/sudoers.d/\`, edited with \`visudo -f\`, never by hand. \`visudo\` refuses to save a file that fails its syntax check, and a broken sudoers file means nobody on the machine can elevate.
 
 ## Logging
 
@@ -18684,11 +19020,48 @@ I send all system logs to a central syslog server using rsyslog. This means that
 
 Log everything. Disk space is cheap. Missing logs during an incident investigation is expensive.
 
-## File Permissions
+Two details make that actually true. Ship over TCP rather than UDP so bursts are not silently dropped, and make sure the receiving server's own firewall accepts the traffic, because a collector that is not listening looks exactly like a quiet network. Test end to end with \`logger -p auth.notice "hardening test from $(hostname)"\` and then grep for that string on the collector. If it is not there, fix the pipeline now, not during an incident.
+
+Authentication events land in \`/var/log/auth.log\` on Debian family systems and \`/var/log/secure\` on Red Hat family systems. Those are the files that show sudo usage, SSH accepts, and failed passwords, so they are the ones that matter most on the collector.
+
+## File permissions
 
 Review file permissions on sensitive files. \`/etc/shadow\` should only be readable by root. SSH keys should be 600. Configuration files should not be world-readable if they contain credentials.
 
+On Debian family systems \`/etc/shadow\` is mode 640 owned by \`root:shadow\`, so root and the shadow group can read it and nobody else. Private keys must be 600 and \`~/.ssh\` must be 700, because sshd runs strict mode checks by default and will refuse to use a key whose file or parent directory is group or world writable. That refusal is silent from the client side, which is why key auth mysteriously stops working after someone copies a home directory around.
+
+A quick audit of setuid binaries is worth running once per build:
+
+\`\`\`bash
+find / -xdev -type f -perm -4000 -printf '%M %u %p\\n' 2>/dev/null
+\`\`\`
+
+You will get a short list containing things like \`passwd\`, \`sudo\`, and \`mount\`. Anything on that list that you or an application installed deserves a hard look, because a setuid binary is a program that runs as its owner no matter who starts it.
+
 These are basics, but basics done consistently are more valuable than advanced techniques done sporadically.
+
+## What breaks
+
+**Enabling the firewall before allowing your own SSH.** The connection drops mid-command and the box is now unreachable. Always add the allow rule first, and on a machine with no console, arrange a rollback before you start: \`echo 'ufw disable' | at now + 5 minutes\` gives you a safety net you can cancel once you confirm you are still connected.
+
+**Editing sshd_config and being overridden by a drop-in.** Cloud images in particular ship a file in \`/etc/ssh/sshd_config.d/\` that enables password authentication, and because the include sits at the top and first match wins, your edit lower in the main file does nothing. \`sshd -T\` is the only honest answer.
+
+**Automatic updates that never take effect.** The packages install, the kernel is still the old one, and the machine has been waiting on a reboot for four months. Monitor for \`/var/run/reboot-required\` or configure an automatic reboot window.
+
+**Locking an account with \`passwd -l\` and considering it done.** Password login is disabled; key login, cron, and existing sessions are not. Expire the account, change the shell, and remove the keys.
+
+**Central logging that was never verified.** UDP syslog to a collector whose firewall drops port 514 produces no errors anywhere. Send a known string with \`logger\` and confirm it arrives.
+
+**Fixing a permissions error with \`chmod 777\`.** It makes the symptom go away and creates a world writable path, which on a config file holding credentials is worse than the original failure. Work out which user needs access and grant that.
+
+## References
+
+- https://man7.org/linux/man-pages/man5/sshd_config.5.html
+- https://man7.org/linux/man-pages/man5/sudoers.5.html
+- https://man7.org/linux/man-pages/man5/shadow.5.html
+- https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
+- https://wiki.archlinux.org/title/Security
+- https://csrc.nist.gov/publications/detail/sp/800-123/final
 `,
   },
   {
@@ -18747,6 +19120,7 @@ Understanding the attacks makes me better at configuring the defenses.
     slug: "sfp-transceivers-explained",
     title: "SFP, SFP+, and QSFP: Transceivers Explained",
     date: "2025-12-15",
+    updated: "2026-08-25",
     tags: ["networking", "hardware"],
     excerpt:
       "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
@@ -18915,38 +19289,185 @@ All of this is automated. Backups run on schedules, retention policies are enfor
     slug: "network-monitoring-tools",
     title: "Network Monitoring Tools I Actually Use",
     date: "2025-12-08",
+    updated: "2026-08-25",
     tags: ["networking", "tools", "homelab"],
     excerpt:
       "A practical look at the monitoring tools running in my homelab and what each one tells me about my network.",
     coverImage: "/images/blog/network-monitoring-tools.jpg",
     content: `
-## Why Monitor
+## Why monitor
 
-You cannot fix what you cannot see. Without monitoring, you find out about problems when something breaks. With monitoring, you find out about problems before they break anything, and you have data to diagnose the root cause quickly.
+You have a lab or a small network, something feels slow, and you have no idea whether the problem started ten minutes ago or three weeks ago. You cannot fix what you cannot see. Without monitoring, you find out about problems when something breaks. With monitoring, you find out about problems before they break anything, and you have data to diagnose the root cause quickly.
 
-## Grafana + Prometheus
+The goal is not to collect every metric that exists. The goal is to be able to answer three questions fast: is it up, is it slow, and did something change. Everything below is built around those three questions.
+
+## Decide what you are measuring first
+
+Before installing anything, pick the handful of signals that actually tell you a machine is unhealthy. For hosts and infrastructure, the useful frame is utilisation, saturation, and errors: how busy a resource is, how much work is queued behind it, and how often it is failing. For services that answer requests, the frame is rate, errors, and duration.
+
+Concretely, in my lab that means CPU run queue and steal time rather than just CPU percent, memory available rather than memory free, disk latency rather than just disk space, and interface errors and discards rather than just interface throughput. A network link that is 40 percent utilised but discarding frames is a bigger problem than a link sitting at 90 percent with a clean error counter.
+
+## Prometheus and Grafana
 
 This combination is the backbone of my monitoring stack. Prometheus scrapes metrics from exporters running on each server (CPU, memory, disk, network) and stores them in a time-series database. Grafana visualizes those metrics on dashboards.
 
+The important thing to understand is that Prometheus is a pull system. It does not sit and wait for servers to send it data. On a schedule, it makes an HTTP GET to \`/metrics\` on each target and parses a plain text response. That design is why a target that disappears is immediately obvious: the scrape fails and the synthetic \`up\` metric for that target goes to 0.
+
+Default ports worth memorising, because you will type them constantly:
+
+- Prometheus server and web UI: 9090
+- node_exporter: 9100
+- Alertmanager: 9093
+- SNMP exporter: 9116
+- Grafana: 3000
+
+A minimal working config looks like this:
+
+\`\`\`yaml
+# /etc/prometheus/prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "node"
+    static_configs:
+      - targets: ["10.0.10.11:9100", "10.0.10.12:9100"]
+        labels:
+          site: "lab"
+\`\`\`
+
+If you leave \`scrape_interval\` out entirely, Prometheus falls back to its built-in default of one minute. The sample config that ships with it sets 15 seconds, which is a better starting point for a lab.
+
+Check the config before restarting anything:
+
+\`\`\`bash
+promtool check config /etc/prometheus/prometheus.yml
+\`\`\`
+
+Correct output is short and boring:
+
+\`\`\`
+Checking /etc/prometheus/prometheus.yml
+ SUCCESS: /etc/prometheus/prometheus.yml is valid prometheus config file syntax
+\`\`\`
+
+You can also confirm an exporter is answering before Prometheus ever touches it:
+
+\`\`\`bash
+curl -s http://10.0.10.11:9100/metrics | grep -m3 '^node_load1'
+\`\`\`
+
+That should print something like \`node_load1 0.24\`. If curl returns nothing, the problem is the exporter or the firewall, not Prometheus, and you have just saved yourself an hour.
+
 I have dashboards for per-server resource usage, ZFS pool health, network interface traffic, and UPS status. Each dashboard has alerts configured so I get notified if a metric crosses a threshold (like disk usage exceeding 85% or UPS battery dropping below 50%).
 
-## SNMP Monitoring
+## Writing alerts that are worth reading
+
+An alert that fires on every transient blip trains you to ignore alerts. Two habits fix most of that. First, alert on a condition that has persisted, using a \`for\` clause. Second, alert on symptoms your users would notice, not on every internal counter.
+
+\`\`\`yaml
+groups:
+  - name: host
+    rules:
+      - alert: DiskFillingUp
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}
+               / node_filesystem_size_bytes) * 100 < 15
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} {{ $labels.mountpoint }} below 15% free"
+
+      - alert: TargetDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+\`\`\`
+
+\`promtool check rules /etc/prometheus/rules/host.yml\` validates the file and prints \`SUCCESS: 2 rules found\`. Reload Prometheus with \`systemctl reload prometheus\` or by POSTing to \`/-/reload\` if you started it with \`--web.enable-lifecycle\`.
+
+## SNMP monitoring
 
 My switches and FortiGate export metrics via SNMP (Simple Network Management Protocol). I use the Prometheus SNMP exporter to pull these into the same monitoring stack. This gives me visibility into switch port utilization, error counters, and CPU usage on network devices.
 
+SNMP agents listen on UDP port 161. Traps, which are unsolicited messages the device sends when something happens, go to UDP port 162 on the collector. Version 1 and version 2c authenticate with nothing more than a community string sent in clear text, so treat a v2c community as a password that anyone on the path can read. Version 3 adds real authentication and optional encryption and is what you should use on anything reachable beyond a management VLAN.
+
+Test from the command line before wiring anything into the exporter:
+
+\`\`\`bash
+snmpwalk -v2c -c public 10.0.0.2 1.3.6.1.2.1.1.5.0
+\`\`\`
+
+Correct output is a single line naming the device:
+
+\`\`\`
+SNMPv2-MIB::sysName.0 = STRING: core-sw-01
+\`\`\`
+
+For interface counters, walk the 64-bit versions rather than the originals:
+
+\`\`\`bash
+snmpwalk -v2c -c public 10.0.0.2 IF-MIB::ifHCInOctets
+\`\`\`
+
 SNMP is not the most modern protocol, but it is universally supported by network equipment and provides consistent access to device metrics.
 
-## Uptime Monitoring
+## Uptime monitoring
 
 I use a simple tool that pings every critical device every 60 seconds and alerts if anything goes down. It is basic, but knowing that your DNS server is unreachable before your users tell you is valuable.
 
-## Log Aggregation
+One caveat: ICMP echo tells you a network stack answered, not that the service is working. A box can reply to ping while its web server has been dead for a day. For anything that matters, add a TCP connect check or an HTTP check against a real endpoint, and check from more than one place if you can, so you can tell "the service is down" apart from "the path from the monitor is down".
+
+## Log aggregation
 
 All syslog data flows to a central log server running rsyslog. I can search across all servers from a single interface, which is essential for troubleshooting issues that span multiple systems.
 
-## The Dashboard
+Syslog has three transports in common use. UDP on port 514 is the traditional one and it silently drops messages under load. TCP on port 514 gives you delivery ordering and back pressure. TLS on port 6514 gives you both plus encryption, which matters because logs routinely contain usernames, source addresses, and occasionally things that should never have been logged at all.
+
+A minimal receiver on the log server:
+
+\`\`\`
+# /etc/rsyslog.d/10-remote.conf
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+template(name="PerHost" type="string"
+         string="/var/log/remote/%HOSTNAME%/%$YEAR%-%$MONTH%-%$DAY%.log")
+*.* ?PerHost
+\`\`\`
+
+Validate with \`rsyslogd -N1\`, which parses the config and exits without starting the daemon. Then prove the path end to end from a client with \`logger -n 10.0.10.5 -P 514 -T "hello from web01"\` and confirm the line appears under \`/var/log/remote/web01/\`.
+
+## The dashboard
 
 My main Grafana dashboard shows a high-level view of the entire lab: all servers, all network devices, storage capacity, and any active alerts. I check it once a day, and if anything is yellow or red, I investigate. This proactive approach has caught failing drives, memory errors, and network issues before they caused outages.
+
+The layout rule I follow is that the top row answers "is anything on fire right now" and everything below it is for diagnosis. If I have to scroll to find out whether the lab is healthy, the dashboard is wrong.
+
+## What breaks
+
+**The monitoring host depends on the thing it monitors.** If Prometheus runs on the same hypervisor as your storage, and storage dies, you lose both the service and the evidence. Put the monitoring stack somewhere with as few shared dependencies as possible, and make sure alert delivery does not route through the network segment most likely to fail.
+
+**\`rate()\` over too short a window returns nothing.** Prometheus needs at least two samples inside the range to compute a rate. With a 15 second scrape interval, \`rate(x[15s])\` is usually empty. A safe habit is a window of at least four scrape intervals, so \`rate(x[1m])\` or \`rate(x[5m])\`.
+
+**32-bit SNMP counters wrap and produce nonsense spikes.** \`ifInOctets\` is a 32-bit counter, which wraps after about 4.29 GB of traffic. On a gigabit link that can happen in well under a minute, and the graph shows an impossible spike or a negative dip. Use the high capacity \`ifHCInOctets\` and \`ifHCOutOctets\` objects from IF-MIB instead, which are 64-bit.
+
+**Prometheus quietly deletes your history.** The default retention is 15 days. If you go looking for the graph of an incident from last month and it is gone, that is why. Raise \`--storage.tsdb.retention.time\`, and size the disk for it, or send long-term data to remote storage.
+
+**An alert on \`up == 0\` cannot fire for a target that was never configured.** If a host is decommissioned from the config or a service discovery job stops returning it, the target simply vanishes and no alert exists to fire. Guard the ones you care about with an \`absent()\` rule, which fires when a named metric stops existing at all.
+
+**Everything alerts at once during a reboot.** Without a \`for\` clause, one planned restart pages you five times. Add \`for: 5m\` on host level alerts and configure inhibition in Alertmanager so a critical "host down" suppresses the twenty warnings that follow from it.
+
+## References
+
+- https://prometheus.io/docs/introduction/overview/
+- https://grafana.com/docs/grafana/latest/
+- https://www.rfc-editor.org/rfc/rfc1157
+- https://www.rfc-editor.org/rfc/rfc3411
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol
 `,
   },
   {
@@ -19156,6 +19677,7 @@ My storage hierarchy mirrors what you would see in a professional post-productio
     slug: "subnetting-practical-guide",
     title: "Subnetting Made Practical: A Real-World Guide",
     date: "2025-11-22",
+    updated: "2026-08-25",
     tags: ["networking", "homelab"],
     excerpt:
       "How I think about subnetting in practice, with real examples from my network instead of textbook exercises.",
@@ -19535,6 +20057,7 @@ I use ZFS RAIDZ2 (which is conceptually similar to RAID 6) for my bulk storage a
     slug: "python-network-automation",
     title: "Automating Network Tasks with Python",
     date: "2025-11-05",
+    updated: "2026-08-25",
     tags: ["networking", "automation", "tools"],
     excerpt:
       "How I use Python to automate repetitive network configuration and monitoring tasks in my lab.",
@@ -19801,6 +20324,7 @@ Buy more rack than you think you need. Label everything during installation, not
     slug: "stp-troubleshooting",
     title: "Troubleshooting Spanning Tree Protocol Issues",
     date: "2025-10-28",
+    updated: "2026-08-25",
     tags: ["networking", "cisco", "troubleshooting"],
     excerpt:
       "Real STP problems I have encountered and how I diagnosed them using show commands and packet captures.",
@@ -19997,31 +20521,111 @@ The default recovery interval is 300 seconds. Leave the cause disabled entirely 
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_2019_on_wheels.jpg",
     },
     content: `
-## What Afterburner Does
+## The problem
+
+You are dropping 4K or 8K ProRes onto a timeline and playback stutters, the CPU pegs, and everything else on the machine slows down. Somebody tells you to buy an Afterburner card. Before you spend that money it is worth understanding exactly what the card accelerates, what it does nothing for, and how to tell whether it is the thing actually limiting you.
+
+## What Afterburner does
 
 The Apple Afterburner card is a PCIe accelerator designed to decode ProRes and ProRes RAW video in hardware. It handles up to 6.3 billion pixels per second, which translates to 3 streams of 8K ProRes RAW or 12 streams of 4K ProRes RAW simultaneously. Without Afterburner, these decode operations happen on the CPU, which limits how many streams you can play back in real time.
 
-## Why It Matters
+Note the word decode. Afterburner is a decoder, full stop. It does not accelerate encoding, it does not accelerate effects, and it does not accelerate colour grading. It makes getting pixels off disk and into memory cheap. Everything downstream of that is still the CPU and GPU's problem.
 
-In video post-production, editors need to scrub through high-resolution footage in real time. ProRes is Apple's professional codec, used widely in film and broadcast. Raw footage from professional cameras is enormous. A single stream of 8K ProRes RAW produces about 4 GB per minute.
+## Why ProRes is expensive to decode
+
+ProRes is an intra-frame codec. Every frame is compressed on its own, with no reference to the frames around it, using a discrete cosine transform on blocks within each frame much like JPEG does. Delivery codecs such as H.264 and HEVC instead encode most frames as differences from neighbours, which is why an H.264 file is small and why seeking in one is awkward.
+
+Intra-frame coding is the right choice for production. You can cut on any frame, you can scrub backwards as cheaply as forwards, and dropping a frame does not poison the ones after it. The cost is bitrate. Apple's published target data rates at 1920x1080 and 29.97 fps give you roughly 45 Mb/s for 422 Proxy, 102 Mb/s for 422 LT, 147 Mb/s for 422, 220 Mb/s for 422 HQ, 330 Mb/s for 4444, and 500 Mb/s for 4444 XQ. Those scale roughly with pixel count, so 4K is about four times those figures and 8K about sixteen.
+
+The 422 profiles are 4:2:2 chroma at 10 bits per component. The 4444 profiles carry full 4:4:4 chroma, up to 12 bits, plus an alpha channel. ProRes itself has been published as SMPTE RDD 36, which is why open source decoders exist and behave correctly. ProRes RAW is a different thing: it stores sensor data before debayering, so the decoder has more work to do and the files are larger still.
+
+Multiply that out. In video post-production, editors need to scrub through high-resolution footage in real time. ProRes is Apple's professional codec, used widely in film and broadcast. Raw footage from professional cameras is enormous. A single stream of 8K ProRes RAW produces about 4 GB per minute.
 
 Without hardware acceleration, playing back multiple 4K or 8K streams simultaneously would require an extremely powerful CPU. Afterburner offloads this work to a dedicated FPGA (field-programmable gate array), freeing the CPU for other tasks like effects rendering and compositing.
 
-## The Hardware
+## The hardware
 
 Afterburner is built on a Xilinx FPGA. Apple programmed the FPGA with their ProRes decode logic, creating a purpose-built accelerator that is more power-efficient than doing the same work on a general-purpose CPU or GPU. The card draws about 25 watts and occupies a half-length PCIe slot.
 
-This approach is interesting from an engineering perspective. FPGAs can be reprogrammed, which means Apple could theoretically update the card to support new codecs or improved decode algorithms through a firmware update. Whether they actually will is another question.
+The reason an FPGA wins here is that a CPU spends most of its transistor budget on things a decoder does not need: branch prediction, out-of-order scheduling, cache coherency across cores. An FPGA is a sea of configurable logic blocks you wire into whatever datapath you want. Apple wired theirs into an inverse DCT pipeline that processes blocks in a fixed-latency stream, dozens of them in parallel, with no instruction fetch and no speculation. That is why 25 W of FPGA beats 200 W of Xeon at this one job by such a wide margin.
 
-## In Practice
+This approach is interesting from an engineering perspective. FPGAs can be reprogrammed, which means Apple could theoretically update the card to support new codecs or improved decode algorithms through a firmware update. Whether they actually will is another question, and the answer so far has been no.
+
+## Checking that it is there and working
+
+The card shows up on the PCIe bus like any other device:
+
+\`\`\`bash
+system_profiler SPPCIDataType | grep -i -A 8 afterburner
+\`\`\`
+
+Correct output names the card, reports \`Driver Installed: Yes\`, and shows a \`Link Width\` of \`x16\`. If the driver line says no, the machine is on a macOS release older than Catalina 10.15.1 and the card is inert. If the card does not appear at all, it is a seating problem, not a software one.
+
+For the software side of the comparison, you can measure what CPU-only ProRes decode costs with \`ffmpeg\`, which has its own decoder and does not use Apple's frameworks. Make a test clip first:
+
+\`\`\`bash
+ffmpeg -f lavfi -i testsrc2=size=3840x2160:rate=30 -t 20 \\
+  -c:v prores_ks -profile:v 3 -pix_fmt yuv422p10le test-hq.mov
+
+ffprobe -v error -select_streams v:0 \\
+  -show_entries stream=codec_name,profile,width,height,pix_fmt \\
+  -of default=noprint_wrappers=1 test-hq.mov
+\`\`\`
+
+\`ffprobe\` should report exactly this:
+
+\`\`\`
+codec_name=prores
+profile=HQ
+width=3840
+height=2160
+pix_fmt=yuv422p10le
+\`\`\`
+
+Profile 3 in \`prores_ks\` is 422 HQ. The profile numbers run 0 for Proxy, 1 for LT, 2 for standard 422, 3 for HQ, 4 for 4444, and 5 for 4444 XQ. Now time a pure decode with no output:
+
+\`\`\`bash
+ffmpeg -hide_banner -benchmark -i test-hq.mov -f null - 2>&1 | tail -2
+\`\`\`
+
+The last lines report the frame rate achieved and a \`bench: utime=\` line giving CPU seconds consumed. That utime figure is the work Afterburner is removing when the same media is played through an application that uses Apple's frameworks. Run the same clip in QuickTime Player with Activity Monitor open on an Afterburner machine and the CPU column stays near idle, because QuickTime goes through AVFoundation and VideoToolbox, and VideoToolbox routes ProRes to the card.
+
+That last point is the one that determines whether any given application benefits. Afterburner is not something an app opts into with a checkbox. An app gets it by decoding through AVFoundation or VideoToolbox. An app that ships its own ProRes decoder gets nothing.
+
+## In practice
 
 In my setup, Afterburner makes a noticeable difference when working with ProRes footage in Final Cut Pro. Timeline scrubbing is instant, even with multiple 4K streams and effects applied. Without Afterburner, the same timeline would stutter and drop frames.
 
 For anyone doing serious video work on a Mac Pro, the Afterburner card is one of the most cost-effective upgrades available. It turns the Mac Pro from a powerful workstation into a dedicated video processing machine.
 
-## The Bigger Picture
+The catch is that it moves the bottleneck rather than removing it. Twelve simultaneous 4K ProRes RAW streams is several gigabytes per second of sustained sequential read. If that media lives on a single SATA SSD, or on a network share, the card will sit mostly idle waiting for bytes. Afterburner only pays off if the storage tier underneath it can actually feed it.
+
+## What breaks
+
+**Expecting faster exports.** Afterburner does not encode. A render or an export that was CPU-bound on encoding finishes in the same time it always did. People buy the card, watch their export bar move at the same speed, and assume it is broken. It is working exactly as designed.
+
+**Expecting it to help other codecs.** ProRes and ProRes RAW only. H.264, HEVC, RED R3D, Blackmagic RAW, and camera-native formats from other vendors get nothing from it. If your project is mostly HEVC from a mirrorless camera, transcode to ProRes first or the card is dead weight.
+
+**Feeding it from slow storage.** Covered above and worth repeating, because it is the most common reason a correctly installed card appears to do nothing. Check your sustained read throughput before blaming the accelerator.
+
+**Assuming any NLE will use it.** The application has to decode through AVFoundation or VideoToolbox. Final Cut Pro and QuickTime do. Applications with their own decoder implementations may not, and support has varied by version, so test with your actual software rather than assuming.
+
+**Planning an Afterburner around an Apple Silicon Mac Pro.** It is not supported there, and it does not need to be. Apple silicon from the M1 Pro and M1 Max onward includes dedicated ProRes encode and decode engines in the SoC, which cover both directions rather than just decode. Afterburner is a 2019 Mac Pro accessory and that is where it stays.
+
+## The bigger picture
 
 Afterburner is a good example of how hardware acceleration can transform specific workloads. The same principle applies to GPU-accelerated machine learning, FPGA-based network packet processing, and ASICs designed for cryptocurrency mining. When you can move a compute-intensive task from general-purpose hardware to dedicated hardware, the performance and efficiency gains are dramatic.
+
+It is also a good example of the tradeoff. Fixed-function silicon is enormously faster at the one job it was built for and worth exactly nothing for anything else. Apple eventually folded the same capability into the SoC, and the discrete card became a footnote. That is usually how this story ends.
+
+## References
+
+- https://en.wikipedia.org/wiki/Apple_ProRes
+- https://en.wikipedia.org/wiki/Field-programmable_gate_array
+- https://en.wikipedia.org/wiki/Discrete_cosine_transform
+- https://en.wikipedia.org/wiki/Chroma_subsampling
+- https://ffmpeg.org/ffmpeg-codecs.html
+- https://developer.apple.com/documentation/videotoolbox
 `,
   },
   {
@@ -20087,6 +20691,7 @@ Firewall policies are not set-and-forget. I review my policies monthly to remove
     slug: "virtualization-networking-concepts",
     title: "Networking Inside Virtual Environments",
     date: "2025-10-18",
+    updated: "2026-08-25",
     tags: ["networking", "virtualization", "servers"],
     excerpt:
       "How virtual switches, port groups, and VLAN tagging work inside hypervisors, and how they connect to physical networks.",
@@ -20240,6 +20845,7 @@ For everything short of that, use the paravirtualised driver rather than an emul
     slug: "log-analysis-methodology",
     title: "How I Approach Log Analysis for Troubleshooting",
     date: "2025-10-15",
+    updated: "2026-08-25",
     tags: ["cybersecurity", "tools", "servers"],
     excerpt:
       "My methodology for analyzing logs to find problems, with examples from real troubleshooting sessions.",
@@ -20251,17 +20857,31 @@ For everything short of that, use the paravirtualised driver rather than an emul
       sourceUrl: "https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg",
     },
     content: `
-## Logs Tell the Truth
+## Logs tell the truth
+
+Something broke twenty minutes ago, a user has given you a vague description of it, and you have a terminal open on the machine. The question is not whether the answer is in the logs. It usually is. The question is how to get from millions of lines to the six that matter without reading any of the rest.
 
 When a system is misbehaving, logs are the first place I look. Unlike user reports or symptoms, logs provide objective, timestamped records of what the system actually did. They do not lie (though they can be incomplete or misleading if you do not know what you are looking at).
 
-## My Process
+## My process
 
 1. **Define the problem clearly.** What broke? When did it start? What changed?
 2. **Identify which logs to check.** System logs, application logs, authentication logs, and network device logs each tell different parts of the story.
 3. **Narrow the time window.** If the problem started at 2:30 PM, focus on logs from 2:15 PM to 2:45 PM. Looking at hours of logs wastes time.
 4. **Search for errors and warnings first.** Grep for ERROR, WARN, FAIL, and DENIED. These keywords surface the most relevant entries quickly.
 5. **Expand from there.** Once you find a relevant log entry, look at the entries before and after it for context.
+
+Step one carries most of the weight. "The website is down" is not a problem definition. "HTTPS requests to the reverse proxy started returning 502 at about 14:30, and it affects every backend" is a definition, and it tells you which three logs to open. If you cannot state the problem in one sentence with a time in it, spend another two minutes with the person who reported it rather than opening a log file.
+
+## Where the logs actually are
+
+On a modern Linux system you have two overlapping stores, and knowing which one you are in saves a lot of confusion.
+
+The **journal** is systemd's binary log, queried with \`journalctl\`. It holds kernel messages, everything services write to stdout and stderr, and structured metadata about which unit, PID, and user produced each line. It is not a text file and grep cannot read it directly.
+
+**Plain text files under \`/var/log\`** are written by rsyslog or by applications themselves. \`/var/log/syslog\` or \`/var/log/messages\` for general system messages, \`/var/log/auth.log\` or \`/var/log/secure\` for authentication, and per-application directories like \`/var/log/nginx/\`.
+
+If the journal is empty after a reboot, the machine is storing it in memory only. Persistent journals require \`/var/log/journal\` to exist; create it and restart systemd-journald and history survives reboots.
 
 ## Tools
 
@@ -20272,9 +20892,81 @@ grep -i "error" /var/log/syslog | tail -50
 journalctl --since "2026-02-10 14:00" --until "2026-02-10 15:00"
 \`\`\`
 
-For more complex analysis, I pipe log data into Python scripts that parse timestamps, extract fields, and aggregate patterns.
+The journalctl options I use constantly, beyond the time window:
 
-## Common Patterns
+- \`-u sshd.service\` restricts to one unit.
+- \`-p err\` filters by priority. The syslog severities defined in RFC 5424 run 0 for emergency through 7 for debug, and \`-p err\` means severity 3 and anything more severe.
+- \`-b\` is the current boot, \`-b -1\` the previous one. That is the fastest way to see what happened before an unexplained reboot.
+- \`-f\` follows in real time, which is how you watch a failure you can reproduce.
+- \`-o short-iso\` prints unambiguous timestamps, and \`--utc\` forces UTC.
+- \`_SYSTEMD_UNIT=\`, \`_PID=\`, and \`_UID=\` filter on the structured fields journald records, which is more precise than grepping the message text.
+
+## A worked example
+
+A user cannot log in to a lab box and thinks their account is locked. Start narrow, on the unit and the window:
+
+\`\`\`bash
+journalctl -u ssh.service --since "14:15" --until "14:45" -o short-iso
+\`\`\`
+
+Correct output looks like a handful of lines with clear verbs:
+
+\`\`\`
+2026-02-10T14:22:41-0800 lab01 sshd[2841]: Failed password for invalid user admin from 203.0.113.9 port 41234 ssh2
+2026-02-10T14:22:43-0800 lab01 sshd[2841]: Connection closed by invalid user admin 203.0.113.9 port 41234 [preauth]
+2026-02-10T14:31:02-0800 lab01 sshd[2907]: Accepted publickey for maxdoubin from 10.0.10.22 port 52118 ssh2: ED25519 SHA256:0Zr...
+\`\`\`
+
+Two things fall out immediately. The user who complained is not in this output at all, which means their connection never reached sshd and the problem is upstream: firewall, routing, or the wrong hostname. And there is unrelated brute force noise from an external address, which is normal background but worth counting.
+
+To count it, aggregate rather than read:
+
+\`\`\`bash
+journalctl -u ssh.service --since today --no-pager \\
+  | grep 'Failed password' \\
+  | grep -oE 'from [0-9.]+' \\
+  | sort | uniq -c | sort -rn | head
+\`\`\`
+
+\`\`\`
+    412 from 203.0.113.9
+     37 from 198.51.100.44
+      2 from 10.0.10.31
+\`\`\`
+
+The external addresses are bots. The internal one is a person with a stale key or a typo in their username, and that is the line worth following up.
+
+For more complex analysis, I pipe log data into Python scripts that parse timestamps, extract fields, and aggregate patterns. A small one that buckets failures per source per minute makes a slow, patient brute force visible where a raw count does not:
+
+\`\`\`python
+import re
+import sys
+from collections import Counter
+
+PATTERN = re.compile(
+    r"^(?P<ts>\\S+)\\s+\\S+\\s+sshd\\[\\d+\\]:\\s+Failed password.*?from (?P<ip>[\\d.]+)"
+)
+
+buckets = Counter()
+for line in sys.stdin:
+    match = PATTERN.match(line)
+    if match:
+        minute = match.group("ts")[:16]  # YYYY-MM-DDTHH:MM
+        buckets[(minute, match.group("ip"))] += 1
+
+for (minute, ip), count in buckets.most_common(10):
+    print(f"{minute}  {ip:<15} {count}")
+\`\`\`
+
+Feed it with \`journalctl -u ssh.service --since today -o short-iso --no-pager | python3 count_failures.py\`. Output is one line per busy minute:
+
+\`\`\`
+2026-02-10T14:22  203.0.113.9     118
+2026-02-10T14:23  203.0.113.9      94
+2026-02-10T09:07  10.0.10.31        2
+\`\`\`
+
+## Common patterns
 
 Some log patterns I have learned to recognize immediately:
 
@@ -20283,13 +20975,44 @@ Some log patterns I have learned to recognize immediately:
 - **Connection refused messages:** Service is not running, port is blocked, or wrong IP.
 - **Out of memory (OOM) kills:** A process consumed too much RAM and the kernel killed it. Need more memory or the application has a memory leak.
 
-## Centralized Logging
+Two additions I have picked up since. A **kernel message about a task blocked for more than 120 seconds** points at storage that has stopped responding, not at the process named in the message. And **a service that restarts on a regular cadence** with nothing between the restarts is usually being killed by its supervisor for failing a health check, so the interesting log is the supervisor's, not the application's.
+
+Also learn the difference between "connection refused" and "connection timed out". Refused means something actively rejected you, so the packet reached a host and nothing was listening on that port. Timed out means no answer at all, which points at a firewall dropping silently or a route that goes nowhere. Those two words send you to completely different places.
+
+## What breaks
+
+**Grepping for the wrong word.** Not every failure says "error". Search for \`-iE 'error|fail|denied|refused|timeout|panic|fatal'\` and use \`-i\`, because half of the software on any machine capitalises differently from the other half.
+
+**Timezone mismatch between sources.** journalctl prints local time by default, most application logs are UTC, and a firewall may be on a third setting. Two logs of the same incident then appear to describe events hours apart. Force one representation with \`-o short-iso\` or \`--utc\`, and prefer RFC 3339 timestamps with an explicit offset wherever you control the format.
+
+**The window you need was rotated away.** logrotate has already deleted the file, or the journal hit its size cap. Check retention before you need it: \`journalctl --disk-usage\` tells you how much is stored, and the settings in journald.conf control the cap. On containers this is worse, because recreating a container discards its logs entirely unless they were shipped somewhere first.
+
+**journald silently rate limiting.** When a service floods the log, journald drops messages and records a line saying it suppressed some number of them from that unit. If your timeline has a hole in it during the busiest moment, search for "Suppressed" before concluding nothing happened.
+
+**Treating absence of a log as absence of an event.** A process that dies before it opens its log file writes nothing at all. So does a service that was never started. When the log is empty, verify the service actually ran, with \`systemctl status\` and the journal for the unit, rather than assuming the subsystem is healthy.
+
+**Trusting local logs on a host you suspect is compromised.** An attacker with root can edit them. This is the entire argument for the next section.
+
+## Centralized logging
 
 Checking logs on individual servers is fine for a few machines. Once you have more than five, centralized logging is essential. I send all syslog data to a central server where I can search across all machines from one interface. This also means I have log copies even if the original server's logs are lost.
 
-## The NCL Connection
+Two rules make it useful rather than decorative. Ship over TCP, because UDP silently drops exactly when a burst of interesting events arrives. And synchronise clocks with NTP across everything that logs, because cross-machine correlation is the whole point and it is impossible if two hosts disagree about what time it is.
+
+## The NCL connection
 
 Log analysis is a major category in the National Cyber League competition. The skills transfer directly: you get a set of logs and need to extract specific information, identify attacks, and answer questions about what happened. The methodology is identical to real-world troubleshooting.
+
+The competition format rewards the same habit that works at work: read the question, narrow the window, aggregate before you read line by line. The people who do badly at log analysis challenges are usually scrolling. The people who do well have already turned the file into a count of something.
+
+## References
+
+- https://man7.org/linux/man-pages/man1/journalctl.1.html
+- https://man7.org/linux/man-pages/man7/systemd.journal-fields.7.html
+- https://man7.org/linux/man-pages/man5/journald.conf.5.html
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://www.rfc-editor.org/rfc/rfc3339
+- https://docs.python.org/3/library/re.html
 `,
   },
   {
@@ -20533,6 +21256,7 @@ I use the Mac Pro's GPUs primarily for video processing and as a learning platfo
     slug: "ssl-tls-certificates-explained",
     title: "SSL/TLS Certificates: What They Are and How They Work",
     date: "2025-09-25",
+    updated: "2026-08-25",
     tags: ["security", "networking", "servers"],
     excerpt:
       "A practical explanation of TLS certificates, certificate authorities, and how to manage certificates on your own infrastructure.",
@@ -20706,6 +21430,7 @@ Revocation deserves a mention even though it rarely works well. CRLs are publish
     slug: "apple-file-system-apfs",
     title: "APFS: Apple's Modern Filesystem and Its Server Implications",
     date: "2025-09-22",
+    updated: "2026-08-25",
     tags: ["apple", "storage", "mac-pro"],
     excerpt:
       "How APFS works, what it does well, and why it is not a replacement for ZFS in server environments.",
@@ -20717,36 +21442,162 @@ Revocation deserves a mention even though it rarely works well. CRLs are publish
       sourceUrl: "https://commons.wikimedia.org/wiki/File:SSD_in_Mac_(26457298651).jpg",
     },
     content: `
-## What APFS Is
+## The problem
 
-Apple File System (APFS) is Apple's modern filesystem, introduced in 2017 to replace HFS+. It was designed primarily for flash storage (SSDs) and supports features like snapshots, clones, strong encryption, space sharing, and crash protection through copy-on-write metadata.
+You have a Mac holding real work, you keep reading that APFS has snapshots and clones and checksums, and you want to know whether that is enough to trust it with data you cannot lose. Or you are running a mixed lab and trying to decide which side of the wire holds the authoritative copy. The short version is that APFS is a very good filesystem that solves a different problem than a server filesystem solves, and the gap is specific enough to name.
 
-## What APFS Does Well
+## What APFS is
+
+Apple File System (APFS) is Apple's modern filesystem, introduced in 2017 to replace HFS+. It shipped first on iOS 10.3 in the spring of that year and then on macOS 10.13 High Sierra in the fall. It was designed primarily for flash storage (SSDs) and supports features like snapshots, clones, strong encryption, space sharing, and crash protection through copy-on-write metadata.
+
+HFS+ was designed for spinning disks and a single volume per partition. It used a journal to recover from crashes, it had 32-bit file IDs, and it had no concept of a snapshot. APFS replaced essentially all of that. File IDs are 64-bit, timestamps are nanosecond resolution, the default block size is 4096 bytes, and the on-disk structures are copy-on-write rather than journalled.
+
+## How copy-on-write actually works here
+
+This is the mechanism that everything else in APFS is built on, so it is worth being precise about it.
+
+When APFS modifies a metadata block, it does not overwrite the old one. It writes a new copy somewhere else and then updates the pointer to it, and that pointer update itself propagates upward until it reaches a superblock. The final write that commits the whole change is a single atomic superblock update. If power drops halfway through, the old superblock is still valid and still points at a fully consistent older state. That is why APFS does not need a journal replay and why \`fsck_apfs\` is usually fast.
+
+The important qualifier: APFS applies copy-on-write to metadata. User data blocks are handled differently, and by default a normal write to an existing file can overwrite in place. That distinction matters when you get to integrity, below.
+
+The same mechanism gives you clones for free. A clone is a second directory entry that points at the same data blocks with a reference count, so duplicating a 50 GB file costs a few kilobytes until one of the copies is modified. Then only the changed blocks diverge.
+
+## Containers and volumes
+
+The part that trips people up is that an APFS "partition" is not a volume. The GPT partition holds an APFS *container*, and the container holds one or more *volumes*. All volumes in a container draw from the same free space pool, which is what Apple means by space sharing. You do not size them up front the way you size an ext4 partition.
+
+Since macOS 10.15 Catalina, a standard Mac boot container has more volumes than most people expect: a read-only System volume, a writable Data volume, plus Preboot, Recovery, and VM. They are stitched together into what looks like one filesystem by a firmlink. This is why \`df\` output on a modern Mac looks strange and why the same bytes appear to be mounted twice.
+
+\`\`\`bash
+diskutil apfs list
+\`\`\`
+
+Correct output looks roughly like this:
+
+\`\`\`
+APFS Container (1 found)
+|
++-- Container disk3 8F2A1C40-...
+    ====================================================
+    APFS Container Reference:     disk3
+    Size (Capacity Ceiling):      2000398934016 B (2.0 TB)
+    Capacity In Use By Volumes:   412316860416 B (412.3 GB) (20.6% used)
+    Capacity Not Allocated:       1588082073600 B (1.6 TB) (79.4% free)
+    |
+    +-< Physical Store disk0s2 ...
+    |
+    +-> Volume disk3s1 (Macintosh HD, APFS System, Not Encrypted)
+    +-> Volume disk3s5 (Macintosh HD - Data, APFS Data, Encrypted)
+\`\`\`
+
+The container-level numbers are the ones that are actually true. Per-volume free space is a projection of the shared pool.
+
+## Snapshots and clones, worked
+
+Here is the clone behaviour on a real volume. \`mkfile\` and \`cp -c\` both ship with macOS, and \`cp -c\` is the flag that calls \`clonefile(2)\` instead of copying blocks.
+
+\`\`\`bash
+cd /tmp
+mkfile 1g big.bin
+df -h /System/Volumes/Data | tail -1
+cp -c big.bin big-clone.bin
+df -h /System/Volumes/Data | tail -1
+du -sh big.bin big-clone.bin
+\`\`\`
+
+What correct output shows: the two \`df\` lines report almost identical available space, differing by kilobytes rather than by a gigabyte, while \`du\` reports \`1.0G\` for each file. That is not a bug in \`du\`. Each file legitimately references a gigabyte of blocks, and the blocks are shared. Drop the \`-c\` and the second \`df\` line loses a full gigabyte.
+
+Snapshots work the same way at volume scale. Time Machine takes local snapshots automatically, and you can force one:
+
+\`\`\`bash
+tmutil localsnapshot
+tmutil listlocalsnapshots /
+\`\`\`
+
+Output is a list of snapshot names in the form \`com.apple.TimeMachine.2026-08-25-101500.local\`. You can mount one read only and pull a single file out of it:
+
+\`\`\`bash
+mkdir /tmp/snap
+sudo mount_apfs -o ro -s com.apple.TimeMachine.2026-08-25-101500.local \\
+  /System/Volumes/Data /tmp/snap
+ls /tmp/snap/Users
+\`\`\`
+
+That is genuinely useful and it is instant. It is also not a backup, for reasons in the mistakes section.
+
+## What APFS does well
 
 APFS is excellent for its intended use case: Apple devices with SSDs. Snapshots are instant and space-efficient. Encryption is hardware-accelerated and transparent. Space sharing lets multiple volumes share a single storage pool dynamically, which is perfect for devices with fixed internal storage.
 
-File operations on APFS are fast because the filesystem was designed around the characteristics of flash storage rather than spinning disks.
+File operations on APFS are fast because the filesystem was designed around the characteristics of flash storage rather than spinning disks. It issues TRIM, it handles sparse files natively, and directory sizing is computed rather than walked, so getting the size of a large tree is quick.
 
-## Where APFS Falls Short for Servers
+Encryption is the other genuine strength. FileVault on APFS is volume-level AES, keyed through the Secure Enclave or T2 on hardware that has one, and the crypto runs in dedicated silicon in the storage path. You do not pay the CPU cost of a software-only stack.
 
-APFS does not checksum file data. It checksums metadata (directory structures, file attributes) but not the actual file contents. This means APFS cannot detect or correct silent data corruption, which is a critical gap for server storage. ZFS, by contrast, checksums every block of data and can self-heal when corruption is detected.
+## Where APFS falls short for servers
 
-APFS also does not support software RAID. There is no APFS equivalent of ZFS RAIDZ or Linux md RAID. For redundant storage, you need either hardware RAID (which APFS sits on top of) or Apple's now-deprecated software RAID from Disk Utility.
+APFS does not checksum file data. It checksums metadata (directory structures, file attributes) using Fletcher-64, but not the actual file contents. This means APFS cannot detect or correct silent data corruption, which is a critical gap for server storage. ZFS, by contrast, checksums every block of data and can self-heal when corruption is detected.
+
+There is also no scrub. Nothing in APFS periodically walks your data verifying it is still what you wrote. \`diskutil verifyVolume\` and \`fsck_apfs\` check that the structures are coherent, which is a different question from whether your file contents are intact. A flipped bit inside a photo passes every check APFS knows how to run.
+
+APFS also does not support software RAID. There is no APFS equivalent of ZFS RAIDZ or Linux md RAID. For redundant storage, you need either hardware RAID (which APFS sits on top of) or Apple's AppleRAID layer, which Disk Utility exposes as mirroring, striping, and concatenation only. There is no parity RAID in the box, and because AppleRAID sits below APFS, a mirror can tell you the two sides disagree but has no checksum to decide which side is right.
+
+Last, replication. ZFS has \`zfs send\` and \`zfs receive\`, which move snapshot deltas between machines as a stream. APFS snapshots are local objects, and there is no general purpose, scriptable equivalent exposed to you.
 
 ## APFS vs ZFS
 
 For server storage:
+
 - **Data integrity:** ZFS wins. Checksumming and self-healing are essential for data you care about.
 - **RAID:** ZFS wins. RAIDZ provides integrated software RAID with flexible configurations.
 - **Snapshots:** Both are excellent. APFS snapshots are lighter-weight for typical desktop use. ZFS snapshots are more powerful for server backup workflows (send/receive).
 - **Encryption:** APFS is more tightly integrated with Apple hardware. ZFS encryption works but is a newer addition.
 - **Performance on SSDs:** APFS is optimized for Apple's specific SSD controllers. ZFS performs well on SSDs but was originally designed for spinning disks.
+- **Verification:** ZFS wins outright. There is no APFS scrub.
 
-## My Approach
+The ZFS side of that is checkable. On the storage box:
+
+\`\`\`bash
+sudo zpool scrub tank
+zpool status tank
+\`\`\`
+
+Correct output ends with a scan line and an error line:
+
+\`\`\`
+  scan: scrub repaired 0B in 03:12:44 with 0 errors on Sun Aug 24 06:12:44 2026
+errors: No known data errors
+\`\`\`
+
+If a disk had returned bad data that the checksum caught, the \`CKSUM\` column for that device would be non-zero and the scrub would report blocks repaired. There is no command on the APFS side that produces the equivalent answer.
+
+## My approach
 
 On my Mac Pro, I use APFS for the boot volume and local workspace because it is the native macOS filesystem and works seamlessly with Apple's tools. For any data that needs integrity guarantees or redundancy, I store it on ZFS pools running on my Dell servers.
 
+Concretely, the Mac writes active project files locally on APFS for speed, and a scheduled \`rsync\` pushes finished work to a ZFS dataset over the network. The ZFS side is the copy with checksums, snapshots on a retention schedule, and a monthly scrub. If the Mac's SSD silently rots a block, the version that matters is elsewhere and verifiable.
+
 This hybrid approach uses each filesystem where it is strongest.
+
+## Common mistakes
+
+**Treating local snapshots as backups.** APFS local snapshots live in the same container as the data they snapshot. If the SSD fails, they die with it. macOS also purges them automatically under disk pressure, so the one you were counting on may not be there. A snapshot protects you from your own \`rm\`, not from hardware.
+
+**Misreading free space.** \`df\` on APFS reports purgeable space as available, and snapshots hold blocks that no live file references. You can see 300 GB free and still get "disk full" on a write. Check the container with \`diskutil apfs list\`, and clear held blocks with \`tmutil deletelocalsnapshots <date>\` or \`tmutil thinlocalsnapshots / <bytes> 4\`.
+
+**Expecting \`cp\` to clone.** Only \`cp -c\`, Finder's Duplicate, and a direct \`clonefile(2)\` call produce clones. A backup script using plain \`cp\` or \`rsync\` writes full copies, and a workflow that assumed cheap duplicates fills the volume overnight.
+
+**Case sensitivity mismatch.** macOS formats APFS case-insensitive by default. If you create a case-sensitive volume for a build tree, you get correct behaviour for source code but break applications that assume otherwise, and copying from case-sensitive to case-insensitive silently collides \`README\` with \`readme\`. Pick one per volume and know which one you picked.
+
+**Assuming encryption implies integrity.** FileVault stops someone reading the disk. It does nothing about a flipped bit, and because the data is enciphered in blocks, a single bit error damages the whole block rather than one byte. Encryption and integrity are separate properties and APFS only provides one of them.
+
+## References
+
+- https://en.wikipedia.org/wiki/Apple_File_System
+- https://en.wikipedia.org/wiki/HFS_Plus
+- https://en.wikipedia.org/wiki/Copy-on-write
+- https://en.wikipedia.org/wiki/ZFS
+- https://openzfs.github.io/openzfs-docs/
+- https://en.wikipedia.org/wiki/Data_scrubbing
 `,
   },
   {
@@ -21164,6 +22015,7 @@ I run all my lab servers with redundant PSUs and connect them to separate circui
     slug: "spanning-tree-protocol-deep-dive",
     title: "Spanning Tree Protocol: What It Does and Why It Breaks Things",
     date: "2026-02-27",
+    updated: "2026-08-25",
     tags: ["networking", "switching", "homelab"],
     excerpt: "STP prevents broadcast storms but introduces its own complexity. Understanding it deeply is essential for anyone working with switched networks.",
     coverImage: "/images/blog/spanning-tree-protocol-deep-dive.jpg",
@@ -21364,6 +22216,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
     slug: "ipv6-in-the-real-world",
     title: "IPv6 in the Real World: What Actually Changes",
     date: "2026-03-01",
+    updated: "2026-08-25",
     tags: ["networking", "ipv6"],
     excerpt: "IPv6 has been 'the future' for decades. Here is how it actually works in practice and what you need to know when you encounter it.",
     coverImage: "/images/blog/ipv6-in-the-real-world.jpg",
@@ -21374,17 +22227,33 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
       sourceUrl: "https://commons.wikimedia.org/wiki/File:IPv6_header_rv1.png",
     },
     content: `
-## Why IPv6 Exists
+## The problem
+
+You enable IPv6 on a router, or your ISP quietly turns it on for you, and suddenly half your traffic takes a path you never configured. A host has five addresses instead of one, \`ping\` works but \`ping6\` does not, and your firewall rules only cover IPv4 so the new protocol is wide open. None of that is IPv6 being exotic. It is IPv6 doing exactly what it was designed to do while you are still thinking in IPv4.
+
+## Why IPv6 exists
 
 IPv4 has approximately 4.3 billion addresses. The internet has more than 4.3 billion devices connected to it. The math does not work without NAT, and NAT creates its own complexity and problems. IPv6 solves this with a 128-bit address space that provides enough addresses for every device that will ever exist, many times over.
 
-## The Address Space
+## The address space
 
 An IPv6 address looks like this: \`2001:db8:85a3::8a2e:370:7334\`. It is 128 bits expressed in eight groups of four hexadecimal digits, separated by colons. Consecutive groups of zeros can be abbreviated with \`::\`.
 
 A typical IPv6 prefix for a network segment is /64, which gives you 18 quintillion possible addresses on that segment. The idea of running out of addresses on a single subnet is gone.
 
-## What Changes for Network Configuration
+There are rules for writing an address down, which matter more than they sound like they do because half of address confusion is two people writing the same address two ways. Leading zeros in a group are dropped. \`::\` replaces the longest run of consecutive zero groups and may appear only once. Hex digits are written lowercase. So \`2001:0DB8:0000:0000:0000:0000:0000:0001\` is written \`2001:db8::1\`, and nothing else is correct.
+
+The ranges you will actually meet:
+
+- \`2000::/3\` is global unicast, the routable internet. Anything starting with a 2 or 3 is a real address.
+- \`fe80::/10\` is link-local. Every interface gets one automatically and it never routes off the link.
+- \`fc00::/7\` is unique local, the rough analogue of RFC 1918 space. In practice you use \`fd00::/8\` and generate a random 40-bit global ID rather than picking \`fd00::1\` like everybody does.
+- \`ff00::/8\` is multicast. \`ff02::1\` is all nodes on the link, \`ff02::2\` is all routers.
+- \`2001:db8::/32\` is reserved for documentation, which is why it shows up in every example including mine.
+
+There is no broadcast address in IPv6 at all. Everything broadcast used to do is now multicast to a specific group, which is a real efficiency win on a busy segment.
+
+## What changes for network configuration
 
 **No more NAT (mostly):** With enough addresses for every device to have a globally routable address, NAT is no longer necessary. Devices can communicate end-to-end directly.
 
@@ -21394,13 +22263,91 @@ A typical IPv6 prefix for a network segment is /64, which gives you 18 quintilli
 
 **Neighbor Discovery Protocol (NDP):** NDP replaces ARP for address resolution on local segments.
 
-## What Stays the Same
+NDP is worth understanding properly because it is where most IPv6 weirdness lives. It runs over ICMPv6, not over a separate ethertype like ARP, and uses five message types: router solicitation (133), router advertisement (134), neighbor solicitation (135), neighbor advertisement (136), and redirect (137). A host boots, sends a router solicitation to \`ff02::2\`, and a router answers with an advertisement carrying the prefix, the default route, and a set of flags.
+
+Those flags decide how the host configures itself. The A flag on a prefix says "build an address from this yourself". The M flag says "use DHCPv6 for addresses". The O flag says "use DHCPv6 for other information such as DNS servers, but build your own address". A network where the router advertises no prefix and no M flag will leave hosts with a link-local address and nothing else, which looks exactly like a broken network.
+
+Address selection also changed. A modern host does not use a stable EUI-64 address derived from its MAC any more, because that leaks the hardware identity across every network it joins. It generates temporary privacy addresses that rotate, plus a stable per-network address. So one interface legitimately having five or six IPv6 addresses is normal and not a misconfiguration.
+
+## What stays the same
 
 Routing, firewall rules, VLANs, and most other networking concepts work the same way. You apply them to IPv6 addresses instead of IPv4 addresses. Your firewall still needs rules. Your switches still handle frames the same way. The mental model transfers directly.
 
-## Getting Started
+## Seeing it work on a Linux host
+
+\`\`\`bash
+ip -6 addr show dev eth0
+\`\`\`
+
+Expected output on a working dual-stack segment:
+
+\`\`\`
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 2001:db8:1234:1::a1b2:c3d4:e5f6:7890/64 scope global temporary dynamic
+       valid_lft 86200sec preferred_lft 14200sec
+    inet6 2001:db8:1234:1::1a2b:3c4d:5e6f:7a8b/64 scope global dynamic mngtmpaddr
+       valid_lft 86200sec preferred_lft 14200sec
+    inet6 fe80::5054:ff:fe12:3456/64 scope link
+       valid_lft forever preferred_lft forever
+\`\`\`
+
+Three things to read there. The \`scope link\` address is the link-local one and it is always present. The \`scope global temporary\` address is the rotating privacy address used for outbound connections. The lifetimes come straight from the router advertisement, and if \`preferred_lft\` is counting down toward zero with no router refreshing it, your router advertisements have stopped.
+
+\`\`\`bash
+ip -6 route
+\`\`\`
+
+\`\`\`
+2001:db8:1234:1::/64 dev eth0 proto ra metric 100 pref medium
+fe80::/64 dev eth0 proto kernel metric 256 pref medium
+default via fe80::1 dev eth0 proto ra metric 100 pref medium
+\`\`\`
+
+Note the default route: \`via fe80::1\`, a link-local address. That is correct and normal. IPv6 next hops are link-local, which means your default gateway does not need a global address at all.
+
+Then test reachability and look at the neighbor table:
+
+\`\`\`bash
+ping -6 -c 3 2001:4860:4860::8888
+ip -6 neigh show
+\`\`\`
+
+A healthy neighbor entry ends in \`REACHABLE\` or \`STALE\`. An entry stuck in \`INCOMPLETE\` means neighbor solicitations are going out and nothing is answering, which is the IPv6 version of an unresolved ARP.
+
+## Firewalling IPv6 correctly
+
+This is the part that bites people who treat IPv6 as "IPv4 with longer addresses". Without NAT there is no accidental inbound protection, so every host with a global address is directly addressable from the internet the moment your ISP routes the prefix. Your stateful firewall policy has to be written twice, once per family, and on Linux that means \`ip6tables\` or an \`nftables\` \`inet\` table rather than assuming \`iptables\` covers it.
+
+The second trap is blocking ICMPv6. On IPv4 you can filter most ICMP and get away with it. On IPv6 you cannot, because ICMPv6 carries neighbor discovery and path MTU discovery. Drop neighbor solicitations and the link stops resolving addresses. Drop Packet Too Big (type 2) and connections establish fine and then hang the moment anyone sends a full-size packet, because the minimum IPv6 MTU is 1280 bytes and routers do not fragment on your behalf. The source host has to be told to shrink, and Packet Too Big is the only way it finds out.
+
+## What breaks
+
+**A prefix that is not a /64.** SLAAC assumes a 64-bit interface identifier. Hand a segment a /112 or a /120 because it "only needs a few addresses" and autoconfiguration silently stops working while static addressing keeps working, so it looks like a client bug. Use /64 for every LAN segment, always. Point-to-point links between routers are the only common exception.
+
+**Rogue router advertisements.** Any device on the segment can send an RA, and hosts will believe it. One misconfigured virtual machine bridging its host adapter can take over as default gateway for the whole VLAN. Switches have RA Guard for exactly this reason. Turn it on for access ports.
+
+**Half-working dual stack, which is worse than no IPv6.** If AAAA records resolve but IPv6 forwarding is broken, clients try IPv6 first, wait for a timeout, then fall back to IPv4. Everything feels sluggish rather than broken, so nobody reports it as an outage. Happy Eyeballs shortens that stall but does not remove it. Either make IPv6 work end to end or turn it off; do not leave it half configured.
+
+**Firewall rules that only exist for IPv4.** Covered above, and worth repeating because it is the most common real security failure when a network turns IPv6 on. Audit with \`ip6tables -L -n -v\` or \`nft list ruleset\` and confirm your default input policy is what you think it is.
+
+**Logging and access lists that break on address format.** An allowlist containing \`2001:db8:0:0:0:0:0:1\` will not match a log line containing \`2001:db8::1\` if you are comparing strings. Normalize addresses before comparing them, and store them in a form your tooling parses rather than in whatever the device happened to print.
+
+**Prefix delegation changing under you.** Many residential ISPs delegate a prefix that changes on reconnect. Every static IPv6 address you wrote down inside that prefix becomes wrong at 4 AM. Use ULA addressing for internal, must-not-change references and let the delegated global prefix be the disposable outer layer.
+
+## Getting started
 
 Most enterprise environments now operate dual-stack, running both IPv4 and IPv6 simultaneously. Start by enabling IPv6 on your homelab router, get a prefix delegation from your ISP if available, and experiment with connectivity. The best way to learn IPv6 is to use it.
+
+Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global address and a working default route. Write the firewall rules before you route the prefix, not after. Then break it on purpose, block ICMPv6 type 2 and watch large transfers hang, so that when it happens for real you recognise the symptom in thirty seconds instead of an afternoon.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc8200
+- https://www.rfc-editor.org/rfc/rfc4291
+- https://www.rfc-editor.org/rfc/rfc4861
+- https://www.rfc-editor.org/rfc/rfc4862
+- https://www.rfc-editor.org/rfc/rfc8981
+- https://www.rfc-editor.org/rfc/rfc5952
 `,
   },
   {
@@ -21488,6 +22435,7 @@ Type \`?\` at any point to see available commands. This works in all modes. \`sh
     slug: "storage-area-networks-explained",
     title: "Storage Area Networks Explained",
     date: "2026-03-03",
+    updated: "2026-08-25",
     tags: ["storage", "networking", "servers"],
     excerpt: "SANs power the storage backends of most enterprise datacenters. Here is how they work and why they are architected the way they are.",
     coverImage: "/images/blog/storage-area-networks-explained.jpg",
@@ -21945,6 +22893,7 @@ Memory speed is limited by the slowest DIMM installed and by the number of DIMMs
     slug: "soc-home-lab-build",
     title: "Building a SOC Home Lab for Cybersecurity Practice",
     date: "2026-03-09",
+    updated: "2026-08-25",
     tags: ["cybersecurity", "homelab", "security"],
     excerpt: "A SOC home lab gives you a realistic environment to practice threat detection, log analysis, and incident response without touching production systems.",
     coverImage: "/images/blog/soc-home-lab-build.jpg",
@@ -21955,11 +22904,13 @@ Memory speed is limited by the slowest DIMM installed and by the number of DIMMs
       sourceUrl: "https://commons.wikimedia.org/wiki/File:NSOC-2012.jpg",
     },
     content: `
-## Why a SOC Lab
+## Why a SOC lab
+
+Every entry level security operations job description asks for experience with a SIEM, and there is no legal way to get that experience on somebody else's production network. So you build a small one where you own every packet and can break anything, and you generate the attacks yourself.
 
 Security operations work requires practice in a realistic environment. Reading about SIEM correlation rules or log analysis is useful, but actually running the tools and analyzing real (or simulated) attacks is how the skills develop. A home SOC lab gives you that environment.
 
-## Core Components
+## Core components
 
 **SIEM (Wazuh or ELK Stack):** The SIEM collects and correlates logs from across the environment. Wazuh is open source, well-documented, and integrates directly with the ELK stack for visualization.
 
@@ -21969,17 +22920,135 @@ Security operations work requires practice in a realistic environment. Reading a
 
 **Packet capture:** A dedicated packet capture setup (like SecurityOnion or a simple tcpdump-based collector) gives you full packet data for investigation.
 
-## Building the Environment
+Four roles, and in a small lab they can be four virtual machines. The one to size generously is the search and storage layer, because it is an OpenSearch or Elasticsearch node underneath and those are memory hungry by design. The rule of thumb from that world is to give the JVM about half the host's memory as heap and never to cross roughly 32 GB of heap, above which the JVM loses compressed object pointers and you get less usable memory per gigabyte, not more. In a lab you are nowhere near that ceiling; the practical consequence is simply that an indexer with 2 GB of RAM will spend its life in garbage collection and you will blame the software.
+
+Storage you can estimate rather than guess. Count your events per second, multiply by the average size of an indexed event, and multiply by your retention in seconds. Measure the first two numbers on your own lab instead of taking a figure from a vendor page, because the answer depends entirely on which sources you turned on.
+
+## Network design comes first
+
+Before installing anything, decide where the lab lives. A SOC lab exists to generate malicious-looking traffic, and some of the tooling generates genuinely malicious traffic. That needs to be on its own segment with no route to the network your family uses, and any target VM you deliberately compromise needs to be on an isolated segment even within the lab.
+
+The minimum sane layout is three zones: a management zone with the SIEM and your workstation, a victim zone with the machines you attack, and a detonation zone with no outbound path at all. Enforce it on the firewall, not in your head, and verify with a ping from the detonation VM that fails.
+
+## Building the environment
 
 Start small. Set up Wazuh on a dedicated VM. Forward logs from a couple of Linux servers using the Wazuh agent. Configure your FortiGate or pfSense to send syslog to Wazuh.
 
 Once you have basic log collection working, run some Atomic Red Team tests and see what alerts generate. Review the logs manually to understand what the attack looks like in telemetry, then write detection rules to catch it automatically next time.
 
-## Detection Engineering
+The ports you will be opening between zones, for a stock Wazuh deployment:
+
+- **1514/TCP:** agents to manager, the channel that carries events.
+- **1515/TCP:** agent enrollment, used once per agent to register it.
+- **55000/TCP:** the manager's REST API.
+- **9200/TCP:** the indexer.
+- **443/TCP:** the dashboard.
+- **514/UDP:** the syslog listener, which is not enabled by default. You configure it explicitly on the manager for network devices that cannot run an agent.
+
+Write those into the firewall as specific rules from specific sources. A lab where the SIEM VM has a blanket allow is a lab that teaches you nothing about segmentation.
+
+## A worked example, end to end
+
+Install the agent on a Linux host, register it, and confirm the manager sees it. On the agent:
+
+\`\`\`bash
+/var/ossec/bin/agent-auth -m 10.0.50.10
+systemctl restart wazuh-agent
+\`\`\`
+
+On the manager, list what has connected:
+
+\`\`\`bash
+/var/ossec/bin/agent_control -l
+\`\`\`
+
+Correct output names each agent with an ID and a state:
+
+\`\`\`
+Wazuh agent_control. List of available agents:
+   ID: 000, Name: wazuh-manager (server), IP: 127.0.0.1, Active/Local
+   ID: 001, Name: lab-web01, IP: 10.0.60.21, Active
+\`\`\`
+
+\`Active\` is what you want. \`Never connected\` means the enrollment worked but events are not flowing, which is almost always 1514 being blocked between the zones. \`Disconnected\` means it connected once and stopped.
+
+Now generate something to detect. Failed SSH authentication is the easiest honest test, and it maps to a real technique, brute force, which ATT&CK tracks as T1110. From another lab host, fail to log in half a dozen times:
+
+\`\`\`bash
+for i in $(seq 1 8); do ssh -o PreferredAuthentications=password \\
+  -o PubkeyAuthentication=no nosuchuser@10.0.60.21; done
+\`\`\`
+
+Watch the manager's alert stream while it runs:
+
+\`\`\`bash
+tail -f /var/ossec/logs/alerts/alerts.json | jq -r '[.rule.id, .rule.level, .rule.description] | @tsv'
+\`\`\`
+
+Correct output is a run of individual failure alerts followed by the composite rule that fires when enough of them arrive in a window:
+
+\`\`\`
+5710	5	Attempt to login using a non-existent user
+5710	5	Attempt to login using a non-existent user
+5712	10	sshd: brute force trying to get access to the system
+\`\`\`
+
+Two things to take from that. The individual events and the correlated event are different rules, and the correlated one is the alert a human should see. And Wazuh writes alerts from level 3 upward by default, so anything you build below that threshold exists in the logs but will never reach you.
+
+If nothing appears at all, work backwards through the chain before touching any rule: is the agent Active, is sshd actually logging to the file the agent is watching, and is the manager receiving anything from that agent at all.
+
+## Detection engineering
 
 Detection engineering is the process of writing, testing, and maintaining detection rules. Start with known-bad: impossible login times, logins from multiple geographic locations, command injection patterns in web server logs. As your understanding grows, develop more sophisticated behavioral rules.
 
 Document every detection you build: what it detects, how it works, and what the expected false positive rate is. This discipline makes you a better analyst and better engineer.
+
+A structure that keeps this honest, one entry per rule:
+
+- The technique it covers, by ATT&CK ID, so you can see your coverage and your gaps.
+- The exact log source and field it reads. If you cannot name the field, the rule is a guess.
+- The threshold and window, with the reason for those numbers.
+- The test that proves it fires, written as a command you can rerun.
+- Known benign triggers and how they are excluded.
+
+That last line is the difference between tuning and disabling. When a rule is noisy the temptation is to switch it off. The right move is to narrow it: exclude the vulnerability scanner by source address, exclude the backup account by name, and write down that you did.
+
+## Packet capture without drowning
+
+Full packet capture in a lab is affordable in a way it is not at work, and it is worth having for the moments when the logs disagree with each other. A single collector with tcpdump on a mirror port is enough to start:
+
+\`\`\`bash
+sudo tcpdump -i eth1 -s 0 -w /captures/lab-%Y%m%d-%H%M.pcap -G 3600 -W 24 'not port 22'
+\`\`\`
+
+That rotates a new file every 3600 seconds, keeps 24 of them, and excludes your own SSH session so you are not capturing your investigation. Confirm it is working with \`tcpdump -r\` against the newest file and check that the packet count is not zero, which is the usual sign that the mirror port is configured on the wrong interface.
+
+## What breaks
+
+**The indexer fills the disk and everything stops.** Ingest grows quietly, retention is unlimited by default in a hand-rolled setup, and one day the dashboard is blank. Set an index lifecycle policy on day one and alert on free disk on the SIEM VM itself.
+
+**Agents that never connect.** Enrollment on 1515 succeeds, events on 1514 do not, because those are two separate ports and you only opened one. \`agent_control -l\` showing \`Never connected\` is the tell.
+
+**Clocks that disagree.** Correlation across sources is the whole product, and it is worthless if the firewall is twenty minutes off. Point every device in the lab at the same NTP server and check it after every VM restore, because a restored snapshot comes back with a stale clock.
+
+**Writing rules against a source you never confirmed.** You spend an evening on a beautiful detection for Windows process creation events and the endpoint was never sending them, so it will never fire and you will never know. Prove the raw event arrives first, then write the rule.
+
+**Detonating something with a route out.** A malware sample in a lab that can reach the internet or the home LAN is not a lab, it is an incident. Test the isolation before you need it.
+
+**Turning off a noisy rule instead of scoping it.** Six months later you have a SIEM with no false positives and no detections either. Exclude the specific benign cause and record why.
+
+## Where this pays off
+
+The habits transfer directly. Narrowing a time window, aggregating before reading, proving a data source exists before trusting a conclusion, and documenting a disposition so the next person does not redo the work are the same skills whether you are answering a National Cyber League log analysis question or handling a real alert. The lab is just the place where getting it wrong costs you an evening instead of an incident.
+
+## References
+
+- https://attack.mitre.org/
+- https://attack.mitre.org/techniques/T1110/
+- https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final
+- https://csrc.nist.gov/publications/detail/sp/800-92/final
+- https://www.tcpdump.org/manpages/tcpdump.1.html
+- https://www.rfc-editor.org/rfc/rfc5424
 `,
   },
   {
@@ -22231,6 +23300,7 @@ Configure RADIUS to return VLAN attributes in the Access-Accept response, and th
     slug: "vxlan-network-virtualization",
     title: "VXLAN and Network Virtualization Explained",
     date: "2026-03-14",
+    updated: "2026-08-25",
     tags: ["networking", "virtualization", "datacenter"],
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
     coverImage: "/images/blog/vxlan-network-virtualization.jpg",
@@ -22385,6 +23455,7 @@ The Kubernetes case is worth a specific note because the port numbers differ. Fl
     slug: "troubleshooting-packet-captures",
     title: "Troubleshooting Network Issues with Packet Captures",
     date: "2026-03-15",
+    updated: "2026-08-25",
     tags: ["networking", "troubleshooting", "wireshark"],
     excerpt: "Packet captures are the most powerful diagnostic tool in networking. Here is a systematic approach to using them effectively for real troubleshooting.",
     coverImage: "/images/blog/troubleshooting-packet-captures.jpg",
@@ -23431,6 +24502,7 @@ Limit the AS path length you accept. An AS path longer than a reasonable maximum
     slug: "secure-network-design-principles",
     title: "Secure Network Design: Principles That Actually Matter",
     date: "2026-03-30",
+    updated: "2026-08-25",
     tags: ["security", "networking", "architecture"],
     excerpt: "Security is most effective when it is built into network architecture from the start, not added on top afterward. Here are the foundational principles.",
     coverImage: "/images/blog/secure-network-design-principles.jpg",
@@ -23574,6 +24646,7 @@ Correct output is a timeout, and a matching \`fw-drop:\` line in the router's lo
     slug: "scaling-homelab-lessons",
     title: "Scaling a Homelab: Lessons from Growing a Lab Environment",
     date: "2026-03-31",
+    updated: "2026-08-25",
     tags: ["homelab", "servers", "networking"],
     excerpt: "A homelab that grows without a plan becomes chaos. Here are the lessons I learned growing from one server to a multi-rack lab environment.",
     coverImage: "/images/blog/scaling-homelab-lessons.jpg",
@@ -23775,6 +24848,7 @@ An alert is only valuable if someone acts on it. Build a workflow: alerts genera
     slug: "qos-enterprise-networks",
     title: "Quality of Service in Enterprise Networks",
     date: "2026-04-02",
+    updated: "2026-08-25",
     tags: ["networking", "qos", "switching"],
     excerpt: "QoS ensures that critical traffic gets priority when bandwidth is constrained. Here is how to design and implement a QoS policy that actually works.",
     coverImage: "/images/blog/qos-enterprise-networks.jpg",
@@ -24094,6 +25168,7 @@ The MITRE ATT&CK framework maps attacker techniques to defensive detections. If 
     slug: "tls-modern-encryption",
     title: "TLS 1.3 and Modern Encryption: What Changed and Why It Matters",
     date: "2026-04-06",
+    updated: "2026-08-25",
     tags: ["security", "encryption", "networking"],
     excerpt: "TLS 1.3 significantly improved on TLS 1.2 in both security and performance. Here is what changed and what you need to do about it.",
     coverImage: "/images/blog/tls-modern-encryption.jpg",
@@ -24292,6 +25367,7 @@ After consolidation, monitor CPU ready time (VMs waiting to be scheduled), memor
     slug: "personal-brand-in-tech",
     title: "Building a Personal Brand in Tech: What Actually Works",
     date: "2026-04-08",
+    updated: "2026-08-25",
     tags: ["career", "community", "technology"],
     excerpt: "A genuine personal brand opens doors that credentials alone do not. Here is how to build one that reflects real expertise rather than manufactured content.",
     coverImage: "/images/blog/personal-brand-in-tech.jpg",

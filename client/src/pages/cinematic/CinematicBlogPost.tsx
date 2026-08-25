@@ -127,7 +127,7 @@ export function CinematicBlogPost() {
       name: post.title,
       description: post.excerpt,
       datePublished: post.date,
-      dateModified: post.date,
+      dateModified: post.updated ?? post.date,
       url: `${SITE_URL}/blog/${post.slug}`,
       image: {
         "@type": "ImageObject",
@@ -411,6 +411,15 @@ export function CinematicBlogPost() {
                 <time dateTime={post.date}>
                   {formatPostDate(post.date)}
                 </time>
+                {post.updated ? (
+                  <>
+                    <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
+                    <span data-testid="text-post-updated">
+                      Rewritten{" "}
+                      <time dateTime={post.updated}>{formatPostDate(post.updated)}</time>
+                    </span>
+                  </>
+                ) : null}
                 <span className="h-px w-4 bg-[hsl(var(--brand-iron))]" />
                 <span>{readMins} min read</span>
                 <DifficultyBadge level={postDifficulty(post)} />

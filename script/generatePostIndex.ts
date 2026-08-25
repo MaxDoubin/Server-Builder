@@ -73,7 +73,10 @@ export interface CoverCredit {
 export interface PostMeta {
   slug: string;
   title: string;
+  /** First published, ISO date. */
   date: string;
+  /** Substantially rewritten on this date, ISO. Absent if never rewritten. */
+  updated?: string;
   tags: string[];
   excerpt: string;
   coverImage: string;
@@ -90,6 +93,7 @@ for (const post of blogPosts) {
   out.push(`    slug: ${j(post.slug)},`);
   out.push(`    title: ${j(post.title)},`);
   out.push(`    date: ${j(post.date)},`);
+  if (post.updated) out.push(`    updated: ${j(post.updated)},`);
   out.push(`    tags: ${j(post.tags)},`);
   out.push(`    excerpt: ${j(post.excerpt)},`);
   out.push(`    coverImage: ${j(post.coverImage)},`);
