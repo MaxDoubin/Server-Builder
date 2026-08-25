@@ -1519,7 +1519,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A guide to power distribution units for server racks, from basic power strips to intelligent metered PDUs.",
     coverImage: "/images/blog/pdu-selection-guide.jpg",
     coverCredit: {"author":"Tobias Maier","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:1U_19inch_rack_switching_panel_8_C13_plugs_8_Switches_1_Fuse.jpg"},
-    wordCount: 367,
+    wordCount: 1884,
   },
   {
     slug: "wireshark-packet-analysis",
@@ -1892,7 +1892,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Three serious hypervisors, three different trade-offs. Here is how to think about choosing between KVM, Proxmox, and VMware ESXi for your environment.",
     coverImage: "/images/blog/kvm-proxmox-esxi-comparison.jpg",
     coverCredit: {"author":"Primalmotion","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Diagramme_ArchiHyperviseur.png"},
-    wordCount: 361,
+    wordCount: 1678,
   },
   {
     slug: "nvme-vs-sata-enterprise-storage",

@@ -27,14 +27,23 @@
 # neither prerendered nor listed here, so adding a route without adding it in
 # one of those two places cannot ship a page that 404s at people.
 
-# One site, one hostname.
+# One site, one hostname: NOT SOLVABLE IN THIS FILE.
 #
-# www.maxdoubin.com answers 200 today, so every page exists at two addresses.
-# The canonical tag points at the apex and Google usually works it out, but
-# "usually" costs crawl budget on a site trying to get 236 articles indexed.
-# An absolute source URL makes this a host-level redirect rather than a path
-# rule, and :splat carries the rest of the path across.
-https://www.maxdoubin.com/* https://maxdoubin.com/:splat 301
+# www.maxdoubin.com answers 200, so every page exists at two addresses. The
+# obvious fix was tried here and does not work:
+#
+#     https://www.maxdoubin.com/* https://maxdoubin.com/:splat 301
+#
+# Cloudflare Pages matches _redirects on the path only. An absolute URL in the
+# source column is not a host matcher, it is just a path that never matches,
+# so the rule sat here doing nothing while appearing to solve the problem.
+# Verified against production after deploying it: www still answered 200.
+#
+# The real fix is outside the repository, in the Cloudflare dashboard: either
+# a Redirect Rule on the zone sending www to the apex, or dropping www as a
+# custom domain on the Pages project. Until then the canonical tag on every
+# page points at the apex, which is what actually keeps Google consolidating
+# the two hosts, and it is doing that job today.
 
 # The simulator's internal dashboards. Canvas-driven, nothing meaningful to
 # prerender, and noindex in _headers so crawl budget goes to the writing.
