@@ -17,6 +17,7 @@ import { SuggestEdit } from "@/components/blog/SuggestEdit";
 import { postDifficulty } from "@/lib/postDifficulty";
 import { recordProgress } from "@/lib/readingHistory";
 import { useSEO } from "@/lib/useSEO";
+import { getTagPage } from "@/lib/tagPages";
 import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import { formatPostDate } from "@/lib/formatDate";
 
@@ -420,11 +421,21 @@ export function CinematicBlogPost() {
               >
                 {post.title}
               </h1>
+              {/*
+                Tags point at their topic hub where one exists.
+
+                Every pill used to link to /blog, the unfiltered index, so the
+                26 hubs had no inbound link from the 236 posts that belong to
+                them: the most obvious way in, clicking the subject you are
+                already reading about, went to a list of everything instead.
+                Tags with too few posts to earn a hub keep going to the index,
+                which is the honest destination for them.
+              */}
               <div className="mt-6 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <Link
                     key={tag}
-                    href="/blog"
+                    href={getTagPage(tag) ? `/topics/${tag}` : "/blog"}
                     className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.5)] px-3 py-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] backdrop-blur-sm transition-colors hover:text-[hsl(var(--brand-bone))]"
                   >
                     {tag}

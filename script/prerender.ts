@@ -20,6 +20,7 @@ import { Marked } from "marked";
 // cleanly here. lib/blogPosts.ts cannot: it reaches for the bodies through
 // import.meta.glob, which only exists inside a Vite build.
 const { postIndex } = await import("../client/src/lib/postIndex.ts");
+const { getTagPage } = await import("../client/src/lib/tagPages.ts");
 const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
@@ -241,8 +242,15 @@ ${JSON.stringify({
   */
   const dateStr = formatPostDate(post.date);
   const readMins = Math.max(1, Math.ceil(post.wordCount / 200));
+  // Point each tag at its topic hub where one exists. Every tag on every
+  // post used to link to /blog, so roughly 700 crawler-visible links pointed
+  // at the index and the 26 hubs had almost no inbound links from the
+  // archive they summarise. Tags without a hub still go to the index.
   const tagLinks = post.tags
-    .map((t) => `<a href="${SITE_URL}/blog">${esc(t)}</a>`)
+    .map((t) => {
+      const href = getTagPage(t) ? `${SITE_URL}/topics/${t}` : `${SITE_URL}/blog`;
+      return `<a href="${href}">${esc(t)}</a>`;
+    })
     .join(" ");
 
   /*

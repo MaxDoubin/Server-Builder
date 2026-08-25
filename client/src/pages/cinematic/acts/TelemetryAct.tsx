@@ -24,8 +24,16 @@ import {
 /**
  * TELEMETRY, Act 6
  *
- * NOC-style HUD overlay. Four live tiles animate sparklines + counters,
- * grouped as: Fabric · Thermal · Power · Availability.
+ * NOC-style HUD overlay. Four tiles animate sparklines and counters, grouped
+ * as: Fabric · Thermal · Power · Availability.
+ *
+ * The values are generated, not measured. They used to be badged LIVE and
+ * labelled against Max's own lab, which read as real-time instrumentation
+ * from a facility he runs. The site is static and there is no telemetry
+ * pipeline behind it, so the badge says SIMULATED and the copy says so too.
+ * Under a heading that reads "If it isn't measured, it doesn't exist", the
+ * old framing was the one thing on the page that could not survive being
+ * checked.
  *
  * Now supercharged with Framer Motion animations layered on top of
  * the existing GSAP scroll reveals.
@@ -346,7 +354,7 @@ export function TelemetryAct() {
             />
             <PulseGlow color="hsl(var(--brand-signal))">
               <Breathing intensity={1.2}>
-                <span className="text-[hsl(var(--brand-signal))]">LIVE</span>
+                <span className="text-[hsl(var(--brand-signal))]">SIMULATED</span>
               </Breathing>
             </PulseGlow>
           </div>
@@ -387,8 +395,9 @@ export function TelemetryAct() {
         >
           <ScrollReveal variants={fadeUp} transition={{ duration: 0.8, delay: 0.2 }}>
             A rack only earns trust when you can answer, at any hour: how many packets
-            moved, how warm, how much power, how long up. These four tiles are what
-            every NOC I run starts with.
+            moved, how warm, how much power, how long up. These are the four tiles
+            every NOC I run starts with. The numbers here are simulated to show the
+            shape of the thing, not a feed from a live facility.
           </ScrollReveal>
         </div>
 
@@ -429,7 +438,7 @@ export function TelemetryAct() {
               </span>
             </StaggerItem>
             <StaggerItem variants={fadeUp}>
-              <span>fabric · 14.2 M pps</span>
+              <span>fabric · 1.42 M pps</span>
             </StaggerItem>
             <StaggerItem variants={fadeUp}>
               <span>l2 · 0 errors</span>
