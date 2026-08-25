@@ -15,6 +15,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import type { PostMeta } from "@/lib/postIndex";
+import { useBodyIndex } from "@/lib/searchIndex";
 
 /** Long enough to skip most intermediate keystrokes, short enough to feel live. */
 const DEBOUNCE_MS = 120;
@@ -33,6 +34,14 @@ const SCORE = {
   tagStart: 45,
   tagPart: 30,
   excerpt: 15,
+  /**
+   * Weakest signal that still counts. A body hit means the post discusses
+   * the term somewhere, which is worth less than a title or tag match but
+   * is the difference between finding a post and being told the archive has
+   * nothing on the subject.
+   */
+  body: 10,
+  bodyPrefix: 6,
 } as const;
 
 interface Haystack {
@@ -57,8 +66,18 @@ function normalise(value: string): string {
   return value.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-/** Score one token against one post. Zero means the token did not match. */
-function scoreToken(hay: Haystack, token: string): number {
+/**
+ * Score one token against one post. Zero means the token did not match.
+ *
+ * `bodyHit` and `bodyPrefixHit` are resolved by the caller from the lazily
+ * fetched body index, so this stays a pure function of what it is given.
+ */
+function scoreToken(
+  hay: Haystack,
+  token: string,
+  bodyHit: boolean,
+  bodyPrefixHit: boolean,
+): number {
   let best = 0;
 
   const titleAt = hay.title.indexOf(token);
@@ -75,6 +94,8 @@ function scoreToken(hay: Haystack, token: string): number {
   }
 
   if (best === 0 && hay.excerpt.includes(token)) best = SCORE.excerpt;
+  if (best === 0 && bodyHit) best = SCORE.body;
+  if (best === 0 && bodyPrefixHit) best = SCORE.bodyPrefix;
 
   return best;
 }
@@ -164,18 +185,39 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
     [debounced],
   );
 
+  // Requested on the first keystroke, never during page load. Until it
+  // lands, results come from titles, tags and excerpts exactly as before.
+  const bodyIndex = useBodyIndex(tokens.length > 0);
+
   /**
    * Every token has to match something, so "bgp filtering" does not return
    * each post that mentions either word. Ties break on date, newest first.
    */
   const results = useMemo<PostMeta[] | null>(() => {
     if (tokens.length === 0) return null;
+
+    // Resolve each token against the body index once, not once per post.
+    const bodySets = tokens.map((token) => {
+      if (!bodyIndex) return { exact: null, prefix: null };
+      const exact = bodyIndex.lookup(token);
+      return {
+        exact,
+        prefix: exact.size > 0 ? null : bodyIndex.lookupPrefix(token),
+      };
+    });
+
     const scored: Array<{ post: PostMeta; score: number }> = [];
     for (const hay of haystacks) {
       let total = 0;
       let matchedAll = true;
-      for (const token of tokens) {
-        const s = scoreToken(hay, token);
+      for (let i = 0; i < tokens.length; i += 1) {
+        const sets = bodySets[i];
+        const s = scoreToken(
+          hay,
+          tokens[i],
+          sets.exact ? sets.exact.has(hay.post.slug) : false,
+          sets.prefix ? sets.prefix.has(hay.post.slug) : false,
+        );
         if (s === 0) {
           matchedAll = false;
           break;
@@ -186,7 +228,7 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
     }
     scored.sort((a, b) => b.score - a.score || (a.post.date < b.post.date ? 1 : -1));
     return scored.map((s) => s.post);
-  }, [haystacks, tokens]);
+  }, [haystacks, tokens, bodyIndex]);
 
   // Kept in a ref so the listing can pass an inline callback without this
   // effect re-firing on every one of its renders.
