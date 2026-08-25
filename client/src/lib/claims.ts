@@ -298,7 +298,7 @@ export const CLAIM_GROUPS: ClaimGroup[] = [
         claim: "Every external link in the writing has been checked to resolve",
         status: "public",
         evidence:
-          "Every reference URL across the archive is requested and its status code recorded before publication, and anything that does not resolve is replaced or removed rather than left to rot. Broken links found after the fact are a defect: report one and it gets fixed.",
+          "All 1,018 reference URLs across the 236 articles are requested and their status codes recorded, and the last full sweep found zero broken. Eleven sit behind hosts that refuse automated requests while serving the page normally to a browser, and each of those was opened and read by hand rather than assumed. A scheduled job re-runs the whole sweep weekly and files an issue when something rots, because a promise nobody re-checks stops being true quietly.",
         url: "https://maxdoubin.com/blog",
         appearsOn: ["/blog"],
       },
