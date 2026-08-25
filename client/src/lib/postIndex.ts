@@ -421,7 +421,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Issuing a certificate is the easy part. The failure mode is renewal, and it is almost always discovered by an outage rather than by a dashboard.",
     coverImage: "/images/blog/certificate-rotation-automation.jpg",
     coverCredit: {"author":"nevil zaveri (thank you for 20+M views:)","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/43109416@N00/6804963524"},
-    wordCount: 941,
+    wordCount: 945,
   },
   {
     slug: "mlops-for-infrastructure-people",
@@ -1016,7 +1016,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Slots are physical, lanes are a budget, and the two do not always match. How to figure out what your cards actually negotiated and why it matters.",
     coverImage: "/images/blog/pcie-lanes-bandwidth-servers.jpg",
     coverCredit: {"author":"instaSHINOBI","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/21050065@N06/6114414289"},
-    wordCount: 822,
+    wordCount: 826,
   },
   {
     slug: "gpu-memory-math-inference",
@@ -1157,7 +1157,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The question I get asked most by other students: should I study for a certification or build something? They teach different things, and the order matters.",
     coverImage: "/images/blog/certifications-vs-projects.jpg",
     coverCredit: {"author":"wyldvision","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/126767021@N06/15882717591"},
-    wordCount: 1209,
+    wordCount: 1211,
   },
   {
     slug: "local-llm-memory-math",
@@ -1339,7 +1339,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","homelab","servers"],
     excerpt: "How running real enterprise hardware at home changed the way I learn about networking, systems, and troubleshooting.",
     coverImage: "/images/blog/why-homelabs-matter.jpg",
-    wordCount: 311,
+    wordCount: 1462,
   },
   {
     slug: "ncl-competition-lessons",
@@ -1468,7 +1468,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I use VLANs to segment my home network into isolated zones for security, performance, and sanity.",
     coverImage: "/images/blog/vlan-segmentation-guide.jpg",
     coverCredit: {"author":"X-Javier","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_4506-E_Switch_001.jpg"},
-    wordCount: 392,
+    wordCount: 1689,
   },
   {
     slug: "fortigate-firewall-homelab",
@@ -1516,7 +1516,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","cybersecurity","tools"],
     excerpt: "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
     coverImage: "/images/blog/wireshark-packet-analysis.jpg",
-    wordCount: 410,
+    wordCount: 1691,
   },
   {
     slug: "nmap-scanning-techniques",
@@ -1565,7 +1565,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A practical guide to network transceivers, DAC cables, and fiber optics for server networking.",
     coverImage: "/images/blog/sfp-transceivers-explained.jpg",
     coverCredit: {"author":"Aurélien Rinaldi","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Modules_SFP_officiels_et_compatibles.jpg"},
-    wordCount: 357,
+    wordCount: 1635,
   },
   {
     slug: "backup-strategy-321-rule",
@@ -1634,7 +1634,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I think about subnetting in practice, with real examples from my network instead of textbook exercises.",
     coverImage: "/images/blog/subnetting-practical-guide.jpg",
     coverCredit: {"author":"Michel Bakni","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Subnetting_Example_(3)_-en.png"},
-    wordCount: 365,
+    wordCount: 1557,
   },
   {
     slug: "server-bios-configuration",
@@ -1684,7 +1684,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I use Python to automate repetitive network configuration and monitoring tasks in my lab.",
     coverImage: "/images/blog/python-network-automation.jpg",
     coverCredit: {"author":"9002Jack","license":"CC0","licenseUrl":"http://creativecommons.org/publicdomain/zero/1.0/deed.en","sourceUrl":"https://commons.wikimedia.org/wiki/File:Python_sul_Terminale.jpg"},
-    wordCount: 337,
+    wordCount: 1763,
   },
   {
     slug: "server-rack-planning",
@@ -1704,7 +1704,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Real STP problems I have encountered and how I diagnosed them using show commands and packet captures.",
     coverImage: "/images/blog/stp-troubleshooting.jpg",
     coverCredit: {"author":"The original uploader was J.smith at English Wikipedia .","license":"CC BY-SA 2.5","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.5","sourceUrl":"https://commons.wikimedia.org/wiki/File:Switch-and-nest.jpg"},
-    wordCount: 372,
+    wordCount: 1706,
   },
   {
     slug: "mac-pro-afterburner-card",
@@ -1733,7 +1733,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","virtualization","servers"],
     excerpt: "How virtual switches, port groups, and VLAN tagging work inside hypervisors, and how they connect to physical networks.",
     coverImage: "/images/blog/virtualization-networking-concepts.jpg",
-    wordCount: 357,
+    wordCount: 1684,
   },
   {
     slug: "log-analysis-methodology",
@@ -1802,7 +1802,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A practical explanation of TLS certificates, certificate authorities, and how to manage certificates on your own infrastructure.",
     coverImage: "/images/blog/ssl-tls-certificates-explained.jpg",
     coverCredit: {"author":"Wikisosh","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Digital_certificates_chain_of_trust.png"},
-    wordCount: 380,
+    wordCount: 1755,
   },
   {
     slug: "apple-file-system-apfs",
@@ -1900,7 +1900,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "STP prevents broadcast storms but introduces its own complexity. Understanding it deeply is essential for anyone working with switched networks.",
     coverImage: "/images/blog/spanning-tree-protocol-deep-dive.jpg",
     coverCredit: {"author":"X-Javier","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_4506-E_Switch_004.jpg"},
-    wordCount: 341,
+    wordCount: 1761,
   },
   {
     slug: "ssh-hardening-linux-servers",
@@ -1939,7 +1939,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "SANs power the storage backends of most enterprise datacenters. Here is how they work and why they are architected the way they are.",
     coverImage: "/images/blog/storage-area-networks-explained.jpg",
     coverCredit: {"author":"Redline","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:HP_EVA4400-1.jpg"},
-    wordCount: 304,
+    wordCount: 1745,
   },
   {
     slug: "proxmox-clustering-high-availability",
@@ -2048,7 +2048,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "VXLAN extends Layer 2 networks over Layer 3 infrastructure, enabling flexible network virtualization in modern datacenters and cloud environments.",
     coverImage: "/images/blog/vxlan-network-virtualization.jpg",
     coverCredit: {"author":"Jupeterson","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Network_Virtualization_Platform_Architecture_Example.png"},
-    wordCount: 310,
+    wordCount: 1697,
   },
   {
     slug: "troubleshooting-packet-captures",
@@ -2058,7 +2058,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Packet captures are the most powerful diagnostic tool in networking. Here is a systematic approach to using them effectively for real troubleshooting.",
     coverImage: "/images/blog/troubleshooting-packet-captures.jpg",
     coverCredit: {"author":"Laurachappell","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Wireshark_Network_Analyzer_Screen.png"},
-    wordCount: 308,
+    wordCount: 1696,
   },
   {
     slug: "runbooks-infrastructure-teams",
@@ -2206,7 +2206,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Security is most effective when it is built into network architecture from the start, not added on top afterward. Here are the foundational principles.",
     coverImage: "/images/blog/secure-network-design-principles.jpg",
     coverCredit: {"author":"istolethetv","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/44124401641@N01/8746385789"},
-    wordCount: 304,
+    wordCount: 1580,
   },
   {
     slug: "scaling-homelab-lessons",
@@ -2216,7 +2216,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A homelab that grows without a plan becomes chaos. Here are the lessons I learned growing from one server to a multi-rack lab environment.",
     coverImage: "/images/blog/scaling-homelab-lessons.jpg",
     coverCredit: {"author":"Tecnalia","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/34843636@N02/5808435079"},
-    wordCount: 339,
+    wordCount: 1586,
   },
   {
     slug: "firewall-log-analysis",
@@ -2236,7 +2236,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "QoS ensures that critical traffic gets priority when bandwidth is constrained. Here is how to design and implement a QoS policy that actually works.",
     coverImage: "/images/blog/qos-enterprise-networks.jpg",
     coverCredit: {"author":"tawalker","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/30139045@N00/458064906"},
-    wordCount: 294,
+    wordCount: 1730,
   },
   {
     slug: "ansible-network-automation",
@@ -2275,7 +2275,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "TLS 1.3 significantly improved on TLS 1.2 in both security and performance. Here is what changed and what you need to do about it.",
     coverImage: "/images/blog/tls-modern-encryption.jpg",
     coverCredit: {"author":"Halub3","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/w/index.php?curid=113054252"},
-    wordCount: 262,
+    wordCount: 1607,
   },
   {
     slug: "server-consolidation-virtualization",
@@ -2295,7 +2295,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A genuine personal brand opens doors that credentials alone do not. Here is how to build one that reflects real expertise rather than manufactured content.",
     coverImage: "/images/blog/personal-brand-in-tech.jpg",
     coverCredit: {"author":"jurvetson","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/44124348109@N01/18279271865"},
-    wordCount: 348,
+    wordCount: 1468,
   },
   {
     slug: "teaching-youth-to-code",

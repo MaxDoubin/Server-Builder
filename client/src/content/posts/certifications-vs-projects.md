@@ -107,5 +107,5 @@ Do all four, in that order, on a loop.
 
 - [CompTIA](https://www.comptia.org/)
 - [National Cyber League](https://nationalcyberleague.org/)
-- [NIST NICE Cybersecurity Workforce Framework](https://www.nist.gov/itl/applied-cybersecurity/nice/nice-framework-resources)
-- [CISA cybersecurity education and career development](https://www.cisa.gov/cybersecurity-training-exercises)
+- [NIST NICE Workforce Framework for Cybersecurity](https://www.nist.gov/nice/framework)
+- [CYBER.ORG, the CISA-funded K-12 cybersecurity curriculum provider](https://www.cyber.org/)

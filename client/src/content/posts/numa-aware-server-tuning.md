@@ -131,4 +131,4 @@ paying for a trip you did not need.
 - [numactl(8) manual page](https://man7.org/linux/man-pages/man8/numactl.8.html)
 - [Non-uniform memory access](https://en.wikipedia.org/wiki/Non-uniform_memory_access)
 - [Linux network scaling documentation](https://docs.kernel.org/networking/scaling.html)
-- [systemd.exec(5) resource and NUMA settings](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.exec(5) resource and NUMA settings](https://man.archlinux.org/man/systemd.exec.5)

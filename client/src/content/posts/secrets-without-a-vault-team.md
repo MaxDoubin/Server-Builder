@@ -146,5 +146,5 @@ manage and it means a leak is a contained incident rather than a full rebuild.
 
 - [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
 - [NIST SP 800-57 Part 1 Rev. 5: Key Management](https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final)
-- [systemd.exec(5) credentials and sandboxing](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.exec(5) credentials and sandboxing](https://man.archlinux.org/man/systemd.exec.5)
 - [Key management](https://en.wikipedia.org/wiki/Key_management)

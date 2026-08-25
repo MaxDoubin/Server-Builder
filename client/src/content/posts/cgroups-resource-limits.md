@@ -132,6 +132,6 @@ It is also immediately useful without any container platform at all. Putting a m
 
 - [Linux kernel: control group v2](https://docs.kernel.org/admin-guide/cgroup-v2.html)
 - [Linux kernel: pressure stall information](https://docs.kernel.org/accounting/psi.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
-- [systemd.slice(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.slice.html)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
+- [systemd.slice(5)](https://man.archlinux.org/man/systemd.slice.5)
 - [cgroups](https://en.wikipedia.org/wiki/Cgroups)

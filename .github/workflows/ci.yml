@@ -120,6 +120,11 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
 
+      # The build reconciles blogPosts.source.ts with content/posts in both
+      # directions. If it had to change either, the commit was half a change.
+      - name: Post archive in sync
+        run: node scripts-ci/check-post-sync.mjs
+
       - name: Bundle budget
         run: node scripts-ci/check-bundle-budget.mjs
 

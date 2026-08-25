@@ -233,7 +233,7 @@ A rule with zero packets after a day of traffic is either wrong or unnecessary, 
 - https://www.netfilter.org/
 - https://wiki.nftables.org/wiki-nftables/index.php/Netfilter_hooks
 - https://wiki.nftables.org/wiki-nftables/index.php/Main_Page
-- https://man7.org/linux/man-pages/man8/nft.8.html
+- https://man.archlinux.org/man/nft.8
 - https://www.kernel.org/doc/html/latest/networking/nf_conntrack-sysctl.html
 `,
   },
@@ -484,7 +484,7 @@ That trade is the real design question in any distributed storage system, and it
 - https://en.wikipedia.org/wiki/Standard_RAID_levels
 - https://en.wikipedia.org/wiki/RAID
 - https://en.wikipedia.org/wiki/Erasure_code
-- https://raid.wiki.kernel.org/index.php/Linux_Raid
+- https://www.kernel.org/doc/html/latest/admin-guide/md.html
 - https://man7.org/linux/man-pages/man8/mdadm.8.html
 - https://man7.org/linux/man-pages/man4/md.4.html
 `,
@@ -685,7 +685,7 @@ And be honest about the hidden cost that never shows up in the price: your time.
 
 ## References
 
-- https://man7.org/linux/man-pages/man8/smartctl.8.html
+- https://man.archlinux.org/man/smartctl.8
 - https://en.wikipedia.org/wiki/Self-Monitoring,_Analysis_and_Reporting_Technology
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 - https://en.wikipedia.org/wiki/Bathtub_curve
@@ -4410,8 +4410,8 @@ It is also immediately useful without any container platform at all. Putting a m
 
 - [Linux kernel: control group v2](https://docs.kernel.org/admin-guide/cgroup-v2.html)
 - [Linux kernel: pressure stall information](https://docs.kernel.org/accounting/psi.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
-- [systemd.slice(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.slice.html)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
+- [systemd.slice(5)](https://man.archlinux.org/man/systemd.slice.5)
 - [cgroups](https://en.wikipedia.org/wiki/Cgroups)
 `,
   },
@@ -5156,7 +5156,7 @@ request.
 - [RFC 8555: Automatic Certificate Management Environment (ACME)](https://www.rfc-editor.org/rfc/rfc8555)
 - [RFC 5280: Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280)
 - [RFC 6962: Certificate Transparency](https://www.rfc-editor.org/rfc/rfc6962)
-- [NIST NCCoE: TLS Server Certificate Management](https://www.nccoe.nist.gov/projects/tls-server-certificate-management)
+- [NIST SP 1800-16: Securing Web Transactions, TLS Server Certificate Management](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.1800-16.pdf)
 - [Certbot documentation](https://eff-certbot.readthedocs.io/)
 `,
   },
@@ -7257,7 +7257,7 @@ manage and it means a leak is a contained incident rather than a full rebuild.
 
 - [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
 - [NIST SP 800-57 Part 1 Rev. 5: Key Management](https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final)
-- [systemd.exec(5) credentials and sandboxing](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.exec(5) credentials and sandboxing](https://man.archlinux.org/man/systemd.exec.5)
 - [Key management](https://en.wikipedia.org/wiki/Key_management)
 `,
   },
@@ -7703,7 +7703,7 @@ You just have to know which file to read.
 
 - [Linux kernel control group v2 documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
 - [Pressure stall information](https://docs.kernel.org/accounting/psi.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
 - [cgroups(7) manual page](https://man7.org/linux/man-pages/man7/cgroups.7.html)
 - [cgroups](https://en.wikipedia.org/wiki/Cgroups)
 `,
@@ -11915,7 +11915,7 @@ paying for a trip you did not need.
 - [numactl(8) manual page](https://man7.org/linux/man-pages/man8/numactl.8.html)
 - [Non-uniform memory access](https://en.wikipedia.org/wiki/Non-uniform_memory_access)
 - [Linux network scaling documentation](https://docs.kernel.org/networking/scaling.html)
-- [systemd.exec(5) resource and NUMA settings](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.exec(5) resource and NUMA settings](https://man.archlinux.org/man/systemd.exec.5)
 `,
   },
   {
@@ -13411,10 +13411,10 @@ Linux operations that I know of.
 
 ## References
 
-- [systemd.exec(5): sandboxing directives](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
-- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
-- [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [systemd.exec(5): sandboxing directives](https://man.archlinux.org/man/systemd.exec.5)
+- [systemd.service(5)](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
+- [systemd-analyze(1)](https://man.archlinux.org/man/systemd-analyze.1)
 - [Linux control group v2 documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
 `,
   },
@@ -13841,7 +13841,7 @@ All of which changes how I plan. I stopped asking "can I run this model" and sta
 
 - [PyTorch CUDA semantics](https://pytorch.org/docs/stable/notes/cuda.html)
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
-- [llama.cpp](https://github.com/ggerganov/llama.cpp)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
 - [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
 - [NVIDIA CUDA documentation](https://docs.nvidia.com/cuda/)
 `,
@@ -13940,7 +13940,7 @@ Re-verify after every hardware change. A reseat, a firmware update, or a new ris
 
 - [PCI Express on Wikipedia](https://en.wikipedia.org/wiki/PCI_Express)
 - [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
-- [PCI-SIG specifications](https://pcisig.com/specifications)
+- [The Linux kernel PCI subsystem documentation](https://www.kernel.org/doc/html/latest/PCI/index.html)
 - [NVM Express specifications](https://nvmexpress.org/specifications/)
 `,
   },
@@ -14794,11 +14794,11 @@ Always run \`systemd-analyze verify\` on a new unit before enabling it, and alwa
 
 ## References
 
-- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.exec(5), sandboxing directives](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
-- [systemd.unit(5), dependencies and ordering](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html)
-- [systemd.timer(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
+- [systemd.service(5)](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.exec(5), sandboxing directives](https://man.archlinux.org/man/systemd.exec.5)
+- [systemd.unit(5), dependencies and ordering](https://man.archlinux.org/man/systemd.unit.5)
+- [systemd.timer(5)](https://man.archlinux.org/man/systemd.timer.5)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
 `,
   },
   {
@@ -15576,8 +15576,8 @@ Do all four, in that order, on a loop.
 
 - [CompTIA](https://www.comptia.org/)
 - [National Cyber League](https://nationalcyberleague.org/)
-- [NIST NICE Cybersecurity Workforce Framework](https://www.nist.gov/itl/applied-cybersecurity/nice/nice-framework-resources)
-- [CISA cybersecurity education and career development](https://www.cisa.gov/cybersecurity-training-exercises)
+- [NIST NICE Workforce Framework for Cybersecurity](https://www.nist.gov/nice/framework)
+- [CYBER.ORG, the CISA-funded K-12 cybersecurity curriculum provider](https://www.cyber.org/)
 `,
   },
   {
@@ -16407,8 +16407,8 @@ The goal is not to squeeze the machine. It is that a single bad process degrades
 ## References
 
 - [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
-- [systemd.service manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.exec manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.service manual page](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.exec manual page](https://man.archlinux.org/man/systemd.exec.5)
 - [Linux kernel documentation](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html)
 `,
   },
@@ -16640,10 +16640,10 @@ Two failure patterns cover most of what I hit. When a unit refuses to start and 
 
 ## References
 
-- [systemd.service manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.timer manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
-- [systemd.exec manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
-- [systemd-analyze manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [systemd.service manual page](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.timer manual page](https://man.archlinux.org/man/systemd.timer.5)
+- [systemd.exec manual page](https://man.archlinux.org/man/systemd.exec.5)
+- [systemd-analyze manual page](https://man.archlinux.org/man/systemd-analyze.1)
 - [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
 `,
   },
@@ -17289,14 +17289,17 @@ Building this project taught me a lot about the relationship between software an
     excerpt:
       "How running real enterprise hardware at home changed the way I learn about networking, systems, and troubleshooting.",
     coverImage: "/images/blog/why-homelabs-matter.jpg",
-    content: `
-## Beyond the Textbook
+    content: `## The problem
+
+You can define a VLAN, recite the OSI layers, and pass the practice exam, and still freeze the first time a trunk port does not come up. Reading about networking builds vocabulary. It does not build the reflex of knowing what to check first. A homelab is the cheapest way to buy that reflex, and you can start one tonight with no hardware at all.
+
+## Beyond the textbook
 
 Reading about VLANs and subnetting is one thing. Configuring them on real hardware, breaking something, and spending two hours figuring out why your trunk port is dropping tagged traffic is a completely different experience. That is why I run a homelab.
 
 My homelab runs multiple Dell enterprise servers with serious compute and storage capacity. It is not a Raspberry Pi cluster or a single tower PC. It is enterprise hardware running enterprise workloads, and that is the point.
 
-## What I Actually Run
+## What I actually run
 
 The core of the lab is built around Dell servers. I use them for:
 
@@ -17305,17 +17308,134 @@ The core of the lab is built around Dell servers. I use them for:
 - **Storage experiments** to understand capacity planning, redundancy, and performance
 - **Security testing** with isolated segments for controlled lab exercises
 
-## Why Scale Matters
+## Why scale matters
 
 A lot of people ask why I need that much hardware at home. The answer is that real environments are messy. When you only have one server and one switch, everything is simple. When you have multiple systems, multiple network segments, and real data moving between them, you start hitting the problems that professionals deal with every day.
 
 That is where the real learning happens: debugging a routing issue across segments, figuring out why a firewall rule is blocking traffic you expected to pass, or tracing a performance problem through layers of infrastructure.
 
-## Building Good Habits
+## Starting with no hardware at all
+
+The most common reason people never start is that they think they need a rack. They do not. Every routing concept in the CCNA-level material can be built on one Linux machine using network namespaces, which are the same kernel feature containers use to get their own network stack.
+
+Here is a two-subnet lab with a router in the middle. It takes about a minute and costs nothing.
+
+\`\`\`bash
+# two isolated hosts, each on its own /24
+sudo ip netns add lab-a
+sudo ip netns add lab-b
+
+# a virtual cable from each namespace to the host
+sudo ip link add veth-a type veth peer name veth-a-host
+sudo ip link add veth-b type veth peer name veth-b-host
+sudo ip link set veth-a netns lab-a
+sudo ip link set veth-b netns lab-b
+
+# the host side becomes the gateway for each subnet
+sudo ip addr add 10.99.1.1/24 dev veth-a-host
+sudo ip addr add 10.99.2.1/24 dev veth-b-host
+sudo ip link set veth-a-host up
+sudo ip link set veth-b-host up
+
+# configure lab-a
+sudo ip netns exec lab-a ip link set lo up
+sudo ip netns exec lab-a ip addr add 10.99.1.10/24 dev veth-a
+sudo ip netns exec lab-a ip link set veth-a up
+sudo ip netns exec lab-a ip route add default via 10.99.1.1
+
+# configure lab-b
+sudo ip netns exec lab-b ip link set lo up
+sudo ip netns exec lab-b ip addr add 10.99.2.10/24 dev veth-b
+sudo ip netns exec lab-b ip link set veth-b up
+sudo ip netns exec lab-b ip route add default via 10.99.2.1
+\`\`\`
+
+Try the ping before you enable forwarding:
+
+\`\`\`bash
+sudo ip netns exec lab-a ping -c 2 10.99.2.10
+\`\`\`
+
+It fails. Both namespaces are configured perfectly, both have a default route, and the traffic still does not cross, because the host is not willing to be a router yet. That single fact is worth more than a chapter about it.
+
+\`\`\`bash
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo ip netns exec lab-a ping -c 2 10.99.2.10
+\`\`\`
+
+\`\`\`
+PING 10.99.2.10 (10.99.2.10) 56(84) bytes of data.
+64 bytes from 10.99.2.10: icmp_seq=1 ttl=63 time=0.061 ms
+64 bytes from 10.99.2.10: icmp_seq=2 ttl=63 time=0.048 ms
+
+--- 10.99.2.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1015ms
+\`\`\`
+
+Look at \`ttl=63\`. The default TTL is 64 and the reply crossed exactly one router, so it arrived with one less. Two hops would show 62. That is a diagnostic you will use for the rest of your career, and here you can see it happen with a value you set yourself.
+
+Prove the routing decision rather than assuming it:
+
+\`\`\`bash
+sudo ip netns exec lab-a ip route get 10.99.2.10
+\`\`\`
+
+\`\`\`
+10.99.2.10 via 10.99.1.1 dev veth-a src 10.99.1.10 uid 0
+    cache
+\`\`\`
+
+Clean up when you are done. Deleting the namespace takes its interfaces with it:
+
+\`\`\`bash
+sudo ip netns del lab-a
+sudo ip netns del lab-b
+sudo sysctl -w net.ipv4.ip_forward=0
+\`\`\`
+
+From here you can add a firewall between the two subnets, run a DHCP server in one namespace, break the return route on purpose and watch what asymmetric routing looks like, or put a packet capture on the host side and read the traffic. None of it needs a switch.
+
+## What to build first
+
+Once you do have hardware, the order matters more than the quantity. Building in this sequence means each step gives you something the next step depends on:
+
+1. **Static addressing and a documented plan.** Write down the subnets before you configure anything.
+2. **DHCP and DNS you control.** The moment your own resolver serves your own names, half of "the internet is down" becomes debuggable.
+3. **A second subnet and routing between them.** This is where the netns exercise above becomes physical.
+4. **VLANs and a trunk.** Now the tag matters and mismatches teach you something.
+5. **A firewall with rules you wrote.** Deny by default and add what you need, so every allow is a decision.
+6. **Monitoring and logging.** Not because it is exciting, but because it turns "it feels slow" into a graph.
+
+Skipping to step 5 is how people end up with a complicated network they cannot troubleshoot.
+
+## Building good habits
 
 The homelab also taught me documentation habits. When you have complex infrastructure, you cannot rely on memory. I keep diagrams, runbooks, and change logs. Every time I make a change, I document what I did, why I did it, and how to reverse it if something goes wrong.
 
 These habits carry directly into professional environments. The difference between a good administrator and a great one is often just documentation and discipline.
+
+The change log is the part people skip and the part that pays off most. When something breaks a week after you touched it, the only question that matters is what changed, and the only reliable answer is a written one. It does not need tooling. A dated text file in a git repository is enough, as long as every entry says what you did and how to undo it.
+
+## What breaks
+
+**The lab becomes production without anyone deciding.** You set up DNS or DHCP for the whole house because it was convenient, and now rebooting a lab machine to test something takes the household offline. Anything the house depends on needs to be treated as production, with a fallback, or moved off the lab entirely.
+
+**Address space collides with something you did not choose.** ISP routers commonly hand out 192.168.0.0/24 or 192.168.1.0/24, Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs route all of 10.0.0.0/8. Pick lab subnets that are unlikely to be chosen by anything else, and check before you commit, because a VPN that swallows your whole range makes remote access to the lab impossible in a way that is very hard to diagnose from a coffee shop.
+
+**Enterprise hardware is loud, hot, and hungry.** Rack servers are designed for a datacenter with cold aisles and no neighbours. Fans that are inaudible in a server room are not inaudible in a bedroom, and the power draw shows up on a bill somebody pays. Work out where the machine lives and what it costs to run before it arrives, not after.
+
+**Nothing is backed up, including the configuration.** People back up the VMs and lose the switch config, the firewall rules, and the hypervisor's network setup, which is the part that took the longest. Export configs on a schedule and keep them in version control somewhere that is not the lab.
+
+**A lab service ends up exposed to the internet.** Port forwarding one thing "temporarily" to test it from outside is how a deliberately vulnerable practice box becomes somebody else's foothold. Use a VPN into the lab instead of forwarding ports, and keep anything intentionally insecure on a segment that cannot route anywhere else.
+
+## References
+
+- https://man7.org/linux/man-pages/man8/ip-netns.8.html
+- https://man7.org/linux/man-pages/man8/ip-route.8.html
+- https://www.kernel.org/doc/html/latest/networking/ip-sysctl.html
+- https://wiki.archlinux.org/title/Network_configuration
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://en.wikipedia.org/wiki/Linux_namespaces
 `,
   },
   {
@@ -17865,14 +17985,25 @@ The total cost was significant, but it has already saved my data at least three 
       licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_4506-E_Switch_001.jpg",
     },
-    content: `
-## What VLANs Actually Do
+    content: `## The problem
+
+Everything on your network can reach everything else. The smart TV can scan your NAS, a guest's laptop lands on the same broadcast domain as your servers, and there is no place to put a rule that says otherwise. VLANs are how you fix that with the switch you already own, and the configuration is small. Getting it right the first time is mostly about understanding what a tag is and where it gets added and removed.
+
+## What VLANs actually do
 
 A VLAN (Virtual Local Area Network) lets you split a single physical switch into multiple logical networks. Devices on different VLANs cannot communicate directly, even if they are plugged into the same switch. Traffic between VLANs has to go through a router or layer-3 switch, where you can apply firewall rules and access controls.
 
 This is the foundation of network segmentation, and it is how every serious network separates different types of traffic.
 
-## My VLAN Layout
+## What the tag actually is
+
+A VLAN is a number carried in the Ethernet frame. The 802.1Q tag is four bytes inserted after the source MAC address: two bytes of tag protocol identifier, always 0x8100, then three bits of priority, one drop-eligible bit, and twelve bits of VLAN ID.
+
+Twelve bits is where the familiar numbers come from. VLAN 0 means "priority information only, no VLAN", and 4095 is reserved, which leaves 1 through 4094 as usable IDs. Those four extra bytes also push the maximum tagged frame to 1522 bytes, which is why some older switches need a "baby giant" setting before trunking works at full MTU.
+
+A VLAN therefore only exists where something is reading that number. Two switches connected by a link that is not carrying tags share no VLANs, whatever their VLAN databases say.
+
+## My VLAN layout
 
 I run six VLANs in my homelab:
 
@@ -17883,21 +18014,133 @@ I run six VLANs in my homelab:
 - **VLAN 50: Lab/Testing.** Isolated segment for experiments. Deliberately separated so a broken lab config cannot affect the rest of the network.
 - **VLAN 99: Guest.** Internet-only access for visitors. No access to any internal resources.
 
-## Trunk Ports and Access Ports
+Matching each VLAN ID to the third octet of its subnet means I can read an IP address and know which segment it belongs to without looking anything up.
+
+## Trunk ports and access ports
 
 The key to VLANs working is the difference between trunk ports and access ports. An access port belongs to a single VLAN and sends untagged traffic. A trunk port carries traffic from multiple VLANs, with each frame tagged with its VLAN ID.
 
 Between my switches and router, I use trunk ports that carry all VLANs. Server ports are access ports assigned to VLAN 20. User device ports are access ports on VLAN 30. This keeps the configuration clean and predictable.
 
-## Inter-VLAN Routing
+A trunk has one more property that causes more trouble than the rest of VLAN configuration combined: the native VLAN. Frames in the native VLAN cross a trunk without a tag. Both ends must agree on which VLAN that is. If one switch calls it VLAN 1 and the other calls it VLAN 10, untagged frames silently move between two segments you believed were separate, and nothing logs an error unless the switches happen to run a discovery protocol that notices.
+
+## Configuring it
+
+Here is the whole thing on a Cisco-style switch: one access port, one trunk to the firewall, and the VLAN definitions.
+
+\`\`\`
+vlan 20
+ name SERVERS
+vlan 40
+ name IOT
+vlan 999
+ name NATIVE-UNUSED
+
+interface GigabitEthernet1/0/5
+ description SERVER-01
+ switchport mode access
+ switchport access vlan 20
+ switchport nonegotiate
+ spanning-tree portfast
+
+interface GigabitEthernet1/0/24
+ description TRUNK-TO-FIREWALL
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan 10,20,30,40,50,99
+ switchport nonegotiate
+\`\`\`
+
+Two choices there are the security-relevant ones. The native VLAN is 999, which carries no hosts, so no untagged traffic on the trunk means anything. And \`switchport nonegotiate\` turns off dynamic trunk negotiation, so nothing plugged into an access port can talk the switch into making it a trunk.
+
+Verify the access port landed where you think:
+
+\`\`\`
+show vlan brief
+\`\`\`
+
+\`\`\`
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Gi1/0/1, Gi1/0/2
+20   SERVERS                          active    Gi1/0/5, Gi1/0/6
+40   IOT                              active    Gi1/0/12
+999  NATIVE-UNUSED                    active
+\`\`\`
+
+And that the trunk is really a trunk:
+
+\`\`\`
+show interfaces GigabitEthernet1/0/24 trunk
+\`\`\`
+
+\`\`\`
+Port        Mode  Encapsulation  Status        Native vlan
+Gi1/0/24    on    802.1q         trunking      999
+
+Port        Vlans allowed and active in management domain
+Gi1/0/24    10,20,30,40,50,99
+\`\`\`
+
+\`trunking\`, the native VLAN you configured, and your list of VLANs under "allowed and active". If the status says \`not-trunking\`, the port is an access port right now regardless of what the config says, and every tagged frame arriving on it is being dropped.
+
+On a Linux host that needs to sit on a tagged VLAN directly, the equivalent is a VLAN sub-interface:
+
+\`\`\`bash
+ip link add link enp1s0 name enp1s0.20 type vlan id 20
+ip addr add 10.0.20.5/24 dev enp1s0.20
+ip link set enp1s0.20 up
+\`\`\`
+
+\`\`\`bash
+ip -d link show enp1s0.20 | grep vlan
+\`\`\`
+
+\`\`\`
+    vlan protocol 802.1Q id 20 <REORDER_HDR>
+\`\`\`
+
+If that line is missing, the interface exists but is not a VLAN interface and the frames are going out untagged.
+
+## Inter-VLAN routing
 
 Traffic between VLANs goes through my FortiGate firewall. This lets me control exactly what crosses VLAN boundaries. My management VLAN can reach everything. My server VLAN can reach the internet. My IoT VLAN can reach the internet but nothing internal. My guest VLAN is completely isolated except for internet access.
 
-## Why This Matters
+There are two shapes this takes. Router-on-a-stick puts one trunk into a router or firewall, which has a sub-interface and a gateway address per VLAN. Every packet between two VLANs travels up the trunk and back down it, so the trunk carries the traffic twice. That is fine at homelab volumes and it is what a firewall-based design like mine looks like.
+
+The alternative is a switched virtual interface on a Layer 3 switch, where the switch itself holds the gateway address for each VLAN and routes between them in hardware at line rate. Much faster, and the tradeoff is that traffic routed inside the switch never reaches your firewall, so any rules you wanted to apply between those VLANs have to live in switch access lists instead. Pick based on where you want the policy, not on which is faster.
+
+One thing you will need either way: a DHCP relay. A DHCP client broadcasts, and broadcasts do not leave the VLAN, so one DHCP server cannot serve six VLANs on its own. Each VLAN's router interface has to forward those requests, which is \`ip helper-address\` on a Cisco SVI and a per-interface relay setting on most firewalls. Without it, every VLAN except the server's own hands out nothing and clients fall back to 169.254 link-local addresses.
+
+## Why this matters
 
 Without VLANs, every device on your network can potentially reach every other device. A compromised IoT camera could scan your servers. A guest's infected laptop could reach your NAS. VLANs prevent this by creating boundaries that require explicit permission to cross.
 
 It takes some effort to set up, but once it is running, you have a network that is structured, secure, and much easier to troubleshoot because traffic flows are predictable.
+
+It is worth being honest about the limit of that protection. A VLAN is a boundary enforced by the switch, and it stops a device from reaching another segment directly. It does nothing about a device attacking others in its own VLAN, and it is not a substitute for the firewall rules at the boundary. Segmentation limits blast radius; it does not remove it.
+
+## What breaks
+
+**VLAN hopping through double tagging.** An attacker on an access port whose VLAN happens to be the trunk's native VLAN can send a frame with two tags. The first switch strips the outer tag, because that VLAN is native and untagged on the trunk, and forwards the frame with the inner tag still on it, landing it in a VLAN the attacker was never allowed into. This is exactly why the native VLAN should be an unused VLAN with no ports in it, as in the config above.
+
+**Dynamic trunking left enabled.** A port with trunk negotiation on will happily become a trunk if something plugged into it asks. That turns one compromised laptop into a device with access to every VLAN on the switch. \`switchport nonegotiate\` on every access port, and explicit \`switchport mode access\` rather than leaving it on the default.
+
+**A new switch wiping the VLAN database.** On Cisco gear running VLAN Trunking Protocol in server or client mode, a switch joining the domain with a higher configuration revision number overwrites the VLANs on every other switch. Plugging in a lab switch that once had a large VLAN database can delete production VLANs across the whole network in seconds. Set VTP to transparent mode unless you specifically want the propagation.
+
+**Allowing every VLAN on every trunk.** The default trunk allows 1 through 4094, so a broadcast storm in the lab VLAN is carried to every switch that has a trunk. Prune each trunk to the VLANs that actually need to cross it.
+
+**IoT devices that stop being discoverable.** This is the one that makes people give up on segmentation. Chromecasts, printers, and speakers are found by mDNS and SSDP, which are multicast and do not cross VLAN boundaries. Put the phone on VLAN 30 and the speaker on VLAN 40 and the app simply never sees the device, with no error message. The fix is an mDNS repeater or reflector on the router between exactly those two VLANs, plus the firewall rule that lets the resulting unicast traffic through.
+
+## References
+
+- https://en.wikipedia.org/wiki/IEEE_802.1Q
+- https://en.wikipedia.org/wiki/VLAN_hopping
+- https://www.rfc-editor.org/rfc/rfc5517
+- https://www.rfc-editor.org/rfc/rfc2131
+- https://man7.org/linux/man-pages/man8/ip-link.8.html
+- https://wiki.archlinux.org/title/VLAN
 `,
   },
   {
@@ -18098,14 +18341,19 @@ I currently run on 120V because that is what my circuit supports, but if I expan
     excerpt:
       "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
     coverImage: "/images/blog/wireshark-packet-analysis.jpg",
-    content: `
-## More Than a Packet Viewer
+    content: `## The problem
+
+You open a capture with two hundred thousand packets in it and you need one answer: which host sent the credentials, where the connection died, what the server actually replied. Scrolling is not going to find it. What finds it is a filter you can write from memory and knowing which of Wireshark's statistics windows answers your particular question in one click.
+
+## More than a packet viewer
 
 Wireshark is the most powerful network analysis tool available, and it is free. But most people only scratch the surface. They open a capture, scroll through packets, and get overwhelmed by the volume of data. The real power of Wireshark comes from knowing how to filter, follow streams, and extract the information you actually need.
 
-## Capture Filters vs Display Filters
+## Capture filters versus display filters
 
 Capture filters limit what Wireshark records. Display filters limit what you see after capture. For troubleshooting, I usually capture everything and use display filters to narrow down. For long-running captures, I use capture filters to avoid filling the disk.
+
+They are also two different languages, which is the part that catches people. Capture filters are BPF, the same syntax tcpdump takes: \`tcp port 443 and host 10.0.20.5\`. Display filters are Wireshark's own: \`tcp.port == 443 && ip.addr == 10.0.20.5\`. Typing one into the other's box gives you either a red filter bar or a filter that quietly matches nothing.
 
 Common display filters I use constantly:
 
@@ -18117,21 +18365,109 @@ http.request
 tcp.analysis.retransmission
 \`\`\`
 
-## Following Streams
+## The syntax worth memorising
+
+Five operators cover almost everything.
+
+\`\`\`
+# equality, inequality, ranges
+tcp.port == 443
+ip.ttl < 64
+tcp.port in {80 443 8080}
+
+# substring match anywhere in the bytes
+frame contains "password"
+http.host contains "login"
+
+# regular expression, case-insensitive
+frame matches "(?i)passw(or)?d"
+
+# field presence, with no value test at all
+http.authorization
+dns.flags.rcode != 0
+\`\`\`
+
+Two of those deserve a note. \`contains\` searches raw bytes, so it works on any field including \`frame\` itself, which is how you sweep an entire capture for a string without knowing which protocol carried it. \`matches\` takes a PCRE-style regular expression, which is slower but lets you look for patterns rather than literals.
+
+Watch out for one trap that produces wrong answers rather than errors. \`ip.addr != 10.0.20.5\` does not mean what it looks like. A packet has two address fields, so the expression is true whenever *either* one differs, which is almost always. The correct form is \`!(ip.addr == 10.0.20.5)\`. The same applies to every field that occurs more than once in a packet.
+
+## Following streams
 
 When I am troubleshooting a specific connection, I right-click a packet and select "Follow TCP Stream." This reconstructs the entire conversation between two endpoints in order, which is invaluable for understanding what happened in an HTTP request, an SMTP exchange, or any other protocol.
 
-## Competition Use
+Notice what happens to the filter bar when you do that: it fills in with \`tcp.stream eq 7\`. Wireshark numbers every TCP conversation in the file from zero, and that index is the fastest way to isolate a conversation once you have found one interesting packet in it. \`udp.stream\` does the same for UDP.
+
+## Statistics that beat scrolling
+
+Before filtering anything, two windows tell you what is in the file.
+
+**Statistics > Protocol Hierarchy** breaks the whole capture down by protocol with packet and byte counts. If you expected an HTTPS-heavy capture and the hierarchy is 80 percent DNS, you have learned something before writing a single filter.
+
+**Statistics > Conversations** lists every pair of endpoints with packet counts, byte counts, and duration, and it sorts. The top talker in a capture is usually either the answer or the noise you need to filter out.
+
+**Statistics > Capture File Properties** gives you the capture duration, the number of dropped packets recorded by the capture engine, and the snaplen. Check the dropped count before trusting any conclusion about loss.
+
+**Analyze > Expert Information** collects every warning and error Wireshark's dissectors generated, grouped by type. It is the fastest way to see that a capture contains 4000 retransmissions and 12 resets without knowing to look for them.
+
+## Competition use
 
 In NCL competitions, Wireshark challenges typically give you a capture file and ask you to extract specific information. Common tasks include identifying what credentials were transmitted in plaintext, finding DNS queries to suspicious domains, and reconstructing file transfers.
 
 The key to speed in competitions is knowing your filters cold. If you have to look up filter syntax during a timed challenge, you are losing minutes. I practice by generating my own captures in the lab and querying them until the syntax is automatic.
 
-## Coloring Rules
+Here is the credentials question done from the command line, which is faster than the GUI once you know the field names. FTP sends its login in the clear, and the commands are named fields:
+
+\`\`\`bash
+tshark -r ctf.pcap \\
+  -Y 'ftp.request.command == "USER" || ftp.request.command == "PASS"' \\
+  -T fields -e frame.number -e ip.src -e ftp.request.command -e ftp.request.arg
+\`\`\`
+
+\`\`\`
+17	10.0.50.14	USER	labuser
+21	10.0.50.14	PASS	hunter2-not-really
+\`\`\`
+
+Frame numbers, the client that sent them, and the arguments. The same shape works for any plaintext protocol: \`http.authorization\` for HTTP basic auth, \`telnet.data\` for telnet, \`pop.request.parameter\` for POP3.
+
+When you do not know which protocol carried the string, sweep the bytes instead:
+
+\`\`\`bash
+tshark -r ctf.pcap -Y 'frame matches "(?i)passw(or)?d"' -T fields -e frame.number -e _ws.col.protocol
+\`\`\`
+
+And to see what is even in the file:
+
+\`\`\`bash
+tshark -r ctf.pcap -q -z io,phs
+\`\`\`
+
+\`\`\`
+===================================================================
+Protocol Hierarchy Statistics
+Filter:
+
+eth                                      frames:48213 bytes:39104882
+  ip                                     frames:48090 bytes:39093410
+    tcp                                  frames:44012 bytes:37882110
+      http                               frames:1204 bytes:1902334
+      ftp                                frames:96 bytes:8814
+    udp                                  frames:4078 bytes:1211300
+      dns                                frames:3944 bytes:1180122
+===================================================================
+\`\`\`
+
+Ninety-six FTP frames in a capture of forty-eight thousand. That is where to look, and the hierarchy found it in one command.
+
+For file recovery challenges, **File > Export Objects** carves reassembled objects straight out of the capture for HTTP, SMB, TFTP, and email, writing them to disk as real files. That is usually the intended solution when a challenge asks what image was downloaded.
+
+## Coloring rules
 
 I customize Wireshark's coloring rules to highlight problems immediately. TCP retransmissions get a red background. DNS errors get yellow. RST packets (connection resets) get orange. This means I can open a capture and immediately spot problem areas without reading every packet.
 
-## Export and Scripting
+Coloring rules live in a file called \`colorfilters\` inside your Wireshark profile directory, so they can be copied between machines or kept in version control. Better still, put them in a **configuration profile** (right-click the profile area in the status bar). I keep one profile tuned for troubleshooting, with time displayed as seconds since the previous displayed packet, and a different profile for competition work with different columns. Switching profiles takes one click and changes columns, colors, and preferences together.
+
+## Export and scripting
 
 For large-scale analysis, I use tshark (Wireshark's command-line counterpart) to extract specific fields into CSV format, then process the data with Python. This is much faster than scrolling through millions of packets in the GUI.
 
@@ -18139,9 +18475,47 @@ For large-scale analysis, I use tshark (Wireshark's command-line counterpart) to
 tshark -r capture.pcap -T fields -e frame.time -e ip.src -e ip.dst -e tcp.dstport -Y "tcp.flags.syn==1" > connections.csv
 \`\`\`
 
-## Building Intuition
+Add \`-E header=y -E separator=,\` when you want a real CSV with a header row rather than tab-separated output. And if a capture is too large to open in the GUI at all, \`editcap\` will cut it down first: \`editcap -c 100000 big.pcap chunk.pcap\` splits it into files of 100,000 packets each, and \`editcap -A\` and \`-B\` trim by absolute start and stop time.
+
+## Decrypting TLS
+
+Most traffic worth analysing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with TLS 1.3 that would not help anyway because the key exchange is always ephemeral.
+
+Instead, have the client write out its session secrets:
+
+\`\`\`bash
+export SSLKEYLOGFILE=/tmp/keys.log
+firefox &
+\`\`\`
+
+Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Master-Secret log filename. HTTPS in that capture becomes readable HTTP. Firefox, Chrome, and curl all honour the variable. This is the legitimate way to debug your own TLS traffic, and it only works for traffic whose client cooperated.
+
+## What breaks
+
+**Running the GUI as root.** Wireshark's dissectors parse hostile input from the network, and they have had memory-safety bugs. Capture with \`dumpcap\` or grant the capability with \`setcap cap_net_raw,cap_net_admin+eip\`, then analyse as a normal user. On Debian-family systems, adding yourself to the \`wireshark\` group and re-logging in is the supported path.
+
+**"Incorrect checksum" everywhere on a host capture.** Checksum offload means the NIC fills these in after Wireshark sees the packet. It is not corruption. Turn off checksum validation in the TCP and IP protocol preferences before you chase it.
+
+**Trusting \`tcp.analysis\` flags on a partial capture.** Those flags are generated by Wireshark's own stream tracking, not read from the packets. If your capture started mid-conversation or dropped packets, perfectly normal traffic is labelled as retransmissions and out-of-order segments. Check the dropped-packet count in the file properties first.
+
+**Name resolution changing what you see.** With network name resolution enabled, Wireshark issues its own DNS lookups, which appear in a live capture and pollute it. Keep it off unless you specifically want it.
+
+**Filtering with \`!=\` on a repeated field.** Described above and worth restating, because it silently returns almost every packet instead of erroring. Wrap the equality in \`!()\` instead.
+
+## Building intuition
 
 The best way to get good at packet analysis is to capture your own traffic and study it. Set up a span port on your switch, capture for an hour, and explore what you see. You will learn more about how protocols actually work than any textbook can teach.
+
+Pick one protocol at a time and watch it do something you already understand. Load a page and follow the DNS query, the TCP handshake, and the TLS ClientHello in order. Once you have seen a healthy version of a conversation, the broken one stands out immediately, and that recognition is the whole skill.
+
+## References
+
+- https://www.wireshark.org/docs/man-pages/wireshark-filter.html
+- https://www.wireshark.org/docs/man-pages/tshark.html
+- https://www.wireshark.org/docs/dfref/
+- https://www.wireshark.org/docs/man-pages/editcap.html
+- https://www.rfc-editor.org/rfc/rfc959
+- https://en.wikipedia.org/wiki/Wireshark
 `,
   },
   {
@@ -18384,9 +18758,13 @@ Understanding the attacks makes me better at configuring the defenses.
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Modules_SFP_officiels_et_compatibles.jpg",
     },
     content: `
-## What Transceivers Do
+## What transceivers do
+
+You bought a switch with SFP+ cages, a NIC with SFP+ cages, and now you are staring at a page of part numbers where every option is either three dollars or three hundred and nothing explains the difference. The question underneath is always the same: what actually has to match at both ends for the link to come up.
 
 Network transceivers convert electrical signals from your switch or NIC into optical signals for fiber cables (or into electrical signals for copper cables). They plug into SFP (Small Form-factor Pluggable) slots on your networking equipment and provide the physical layer connection.
+
+A transceiver is a small computer in its own right. It contains the laser or the copper driver, the receive photodiode and amplifier, and an EEPROM holding its identity: vendor, part number, serial, supported speeds, wavelength, and rated distance. The host switch reads that EEPROM over an I2C bus the instant you insert the module, which is how a port knows what it is holding before a single frame crosses it. The form factors are defined by multi-source agreements between manufacturers rather than by IEEE, which is why they interoperate widely but also why vendor lock-in games are possible at all.
 
 ## SFP vs SFP+ vs QSFP28
 
@@ -18396,7 +18774,21 @@ Network transceivers convert electrical signals from your switch or NIC into opt
 
 **QSFP28** supports 100 Gbps. This is used for spine/leaf datacenter fabrics and high-performance computing. A single QSFP28 port can also be broken out into 4x25 Gbps connections.
 
-## Fiber vs Copper
+Two more you will meet. **SFP28** is the same physical cage as SFP+ running a single 25 Gbps lane, and it is the building block that QSFP28 breaks out into. **QSFP+** is the 40 Gbps generation, four lanes of 10 Gbps, which breaks out to 4x10 Gbps the same way.
+
+The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighbouring port numbers, so check the platform's documentation before buying the cable.
+
+## Reading the part number
+
+Most of the information you need is encoded in the optic's designation, and it follows a consistent grammar. Take 10GBASE-SR: the 10G is the speed, BASE means baseband signalling, and the suffix is the medium and reach.
+
+- **SR (short reach)** uses 850 nm light on multimode fiber. At 10 Gbps that reaches 300 m on OM3 and 400 m on OM4, and much less on the older OM1 and OM2 grades.
+- **LR (long reach)** uses 1310 nm on single-mode fiber for 10 km.
+- **ER (extended reach)** uses 1550 nm on single-mode for 40 km.
+
+Both ends of a link must agree on speed, wavelength, and fiber type. An SR module will not talk to an LR module, not because of vendor politics but because one is shouting 850 nm into multimode and the other is listening for 1310 nm from single-mode. This is the single most common reason a fiber link stays dark.
+
+## Fiber vs copper
 
 For distances under 5 meters, DAC (Direct Attach Copper) cables are the cheapest and simplest option. A DAC cable has transceivers permanently attached to both ends. They are passive, require no configuration, and work in any SFP+ slot.
 
@@ -18404,7 +18796,19 @@ For distances between 5 and 300 meters, multimode fiber with SR (Short Range) tr
 
 For distances over 300 meters, single-mode fiber with LR (Long Range) transceivers is required. These are more expensive but can reach up to 10 kilometers.
 
-## Third-Party vs OEM
+Between passive DAC and fiber there are two intermediate options. Active DAC includes signal conditioning electronics in the ends and stretches the copper reach roughly double that of passive. Active optical cable (AOC) is a fiber cable with the optics permanently bonded to both ends: it has the reach of fiber and the plug-and-play simplicity of DAC, at the cost of not being able to replace either end independently.
+
+10GBASE-T over Cat6a is the other copper option, and it reaches 100 m, but it draws noticeably more power per port than SFP+ and adds latency measured in microseconds because of the block-based error correction it uses. For in-rack links, DAC wins on cost, power, and latency at once.
+
+## Connectors and fiber grades
+
+Duplex fiber for SFP and SFP+ terminates in LC connectors, two ferrules in a clip, one for transmit and one for receive. QSFP optics that use parallel fiber terminate in MPO or MTP connectors carrying 12 or 8 fibers in one rectangular ferrule.
+
+Multimode fiber is graded OM1 through OM5, and the grade sets the distance. OM3 and OM4 are the ones you want for 10 Gbps and above; OM1 orange fiber pulled out of a box of old patch leads will link at 10 Gbps only over very short runs, if at all. Single-mode is yellow, has a much smaller core, and does not have equivalent grading in the same way.
+
+Fiber ends are the most common physical failure and the easiest to fix. A fingerprint on a ferrule attenuates the signal enough to cause errors under load while still showing a link light. Keep the dust caps on until the moment you plug the cable in, and clean the ends with a proper fiber cleaner rather than a shirt sleeve.
+
+## Third-party vs OEM
 
 Cisco, Juniper, and other vendors sell their own branded transceivers at premium prices. Third-party transceivers from companies like Finisar (now II-VI) or generic options from Amazon work identically in most cases at a fraction of the cost.
 
@@ -18414,9 +18818,55 @@ Some switches check for OEM transceivers and will display warnings or refuse to 
 service unsupported-transceiver
 \`\`\`
 
-## My Setup
+What the switch is doing is reading the vendor name and part number out of that EEPROM and comparing them against a list. Reputable third-party suppliers will code the EEPROM for the platform you tell them you are using, which is why the same physical module is sold as "Cisco coded" or "Arista coded" at the same price. The optics are frequently made in the same factories as the branded ones.
+
+## Reading the diagnostics with ethtool
+
+Optics that support digital diagnostics (nearly all of them) report their own temperature, supply voltage, laser bias, transmit power, and receive power. On Linux this is one command:
+
+\`\`\`bash
+sudo ethtool -m enp1s0f0
+\`\`\`
+
+Useful output looks like this:
+
+\`\`\`
+	Identifier                                : 0x03 (SFP)
+	Transceiver type                          : 10G Ethernet: 10G Base-SR
+	Laser wavelength                          : 850nm
+	Module temperature                        : 34.62 degrees C
+	Laser output power                        : 0.5623 mW / -2.50 dBm
+	Receiver signal average optical power     : 0.4074 mW / -3.90 dBm
+\`\`\`
+
+Receive power is the number that matters. On a 10GBASE-SR link, a reading in the region of -2 to -8 dBm is a healthy short run, and the receiver runs out of sensitivity somewhere around -11 dBm. A reading of -40 dBm, or a field showing no signal at all, means no light is arriving: the far end is down, the transmit and receive strands are swapped, or a connector is not seated. A reading that has drifted down by several dB since installation usually means a dirty or damaged connector rather than a dying laser.
+
+\`ethtool -m\` on a DAC reports the cable's EEPROM but no optical power, because there is no light involved. That is expected and not a fault.
+
+## My setup
 
 In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everything is within a single rack, so DAC is perfect. The total cost for 10GbE connectivity was a fraction of what it would cost with fiber and OEM transceivers. For a homelab, there is no reason to pay more.
+
+## What breaks
+
+**Mismatched optics at the two ends.** SR to LR will never link, and neither will 850 nm into single-mode fiber. Check the transceiver type on both ends with \`ethtool -m\` before you go looking for a switch configuration problem.
+
+**Transmit and receive swapped on a duplex patch.** LC pairs can be inserted either way round, and one end's transmit must land on the other end's receive. The symptom is both sides reporting healthy transmit power and no receive power at all. Reverse the pair at one end only.
+
+**A DAC that is fine electrically and rejected administratively.** The link stays down and the log complains about an unsupported or unauthorised module. This is the EEPROM check, not the cable. Either use a module coded for the platform, or enable the unsupported-transceiver setting where the vendor provides one.
+
+**Dirty connectors that pass a link test and fail under load.** Contamination raises attenuation enough to push receive power toward the sensitivity limit. The link comes up, light traffic works, and a sustained transfer produces CRC errors. Compare the current receive power against what the same link reported when it was new.
+
+**Assuming the cage speed is the port speed.** An SFP+ cage will happily accept a 1 Gbps SFP module and run the port at 1 Gbps. If a "10 gig" link is inexplicably slow, confirm the negotiated speed with \`ethtool enp1s0f0\` before blaming anything else, because the cage and the module are two different things.
+
+## References
+
+- https://en.wikipedia.org/wiki/Small_Form-factor_Pluggable
+- https://en.wikipedia.org/wiki/10_Gigabit_Ethernet
+- https://en.wikipedia.org/wiki/100_Gigabit_Ethernet
+- https://en.wikipedia.org/wiki/Multi-mode_optical_fiber
+- https://en.wikipedia.org/wiki/Single-mode_optical_fiber
+- https://man7.org/linux/man-pages/man8/ethtool.8.html
 `,
   },
   {
@@ -18716,20 +19166,42 @@ My storage hierarchy mirrors what you would see in a professional post-productio
       licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Subnetting_Example_(3)_-en.png",
     },
-    content: `
-## Why Subnetting Matters
+    content: `## The problem
+
+You have a flat home network where everything sits on 192.168.1.0/24, you want to split it into segments, and every guide you open asks you to convert octets to binary and fill in a worksheet. That is not what you need. You need to know how to pick ranges that will not collide, how to write them down so future you can read them, and how to tell quickly when you got one wrong.
+
+## Why subnetting matters
 
 Subnetting divides a large network into smaller, more manageable segments. Each subnet is its own broadcast domain, which means broadcast traffic stays within the subnet instead of flooding the entire network. This improves performance, security, and manageability.
 
-In my lab, subnetting is how I give each VLAN its own address space and control routing between them.
+In my lab, subnetting is how I give each VLAN its own address space and control routing between them. A VLAN gives you the Layer 2 boundary. The subnet gives you the Layer 3 boundary that sits on top of it. The two are separate ideas that almost always get configured together, and confusing them is where a lot of early trouble comes from.
 
-## CIDR Notation
+## CIDR notation
 
 CIDR (Classless Inter-Domain Routing) notation uses a slash followed by the number of bits in the network portion of the address. A /24 network has 256 addresses (254 usable). A /25 has 128 (126 usable). A /28 has 16 (14 usable).
 
 The quick mental math: start with 32, subtract the CIDR number, raise 2 to that power. That is your total addresses. Subtract 2 for network and broadcast.
 
-## My Network Layout
+The two addresses you subtract are not arbitrary. The address with all host bits set to zero identifies the subnet itself, and the address with all host bits set to one is the directed broadcast for that subnet. Neither can be assigned to an interface.
+
+Two prefix lengths are exceptions worth knowing. A /32 is a single host route, used for loopbacks and for pinning a route to one address. A /31 has only two addresses and no room for a network and broadcast pair, and RFC 3021 defines it specifically so both addresses are usable on a point-to-point link. Older gear does not always support /31, which is why you still see /30 links wasting two addresses each.
+
+## Reading a mask without binary
+
+You only ever need the last non-255 octet, and there are only eight values it can take:
+
+- /25 is 255.255.255.128
+- /26 is 255.255.255.192
+- /27 is 255.255.255.224
+- /28 is 255.255.255.240
+- /29 is 255.255.255.248
+- /30 is 255.255.255.252
+- /31 is 255.255.255.254
+- /32 is 255.255.255.255
+
+The trick that makes this fast is block size. Subtract that octet value from 256 and you get the spacing between consecutive subnets. For a /26, 256 minus 192 is 64, so the subnets are x.x.x.0, x.x.x.64, x.x.x.128, and x.x.x.192. For a /28, the block size is 16, so subnets start at 0, 16, 32, 48, and so on. Once you can produce block size in your head, you can name the network address, the first host, the last host, and the broadcast for any prefix without writing anything down.
+
+## My network layout
 
 I use 10.0.0.0/8 as my overall private address space, divided into /24 subnets for each VLAN:
 
@@ -18742,17 +19214,132 @@ I use 10.0.0.0/8 as my overall private address space, divided into /24 subnets f
 
 Using the third octet to match the VLAN ID makes the addressing scheme intuitive. If I see an IP starting with 10.0.40, I immediately know it is an IoT device.
 
-## VLSM in Practice
+The one limit of that scheme, and it is worth knowing before you commit to it: VLAN IDs are 12 bits and run from 1 to 4094, while an octet only runs from 0 to 255. The mapping is clean right up until you want VLAN 300. If you think you will ever go past VLAN 255, encode the VLAN across the second and third octets instead, or accept that the mapping is a convention that stops at 255.
+
+10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16 are the three private ranges reserved by RFC 1918. Anything you assign should come out of one of them. 169.254.0.0/16 is link-local and is what an interface gives itself when DHCP fails, so seeing a 169.254 address on a host is a diagnosis, not a configuration.
+
+## VLSM in practice
 
 Variable Length Subnet Masking (VLSM) lets you use different subnet sizes within the same network. My management VLAN only has about 15 devices, so a /24 is wasteful. I could use a /28 (14 usable) and conserve address space.
 
 In practice, I keep everything at /24 because simplicity matters more than address conservation in a private network. If I were designing a public-facing network with limited IP space, VLSM would be essential.
 
-## Common Mistakes
+The other reason to keep uniform /24s in a lab is that a subnet is very hard to grow after the fact. Widening 10.0.10.0/28 to a /27 means every host, every DHCP scope, and every firewall rule that referenced the old mask has to change at the same time, and the ones you miss fail in ways that only show up for some pairs of hosts. Allocating generously up front costs nothing when the addresses are free.
 
-The most common subnetting mistake I see is overlapping subnets. If two VLANs have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range.
+## Working it out with Python
 
-The second most common mistake is forgetting the gateway. Every subnet needs a gateway address (usually .1) configured on the router or L3 switch for inter-subnet traffic to work.
+I do not do subnet arithmetic by hand any more. The \`ipaddress\` module in the Python standard library is the fastest way to get an authoritative answer, and it ships with every Python 3 install.
+
+\`\`\`bash
+python3 -c "
+import ipaddress
+net = ipaddress.ip_network('10.0.40.0/24')
+print('network  ', net.network_address)
+print('broadcast', net.broadcast_address)
+print('total    ', net.num_addresses)
+hosts = list(net.hosts())
+print('first    ', hosts[0])
+print('last     ', hosts[-1])
+"
+\`\`\`
+
+Correct output:
+
+\`\`\`
+network   10.0.40.0
+broadcast 10.0.40.255
+total     256
+first     10.0.40.1
+last      10.0.40.254
+\`\`\`
+
+The check I actually care about is overlap. Before I add a subnet to the plan, I run every pair through \`overlaps()\`:
+
+\`\`\`bash
+python3 -c "
+import ipaddress
+plan = ['10.0.10.0/24','10.0.20.0/24','10.0.30.0/24',
+        '10.0.40.0/24','10.0.50.0/24','10.0.99.0/24',
+        '172.17.0.0/16']
+nets = [ipaddress.ip_network(s) for s in plan]
+bad = 0
+for i, a in enumerate(nets):
+    for b in nets[i+1:]:
+        if a.overlaps(b):
+            print('OVERLAP', a, b)
+            bad += 1
+print('checked', len(nets), 'subnets,', bad, 'conflicts')
+"
+\`\`\`
+
+A clean plan prints:
+
+\`\`\`
+checked 7 subnets, 0 conflicts
+\`\`\`
+
+If you want to carve a /24 into smaller pieces, \`subnets()\` does the arithmetic:
+
+\`\`\`bash
+python3 -c "
+import ipaddress
+for s in ipaddress.ip_network('10.0.10.0/24').subnets(new_prefix=28):
+    print(s, list(s.hosts())[0], list(s.hosts())[-1])
+" | head -3
+\`\`\`
+
+\`\`\`
+10.0.10.0/28 10.0.10.1 10.0.10.14
+10.0.10.16/28 10.0.10.17 10.0.10.30
+10.0.10.32/28 10.0.10.33 10.0.10.46
+\`\`\`
+
+## Confirming it on the host
+
+Once it is configured, two commands tell you whether the host agrees with your plan.
+
+\`\`\`bash
+ip -brief address show
+\`\`\`
+
+\`\`\`
+lo     UNKNOWN  127.0.0.1/8 ::1/128
+ens18  UP       10.0.20.5/24 fe80::5054:ff:fe12:3456/64
+\`\`\`
+
+The prefix printed after the address is the mask the host is actually using, not the one you meant to set. Then confirm which way traffic will leave:
+
+\`\`\`bash
+ip route get 10.0.30.15
+\`\`\`
+
+\`\`\`
+10.0.30.15 via 10.0.20.1 dev ens18 src 10.0.20.5 uid 1000
+    cache
+\`\`\`
+
+\`via 10.0.20.1\` means the host correctly decided the destination is off-subnet and handed it to the gateway. If you expected a gateway and instead see \`dev ens18 src ...\` with no \`via\`, the host thinks the destination is on its own wire, which means your mask is wider than you intended.
+
+## Common mistakes
+
+**Overlapping subnets.** The most common subnetting mistake I see. If two VLANs have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range. The overlaps that catch people are the ones they did not choose: Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs hand out 10.x space. If your lab uses 10.0.x, a VPN route for 10.0.0.0/8 will swallow your whole network the moment you connect.
+
+**Forgetting the gateway.** Every subnet needs a gateway address (usually .1) configured on the router or L3 switch for inter-subnet traffic to work. A host with a correct address and no reachable gateway can talk to its neighbours perfectly and nothing else, which reads like a firewall problem and is not.
+
+**Mask mismatch between hosts on the same wire.** Host A is 10.0.20.5/24 and host B is 10.0.20.200/25. B thinks A is off-subnet and sends to the gateway, A thinks B is local and sends directly. Traffic works in one direction and fails in the other, or works until a router stops proxying. Always check the prefix on both ends, not just the addresses.
+
+**DHCP pool overlapping the static range.** The DHCP server does not know which addresses you typed into a server by hand. Reserve an explicit block, for example .1 to .49 for infrastructure and statics, .100 to .199 for the pool, and keep the rest empty. Duplicate address detection will eventually tell you, but only after something has already gone offline.
+
+**Assigning the network or broadcast address.** In a /24 the .0 and .255 are not usable, and in a /26 the unusable pair moves to every block boundary: .0 and .63, .64 and .127, and so on. Handing out 10.0.20.63 in a /26 gives you a host that half the network can reach and nothing can broadcast past.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc4632
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://www.rfc-editor.org/rfc/rfc3021
+- https://www.rfc-editor.org/rfc/rfc6890
+- https://docs.python.org/3/library/ipaddress.html
+- https://man7.org/linux/man-pages/man8/ip-address.8.html
 `,
   },
   {
@@ -18959,15 +19546,32 @@ I use ZFS RAIDZ2 (which is conceptually similar to RAID 6) for my bulk storage a
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Python_sul_Terminale.jpg",
     },
     content: `
-## Why Automate
+## Why automate
+
+You have a rack of switches, a firewall, and a couple of routers, and every Friday you log into each one by hand to copy the running config somewhere safe and confirm nothing has drifted. It works. It also takes an hour, and the one week you skip it is the week something is wrong.
 
 Configuring network devices manually works fine when you have two switches. When you have ten, or twenty, or a hundred, manual configuration becomes error-prone and time-consuming. Automation ensures consistency, saves time, and reduces human error.
 
-In my lab, I use Python to automate configuration backups, monitoring checks, and bulk configuration changes.
+In my lab, I use Python to automate configuration backups, monitoring checks, and bulk configuration changes. None of these scripts are clever. They are short, boring, and they run on a schedule, which is exactly what you want from anything that touches network gear.
 
-## Netmiko for Device Access
+## Set up an isolated environment first
+
+Do not install network libraries into the system Python. Distributions ship their own packages there, and a \`pip install\` that upgrades a shared dependency can break unrelated system tools:
+
+\`\`\`bash
+python3 -m venv ~/netauto
+source ~/netauto/bin/activate
+pip install netmiko pysnmp
+pip freeze > requirements.txt
+\`\`\`
+
+Pinning matters more here than in most Python work. Netmiko and PySNMP have both changed their public APIs across major versions, and a script that quietly stops working at 2 a.m. because a dependency moved is not a script you can trust.
+
+## Netmiko for device access
 
 Netmiko is a Python library that simplifies SSH connections to network devices. It handles the quirks of different vendors (Cisco, Fortinet, Juniper, etc.) and provides a clean interface for sending commands and receiving output.
+
+What it does for you is unglamorous and important. It opens an SSH session on TCP port 22, waits for the device prompt, disables paging so output does not stop at a \`--More--\`, sends your command, and reads until the prompt returns. Every one of those steps is a place where a hand-rolled SSH script breaks against a vendor that does something slightly different.
 
 \`\`\`python
 from netmiko import ConnectHandler
@@ -18989,9 +19593,77 @@ with open("switch_backup.txt", "w") as f:
 
 This script connects to a Cisco switch, pulls the running configuration, and saves it to a file. I run it nightly on every network device to maintain configuration backups.
 
-## Paramiko for Custom SSH
+The \`device_type\` string is not cosmetic. It selects the driver that knows the prompt pattern, the paging command, and how to enter enable and config mode. \`cisco_ios\`, \`cisco_nxos\`, \`arista_eos\`, \`juniper_junos\`, and \`fortinet\` are common ones. If you pick the wrong one you usually get a timeout waiting for a prompt that never matches.
+
+Three methods cover almost everything. \`send_command(cmd)\` runs a show command and waits for the prompt, which is what you want for anything read-only. \`send_config_set([...])\` takes a list of lines, enters configuration mode, sends them, and exits, handling the mode transitions for you. \`send_command_timing(cmd)\` reads based on inter-character delay instead of a prompt match, for commands that prompt for confirmation.
+
+## A worked example: nightly backup with change detection
+
+A backup you never look at is half a backup. What I want to know is whether anything changed, and writing the configs into a git repository gives me that for free:
+
+\`\`\`python
+#!/usr/bin/env python3
+import logging
+from pathlib import Path
+from netmiko import ConnectHandler
+from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
+
+logging.basicConfig(filename="/var/log/netbackup.log", level=logging.INFO,
+                    format="%(asctime)s %(levelname)s %(message)s")
+
+DEVICES = [
+    {"name": "core-sw", "host": "10.0.10.2", "device_type": "cisco_ios"},
+    {"name": "access-sw1", "host": "10.0.10.3", "device_type": "cisco_ios"},
+]
+
+OUTDIR = Path("/srv/netbackup/configs")
+failures = 0
+
+for d in DEVICES:
+    params = {
+        "device_type": d["device_type"],
+        "host": d["host"],
+        "username": "backup",
+        "use_keys": True,
+        "key_file": "/home/netauto/.ssh/id_ed25519",
+        "conn_timeout": 15,
+    }
+    try:
+        with ConnectHandler(**params) as conn:
+            cfg = conn.send_command("show running-config")
+        # Strip the timestamp line so unchanged configs produce no diff
+        lines = [l for l in cfg.splitlines() if not l.startswith("! Last configuration change")]
+        (OUTDIR / f"{d['name']}.cfg").write_text("\\n".join(lines) + "\\n")
+        logging.info("backed up %s (%d lines)", d["name"], len(lines))
+    except (NetmikoTimeoutException, NetmikoAuthenticationException) as e:
+        failures += 1
+        logging.error("FAILED %s: %s", d["name"], e)
+
+raise SystemExit(1 if failures else 0)
+\`\`\`
+
+Then let git do the diffing:
+
+\`\`\`bash
+cd /srv/netbackup && git add -A && git commit -m "nightly $(date -I)" || echo "no changes"
+\`\`\`
+
+A healthy run looks like this in the log, and produces \`no changes\` from git:
+
+\`\`\`
+2026-08-24 02:00:04 INFO backed up core-sw (1184 lines)
+2026-08-24 02:00:11 INFO backed up access-sw1 (612 lines)
+\`\`\`
+
+That "no changes" line is the whole point. On the night somebody edits a switch, git commits a diff, and the diff is a precise record of what changed and when. Filtering the \`! Last configuration change\` line matters because IOS writes a timestamp into the running config, and without stripping it every backup shows as modified and the signal disappears into noise.
+
+## Paramiko for custom SSH
 
 For tasks where Netmiko's abstraction gets in the way, I use Paramiko directly. Paramiko is the SSH library that Netmiko is built on, and it gives you lower-level control over the SSH connection.
+
+The cases where I drop down to Paramiko are narrow: pulling a file over SFTP, running something on a Linux box where there is no prompt weirdness to handle, or talking to a device whose prompt is so unusual that fighting Netmiko's expect logic is more work than reading the channel myself. If you find yourself reimplementing paging suppression and prompt matching in Paramiko, go back to Netmiko.
+
+Use keys, not passwords, in both libraries. A password in a script is a password in git history. A dedicated \`backup\` user at a read-only privilege level with an SSH key is the right shape for automation credentials.
 
 ## SNMP with PySNMP
 
@@ -19013,7 +19685,17 @@ for varBind in varBinds:
     print(f"{varBind[0]} = {varBind[1]}")
 \`\`\`
 
-## Practical Scripts
+Numbers worth knowing. SNMP polling runs over UDP port 161, and traps the device sends unprompted go to UDP port 162 on your collector. \`sysUpTime\` is reported in hundredths of a second, so divide by 100 before printing it. Interface counters in the original \`ifTable\` are 32 bits, which wraps in seconds on a loaded 10 Gbps link, so use the 64-bit counters in \`ifXTable\` (\`ifHCInOctets\` and \`ifHCOutOctets\`) on anything fast.
+
+Community strings in SNMPv1 and v2c are sent in cleartext, and \`public\` is the default read community on far too much equipment. Use SNMPv3, which adds real authentication and encryption, on anything reachable from a network you do not fully control. If you are stuck with v2c on a lab switch, change the community string and restrict polling by ACL to your monitoring host.
+
+Be aware that PySNMP's import paths and synchronous helpers have shifted between major releases. Whatever version you install, pin it, and check the version's own documentation rather than assuming a snippet from a few years ago still imports.
+
+## Structured APIs beat screen scraping
+
+Everything above parses text meant for humans. That works, and on older gear it is the only option, but it is brittle: a vendor changes a column header and your parser silently returns garbage. Where the device supports it, use a structured interface instead. NETCONF (RFC 6241) exchanges XML configuration and state over SSH, conventionally on TCP port 830, with an explicit model of candidate versus running configuration and a real commit operation. RESTCONF (RFC 8040) exposes the same YANG data models over HTTPS with JSON or XML payloads. The Python client for NETCONF is \`ncclient\`; for RESTCONF you need nothing beyond \`requests\`. The parsing code you never write is the parsing code that never breaks.
+
+## Practical scripts
 
 My most-used automation scripts:
 
@@ -19023,6 +19705,39 @@ My most-used automation scripts:
 4. **Uptime check:** Queries sysUpTime from all devices and flags any that have rebooted unexpectedly.
 
 Each script is simple, focused, and reliable. They save me hours of manual checking every week.
+
+The uptime check has earned its keep most often. A switch that rebooted at 3 a.m. and came back up looks normal by morning; the only evidence is the counter resetting, and unless something watches it you find out much later, while debugging something unrelated.
+
+## Running it on a schedule
+
+Cron runs with a minimal environment and almost no \`PATH\`, so use absolute paths and call the virtual environment's interpreter directly:
+
+\`\`\`
+0 2 * * * /home/netauto/netauto/bin/python /opt/netauto/backup.py
+\`\`\`
+
+Exit non-zero on failure, as the example does, so cron's mail notices. Make every script safe to run twice: if a config-push script is not idempotent, a retry after a partial failure can leave the device worse off than the failure did.
+
+## What breaks
+
+**The script hangs on one unreachable device.** Netmiko's default connection timeout is generous, and a loop over fifty devices with no per-device timeout will sit there. Set \`conn_timeout\` explicitly, wrap each device in try/except, and count failures instead of aborting the loop.
+
+**Paging eats your output.** Roll your own SSH connection and the device sends \`--More--\` after a screen of output and waits. Your read blocks, or you capture a truncated config and write it over a good backup. Send \`terminal length 0\` on IOS-style devices first, or let Netmiko handle it.
+
+**Wrong \`device_type\` produces a timeout, not an error.** Netmiko waits for a prompt pattern that will never match, which sends you hunting for a network problem that does not exist. If a device that pings and accepts SSH by hand times out in Netmiko, suspect the driver string before the network.
+
+**SNMP counters wrap and produce absurd rates.** A 32-bit octet counter rolls over at 4,294,967,295. Subtract the previous sample without handling that and you get a huge negative number or a nonsense spike. Use the 64-bit \`ifXTable\` counters, and treat any negative delta as a wrap or a reboot rather than plotting it.
+
+**Credentials in the repository.** The most common mistake and the hardest to undo, because git keeps history. Use SSH keys, keep secrets in a file outside the repo with mode 600, and add that path to \`.gitignore\` before the first commit rather than after.
+
+## References
+
+- https://docs.python.org/3/library/venv.html
+- https://docs.python.org/3/library/logging.html
+- https://man7.org/linux/man-pages/man5/crontab.5.html
+- https://www.rfc-editor.org/rfc/rfc6241
+- https://www.rfc-editor.org/rfc/rfc8040
+- https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol
 `,
   },
   {
@@ -19097,15 +19812,48 @@ Buy more rack than you think you need. Label everything during installation, not
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Switch-and-nest.jpg",
     },
     content: `
-## STP Is Everywhere
+## STP is everywhere
+
+The network is down, every link light on every switch is blinking in perfect unison, the switch console takes ten seconds to echo a character, and nothing you ping responds. That specific combination has one likely cause, and you need to stop it before you can investigate it.
 
 Spanning Tree Protocol runs on every enterprise switch, usually without anyone thinking about it. It prevents Layer 2 loops by blocking redundant paths, and it is absolutely essential for network stability. But when STP goes wrong, it goes wrong fast.
 
-## The Broadcast Storm
+## The broadcast storm
 
 The worst STP failure I experienced in my lab was a broadcast storm caused by a misconfigured port. I had a port set as a trunk that should have been an access port. When I connected a second cable between two switches (creating a physical loop), STP should have blocked one path. Instead, the misconfigured port did not participate in STP correctly, and the loop formed.
 
 The result was immediate. Every device on the VLAN became unreachable. CPU utilization on the switches spiked to 100%. The switches were spending all their resources forwarding broadcast frames in an infinite loop.
+
+## Recognising the symptoms
+
+A layer 2 loop looks different from most outages, and learning the signature saves a lot of time:
+
+- Link lights on many ports flashing in lockstep at the same rhythm, including ports that should be nearly idle.
+- Switch CPU at or near 100 percent, with the console noticeably slow to respond.
+- Total loss of connectivity for everything in the affected VLAN, while devices in other VLANs are unaffected.
+- MAC flapping messages in the log, which are the single most diagnostic clue available.
+
+That last one is worth knowing by sight. Cisco switches log something like this:
+
+\`\`\`
+%SW_MATM-4-MACFLAP_NOTIF: Host 0050.56aa.bb01 in vlan 20 is flapping
+between port Gi1/0/1 and port Gi1/0/2
+\`\`\`
+
+That message says the switch is learning the same MAC address from two different ports over and over, which is only possible if a frame from that host is arriving by two paths. It names the VLAN and both ports, which is most of your investigation done for you.
+
+## Stop the bleeding first
+
+Diagnosis on a saturated network is close to impossible, because management traffic is competing with the storm. Break the loop before you analyse it.
+
+If you know what changed, unplug it. If you do not, shut ports administratively from the console, starting with the ones named in the flap messages:
+
+\`\`\`
+LabSwitch(config)# interface GigabitEthernet1/0/2
+LabSwitch(config-if)# shutdown
+\`\`\`
+
+The network should recover within seconds of the loop being broken. If the console itself is unusable, physically unplugging inter-switch links one at a time until the lights calm down is a legitimate technique and frequently the fastest one.
 
 ## Diagnosis
 
@@ -19117,7 +19865,58 @@ LabSwitch# show spanning-tree vlan 20
 
 This showed me the root bridge, the port roles (root, designated, alternate, blocked), and the port states. The problem was immediately visible: the misconfigured port was not in a blocking state when it should have been.
 
-## Root Bridge Election
+Here is what a healthy output looks like, so you know what you are comparing against:
+
+\`\`\`
+VLAN0020
+  Spanning tree enabled protocol rstp
+  Root ID    Priority    4116
+             Address     00b1.2c3d.4e5f
+             This bridge is the root
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    4116  (priority 4096 sys-id-ext 20)
+             Address     00b1.2c3d.4e5f
+             Aging Time  300 sec
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------
+Gi1/0/1          Desg FWD 4         128.1    P2p
+Gi1/0/2          Desg FWD 4         128.2    P2p
+Gi1/0/14         Desg FWD 4         128.14   P2p Edge
+\`\`\`
+
+Read it in this order. First, is the root the switch you intended? Second, on a switch that is not the root, exactly one port should have role \`Root\`; if none does, this switch is not hearing the root at all. Third, look for an \`Altn BLK\` port anywhere you have a redundant path. If you have two cables between two switches and both ends show \`Desg FWD\`, spanning tree is not managing that loop and you have found your problem.
+
+The priority reading 4116 rather than 4096 is normal, not a bug: the VLAN number is carried in the low bits of the priority field, and the parenthetical \`(priority 4096 sys-id-ext 20)\` spells that out.
+
+Two more commands earn their place. \`show spanning-tree interface Gi1/0/2 detail\` gives you the BPDU counters for one port, and a port that has sent thousands of BPDUs and received none is either isolated or facing a device that does not speak STP. \`show spanning-tree vlan 20 detail\` reports the number of topology changes and when the last one occurred, which turns "the network feels unstable" into a number you can watch.
+
+## Capturing BPDUs
+
+When the switch output does not explain the behaviour, look at the frames. BPDUs go to the well-known multicast address 01:80:c2:00:00:00, which makes them easy to filter for:
+
+\`\`\`bash
+sudo tcpdump -i eno1 -e -nn -v 'ether dst 01:80:c2:00:00:00'
+\`\`\`
+
+A single BPDU decodes roughly like this:
+
+\`\`\`
+18:22:41.005112 00:1b:21:aa:bb:cc > 01:80:c2:00:00:00, 802.3, length 60:
+  LLC, dsap STP (0x42), ssap STP (0x42), ctrl 0x03: STP 802.1d, Config,
+  Flags [none], bridge-id 1014.00:1b:21:aa:bb:cc.8002, length 35
+    message-age 0.00s, max-age 20.00s, hello-time 2.00s, forwarding-delay 15.00s
+    root-id 1014.00:1b:21:aa:bb:cc, root-pathcost 0
+\`\`\`
+
+The two fields to read are \`root-id\` and \`bridge-id\`. If they are equal, the sender believes it is the root. Capture on two ports and compare: if two switches each claim to be root, they are not exchanging BPDUs and you have a segmented spanning tree, which is a loop waiting to happen.
+
+In Wireshark, the display filter is simply \`stp\`. Two patterns are worth recognising in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
+
+Capture from a mirrored port or a host attached to the affected VLAN, not from the switch console, since the console is the thing under load.
+
+## Root bridge election
 
 Every STP instance has a root bridge. The root bridge is the switch with the lowest bridge ID, which is a combination of priority and MAC address. In my lab, I set the priority on my core switch to ensure it is always the root bridge:
 
@@ -19126,6 +19925,14 @@ LabSwitch(config)# spanning-tree vlan 20 priority 4096
 \`\`\`
 
 If you do not explicitly set a root bridge, the election is based on MAC addresses, which means a new switch with a lower MAC could take over as root and change your entire network topology.
+
+Set the backup as well, so a failure of the primary still gives you a topology you chose:
+
+\`\`\`
+LabSwitch(config)# spanning-tree vlan 20 root secondary
+\`\`\`
+
+A root that moved on its own is worth investigating rather than just correcting. Compare the root MAC in \`show spanning-tree\` against the one you expect. If it belongs to a device you do not recognise, something was plugged into your network that should not have been, and that is a security finding as much as a networking one.
 
 ## PortFast and BPDU Guard
 
@@ -19137,6 +19944,42 @@ LabSwitch(config-if)# spanning-tree bpduguard enable
 \`\`\`
 
 These two features together prevent most common STP issues on access ports.
+
+When BPDU Guard fires, the port goes to err-disabled and stays there until someone intervenes, which is correct behaviour but produces a dead port that nobody explains. Confirm it with:
+
+\`\`\`
+LabSwitch# show interfaces status err-disabled
+\`\`\`
+
+You can have the switch retry on its own after a delay, which turns a permanently dead port into a self-healing one once the offending device is unplugged:
+
+\`\`\`
+LabSwitch(config)# errdisable recovery cause bpduguard
+LabSwitch(config)# errdisable recovery interval 300
+\`\`\`
+
+The default recovery interval is 300 seconds. Leave the cause disabled entirely if you would rather a human look at every occurrence, which on a small network is a defensible choice.
+
+## What breaks
+
+**An err-disabled port that nobody investigates.** BPDU Guard did its job, someone finds the port dead, and the fix applied is \`shutdown\` followed by \`no shutdown\` without ever asking what sent the BPDU. The unauthorised switch is still there and the port dies again on the next reboot. Always read the log entry that accompanies the err-disable.
+
+**A hypervisor bridging two physical NICs.** A virtual switch with two uplinks into the same VLAN and no loop prevention is a loop, and it is invisible from the physical switch's point of view because the host does not send BPDUs. The MAC flap message will name two switch ports that both lead to the same server, which is the tell.
+
+**Mismatched STP modes between vendors.** Cisco's per-VLAN modes and standard MSTP or RSTP interoperate in specific, limited ways, mostly across the native VLAN. A link between two vendors where each thinks it is managing the topology alone can leave a redundant path forwarding on both ends. When mixing vendors, standardise on MSTP and verify the region configuration matches on both sides.
+
+**BPDU Filter applied where BPDU Guard was intended.** Filter stops the port participating in spanning tree at all, so a switch plugged into that port creates a loop with nothing watching for it. Guard shuts the port down. The names are similar and the outcomes are opposites.
+
+**An unmanaged switch or a looped patch cable under a desk.** The cheapest cause and a common one. Two ports on the same wall plate joined by a short cable produces a loop that PortFast will happily forward into. This is exactly what BPDU Guard on every access port is for, and it is why "every access port" means every one, including the ones nobody uses.
+
+## References
+
+- https://en.wikipedia.org/wiki/Spanning_Tree_Protocol
+- https://en.wikipedia.org/wiki/Bridge_Protocol_Data_Unit
+- https://en.wikipedia.org/wiki/Broadcast_radiation
+- https://man7.org/linux/man-pages/man8/bridge.8.html
+- https://wiki.archlinux.org/title/Network_bridge
+- https://www.wireshark.org/docs/
 `,
   },
   {
@@ -19248,32 +20091,149 @@ Firewall policies are not set-and-forget. I review my policies monthly to remove
     excerpt:
       "How virtual switches, port groups, and VLAN tagging work inside hypervisors, and how they connect to physical networks.",
     coverImage: "/images/blog/virtualization-networking-concepts.jpg",
-    content: `
-## Virtual Switches
+    content: `## The problem
+
+You built a VM, gave it an IP on the right subnet, and it cannot reach anything. The host itself is fine. Nothing in the guest looks wrong. The problem is almost always in the layer between the guest's virtual NIC and the physical switch port, and that layer has three places to configure a VLAN and only one correct combination. This is how that layer works and how to check each piece.
+
+## Virtual switches
 
 When you create a VM, it needs network access. The hypervisor provides this through virtual switches (vSwitches), which work like physical switches but exist entirely in software. VMs connect their virtual NICs to a vSwitch, and the vSwitch connects to a physical NIC on the host.
 
 In Proxmox, the default virtual bridge is called vmbr0. In ESXi, it is a vSwitch or Distributed Switch. The concept is the same: a software-defined Layer 2 switch inside the hypervisor.
 
-## Connecting to Physical Networks
+There is one behavioural difference between the software switch and the physical one that catches people out. A Linux bridge learns MAC addresses the same way a physical switch does, but a hypervisor vSwitch generally does not need to: it already knows which MAC belongs to which virtual port because it handed the address out. That means unknown-unicast flooding, the thing that lets you snoop traffic on a hub, mostly does not happen, and it is why you cannot simply run a capture inside one VM and see another VM's traffic.
+
+## Connecting to physical networks
 
 The virtual switch connects to the physical network through one or more physical NICs (called uplinks). Traffic from VMs travels through the vSwitch, out the uplink NIC, and onto the physical network. From the physical switch's perspective, all VM traffic comes from the host's NIC.
 
-## VLAN Tagging
+That last sentence is not quite true and the difference matters. The physical switch sees the host's NIC as one port, but it sees many different source MAC addresses arriving on it, one per virtual NIC. The switch's MAC address table therefore has an entry per VM pointing at the same port. If your switch has port security configured with a maximum of one MAC per port, it will shut the port down the moment the second VM sends a frame. This is the single most confusing "the whole host went offline when I powered on a VM" failure.
+
+## VLAN tagging
 
 To put VMs on different VLANs, you configure VLAN tagging on the virtual switch. The hypervisor adds VLAN tags to traffic leaving the vSwitch, and the physical switch must be configured with a trunk port that accepts those VLAN tags.
 
 In Proxmox, you create VLAN-aware bridges or separate bridge interfaces for each VLAN. In ESXi, you create port groups with VLAN IDs. Either way, the result is the same: VMs can be placed on different VLANs without dedicated physical NICs for each VLAN.
 
-## Common Problems
+There are three places the tag can be applied, and they have names worth knowing because documentation uses them:
+
+- **External switch tagging.** The physical switch port is an access port. The hypervisor never sees a tag, and the whole host is on one VLAN. Simple, and no good if you want more than one VLAN.
+- **Virtual switch tagging.** The hypervisor applies and strips the tag. The guest sees plain untagged Ethernet and has no idea a VLAN exists. This is the normal choice and what a Proxmox VLAN tag on the NIC or an ESXi port group with a VLAN ID does.
+- **Virtual guest tagging.** The tag is passed through to the guest, which does its own 802.1Q handling. On ESXi this is port group VLAN ID 4095. On a VLAN-aware Linux bridge you get it by leaving the guest's tag unset and allowing the VLANs on the port. Use this only when the guest is itself a router or firewall that needs multiple VLANs on one interface.
+
+The VLAN ID field in an 802.1Q tag is 12 bits, giving 1 to 4094 as usable IDs (0 and 4095 are reserved), and the tag adds 4 bytes to the frame.
+
+## A worked example on Proxmox
+
+A VLAN-aware bridge is one bridge that carries every VLAN, with the per-VM tag set on the virtual NIC. This is much easier to manage than a separate bridge per VLAN.
+
+\`\`\`
+# /etc/network/interfaces
+auto lo
+iface lo inet loopback
+
+iface enp1s0 inet manual
+
+auto vmbr0
+iface vmbr0 inet static
+    address 10.0.10.5/24
+    gateway 10.0.10.1
+    bridge-ports enp1s0
+    bridge-stp off
+    bridge-fd 0
+    bridge-vlan-aware yes
+    bridge-vids 2-4094
+\`\`\`
+
+Confirm the bridge actually came up in filtering mode:
+
+\`\`\`bash
+ip -d link show vmbr0 | grep -o 'vlan_filtering [01]'
+\`\`\`
+
+\`\`\`
+vlan_filtering 1
+\`\`\`
+
+If that prints \`vlan_filtering 0\`, the bridge is a plain bridge and every per-VM VLAN tag you set is being ignored, which means all your VMs are sitting on the untagged VLAN together. That is a security problem, not just a connectivity one.
+
+Then look at the per-port VLAN membership:
+
+\`\`\`bash
+bridge vlan show
+\`\`\`
+
+\`\`\`
+port              vlan-id
+enp1s0            1 PVID Egress Untagged
+                  2-4094
+vmbr0             1 PVID Egress Untagged
+tap100i0          20 PVID Egress Untagged
+tap101i0          40 PVID Egress Untagged
+\`\`\`
+
+Read it like this. The uplink \`enp1s0\` carries VLAN 1 untagged and 2 through 4094 tagged, so it is a trunk. \`tap100i0\` is VM 100's virtual NIC and it is an untagged member of VLAN 20 only, which is virtual switch tagging: the VM sends untagged frames, the bridge tags them 20 on the way to the uplink and strips the tag on the way back. VM 101 is on VLAN 40 the same way.
+
+The matching physical switch port has to be a trunk:
+
+\`\`\`
+interface GigabitEthernet1/0/10
+ description PROXMOX-NODE1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,99
+ switchport trunk native vlan 10
+ spanning-tree portfast trunk
+\`\`\`
+
+\`\`\`
+show interfaces GigabitEthernet1/0/10 trunk
+\`\`\`
+
+\`\`\`
+Port        Mode         Encapsulation  Status        Native vlan
+Gi1/0/10    on           802.1q         trunking      10
+
+Port        Vlans allowed and active in management domain
+Gi1/0/10    10,20,30,40,50,99
+\`\`\`
+
+\`Status: trunking\` and your VLANs listed as allowed and active is the confirmation. \`not-trunking\` means the negotiation failed and the port fell back to access mode, which is the most common cause of a VM that cannot reach its gateway.
+
+## What breaks
 
 The most frequent issue I troubleshoot is mismatched VLAN configuration. If the hypervisor is tagging traffic with VLAN 20 but the physical switch port is configured as an access port on VLAN 10, the traffic gets dropped. Always verify that the physical switch port is configured as a trunk and allows the VLANs you need.
 
-## Performance Considerations
+Beyond that, four failure modes cover most of what I have hit.
+
+**Double tagging.** The guest OS has a VLAN sub-interface configured, and the port group or the virtual NIC also applies a tag. The frame goes out with two tags, the physical switch reads the outer one, and the traffic lands somewhere nobody expected or gets dropped. Tag in exactly one place. If the guest is doing the tagging, the hypervisor port must be in guest-tagging mode with no tag of its own.
+
+**Native VLAN mismatch.** The switch port's native VLAN is 10, the bridge's PVID is 1. Untagged frames from the host management interface arrive in VLAN 10 while the host thinks they are VLAN 1. Cisco Discovery Protocol logs a native VLAN mismatch for exactly this reason; do not ignore that message.
+
+**MTU set in one place only.** Jumbo frames need the MTU raised on the physical NIC, the bridge, the virtual NIC, and the guest, and on every switch in the path. Set it on three of the five and small packets work perfectly while anything large disappears. The symptom is a TCP handshake that completes and a transfer that immediately stalls.
+
+**Nested workloads with unknown source MACs.** Run containers or nested VMs inside a guest and their frames leave with source MAC addresses the vSwitch never handed out. A Linux bridge will learn them. ESXi drops them unless the port group allows forged transmits, and needs promiscuous mode before a guest can see traffic addressed to anyone else. If you are building a lab firewall or an IDS VM, these two settings are usually why it sees nothing.
+
+## Performance considerations
 
 Virtual networking adds a small amount of overhead compared to physical networking. For most workloads, the overhead is negligible. For high-throughput workloads (10GbE storage traffic, for example), techniques like SR-IOV (Single Root I/O Virtualization) can bypass the virtual switch entirely and give VMs near-native network performance.
 
 I use SR-IOV for my NFS storage VMs that need maximum throughput, and standard vSwitch connectivity for everything else. The configuration complexity of SR-IOV is only worth it when you actually need the performance.
+
+The mechanism is worth understanding before you reach for it. An SR-IOV capable NIC presents one physical function and a number of virtual functions, each of which looks to the PCI bus like its own NIC. A virtual function is passed straight through to the guest, so packets move by DMA between the NIC and guest memory without the host CPU building and copying frames. It requires IOMMU support enabled in firmware and in the kernel.
+
+The costs are real. Traffic on a virtual function does not traverse the host bridge, so the host cannot filter it, mirror it, or count it, and none of your \`tcpdump\` on the bridge will show it. Live migration is difficult or impossible because the guest is bound to a specific piece of hardware. And the VLAN for a VF is set on the physical function rather than in your bridge config, so it is one more place to keep in sync.
+
+For everything short of that, use the paravirtualised driver rather than an emulated one. A \`virtio-net\` NIC and an emulated \`e1000\` NIC both work, but the emulated card makes the host simulate a real chipset register by register, and the throughput difference is large. Pick emulation only when the guest is too old to have virtio drivers.
+
+## References
+
+- https://www.kernel.org/doc/html/latest/networking/bridge.html
+- https://man7.org/linux/man-pages/man8/bridge.8.html
+- https://man7.org/linux/man-pages/man8/ip-link.8.html
+- https://wiki.archlinux.org/title/Network_bridge
+- https://en.wikipedia.org/wiki/IEEE_802.1Q
+- https://www.kernel.org/doc/html/latest/PCI/pci-iov-howto.html
 `,
   },
   {
@@ -19584,17 +20544,42 @@ I use the Mac Pro's GPUs primarily for video processing and as a learning platfo
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Digital_certificates_chain_of_trust.png",
     },
     content: `
-## What TLS Does
+## What TLS does
+
+Your browser shows a red warning on the internal service you just stood up, the certificate you generated looks fine to you, and nothing you have read explains which of the dozen fields is the one the browser is objecting to. Certificates fail in ways that produce unhelpful errors, and the fastest way past that is to understand what the client is actually checking.
 
 TLS (Transport Layer Security) encrypts communication between a client and a server. When you connect to a website over HTTPS, TLS ensures that nobody can read or modify the data in transit. It also verifies the identity of the server, so you know you are connected to the real site and not an impostor.
 
-## How Certificates Work
+Those are three separate guarantees worth keeping apart: confidentiality, integrity, and authentication. Encryption gives you the first two. Certificates are entirely about the third, and almost every certificate error you will debug is an authentication failure, not an encryption failure.
+
+## How certificates work
 
 A TLS certificate is a digital document that binds a public key to a domain name (or IP address). The certificate is signed by a Certificate Authority (CA) that the client trusts. When a client connects, the server presents its certificate, the client verifies the CA's signature, and if everything checks out, they establish an encrypted connection.
 
 The trust chain goes: client trusts CA -> CA signed the certificate -> certificate proves the server's identity.
 
-## Certificate Types
+In practice there is a middle layer. Root CAs keep their private keys offline and sign intermediate CAs, which do the day to day issuing. The real chain is root, intermediate, leaf, and the server must send the leaf plus every intermediate needed to reach a root the client already has. Only the root lives in the client's trust store. This is why a certificate that works in your browser fails from \`curl\`: the browser had the intermediate cached and filled the gap for you.
+
+## What is actually inside one
+
+A certificate is an X.509 structure, profiled for the internet by RFC 5280. The fields that matter operationally:
+
+- **Subject** and **Issuer**: who this is for, and who signed it.
+- **Validity**: notBefore and notAfter timestamps. Outside that window the certificate is invalid, full stop.
+- **Subject Alternative Name (SAN)**: the list of names and IP addresses the certificate is actually valid for.
+- **Basic Constraints**: whether this certificate is a CA and may sign others.
+- **Key Usage** and **Extended Key Usage**: what the key is permitted to do, \`serverAuth\` being the one a TLS server needs.
+- **Serial number** and the CA's **signature** over everything above.
+
+The name check is the part people get wrong. Hostname verification is done against the SAN extension, not the Common Name. Common Name as an identity field was deprecated by RFC 6125 and browsers stopped honouring it years ago. A certificate with \`CN=nas.lab.internal\` and no SAN entry will be rejected by every modern client with an error that says nothing about SANs.
+
+## The handshake, briefly
+
+Over TLS 1.3, defined in RFC 8446, the client opens a connection to TCP port 443 and sends a ClientHello that already includes a key share guess. The server replies with its ServerHello, its certificate chain, a CertificateVerify signature proving it holds the matching private key, and a Finished message. One round trip, and application data flows.
+
+Two details matter. The certificate proves nothing on its own, since anyone can copy a public certificate; CertificateVerify, a signature over the handshake transcript made with the private key, is what proves possession. And TLS 1.3 removed static RSA key exchange, so every connection uses ephemeral keys and gets forward secrecy: recording the traffic today and stealing the server key later does not decrypt it.
+
+## Certificate types
 
 **Domain Validated (DV):** The CA verifies that you control the domain name. This is the most common type and what Let's Encrypt provides for free. Good for most use cases.
 
@@ -19602,7 +20587,9 @@ The trust chain goes: client trusts CA -> CA signed the certificate -> certifica
 
 **Extended Validation (EV):** The CA performs thorough verification of the organization. Used to display the organization name in the browser's address bar (though most browsers have stopped showing this prominently).
 
-## Self-Signed Certificates
+Cryptographically these are identical. The difference is only in what the CA checked before issuing, and since browsers removed the EV indicator the practical difference for a visitor is approximately zero. Do not pay for a validation level expecting a technical benefit.
+
+## Self-signed certificates and running your own CA
 
 For internal infrastructure, I use self-signed certificates generated with my own internal CA. This means I do not need to expose internal services to the internet for domain validation, and I can issue certificates for any internal hostname or IP.
 
@@ -19614,13 +20601,105 @@ openssl req -x509 -newkey rsa:4096 -keyout ca-key.pem -out ca-cert.pem -days 365
 
 I distribute the CA certificate to all internal machines so they trust certificates signed by my internal CA.
 
-## Let's Encrypt for Public Services
+Issuing a server certificate from that CA is three steps. Generate a key and a signing request:
+
+\`\`\`bash
+openssl req -newkey rsa:2048 -nodes \\
+  -keyout server-key.pem -out server.csr \\
+  -subj "/CN=nas.lab.internal"
+\`\`\`
+
+Write the extensions, because this is where the SAN comes from and a CSR's own SAN is not carried over by default:
+
+\`\`\`bash
+cat > san.ext <<'EOF'
+subjectAltName = DNS:nas.lab.internal, DNS:nas, IP:10.0.10.20
+extendedKeyUsage = serverAuth
+EOF
+\`\`\`
+
+Sign it:
+
+\`\`\`bash
+openssl x509 -req -in server.csr -CA ca-cert.pem -CAkey ca-key.pem \\
+  -CAcreateserial -out server-cert.pem -days 825 -sha256 -extfile san.ext
+\`\`\`
+
+Then verify before you deploy it, rather than finding out from a browser:
+
+\`\`\`bash
+openssl verify -CAfile ca-cert.pem server-cert.pem
+openssl x509 -in server-cert.pem -noout -subject -dates -ext subjectAltName
+\`\`\`
+
+Correct output looks like this:
+
+\`\`\`
+server-cert.pem: OK
+subject=CN = nas.lab.internal
+notBefore=Aug 25 18:02:11 2026 GMT
+notAfter=Nov 28 18:02:11 2028 GMT
+X509v3 Subject Alternative Name:
+    DNS:nas.lab.internal, DNS:nas, IP Address:10.0.10.20
+\`\`\`
+
+\`OK\` from \`openssl verify\` means the chain builds and the signature checks out. The SAN block is the part to actually read: if it is missing, the certificate will fail in every browser regardless of what the subject says.
+
+## Let's Encrypt for public services
 
 For any service exposed to the internet, I use Let's Encrypt certificates. They are free, automatically renewed, and trusted by all major browsers. Certbot handles the issuance and renewal process automatically.
 
-## Certificate Management
+The protocol underneath is ACME, standardised as RFC 8555. The CA gives your client a challenge and the client proves control of the name by answering it. The three that matter: http-01 serves a token at a well-known path over port 80, tls-alpn-01 answers on port 443 using a special ALPN protocol, and dns-01 publishes a TXT record at \`_acme-challenge.<name>\`.
+
+Only dns-01 can issue wildcards, and it is the only one that works for a host with no inbound internet access, which makes it the right choice for internal services that still want a publicly trusted certificate.
+
+Let's Encrypt certificates are valid for 90 days and clients renew at 30 days remaining, leaving a month of runway if renewal starts failing. The short lifetime is deliberate: it forces automation, and renewal that runs every 60 days is far more reliable than a manual process performed annually. For context, the CA/Browser Forum limit for publicly trusted TLS certificates has been 398 days since 2020, and it continues to move shorter.
+
+## Certificate management
 
 The biggest challenge with certificates is tracking expiration dates. An expired certificate causes service outages and browser warnings. I monitor certificate expiration with a simple script that checks each certificate's validity date and alerts me 30 days before expiration.
+
+The check is one command per host. \`-checkend\` takes seconds and exits non-zero if the certificate expires within that window, so 2592000 is exactly 30 days:
+
+\`\`\`bash
+for host in nas.lab.internal git.lab.internal; do
+  if ! echo | openssl s_client -connect "$host:443" -servername "$host" 2>/dev/null \\
+       | openssl x509 -noout -checkend 2592000 >/dev/null; then
+    echo "EXPIRING SOON: $host"
+  fi
+done
+\`\`\`
+
+Silence means every certificate has more than 30 days left. Use \`-enddate\` instead of \`-checkend\` when you want the actual date printed:
+
+\`\`\`
+notAfter=Nov 28 18:02:11 2028 GMT
+\`\`\`
+
+Note the \`-servername\` flag. Without it, \`s_client\` sends no SNI, and a server hosting several sites on one address will hand you the default certificate rather than the one you meant to check, so your monitoring quietly watches the wrong thing.
+
+Revocation deserves a mention even though it rarely works well. CRLs are published lists of revoked serial numbers; OCSP (RFC 6960) is an online query for one certificate's status. Both have real deployment problems, and clients often fail open when the check is unavailable. The industry's answer has been short lifetimes instead: a certificate that expires in weeks limits the damage from a stolen key more reliably than a revocation check that may never happen.
+
+## Common mistakes
+
+**No SAN entry.** The single most common self-signed certificate failure. Modern clients verify the hostname against SAN only, so a certificate with just a Common Name is rejected. Always pass an extensions file when signing, and confirm with \`openssl x509 -noout -ext subjectAltName\`.
+
+**Serving the leaf without the intermediates.** Works in the browser that already cached the intermediate, fails from \`curl\`, mobile apps, and anything with a strict chain builder. The server must send the full chain below the root. Check with \`openssl s_client -connect host:443\` and read the certificate chain it prints.
+
+**Trusting your internal CA on servers but not in applications.** A Python script, a Java service, and the OS each consult a different trust store. Adding your root to the OS store does not make \`requests\` or a JVM trust it. Point each runtime at the CA bundle explicitly.
+
+**A renewal that succeeds but never gets loaded.** Certbot writes a new certificate and the service keeps serving the old one from memory until it is reloaded. Certificates expire on a service that renewed perfectly for months. Use the renewal hook to reload the web server, and verify against the live port rather than against the file on disk.
+
+**Clock skew.** Validity is checked against the client's clock. A device whose time is wrong by more than the certificate's notBefore margin rejects a perfectly good certificate, and a freshly imaged machine with no NTP is the classic case. If a certificate error appears on exactly one host, check its clock before you check anything else.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc8446
+- https://www.rfc-editor.org/rfc/rfc5280
+- https://www.rfc-editor.org/rfc/rfc6125
+- https://www.rfc-editor.org/rfc/rfc8555
+- https://www.rfc-editor.org/rfc/rfc6960
+- https://www.openssl.org/docs/
 `,
   },
   {
@@ -20095,19 +21174,83 @@ I run all my lab servers with redundant PSUs and connect them to separate circui
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_4506-E_Switch_004.jpg",
     },
     content: `
-## The Problem STP Solves
+## The problem STP solves
+
+You patch in a second cable between two switches for redundancy and the entire network dies within seconds. Every light on every switch goes solid, nothing responds, and unplugging the cable you just added fixes it instantly. That is a layer 2 loop, and understanding why it is so catastrophic is the beginning of understanding spanning tree.
 
 Ethernet switches forward frames by MAC address. If you have two switches connected by two cables (creating a physical loop), a broadcast frame will loop forever, duplicating with each pass until the network is completely saturated. This is a broadcast storm, and it will take down your entire network in seconds.
 
+The reason it never stops is that an Ethernet frame has no TTL. An IP packet caught in a routing loop dies when its TTL counts down; the Ethernet header has no equivalent field, so a frame that finds a loop circulates until the hardware carrying it fails. Worse, each switch floods the broadcast out every port except the one it arrived on, so a single frame multiplies at every hop.
+
 STP (Spanning Tree Protocol) prevents this by detecting loops and blocking redundant paths at the logical level. Only one active path exists between any two network nodes, but the blocked paths are available as backups if the active path fails.
 
-## How It Works
+## How it works
 
 STP elects a root bridge based on bridge priority and MAC address. Every other switch calculates the lowest-cost path to the root bridge and designates one port as the root port. Redundant ports that would create loops are put in a blocking state.
 
 When topology changes, STP reconverges. This can take 30 to 50 seconds with classic STP (802.1D), which is why RSTP (Rapid STP, 802.1w) was developed. RSTP reconverges in seconds using negotiation between switches rather than timers.
 
-## Common STP Problems
+## The bridge ID, and why priority is a strange number
+
+The bridge ID is 8 bytes: a 2-byte priority followed by the 6-byte MAC address. Lowest wins. The default priority is 32768, which is the midpoint of the 16-bit range, chosen so administrators can move a switch in either direction.
+
+Priority is configurable only in increments of 4096, because the low 12 bits of the field were repurposed to carry the VLAN ID. That addition, the extended system ID, lets one switch run a separate spanning tree per VLAN without a separate MAC address for each. So configure priority 4096 on VLAN 20 and the switch advertises 4116: 4096 plus the VLAN number. Seeing 4116 in \`show spanning-tree\` and thinking your configuration did not take is a rite of passage.
+
+## Port roles, states, and the timers behind them
+
+Classic STP has five port states: disabled, blocking (receives BPDUs, forwards nothing), listening (participates in the election, forwards nothing, learns nothing), learning (populates the MAC table but does not forward), and forwarding. Three timers drive the transitions, all advertised by the root so every switch uses the same values:
+
+- **Hello time: 2 seconds.** How often the root emits a configuration BPDU.
+- **Max age: 20 seconds.** How long a switch keeps believing stored BPDU information after it stops hearing from the root.
+- **Forward delay: 15 seconds.** Time spent in listening, and again in learning.
+
+That arithmetic is where the convergence figures come from. A port coming up goes 15 seconds in listening plus 15 in learning, so 30 seconds before it forwards. A failure that a switch learns about only by BPDU timeout adds max age first: 20 plus 15 plus 15 gives the 50 second worst case.
+
+RSTP rebuilt this around explicit port roles and a proposal/agreement handshake instead of timers. It keeps root and designated, adds alternate (a backup path to the root, the RSTP equivalent of a blocked port) and backup (a redundant link to the same segment), and collapses the states to discarding, learning, and forwarding. Because a switch negotiates directly with its neighbour rather than waiting out max age, convergence on a point-to-point link is typically under a second.
+
+## Path cost, and the two cost tables
+
+Root port selection is by lowest cumulative path cost to the root, and cost is derived from link speed. There are two tables, and mixing them is a real source of bad topologies.
+
+The original short (16-bit) costs from 802.1D-1998: 10 Mbit is 100, 100 Mbit is 19, 1 Gbit is 4, 10 Gbit is 2. The problem is obvious at the top end, where anything faster compresses toward 1 and the protocol loses the ability to tell links apart. The long (32-bit) costs from 802.1t give plenty of resolution: 100 Mbit is 200,000, 1 Gbit is 20,000, 10 Gbit is 2,000. Both ends of a network must agree on which table is in use, because a switch computing in the short table and a neighbour computing in the long table will disagree about which path is cheaper.
+
+If costs tie, the tiebreakers run in order: lowest sender bridge ID, then lowest sender port ID, then lowest receiving port ID.
+
+## What a BPDU actually is
+
+Bridge Protocol Data Units go to the multicast destination MAC 01:80:C2:00:00:00 inside an 802.3 LLC frame. They carry the root bridge ID, the sender's bridge ID, the sender's cost to the root, the port ID, and the three timers. In classic STP only the root originates configuration BPDUs and other switches relay them; in RSTP every switch generates its own each hello interval, which is what lets a neighbour detect a dead link after three missed hellos instead of waiting out max age.
+
+Topology Change Notifications are a separate, smaller BPDU that travels toward the root when a port changes state. The root then flags everyone to age out their MAC tables quickly. That flush is the point, and it is also why unnecessary topology changes hurt: an emptied MAC table means unknown-unicast flooding until it refills.
+
+## A worked example you can run on a Linux box
+
+You do not need switch hardware to watch this work. The Linux bridge implements STP:
+
+\`\`\`bash
+sudo ip link add name br0 type bridge stp_state 1 priority 4096
+sudo ip link set br0 up
+sudo ip link set enp2s0 master br0
+sudo ip link set enp3s0 master br0
+\`\`\`
+
+Check who won the election and what each port decided:
+
+\`\`\`bash
+cat /sys/class/net/br0/bridge/bridge_id
+cat /sys/class/net/br0/bridge/root_id
+bridge link show
+\`\`\`
+
+If this bridge is the root, \`bridge_id\` and \`root_id\` are identical. Port states appear in the \`bridge link\` output:
+
+\`\`\`
+3: enp2s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br0 state forwarding priority 32 cost 4
+4: enp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br0 state blocking priority 32 cost 4
+\`\`\`
+
+One forwarding and one blocking on a pair of ports facing the same neighbour is exactly right: the loop is broken logically while the cable stays in place. Pull the forwarding link and the blocking port should transition to forwarding on its own. The timer files in that sysfs directory (\`forward_delay\`, \`max_age\`, \`hello_time\`) are in hundredths of a second, so 1500 means 15 seconds.
+
+## Common STP problems
 
 **Suboptimal root bridge election:** If you do not manually configure bridge priorities, the switch with the lowest MAC address becomes root. This might not be the most centrally connected or highest-capacity switch. Always set bridge priority explicitly.
 
@@ -20115,13 +21258,38 @@ When topology changes, STP reconverges. This can take 30 to 50 seconds with clas
 spanning-tree vlan 1 priority 4096
 \`\`\`
 
+Older switches frequently have lower MAC addresses than new ones, because address blocks are assigned over time. The practical effect is that the oldest, slowest box in the rack tends to win an unmanaged election and pull every path through itself.
+
 **TCN (Topology Change Notifications) flooding:** Every time a port changes state, STP flushes MAC tables. In a large network with frequently changing ports (like access ports with PCs), this can cause excessive flooding. PortFast and BPDU Guard on access ports solve this.
 
 **Inferior paths surviving:** With complex topologies, STP may choose a slower path as the root port if costs are not tuned properly.
 
-## Best Practices
+## Best practices
 
 Enable Rapid PVST+ (or MSTP in larger environments). Set explicit bridge priorities so your core switches are root. Enable PortFast on all access ports and BPDU Guard to protect against unauthorized switches. Document your STP topology so you understand which paths are active and which are blocking.
+
+Two additions worth the time. Set the secondary root explicitly too, so a failure of the primary gives a topology you chose rather than one the MAC addresses chose. And enable Root Guard on ports facing switches you do not control: it puts the port into a root-inconsistent state if a superior BPDU arrives, which stops a switch someone plugged in under a desk from becoming root.
+
+## What breaks
+
+**Unidirectional links.** Fiber where transmit works and receive does not is the nightmare case: the blocking side stops hearing BPDUs, concludes the path is gone, and starts forwarding into a loop the other side is still transmitting on. STP cannot detect this alone. Loop Guard, which holds a port blocking when expected BPDUs stop arriving without the link dropping, and UDLD, which verifies bidirectionality directly, exist for this failure.
+
+**BPDU Filter confused with BPDU Guard.** They sound similar and do opposite things. BPDU Guard shuts a port down when a BPDU arrives, which is what you want on an access port. BPDU Filter stops the port from sending or processing BPDUs at all, which makes the port invisible to spanning tree and is a loop generator if anything but an end host is on the other end.
+
+**PortFast on a port that is not an edge port.** PortFast skips listening and learning and goes straight to forwarding. On a port with a switch or a bridging hypervisor behind it, that means forwarding for 30 seconds before spanning tree gets around to blocking, which is 30 seconds of storm. Always pair PortFast with BPDU Guard.
+
+**MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behaviour rarely matches what anyone expected.
+
+**Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual VLANs you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
+
+## References
+
+- https://en.wikipedia.org/wiki/Spanning_Tree_Protocol
+- https://en.wikipedia.org/wiki/Multiple_Spanning_Tree_Protocol
+- https://en.wikipedia.org/wiki/Broadcast_radiation
+- https://www.kernel.org/doc/html/latest/networking/bridge.html
+- https://man7.org/linux/man-pages/man8/bridge.8.html
+- https://wiki.archlinux.org/title/Network_bridge
 `,
   },
   {
@@ -20330,11 +21498,21 @@ Type \`?\` at any point to see available commands. This works in all modes. \`sh
       sourceUrl: "https://commons.wikimedia.org/wiki/File:HP_EVA4400-1.jpg",
     },
     content: `
-## What a SAN Is
+## What a SAN is
+
+Your hypervisors each have local disks, and the moment you want to live-migrate a VM between them you discover the problem: the disk image lives on one host. Shared storage is the answer, and the words that come back at you are SAN, NAS, iSCSI, LUN, and fabric, mostly without definitions.
 
 A Storage Area Network is a dedicated high-speed network that connects servers to storage arrays. Unlike a NAS (Network Attached Storage) that presents files over a network, a SAN presents raw block devices. The server sees the storage as if it were a locally attached disk.
 
 This distinction matters. Block-level access is faster and more flexible than file-level access for most database and virtualization workloads.
+
+## Block versus file, concretely
+
+With a NAS, the storage device owns the filesystem. Your server sends "read this file" over NFS or SMB, and the NAS handles allocation, locking, and metadata. Multiple clients can safely use the same share at once because the server is arbitrating.
+
+With a SAN, the storage array hands out a LUN, which is nothing more than a range of numbered blocks. Your server owns the filesystem, formats those blocks, and caches metadata locally. That is where the performance comes from, and also where the danger comes from: if two servers mount the same LUN with an ordinary filesystem like ext4 or NTFS, each believes it is the sole owner, each caches metadata the other is changing, and the filesystem is destroyed. Not degraded, destroyed, usually within minutes.
+
+Sharing a LUN between hosts requires a clustered filesystem built for it, such as VMFS, GFS2, or OCFS2, or a layer above that coordinates access, which is what a hypervisor cluster provides. Anything else needs exactly one owner at a time.
 
 ## Fibre Channel vs iSCSI
 
@@ -20342,13 +21520,35 @@ Traditional SANs use Fibre Channel (FC), a dedicated network technology optimize
 
 iSCSI runs the SCSI storage protocol over standard Ethernet. It is less expensive because it reuses existing network infrastructure, and performance has improved dramatically as 10GbE and 25GbE become standard. Many organizations have moved from FC to iSCSI for new deployments.
 
-## How Targets and Initiators Work
+The architectural difference underneath is loss. Fibre Channel is a lossless fabric: a port only transmits when the receiver has advertised buffer space for the frame, so congestion causes back pressure rather than drops. SCSI was designed for a cable inside a chassis and does not expect to lose commands, which is why this matters.
+
+iSCSI gets the same guarantee from TCP, which retransmits what the network drops. That works, but a retransmit is far slower than back pressure, so an iSCSI network that drops packets produces latency spikes that look to the application like a failing disk. This is the real reason iSCSI wants its own network rather than sharing with general traffic.
+
+Each FC port has a 64-bit World Wide Name, and the fabric restricts which ports can talk to each other through zoning, configured on the FC switch. Zoning is the FC equivalent of a firewall rule, and it is not optional.
+
+## Targets, initiators, and IQNs
 
 In iSCSI terminology:
 - **Target:** The storage device (SAN array)
 - **Initiator:** The server connecting to the storage
 
 The initiator connects to targets using iSCSI Qualified Names (IQNs). Once connected and authenticated, the OS sees the target LUNs as local disks.
+
+An IQN follows a fixed shape defined in RFC 3721: \`iqn.\` then a year and month in \`yyyy-mm\` form, then the naming authority's domain in reverse, then a colon and any string you like. So \`iqn.2024-01.com.storage:array1\` reads as: an IQN, from an entity that owned storage.com in January 2024, identifying array1. The date is there so a name stays unique even after a domain changes hands.
+
+iSCSI listens on TCP port 3260 by default. Discovery is a separate step from login: you ask a portal what targets it offers, then log in to the ones you want.
+
+## A worked example on Linux
+
+Set your initiator name first, because the array's access control is keyed to it:
+
+\`\`\`bash
+cat /etc/iscsi/initiatorname.iscsi
+# InitiatorName=iqn.2026-08.internal.lab:hv01
+sudo systemctl enable --now iscsid
+\`\`\`
+
+Then discover and connect:
 
 \`\`\`bash
 # Discover iSCSI targets
@@ -20358,13 +21558,103 @@ iscsiadm -m discovery -t sendtargets -p 192.168.10.50
 iscsiadm -m node -T iqn.2024-01.com.storage:array1 -p 192.168.10.50 --login
 \`\`\`
 
+Discovery prints the portal and every target it is willing to tell you about:
+
+\`\`\`
+192.168.10.50:3260,1 iqn.2024-01.com.storage:array1
+\`\`\`
+
+A successful login says so explicitly:
+
+\`\`\`
+Logging in to [iface: default, target: iqn.2024-01.com.storage:array1, portal: 192.168.10.50,3260]
+Login to [iface: default, target: iqn.2024-01.com.storage:array1, portal: 192.168.10.50,3260] successful.
+\`\`\`
+
+Now confirm the block device actually appeared, which is the step people skip:
+
+\`\`\`bash
+lsblk --scsi
+iscsiadm -m session -P 3 | grep -E "Target|Attached scsi disk|State"
+\`\`\`
+
+Healthy output shows the session \`LOGGED_IN\` and names the device:
+
+\`\`\`
+Target: iqn.2024-01.com.storage:array1
+	iSCSI Session State: LOGGED_IN
+	Attached scsi disk sdb		State: running
+\`\`\`
+
+A session that is logged in but has no attached disk means the login succeeded and no LUN was presented to you, which is a masking problem on the array, not a network problem.
+
+## LUN masking and access control
+
+The array decides which initiators may see which LUNs. That is LUN masking, and it is the control that keeps a test server from mounting the production database volume. On a fresh array with masking not yet configured, every host that can reach the portal may see every LUN, and the first host to format one wins.
+
+iSCSI also supports CHAP authentication, in one-way form (target authenticates initiator) or mutual form. Use it. It is weak on its own, since CHAP is a challenge-response over a link that is otherwise cleartext, but combined with a segmented storage network it stops the accident of a wrongly configured host connecting to the wrong array. For real confidentiality on an untrusted path, iSCSI is meant to be carried over IPsec, as described in RFC 3723.
+
+## Network design for iSCSI
+
+Give iSCSI its own VLAN with no default gateway, so storage traffic cannot be routed anywhere and nothing else can reach it. Do not run it across a routed path if you can avoid it.
+
+Jumbo frames help, and the usual MTU is 9000. The catch is that every device on the path must agree, including both hosts, every switch, and the array. One device at 1500 in the middle produces a link that passes pings and stalls on the first large transfer, which is a genuinely miserable thing to debug. Test with a large do-not-fragment ping before trusting it:
+
+\`\`\`bash
+ping -M do -s 8972 192.168.10.50
+\`\`\`
+
+The 8972 is 9000 minus 20 bytes of IP header and 8 bytes of ICMP header. If that succeeds and a 1500-byte ping also succeeds, the path is consistent.
+
+For multipathing, put each path on its own subnet and its own physical NIC. Two paths on the same subnet gives you two ways to reach the same place through one failure domain, which is not redundancy.
+
 ## Multipathing
 
 Enterprise storage connects servers via multiple independent paths to eliminate single points of failure. The OS uses multipath software (MPIO on Windows, multipathd on Linux) to manage these paths transparently. If one path fails, I/O continues over the surviving paths.
 
-## When SANs Make Sense
+Without it, two paths to one LUN appear to Linux as two separate block devices, \`sdb\` and \`sdc\`, both pointing at the same blocks. Multipath recognises them by their shared WWID and presents a single device under \`/dev/mapper/\`. Always build filesystems and LVM on the mapper device, never on the underlying \`sd\` device, or you have gone around the very layer that provides the failover.
+
+\`\`\`bash
+sudo multipath -ll
+\`\`\`
+
+\`\`\`
+mpatha (3600a098038303853572b4b7a4d4f4c31) dm-2 LIO-ORG,storage
+size=500G features='0' hwhandler='1 alua' wp=rw
+|-+- policy='service-time 0' prio=50 status=active
+| \`- 7:0:0:0 sdb 8:16 active ready running
+\`-+- policy='service-time 0' prio=10 status=enabled
+  \`- 8:0:0:0 sdc 8:32 active ready running
+\`\`\`
+
+Two path groups, both \`active ready running\`, is the picture you want. A path showing \`failed faulty\` while the device still works means you are running without redundancy and nothing has alerted you, which is exactly the state a monthly check exists to catch. Test failover deliberately: pull one cable, confirm I/O continues, plug it back in, confirm the path returns to \`active ready running\`.
+
+## When SANs make sense
 
 SANs make sense when you need shared storage for clustered workloads, high-performance block storage, or centralized storage management at scale. For simpler environments, NFS or direct-attached NVMe may be more appropriate.
+
+Be honest about the failure domain you are creating. A SAN concentrates every server's storage into one system, so the array and the storage network become the thing that takes down everything at once. That trade is worth making when it buys you live migration and clustering, and it is a bad trade when you added it because it seemed like what a real datacenter does.
+
+## What breaks
+
+**Two hosts, one LUN, an ordinary filesystem.** The fastest way to lose data on a SAN. Both hosts cache metadata, neither knows about the other, and the filesystem is corrupt before anyone notices. Use LUN masking to make it impossible, and a clustered filesystem when genuine sharing is required.
+
+**MTU mismatch on the storage path.** Small packets work, large ones vanish, and the symptom is a session that connects and then hangs under load. Verify with \`ping -M do -s 8972\` on every path before you put a workload on it.
+
+**Filesystems built on the raw \`sd\` device instead of the mapper device.** Everything works until the path you happened to use fails, and then the mount dies even though multipath is healthy on the other path. Check with \`lsblk\` that your filesystem sits on \`/dev/mapper/mpathX\`.
+
+**Both paths through one switch.** Two NICs, two cables, one switch, and the redundancy evaporates when that switch reboots for a firmware update. Independent paths means independent switches, and ideally independent subnets so the host cannot silently route around the failure.
+
+**Nobody watching path state.** Multipath is designed to hide failures, and it is very good at it. A degraded path stays degraded for months because the system kept working. Alert on \`multipath -ll\` output showing anything other than all paths active, and test failover on a schedule rather than during an outage.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc7143
+- https://www.rfc-editor.org/rfc/rfc3721
+- https://www.rfc-editor.org/rfc/rfc3723
+- https://en.wikipedia.org/wiki/Storage_area_network
+- https://en.wikipedia.org/wiki/Fibre_Channel
+- https://wiki.archlinux.org/title/ISCSI
 `,
   },
   {
@@ -20850,12 +22140,10 @@ pcs cluster enable --all
 
 \`\`\`bash
 # Create a floating IP resource
-pcs resource create virtual-ip IPaddr2 ip=192.168.1.100 \
-  cidr_netmask=24 op monitor interval=30s
+pcs resource create virtual-ip IPaddr2 ip=192.168.1.100   cidr_netmask=24 op monitor interval=30s
 
 # Create a service resource
-pcs resource create nginx systemd:nginx \
-  op monitor interval=30s
+pcs resource create nginx systemd:nginx   op monitor interval=30s
 
 # Create a resource group (starts in order, stops in reverse)
 pcs resource group add web-group virtual-ip nginx
@@ -20866,9 +22154,7 @@ pcs resource group add web-group virtual-ip nginx
 Fencing (STONITH - Shoot The Other Node In The Head) ensures that a failed node is truly offline before resources are moved. Without fencing, two nodes might both believe they are authoritative, leading to data corruption. Configure IPMI-based fencing so the cluster can power-cycle a node it cannot reach.
 
 \`\`\`bash
-pcs stonith create ipmi-node1 fence_ipmilan \
-  ipaddr=192.168.10.101 username=admin password=secret \
-  pcmk_host_list=node1
+pcs stonith create ipmi-node1 fence_ipmilan   ipaddr=192.168.10.101 username=admin password=secret   pcmk_host_list=node1
 \`\`\`
 `,
   },
@@ -20954,18 +22240,35 @@ Configure RADIUS to return VLAN attributes in the Access-Accept response, and th
       licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Network_Virtualization_Platform_Architecture_Example.png",
     },
-    content: `
-## The Problem with VLANs at Scale
+    content: `## The problem
+
+You brought up a VXLAN interface on two hosts, the tunnel says it is up, and either nothing passes at all or small pings work while any real transfer hangs. Both symptoms have short explanations, and both come from the same place: VXLAN is a tunnel, and a tunnel has a port number and a size budget that the interface state does not tell you about. Here is what the protocol actually does and how to check each piece.
+
+## Where traditional VLANs run out
 
 Traditional VLANs are limited to 4096 IDs. In a cloud or large multi-tenant datacenter environment, you need isolation for thousands or millions of tenants. You also need to stretch Layer 2 networks across physical boundaries, which traditional VLANs cannot do without complex MPLS configurations.
 
-## What VXLAN Does
+There is a second limit that bites before the ID space does. A stretched Layer 2 domain shares one spanning tree, and spanning tree prevents loops by blocking links. In a fabric with many equal-cost paths, that wastes half of what you paid for. An overlay lets you run the underlay as a routed network where every link forwards.
+
+## What VXLAN does
 
 VXLAN (Virtual Extensible LAN) encapsulates Layer 2 Ethernet frames inside UDP packets. This allows you to carry a virtual Layer 2 network over a standard Layer 3 (IP) infrastructure. The VXLAN Network Identifier (VNI) supports 16 million unique segments, which eliminates the VLAN scalability problem.
 
 A VXLAN Tunnel Endpoint (VTEP) handles encapsulation and decapsulation. When a VM sends a frame, the VTEP wraps it in a VXLAN UDP packet and sends it to the destination VTEP, which unwraps it and delivers it to the destination VM.
 
-## How VTEPs Work
+The VNI is a 24-bit field, so the exact number of segments is 16,777,216 rather than a round 16 million. VXLAN is specified in RFC 7348.
+
+## The encapsulation, byte by byte
+
+The overhead is the number you have to remember, because it determines your MTU.
+
+An encapsulated frame carries an outer Ethernet header (14 bytes), an outer IPv4 header (20 bytes), a UDP header (8 bytes), and the VXLAN header (8 bytes). That is 50 bytes added to the original frame. Over an IPv6 underlay the outer header is 40 bytes instead of 20, making the total 70. If the outer frame also carries an 802.1Q tag, add 4 more.
+
+So on a standard 1500 byte underlay, the largest inner frame that fits without fragmentation is 1450 bytes. Either raise the underlay MTU to at least 1550 and leave the overlay at 1500, which is what datacenter fabrics do, or drop the overlay MTU to 1450 and accept it.
+
+Two fields in the outer headers do useful work. The UDP destination port identifies the traffic as VXLAN; IANA assigned 4789 for it. The UDP source port is not meaningful as a port at all: the sending VTEP fills it with a hash of the inner frame's headers, purely so that ECMP hashing in the underlay spreads different inner flows across different physical paths. Without it, every tunnelled flow between two VTEPs would look like one conversation and pin to a single link.
+
+## How VTEPs work
 
 VTEPs can be physical switches (hardware VTEPs) or software-based (like Open vSwitch). Each hypervisor running VXLAN acts as a VTEP.
 
@@ -20976,15 +22279,106 @@ ip link set vxlan100 up
 ip addr add 10.100.0.1/24 dev vxlan100
 \`\`\`
 
-## BGP EVPN Control Plane
+Set the MTU explicitly at the same time, because the kernel will not work it out for you:
+
+\`\`\`bash
+ip link set vxlan100 mtu 1450
+\`\`\`
+
+Then check what you actually built:
+
+\`\`\`bash
+ip -d link show vxlan100
+\`\`\`
+
+\`\`\`
+7: vxlan100: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UNKNOWN
+    link/ether 6a:1f:2c:44:8d:e0 brd ff:ff:ff:ff:ff:ff
+    vxlan id 100 remote 192.168.1.2 local 192.168.1.1 dev eth0 srcport 0 0
+    dstport 4789 ttl auto ageing 300 udpcsum noudp6zerocsumtx noudp6zerocsumrx
+\`\`\`
+
+Read three things off that line. \`dstport 4789\` is the one people get wrong, for reasons covered below. \`srcport 0 0\` means the kernel picks the source port from the ephemeral range using the inner-flow hash, which is what you want. \`ageing 300\` is the forwarding database timeout in seconds.
+
+The forwarding database is where the tunnel keeps its remote MAC entries:
+
+\`\`\`bash
+bridge fdb show dev vxlan100
+\`\`\`
+
+\`\`\`
+00:00:00:00:00:00 dst 192.168.1.2 self permanent
+\`\`\`
+
+The all-zeros entry is not a real MAC. It is the default remote, meaning "anything I do not have a specific entry for, send to 192.168.1.2". As traffic flows, real MAC addresses appear alongside it with their own destinations.
+
+Finally, prove encapsulation is happening by watching the underlay interface while you ping across the overlay:
+
+\`\`\`bash
+tcpdump -ni eth0 'udp port 4789'
+\`\`\`
+
+\`\`\`
+12:04:11.512340 IP 192.168.1.1.49876 > 192.168.1.2.4789: VXLAN, flags [I] (0x08), vni 100
+IP 10.100.0.1 > 10.100.0.2: ICMP echo request, id 4, seq 1, length 64
+\`\`\`
+
+Two lines per packet: the outer UDP packet, then the inner frame decoded from inside it. \`vni 100\` confirms the segment. Outer packets leaving with no reply means the problem is between the VTEPs; nothing at all means it is local.
+
+Then test the size budget, which the ping above will not catch:
+
+\`\`\`bash
+ping -M do -s 1422 10.100.0.2
+\`\`\`
+
+1422 bytes of payload plus 8 bytes of ICMP header plus 20 bytes of IP header is exactly 1450, and \`-M do\` forbids fragmentation. If that succeeds and \`-s 1423\` fails, your MTU is set correctly. If both fail while a small ping works, your MTU is wrong somewhere in the path.
+
+## Flood-and-learn versus a control plane
+
+A VTEP has to answer one question before it can send anything: which remote VTEP holds the MAC address I am looking for? There are three ways to answer it.
+
+Static configuration, as in the example above, works for two endpoints and no further.
+
+Multicast flood-and-learn maps each VNI to an underlay multicast group. Broadcast, unknown-unicast, and multicast frames go to the group, every VTEP in that VNI receives them, and each one learns source MACs from what arrives. It works, and it requires multicast routing in the underlay, which is the part most people do not have.
+
+Ingress replication, also called head-end replication, avoids multicast: the sending VTEP unicasts a copy of every flooded frame to each remote VTEP, at the cost of duplicating that traffic once per peer.
+
+## BGP EVPN control plane
 
 Early VXLAN implementations used multicast or flood-and-learn for MAC address discovery, which does not scale well. BGP EVPN (Ethernet VPN) provides a control plane for VXLAN, distributing MAC and IP address information via BGP rather than flooding.
 
 BGP EVPN is the standard in modern datacenter fabrics (Cisco ACI, Arista, Juniper). It enables scalable, efficient VXLAN deployments with millisecond failover.
 
-## Where You See VXLAN
+The mechanism is BGP route advertisements carrying Ethernet information. EVPN is defined in RFC 7432 and its use as a VXLAN control plane in RFC 8365. Three route types cover most of what you will see: type 2 advertises a MAC address, optionally with its IP, so every VTEP learns the location of every host without flooding; type 3 tells peers which VTEPs are members of a VNI, which is how ingress replication lists get built automatically; type 5 advertises an IP prefix for routing between segments.
+
+Because every VTEP knows every MAC and IP in the segment, it can answer ARP locally instead of flooding, which removes most of the broadcast traffic that made stretched Layer 2 painful.
+
+## Where you see VXLAN
 
 AWS VPCs, Azure virtual networks, and most cloud networking platforms are built on VXLAN or similar overlay technologies. Kubernetes networking (Flannel, Calico, Cilium) frequently uses VXLAN for pod-to-pod communication. Understanding VXLAN is increasingly essential for anyone working in modern infrastructure.
+
+The Kubernetes case is worth a specific note because the port numbers differ. Flannel's VXLAN backend uses UDP 8472 by default, and Cilium's VXLAN mode does too, while Calico's VXLAN uses 4789. If you write a firewall rule for one and deploy the other, pods come up healthy and cannot talk to pods on other nodes. It is also where you meet the MTU problem, since the CNI subtracts its overhead from an assumed node MTU.
+
+## What breaks
+
+**The port number.** This is the first thing to check and the least obvious. IANA assigned 4789 to VXLAN, but the Linux kernel's VXLAN driver still defaults to 8472, the value Linux used before the number was standardised. Create an interface without \`dstport\` on one host and with \`dstport 4789\` on the other and you have two VTEPs shouting past each other. Always specify the port explicitly on both ends.
+
+**MTU.** The 50 byte overhead means an inner packet of full 1500 bytes will not fit in a 1500 byte underlay. Because the tunnel is UDP and the outer packet usually has the do-not-fragment bit set, oversized packets are silently dropped rather than fragmented. The classic symptom is that ping works, DNS works, SSH connects, and then the first large transfer hangs forever. Test with \`ping -M do\` at the exact size, not with default pings.
+
+**A firewall in the underlay.** UDP 4789 (or 8472) has to be permitted between every pair of VTEP addresses, in both directions. Host firewalls are the usual culprit, and because the tunnel interface still shows UP, nothing looks broken.
+
+**Multicast that is not really there.** A flood-and-learn configuration pointing at a multicast group needs PIM running in the underlay. Without it, the group exists on paper, BUM traffic goes nowhere, ARP never resolves, and every host in the overlay looks like it is offline. Use ingress replication or a control plane instead unless you know the underlay does multicast.
+
+**Loops, with nothing to stop them.** The overlay does not run spanning tree. If you bridge two VTEPs into the same Layer 2 domain that is also connected by a physical path, you have built a loop and there is no protocol that will block a port to save you. Broadcast traffic will saturate the underlay in seconds.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc7348
+- https://www.rfc-editor.org/rfc/rfc7432
+- https://www.rfc-editor.org/rfc/rfc8365
+- https://man7.org/linux/man-pages/man8/ip-link.8.html
+- https://man7.org/linux/man-pages/man8/bridge.8.html
+- https://en.wikipedia.org/wiki/Virtual_Extensible_LAN
 `,
   },
   {
@@ -21000,12 +22394,17 @@ AWS VPCs, Azure virtual networks, and most cloud networking platforms are built 
       licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Wireshark_Network_Analyzer_Screen.png",
     },
-    content: `
-## When to Reach for Packet Captures
+    content: `## The problem
+
+Something on the network is slow, intermittent, or resetting, and the logs on both ends say nothing useful. The application team says it is the network, the network team says it is the application, and neither has evidence. A packet capture is how you stop guessing, but only if you take it in the right place, filter it usefully, and know what a healthy conversation looks like so you can spot the sick one.
+
+## When to reach for packet captures
 
 Use packet captures when layer 2-4 problems are not obvious from interface statistics and logs. Common scenarios: unexplained TCP retransmissions, connection resets, intermittent connectivity, suspected firewall misconfigurations, and application performance issues where the application team blames the network.
 
-## Capturing in the Right Place
+Before you capture, check the cheaper sources. \`ip -s link\` and the switch's interface counters will tell you about CRC errors, drops, and discards in one command. If an interface is showing input errors climbing, you have your answer and do not need a capture at all. Captures are for the problems where every counter is clean and the behaviour still makes no sense.
+
+## Capturing in the right place
 
 The most common mistake is capturing in the wrong place. To diagnose a problem, you need captures on both sides of the suspected failure point:
 
@@ -21015,7 +22414,27 @@ The most common mistake is capturing in the wrong place. To diagnose a problem, 
 
 For a firewall issue, capture on both the inside and outside interfaces simultaneously.
 
-## Filtering Effectively
+You have three ways to get the traffic. Capturing on the host itself is easiest and lies to you the most, because it sees the packet before the NIC has finished with it. A SPAN or mirror port on the switch copies traffic from one or more ports to a monitor port, which is what I use most of the time. A physical TAP sits inline and is the only method that cannot drop frames under load, because it is not sharing a forwarding path with production traffic.
+
+The limitation of SPAN worth knowing up front: the mirror destination has the same speed as any other port. Mirroring two saturated 1 Gb ports into one 1 Gb monitor port means the switch discards the excess, and those discards look exactly like network loss in your capture. If you are chasing loss, mirror one direction at a time or use a TAP.
+
+Also make sure the clocks agree. Two captures taken on machines whose time differs by 400 ms are almost useless for deciding which side was late. Check that both hosts are synchronised before you start, not after.
+
+## Capture filters and display filters are different languages
+
+This trips up everyone once. A capture filter uses BPF syntax and decides what gets written to disk. A display filter uses Wireshark's own syntax and decides what you see afterwards. They are not interchangeable, and typing one where the other belongs gives a syntax error or, worse, silently matches nothing.
+
+\`\`\`
+# capture filter (BPF): what tcpdump and dumpcap accept
+host 192.168.1.100 and tcp port 443
+
+# display filter (Wireshark): what the filter bar accepts
+ip.addr == 192.168.1.100 && tcp.port == 443
+\`\`\`
+
+\`host\` versus \`ip.addr\`, \`and\` versus \`&&\`, \`tcp port 443\` versus \`tcp.port == 443\`. Same intent, different grammar.
+
+## Filtering effectively
 
 Capturing everything is usually too much data. Use display filters in Wireshark to focus on what matters:
 
@@ -21036,7 +22455,11 @@ ssl.handshake
 http.request
 \`\`\`
 
-## What to Look For
+One note on that TLS line: \`ssl\` is the historical name and still works as an alias, but the current dissector is \`tls\`, so \`tls.handshake.type == 1\` for ClientHello and \`tls.handshake.type == 2\` for ServerHello are what the documentation uses now. Both resolve.
+
+\`tcp.analysis.flags\` is worth understanding rather than just copying. It is not a field in the packet. Wireshark generates it by tracking the state of each TCP stream and flagging anything that looks anomalous. That means it is an opinion, not a fact: a capture that missed the original packet will show the real transmission as a retransmission, because Wireshark never saw the first copy.
+
+## What to look for
 
 **TCP retransmissions:** The sender is not receiving acknowledgments. Usually indicates packet loss.
 
@@ -21048,6 +22471,12 @@ http.request
 
 **Window size zero:** The receiver's buffer is full. Application is not reading data fast enough.
 
+Two more patterns come up constantly.
+
+**Duplicate ACKs.** The receiver keeps acknowledging the same sequence number because it is getting later segments but not the missing one. Three duplicate ACKs trigger fast retransmit, so a burst of three followed by a retransmission is TCP recovering normally. A long run of them means the retransmission is not getting through either.
+
+**ICMP type 3 code 4, fragmentation needed.** This is a router telling you the packet is too big for the next hop and the do-not-fragment bit was set. If you see these, path MTU discovery is doing its job. If you see a connection that completes its handshake and then stalls the moment real data flows, and you see no ICMP at all, you probably have a PMTU black hole where a firewall is filtering the ICMP that would have told the sender to send smaller packets.
+
 ## Capturing on Linux
 
 \`\`\`bash
@@ -21057,6 +22486,75 @@ tcpdump -i eth0 -w capture.pcap host 192.168.1.100
 # Rotate files every 100MB, keep 10 files
 tcpdump -i eth0 -w capture.pcap -C 100 -W 10
 \`\`\`
+
+The units on \`-C\` are millions of bytes, not mebibytes, so \`-C 100\` rotates at 100,000,000 bytes. With \`-W 10\` you have bounded the capture at roughly one gigabyte on disk, which is the point: an unbounded capture on a busy interface will fill the root filesystem and take the box down with it.
+
+A few flags I add by reflex. \`-n\` disables name resolution, which stops tcpdump generating its own DNS traffic into your capture. \`-s 0\` sets an unlimited snaplen, though modern tcpdump already defaults to 262144 bytes, which is effectively unlimited for Ethernet. \`-e\` prints the link-layer header, which you need when you are chasing VLAN tags or MAC addresses. Add \`-Z\` if you want it to drop privileges after opening the interface.
+
+Do not use \`-i any\` when Layer 2 matters. On Linux it captures with a synthetic cooked-mode header rather than the real Ethernet header, so MAC addresses and VLAN tags are not there to look at.
+
+## A worked example
+
+Say a file transfer between 10.0.20.5 and 10.0.30.42 is slow. Capture on the server for two minutes with a filter, then measure rather than scroll.
+
+\`\`\`bash
+tcpdump -i eth0 -n -w /var/tmp/slow.pcap host 10.0.30.42 and tcp port 445
+\`\`\`
+
+Confirm you actually caught something:
+
+\`\`\`bash
+capinfos -c -u /var/tmp/slow.pcap
+\`\`\`
+
+\`\`\`
+File name:           /var/tmp/slow.pcap
+Number of packets:   61 k
+Capture duration:    120.114 seconds
+\`\`\`
+
+Now count retransmissions by direction:
+
+\`\`\`bash
+tshark -r /var/tmp/slow.pcap -Y tcp.analysis.retransmission \\
+  -T fields -e ip.src -e ip.dst | sort | uniq -c | sort -rn
+\`\`\`
+
+\`\`\`
+    418 10.0.20.5	10.0.30.42
+      3 10.0.30.42	10.0.20.5
+\`\`\`
+
+That is the answer. 418 retransmissions from the server toward the client and effectively none coming back means loss is on the server-to-client path, not the reverse. Roughly 0.7 percent of the packets in this capture, which is more than enough to collapse TCP throughput. Next step is to capture at the client at the same time and see whether those 418 packets arrived, which tells you whether they were lost in the network or never really left.
+
+Check for zero windows before you blame the network at all:
+
+\`\`\`bash
+tshark -r /var/tmp/slow.pcap -Y tcp.analysis.zero_window -T fields -e ip.src | sort | uniq -c
+\`\`\`
+
+No output means no zero windows, so the receiving application was keeping up. Output here would have meant the problem was a slow reader, not loss.
+
+## What breaks
+
+**Checksum offload makes every outbound packet look corrupt.** When you capture on the sending host, the NIC has not computed the checksum yet, so Wireshark flags thousands of "incorrect checksum" errors on traffic that is completely fine. Turn off the checksum validation in Wireshark's TCP preferences, or capture somewhere other than the sender, before you go hunting for a corruption problem that does not exist.
+
+**Segmentation offload shows frames bigger than the MTU.** With TSO and GRO enabled, the kernel hands the NIC one large buffer and the NIC splits it, so a capture on the host shows a 20000 byte "frame" on a 1500 byte link. Those are not real frames and their timing is not real timing. Disable with \`ethtool -K eth0 tso off gso off gro off\` while capturing, or capture off-box.
+
+**The NIC strips the VLAN tag before you see it.** Hardware VLAN offload removes the 802.1Q tag on receive, so a capture on a trunked host shows untagged frames and you conclude tagging is broken. \`ethtool -K eth0 rxvlan off\` puts the tag back in the capture.
+
+**A snaplen from an old habit truncates the payload.** Copying \`-s 96\` out of an old runbook gives you headers and nothing else, and you find out after the incident is over. If the capture shows \`[Packet size limited during capture]\`, that is what happened.
+
+**The mirror port silently drops what you are looking for.** Covered above and it is the cruellest failure mode, because the missing packets look like exactly the network loss you are investigating. Compare the packet count at the source port counters against what landed in your file before you trust a SPAN capture that shows loss.
+
+## References
+
+- https://www.tcpdump.org/manpages/tcpdump.1.html
+- https://www.tcpdump.org/manpages/pcap-filter.7.html
+- https://www.wireshark.org/docs/man-pages/tshark.html
+- https://www.rfc-editor.org/rfc/rfc9293
+- https://www.rfc-editor.org/rfc/rfc1191
+- https://en.wikipedia.org/wiki/Port_mirroring
 `,
   },
   {
@@ -21205,14 +22703,10 @@ iDRAC supports the Redfish API standard, which allows programmatic management:
 
 \`\`\`bash
 # Get system information
-curl -k -u admin:password \
-  https://idrac-ip/redfish/v1/Systems/System.Embedded.1
+curl -k -u admin:password   https://idrac-ip/redfish/v1/Systems/System.Embedded.1
 
 # Power on the server
-curl -k -u admin:password -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"ResetType":"On"}' \
-  https://idrac-ip/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset
+curl -k -u admin:password -X POST   -H "Content-Type: application/json"   -d '{"ResetType":"On"}'   https://idrac-ip/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset
 \`\`\`
 
 This enables automation: deploy scripts that configure servers, update firmware, and verify health checks without human interaction.
@@ -21595,8 +23089,7 @@ For a homelab, create your own Certificate Authority. Add its certificate to you
 
 \`\`\`bash
 # Create a CA key and certificate
-openssl req -x509 -nodes -newkey rsa:4096 -keyout ca.key \
-  -out ca.crt -days 3650 -subj "/CN=Lab CA"
+openssl req -x509 -nodes -newkey rsa:4096 -keyout ca.key   -out ca.crt -days 3650 -subj "/CN=Lab CA"
 \`\`\`
 
 ## Rate Limiting
@@ -21948,29 +23441,53 @@ Limit the AS path length you accept. An AS path longer than a reasonable maximum
       sourceUrl: "https://www.flickr.com/photos/44124401641@N01/8746385789",
     },
     content: `
-## Defense in Depth
+## Defense in depth
+
+You have a firewall at the edge, the rules on it are tight, and everything behind it is one flat network where any host can reach any other host on any port. That design has exactly one control, and the entire security of the network is a bet that the control never fails. It always fails eventually.
 
 No single control is sufficient. A network designed for security has multiple independent layers. If an attacker bypasses the perimeter firewall, they still face internal segmentation. If they compromise a server, they cannot reach other segments without traversing another control point.
 
 Defense in depth means assuming any individual control will fail and designing so that failure does not cascade.
 
-## Least Privilege Network Access
+The layers that actually matter in a small or mid-sized network are the boring ones: a perimeter filter, segmentation between internal zones, host-level firewalls on the servers themselves, authentication on every service rather than relying on network position, and logging that records what happened. Each is independently weak. Together they mean that a single mistake is an incident and not a catastrophe.
+
+## Least privilege network access
 
 Every device and every user should only have network access to what they need. A printer should not be able to reach your domain controllers. A guest WiFi network should not be able to reach anything internal. A database server should only accept connections from the application servers that query it.
 
 Enforce this with firewall rules, ACLs, and VLAN segmentation. Document what should be allowed and deny everything else by default.
 
-## Separate Management Plane
+The order matters. Write the default-deny first, then add the allows, and let the ruleset be uncomfortable for a week while you find what you forgot. The reverse approach, denying specific bad things and permitting the rest, is unbounded work: you have to enumerate every threat, forever, and you will miss one.
+
+Least privilege applies per direction as well. Most rulesets carefully control what can reach a server and say nothing about what the server can reach. That outbound gap is how a compromised host phones home, pulls a second-stage payload, and exfiltrates data. If your database server has no reason to make outbound connections to the internet, it should not be able to.
+
+## Segment along blast radius, not the org chart
+
+Segmentation is not about departments. It is about answering one question for each zone: if everything in here is compromised, what else is now reachable?
+
+Group by trust level and by what an attacker gains. Untrusted devices that phone home to vendors and never get patched belong together and belong nowhere near anything else. Infrastructure that can reconfigure other infrastructure belongs in its own zone with the smallest possible number of ways in. Workloads that hold data you care about belong behind a control point that logs.
+
+The failure most people hit is stopping at VLANs. A VLAN is a broadcast domain, not a security boundary. If two VLANs are routed by the same device with no ACL between them, an attacker on one reaches the other with a single hop and no obstacle. The boundary is the filter you put on the routed interface, not the tag on the frame.
+
+## Separate management plane
 
 Network device management (SSH, HTTPS, SNMP) should never ride on the same network as production traffic. Create a dedicated management VLAN or network. Only devices with a specific need to manage infrastructure can reach the management plane.
 
 This means that even if an attacker compromises a server, they cannot reach your router's management interface because it is on a physically or logically separate network.
 
-## Assume Breach
+Two practical notes. First, reach the management network through a single jump host that requires its own authentication and logs every session, rather than routing to it from anywhere on the trusted network. The moment the management VLAN is reachable from a laptop, it is reachable from whatever compromises that laptop.
+
+Second, baseboard management controllers deserve special paranoia. IPMI, iDRAC, iLO, and their equivalents are full computers with independent power, their own network stack, and complete control over the host, including remote console and virtual media. They have a long history of firmware vulnerabilities and default credentials. A BMC reachable from a general-purpose network is a full compromise of that server waiting to happen. Put them on the management VLAN, change the default credentials, and never expose them to the internet.
+
+## Assume breach
 
 Design the network assuming an attacker will eventually get in. The question is not whether the perimeter will be breached, but what they can do once inside. Micro-segmentation, zero-trust access controls, and comprehensive logging all limit the damage from a successful intrusion.
 
-## Visibility by Default
+This is the core of the zero trust model described in NIST SP 800-207: network location is not an authentication factor. Being on the internal network should grant you nothing by itself. Every request gets authenticated and authorised on its own merits, and the network's job is to reduce the set of things a compromised identity can even attempt to reach.
+
+You do not need a product to start. Requiring authentication on internal services that currently have none, and putting a filter between zones that currently route freely, gets you most of the practical benefit.
+
+## Visibility by default
 
 You cannot defend what you cannot see. Every network should have:
 - Centralized logging from all devices
@@ -21979,6 +23496,78 @@ You cannot defend what you cannot see. Every network should have:
 - Authentication event logging
 
 Security without visibility is guesswork. Build observability into the network from day one.
+
+Some specifics for building that out. Syslog as standardised in RFC 5424 traditionally rides UDP port 514, which is unauthenticated and can be dropped silently; use the TLS transport on port 6514 where the gear supports it. IPFIX, the IETF standard descended from NetFlow version 9, is registered on port 4739, while NetFlow v9 exporters conventionally use UDP 2055, a convention rather than a standard, so check what your collector expects.
+
+Two things make logs usable rather than merely voluminous. Synchronise clocks with NTP on every device, because correlating events across systems whose timestamps disagree by minutes is nearly impossible. And ship logs off the device that generated them immediately, since the first thing a competent intruder does on a compromised host is edit its local logs.
+
+Decide retention deliberately. Intrusions are frequently discovered weeks or months after they begin, and flow data from the week before you started looking is what tells you how far it spread.
+
+## A worked example: default-deny between zones
+
+Here is the shape of a default-deny policy on a Linux router with nftables, filtering traffic between the server VLAN and everything else:
+
+\`\`\`
+table inet filter {
+  chain forward {
+    type filter hook forward priority 0; policy drop;
+
+    ct state established,related accept
+    ct state invalid drop
+
+    # Clients may reach the app server on HTTPS only
+    ip saddr 10.0.30.0/24 ip daddr 10.0.20.10 tcp dport 443 accept
+
+    # The app server may reach the database, nothing else may
+    ip saddr 10.0.20.10 ip daddr 10.0.20.20 tcp dport 5432 accept
+
+    # IoT gets internet, never the inside
+    ip saddr 10.0.40.0/24 ip daddr 10.0.0.0/8 drop
+    ip saddr 10.0.40.0/24 accept
+
+    log prefix "fw-drop: " limit rate 5/second
+  }
+}
+\`\`\`
+
+The \`policy drop\` on the chain is the whole design; every accept below it is an exception you chose. The final \`log\` rule catches what the policy dropped, rate limited so a scan cannot fill your disk.
+
+Verify with counters rather than assumptions:
+
+\`\`\`bash
+sudo nft list ruleset
+sudo nft -a list chain inet filter forward
+\`\`\`
+
+A working ruleset shows non-zero packet counts on the rules you expect traffic to match and a growing count on the drop policy. Then test the negative case explicitly, because a rule that was never exercised has never been tested:
+
+\`\`\`bash
+# From an IoT-VLAN host, this must fail
+nc -zv -w 3 10.0.20.20 5432
+\`\`\`
+
+Correct output is a timeout, and a matching \`fw-drop:\` line in the router's log with the source address of the IoT host. If you get \`succeeded\`, your rule order is wrong: nftables evaluates rules top to bottom and the first match wins, so a broad accept placed above a specific drop silently defeats it.
+
+## Common mistakes
+
+**Treating a VLAN as a security boundary.** Two VLANs on the same router with no ACL between them are one network with extra configuration. The control is the filter on the routed interface. If you cannot point at the rule, there is no boundary.
+
+**Rules that only filter inbound.** Outbound filtering is what stops a compromised host from fetching its second stage and exfiltrating data. It is also the rule set nobody writes, because everything works without it.
+
+**A management network you can reach from everywhere.** Building a management VLAN and then permitting the entire trusted network to route into it recreates the original problem with more steps. Force it through a jump host and log the sessions.
+
+**Logging to the box you are trying to protect.** Local logs on a compromised host are attacker-controlled. Ship them off immediately, and make the log collector a system that the hosts sending to it cannot log into.
+
+**Unsynchronised clocks.** Every incident timeline is built from timestamps. If your switch, firewall, and servers disagree, you cannot establish what happened before what, and the investigation stalls on a problem that NTP would have solved for free.
+
+## References
+
+- https://csrc.nist.gov/pubs/sp/800/207/final
+- https://www.rfc-editor.org/rfc/rfc4949
+- https://www.rfc-editor.org/rfc/rfc5424
+- https://www.rfc-editor.org/rfc/rfc7011
+- https://owasp.org/www-project-top-ten/
+- https://en.wikipedia.org/wiki/Defense_in_depth_(computing)
 `,
   },
   {
@@ -21995,33 +23584,138 @@ Security without visibility is guesswork. Build observability into the network f
       sourceUrl: "https://www.flickr.com/photos/34843636@N02/5808435079",
     },
     content: `
-## Start with the Network
+## Start with the network
+
+The lab worked fine with one server. Now there are five, two of them need isolated networks, you cannot remember which port on the switch goes where, and the breaker tripped once last month for reasons nobody established. Nothing here is broken exactly, but nothing is trustworthy either.
 
 The biggest mistake in homelab growth is treating the network as an afterthought. When you add your fifth server and third VLAN, suddenly the flat network you started with is a mess. Traffic that should stay local hops through random paths. Troubleshooting is painful.
 
 Plan for segmentation from the beginning, even if you only have one server. A managed switch, a few VLANs, and a firewall cost relatively little and provide the structure you need to grow cleanly.
 
-## Document Before You Forget
+## An addressing plan you will not regret
+
+Pick the plan before you need it, because renumbering a live lab is miserable. RFC 1918 gives you three private ranges to work with: 10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16. Use 10.x, and make the second octet mean something.
+
+The scheme that has held up for me is one /24 per VLAN with the VLAN ID encoded in the third octet, so you can read an address and know instantly where it lives:
+
+| VLAN | Purpose | Subnet | Gateway |
+|---|---|---|---|
+| 10 | Management (switches, IPMI, hypervisor) | 10.0.10.0/24 | 10.0.10.1 |
+| 20 | Servers and VMs | 10.0.20.0/24 | 10.0.20.1 |
+| 30 | Trusted clients | 10.0.30.0/24 | 10.0.30.1 |
+| 40 | IoT and untrusted devices | 10.0.40.0/24 | 10.0.40.1 |
+| 50 | Lab and detonation | 10.0.50.0/24 | 10.0.50.1 |
+
+Two conventions inside each /24 save real time later: static addresses in the low range (.2 to .49) for anything that must never move, DHCP pool in the middle, and reservations for anything you want to find by name. A /24 gives you 254 usable hosts, which is far more than a lab needs, and that headroom is the point.
+
+Avoid 192.168.0.0/24 and 192.168.1.0/24 entirely. Every consumer router in the world ships with one of them, so the day you VPN into the lab from a friend's house or a hotel, the routes collide and nothing works. Picking an unusual range costs nothing and removes an entire category of confusing failure.
+
+## Document before you forget
 
 Documentation is easiest when you are setting something up the first time. A week later, you will not remember which port on which switch connects to which server, or which IP address you assigned to which management interface.
 
 I keep a simple network diagram (updated whenever something changes) and a spreadsheet with IP assignments. It takes ten minutes to update and saves hours of confusion later.
 
-## Power Planning
+Keep the documentation somewhere that survives the lab being down. A wiki hosted on a VM inside the lab is useless during the outage you most need it for. Plain text or markdown in a git repository, synced off the lab, works and costs nothing.
+
+The other kind of documentation is the kind the network generates for itself. If your switches speak LLDP, you can ask the network what is plugged in instead of trusting a spreadsheet:
+
+\`\`\`bash
+sudo apt install lldpd
+sudo lldpctl
+\`\`\`
+
+Correct output names the switch and the exact port on the other end of the cable:
+
+\`\`\`
+Interface:    eno1, via: LLDP
+  Chassis:
+    ChassisID:    mac 00:1b:21:aa:bb:cc
+    SysName:      core-sw
+  Port:
+    PortID:       ifname GigabitEthernet1/0/14
+    PortDescr:    hv01-mgmt
+\`\`\`
+
+When \`lldpctl\` and your spreadsheet disagree, the spreadsheet is wrong. That is worth checking every few months.
+
+## Power planning
 
 Power is often the binding constraint in a homelab. A single R740 under load pulls 400-600W. Add another server, a UPS, and a few switches, and you are approaching the capacity of a typical residential circuit.
 
 Calculate your power draw before buying hardware. Know which circuits you have available, what their capacity is, and how you will distribute load across them. A UPS gives you clean power and runtime for graceful shutdowns.
 
-## Cables and Cable Management
+The numbers you need are simple. A 15 A branch circuit at 120 V is 1800 VA, but electrical code treats anything running for three hours or more as a continuous load and limits it to 80 percent of the breaker rating. That is 1440 W of usable continuous draw on a 15 A circuit, and 1920 W on a 20 A circuit. Two loaded servers and the supporting gear will reach that.
+
+Watch the VA and watt ratings on a UPS separately. They are not the same number: a unit advertised at 1500 VA is frequently rated for something closer to 900 W, and it is the watt figure that decides whether your gear stays up. Size for the load you actually measure at the wall, not the sum of the power supply labels, which are maximums nobody reaches.
+
+Runtime is the other half. A UPS in a lab is not there to ride out a long outage, it is there to buy the two or three minutes your hypervisors need to shut down cleanly. Wire the UPS to talk to the servers so that shutdown actually happens, and test it by pulling the plug on purpose while you are standing there, not by hoping.
+
+## Cables and cable management
 
 Cable management that seems like excessive effort when you have three devices becomes essential when you have thirty. Spend time on it early. Label everything: patch cables, power cables, fiber. A label maker is one of the best investments in a growing lab.
 
-## Test Everything
+A few rules that pay for themselves. Label both ends of every cable with the same identifier, because a label you can only read from the back of the rack is not a label. Use colour to encode function, so management, storage, and uplinks are visually distinct before you read anything. Buy the length you need rather than coiling three metres of slack behind every server, since slack is what turns a rack into a nest.
+
+Fiber has one extra rule: respect the minimum bend radius. Kinking a patch cable around a rack post will not snap it visibly, it will just raise the loss until the link flaps intermittently at 3 a.m. and you spend a weekend blaming the transceiver.
+
+## Test everything
 
 Each time you add something to the lab, test it thoroughly before relying on it. A new switch, a new server, a new cable: verify it works under load before you depend on it for anything important.
 
+Here is what "test it" concretely means for a new link. First confirm the negotiated speed rather than the speed you assume:
+
+\`\`\`bash
+ethtool eno1 | grep -E "Speed|Duplex|Link detected"
+\`\`\`
+
+\`\`\`
+	Speed: 10000Mb/s
+	Duplex: Full
+	Link detected: yes
+\`\`\`
+
+Then push real traffic across it for long enough to matter:
+
+\`\`\`bash
+# on the far end
+iperf3 -s
+# on the near end, 60 seconds, four parallel streams
+iperf3 -c 10.0.20.5 -t 60 -P 4
+\`\`\`
+
+A healthy 10 Gbps link reports a summed throughput in the 9.3 to 9.9 Gbits/sec range and zero retransmits. Retransmits climbing steadily, or throughput that starts high and collapses after ten seconds, points at a bad cable, a dirty fiber connector, or a switch buffer problem, and it is far better to find that now than during a migration.
+
+Finally, check the error counters after the test, because a link can pass a throughput test while quietly corrupting frames:
+
+\`\`\`bash
+ip -s link show eno1
+\`\`\`
+
+The RX and TX error and dropped columns should be zero. Any non-zero value on a brand new link is a defect, not a rounding error.
+
 The lab is a place to practice and learn. Let it teach you through failures in controlled conditions, not through production outages.
+
+## What breaks
+
+**Everything on one VLAN because segmentation was going to be phase two.** Phase two never arrives on its own. Retrofitting VLANs means renumbering hosts, rewriting firewall rules, and reconfiguring every service that hard-coded an IP. Segment early, when there are three things to move instead of thirty.
+
+**Management on the same network as workloads.** When a VM chews the link or a broadcast storm starts, you lose the ability to log in and fix it at exactly the moment you need it. Keep switch management, IPMI, and hypervisor management on their own VLAN, and make sure you can reach that VLAN from a machine that is not itself inside the lab.
+
+**One circuit, two servers, and a heater on the same wall.** Breakers trip from total load, not from the load you were thinking about. Map which outlets share a breaker before you distribute equipment, because outlets in different rooms are frequently on the same circuit and the panel labels are often wrong.
+
+**DHCP handing out addresses that collide with statics.** If the DHCP pool covers the whole subnet and you assign statics by hand from the same range, you will eventually get a duplicate. Carve the pool explicitly, keep statics outside it, and write the split down in the same place as the subnet table.
+
+**Trusting a cable because it passed link.** A cable can negotiate 1 Gbps and still be marginal, and a fiber connector with dust on it will link up and then error under load. Link lights mean the physical layer found a peer, nothing more. Test throughput and check error counters before you build anything on top of it.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc1918
+- https://www.rfc-editor.org/rfc/rfc2131
+- https://en.wikipedia.org/wiki/IEEE_802.1Q
+- https://en.wikipedia.org/wiki/19-inch_rack
+- https://en.wikipedia.org/wiki/National_Electrical_Code
+- https://wiki.archlinux.org/title/Network_configuration
 `,
   },
   {
@@ -22048,8 +23742,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 
 \`\`\`bash
 # Extract denied connections from FortiGate syslog
-grep "action=deny" /var/log/fortigate/traffic.log | \
-  awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
+grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
 ## Identify Traffic Patterns
@@ -22092,13 +23785,21 @@ An alert is only valuable if someone acts on it. Build a workflow: alerts genera
       sourceUrl: "https://www.flickr.com/photos/30139045@N00/458064906",
     },
     content: `
-## When QoS Matters
+## When QoS matters
+
+Someone starts a large file copy and the phone call breaks up. A backup job kicks off at 5 p.m. and the video meeting turns into slideshow. Both of those are the same problem: a link with more traffic offered to it than it can carry, and no rule about which packet goes first.
 
 QoS is about managing contention. On an uncongested link, every packet gets through immediately regardless of its type. When a link is congested (more traffic than bandwidth), some packets get delayed or dropped. QoS controls which packets get priority in that situation.
 
 The main use cases: ensuring voice (VoIP) stays clear even when the network is busy, prioritizing business-critical applications over bulk transfers, and limiting the impact of backup traffic on interactive workloads.
 
-## The QoS Model
+## What QoS cannot do
+
+QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behaviour through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
+
+QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honour your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
+
+## The QoS model
 
 **Classification:** Mark traffic with a DSCP (Differentiated Services Code Point) value that indicates its priority. This is done as close to the source as possible.
 
@@ -22106,7 +23807,15 @@ The main use cases: ensuring voice (VoIP) stays clear even when the network is b
 
 **Policing and shaping:** Limit the bandwidth available to specific traffic classes. Shaping buffers excess traffic and sends it later; policing drops it.
 
-## DSCP Values
+The piece people skip is the trust boundary. Every host can set its own DSCP values, and an application that marks its own traffic as expedited forwarding will happily starve your phones. Decide which ports you trust (an IP phone, a known server) and rewrite the DSCP to zero on everything else at the access port. Classification you did not authorise is not classification, it is a request from an untrusted device.
+
+## Where the bits actually live
+
+DSCP is the top 6 bits of the 8-bit DS field in the IP header, which is the byte that used to be called Type of Service in IPv4 and is Traffic Class in IPv6. Six bits gives 64 possible code points, 0 through 63. The remaining 2 bits of that byte are ECN, which is a separate mechanism and not yours to overwrite.
+
+At layer 2, an 802.1Q VLAN tag carries a 3-bit Priority Code Point field, commonly called CoS or 802.1p, so 8 values instead of 64. Switches map between the two, and the mapping is where markings quietly disappear: an untagged access port has nowhere to put a CoS value, so layer 2 priority is lost the moment the frame leaves a trunk. DSCP is what survives across routers, so mark with DSCP and let the switch derive CoS from it.
+
+## DSCP values
 
 The standard markings used in most enterprise environments:
 
@@ -22118,7 +23827,9 @@ The standard markings used in most enterprise environments:
 | Best effort | 0 | Default |
 | Scavenger (backups) | 8 | CS1 |
 
-## Cisco Configuration
+Those numbers are not arbitrary. Expedited Forwarding is defined in RFC 3246, recommended code point 46. The Assured Forwarding group in RFC 2597 defines four classes with three drop precedences each, which is where 34 (AF41) and 26 (AF31) come from. RFC 4594 has the reasoning behind a full class map. One update worth knowing: the modern marking for deliberately-lower-than-best-effort traffic is the Lower Effort PHB of RFC 8622, code point 1, rather than the older CS1 value of 8. Plenty of designs still use CS1, and that is fine as long as everyone on the path agrees.
+
+## Cisco configuration
 
 \`\`\`
 ! Mark VoIP traffic from IP phones
@@ -22127,7 +23838,7 @@ class-map match-all VOIP
 
 policy-map QOS-POLICY
   class VOIP
-    priority 20  ! Guaranteed 20% bandwidth with strict priority
+    priority percent 20  ! Strict priority, capped at 20% of the link
   class BUSINESS-APPS
     bandwidth percent 40
   class class-default
@@ -22137,9 +23848,85 @@ interface GigabitEthernet0/1
   service-policy output QOS-POLICY
 \`\`\`
 
-## Testing Your QoS Policy
+Write the units you mean. In the Cisco MQC, \`priority percent 20\` is a percentage of the interface rate, while a bare \`priority 20\` is 20 kilobits per second, which is not a policy, it is a punishment. The same applies to \`bandwidth\`.
+
+Note also that \`priority\` is a strict-priority queue with an implicit policer. Traffic in that class is served ahead of everything else, but only up to the configured rate; above it, packets are dropped rather than allowed to starve the other classes. That policer is a feature. Without it, one misbehaving flow marked EF can consume the entire link.
+
+QoS policies apply in the outbound direction on the interface where congestion happens. Applying a shaping policy inbound on the interface where traffic arrives does very little, because by then the packets have already crossed the constrained link.
+
+## A worked example on Linux
+
+You do not need enterprise switches to see this work. Linux \`tc\` will shape an interface and let you watch the counters. This caps eth0 at 100 Mbit and gives a priority band to DSCP EF traffic:
+
+\`\`\`bash
+# Shape eth0 to 100 Mbit with a two-band priority scheme
+sudo tc qdisc add dev eth0 root handle 1: htb default 20
+sudo tc class add dev eth0 parent 1: classid 1:1 htb rate 100mbit
+sudo tc class add dev eth0 parent 1:1 classid 1:10 htb rate 20mbit ceil 20mbit prio 0
+sudo tc class add dev eth0 parent 1:1 classid 1:20 htb rate 80mbit ceil 100mbit prio 1
+
+# Send DSCP EF (46, which is 0xb8 in the full TOS byte) to the priority class
+sudo tc filter add dev eth0 protocol ip parent 1: prio 1 u32 \\
+    match ip tos 0xb8 0xfc flowid 1:10
+\`\`\`
+
+The \`0xfc\` mask matters: it masks off the two ECN bits so you match the 6 DSCP bits and not a specific ECN state. Matching \`0xb8\` with no mask will silently miss most of your EF traffic.
+
+Check it with:
+
+\`\`\`bash
+sudo tc -s class show dev eth0
+\`\`\`
+
+Correct output shows non-zero \`Sent\` bytes on both classes and, under load, a growing \`dropped\` or \`overlimits\` count on the bulk class while the priority class stays clean:
+
+\`\`\`
+class htb 1:10 parent 1:1 prio 0 rate 20Mbit ceil 20Mbit
+ Sent 41203984 bytes 28617 pkt (dropped 0, overlimits 0 requeues 0)
+class htb 1:20 parent 1:1 prio 1 rate 80Mbit ceil 100Mbit
+ Sent 918440221 bytes 623115 pkt (dropped 4471, overlimits 20933 requeues 0)
+\`\`\`
+
+Drops on the bulk class with zero drops on the priority class is the policy working. Zero drops everywhere means you never actually congested the link and have not tested anything.
+
+## Testing your QoS policy
 
 Use iPerf to generate test traffic and verify that QoS is working as expected. Generate competing flows of different traffic types and measure whether the priority traffic maintains its performance while lower-priority traffic degrades.
+
+Concretely: start a long TCP flow to saturate the link, then run a small UDP flow marked EF alongside it and watch jitter and loss on the UDP stream. iPerf3 will set the DSCP for you with \`-S\`, which takes the full TOS byte, so EF is \`-S 0xb8\`:
+
+\`\`\`bash
+# Saturate the link with unmarked bulk traffic
+iperf3 -c 10.0.20.5 -t 60 -P 4
+
+# In another terminal, the "voice" flow
+iperf3 -c 10.0.20.5 -u -b 1M -l 200 -S 0xb8 -t 60
+\`\`\`
+
+A passing test is the UDP flow reporting jitter in the low single-digit milliseconds and loss under about 1 percent while the TCP flows are eating the rest of the link. If the UDP flow shows tens of milliseconds of jitter, your marking is not surviving the path or your priority queue is not being applied where the congestion is.
+
+On the switch itself, \`show policy-map interface GigabitEthernet0/1\` gives you per-class packet and drop counters. Those counters are the ground truth. If the class you expect to match shows zero packets, your classification is wrong, and no amount of queue tuning will help.
+
+## Common mistakes
+
+**Marking traffic but never queuing it.** Setting DSCP values does nothing on its own. The mark is only an instruction to a device that has a policy configured. A network where every packet is beautifully classified and no interface has a service policy behaves exactly like a network with no QoS.
+
+**Applying the policy in the wrong direction or the wrong place.** Congestion happens at the point where a fast link feeds a slow one. That is the interface that needs an output policy. Policing inbound at the far end of an already-congested circuit does not help, because the damage was done upstream.
+
+**Trusting DSCP from end hosts.** Anything can set DSCP 46. If your access ports trust incoming markings, one workstation running a marked bulk transfer sits in the voice queue. Rewrite DSCP to 0 at untrusted access ports and mark it yourself based on what you know about the traffic.
+
+**Putting too much in the priority queue.** A strict-priority queue sized at 50 percent of the link is not a priority queue, it is a second best-effort queue with extra steps. Keep the sum of your priority classes small, conventionally around a third of the link at most, so the queue is genuinely empty most of the time. Latency in a priority queue only stays low while it stays short.
+
+**Confusing shaping with policing.** Shaping buffers and delays; policing drops. Policing TCP hard produces retransmits and sawtooth throughput far worse than the raw rate limit suggests. Where the provider polices you, shaping slightly below the contracted rate beats letting their policer do the dropping. And remember that a deep buffer does not prevent loss, it converts loss into delay: on a lab router, switching the WAN interface to fq_codel often does more for real latency than a hand-built DSCP scheme.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc2474
+- https://www.rfc-editor.org/rfc/rfc2475
+- https://www.rfc-editor.org/rfc/rfc2597
+- https://www.rfc-editor.org/rfc/rfc3246
+- https://www.rfc-editor.org/rfc/rfc4594
+- https://man7.org/linux/man-pages/man8/tc.8.html
 `,
   },
   {
@@ -22316,14 +24103,19 @@ The MITRE ATT&CK framework maps attacker techniques to defensive detections. If 
       licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
       sourceUrl: "https://commons.wikimedia.org/w/index.php?curid=113054252",
     },
-    content: `
-## Why TLS 1.3 Is Important
+    content: `## The problem
+
+A scanner flagged your site for supporting old TLS versions, or you turned on TLS 1.3 in a config file and cannot tell whether it is actually being used. Both questions have the same shape: you need to know what the protocol is really doing on the wire, not what the config file claims. This post covers what changed in TLS 1.3, how to turn it on, and how to prove it is working.
+
+## Why TLS 1.3 is important
 
 TLS 1.2 is secure when configured correctly, but "when configured correctly" is the problem. TLS 1.2 supported a wide range of cipher suites, many of which are now considered weak. Misconfigured servers using RC4, 3DES, or export-grade ciphers were common attack targets for years.
 
 TLS 1.3 removed all the dangerous cipher suites, mandated forward secrecy, simplified the protocol, and reduced handshake latency. It is strictly better than TLS 1.2 and should be preferred wherever possible.
 
-## What Changed in TLS 1.3
+TLS 1.3 is specified in RFC 8446, published in August 2018. TLS 1.2 is RFC 5246. TLS 1.0 and 1.1 were formally deprecated by RFC 8996 in 2021, so "you should not be running these" is not an opinion any more, it is the standards position.
+
+## What changed in TLS 1.3
 
 **Removed cipher suites:** RC4, 3DES, AES-CBC mode, and many others are simply gone. TLS 1.3 only supports AEAD ciphers: AES-GCM and ChaCha20-Poly1305.
 
@@ -22332,6 +24124,22 @@ TLS 1.3 removed all the dangerous cipher suites, mandated forward secrecy, simpl
 **Faster handshake:** TLS 1.3 requires only one round trip for the handshake (compared to two for TLS 1.2). 0-RTT resumption allows reconnecting clients to send data in the first packet.
 
 **Encrypted certificates:** In TLS 1.2, the server's certificate was sent in plaintext. TLS 1.3 encrypts it, improving privacy.
+
+A few more removals matter in practice. Renegotiation is gone, replaced by a \`KeyUpdate\` message that rekeys without restarting the handshake. TLS-level compression is gone, which closes the CRIME class of attacks. Custom Diffie-Hellman groups are gone, so a server can no longer negotiate a weak group by accident, and only named groups from the registry are allowed. RSA signatures in the handshake must be RSA-PSS rather than the older PKCS #1 v1.5 scheme.
+
+The cipher suite list shrank from hundreds of combinations to five. In practice you will only ever see three of them: \`TLS_AES_128_GCM_SHA256\`, \`TLS_AES_256_GCM_SHA384\`, and \`TLS_CHACHA20_POLY1305_SHA256\`. The first is mandatory to implement. Note the naming changed too. A TLS 1.3 suite names only the AEAD algorithm and the hash, because the key exchange and the signature algorithm are negotiated separately now.
+
+## How the handshake actually works
+
+The client sends a \`ClientHello\` that already contains its key share, so it is guessing which group the server will pick. The server replies with \`ServerHello\` carrying its own key share, and from that point everything else in the handshake is encrypted, including the server's certificate and the extensions. That is why one round trip is enough: the client did the work of proposing a key before it knew whether the server would accept it.
+
+Two details of that design surprise people reading captures.
+
+First, the version number on the record layer still says TLS 1.2. TLS 1.3 negotiates its version through the \`supported_versions\` extension, leaving the legacy version field at 0x0303, because middleboxes on the internet would drop anything that claimed a version they did not recognise. If you filter a capture for the literal version field you will conclude TLS 1.3 is not in use when it is.
+
+Second, TLS 1.3 has a downgrade protection mechanism built into the server random. If a TLS 1.3 capable server ends up negotiating a lower version, it writes a fixed sentinel value into the last eight bytes of the random field, and a TLS 1.3 client that sees it aborts the connection. This is what stops an attacker from stripping the handshake back to 1.2.
+
+One thing TLS 1.3 does not encrypt is the server name. SNI is still sent in the clear in the \`ClientHello\`, so anyone on path can see which host you asked for even though they cannot see the certificate that comes back. Encrypted Client Hello is the work aimed at that, and it is separate from TLS 1.3 itself.
 
 ## Enabling TLS 1.3
 
@@ -22342,11 +24150,92 @@ ssl_ciphers ECDH+AESGCM:ECDH+CHACHA20:!aNULL:!MD5;
 ssl_prefer_server_ciphers on;
 \`\`\`
 
-## What You Should Disable
+Two things about that config are easy to get wrong.
+
+\`ssl_ciphers\` does not control TLS 1.3. The OpenSSL cipher string syntax applies to TLS 1.2 and below. TLS 1.3 suites are configured through a separate OpenSSL API and nginx does not expose a directive for them, so the three TLS 1.3 suites are on whether your cipher string mentions them or not. Removing \`ECDH+AESGCM\` from the string will not disable \`TLS_AES_128_GCM_SHA256\`.
+
+\`ssl_prefer_server_ciphers\` also has no effect on TLS 1.3. Suite preference in 1.3 is client-driven by design, which is deliberate: it lets a phone pick ChaCha20-Poly1305 because it has no AES hardware, while a server with AES-NI gets AES-GCM.
+
+You also need a build that can do it. TLS 1.3 support in nginx requires OpenSSL 1.1.1 or newer, and the \`TLSv1.3\` parameter arrived in nginx 1.13.0. Check what you actually have:
+
+\`\`\`bash
+nginx -V 2>&1 | head -2
+\`\`\`
+
+\`\`\`
+nginx version: nginx/1.24.0
+built with OpenSSL 3.0.11 19 Sep 2023
+\`\`\`
+
+If that says OpenSSL 1.0.2, no amount of config editing will give you TLS 1.3.
+
+## Verifying it from the command line
+
+Configuration is a claim. The handshake is the evidence.
+
+\`\`\`bash
+openssl s_client -connect example.com:443 -tls1_3 -servername example.com </dev/null
+\`\`\`
+
+The part of the output that matters:
+
+\`\`\`
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+---
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Verify return code: 0 (ok)
+\`\`\`
+
+\`Protocol : TLSv1.3\` is the confirmation. \`Verify return code: 0 (ok)\` means the chain validated. "Secure Renegotiation IS NOT supported" looks alarming and is correct behaviour: renegotiation does not exist in TLS 1.3, so there is nothing to secure.
+
+Now prove the old versions are off:
+
+\`\`\`bash
+openssl s_client -connect example.com:443 -tls1 </dev/null
+\`\`\`
+
+A server that refuses returns a protocol version alert, which OpenSSL prints as \`SSL alert number 70\`. If your local OpenSSL is itself built or configured with a minimum of TLS 1.2, you will instead get \`no protocols available\` before a packet is sent, which tells you about your client rather than the server. Test from a machine whose OpenSSL still permits the old version, or use \`nmap --script ssl-enum-ciphers -p 443 example.com\`, which enumerates every version and suite the server will accept and grades them.
+
+## 0-RTT is not free
+
+0-RTT lets a resuming client send application data in its very first flight. The saving is real and so is the catch: 0-RTT data has no replay protection at the protocol level. An attacker who captures that first flight can send it again, and the server cannot tell the copy from the original.
+
+That is fine for a GET of a static asset. It is not fine for anything that changes state. RFC 8446 is explicit that applications must only send data they are willing to have replayed. In nginx, \`ssl_early_data\` is off by default, and leaving it off is the right default unless you have gone through what your endpoints do with a replayed request.
+
+## What you should disable
 
 Disable TLS 1.0 and 1.1 everywhere. These versions have known vulnerabilities (POODLE, BEAST) and no modern client requires them. Check your servers and load balancers for these settings.
 
+For context on those two names: BEAST exploited the predictable CBC initialisation vector in TLS 1.0, and POODLE was originally an SSL 3.0 padding attack that also affected TLS implementations that did not check CBC padding properly. Both are artefacts of the CBC construction that TLS 1.3 removed entirely.
+
 Monitor your cipher suite usage and set a timeline for deprecating TLS 1.2 once you have confirmed all clients support 1.3.
+
+## What breaks
+
+**A middlebox that does not understand TLS 1.3.** Some inspection appliances and older load balancers drop or mangle handshakes they cannot parse. The symptom is a connection that fails only from certain networks. TLS 1.3 includes a compatibility mode that makes the handshake look more like TLS 1.2 (a dummy ChangeCipherSpec, an echoed session ID) specifically to survive these, but it does not save you from a device doing real inspection.
+
+**Terminating TLS 1.3 at a proxy and forwarding over TLS 1.2.** Your scan of the front door passes and the internal hop is still negotiating something old. Test each hop separately, not just the public endpoint.
+
+**Assuming the cipher string disabled something.** Covered above and worth repeating because it produces a false audit result. If you need to prove a suite is off, do not read the config, run the handshake.
+
+**Session resumption silently disabled.** TLS 1.3 resumption uses tickets sent in \`NewSessionTicket\` after the handshake. Turning tickets off for forward-secrecy reasons, or terminating on several servers that do not share ticket keys, means every connection pays the full handshake. The site still works, it is just slower, so nobody notices for months.
+
+**Certificate chain problems hidden by a browser.** Browsers repair incomplete chains by fetching intermediates; \`openssl s_client\` and most non-browser clients do not. If \`Verify return code\` is anything other than 0 while the site looks fine in Chrome, your chain is missing an intermediate and API clients will fail.
+
+## References
+
+- https://www.rfc-editor.org/rfc/rfc8446
+- https://www.rfc-editor.org/rfc/rfc8996
+- https://www.rfc-editor.org/rfc/rfc5246
+- https://nginx.org/en/docs/http/ngx_http_ssl_module.html
+- https://developer.mozilla.org/en-US/docs/Web/Security/Transport_Layer_Security
+- https://en.wikipedia.org/wiki/Transport_Layer_Security
 `,
   },
   {
@@ -22412,32 +24301,113 @@ After consolidation, monitor CPU ready time (VMs waiting to be scheduled), memor
       licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
       sourceUrl: "https://www.flickr.com/photos/44124348109@N01/18279271865",
     },
-    content: `
-## What a Personal Brand Actually Is
+    content: `## The problem
+
+You have done real work, and nobody outside the room where you did it knows about it. The advice you find is either "post every day" or "just be authentic", and neither tells you what to actually do on a Tuesday evening. This is what has worked for me, and the parts that are mechanical rather than mystical, including the ones that are literally a command you run.
+
+## What a personal brand actually is
 
 A personal brand is your reputation, made visible. It is what people think of when they see your name in a professional context. It is built on consistent, genuine output over time, not on clever marketing or posting a lot.
 
 The foundation is expertise. You cannot fake technical depth to an audience of technical people. Every post, project, and contribution either builds or undermines that foundation.
 
-## Building Through Output
+The word "brand" puts a lot of technical people off, and I understand why. Think of it as the answer to a question someone asks about you when you are not in the room. Somebody is deciding whether to invite you to a project, a team, or an interview, and they type your name into a search box. Whatever comes back is the brand, whether you curated it or not.
+
+## Building through output
 
 The most durable personal brands in tech are built by people who share what they learn. Writing blog posts, creating tools, contributing to open source, answering questions in forums, and teaching others all create a record of thinking and problem-solving that is hard to fake and hard to misrepresent.
 
 This site is part of that for me. Writing about what I actually do in the lab, what competitions have taught me, and what I think about infrastructure and security creates a record that is honest and specific. That specificity is what makes it valuable.
 
-## The Long Game
+The useful reframe is that you are not producing content, you are producing artifacts of work you were doing anyway. I do not write a post and then go find something to say about it. I fix something in the lab, notice that the fix was not obvious, and write down what I learned while it is still fresh. The writing costs an extra hour on top of work that already happened. That ratio is what makes it sustainable.
+
+## Own the canonical copy
+
+Publish where you control the URL. Post on other platforms as much as you like, but the version that other things link to should live on a domain that is yours, because platforms change their rules, their layout, and occasionally their existence, and every link into them goes with them.
+
+Two mechanics make that work. When you republish something elsewhere, the copy should carry a \`rel="canonical"\` link pointing back at the original, which tells search engines which version is authoritative and stops the copies competing with the source. And your site should publish a feed, RSS or Atom, so that people who want to follow the work can do so without an account anywhere.
+
+Check nothing is quietly telling crawlers to stay away:
+
+\`\`\`bash
+curl -sI https://yourdomain.example/ | grep -i 'x-robots-tag'
+curl -s  https://yourdomain.example/robots.txt
+\`\`\`
+
+The first command should print nothing at all. An \`X-Robots-Tag: noindex\` header is invisible in a browser and will keep your work out of search results entirely, and it gets left behind on production more often than you would think. The second should show your intended rules; a bare \`Disallow: /\` under \`User-agent: *\` means you have unpublished yourself.
+
+## Make the work attributable
+
+Here is the most common way people lose credit for work they actually did, and it takes thirty seconds to check.
+
+Git records the author of a commit from whatever \`user.email\` was configured on the machine at the time. Hosting platforms match commits to profiles by that address. Commit from a lab box that has no identity configured, or from an old address you no longer have on your account, and the commit exists, the code ships, and it is attributed to nobody.
+
+\`\`\`bash
+git log --format='%an <%ae>' | sort | uniq -c | sort -rn
+\`\`\`
+
+\`\`\`
+    214 Max Doubin <me@example.com>
+      9 root <root@lab-01.localdomain>
+      2 Max <max@old-address.example>
+\`\`\`
+
+Two hundred and fourteen commits attributed correctly, eleven that are not. The nine from \`root\` will never appear on any profile. Fix the identity before the next commit:
+
+\`\`\`bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --get user.email
+\`\`\`
+
+\`\`\`
+you@example.com
+\`\`\`
+
+Then add every address you have ever committed from to your account on the hosting platform, so the historical commits get matched retroactively. That alone has recovered visible contribution history for people I have shown it to.
+
+## The long game
 
 The mistake most people make is expecting fast results. Personal brands compound slowly. A blog post written today might be discovered by someone a year from now. A project that gets 50 GitHub stars this year might get 500 next year. The timeline is long and the feedback loop is delayed.
 
 This means consistency matters more than any individual piece of output. Write regularly, build regularly, contribute regularly. Over months and years, the accumulation becomes significant.
 
-## Being Specific
+The delay has a practical implication: judge the process, not the reaction. A post's readership in the first week tells you almost nothing, because most of the traffic a durable piece gets arrives from search months later. If you measure by the first week, you will conclude the good posts failed and rewrite yourself into whatever gets an immediate reaction, which is usually the least useful thing you produce.
+
+## Being specific
 
 Generic content does not build reputation. "Networking is important" is not valuable. "Here is exactly how I debugged a spanning tree loop that was causing packet loss on a specific VLAN" is valuable. Specificity demonstrates that you have actually done the thing.
 
-## Teaching Youth as a Brand Builder
+Specificity is testable, which is the real reason it works. A reader can take "set the native VLAN on the trunk to an unused VLAN" and try it. They cannot do anything with "follow security best practices". Anything a reader can act on and verify builds trust, because it is a claim you have exposed to being wrong in public.
+
+That also means being willing to publish the failure. The post about the thing that took you four hours because you misread one line of output is more useful, and more credible, than the one where everything worked.
+
+## Teaching youth as a brand builder
 
 Teaching coding camps in the Las Vegas Valley has been one of the most meaningful ways I have built reputation in the local tech community. It is genuinely valuable work that directly demonstrates technical knowledge, communication skills, and commitment to the community. Those things travel.
+
+It is also the fastest way I know to find the gaps in your own understanding. Explaining subnetting to someone who has never seen an IP address forces you to know which parts are essential and which are trivia you happen to have memorised. If you cannot explain it to a beginner, you know the shape of the thing and not the thing.
+
+## Common mistakes
+
+**Posting volume instead of substance.** Five thin posts a week teach nobody anything and train your audience to skim past your name. One substantial thing a month, that a person can actually use, does more. Volume is the easiest metric to move and the least correlated with reputation.
+
+**Building only on someone else's platform.** Every follower on a platform is a relationship the platform owns and can change the terms of. Use platforms for reach, keep the artifact on your own domain, and make sure the feed exists so people can follow you without one.
+
+**Losing attribution on the work itself.** The git identity problem above, plus its cousins: contributing under a handle nobody connects to your name, or letting a shared account own the commits. If a hiring manager cannot connect the work to you in under a minute, the work is not doing the job you hoped it would.
+
+**Talking about work you have not done.** Technical audiences detect this quickly, and the correction is permanent in a way the original claim never was. It is entirely fine to write "here is what I understand so far and here is where I am unsure". It is not fine to imply experience you do not have.
+
+**Treating it as separate from the work.** The people whose reputations I respect did not run a content strategy. They did serious work and wrote it down. If the writing starts driving what you build rather than recording it, you have inverted the thing that made it credible.
+
+## References
+
+- https://en.wikipedia.org/wiki/Personal_branding
+- https://en.wikipedia.org/wiki/Canonical_link_element
+- https://git-scm.com/docs/git-config
+- https://www.rfc-editor.org/rfc/rfc9309
+- https://www.rfc-editor.org/rfc/rfc4287
+- https://en.wikipedia.org/wiki/Web_syndication
 `,
   },
   {

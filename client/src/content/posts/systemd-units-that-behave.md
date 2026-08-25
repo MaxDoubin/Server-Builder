@@ -134,8 +134,8 @@ Always run `systemd-analyze verify` on a new unit before enabling it, and always
 
 ## References
 
-- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.exec(5), sandboxing directives](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
-- [systemd.unit(5), dependencies and ordering](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html)
-- [systemd.timer(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
+- [systemd.service(5)](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.exec(5), sandboxing directives](https://man.archlinux.org/man/systemd.exec.5)
+- [systemd.unit(5), dependencies and ordering](https://man.archlinux.org/man/systemd.unit.5)
+- [systemd.timer(5)](https://man.archlinux.org/man/systemd.timer.5)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)

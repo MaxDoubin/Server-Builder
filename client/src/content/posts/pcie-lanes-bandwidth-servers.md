@@ -78,5 +78,5 @@ Re-verify after every hardware change. A reseat, a firmware update, or a new ris
 
 - [PCI Express on Wikipedia](https://en.wikipedia.org/wiki/PCI_Express)
 - [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
-- [PCI-SIG specifications](https://pcisig.com/specifications)
+- [The Linux kernel PCI subsystem documentation](https://www.kernel.org/doc/html/latest/PCI/index.html)
 - [NVM Express specifications](https://nvmexpress.org/specifications/)

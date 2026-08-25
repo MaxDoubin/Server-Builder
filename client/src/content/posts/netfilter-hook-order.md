@@ -98,5 +98,5 @@ A rule with zero packets after a day of traffic is either wrong or unnecessary, 
 - https://www.netfilter.org/
 - https://wiki.nftables.org/wiki-nftables/index.php/Netfilter_hooks
 - https://wiki.nftables.org/wiki-nftables/index.php/Main_Page
-- https://man7.org/linux/man-pages/man8/nft.8.html
+- https://man.archlinux.org/man/nft.8
 - https://www.kernel.org/doc/html/latest/networking/nf_conntrack-sysctl.html

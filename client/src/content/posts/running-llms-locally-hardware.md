@@ -86,6 +86,6 @@ All of which changes how I plan. I stopped asking "can I run this model" and sta
 
 - [PyTorch CUDA semantics](https://pytorch.org/docs/stable/notes/cuda.html)
 - [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/index)
-- [llama.cpp](https://github.com/ggerganov/llama.cpp)
+- [llama.cpp](https://github.com/ggml-org/llama.cpp)
 - [lspci(8) manual page](https://man7.org/linux/man-pages/man8/lspci.8.html)
 - [NVIDIA CUDA documentation](https://docs.nvidia.com/cuda/)

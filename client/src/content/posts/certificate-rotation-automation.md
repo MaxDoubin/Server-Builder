@@ -125,5 +125,5 @@ request.
 - [RFC 8555: Automatic Certificate Management Environment (ACME)](https://www.rfc-editor.org/rfc/rfc8555)
 - [RFC 5280: Internet X.509 Public Key Infrastructure Certificate and CRL Profile](https://www.rfc-editor.org/rfc/rfc5280)
 - [RFC 6962: Certificate Transparency](https://www.rfc-editor.org/rfc/rfc6962)
-- [NIST NCCoE: TLS Server Certificate Management](https://www.nccoe.nist.gov/projects/tls-server-certificate-management)
+- [NIST SP 1800-16: Securing Web Transactions, TLS Server Certificate Management](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.1800-16.pdf)
 - [Certbot documentation](https://eff-certbot.readthedocs.io/)

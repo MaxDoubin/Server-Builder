@@ -36,6 +36,14 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
+  // The archive round trips. Markdown edits go up into the source first,
+  // then the source comes back down into markdown and the metadata index.
+  // Without the first half, editing the file that actually holds the article
+  // is silently undone by the second half, which is exactly what happened.
+  console.log("syncing post bodies...");
+  const { syncPostBodies } = await import("./syncPostBodies.ts");
+  await syncPostBodies();
+
   // Regenerate before Vite runs, so an edit to blogPosts.source.ts cannot
   // ship with a stale index or a missing body.
   console.log("generating post index...");

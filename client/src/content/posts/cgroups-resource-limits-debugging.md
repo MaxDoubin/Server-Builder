@@ -137,6 +137,6 @@ You just have to know which file to read.
 
 - [Linux kernel control group v2 documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
 - [Pressure stall information](https://docs.kernel.org/accounting/psi.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
 - [cgroups(7) manual page](https://man7.org/linux/man-pages/man7/cgroups.7.html)
 - [cgroups](https://en.wikipedia.org/wiki/Cgroups)

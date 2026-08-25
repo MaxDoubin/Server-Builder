@@ -161,8 +161,8 @@ Linux operations that I know of.
 
 ## References
 
-- [systemd.exec(5): sandboxing directives](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
-- [systemd.service(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.resource-control(5)](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html)
-- [systemd-analyze(1)](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [systemd.exec(5): sandboxing directives](https://man.archlinux.org/man/systemd.exec.5)
+- [systemd.service(5)](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
+- [systemd-analyze(1)](https://man.archlinux.org/man/systemd-analyze.1)
 - [Linux control group v2 documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)

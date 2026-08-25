@@ -90,6 +90,6 @@ The goal is not to squeeze the machine. It is that a single bad process degrades
 ## References
 
 - [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)
-- [systemd.service manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.exec manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
+- [systemd.service manual page](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.exec manual page](https://man.archlinux.org/man/systemd.exec.5)
 - [Linux kernel documentation](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html)

@@ -129,8 +129,8 @@ Two failure patterns cover most of what I hit. When a unit refuses to start and 
 
 ## References
 
-- [systemd.service manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
-- [systemd.timer manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)
-- [systemd.exec manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html)
-- [systemd-analyze manual page](https://www.freedesktop.org/software/systemd/man/latest/systemd-analyze.html)
+- [systemd.service manual page](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.timer manual page](https://man.archlinux.org/man/systemd.timer.5)
+- [systemd.exec manual page](https://man.archlinux.org/man/systemd.exec.5)
+- [systemd-analyze manual page](https://man.archlinux.org/man/systemd-analyze.1)
 - [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)

@@ -75,7 +75,7 @@ And be honest about the hidden cost that never shows up in the price: your time.
 
 ## References
 
-- https://man7.org/linux/man-pages/man8/smartctl.8.html
+- https://man.archlinux.org/man/smartctl.8
 - https://en.wikipedia.org/wiki/Self-Monitoring,_Analysis_and_Reporting_Technology
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 - https://en.wikipedia.org/wiki/Bathtub_curve

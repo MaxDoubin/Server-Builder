@@ -60,6 +60,6 @@ That trade is the real design question in any distributed storage system, and it
 - https://en.wikipedia.org/wiki/Standard_RAID_levels
 - https://en.wikipedia.org/wiki/RAID
 - https://en.wikipedia.org/wiki/Erasure_code
-- https://raid.wiki.kernel.org/index.php/Linux_Raid
+- https://www.kernel.org/doc/html/latest/admin-guide/md.html
 - https://man7.org/linux/man-pages/man8/mdadm.8.html
 - https://man7.org/linux/man-pages/man4/md.4.html
