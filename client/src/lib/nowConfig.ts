@@ -56,12 +56,12 @@ export const nowConfig: NowConfig = {
       label: "· Now · Studying",
       heading: "What I am studying",
       summary:
-        "Three certification tracks in progress and the coursework underneath them. None of these are earned yet, and I do not list them as if they were.",
+        "Three certification tracks in progress and the coursework underneath them, with where each one currently stands.",
       items: [
         {
           title: "CompTIA Security+",
           detail:
-            "Working through the objectives. Studying toward it, not certified: the exam is the goal, not the claim.",
+            "Working through the SY0-701 objectives. Security fundamentals, secure architecture, and operations are the sections I keep coming back to.",
         },
         {
           title: "CompTIA Network+",

@@ -17,16 +17,7 @@ import {
   type Transition,
   type MotionValue,
 } from "framer-motion";
-import {
-  useRef,
-  useEffect,
-  useState,
-  useCallback,
-  type ReactNode,
-  type CSSProperties,
-  createContext,
-  useContext,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type RefObject, type ReactNode } from "react";
 
 // ─────────────────────────────────────────────────────────
 // TRANSITION PRESETS
@@ -257,6 +248,59 @@ interface ScrollRevealProps {
   as?: keyof JSX.IntrinsicElements;
 }
 
+/**
+ * `useInView`'s `amount` is a fraction OF THE OBSERVED ELEMENT, not of the
+ * viewport. That makes any threshold above `viewportHeight / elementHeight`
+ * physically unreachable: the observer never fires, the element keeps its
+ * hidden variant, and the content is invisible forever while still taking up
+ * scroll height.
+ *
+ * That is not hypothetical. The blog index wraps all 24 post cards in one
+ * StaggerGroup. On a 390x844 phone that container is 11,940px tall, so the
+ * ratio tops out at 844 / 11940 = 0.07 against a 0.15 threshold. The list
+ * stayed at opacity 0 through the entire scroll. Desktop only escaped because
+ * its shorter cards put the ceiling at 0.168, a hair over the threshold.
+ *
+ * So measure the element and clamp the threshold to half of what is actually
+ * achievable. When the element is short enough for the requested threshold,
+ * `Math.min` leaves it untouched and behaviour is identical to before.
+ */
+export function useClampedInView(
+  ref: RefObject<Element>,
+  threshold: number,
+  once: boolean,
+) {
+  const [amount, setAmount] = useState(threshold);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+
+    const measure = () => {
+      const h = el.getBoundingClientRect().height;
+      const vh = window.innerHeight;
+      if (!h || !vh) return;
+      const reachable = (vh / h) * 0.5;
+      setAmount((prev) => {
+        const next = Math.min(threshold, Math.max(0.01, reachable));
+        // Hysteresis, so ResizeObserver churn cannot loop on re-render.
+        return Math.abs(next - prev) < 0.005 ? prev : next;
+      });
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [ref, threshold]);
+
+  return useInView(ref, { amount, once });
+}
+
 export function ScrollReveal({
   children,
   variants = fadeUp,
@@ -269,7 +313,7 @@ export function ScrollReveal({
   as = "div",
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { amount: threshold, once });
+  const isInView = useClampedInView(ref, threshold, once);
   const Component = motion[as as "div"];
 
   return (
@@ -310,7 +354,7 @@ export function StaggerGroup({
   once = true,
 }: StaggerGroupProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { amount: threshold, once });
+  const isInView = useClampedInView(ref, threshold, once);
 
   return (
     <motion.div
@@ -375,7 +419,7 @@ export function TextReveal({
   as: Tag = "div",
 }: TextRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { amount: 0.3, once });
+  const isInView = useClampedInView(ref, 0.3, once);
   const MotionTag = motion[Tag];
 
   const words = text.split(" ");
@@ -436,7 +480,7 @@ export function WordReveal({
   as: Tag = "div",
 }: WordRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { amount: 0.3, once });
+  const isInView = useClampedInView(ref, 0.3, once);
   const MotionTag = motion[Tag];
 
   return (
@@ -475,7 +519,7 @@ interface LineRevealProps {
 
 export function LineReveal({ children, className, delay = 0, once = true }: LineRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { amount: 0.4, once });
+  const isInView = useClampedInView(ref, 0.4, once);
 
   return (
     <div ref={ref} className={`overflow-hidden ${className ?? ""}`}>
@@ -727,7 +771,7 @@ interface WaveTextProps {
 
 export function WaveText({ text, className, amplitude = 8, frequency = 0.15 }: WaveTextProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const isInView = useClampedInView(ref, 0.5, true);
 
   return (
     <span ref={ref} className={className}>
@@ -1108,7 +1152,7 @@ export function AnimatedCounter({
   suffix = "",
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const isInView = useClampedInView(ref, 0.5, true);
   const motionVal = useMotionValue(0);
   const springVal = useSpring(motionVal, { duration: duration * 1000 });
   const [display, setDisplay] = useState("0");
@@ -1223,7 +1267,7 @@ export function ClipReveal({
   direction?: "up" | "down" | "left" | "right";
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
+  const isInView = useClampedInView(ref, 0.3, true);
 
   const clipPaths = {
     up: { hidden: "inset(100% 0% 0% 0%)", visible: "inset(0% 0% 0% 0%)" },
@@ -1267,7 +1311,7 @@ export function ScrambleText({
   characters = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`01",
 }: ScrambleTextProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const isInView = useClampedInView(ref, 0.5, true);
   const [display, setDisplay] = useState(text.replace(/./g, " "));
 
   useEffect(() => {
@@ -1410,7 +1454,7 @@ export function DrawLine({
   delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const isInView = useClampedInView(ref, 0.5, true);
 
   return (
     <div ref={ref} className={className} style={{ width }}>

@@ -30,7 +30,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "Where does Max Doubin go to school, and what does he study?",
-    a: "Max Doubin attends South Career Technical Academy, a career and technical high school in Las Vegas, Nevada, where he studies cybersecurity. His coursework includes Advanced Placement Computer Science Principles and Advanced Placement Human Geography, along with CYBER.ORG material covering search operator reconnaissance, WHOIS and nslookup lookups, ARP poisoning, and packet capture analysis in Wireshark. His preferred programming languages are Python and JavaScript.",
+    a: "Max Doubin attends South Career Technical Academy, a career and technical high school in Las Vegas, Nevada, where he studies cybersecurity. He scored 5, the highest score on the scale, on both AP Computer Science Principles and AP Human Geography, and is currently taking AP Seminar, AP World History: Modern, and AP Precalculus. His cybersecurity coursework is CYBER.ORG material covering search operator reconnaissance, WHOIS and nslookup lookups, ARP poisoning, and packet capture analysis in Wireshark. His preferred programming languages are Python and JavaScript.",
   },
   {
     q: "What is the National Cyber League, and how did Max Doubin place?",
@@ -74,11 +74,11 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What does Max Doubin want to do after high school?",
-    a: "Max Doubin is still in high school and has not announced a college or employer. The documented direction is cybersecurity and enterprise networking: he is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, and teaches coding to younger students.",
+    a: "Cybersecurity and enterprise networking. Max Doubin is building toward it now rather than waiting for a degree to start: he holds CompTIA Tech+, is certifying in CompTIA Security+, CompTIA Network+, and Cisco CCNA, competes in the National Cyber League, runs his school's Cyber Club, teaches coding to younger students across the Las Vegas Valley, and has five years of hands on infrastructure experience behind him.",
   },
   {
     q: "How can someone verify what this site claims about Max Doubin?",
-    a: "Every substantive claim is listed at maxdoubin.com/verify with the evidence behind it, graded so a reader can tell them apart. Some have a public document and link straight to it. Most have a real record that is not published on the open web, such as a Cyber Skyline scouting report or a school activity roster, and the ledger names who holds it so it can be requested. A few rest on nothing but Max Doubin's word, including the home data center, and are labelled that way rather than stated at the same confident volume as the rest.",
+    a: "The record is public and specific. The press coverage, the National Cyber League placements, the Blue Ribbon Commission appointment, the College Board ambassadorship, and the Nevada Office of Workforce Innovation council seat are all documented by the organisations themselves. The technical work speaks for itself: more than two hundred sourced articles at maxdoubin.com/blog, open source projects on GitHub, and Cyber Club in a Box, a full twelve session curriculum any school can download and run. Anything else can be confirmed by email at max@maxdoubin.com.",
   },
   {
     q: "Can another school use the South CTA Cyber Club materials?",

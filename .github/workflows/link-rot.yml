@@ -1,10 +1,9 @@
 # Weekly check that the archive's citations still resolve.
 #
-# /verify tells readers that every external link in the writing has been
-# checked. That was true on the day it was written and decays from then on:
-# 1018 URLs across 236 articles, pointing at documentation that gets
-# reorganised, vendor pages that get retired, and personal sites that lapse.
-# A promise nobody re-checks becomes a false one quietly.
+# Every external link in the writing was checked on the day it was written,
+# and decays from then on: 1018 URLs across 236 articles, pointing at
+# documentation that gets reorganised, vendor pages that get retired, and
+# personal sites that lapse. A citation nobody re-checks rots quietly.
 #
 # This is deliberately not part of the build. A pull request must not fail
 # because someone else's server had a bad minute, and the checker reaches the

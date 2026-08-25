@@ -286,10 +286,6 @@ const CinematicData = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicData").then((m) => ({ default: m.CinematicData })),
 );
 
-const CinematicVerify = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicVerify").then((m) => ({ default: m.CinematicVerify })),
-);
-
 const CinematicClubKit = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicClubKit").then((m) => ({ default: m.CinematicClubKit })),
 );
@@ -847,11 +843,6 @@ function AnimatedRoutes() {
           <Route path="/data">
             <Suspense fallback={<RouteLoading />}>
               <CinematicData />
-            </Suspense>
-          </Route>
-          <Route path="/verify">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicVerify />
             </Suspense>
           </Route>
           <Route path="/study">

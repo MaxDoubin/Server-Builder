@@ -108,7 +108,7 @@ out.push("");
 /*
   Citation count, generated rather than written down.
 
-  The claim ledger at /verify states how many reference URLs the archive
+  The archive's own pages state how many reference URLs it
   carries and how many were checked. That is the page whose entire purpose is
   not containing stale claims, so the number cannot be a literal somebody has
   to remember to update when a post is added. Counted the same way
@@ -159,7 +159,7 @@ void countCitations;
 
 // Cover image attribution links are checked alongside the citations, because
 // a CC BY credit that 404s is a licensing problem rather than an
-// inconvenience. They are counted separately so /verify can say which is
+// inconvenience. They are counted separately so a page can say which is
 // which instead of quoting one total and calling it all references.
 const attributionUrls = new Set<string>();
 for (const post of blogPosts) {
@@ -172,7 +172,7 @@ out.push("/**");
 out.push(" * Unique external reference URLs in the article text.");
 out.push(" *");
 out.push(" * Generated, along with the two counts below. The claim ledger at");
-out.push(" * /verify quotes these, and a number that goes stale on the page about");
+out.push(" * Pages quote these, and a number that goes stale on a page about");
 out.push(" * not making stale claims would be the worst possible place for one.");
 out.push(" */");
 out.push(`export const CITATION_COUNT = ${allCitations.size};`);

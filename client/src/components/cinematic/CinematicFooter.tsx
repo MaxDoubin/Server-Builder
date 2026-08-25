@@ -14,6 +14,7 @@ import {
   AnimatedGradientText,
   Breathing,
   FloatingParticles,
+  useClampedInView,
 } from "@/lib/framer-animations";
 
 const footerLinkVariants = {
@@ -28,7 +29,7 @@ const footerLinkVariants = {
 export function CinematicFooter() {
   const year = new Date().getFullYear();
   const footerRef = useRef<HTMLElement>(null);
-  const isInView = useInView(footerRef, { once: true, amount: 0.15 });
+  const isInView = useClampedInView(footerRef, 0.15, true);
 
   return (
     <footer
@@ -125,7 +126,6 @@ export function CinematicFooter() {
               { href: "/uses", label: "Uses", testId: "link-footer-uses" },
               { href: "/subscribe", label: "Subscribe", testId: "link-footer-subscribe" },
               { href: "/colophon", label: "Colophon", testId: "link-footer-colophon" },
-              { href: "/verify", label: "Verify these claims", testId: "link-footer-verify" },
               { href: "/roadmap", label: "Roadmap", testId: "link-footer-roadmap" },
             ].map((item) => (
               <StaggerItem key={item.href} variants={footerLinkVariants}>

@@ -30,26 +30,26 @@ export function CinematicCerts() {
               Certifications.
             </h1>
             <p className="mt-6 font-mono-tight text-base leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              An honest progress board. I hold CompTIA Tech+, and I am currently
-              studying toward Security+, Network+, and the CCNA. This page tracks
-              what each one covers, what it is worth, and exactly where I stand.
+              I hold CompTIA Tech+ and I am certifying in Security+, Network+,
+              and the CCNA. This page tracks what each one covers, what it is
+              worth, and how far through the objectives I am.
             </p>
           </header>
 
-          {/* An unambiguous, high-contrast statement of status, so nothing here
-              can be misread as a credential already held. */}
+          {/* Status is stated plainly so an "in progress" card is never read as
+              a credential already held. Confident, not apologetic. */}
           <div
             role="note"
-            className="mt-8 flex items-start gap-3 rounded-2xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.08)] p-5"
+            className="mt-8 flex items-start gap-3 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.07)] p-5"
           >
-            <span aria-hidden className="mt-0.5 font-mono-tight text-[hsl(var(--brand-amber))]">
-              !
+            <span aria-hidden className="mt-0.5 font-mono-tight text-[hsl(var(--brand-signal))]">
+              #
             </span>
             <p className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone))]">
-              To be clear: <span className="text-[hsl(var(--brand-amber))]">In progress</span> means
-              I am studying toward the exam and have not yet passed it. I am not
-              claiming Security+, Network+, or the CCNA as credentials I currently
-              hold. Only Tech+ is earned.
+              <span className="text-[hsl(var(--brand-signal))]">Earned</span> means the
+              credential is held today.{" "}
+              <span className="text-[hsl(var(--brand-signal))]">In progress</span> means the
+              objectives are being worked through and the exam has not been sat yet.
             </p>
           </div>
 
@@ -75,10 +75,10 @@ export function CinematicCerts() {
               In progress
             </h2>
             <p className="mt-3 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Studying toward these. Each card lists the official exam objective
-              domains for the stated exam version and the resources I use per
-              domain. Weightings can change between versions, so confirm the
-              current objectives on the vendor's site.
+              Working through these now. Each card lists the official exam
+              objective domains for the stated exam version and the resources I
+              use per domain. Weightings change between versions, so each card
+              also links the vendor's current objectives.
             </p>
             <div className="mt-6 space-y-6">
               {CERTS_IN_PROGRESS.map((cert) => (
