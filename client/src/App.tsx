@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { disposePooledAssets } from "@/lib/asset-pool-dispose";
+import { installLinkPrefetching } from "@/lib/prefetchOnHover";
 import { ScrollProgressBar, CursorGlow } from "@/lib/framer-animations";
 
 import { CinematicHome } from "@/pages/cinematic/CinematicHome";
@@ -402,6 +403,11 @@ export default function App() {
     const handleUnload = () => disposePooledAssets();
     window.addEventListener("beforeunload", handleUnload);
 
+    // Warm the chunk behind any internal link the pointer or keyboard
+    // reaches. Delegated from the document, so every link is covered
+    // without each one having to opt in.
+    const stopPrefetching = installLinkPrefetching();
+
     // Idle-prefetch the most likely next routes so clicking Projects / Blog
     // / Contact doesn't show the skeleton loader on first navigation. Ties
     // into the retry helper, so prefetch failures are silent.
@@ -423,6 +429,7 @@ export default function App() {
 
     return () => {
       window.removeEventListener("beforeunload", handleUnload);
+      stopPrefetching();
       disposePooledAssets();
     };
   }, []);

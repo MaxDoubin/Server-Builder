@@ -107,6 +107,8 @@ jobs:
       # Cheap, and it needs no build output, so run it before the slow step.
       - name: Image budget
         run: node scripts-ci/check-image-budget.mjs
+      - name: Prefetch map
+        run: node scripts-ci/check-prefetch-map.mjs
 
       # vite build, then the prerenderer over 200+ posts, then the server
       # bundle. The heap bump is for the prerender pass, which holds the whole

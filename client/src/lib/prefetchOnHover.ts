@@ -8,9 +8,10 @@
  * router asks for it. Focus is wired alongside hover so keyboard tabbing
  * through the nav gets the same head start.
  *
- * Wiring: the coordinator spreads these handlers onto the nav links in
- * CinematicNav (and anywhere else a route link is rendered), for example
- *   <Link href={link.href} {...prefetchHandlers(link.href)}>
+ * Wiring: App.tsx calls installLinkPrefetching() once, which delegates from
+ * the document and covers every internal link on the site. The per-link
+ * prefetchHandlers below remain for a caller that wants explicit control,
+ * but nothing has to use them.
  *
  * The import specifiers below MUST stay character-identical to the ones in
  * App.tsx. Rollup keys chunks by the resolved module, so a mismatched
@@ -19,6 +20,12 @@
  *
  * Adding a route: add its entry to EXACT_ROUTES or PREFIX_ROUTES here at the
  * same time as the lazy() in App.tsx, or hovering it simply does nothing.
+ *
+ * That instruction was not enough on its own. Thirty-seven routes were added
+ * after this file was written and none of them were registered, so hover
+ * prefetching quietly covered nineteen routes out of fifty-six, including no
+ * tool page at all. scripts-ci/check-prefetch-map.mjs now fails the build on
+ * a lazy route with no entry here, so the drift cannot repeat silently.
  */
 
 import { useMemo } from "react";
@@ -50,6 +57,41 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/legacy/projects": { load: () => import("@/pages/Projects") },
   "/legacy/contact": { load: () => import("@/pages/Contact") },
   "/legacy/game": { load: () => import("@/pages/GamePage"), heavy: true },
+  "/archive": { load: () => import("@/pages/cinematic/CinematicArchive") },
+  "/ask": { load: () => import("@/pages/cinematic/CinematicAsk") },
+  "/certifications": { load: () => import("@/pages/cinematic/CinematicCerts") },
+  "/changelog": { load: () => import("@/pages/cinematic/CinematicChangelog") },
+  "/coding-camps": { load: () => import("@/pages/cinematic/CinematicCamps") },
+  "/colophon": { load: () => import("@/pages/cinematic/CinematicColophon") },
+  "/cyber-club": { load: () => import("@/pages/cinematic/CinematicCyberClub") },
+  "/faq": { load: () => import("@/pages/cinematic/CinematicFaq") },
+  "/flashcards": { load: () => import("@/pages/cinematic/CinematicFlashcards") },
+  "/links": { load: () => import("@/pages/cinematic/CinematicLinks") },
+  "/ncl": { load: () => import("@/pages/cinematic/CinematicNcl") },
+  "/now": { load: () => import("@/pages/cinematic/CinematicNow") },
+  "/paths": { load: () => import("@/pages/cinematic/CinematicPaths") },
+  "/resume": { load: () => import("@/pages/cinematic/CinematicResume") },
+  "/study-timer": { load: () => import("@/pages/cinematic/CinematicStudyTimer") },
+  "/subscribe": { load: () => import("@/pages/cinematic/CinematicSubscribe") },
+  "/timeline": { load: () => import("@/pages/cinematic/CinematicTimeline") },
+  "/tools": { load: () => import("@/pages/cinematic/CinematicTools") },
+  "/tools/base-converter": { load: () => import("@/pages/tools/BaseConverter") },
+  "/tools/chmod-calculator": { load: () => import("@/pages/tools/ChmodCalculator") },
+  "/tools/cidr-visualizer": { load: () => import("@/pages/tools/CidrVisualizer") },
+  "/tools/classical-ciphers": { load: () => import("@/pages/tools/ClassicalCiphers") },
+  "/tools/cron-explainer": { load: () => import("@/pages/tools/CronExplainer") },
+  "/tools/dns-records": { load: () => import("@/pages/tools/DnsRecords") },
+  "/tools/encoder-decoder": { load: () => import("@/pages/tools/EncoderDecoder") },
+  "/tools/hash-identifier": { load: () => import("@/pages/tools/HashIdentifier") },
+  "/tools/http-status-codes": { load: () => import("@/pages/tools/HttpStatusCodes") },
+  "/tools/mac-lookup": { load: () => import("@/pages/tools/MacLookup") },
+  "/tools/packet-headers": { load: () => import("@/pages/tools/PacketHeaders") },
+  "/tools/port-reference": { load: () => import("@/pages/tools/PortReference") },
+  "/tools/regex-tester": { load: () => import("@/pages/tools/RegexTester") },
+  "/tools/subnet-calculator": { load: () => import("@/pages/tools/SubnetCalculator") },
+  "/tools/vlsm-practice": { load: () => import("@/pages/tools/VlsmPractice") },
+  "/tools/wireshark-filters": { load: () => import("@/pages/tools/WiresharkFilters") },
+  "/uses": { load: () => import("@/pages/cinematic/CinematicUses") },
   "/noc": { load: () => import("@/pages/noc-dashboard") },
   "/network": { load: () => import("@/pages/network-dashboard") },
   "/floor": { load: () => import("@/pages/floor-dashboard") },
@@ -66,6 +108,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
 const PREFIX_ROUTES: Record<string, RouteChunk> = {
   "/blog/": { load: () => import("@/pages/cinematic/CinematicBlogPost") },
   "/topics/": { load: () => import("@/pages/cinematic/CinematicTag") },
+  "/ncl/": { load: () => import("@/pages/cinematic/CinematicNclGuide") },
   "/legacy/blog/": { load: () => import("@/pages/BlogPost") },
 };
 
@@ -144,6 +187,50 @@ export function prefetchRoute(href: string): void {
     // Drop the key so a later hover can have another go.
     requested.delete(resolved.key);
   });
+}
+
+/**
+ * Prefetch any internal link the pointer or keyboard lands on, anywhere.
+ *
+ * The per-link handlers below required every link in the codebase to opt in,
+ * and only the two nav components ever did. Tool cards, post cards, footer
+ * links, related posts, topic hubs and reading paths all had a registered
+ * route and no way to trigger it, so hovering them did nothing.
+ *
+ * One delegated listener covers every link that exists now and every link
+ * added later, with no per-call-site wiring to forget. Call once at startup.
+ *
+ * pointerover covers mouse and pen. focusin covers keyboard tabbing. Touch
+ * gets touchstart, which lands roughly a tenth of a second before the click
+ * and is the only warning a tap gives.
+ */
+export function installLinkPrefetching(): () => void {
+  if (typeof document === "undefined") return () => {};
+
+  const onCandidate = (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const anchor = target.closest("a[href]");
+    if (!(anchor instanceof HTMLAnchorElement)) return;
+
+    // Leave anything the router will not handle to the browser: other
+    // origins, new tabs, downloads, and mailto or tel schemes.
+    if (anchor.target && anchor.target !== "_self") return;
+    if (anchor.hasAttribute("download")) return;
+    if (anchor.origin !== window.location.origin) return;
+
+    prefetchRoute(anchor.pathname + anchor.search + anchor.hash);
+  };
+
+  document.addEventListener("pointerover", onCandidate, { passive: true });
+  document.addEventListener("focusin", onCandidate, { passive: true });
+  document.addEventListener("touchstart", onCandidate, { passive: true });
+
+  return () => {
+    document.removeEventListener("pointerover", onCandidate);
+    document.removeEventListener("focusin", onCandidate);
+    document.removeEventListener("touchstart", onCandidate);
+  };
 }
 
 export interface PrefetchHandlers {

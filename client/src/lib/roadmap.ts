@@ -220,7 +220,11 @@ export const ROADMAP: RoadmapGroup[] = [
         note: "Needs an image encoder that is not available in this environment. The covers are already progressive JPEGs at sane sizes.",
       },
       { id: 87, title: "Responsive image srcset", status: "planned" },
-      { id: 88, title: "Prefetch routes on hover", status: "done" },
+      { id: 88, title: "Prefetch routes on hover", status: "done",
+      note:
+        "Registered nineteen routes out of fifty-six and attached the handlers " +
+        "only to the nav, so no tool page or later addition ever prefetched. " +
+        "Now delegated from the document, with a CI check on the route map." },
       { id: 89, title: "Offline reading", status: "done" },
       { id: 90, title: "Security headers", status: "done" },
       { id: 91, title: "Trim the entry bundle further", status: "planned" },
