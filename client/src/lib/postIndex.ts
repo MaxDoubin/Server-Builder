@@ -413,7 +413,7 @@ export const postIndex: PostMeta[] = [
     tags: ["hardware","power","ai"],
     excerpt: "Compute is the easy part to buy. Whether your circuit can carry it and your room can reject the heat is what actually decides what you can run.",
     coverImage: "/images/blog/gpu-power-and-cooling.jpg",
-    coverCredit: {"author":"nordique","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/28435100@N00/7805224296"},
+    coverCredit: {"author":"nordique","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/28435100@N00/"},
     wordCount: 1199,
   },
   {
@@ -1333,7 +1333,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I built an immersive 3D datacenter simulation with procedural generation, real-time thermal modeling, and React Three Fiber.",
     coverImage: "/images/blog/building-hyperscale.jpg",
     coverCredit: {"author":"DOE / National Renewable Energy Laboratory (NREL)","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Data_center_infrastructure_in_the_United_States.jpg"},
-    wordCount: 332,
+    wordCount: 1800,
   },
   {
     slug: "why-homelabs-matter",
@@ -1353,7 +1353,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "What I learned from reaching the top 1 percent in competitive cybersecurity, and why the process matters more than the ranking.",
     coverImage: "/images/blog/ncl-competition-lessons.jpg",
     coverCredit: {"author":"U.S. Air Force photo by Tech. Sgt. Robert Biermann","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Units_compete_in_NAF-wide_cyber_competition_(5470557).jpg"},
-    wordCount: 273,
+    wordCount: 1558,
   },
   {
     slug: "mac-pro-rack-mount-homelab",
@@ -1623,7 +1623,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The core switching concepts I learned on Cisco hardware and use every day in my lab environment.",
     coverImage: "/images/blog/cisco-switching-fundamentals.jpg",
     coverCredit: {"author":"Jemimus","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_Catalyst_2950_network_switches_in_situ_-_IMG_1076.jpg"},
-    wordCount: 349,
+    wordCount: 1829,
   },
   {
     slug: "dell-idrac-tips-tricks",
@@ -1872,7 +1872,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "BGP is the protocol that holds the internet together. Here is what you actually need to know to start working with it in real environments.",
     coverImage: "/images/blog/bgp-for-network-engineers.jpg",
     coverCredit: {"author":"pmsyyz","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/96671942@N00/5768497319"},
-    wordCount: 336,
+    wordCount: 1817,
   },
   {
     slug: "fortigate-cli-essentials",
@@ -1913,7 +1913,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A step-by-step look at building a monitoring system that gives you real visibility into your network's health, traffic, and events.",
     coverImage: "/images/blog/network-monitoring-system-build.jpg",
     coverCredit: {"author":"Masdestructive","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Batelco_Network_Operations_Centre_(NOC).JPG"},
-    wordCount: 303,
+    wordCount: 1760,
   },
   {
     slug: "redundant-power-supplies",
@@ -1923,7 +1923,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Redundant PSUs are a fundamental part of enterprise server design. Here is how they actually work and when they matter.",
     coverImage: "/images/blog/redundant-power-supplies.jpg",
     coverCredit: {"author":"Thesydneyknowitall at English Wikipedia","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DL380sREAR.jpg"},
-    wordCount: 332,
+    wordCount: 1624,
   },
   {
     slug: "spanning-tree-protocol-deep-dive",
@@ -1986,7 +1986,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Proxmox clustering lets multiple hosts share workloads and survive individual node failures. Here is how to set it up and what to watch out for.",
     coverImage: "/images/blog/proxmox-clustering-high-availability.jpg",
     coverCredit: {"author":"Patrick Finnegan","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:HP_s6500_chassis_with_ProLiant_SL250s_servers_and_storage.jpg"},
-    wordCount: 305,
+    wordCount: 1616,
   },
   {
     slug: "fortigate-sdwan-configuration",
@@ -2005,7 +2005,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A well-designed zone architecture is the foundation of network security. Here is how to think about segmenting your network into security zones.",
     coverImage: "/images/blog/network-security-zones-dmz.jpg",
     coverCredit: {"author":"Dgondim","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Traditional_Single_Layer_DMZ_with_two_flanking_firewalls.png"},
-    wordCount: 297,
+    wordCount: 1623,
   },
   {
     slug: "power-over-ethernet-poe",
@@ -2015,7 +2015,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "PoE eliminates the need for separate power supplies for IP phones, cameras, and wireless APs. Here is how the standard works and how to plan for it.",
     coverImage: "/images/blog/power-over-ethernet-poe.jpg",
     coverCredit: {"author":"Phiarc","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:PowerDsine_3524G_24-Port_Gigabit_Ethernet_PoE_Midspan_Injector_with_top_cover_removed,_oblique_view.jpg"},
-    wordCount: 300,
+    wordCount: 1650,
   },
   {
     slug: "server-memory-architecture",
@@ -2056,7 +2056,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "DNS is foundational to every network connection, which makes it a prime target for attacks. Here is how DNSSEC and encrypted DNS protect the resolution process.",
     coverImage: "/images/blog/dns-security-dnssec.jpg",
     coverCredit: {"author":"Jan Bellon","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:DNSSEC_Trust_Anchor_Diagram.png"},
-    wordCount: 328,
+    wordCount: 1809,
   },
   {
     slug: "high-availability-clustering",
@@ -2108,7 +2108,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A runbook that no one reads is just a box-checking exercise. Here is how to write documentation that engineers actually reach for during incidents.",
     coverImage: "/images/blog/runbooks-infrastructure-teams.jpg",
     coverCredit: {"author":"Steve Jurvetson from Los Altos, USA","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apollo_17_Lunar_Surface_Checklist_(4705455692).jpg"},
-    wordCount: 290,
+    wordCount: 1454,
   },
   {
     slug: "ospf-routing-protocol",
@@ -2127,7 +2127,7 @@ export const postIndex: PostMeta[] = [
     tags: ["dell","servers","hardware"],
     excerpt: "Most people use iDRAC for basic console access and power control. Here are the features that make it genuinely powerful for server management.",
     coverImage: "/images/blog/idrac-advanced-features.jpg",
-    wordCount: 326,
+    wordCount: 1611,
   },
   {
     slug: "syslog-centralized-logging",
@@ -2167,7 +2167,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "NFS and SMB both share files over a network, but they are designed for different environments. Here is how to choose between them.",
     coverImage: "/images/blog/nfs-vs-smb-network-storage.jpg",
     coverCredit: {"author":"DYVER","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Synology_Disk_Station_DS223J_-_NAS-Server.jpg"},
-    wordCount: 315,
+    wordCount: 1806,
   },
   {
     slug: "ntp-enterprise-networks",
@@ -2207,7 +2207,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Enterprise access points cost significantly more than consumer routers. Here is what you actually get for that investment.",
     coverImage: "/images/blog/enterprise-wifi-vs-consumer.jpg",
     coverCredit: {"author":"Xosema","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Cisco_Aironet_1131AG_-_Close.jpg"},
-    wordCount: 292,
+    wordCount: 1818,
   },
   {
     slug: "dhcp-snooping-arp-inspection",
@@ -2300,7 +2300,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Networking has changed significantly in the last few years. Here is what the role looks like now and what skills matter most going forward.",
     coverImage: "/images/blog/network-engineer-role-2026.jpg",
     coverCredit: {"author":"cogdogblog","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0/","sourceUrl":"https://www.flickr.com/photos/37996646802@N01/537486932"},
-    wordCount: 287,
+    wordCount: 1332,
   },
   {
     slug: "penetration-testing-basics",
@@ -2331,7 +2331,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Server consolidation using virtualization reduces hardware costs, power consumption, and management complexity. Here is how to plan and execute it.",
     coverImage: "/images/blog/server-consolidation-virtualization.jpg",
     coverCredit: {"author":"e53","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/12149418@N00/2367945536"},
-    wordCount: 307,
+    wordCount: 1654,
   },
   {
     slug: "personal-brand-in-tech",

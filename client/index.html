@@ -12,7 +12,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+    <!--
+      Fonts load without blocking the first paint.
+
+      As a plain stylesheet this was render blocking against a third party
+      origin: nothing painted until fonts.googleapis.com answered. Measured
+      against the built site with that host unreachable, DOMContentLoaded went
+      from 124ms to 12778ms and LCP from 832ms to 13460ms. Google Fonts is
+      usually fast, so most visitors never saw that, but "usually" is doing a
+      lot of work: a filtered school network, which is a large part of who this
+      site is for, hits exactly this path.
+
+      media="print" means the browser fetches the sheet at low priority and
+      does not block on it; the onload flips it to apply. Every family in
+      tailwind.config.ts ends in system-ui or monospace, so text paints
+      immediately in a system font and swaps when the webfont lands, which is
+      also why the URL carries display=swap.
+    -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" media="print" onload="this.media='all';this.onload=null;">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet"></noscript>
 
     <title>Max Doubin | Cybersecurity Specialist &amp; Enterprise Networking Expert</title>
     <meta name="description" content="Max Doubin, cybersecurity student in Las Vegas. Top 1 percent National Cyber League, CompTIA Tech plus, and field notes on networking, servers, and security.">
