@@ -81,7 +81,10 @@ def main():
     render(96, bg=OBSIDIAN).save(OUT / "favicon.png", optimize=True)
     # Root .ico, which Google still probes as a fallback.
     render(48, bg=OBSIDIAN).save(OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
-    render(180, pad=0.10, bg=OBSIDIAN).save(OUT / "apple-touch-icon.png", optimize=True)
+    # 192 rather than the usual iOS 180: Google will also pick an
+    # apple-touch-icon as the search favicon, and it wants a multiple of 48.
+    # iOS downscales 192 cleanly, so this satisfies both.
+    render(192, pad=0.10, bg=OBSIDIAN).save(OUT / "apple-touch-icon.png", optimize=True)
     for s in (192, 512):
         render(s, pad=0.20, bg=OBSIDIAN).save(OUT / f"icon-maskable-{s}.png", optimize=True)
     print("favicons written to", OUT)
