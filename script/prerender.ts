@@ -30,6 +30,22 @@ const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
 const { FAQS } = await import("../client/src/lib/faqs.ts");
 const { KIT_SESSIONS, KIT_RULES, KIT_RESOURCES } = await import("../client/src/lib/clubKit.ts");
+const { siteConfig, PRESS } = await import("../client/src/lib/siteConfig.ts");
+const { clubConfig } = await import("../client/src/lib/clubConfig.ts");
+const { nowConfig } = await import("../client/src/lib/nowConfig.ts");
+const { usesConfig } = await import("../client/src/lib/usesConfig.ts");
+const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
+const { TIMELINE_GROUPS } = await import("../client/src/lib/timelineConfig.ts");
+const { ALL_CERTS } = await import("../client/src/lib/certConfig.ts");
+const { ROADMAP, ROADMAP_UPDATED, roadmapCounts } = await import("../client/src/lib/roadmap.ts");
+const { CHANGELOG } = await import("../client/src/lib/changelog.ts");
+const { DECKS } = await import("../client/src/lib/flashcardDecks.ts");
+const { LINK_GROUPS } = await import("../client/src/lib/linksConfig.ts");
+const { STACK, DECISIONS } = await import("../client/src/lib/colophonConfig.ts");
+const { READERS } = await import("../client/src/lib/subscribeConfig.ts");
+const { ANSWERED } = await import("../client/src/lib/askConfig.ts");
+const { COVERS, TAKEAWAYS } = await import("../client/src/lib/campsConfig.ts");
+const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -607,22 +623,6 @@ ${JSON.stringify({
     rootContent: blogRootContent,
   });
 
-  // ── projects ──
-  await writePage("projects", base, {
-    title: "Projects | Max Doubin",
-    description:
-      "Projects by Max Doubin in cybersecurity, enterprise networking, 3D datacenter simulation, and web development.",
-    canonical: `${SITE_URL}/projects`,
-  });
-
-  // ── contact ──
-  await writePage("contact", base, {
-    title: "Contact | Max Doubin",
-    description:
-      "Get in touch with Max Doubin, cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
-    canonical: `${SITE_URL}/contact`,
-  });
-
   /*
     Standalone pages.
 
@@ -863,18 +863,466 @@ ${JSON.stringify({
   <nav><a href="${SITE_URL}/cyber-club">South CTA Cyber Club</a> · <a href="${SITE_URL}/ncl">National Cyber League notes</a> · <a href="${SITE_URL}/tools">Browser tools</a></nav>
 </main>`;
 
+  /*
+    Static bodies for the pages that had none.
+
+    Nineteen routes prerendered the site nav and nothing else: 297 characters,
+    no heading, no prose. /resume, /projects, /contact and /certifications
+    were among them, so a crawler reading the page a hiring manager or an
+    admissions officer would be sent to found an empty document. React filled
+    them in on the client, which does not help anything that does not run it.
+
+    Every body below is generated from the same module the React page renders
+    from, so the two cannot drift. Where a page's copy lives in the component
+    rather than a config module, the summary here is deliberately short: it
+    states what the page is and links onward, rather than duplicating prose
+    that would go stale silently.
+  */
+  const li = (items: string[]) => items.map((i) => `<li>${i}</li>`).join("");
+  const dl = (items: Array<{ title: string; detail: string }>) =>
+    items
+      .map((i) => `<dt>${esc(i.title)}</dt><dd>${esc(i.detail)}</dd>`)
+      .join("\n    ");
+  const backLinks = (
+    links: Array<[string, string]>,
+  ) => `<nav>${links.map(([href, label]) => `<a href="${SITE_URL}${href}">${esc(label)}</a>`).join(" · ")}</nav>`;
+
+  const resumeContent = `
+<main>
+  <h1>Resume: ${esc(siteConfig.name)}</h1>
+  <p>${esc(siteConfig.tagline)}</p>
+  ${siteConfig.fullBio.map((para) => `<p>${esc(para)}</p>`).join("\n  ")}
+  <section>
+    <h2>Currently</h2>
+    ${siteConfig.currently
+      .map(
+        (group) => `<h3>${esc(group.category)}</h3>
+    <ul>${li(group.items.map(esc))}</ul>`,
+      )
+      .join("\n    ")}
+  </section>
+  <section>
+    <h2>Leadership and service</h2>
+    ${siteConfig.leadership
+      .map(
+        (role) => `<h3>${esc(role.title)}, ${esc(role.org)}</h3>
+    <ul>${li(role.details.map(esc))}</ul>`,
+      )
+      .join("\n    ")}
+  </section>
+  <section>
+    <h2>Achievements</h2>
+    <dl>${dl(siteConfig.achievements.map((a) => ({ title: a.title, detail: a.description })))}</dl>
+  </section>
+  <section>
+    <h2>Skills</h2>
+    ${siteConfig.skillCategories
+      .map(
+        (cat) => `<h3>${esc(cat.name)}</h3>
+    <ul>${li(cat.skills.map(esc))}</ul>`,
+      )
+      .join("\n    ")}
+  </section>
+  <section>
+    <h2>Contact</h2>
+    <p><a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a></p>
+  </section>
+  ${backLinks([["/projects", "Projects"], ["/timeline", "Timeline"], ["/certifications", "Certifications"], ["/contact", "Contact"]])}
+</main>`;
+
+  const projectsContent = `
+<main>
+  <h1>Projects</h1>
+  <p>Work by ${esc(siteConfig.name)} across cybersecurity, enterprise networking, 3D simulation and web development. Each one is something that runs, not a description of something planned.</p>
+  ${siteConfig.projects
+    .map(
+      (project) => `<section>
+    <h2>${esc(project.title)}</h2>
+    <p>${esc(project.description)}</p>
+    <p>Built with: ${project.tech.map(esc).join(", ")}</p>
+    ${project.link ? `<p><a href="${project.link.startsWith("http") ? project.link : SITE_URL + project.link}">Open ${esc(project.title)}</a></p>` : ""}
+  </section>`,
+    )
+    .join("\n  ")}
+  ${backLinks([["/resume", "Resume"], ["/blog", "Field Notes"], ["/game", "Simulator"]])}
+</main>`;
+
+  const timelineContent = `
+<main>
+  <h1>Timeline</h1>
+  <p>Competitions, awards and milestones for ${esc(siteConfig.name)}. Entries carry a date only where one is actually recorded; the rest are grouped as undated rather than given a guessed year.</p>
+  ${TIMELINE_GROUPS.map(
+    (group) => `<section>
+    <h2>${esc(group.label)}</h2>
+    ${group.note ? `<p>${esc(group.note)}</p>` : ""}
+    <dl>${group.entries
+      .map(
+        (entry) =>
+          `<dt>${esc(entry.title)}${entry.when ? ` (${esc(entry.when)})` : ""}</dt><dd>${esc(entry.description)}</dd>`,
+      )
+      .join("\n    ")}</dl>
+  </section>`,
+  ).join("\n  ")}
+  <p>Press: <a href="${PRESS.url}">${esc(PRESS.headline)}</a>, ${esc(PRESS.outlet)}, ${esc(PRESS.displayDate)}.</p>
+  ${backLinks([["/resume", "Resume"], ["/certifications", "Certifications"], ["/ncl", "National Cyber League"]])}
+</main>`;
+
+  const certificationsContent = `
+<main>
+  <h1>Certifications</h1>
+  <p>What ${esc(siteConfig.name)} has earned, what is in progress, and what each exam actually covers. Nothing in progress is listed as earned.</p>
+  ${ALL_CERTS.map(
+    (cert) => `<section>
+    <h2>${esc(cert.name)} (${esc(cert.code)})</h2>
+    <p>${esc(cert.vendor)}, ${esc(cert.level)}. Status: ${esc(cert.statusLabel)}. ${esc(cert.statusDetail)}</p>
+    <p>${esc(cert.covers)}</p>
+    <p>${esc(cert.worth)}</p>
+    <h3>Exam domains</h3>
+    <dl>${dl(
+      cert.domains.map((d: { name: string; weight: string; summary: string }) => ({
+        title: `${d.name} (${d.weight})`,
+        detail: d.summary,
+      })),
+    )}</dl>
+    <p><a href="${cert.officialUrl}">Official ${esc(cert.code)} objectives</a></p>
+  </section>`,
+  ).join("\n  ")}
+  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/resume", "Resume"]])}
+</main>`;
+
+  const cyberClubContent = `
+<main>
+  <h1>${esc(clubConfig.fullName)}</h1>
+  <p>${esc(clubConfig.intro)}</p>
+  <p>${esc(clubConfig.school)}, ${esc(clubConfig.city)}, ${esc(clubConfig.region)}. President: ${esc(clubConfig.president)}.</p>
+  <section>
+    <h2>What the club does</h2>
+    <dl>${dl(clubConfig.whatWeDo)}</dl>
+  </section>
+  <section>
+    <h2>What you learn</h2>
+    <dl>${dl(clubConfig.whatYouLearn)}</dl>
+  </section>
+  <section>
+    <h2>How to join</h2>
+    <ul>${li(clubConfig.howToJoin.map(esc))}</ul>
+  </section>
+  <section>
+    <h2>Questions parents ask</h2>
+    <dl>${clubConfig.parentFaq
+      .map((f: { q: string; a: string }) => `<dt>${esc(f.q)}</dt><dd>${esc(f.a)}</dd>`)
+      .join("\n    ")}</dl>
+  </section>
+  ${backLinks([["/cyber-club/kit", "Cyber Club in a Box"], ["/ncl", "National Cyber League notes"], ["/contact", "Contact"]])}
+</main>`;
+
+  const nowContent = `
+<main>
+  <h1>Now</h1>
+  <p>${esc(nowConfig.intro)}</p>
+  <p>Covering ${esc(nowConfig.period)}. Last updated ${esc(nowConfig.lastUpdatedDisplay)}.</p>
+  ${nowConfig.sections
+    .map(
+      (section) => `<section>
+    <h2>${esc(section.heading)}</h2>
+    ${section.summary ? `<p>${esc(section.summary)}</p>` : ""}
+    <dl>${dl(section.items.map((i: { title: string; detail: string }) => ({ title: i.title, detail: i.detail })))}</dl>
+  </section>`,
+    )
+    .join("\n  ")}
+  ${backLinks([["/uses", "Uses"], ["/roadmap", "Roadmap"], ["/blog", "Field Notes"]])}
+</main>`;
+
+  const usesContent = `
+<main>
+  <h1>Uses</h1>
+  <p>${esc(usesConfig.intro)}</p>
+  ${usesConfig.groups
+    .map((group) => {
+      // unconfirmed entries are placeholders the React page also refuses to
+      // render. Prerendering them would publish a claim the site withholds.
+      const items = group.items.filter(
+        (i: { unconfirmed?: boolean }) => !i.unconfirmed,
+      );
+      if (!items.length) return "";
+      return `<section>
+    <h2>${esc(group.heading)}</h2>
+    ${group.summary ? `<p>${esc(group.summary)}</p>` : ""}
+    <dl>${items
+      .map(
+        (i: { name: string; why: string }) =>
+          `<dt>${esc(i.name)}</dt><dd>${esc(i.why)}</dd>`,
+      )
+      .join("\n    ")}</dl>
+  </section>`;
+    })
+    .filter(Boolean)
+    .join("\n  ")}
+  ${backLinks([["/now", "Now"], ["/colophon", "How this site is built"], ["/tools", "Browser tools"]])}
+</main>`;
+
+  const pathsContent = `
+<main>
+  <h1>Reading paths</h1>
+  <p>Curated routes through the archive, in the order the ideas actually build on each other. Each step says why it comes after the one before it.</p>
+  ${readingPaths
+    .map(
+      (rp) => `<section>
+    <h2>${esc(rp.title)}</h2>
+    <p>${esc(rp.blurb)}</p>
+    <ol>${rp.steps
+      .map((step: { slug: string; why: string }) => {
+        const post = postIndex.find((p) => p.slug === step.slug);
+        const label = post ? post.title : step.slug;
+        return `<li><a href="${SITE_URL}/blog/${step.slug}">${esc(label)}</a>: ${esc(step.why)}</li>`;
+      })
+      .join("")}</ol>
+  </section>`,
+    )
+    .join("\n  ")}
+  ${backLinks([["/blog", "Field Notes"], ["/archive", "Archive"], ["/topics", "Topics"]])}
+</main>`;
+
+  const archiveContent = `
+<main>
+  <h1>Archive</h1>
+  <p>Every field note on ${esc(siteConfig.siteUrl.replace("https://", ""))}, newest first. ${postIndex.length} articles.</p>
+  <ul>${postIndex
+    .map(
+      (p) =>
+        `<li><a href="${SITE_URL}/blog/${p.slug}">${esc(p.title)}</a> (${esc(formatPostDate(p.date))}): ${esc(p.excerpt)}</li>`,
+    )
+    .join("\n    ")}</ul>
+  ${backLinks([["/blog", "Field Notes"], ["/topics", "Topics"], ["/paths", "Reading paths"]])}
+</main>`;
+
+  const roadmapContent = (() => {
+    const counts = roadmapCounts();
+    return `
+<main>
+  <h1>Roadmap</h1>
+  <p>What is planned, in progress, done and blocked on this site, tracked in public. Last updated ${esc(ROADMAP_UPDATED)}. Done: ${counts.done}. In progress: ${counts["in-progress"]}. Planned: ${counts.planned}. Blocked: ${counts.blocked}.</p>
+  ${ROADMAP.map(
+    (group) => `<section>
+    <h2>${esc(group.title)}</h2>
+    <p>${esc(group.blurb)}</p>
+    <ul>${group.items
+      .map(
+        (item: { id: number; title: string; status: string; note?: string }) =>
+          `<li>${esc(item.title)} (${esc(item.status)})${item.note ? `: ${esc(item.note)}` : ""}</li>`,
+      )
+      .join("")}</ul>
+  </section>`,
+  ).join("\n  ")}
+  ${backLinks([["/changelog", "Changelog"], ["/colophon", "Colophon"], ["/now", "Now"]])}
+</main>`;
+  })();
+
+  const changelogContent = `
+<main>
+  <h1>Changelog</h1>
+  <p>What changed on this site and when, newest first.</p>
+  ${CHANGELOG.map(
+    (release) => `<section>
+    <h2>${esc(release.title)}</h2>
+    <p>${esc(release.date)}</p>
+    <ul>${li(release.entries.map(esc))}</ul>
+  </section>`,
+  ).join("\n  ")}
+  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"]])}
+</main>`;
+
+  const flashcardsContent = `
+<main>
+  <h1>Flashcards</h1>
+  <p>Spaced repetition decks for networking, ports, security, Linux and cryptography. ${DECKS.reduce((n: number, d: { cards: unknown[] }) => n + d.cards.length, 0)} cards across ${DECKS.length} decks, scheduled in the browser with nothing sent anywhere.</p>
+  ${DECKS.map(
+    (deck) => `<section>
+    <h2>${esc(deck.name)}</h2>
+    <p>${esc(deck.description)} ${deck.cards.length} cards.</p>
+  </section>`,
+  ).join("\n  ")}
+  ${backLinks([["/study", "Study guides"], ["/certifications", "Certifications"], ["/tools", "Browser tools"]])}
+</main>`;
+
+  const linksContent = `
+<main>
+  <h1>Links</h1>
+  <p>Free and freemium resources worth the time, grouped by what they are for. Every entry points at a site root rather than a deep path, because a guessed deep link rots and takes the reader's trust with it.</p>
+  ${LINK_GROUPS.map(
+    (group) => `<section>
+    <h2>${esc(group.heading)}</h2>
+    <p>${esc(group.summary)}</p>
+    <dl>${group.items
+      .map(
+        (r: { name: string; url: string; why: string; access: string }) =>
+          `<dt><a href="${r.url}">${esc(r.name)}</a> (${esc(r.access)})</dt><dd>${esc(r.why)}</dd>`,
+      )
+      .join("\n    ")}</dl>
+  </section>`,
+  ).join("\n  ")}
+  ${backLinks([["/study", "Study guides"], ["/ncl", "National Cyber League notes"], ["/tools", "Browser tools"]])}
+</main>`;
+
+  const colophonContent = `
+<main>
+  <h1>Colophon</h1>
+  <p>How ${esc(siteConfig.siteUrl.replace("https://", ""))} is built, and why each piece was chosen over the alternative.</p>
+  <section>
+    <h2>Stack</h2>
+    <dl>${STACK.map(
+      (item: { name: string; role: string; detail: string }) =>
+        `<dt>${esc(item.name)} (${esc(item.role)})</dt><dd>${esc(item.detail)}</dd>`,
+    ).join("\n    ")}</dl>
+  </section>
+  <section>
+    <h2>Decisions</h2>
+    ${DECISIONS.map(
+      (d: { title: string; body: string[] }) => `<h3>${esc(d.title)}</h3>
+    ${d.body.map((para) => `<p>${esc(para)}</p>`).join("\n    ")}`,
+    ).join("\n    ")}
+  </section>
+  ${backLinks([["/roadmap", "Roadmap"], ["/changelog", "Changelog"], ["/uses", "Uses"]])}
+</main>`;
+
+  const subscribeContent = `
+<main>
+  <h1>Subscribe</h1>
+  <p>The field notes publish to a feed at <a href="${SITE_URL}/feed.xml">${SITE_URL}/feed.xml</a>. A feed is a plain file this site updates when something new goes out; your reader checks it and shows you the new posts. No account, no algorithm deciding what you see, and no way for anyone here to know you are reading.</p>
+  <section>
+    <h2>Readers worth trying</h2>
+    <p>One per situation rather than a ranked list. Which one is right depends far more on which devices you own than on features.</p>
+    <dl>${READERS.map(
+      (r: { name: string; url: string; platforms: string; note: string }) =>
+        `<dt><a href="${r.url}">${esc(r.name)}</a> (${esc(r.platforms)})</dt><dd>${esc(r.note)}</dd>`,
+    ).join("\n    ")}</dl>
+  </section>
+  ${backLinks([["/blog", "Field Notes"], ["/archive", "Archive"], ["/paths", "Reading paths"]])}
+</main>`;
+
+  const askContent = `
+<main>
+  <h1>Ask</h1>
+  <p>Questions about networking, security, the home lab, competition prep or starting a club. This site is static files on a CDN with nothing running behind it, so the page composes your message and hands it to something that can deliver it: a mail client, or GitHub. You see the full text before anything is sent.</p>
+  <section>
+    <h2>Already answered</h2>
+    <p>These have a written answer already. Worth checking before asking.</p>
+    <ul>${ANSWERED.map(
+      (a: { question: string; href: string; answer: string }) =>
+        `<li>${esc(a.question)}: <a href="${SITE_URL}${a.href}">${esc(a.answer)}</a></li>`,
+    ).join("\n    ")}</ul>
+  </section>
+  <p>Direct email: <a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a></p>
+  ${backLinks([["/contact", "Contact"], ["/faq", "FAQ"], ["/blog", "Field Notes"]])}
+</main>`;
+
+  const campsContent = `
+<main>
+  <h1>Youth coding camps</h1>
+  <p>Coding camps taught by ${esc(siteConfig.name)} across the Las Vegas Valley. Students write real code from the first session; nothing is dragged into place on their behalf.</p>
+  <section>
+    <h2>What the camps cover</h2>
+    <dl>${dl(COVERS)}</dl>
+  </section>
+  <section>
+    <h2>What a beginner takes home</h2>
+    <dl>${dl(TAKEAWAYS)}</dl>
+  </section>
+  <p>To ask about a session, email <a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a>.</p>
+  ${backLinks([["/contact", "Contact"], ["/cyber-club", "Cyber Club"], ["/projects", "Projects"]])}
+</main>`;
+
+  const contactContent = `
+<main>
+  <h1>Contact</h1>
+  <p>${esc(siteConfig.name)}, ${esc(siteConfig.tagline)}. Based in Las Vegas, Nevada.</p>
+  <p>Email: <a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a></p>
+  <p>GitHub: <a href="${siteConfig.social.github.url}">${esc(siteConfig.social.github.handle)}</a></p>
+  <p>Worth reaching out about: cybersecurity competition and club setup, enterprise networking and home lab questions, youth coding instruction, and speaking to student groups. Questions with a general answer are better on <a href="${SITE_URL}/ask">the ask page</a>, where the answer can be published for the next person with the same one.</p>
+  ${backLinks([["/ask", "Ask"], ["/resume", "Resume"], ["/faq", "FAQ"]])}
+</main>`;
+
+  const studyTimerContent = `
+<main>
+  <h1>Study timer</h1>
+  <p>A focus timer for certification study, built around work intervals separated by short breaks and a longer break every few cycles. Work, short break, long break and cycle length are all adjustable.</p>
+  <p>It runs entirely in the browser. Settings and session counts are kept in local storage on your own device, nothing is sent anywhere, and no account is needed. Closing the tab loses nothing; reopening it restores where you were.</p>
+  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/certifications", "Certifications"]])}
+</main>`;
+
+  const nclHubContent = `
+<main>
+  <h1>National Cyber League</h1>
+  <p>What the National Cyber League is, how the scoring works, how to prepare for it, and a written guide to every challenge category. The competition runs capture the flag style challenges on the Cyber Skyline platform, scored on accuracy and completion rather than speed alone.</p>
+  <section>
+    <h2>Category guides</h2>
+    <dl>${NCL_GUIDE_DATA.map(
+      (guide: { slug: string; category: string; tagline: string }) =>
+        `<dt><a href="${SITE_URL}/ncl/${guide.slug}">${esc(guide.category)}</a></dt><dd>${esc(guide.tagline)}</dd>`,
+    ).join("\n    ")}</dl>
+  </section>
+  <section>
+    <h2>Competition day checklist</h2>
+    <ol>${li(DAY_CHECKLIST.map(esc))}</ol>
+  </section>
+  <section>
+    <h2>Mistakes worth not repeating</h2>
+    <ul>${li(MISTAKES.map(esc))}</ul>
+  </section>
+  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/cyber-club", "Cyber Club"], ["/links", "Links"]])}
+</main>`;
+
+  /*
+    Keyed by the same `dir` the STANDALONE list uses, so adding a page without
+    a body here is caught by check-prerender-depth rather than shipping empty.
+  */
+  const STANDALONE_CONTENT: Record<string, string> = {
+    archive: archiveContent,
+    paths: pathsContent,
+    now: nowContent,
+    uses: usesContent,
+    resume: resumeContent,
+    timeline: timelineContent,
+    "cyber-club": cyberClubContent,
+    "cyber-club/kit": kitContent,
+    "coding-camps": campsContent,
+    colophon: colophonContent,
+    links: linksContent,
+    subscribe: subscribeContent,
+    "study-timer": studyTimerContent,
+    ask: askContent,
+    changelog: changelogContent,
+    certifications: certificationsContent,
+    ncl: nclHubContent,
+    flashcards: flashcardsContent,
+  };
+
   for (const page of STANDALONE) {
     const { dir, ...meta } = page;
-    if (dir === "cyber-club/kit") {
-      await writePage(dir, base, { ...meta, rootContent: kitContent });
-      continue;
-    }
     if (dir === "faq") {
       await writePage(dir, base, { ...meta, schema: faqSchema, rootContent: faqContent });
       continue;
     }
-    await writePage(dir, base, meta);
+    await writePage(dir, base, { ...meta, rootContent: STANDALONE_CONTENT[dir] });
   }
+
+  // ── projects ──
+  await writePage("projects", base, {
+    title: "Projects | Max Doubin",
+    description:
+      "Projects by Max Doubin in cybersecurity, enterprise networking, 3D datacenter simulation, and web development.",
+    canonical: `${SITE_URL}/projects`,
+    rootContent: projectsContent,
+  });
+
+  // ── contact ──
+  await writePage("contact", base, {
+    title: "Contact | Max Doubin",
+    description:
+      "Get in touch with Max Doubin, cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+    canonical: `${SITE_URL}/contact`,
+    rootContent: contactContent,
+  });
 
   // ── National Cyber League category guides ──
   const NCL_GUIDES: Array<[string, string, string]> = [
@@ -1229,6 +1677,7 @@ ${matched
     description:
       "What is planned, in progress, done and blocked on maxdoubin.com, tracked in public across 100 improvements.",
     canonical: `${SITE_URL}/roadmap`,
+    rootContent: roadmapContent,
   });
 
   // ── sitemap ──
