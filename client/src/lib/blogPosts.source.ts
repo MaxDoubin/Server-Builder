@@ -30368,6 +30368,636 @@ The bridge is already there in the material. The Caesar cipher exercise is a cry
 - https://en.wikipedia.org/wiki/Pair_programming
 `,
   },
+  {
+    slug: "encrypted-dns-and-internal-name-resolution",
+    title: "Encrypted DNS And Internal Name Resolution",
+    date: "2026-08-23",
+    tags: ["networking", "security", "dns"],
+    excerpt:
+      "DoH and DoT move the choice of resolver from the network to the application. That is what breaks split-horizon DNS, and here is what actually works on a network you run.",
+    coverImage: "/images/blog/encrypted-dns-and-internal-name-resolution.jpg",
+    content: `
+## What encrypted DNS actually changes
+
+For most of the history of the internet, the answer to "which resolver does
+this machine use" came from the network. DHCP handed out option 6, the stub
+resolver wrote it into \`/etc/resolv.conf\`, and every application on the box
+asked that server. If you ran the network, you ran name resolution, and
+everything downstream of that assumption worked.
+
+Encrypted DNS does not change the protocol very much. It changes who picks the
+resolver. DNS over HTTPS is a normal DNS query in a normal HTTPS request, and
+an application that speaks HTTPS already has everything it needs to resolve
+names without asking you. That is the part that lands on your desk.
+
+## The two protocols, briefly
+
+DNS over TLS (RFC 7858) is ordinary DNS wire format inside a TLS session on
+TCP port 853. It has its own port, so it is visible on the network and
+trivially blockable. DNS over HTTPS (RFC 8484) puts the same wire format in an
+HTTP request body or in a base64url query parameter on port 443, mixed in with
+every other web request on the machine. There is also DNS over QUIC on 853
+(RFC 9250), which behaves like DoT for your purposes.
+
+Both are easy to speak from a shell, which is the fastest way to prove a path
+works before you trust a client with it:
+
+\`\`\`bash
+# DoT, with the certificate actually validated
+kdig -d @1.1.1.1 +tls-ca +tls-host=cloudflare-dns.com \\
+  example.com A
+
+# DoH, RFC 8484 wire format, GET with the query in base64url
+curl -sS -H 'accept: application/dns-message' \\
+  'https://cloudflare-dns.com/dns-query?dns=AAABAAABAAAAAAAAA3d3dwdleGFtcGxlA2NvbQAAAQAB' \\
+  | od -A x -t x1z | head -4
+\`\`\`
+
+Neither protocol says anything about whether the answer is true. They
+authenticate the resolver and hide the query from the path. That is a
+different job from [DNSSEC](/blog/dns-security-dnssec), which signs the data
+so it survives an untrustworthy carrier. The two solve opposite halves and you
+want both.
+
+## Why it breaks the names you own
+
+Split-horizon DNS depends on clients asking your resolver. Internal zones
+resolve to internal addresses, the same names either do not exist outside or
+point somewhere public, and the whole arrangement rests on one rule: queries
+for \`lab.example\` go to \`10.20.0.5\`.
+
+A browser with secure DNS enabled sends every query to a public resolver over
+443. That resolver has never heard of \`nas.lab.example\`, so it returns
+NXDOMAIN, and the browser reports that the site cannot be found. Meanwhile
+\`dig\` on the same laptop, using the stub resolver and your DHCP-supplied
+server, answers correctly in five milliseconds.
+
+That split is the signature of the whole class of problem:
+
+\`\`\`bash
+# Works: uses /etc/resolv.conf, which points at your resolver
+dig +short nas.lab.example
+10.20.30.14
+
+# Also works: asks the internal server directly
+dig @10.20.0.5 +short nas.lab.example
+10.20.30.14
+
+# Browser says the name does not exist
+\`\`\`
+
+When resolution succeeds from the command line and fails in one application,
+stop looking at the DNS server. The application is not using it.
+
+The same mechanism quietly removes three other things you may be relying on:
+DNS-based filtering, query logging, and any policy that depends on seeing
+which names a device asked for. None of them fail loudly. They just stop
+covering the clients that upgraded themselves.
+
+## Getting the network back into the decision
+
+There are four workable levers and one that only looks like one.
+
+**Answer the canary.** Firefox queries \`use-application-dns.net\` at startup
+and disables its own DoH if the network answers NXDOMAIN. In Unbound that is
+one line:
+
+\`\`\`text
+server:
+    local-zone: "use-application-dns.net" always_nxdomain
+\`\`\`
+
+It is a convention Mozilla honours, not a standard, and nothing else is
+obliged to check it. It is still the cheapest thing on this list.
+
+**Set policy where the client is managed.** Every major browser exposes secure
+DNS as an enterprise policy, and the right setting is usually not "off" but
+"use this specific template", pointed at a resolver you run. A managed client
+should be told what to do, not left to guess and then be blocked.
+
+**Advertise an encrypted resolver properly.** This is what RFC 9462 and RFC
+9463 exist for. DDR lets a client that already knows your resolver's IP
+discover its encrypted endpoints by querying SVCB records under
+\`_dns.resolver.arpa\`, and DNR carries the same designation in a DHCP option or
+a router advertisement. Support is uneven, but it is the standards-track
+answer, and it is the one that scales past a home network.
+
+**Force plain DNS back to your server.** Redirect outbound 53 and reject 853
+at the edge, which catches hardcoded devices and DoT clients:
+
+\`\`\`text
+table ip nat {
+  chain prerouting {
+    type nat hook prerouting priority dstnat; policy accept;
+    iifname "lan0" udp dport 53 ip daddr != 10.20.0.5 dnat to 10.20.0.5
+    iifname "lan0" tcp dport 53 ip daddr != 10.20.0.5 dnat to 10.20.0.5
+  }
+}
+
+table inet filter {
+  chain forward {
+    type filter hook forward priority filter; policy accept;
+    iifname "lan0" tcp dport 853 counter reject
+  }
+}
+\`\`\`
+
+And the lever that is not one: blocking DoH by port. It is 443 to a host that
+also serves web pages. You are left with blocklists of known DoH endpoint
+names and addresses, which are maintained by third parties, go stale, and lose
+to any resolver that is not on the list. Treat them as reducing the noise, not
+as a control.
+
+## Encrypt your own last hop
+
+The privacy argument for encrypted DNS is real, and the honest response is not
+to fight it but to offer it. Run the resolver, then let clients reach it over
+TLS so nobody has a reason to reach past you.
+
+On a systemd host, that is a drop-in:
+
+\`\`\`ini
+# /etc/systemd/resolved.conf.d/lab.conf
+[Resolve]
+DNS=10.20.0.5#dns.lab.example
+DNSOverTLS=yes
+Domains=~lab.example
+Cache=yes
+\`\`\`
+
+\`\`\`bash
+sudo systemctl restart systemd-resolved
+resolvectl status | head -20
+resolvectl query nas.lab.example
+\`\`\`
+
+The \`#dns.lab.example\` suffix is the name the certificate must present, and it
+is the difference between a real check and a warm feeling. RFC 8310 names the
+two postures: opportunistic privacy encrypts when it can and falls back to
+plaintext when it cannot, which protects you from passive observation and not
+from anyone able to interfere; strict privacy validates the resolver and fails
+closed. \`DNSOverTLS=yes\` is strict, \`opportunistic\` is the other one. If you
+choose strict, know that a broken resolver now means no name resolution at
+all, and put that in the runbook.
+
+## What I run
+
+Internal resolver on the wired network with the internal zones and full query
+logging, DoT enabled on it, upstream forwarding over DoT to two providers,
+the canary zone answered NXDOMAIN, browser policy pushed on the managed
+laptops, port 53 redirected and 853 rejected for everything else. Guest
+devices get the same resolver and no internal zones.
+
+The unmanaged devices still win sometimes, and that is the accurate picture:
+this is not a control you enforce, it is a default you make good enough that
+nothing has a reason to route around it. What changed for me was diagnosis
+time. Once "dig works, the browser does not" is a shape you recognise, it is a
+ninety second call instead of an evening spent restarting a DNS server that
+was answering correctly the entire time.
+
+## References
+
+- [RFC 8484: DNS Queries over HTTPS (DoH)](https://www.rfc-editor.org/rfc/rfc8484.html)
+- [RFC 7858: Specification for DNS over Transport Layer Security](https://www.rfc-editor.org/rfc/rfc7858.html)
+- [RFC 8310: Usage Profiles for DNS over TLS and DNS over DTLS](https://www.rfc-editor.org/rfc/rfc8310.html)
+- [RFC 9462: Discovery of Designated Resolvers](https://www.rfc-editor.org/rfc/rfc9462.html)
+- [RFC 9463: DHCP and Router Advertisement Options for DNR](https://www.rfc-editor.org/rfc/rfc9463.html)
+- [resolved.conf(5)](https://man.archlinux.org/man/resolved.conf.5)
+- [Mozilla: the canary domain use-application-dns.net](https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet)
+`,
+  },
+  {
+    slug: "how-totp-codes-actually-work",
+    title: "How TOTP Codes Actually Work",
+    date: "2026-08-24",
+    tags: ["security", "cybersecurity", "operations"],
+    excerpt:
+      "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
+    coverImage: "/images/blog/how-totp-codes-actually-work.jpg",
+    content: `
+## Six digits, thirty seconds, no network
+
+The thing that should bother you about a TOTP code is that it works on a plane.
+Your phone has no signal, the server is a thousand miles away, and the six
+digits it shows are the six digits the server is expecting. Nothing was
+exchanged. Nothing could have been.
+
+That is the whole design. The phone and the server agreed on a secret once,
+when you scanned the QR code, and they have both been watching the same clock
+ever since. Everything else is arithmetic.
+
+## What is actually in the QR code
+
+The QR code is a URI, and you can read it. Mine look like this:
+
+\`\`\`text
+otpauth://totp/lab.example:max?secret=JBSWY3DPEHPK3PXP
+  &issuer=lab.example&algorithm=SHA1&digits=6&period=30
+\`\`\`
+
+The \`secret\` is the shared secret, encoded in base32 (RFC 4648) because base32
+survives being typed by a human when the camera will not focus. Twenty
+characters of base32 is 100 bits; most services issue 128 or 160. The rest is
+metadata: which hash, how many digits, how long a step lasts.
+
+The moment that secret is generated, two copies of it exist. That fact drives
+most of what follows.
+
+## The algorithm, in full
+
+TOTP (RFC 6238) is HOTP (RFC 4226) with a clock in place of a counter. HOTP is
+an HMAC (RFC 2104) of a counter under the shared key, truncated to a few
+digits. TOTP defines the counter as the number of time steps since the Unix
+epoch:
+
+\`\`\`text
+T = floor((unix_time - T0) / X)     with T0 = 0 and X = 30 seconds
+\`\`\`
+
+Written out, the whole algorithm fits in a screen of Python and there is
+nothing hidden in it:
+
+\`\`\`python
+import base64, hashlib, hmac, struct, time
+
+secret  = base64.b32decode("JBSWY3DPEHPK3PXP")
+counter = int(time.time()) // 30
+
+mac = hmac.new(secret, struct.pack(">Q", counter), hashlib.sha1).digest()
+
+offset = mac[-1] & 0x0F                       # dynamic truncation
+code   = struct.unpack(">I", mac[offset:offset + 4])[0] & 0x7FFFFFFF
+print(f"{code % 10 ** 6:06d}")
+\`\`\`
+
+Check it against a real implementation before you believe it:
+
+\`\`\`bash
+oathtool --totp -b JBSWY3DPEHPK3PXP
+\`\`\`
+
+Two details in that code are worth naming. The offset is read from the low
+four bits of the last byte of the MAC, so which four bytes get used changes
+every step: that is the "dynamic" in dynamic truncation, and it exists so an
+attacker cannot attack a fixed slice of the HMAC output. The \`& 0x7FFFFFFF\`
+clears the top bit, because RFC 4226 wanted the same answer from languages
+that only have signed integers.
+
+## Why six digits
+
+Six is a usability decision with the security cost written down. RFC 4226
+allows six to eight digits and requires at least six. A six digit code is a
+million possibilities, so a blind guess succeeds one time in a million per
+attempt, and an attacker who can make a million attempts inside one time step
+wins outright.
+
+That is why the RFC pairs the digit count with throttling rather than treating
+it as a strength parameter. Six digits plus a hard attempt limit is fine. Six
+digits with unlimited retries is a four to five character password. The digits
+are not what is protecting the account; the rate limit is.
+
+## Clock drift, and the window nobody documents
+
+Both sides read \`floor(unix_time / 30)\`. If the phone's clock is eleven seconds
+fast and the code is generated three seconds before a boundary, the phone is
+already in step N+1 while the server is still in step N. The code is correct
+and it does not validate.
+
+RFC 6238 handles this by letting the validator try neighbouring steps. One step
+back is the common setting, which accepts anything within roughly thirty to
+sixty seconds of the truth. You can see the effect directly:
+
+\`\`\`bash
+# What the server would accept with a window of one step either side
+oathtool --totp -b --now "2026-08-25 09:00:00 UTC" -w 1 JBSWY3DPEHPK3PXP
+\`\`\`
+
+The window is a real cost, not free tolerance. Every extra step you accept
+multiplies the guessing surface by the number of live codes, and it extends
+how long a stolen code stays useful. A window of one is a reasonable default.
+A window of ten, which I have seen configured to stop support tickets from
+phones with bad clocks, means a code is valid for five minutes. Fix the clocks
+instead: run NTP on the server and let the phone sync from the network.
+
+The better fix for a persistently skewed device is resynchronisation. The
+verifier records how far off that user's last successful code was and applies
+the offset next time, which is exactly how HOTP counter resync works.
+
+## The replay window is the server's job
+
+Nothing in the maths stops a code being used twice. The same six digits are
+valid for the whole time step, so anyone who observes them has the remainder of
+the step to use them.
+
+RFC 6238 is explicit: after a successful validation, the verifier must not
+accept another OTP for the same time step from that user. In practice that is
+one column.
+
+\`\`\`sql
+ALTER TABLE totp_credential ADD COLUMN last_step BIGINT NOT NULL DEFAULT 0;
+-- accept only if the presented step is strictly greater than last_step,
+-- then write it back inside the same transaction
+\`\`\`
+
+If you are reviewing an implementation, this is the first thing to look for and
+the thing most often missing. Without it, a code shoulder-surfed off a screen,
+or captured in a proxy, works again for as long as the step lasts.
+
+## Why TOTP is phishable and WebAuthn is not
+
+A TOTP code is a bearer token. It proves someone holds the secret. It does not
+say anything about who they are talking to.
+
+The attack is a proxy. A user lands on a lookalike site, the site relays the
+login to the real one, the real one asks for a code, the lookalike asks the
+user, the user types it, and the proxy replays it inside the same thirty
+second step. Every step of that is normal protocol use. The user did nothing
+wrong and there is no field in the exchange where the site's real identity
+could have been checked, because the code is computed from a clock and a
+secret and nothing else.
+
+WebAuthn removes the bearer token entirely. The authenticator holds a private
+key, generates a signature over a challenge, and includes the relying party ID
+in what it signs. The browser supplies that ID from the origin it is actually
+connected to, and the authenticator refuses to use a credential registered for
+\`login.example.com\` when the page is \`login.examp1e.com\`. The proxy cannot
+forward what it cannot get signed for its own name.
+
+The second difference matters for anyone running a service. TOTP seeds are
+symmetric secrets sitting in your database. A dump gives an attacker working
+second factors for every user. WebAuthn stores public keys, and a dump of
+those is worth nothing.
+
+## What this means in practice
+
+TOTP is a large improvement over a password alone. It stops credential
+stuffing, password reuse, and every attack that ends with a database of
+hashes. It does not stop a live phishing proxy, and no amount of configuration
+will make it.
+
+So: hardware-backed WebAuthn on anything with real access, TOTP everywhere
+that does not support it yet, and never SMS. On the services I run, that means
+passkeys for administrators, TOTP for regular accounts, a validation window of
+one step, a replay check on the step number, and a lockout after five failed
+codes. NIST SP 800-63B says the same thing in more careful language, and it is
+worth reading the section on look-up secrets and out-of-band authenticators
+before choosing anything else.
+
+## References
+
+- [RFC 6238: TOTP, Time-Based One-Time Password Algorithm](https://www.rfc-editor.org/rfc/rfc6238.html)
+- [RFC 4226: HOTP, An HMAC-Based One-Time Password Algorithm](https://www.rfc-editor.org/rfc/rfc4226.html)
+- [RFC 2104: HMAC, Keyed-Hashing for Message Authentication](https://www.rfc-editor.org/rfc/rfc2104.html)
+- [RFC 4648: The Base16, Base32, and Base64 Data Encodings](https://www.rfc-editor.org/rfc/rfc4648.html)
+- [NIST SP 800-63B: Digital Identity Guidelines, Authentication](https://pages.nist.gov/800-63-3/sp800-63b.html)
+- [W3C Web Authentication Level 3](https://www.w3.org/TR/webauthn-3/)
+- [oathtool(1)](https://man.archlinux.org/man/oathtool.1)
+`,
+  },
+  {
+    slug: "init-scripts-to-systemd-units",
+    title: "From Init Scripts To Unit Files",
+    date: "2026-08-25",
+    tags: ["linux", "operations", "servers"],
+    excerpt:
+      "If you can write a SysV init script, most of a unit file is a translation exercise. The parts that are not are dependency ordering, restart policy, and the journal.",
+    coverImage: "/images/blog/init-scripts-to-systemd-units.jpg",
+    content: `
+## The script you no longer write
+
+A SysV init script is a program that answers four questions: how to start, how
+to stop, how to restart, and whether it is running. Most of them were three
+hundred lines and two hundred and eighty of those lines were the same three
+hundred lines from the last package, adapted. Background the process. Write a
+PID file. Read the PID file back and hope the number still belongs to you. Fake
+a status check by sending signal 0. Redirect stdout somewhere and rotate it
+later.
+
+A unit file answers a different question. It does not tell the system how to
+manage the process, it describes the process and lets PID 1 do the managing.
+Everything the init script implemented by hand, systemd already implements
+once: process supervision, ordering, restart, output capture, resource limits.
+The translation is mostly deletion.
+
+\`\`\`ini
+# /etc/systemd/system/inventory-api.service
+[Unit]
+Description=Inventory API
+Documentation=https://wiki.lab.example/runbooks/inventory-api
+
+[Service]
+Type=exec
+ExecStart=/opt/inventory/bin/api --config /etc/inventory/api.toml
+User=inventory
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+\`\`\`
+
+No PID file, no daemonising, no logging setup. If your daemon has a
+\`--daemonize\` flag, do not use it: systemd wants the process in the
+foreground so it can supervise it directly.
+
+## The unit types you will meet
+
+There are eleven, and five carry the weight.
+
+\`.service\` is a process. \`.socket\` is a listening socket systemd holds open
+and hands to a service when a connection arrives, which is how you bind port
+443 without the service ever having the capability to do it. \`.target\` is a
+grouping and a synchronisation point, and is what replaced runlevels:
+\`multi-user.target\` is roughly runlevel 3, \`graphical.target\` roughly
+runlevel 5. \`.timer\` replaces a crontab entry and logs like everything else.
+\`.mount\` and \`.automount\` are generated from \`/etc/fstab\`, which is why a bad
+fstab line now fails as a unit.
+
+\`\`\`bash
+systemctl list-units --type=target
+systemctl list-unit-files --state=enabled
+\`\`\`
+
+Anything still shipping an init script gets wrapped by
+\`systemd-sysv-generator\` at boot into a real unit, and its LSB
+\`# Required-Start:\` header is translated into ordering. That is why a legacy
+script mostly keeps working, and also why \`systemctl status\` on it shows a
+generated unit you cannot find on disk.
+
+## After= is not Requires=, and this is the one that bites
+
+An init script encoded dependency as a number in a filename: \`S20postgresql\`
+sorted before \`S40inventory\`, so the database went first. That was ordering
+and requirement at the same time, because there was only one mechanism.
+
+systemd splits them, and the split is where most boot bugs live.
+
+- \`After=\` and \`Before=\` control **order only**. Neither one causes a unit to
+  start.
+- \`Wants=\` causes a unit to start, and does not care if it fails.
+- \`Requires=\` causes it to start, and fails your unit if it fails to start.
+- \`BindsTo=\` is \`Requires=\` plus: if the other unit stops later, yours stops.
+
+Read that list again with this in mind: \`Requires=\` says nothing about order.
+Two units in a \`Requires=\` relationship start in parallel by default.
+
+Here is the failure. Somebody writes the obvious thing:
+
+\`\`\`ini
+[Unit]
+Description=Inventory API
+After=postgresql.service
+\`\`\`
+
+It works on their machine for a year. Then the API is deployed to a host where
+PostgreSQL is not enabled, or the database is masked during maintenance, and
+the API starts immediately and crashes, because \`After=\` only orders units
+that were already going to start. Ordering an absent unit is a no-op.
+
+The mirror image is just as common: \`Requires=postgresql.service\` with no
+\`After=\`. The database is pulled in, both units start together, the API opens
+a socket to a Postgres that has not finished recovery, and it fails maybe one
+boot in four. Intermittent, host-specific, and impossible to reproduce by hand,
+because when you type \`systemctl start inventory-api\` the database has been up
+for an hour.
+
+Ask the running system rather than guessing:
+
+\`\`\`bash
+systemctl show inventory-api.service -p Requires -p Wants -p After
+\`\`\`
+
+\`\`\`text
+Requires=system.slice sysinit.target
+Wants=
+After=system.slice basic.target sysinit.target postgresql.service
+\`\`\`
+
+\`postgresql.service\` in \`After=\` and absent from \`Requires=\` is the bug, in
+one line of output. What you almost always want is both directives:
+
+\`\`\`ini
+[Unit]
+Requires=postgresql.service
+After=postgresql.service
+Wants=network-online.target
+After=network-online.target
+\`\`\`
+
+\`network.target\` deserves the same scepticism. It means the networking stack
+is being configured, not that an address exists. If the service binds to a
+specific address at startup, you need \`network-online.target\`, and that target
+is only meaningful if the matching wait service is enabled.
+
+## Restart policy, and the state that outlives it
+
+\`respawn\` in \`/etc/inittab\` had one behaviour: bring it back, forever. That is
+\`Restart=always\`, and on a service with a typo in its config it produces a
+crash loop that fills a disk with log lines about the same missing file.
+
+\`Restart=on-failure\` restarts on a non-zero exit or a signal and leaves a
+clean exit alone. Pair it with the rate limiter, which is the part people miss:
+
+\`\`\`ini
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+\`\`\`
+
+Five failures in five minutes and systemd stops trying and parks the unit in
+\`failed\`. That is the correct outcome: a unit sitting in \`failed\` is visible to
+every monitoring check you have, while a unit in a crash loop reports as
+\`activating\` and looks alive.
+
+The detail that catches people afterwards is that the start limit is sticky.
+Once a unit has tripped it, \`systemctl start\` refuses until you clear the
+counter:
+
+\`\`\`bash
+systemctl reset-failed inventory-api.service
+systemctl start inventory-api.service
+\`\`\`
+
+Also note that \`StartLimitIntervalSec\` and \`StartLimitBurst\` belong in
+\`[Unit]\`, not \`[Service]\`. They were moved years ago, and half the examples
+online still put them in the wrong section, where they are silently ignored.
+
+## The journal replaces the log file you were managing
+
+Delete the redirection from the init script. Anything the process writes to
+stdout or stderr is captured, tagged with the unit, the PID, the boot ID and a
+priority, and stored as structured records rather than lines of text. That
+changes what a query looks like. The classic centralised
+[syslog](/blog/syslog-centralized-logging) pipeline still has a place, and
+journald can forward into it, but the local first stop is now a query.
+
+\`\`\`bash
+journalctl -u inventory-api.service -b --since "10 min ago"
+journalctl -u inventory-api.service -p err -o short-precise
+journalctl -u inventory-api.service -f
+journalctl _SYSTEMD_UNIT=inventory-api.service _PID=1432
+\`\`\`
+
+\`-b\` is this boot, \`-b -1\` the previous one, which is the fastest way to see
+what a machine said before it went down. \`-p err\` filters by the priority
+field, so you are filtering on a real value, not grepping for the string
+"error". The underscore-prefixed fields are trusted: journald sets them from
+the kernel and the cgroup, so a process cannot forge the unit it belongs to.
+
+Two settings decide whether any of this is there when you need it:
+
+\`\`\`ini
+# /etc/systemd/journald.conf
+Storage=persistent
+SystemMaxUse=2G
+RateLimitIntervalSec=30s
+RateLimitBurst=10000
+\`\`\`
+
+Without \`Storage=persistent\` and a \`/var/log/journal\` directory, the journal
+lives in \`/run\` and is gone at reboot, which is exactly when you wanted it.
+And the rate limiter really does drop messages under it: a service logging
+hard during an incident gets truncated, and the only trace is a line saying
+some messages were suppressed. Raise the burst on hosts where that matters.
+
+\`\`\`bash
+journalctl --disk-usage
+journalctl --vacuum-time=30d
+\`\`\`
+
+## Four commands before you enable anything
+
+\`\`\`bash
+systemd-analyze verify /etc/systemd/system/inventory-api.service
+systemctl daemon-reload
+systemctl list-dependencies inventory-api.service
+systemd-analyze critical-chain inventory-api.service
+\`\`\`
+
+\`verify\` catches typos and missing referenced units before they become boot
+behaviour. \`daemon-reload\` is the answer to half of all "my change did
+nothing". \`list-dependencies\` shows the tree you actually built rather than
+the one you meant. \`critical-chain\` shows what your unit waited on and for how
+long, which is where you find out that the whole boot is held up by a network
+wait nobody needed.
+
+Use \`systemctl edit\` for changes to packaged units so a drop-in survives the
+next upgrade, and \`systemctl cat\` to see the merged result. Between those two
+and \`verify\`, a unit file becomes something you can reason about, which is
+more than an init script ever offered.
+
+## References
+
+- [systemd.unit(5): dependencies and ordering](https://man.archlinux.org/man/systemd.unit.5)
+- [systemd.service(5)](https://man.archlinux.org/man/systemd.service.5)
+- [systemd.special(7): the standard targets](https://man.archlinux.org/man/systemd.special.7)
+- [journalctl(1)](https://man.archlinux.org/man/journalctl.1)
+- [systemd.journal-fields(7)](https://man.archlinux.org/man/systemd.journal-fields.7)
+- [journald.conf(5)](https://man.archlinux.org/man/journald.conf.5)
+- [systemd-analyze(1)](https://man.archlinux.org/man/systemd-analyze.1)
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {

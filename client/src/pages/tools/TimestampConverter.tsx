@@ -168,7 +168,7 @@ function parseEpoch(raw: string, unit: Unit): Parsed {
 
   const digits = text.replace(/^[+-]/, "").split(".")[0].length;
   const resolved = unit === "auto" ? detectUnit(digits) : unit;
-  const ms = Number(text) * UNIT_TO_MS[resolved];
+  const ms = Math.round(Number(text) * UNIT_TO_MS[resolved]);
   if (!Number.isFinite(ms) || Math.abs(ms) > MAX_MS) {
     return {
       ok: false,
@@ -207,10 +207,10 @@ function parseDate(raw: string, zone: Zone): { ok: true; ms: number } | { ok: fa
     const millis = Number((bare[7] ?? "0").padEnd(3, "0"));
     const utc = zone === "utc";
 
-    const raw_ms = utc
+    const wallClock = utc
       ? Date.UTC(year, month - 1, day, hours, minutes, seconds, millis)
       : new Date(year, month - 1, day, hours, minutes, seconds, millis).getTime();
-    const ms = withYear(raw_ms, year, utc);
+    const ms = withYear(wallClock, year, utc);
 
     // Both constructors roll an impossible date forward rather than refusing
     // it, so 2025-02-30 quietly becomes 2 March. Catch that by reading the
@@ -290,23 +290,23 @@ export function TimestampConverter() {
     return () => window.clearInterval(id);
   }, []);
 
+  // Microseconds and nanoseconds run past 2^53 at the far end of the range,
+  // so they are built by appending zeros to the millisecond figure instead of
+  // by multiplying and quietly losing the low digits.
   function epochText(ms: number, forUnit: Unit): string {
     const resolved = forUnit === "auto" ? "s" : forUnit;
-    const value = ms / UNIT_TO_MS[resolved];
-    return Number.isInteger(value) ? String(value) : value.toFixed(0);
+    if (resolved === "s") return String(Math.floor(ms / 1000));
+    if (resolved === "ms") return String(ms);
+    return `${ms}${resolved === "us" ? "000" : "000000"}`;
   }
 
-  /** Move the instant and rewrite whichever draft the reader is not typing in. */
-  function commit(ms: number, source: "epoch" | "date" | "both") {
+  /** Jump both inputs and every format to one instant. */
+  function commit(ms: number) {
     setInstant(ms);
-    if (source !== "epoch") {
-      setEpochDraft(epochText(ms, unit));
-      setEpochError(null);
-    }
-    if (source !== "date") {
-      setDateDraft(zone === "utc" ? isoUtc(ms) : isoLocal(ms));
-      setDateError(null);
-    }
+    setEpochDraft(epochText(ms, unit));
+    setDateDraft(zone === "utc" ? isoUtc(ms) : isoLocal(ms));
+    setEpochError(null);
+    setDateError(null);
   }
 
   function onEpochChange(value: string) {
@@ -380,7 +380,7 @@ export function TimestampConverter() {
                 {Math.floor(nowTick / 1000)}
               </div>
               <p className="mt-1 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                {isoUtc(nowTick).replace(/\.\d{3}Z$/, "Z")} · {Math.floor(nowTick)} ms
+                {isoUtc(nowTick).replace(/\.\d{3}Z$/, "Z")} · {nowTick} ms
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -393,7 +393,7 @@ export function TimestampConverter() {
               </CopyButton>
               <button
                 type="button"
-                onClick={() => commit(Math.floor(Date.now() / 1000) * 1000, "both")}
+                onClick={() => commit(Math.floor(Date.now() / 1000) * 1000)}
                 data-testid="button-use-now"
                 className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
@@ -550,7 +550,7 @@ export function TimestampConverter() {
           <ToolPanel title="Epoch">
             <FormatRow label="Seconds" value={String(seconds)} testId="text-epoch-seconds" />
             <FormatRow label="Milliseconds" value={String(instant)} testId="text-epoch-ms" />
-            <FormatRow label="Microseconds" value={String(instant * 1000)} />
+            <FormatRow label="Microseconds" value={`${instant}000`} />
             <FormatRow label="Nanoseconds" value={`${instant}000000`} />
           </ToolPanel>
 
@@ -594,7 +594,7 @@ export function TimestampConverter() {
               <button
                 key={reference.label}
                 type="button"
-                onClick={() => commit(reference.seconds * 1000, "both")}
+                onClick={() => commit(reference.seconds * 1000)}
                 data-testid={`button-reference-${reference.seconds}`}
                 className={`flex min-h-[44px] flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                   seconds === reference.seconds

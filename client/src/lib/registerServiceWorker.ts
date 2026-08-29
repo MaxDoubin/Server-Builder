@@ -43,6 +43,45 @@ async function unregisterAll(): Promise<void> {
   }
 }
 
+/** At most one update check per hour per page. */
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
+ * Ask whether a newer worker has shipped, when the window comes back to the
+ * foreground.
+ *
+ * This exists for the installed app specifically. A browser tab is navigated
+ * and reloaded constantly, and the browser revalidates /sw.js on every
+ * navigation, so a new worker is picked up within minutes. A standalone PWA
+ * window is opened once and left alone for days: nothing navigates, and the
+ * only other trigger is the browser's own fallback check, which runs at most
+ * every 24 hours. So a fix could sit unshipped for a full day on exactly the
+ * surface this file exists to support. Checking on foreground bounds that to
+ * an hour, and the worker's skipWaiting means a new one takes over as soon as
+ * it installs.
+ *
+ * Deliberately no reload on controllerchange to go with it. Nothing the
+ * worker serves can be broken by a mid-session handover (a new worker starts
+ * with empty caches and every miss goes to the network), so yanking the page
+ * out from under someone reading an article would buy nothing.
+ */
+function watchForUpdates(registration: ServiceWorkerRegistration): void {
+  let lastCheck = Date.now();
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+
+    const now = Date.now();
+    if (now - lastCheck < UPDATE_CHECK_INTERVAL_MS) return;
+    lastCheck = now;
+
+    registration.update().catch(() => {
+      // The check failed because the network is down, which the reader
+      // already knows. It must never surface as an error.
+    });
+  });
+}
+
 export function registerServiceWorker(): void {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
@@ -58,10 +97,13 @@ export function registerServiceWorker(): void {
   }
 
   const register = () => {
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {
-      // A failed registration means no offline support, which is a nicety.
-      // It must never surface as an error to the reader.
-    });
+    navigator.serviceWorker
+      .register("/sw.js", { scope: "/" })
+      .then(watchForUpdates)
+      .catch(() => {
+        // A failed registration means no offline support, which is a nicety.
+        // It must never surface as an error to the reader.
+      });
   };
 
   // Registration competes with the page's own asset fetches for bandwidth, so
