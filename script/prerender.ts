@@ -178,7 +178,7 @@ const SITE_NAV = `
 */
 const PRERENDER_CSS = `<style>
 body{background:hsl(220 12% 4%);margin:0}
-#prerender{color:hsl(40 16% 92%);font:400 15px/1.7 "Space Grotesk",Inter,system-ui,-apple-system,sans-serif;max-width:68ch;margin:0 auto;padding:12vh 7vw 8vh;-webkit-font-smoothing:antialiased}
+#prerender{color:hsl(40 16% 92%);font:400 15px/1.7 "Space Grotesk",Inter,system-ui,-apple-system,sans-serif;max-width:68ch;margin:0 auto;padding:12vh 7vw 8vh;-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
 #prerender h1{font-size:clamp(1.7rem,6vw,2.4rem);line-height:1.1;letter-spacing:-.03em;margin:0 0 .55em;font-weight:500}
 #prerender h2{font-size:1.1rem;font-weight:500;margin:2.2em 0 .5em;letter-spacing:-.01em}
 #prerender h3{font-size:.95rem;font-weight:500;margin:1.6em 0 .35em}
@@ -189,6 +189,12 @@ body{background:hsl(220 12% 4%);margin:0}
 #prerender li{margin:0 0 .35em}
 #prerender a{color:hsl(72 100% 50%);text-decoration:none}
 #prerender code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9em;color:hsl(180 85% 62%)}
+#prerender img{max-width:100%;height:auto;display:block;border-radius:6px;margin:0 0 1.4em}
+#prerender pre{overflow-x:auto;background:hsl(220 10% 9%);border:1px solid hsl(220 6% 22%);border-radius:6px;padding:.9em 1em;font-size:12.5px;line-height:1.55;margin:0 0 1.2em}
+#prerender pre code{color:hsl(40 10% 72%)}
+#prerender table{display:block;overflow-x:auto;border-collapse:collapse;font-size:13px;margin:0 0 1.2em}
+#prerender td,#prerender th{border:1px solid hsl(220 6% 22%);padding:.4em .7em;text-align:left}
+#prerender blockquote{margin:0 0 1.2em;padding-left:1.1em;border-left:2px solid hsl(72 100% 50%);color:hsl(40 10% 72%)}
 #prerender nav{margin-top:2.5em;font-size:12px;line-height:2.1;color:hsl(220 5% 56%)}
 #prerender nav a{color:hsl(220 5% 56%);margin-right:1.1em;white-space:nowrap}
 #prerender nav[aria-label="Site"]{margin-top:4em;padding-top:1.5em;border-top:1px solid hsl(220 6% 22%)}
