@@ -152,6 +152,12 @@ jobs:
       - name: Prerendered content
         run: node scripts-ci/check-prerender-depth.mjs
 
+      # The sitemap's top-level URLs and the STANDALONE page list are both
+      # written by hand in prerender.ts. Two hand-maintained lists describing
+      # the same pages already cost this site two guides.
+      - name: Sitemap coverage
+        run: node scripts-ci/check-sitemap-coverage.mjs
+
       - name: Bundle budget
         run: node scripts-ci/check-bundle-budget.mjs
 
