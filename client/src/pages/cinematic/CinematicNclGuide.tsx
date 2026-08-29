@@ -55,7 +55,7 @@ export function CinematicNclGuide() {
               Guide not found.
             </h1>
             <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              That category does not exist. Browse all seven from the index.
+              That category does not exist. Browse all nine from the index.
             </p>
             <Link
               href="/ncl"

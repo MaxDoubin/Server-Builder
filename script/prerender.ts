@@ -559,7 +559,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/study">Certification study</a>, mapped to the published Security+, Network+ and CCNA exam objectives.</li>
     <li><a href="${SITE_URL}/data">Open rack hardware dataset</a>, power, heat, rack units and port counts as JSON and CSV under CC BY 4.0.</li>
     <li><a href="${SITE_URL}/game">Hyperscale</a>, a datacenter simulator running on real power and cooling maths.</li>
-    <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all seven scored categories.</li>
+    <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all nine scored categories.</li>
     <li><a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>, a free twelve week plan for starting a school cybersecurity club.</li>
   </ul>
   <h2>About</h2>
@@ -750,7 +750,7 @@ ${JSON.stringify({
       dir: "ncl",
       title: "National Cyber League Study Guide | Max Doubin",
       description:
-        "What the National Cyber League is, how scoring works, how to prepare, and guides to all seven challenge categories, from a top 1 percent competitor.",
+        "What the National Cyber League is, how scoring works, how to prepare, and guides to all nine challenge categories, from a top 1 percent competitor.",
       canonical: `${SITE_URL}/ncl`,
       // The seven guides were reachable from nowhere: this index rendered its
       // list client side, so a crawler saw an empty page with no links out.
@@ -758,7 +758,7 @@ ${JSON.stringify({
 <main>
   <h1>National Cyber League study guide</h1>
   <p>
-    The National Cyber League scores seven categories. Each guide below covers
+    The National Cyber League scores nine categories. Each guide below covers
     what that category tests, the tools worth knowing, a worked example, and
     the mistakes that cost the most time.
   </p>
@@ -1326,25 +1326,26 @@ ${JSON.stringify({
   });
 
   // ── National Cyber League category guides ──
-  const NCL_GUIDES: Array<[string, string, string]> = [
-    ["open-source-intelligence", "Open Source Intelligence", "How the NCL Open Source Intelligence category works: pivoting from a clue, metadata and GPS extraction, DNS and certificate recon, and a worked example."],
-    ["cryptography", "Cryptography", "How the NCL Cryptography category works: telling encodings from ciphers, classical cipher methods, RSA weaknesses, and a worked example."],
-    ["password-cracking", "Password Cracking", "How the NCL Password Cracking category works: identifying hash types, hashcat and John modes, wordlists, rules and masks, plus a worked MD5 example."],
-    ["log-analysis", "Log Analysis", "How the NCL Log Analysis category works: reading web and auth log formats, grep and awk aggregation, spotting brute force, and a worked example."],
-    ["network-traffic-analysis", "Network Traffic Analysis", "How the NCL Network Traffic Analysis category works: reading pcaps in Wireshark, display versus capture filters, following streams, and an example."],
-    ["forensics", "Forensics", "How the NCL Forensics category works: file signatures and magic bytes, strings and binwalk, steganography, metadata, memory analysis, and a worked example."],
-    ["web-application-exploitation", "Web Application Exploitation", "How the NCL Web Application Exploitation category works: recon and enumeration, SQL injection, XSS, OWASP references, and a worked example."],
-  ];
+  /*
+    Derived from nclGuides.ts rather than listed here. The hardcoded copy of
+    this list had seven entries while the data had nine, so two guides existed
+    in the app and in no static document. A list that has to be edited twice
+    gets edited once.
+  */
+  const NCL_GUIDES: Array<[string, string, string]> = NCL_GUIDE_DATA.map(
+    (g: { slug: string; category: string; seoDescription: string }) =>
+      [g.slug, g.category, g.seoDescription] as [string, string, string],
+  );
   for (const [slug, name, description] of NCL_GUIDES) {
     const url = `${SITE_URL}/ncl/${slug}`;
     /*
       Give the guide a body a crawler can read.
 
-      These seven pages were prerendering ten characters: the loading
+      These pages were prerendering ten characters: the loading
       placeholder. Everything a reader sees is rendered from nclGuides.ts
-      after hydration, so to Google they were seven empty pages in the
-      sitemap, which is worse than not listing them. The data was already
-      there; it just was not being written into the HTML.
+      after hydration, so to Google they were empty pages in the sitemap,
+      which is worse than not listing them. The data was already there; it
+      just was not being written into the HTML.
     */
     const guide = NCL_GUIDE_DATA.find((g) => g.slug === slug);
     const guideContent = guide
@@ -1783,15 +1784,7 @@ async function writeSitemap(
       priority: "0.7",
     });
   }
-  for (const slug of [
-    "open-source-intelligence",
-    "cryptography",
-    "password-cracking",
-    "log-analysis",
-    "network-traffic-analysis",
-    "forensics",
-    "web-application-exploitation",
-  ]) {
+  for (const slug of NCL_GUIDE_DATA.map((g: { slug: string }) => g.slug)) {
     urls.push({
       loc: `${SITE_URL}/ncl/${slug}`,
       lastmod: today,

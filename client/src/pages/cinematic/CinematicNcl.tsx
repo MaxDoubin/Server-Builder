@@ -11,7 +11,7 @@ const courseSchema = {
   "@type": "Course",
   name: "National Cyber League Preparation",
   description:
-    "A preparation guide for the National Cyber League, covering all seven challenge categories with mental models, tooling, worked examples, and self-check quizzes.",
+    "A preparation guide for the National Cyber League, covering all nine challenge categories with mental models, tooling, worked examples, and self-check quizzes.",
   url: `${SITE_URL}/ncl`,
   inLanguage: "en",
   about: NCL_GUIDES.map((g) => g.category),
@@ -24,7 +24,7 @@ export function CinematicNcl() {
   useSEO({
     title: "National Cyber League Study Guide | Max Doubin",
     description:
-      "What the National Cyber League is, how scoring works, how to prepare, and guides to all seven challenge categories, from a top 1 percent competitor.",
+      "What the National Cyber League is, how scoring works, how to prepare, and guides to all nine challenge categories, from a top 1 percent competitor.",
     canonical: `${SITE_URL}/ncl`,
     schema: courseSchema,
     schemaId: "ncl-course-schema",
@@ -110,7 +110,7 @@ export function CinematicNcl() {
 
           <section className="mt-16">
             <h2 className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl">
-              The seven categories
+              The nine categories
             </h2>
             <p className="mt-3 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Each guide covers what the category tests, the mental model, the
