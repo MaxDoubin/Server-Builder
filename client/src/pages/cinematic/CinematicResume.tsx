@@ -202,7 +202,8 @@ export function CinematicResume() {
                   Ranked in the top 1 percent of National Cyber League competitors
                 </Bullet>
                 <Bullet>
-                  Helped lead South Career Technical Academy to a 7th place national school finish
+                  Helped lead South Career Technical Academy to 7th nationally among high schools in
+                  the Fall 2025 Cyber Power Rankings
                 </Bullet>
                 <Bullet>
                   Categories: open source intelligence, cryptography, log analysis, hash cracking,

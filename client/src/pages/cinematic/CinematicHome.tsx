@@ -63,7 +63,7 @@ export function CinematicHome() {
       },
       award: [
         "Top 1% · National Cyber League",
-        "South CTA ranked 7th in the nation in National Cyber League competition",
+        "South CTA ranked 7th among U.S. high schools in the Cyber Power Rankings",
         "#1 Percussionist · State of Nevada, 2024",
         "PBS Varsity Quiz · State finalist, 2026",
         "Student of the Month · South CTA",

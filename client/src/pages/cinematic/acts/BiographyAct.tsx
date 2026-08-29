@@ -25,7 +25,7 @@ const PILLARS: Pillar[] = [
     accent: "signal",
     lines: [
       "Top 1% in National Cyber League competition",
-      "Helped lead South CTA to a 7th-ranked school finish in the nation",
+      "Helped lead South CTA to 7th among U.S. high schools in the Cyber Power Rankings",
       "Active on Cyber Skyline across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
       "CompTIA Tech+ certified; Security+, Network+, and CCNA in progress",
     ],
@@ -292,7 +292,7 @@ export function BiographyAct() {
             <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm">
               The Weekly’s back-to-school feature on CCSD career and technical
               academies opens on South CTA’s cybersecurity track, and notes
-              leading the team to seventh in the nation at the National Cyber
+              the school's seventh in the nation finish at the National Cyber
               League in 2025.
             </p>
 

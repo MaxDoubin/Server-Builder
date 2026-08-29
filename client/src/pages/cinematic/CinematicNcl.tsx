@@ -184,9 +184,11 @@ export function CinematicNcl() {
               <p>
                 I have competed in the National Cyber League and finished in the
                 top 1 percent of competitors individually. As president of the
-                South CTA Cyber Club, I also helped our team place 7th nationally
-                among schools. Those two results are the honest summary of where I
-                have gotten to so far.
+                South CTA Cyber Club, I also helped the school place 7th nationally
+                among high schools in the Fall 2025 Cyber Power Rankings. That
+                ranking blends a school's top team, its top individual and its
+                participation, so it is not a team result on its own. Those two
+                results are the honest summary of where I have gotten to so far.
               </p>
               <p>
                 My strongest categories have been the ones I practised most
