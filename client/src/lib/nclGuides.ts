@@ -800,6 +800,253 @@ const webExploitation: NclGuide = {
   ],
 };
 
+const scanningRecon: NclGuide = {
+  slug: "scanning-and-reconnaissance",
+  category: "Scanning & Reconnaissance",
+  order: 8,
+  tagline: "Find what is listening, then find out what it is.",
+  seoDescription:
+    "How the NCL Scanning and Reconnaissance category works: nmap host discovery, port states, service and version detection, NSE scripts, banner grabbing, and a worked example.",
+  whatItTests: [
+    "Scanning and Reconnaissance tests whether you can map a target you were given nothing but an address for. That means discovering which hosts are alive, which ports are open, what service sits behind each one, what version it is running, and what that version implies. Questions are usually answered from scan output: a port number, a service banner, an operating system guess, a certificate field, or the count of hosts responding in a range.",
+    "It is the category most directly about reading output carefully. The tooling does the work; the marks go to whoever knows which flag produces the fact being asked for, and can tell the difference between a port that is closed and a port that is filtered.",
+  ],
+  mentalModel: [
+    "Separate discovery from enumeration. First establish what exists: a ping sweep with nmap -sn over a range tells you which hosts respond without touching a single port. Only then scan ports, and only then interrogate the services you found. Running a full version scan across an entire subnet as your opening move wastes the one resource the competition actually limits, which is time.",
+    "Know what the three port states mean, because questions are written around the distinction. Open means something accepted the connection. Closed means the host replied with a reset: it is up, nothing is listening on that port. Filtered means no useful reply came back at all, which usually means a firewall dropped the probe rather than that the port is shut. A host that reports every port filtered is telling you about its firewall, not about its services.",
+    "Default scans are narrower than people assume. nmap without -p covers its top 1000 ports, not all 65535, so a service parked on a high port is invisible unless you ask for it with -p-. When a scan comes back empty and the question implies something is there, widening the port range is usually the missing step.",
+  ],
+  tools: [
+    { name: "nmap", use: "The default answer for host discovery, port scanning, service and version detection, and OS fingerprinting." },
+    { name: "nmap NSE", use: "Its script engine, which turns nmap into an enumerator: --script with a category or a named script." },
+    { name: "masscan", use: "Scans very large ranges far faster than nmap, at the cost of detail. Useful for finding candidates to scan properly." },
+    { name: "netcat", use: "Opens a raw connection to one port so you can read the banner a service sends unprompted." },
+    { name: "whatweb", use: "Fingerprints web technologies, frameworks, and versions from HTTP responses." },
+    { name: "dig / nslookup", use: "Resolves names and pulls records before any port is touched, which is often where the answer already is." },
+  ],
+  walkthrough: {
+    scenario:
+      "You are given the range 10.10.20.0/24 and asked which host is running an outdated SSH server, and what version it is.",
+    steps: [
+      {
+        label: "Find what is alive first",
+        detail:
+          "A ping sweep with -sn skips port scanning entirely and just reports which addresses answer. Scanning ports on 254 addresses when four are up is the most common way to run out of time in this category.",
+        code: "nmap -sn 10.10.20.0/24",
+      },
+      {
+        label: "Scan only the live hosts",
+        detail:
+          "With four addresses instead of 254, a full port range is affordable. -p- covers all 65535 ports rather than nmap's default top 1000, which matters because an SSH daemon moved off 22 is exactly the kind of thing this question hides.",
+        code: "nmap -p- 10.10.20.5,17,42,103",
+      },
+      {
+        label: "Ask the service what it is",
+        detail:
+          "-sV probes each open port and matches the reply against nmap's service fingerprint database. The version string is the answer to most questions in this category, so this flag is the one to reach for once the port list is known.",
+        code: "nmap -sV -p 22,2222,80,443 10.10.20.42",
+      },
+      {
+        label: "Read the version, then judge it",
+        detail:
+          "The scan reports OpenSSH 7.2p2 on 2222. That release is from 2016, so it is the outdated one. Confirm by hand with netcat if you want the raw banner: SSH servers announce themselves before authentication, so a bare connection is enough.",
+        code: "PORT     STATE SERVICE VERSION\n2222/tcp open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.10",
+      },
+    ],
+    answer:
+      "10.10.20.42 is running OpenSSH 7.2p2 on port 2222. Found by sweeping for live hosts first, scanning the full port range on only those, and using -sV to read the version off the service rather than assuming it from the port number.",
+  },
+  mistakes: [
+    "Scanning every address in a range before checking which ones are up. A -sn sweep first turns a scan that times out into one that finishes.",
+    "Forgetting that nmap's default is the top 1000 ports. When a service seems missing, -p- is usually what was missing.",
+    "Reading filtered as closed. Filtered means no answer came back, which points at a firewall; closed means the host actively refused, which means it is up.",
+    "Assuming the service from the port number. Port 8080 is not necessarily HTTP and port 22 is not necessarily SSH; -sV is what settles it.",
+    "Skipping DNS. A zone transfer, a TXT record, or a reverse lookup sometimes answers the question before a single port is scanned.",
+    "Ignoring the NSE scripts. --script=default or a targeted script often produces the exact field a question asks for in one command.",
+  ],
+  resources: [
+    { label: "Nmap Reference Guide", detail: "The official manual, and the fastest way to find the flag that produces a given fact.", url: "https://nmap.org/book/man.html" },
+    { label: "Nmap Scripting Engine", detail: "How NSE scripts work and what categories exist.", url: "https://nmap.org/book/nse.html" },
+    { label: "Port states explained", detail: "Nmap's own description of open, closed, filtered, and the combined states.", url: "https://nmap.org/book/man-port-scanning-basics.html" },
+    { label: "masscan", detail: "The very fast scanner, for ranges too large to nmap directly.", url: "https://github.com/robertdavidgraham/masscan" },
+    { label: "IANA Service Name and Port Registry", detail: "The authoritative list of what a port number is assigned to.", url: "https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml" },
+    { label: "NIST SP 800-115", detail: "NIST's technical guide to information security testing, including the discovery phase.", url: "https://csrc.nist.gov/pubs/sp/800/115/final" },
+  ],
+  quiz: [
+    {
+      id: "scanning-q1",
+      question: "An nmap scan reports a port as filtered. That means:",
+      choices: [
+        "The host refused the connection with a reset",
+        "No usable reply came back, typically because a firewall dropped the probe",
+        "A service is listening and accepted the connection",
+        "The host is offline",
+      ],
+      correctIndex: 1,
+      explanation:
+        "Filtered means nmap got no useful answer, which usually indicates a firewall dropping probes. Closed is the state where the host actively refuses with a reset, which also proves the host is up.",
+    },
+    {
+      id: "scanning-q2",
+      question: "By default, how many TCP ports does nmap scan?",
+      choices: ["All 65535", "The top 1000 most common", "Only the well-known ports 1 to 1023", "The first 100"],
+      correctIndex: 1,
+      explanation:
+        "nmap scans its top 1000 ports unless told otherwise. -p- widens it to all 65535, which is how a service on a high port gets found.",
+    },
+    {
+      id: "scanning-q3",
+      question: "Which flag makes nmap identify the software and version behind an open port?",
+      choices: ["-sn", "-sV", "-Pn", "-sS"],
+      correctIndex: 1,
+      explanation:
+        "-sV runs version detection, probing each open port and matching the response against nmap's fingerprint database. -sn is a ping sweep with no port scan, -Pn skips host discovery, and -sS is a SYN scan that reports state without version.",
+    },
+    {
+      id: "scanning-q4",
+      question: "You need to know which of 254 addresses are up, as quickly as possible. The right first command is:",
+      choices: [
+        "nmap -p- on the whole range",
+        "nmap -sV on the whole range",
+        "nmap -sn on the whole range",
+        "netcat against each address in turn",
+      ],
+      correctIndex: 2,
+      explanation:
+        "-sn is host discovery only: it reports which addresses respond without scanning any ports. Port and version scans come after, against the short list it produces.",
+    },
+  ],
+};
+
+const enumerationExploitation: NclGuide = {
+  slug: "enumeration-and-exploitation",
+  category: "Enumeration & Exploitation",
+  order: 9,
+  tagline: "Read the code for the assumption it makes, then break the assumption.",
+  seoDescription:
+    "How the NCL Enumeration and Exploitation category works: reading source for injection, buffer overflows, integer and format string bugs, race conditions, and a worked example.",
+  whatItTests: [
+    "Enumeration and Exploitation is the code and binary category. You are given source, or a compiled program, or a service you can reach, and asked to make it do something it was not written to do: return data it should not, run a command it should not, or reveal a value it holds. Command injection, buffer overflows, integer handling bugs, format string bugs, path traversal, and race conditions are the recurring shapes.",
+    "It is the category with the widest difficulty spread. An easy question is a shell command built by string concatenation, which anyone who spots it can solve in a minute. A hard one is a race condition or a memory corruption chain, and those are worth banking for later rather than opening first.",
+  ],
+  mentalModel: [
+    "Look for the boundary where input becomes instruction. Almost every exploitable bug in this category is a place where something the user controls is treated as something the program trusts: a filename that becomes part of a shell command, a length field that decides how many bytes to copy, a format string that is user text, a path that is concatenated instead of resolved. Read the code asking which value crosses that line, not asking whether it looks unsafe.",
+    "For memory bugs, the question is always what writes and what decides how much. A fixed buffer plus a copy whose length comes from input is the classic pair: strcpy, gets, sprintf, and any memcpy whose size argument is attacker-influenced. Signed and unsigned confusion belongs here too. A negative length checked with a signed comparison passes the test and then becomes an enormous unsigned value at the copy.",
+    "For race conditions, the bug lives in the gap between check and use. A program that tests whether a file is safe and then opens it has a window in between where the file can be swapped. The exploit is not clever code, it is running the two halves against each other until the timing lands. That is why these are slow to solve and worth deferring.",
+  ],
+  tools: [
+    { name: "Ghidra", use: "Decompiles a binary back to readable C, which is usually faster than reading the disassembly." },
+    { name: "GDB with pwndbg or GEF", use: "Runs the binary under a debugger with the exploitation-oriented views these plugins add." },
+    { name: "pwntools", use: "A Python library for building the input, sending it, and handling the process or socket." },
+    { name: "checksec", use: "Reports which protections a binary was built with: NX, stack canaries, PIE, RELRO." },
+    { name: "strings and objdump", use: "Fast first look at a binary: embedded text, symbols, and the function list." },
+    { name: "ltrace / strace", use: "Shows which library and system calls run, which often exposes the unsafe one immediately." },
+  ],
+  walkthrough: {
+    scenario:
+      "You are given the source of a small web utility that reports whether a host is reachable, and asked to read a file the application should not expose.",
+    steps: [
+      {
+        label: "Find where input reaches an interpreter",
+        detail:
+          "The handler builds a shell command by concatenating the host parameter into a string and passing it to a shell. That concatenation is the boundary: everything after it is instruction, and the host value came from the request.",
+        code: "cmd = \"ping -c 1 \" + request.args[\"host\"]\nsubprocess.run(cmd, shell=True)",
+      },
+      {
+        label: "Confirm the shell is really a shell",
+        detail:
+          "shell=True means the string is handed to /bin/sh, so shell metacharacters are live. A semicolon ends the ping and starts a second command; a pipe or a backtick would work as well. Test with something harmless and observable before trying to read anything.",
+        code: "?host=127.0.0.1;id",
+      },
+      {
+        label: "Read the target",
+        detail:
+          "With command execution confirmed, the payload becomes whatever the question asks for. The output of the injected command lands in the same response body the ping output was going to fill.",
+        code: "?host=127.0.0.1;cat%20/etc/passwd",
+      },
+      {
+        label: "Note what the fix would have been",
+        detail:
+          "Passing an argument list instead of a string removes the shell entirely, so there is no metacharacter to inject. Competition questions sometimes ask for the remediation as well as the exploit, and this is the answer they want: no shell, arguments as a list, validate the host separately.",
+        code: "subprocess.run([\"ping\", \"-c\", \"1\", host])",
+      },
+    ],
+    answer:
+      "The host parameter is concatenated into a shell command run with shell=True, so a semicolon injects a second command whose output is returned with the response. The fix is to pass an argument list, which removes the shell.",
+  },
+  mistakes: [
+    "Opening the hardest binary first. Read every question in the category, clear the injection and traversal ones, then spend what is left on memory corruption.",
+    "Reading a binary in disassembly when Ghidra would decompile it to C in a minute.",
+    "Not running checksec. Whether a binary has NX, a canary, or PIE decides which technique is even possible, and it takes one command to find out.",
+    "Assuming a length check is safe without looking at its type. A signed comparison against a negative value passes, then becomes an enormous unsigned size at the copy.",
+    "Testing an injection with the real payload. Confirm execution with something harmless and visible first, so a failure tells you the injection did not work rather than that the payload was wrong.",
+    "Burning the clock on a race condition. They are real, they are solvable, and they are the wrong thing to be holding when time runs out.",
+  ],
+  resources: [
+    { label: "OWASP Command Injection", detail: "What the bug is, how it is exploited, and how it is prevented.", url: "https://owasp.org/www-community/attacks/Command_Injection" },
+    { label: "CWE-78: OS Command Injection", detail: "MITRE's formal description, with language-specific examples.", url: "https://cwe.mitre.org/data/definitions/78.html" },
+    { label: "CWE-787: Out-of-bounds Write", detail: "The class most buffer overflow questions belong to.", url: "https://cwe.mitre.org/data/definitions/787.html" },
+    { label: "Ghidra", detail: "The NSA's reverse engineering suite, free and the usual first tool on a binary.", url: "https://ghidra-sre.org/" },
+    { label: "pwntools documentation", detail: "The exploit development library most competition writeups use.", url: "https://docs.pwntools.com/" },
+    { label: "pwn.college", detail: "Structured, free exercises that build binary exploitation from the ground up.", url: "https://pwn.college/" },
+    { label: "Nightmare", detail: "An open binary exploitation course built around worked CTF challenges.", url: "https://guyinatuxedo.github.io/" },
+  ],
+  quiz: [
+    {
+      id: "enumeration-q1",
+      question: "In Python, subprocess.run(cmd, shell=True) with cmd built by string concatenation is dangerous because:",
+      choices: [
+        "It is slower than passing an argument list",
+        "The string is handed to a shell, so user input can add shell metacharacters and further commands",
+        "It cannot capture output",
+        "It only works on Linux",
+      ],
+      correctIndex: 1,
+      explanation:
+        "shell=True runs the string through /bin/sh, which interprets ;, |, &&, and backticks. Passing an argument list runs the program directly with no shell, so there is nothing to inject into.",
+    },
+    {
+      id: "enumeration-q2",
+      question: "checksec on a target binary reports NX enabled. That means:",
+      choices: [
+        "The stack is non-executable, so shellcode placed on it will not run",
+        "The binary is stripped of symbols",
+        "Address space layout is randomised",
+        "The binary is statically linked",
+      ],
+      correctIndex: 0,
+      explanation:
+        "NX marks writable memory non-executable, which rules out simply jumping to shellcode on the stack and pushes the exploit toward reusing existing code, such as return-oriented programming.",
+    },
+    {
+      id: "enumeration-q3",
+      question: "A length check passes but the copy still overflows. The most likely cause is:",
+      choices: [
+        "The buffer was allocated on the heap",
+        "The check compared a signed value, and a negative length became a huge unsigned size at the copy",
+        "The compiler optimised the check away",
+        "The string was not null terminated",
+      ],
+      correctIndex: 1,
+      explanation:
+        "A signed comparison accepts a negative number, which converts to an enormous value when it reaches a size_t parameter. Signed and unsigned confusion is a standard way a bounds check fails to bound anything.",
+    },
+    {
+      id: "enumeration-q4",
+      question: "A program checks that a file is safe, then opens it. The window between those two operations is:",
+      choices: [
+        "A format string bug",
+        "An integer overflow",
+        "A time-of-check to time-of-use race condition",
+        "A use-after-free",
+      ],
+      correctIndex: 2,
+      explanation:
+        "TOCTOU: the property verified at check time can be changed before use time, for example by replacing the file with a symlink. The fix is to operate on a handle opened once rather than re-resolving the path.",
+    },
+  ],
+};
+
 export const NCL_GUIDES: NclGuide[] = [
   osint,
   cryptography,
@@ -808,6 +1055,8 @@ export const NCL_GUIDES: NclGuide[] = [
   trafficAnalysis,
   forensics,
   webExploitation,
+  scanningRecon,
+  enumerationExploitation,
 ];
 
 export function getGuide(slug: string): NclGuide | undefined {
