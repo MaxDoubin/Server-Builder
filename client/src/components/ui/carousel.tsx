@@ -114,6 +114,10 @@ const Carousel = React.forwardRef<
       api.on("select", onSelect)
 
       return () => {
+        // "reInit" was subscribed above but never unsubscribed, so every
+        // remount of a carousel left another live handler on the embla api
+        // holding this component's setState closures.
+        api?.off("reInit", onSelect)
         api?.off("select", onSelect)
       }
     }, [api, onSelect])

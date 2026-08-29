@@ -171,6 +171,12 @@ export function CinematicFooter() {
                       data-testid={item.testId}
                     >
                       {item.label}
+                      {/* These three throw the reader into a new tab with no
+                          visible sign that they will. Say so in the name, the
+                          way the suggest-an-edit link already does. */}
+                      {item.href.startsWith("http") && (
+                        <span className="sr-only"> (opens in a new tab)</span>
+                      )}
                     </a>
                   </motion.div>
                 </Magnetic>

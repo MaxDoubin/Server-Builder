@@ -14,12 +14,30 @@
  * total build size stays roughly flat when 950KB moves from a lazy chunk into
  * the eager one. Only the static closure shows it.
  *
- * Measured 2026-08-24 on the current build: 597.4 KB (611,690 bytes) across
- * four chunks, index (303.5 KB), react (148.1 KB), motion (128.7 KB) and
- * icons (17.1 KB). Budget is 700KB. That is roughly 100KB of headroom: enough
- * for real growth, not enough to absorb a 3D engine or the post archive
- * unnoticed. The measured figure drifts by a few KB with ordinary page work;
- * treat a jump of tens of KB as something to look at.
+ * Measured 2026-08-29 on the current build: 617.5 KB across four chunks,
+ * index (331.5 KB), react (140.2 KB), motion (128.7 KB, which is gsap plus
+ * lenis, not framer-motion) and icons (17.1 KB). The measured figure drifts
+ * by a few KB with ordinary page work; treat a jump of tens of KB as
+ * something to look at.
+ *
+ * Budget is 692KB, which is roughly 75KB of headroom: enough for real growth,
+ * not enough to absorb a 3D engine or the post archive unnoticed. It was 700KB
+ * until the nested-copy fix in vite.config.ts manualChunks returned 7.9 KB by
+ * evicting react-three-fiber's private scheduler copies from the eager react
+ * chunk. The budget came down by exactly that much so the win cannot be
+ * silently spent; keep doing that rather than banking headroom.
+ *
+ * Where the remaining weight is, if you are here to cut more. The two biggest
+ * items in the closure are eager only because of static imports in the app
+ * shell, so neither can be fixed from vite.config.ts:
+ *   - framer-motion, about 145 KB, invisible because it sits inside index-*.js
+ *     rather than a named chunk. Eagerly imported by lib/framer-animations.tsx
+ *     (App.tsx pulls ScrollProgressBar and CursorGlow from it) and directly by
+ *     components/cinematic/CinematicNav.tsx and CinematicFooter.tsx. All three
+ *     have to stop importing it at the top level before any of it moves.
+ *   - motion (gsap plus lenis), 128.7 KB, reached through lib/motion/gsap.ts.
+ *     Every caller only touches gsap inside a useEffect, so the static import
+ *     there is the only thing keeping the chunk eager.
  *
  * Usage: node scripts-ci/check-bundle-budget.mjs   (after npm run build)
  */
@@ -30,7 +48,7 @@ import path from "node:path";
 const DIST = path.resolve("dist/public");
 const INDEX = path.join(DIST, "index.html");
 
-const BUDGET_BYTES = 700 * 1024;
+const BUDGET_BYTES = 692 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

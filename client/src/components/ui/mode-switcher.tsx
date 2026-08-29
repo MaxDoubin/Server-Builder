@@ -30,9 +30,15 @@ export function ModeSwitcher() {
         const Icon = mode.icon;
         const isActive = location === modeRoutes[mode.id];
         return (
+          /*
+            aria-current: which mode is current was carried only by the filled
+            button variant, so it did not exist for a screen reader or under
+            forced colours.
+          */
           <Button
             key={mode.id}
             variant={isActive ? "default" : "ghost"}
+            aria-current={isActive ? "page" : undefined}
             size="sm"
             onClick={() => {
               setGameMode(mode.id);
@@ -43,7 +49,7 @@ export function ModeSwitcher() {
             }`}
             data-testid={`button-mode-${mode.id}`}
           >
-            <Icon className="w-4 h-4 mr-1.5" />
+            <Icon className="w-4 h-4 mr-1.5" aria-hidden="true" />
             {mode.label}
           </Button>
         );

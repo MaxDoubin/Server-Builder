@@ -62,7 +62,14 @@ export function CopyButton({ value, label = "Copy to clipboard", children, class
     <button
       type="button"
       onClick={copy}
-      aria-label={copied ? "Copied" : label}
+      /*
+        Stable name. Swapping this to "Copied" renamed the control while it
+        still held focus, which some screen readers re-announce on top of the
+        live region below, and for the 1.8s window the button's name stopped
+        describing what pressing it does. The live region is what reports the
+        result.
+      */
+      aria-label={label}
       data-testid={testId}
       className={`inline-flex min-h-[28px] shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono-tight text-[10px] uppercase tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
         copied

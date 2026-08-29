@@ -53,8 +53,16 @@ export function StatusBar() {
       className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
       data-testid="status-bar"
     >
+      {/*
+        Each readout is an icon plus a number. lucide-react does not set
+        aria-hidden, and the icon carried the entire meaning, so these were
+        announced as "graphic, 12" with nothing saying what 12 counted. The
+        sr-only labels are position:absolute, so they are not flex items and
+        the gap-1.5 spacing is unchanged.
+      */}
       <div className="flex items-center gap-1.5" data-testid="status-power">
-        <Zap className="w-4 h-4 text-noc-yellow" />
+        <Zap className="w-4 h-4 text-noc-yellow" aria-hidden="true" />
+        <span className="sr-only">IT load</span>
         <span className="font-mono text-xs">
           {(resolvedMetrics.itLoad / 1000).toFixed(1)} kW
         </span>
@@ -68,26 +76,50 @@ export function StatusBar() {
       </div>
 
       <div className="flex items-center gap-1.5" data-testid="status-uptime">
-        <Clock className="w-4 h-4 text-noc-green" />
+        <Clock className="w-4 h-4 text-noc-green" aria-hidden="true" />
+        <span className="sr-only">Uptime</span>
         <span className="font-mono text-xs">
           {resolvedMetrics.uptime.toFixed(4)}%
         </span>
       </div>
 
       <div className="flex items-center gap-1.5" data-testid="status-servers">
-        <Server className="w-4 h-4 text-noc-blue" />
+        <Server className="w-4 h-4 text-noc-blue" aria-hidden="true" />
+        <span className="sr-only">Servers</span>
         <span className="font-mono text-xs">{resolvedMetrics.serverCount}</span>
       </div>
 
       <div className="flex items-center gap-1.5" data-testid="status-storage">
-        <HardDrive className="w-4 h-4 text-noc-purple" />
+        <HardDrive className="w-4 h-4 text-noc-purple" aria-hidden="true" />
+        <span className="sr-only">Storage used</span>
         <span className="font-mono text-xs">
           {storagePercent.toFixed(0)}%
         </span>
       </div>
 
+      {/*
+        The live region is always mounted, and only its text changes. Putting
+        role="status" on the badge itself would not work: a live region that
+        is inserted into the DOM already holding its text is not reliably
+        announced, and the badge only exists once an alert fires.
+      */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {criticalCount > 0
+          ? `${criticalCount} unacknowledged critical ${criticalCount === 1 ? "alert" : "alerts"}`
+          : ""}
+      </span>
+
+      {/*
+        aria-hidden: the sr-only region above already carries this count in the
+        same reading position, and announcing it twice is worse than once.
+      */}
       {criticalCount > 0 && (
-        <Badge variant="destructive" className="font-mono" data-testid="status-critical-alerts">
+        <Badge
+          variant="destructive"
+          className="font-mono"
+          data-testid="status-critical-alerts"
+          aria-hidden="true"
+        >
           <AlertCircle className="w-3 h-3 mr-1" />
           {criticalCount} CRITICAL
         </Badge>

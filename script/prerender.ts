@@ -1572,15 +1572,98 @@ ${guide.mistakes.map((m) => `    <li>${esc(m)}</li>`).join("\n")}
   <ul>
 ${guide.resources.map((r) => `    <li><a href="${r.url}">${esc(r.label)}</a>: ${esc(r.detail)}</li>`).join("\n")}
   </ul>
-  <p><a href="${SITE_URL}/ncl">All National Cyber League category guides</a></p>
+${
+  /*
+    The self-check, written into the static body as well as the JSON-LD.
+
+    The quiz is a React component, so on the first HTML crawl it does not
+    exist. Marking up a Quiz for questions that are nowhere in the document
+    is exactly the mismatch Google treats as spam: the guidance for practice
+    problems is that the marked-up content has to be on the page for the
+    reader too. Rendering the questions here keeps the two in step, and it
+    is the same trade the rest of this body already makes, since React
+    replaces the whole block on mount and no reader ever sees it.
+  */
+  guide.quiz.length
+    ? `  <h2>Check yourself</h2>
+  <ol>
+${guide.quiz
+  .map(
+    (q) => `    <li>
+      <p>${esc(q.question)}</p>
+      <ul>
+${q.choices.map((c) => `        <li>${esc(c)}</li>`).join("\n")}
+      </ul>
+      <p>Answer: ${esc(q.choices[q.correctIndex])}. ${esc(q.explanation)}</p>
+    </li>`,
+  )
+  .join("\n")}
+  </ol>
+`
+    : ""
+}  <p><a href="${SITE_URL}/ncl">All National Cyber League category guides</a></p>
 </main>`
       : undefined;
+
+    /*
+      Quiz markup for the nine category guides.
+
+      Each guide ships a real multiple-choice self-check with a written
+      explanation, which is the one content shape Google has a dedicated
+      education rich result for. Without it these pages compete as plain
+      prose against every other write-up of the same nine categories.
+
+      The explanation is attached only to the accepted answer. The data holds
+      one explanation per question, not one per choice, so repeating it under
+      each distractor would be inventing a rationale the author never wrote
+      for that option.
+
+      Guarded on quiz.length so a guide added later without a quiz emits no
+      empty Quiz, which would be a rich result promising questions and
+      carrying none.
+    */
+    const quizSchema =
+      guide && guide.quiz.length
+        ? `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Quiz",
+  name: `${guide.category} self-check`,
+  url,
+  about: { "@type": "Thing", name: guide.category },
+  educationalUse: "Practice",
+  learningResourceType: "Practice problem",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+  hasPart: guide.quiz.map((q) => ({
+    "@type": "Question",
+    eduQuestionType: "Multiple choice",
+    learningResourceType: "Practice problem",
+    name: q.question,
+    text: q.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      position: q.correctIndex,
+      text: q.choices[q.correctIndex],
+      comment: { "@type": "Comment", text: q.explanation },
+    },
+    suggestedAnswer: q.choices
+      .map((choice, position) => ({ choice, position }))
+      .filter((c) => c.position !== q.correctIndex)
+      .map((c) => ({ "@type": "Answer", position: c.position, text: c.choice })),
+  })),
+})}
+</script>
+`
+        : "";
+
     await writePage(`ncl/${slug}`, base, {
       title: pageTitle(`${name} | NCL Guide`),
       description,
       canonical: url,
       rootContent: guideContent,
-      schema: `<script type="application/ld+json">
+      schema: `${quizSchema}<script type="application/ld+json">
 ${JSON.stringify({
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -1595,11 +1678,45 @@ ${JSON.stringify({
   }
 
   // ── tools ──
+  /*
+    One string, used as both the meta description and the ItemList's own
+    description, so the two cannot drift into saying different things about
+    the same page.
+  */
+  const toolsIndexDescription =
+    "Free browser-based tools for networking and security study: subnetting, packet headers, cron, regex, encoding, and classical ciphers.";
+
   await writePage("tools", base, {
     title: "Tools | Max Doubin",
-    description:
-      "Free browser-based tools for networking and security study: subnetting, packet headers, cron, regex, encoding, and classical ciphers.",
+    description: toolsIndexDescription,
     canonical: `${SITE_URL}/tools`,
+    /*
+      The index as a list of the seventeen tools it links to.
+
+      This page carried only a BreadcrumbList, which describes what is above
+      it and says nothing about what is below. An ItemList is the markup that
+      makes a hub legible as a hub: it names its children and their order, so
+      the set can surface together instead of one tool at a time, and so a
+      crawler learns the relationship without having to infer it from anchor
+      tags. Ordered as TOOLS is ordered, which is the order the page renders.
+    */
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Browser tools for networking and security",
+  description: toolsIndexDescription,
+  url: `${SITE_URL}/tools`,
+  numberOfItems: TOOLS.length,
+  itemListElement: TOOLS.map((t, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: t.name,
+    description: t.blurb,
+    url: `${SITE_URL}/tools/${t.slug}`,
+  })),
+})}
+</script>`,
     rootContent: `
 <main>
   <h1>Tools</h1>
@@ -1628,6 +1745,21 @@ ${JSON.stringify({
   applicationCategory: "UtilitiesApplication",
   operatingSystem: "Any",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  /*
+    A zero-price Offer is a claim about money and nothing else. Google reads
+    isAccessibleForFree as the separate claim that the thing is usable
+    without a paywall, a login or a trial, which is what is actually true
+    here: every tool is client-side JavaScript that runs on load.
+  */
+  isAccessibleForFree: true,
+  /*
+    featureList is the registry's own keywords for the tool, verbatim. They
+    are the subjects it handles (a subnet calculator's cidr, netmask, ipv4,
+    wildcard), which is the closest thing to a feature list this data holds.
+    Writing prose features here instead would mean inventing capabilities
+    nobody has verified the tool has.
+  */
+  featureList: tool.keywords.length ? tool.keywords : undefined,
   author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
 })}
 </script>
@@ -1859,6 +1991,15 @@ ${EXAMS.map(
 
   for (const exam of EXAMS) {
     /*
+      The name of the standard these pages are written against.
+
+      Built from the exam's own name and code rather than concatenating
+      exam.vendor, which is already inside two of the three names and would
+      print "CompTIA CompTIA Security+".
+    */
+    const framework = `${exam.name} ${exam.code} exam objectives`;
+
+    /*
       The exam level itself. /study/ccna/ip-connectivity resolved while
       /study/ccna returned a 404, so trimming a URL, which is ordinary
       navigation and something crawlers do, walked into a dead end on a path
@@ -1868,6 +2009,39 @@ ${EXAMS.map(
       title: pageTitle(`${exam.name} ${exam.code} objectives`),
       description: `Every ${exam.name} ${exam.code} exam domain, its published weighting, and what each one actually asks of you.`,
       canonical: `${SITE_URL}/study/${exam.slug}`,
+      /*
+        LearningResource for the exam as a whole.
+
+        These twenty pages exist to answer objective queries, and a page that
+        says nothing about what it teaches is indistinguishable from the
+        content farms answering the same query. teaches lists the exam's own
+        domain names, and educationalAlignment points at the vendor document
+        those names were read from, so the claim is checkable rather than
+        asserted: targetUrl is the published objectives page, which every one
+        of these pages already links in its body.
+      */
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: `${exam.name} ${exam.code} exam objectives`,
+  description: exam.intro,
+  url: `${SITE_URL}/study/${exam.slug}`,
+  learningResourceType: "Study guide",
+  educationalUse: "Exam preparation",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  teaches: exam.domains.map((d: { name: string }) => d.name),
+  educationalAlignment: {
+    "@type": "AlignmentObject",
+    alignmentType: "teaches",
+    educationalFramework: framework,
+    targetName: `${exam.name} ${exam.code}`,
+    targetUrl: exam.officialUrl,
+  },
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
       rootContent: `
 <main>
   <nav><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/study">Study</a></nav>
@@ -1900,6 +2074,43 @@ ${EXAMS.map(
         title: pageTitle(`${domain.name} | ${exam.name} ${exam.code}`),
         description: `${domain.name} for ${exam.name} ${exam.code}: ${matched.length} articles and free tools mapped to this exam objective.`,
         canonical: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
+        /*
+          The same LearningResource one level down, scoped to the single
+          objective this page covers. teaches is the vendor's own name for
+          the domain, which is the competency the page claims to build, and
+          the alignment target is that same name inside the framework the
+          exam publishes. No weighting appears anywhere in this block:
+          schema.org has no property for "22 percent of the exam", and Cisco
+          publishes no weightings at all, so six of these pages have nothing
+          to put there even if it did.
+        */
+        schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: `${domain.name}, ${exam.name} ${exam.code}`,
+  description: domain.summary,
+  url: `${SITE_URL}/study/${exam.slug}/${domain.slug}`,
+  learningResourceType: "Study guide",
+  educationalUse: "Exam preparation",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  teaches: domain.name,
+  educationalAlignment: {
+    "@type": "AlignmentObject",
+    alignmentType: "teaches",
+    educationalFramework: framework,
+    targetName: domain.name,
+    targetUrl: exam.officialUrl,
+  },
+  isPartOf: {
+    "@type": "LearningResource",
+    name: framework,
+    url: `${SITE_URL}/study/${exam.slug}`,
+  },
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
         rootContent: `
 <main>
   <nav><a href="${SITE_URL}/study">All exam domains</a></nav>

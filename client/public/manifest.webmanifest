@@ -1,13 +1,16 @@
 {
+  "id": "/",
   "name": "Max Doubin",
   "short_name": "Max Doubin",
   "description": "Cybersecurity specialist and enterprise networking expert. Systems live, built to lead.",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#04050a",
-  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "background_color": "#090a0b",
+  "theme_color": "#090a0b",
   "icons": [
     {
       "src": "/favicon-192.png",
@@ -32,6 +35,26 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Field Notes",
+      "short_name": "Notes",
+      "description": "The technical journal, newest first.",
+      "url": "/blog"
+    },
+    {
+      "name": "Tools",
+      "short_name": "Tools",
+      "description": "Subnetting, VLAN and networking calculators.",
+      "url": "/tools"
+    },
+    {
+      "name": "Study",
+      "short_name": "Study",
+      "description": "Certification objectives, guides and flashcards.",
+      "url": "/study"
     }
   ]
 }

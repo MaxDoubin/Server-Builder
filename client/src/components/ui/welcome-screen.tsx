@@ -41,15 +41,37 @@ export function WelcomeScreen({
     setMode(defaultMode);
   }, [defaultMode]);
 
+  /*
+    Gated on isVisible. The early return below is after the hooks, so this
+    listener stayed bound to window for the whole life of the game page even
+    once the gate was dismissed: every "e" the visitor typed kept flipping
+    hidden state, and re-opening the gate showed panels nobody asked for.
+
+    The target and modifier guards are the other half of the same defect. An
+    unmodified single-letter shortcut on window fires while the caret is in a
+    text field, so typing "e" anywhere on the page tripped it, and Ctrl/Cmd+E
+    fired it alongside the browser's own shortcut.
+  */
   useEffect(() => {
+    if (!isVisible) return;
     const handleKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.isContentEditable ||
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.tagName === "SELECT"
+      ) {
+        return;
+      }
       if (event.key.toLowerCase() === "e") {
         setShowPanels((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, []);
+  }, [isVisible]);
 
   if (!isVisible) return null;
 
@@ -259,15 +281,25 @@ export function WelcomeScreen({
       </div>
 
       <div className="absolute right-6 top-1/2 z-20 -translate-y-1/2">
+        {/*
+          aria-expanded: the glyph flips between two chevrons, so the only cue
+          that the panels are already open was visual and the button announced
+          the same name in both states.
+
+          The `before:` box is a pointer target only, no paint: the painted
+          circle stays 40px, which is under the 44px minimum for a standalone
+          touch control, so the hit area is grown around it instead.
+        */}
         <Button
           type="button"
           size="icon"
           variant="ghost"
           onClick={() => setShowPanels((prev) => !prev)}
-          className="h-10 w-10 rounded-full border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-graphite)/0.64)] text-[hsl(var(--brand-bone))] shadow-[0_0_16px_hsl(var(--brand-cyan)/0.24)]"
+          aria-expanded={showPanels}
+          className="relative h-10 w-10 rounded-full border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-graphite)/0.64)] text-[hsl(var(--brand-bone))] shadow-[0_0_16px_hsl(var(--brand-cyan)/0.24)] before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-['']"
           aria-label="Toggle intro panels"
         >
-          {showPanels ? "⟨" : "⟩"}
+          <span aria-hidden>{showPanels ? "⟨" : "⟩"}</span>
         </Button>
         <div className="mt-2 text-center font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
           Press E
