@@ -1,11 +1,12 @@
 import { useGame } from "@/lib/game-context";
+import type { Equipment, InstalledEquipment } from "@shared/schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Server, Plus, Thermometer, Zap } from "lucide-react";
 
 export function RackView() {
-  const { racks, selectedRackId, setSelectedRackId } = useGame();
+  const { racks, selectedRackId, setSelectedRackId, equipmentCatalog } = useGame();
   const selectedRack = racks.find((r) => r.id === selectedRackId);
 
   if (!selectedRack) {
@@ -34,6 +35,37 @@ export function RackView() {
   }
 
   const usSlots = Array.from({ length: selectedRack.totalUs }, (_, i) => i + 1).reverse();
+
+  /*
+    Rack contents, read the way the data model actually stores them.
+
+    This pane used to look occupancy up as `slot.serverId`, a field no rack
+    slot has ever carried: a slot is { uPosition, equipmentInstanceId }, and
+    `serverId` appears nowhere in the repository. The lookup never matched, so
+    the occupied branch was unreachable and every rack drew a column of empty
+    Us no matter what was installed in it.
+
+    The real link is rack.installedEquipment joined against the equipment
+    catalog, which is what RackDetailPanel does. Equipment spans uStart to
+    uEnd, so a 2U box occupies two rows: the row equal to uStart renders the
+    device and the rows above it are covered, which keeps the column the same
+    height as the U ruler beside it.
+  */
+  const startsAt = new Map<number, { equipment: Equipment; installed: InstalledEquipment }>();
+  const covered = new Set<number>();
+  for (const installed of selectedRack.installedEquipment ?? []) {
+    const equipment = equipmentCatalog.find((item) => item.id === installed.equipmentId);
+    if (!equipment) continue;
+    startsAt.set(installed.uStart, { equipment, installed });
+    for (let u = installed.uStart; u <= installed.uEnd; u += 1) covered.add(u);
+  }
+
+  const STATUS_DOT: Record<InstalledEquipment["status"], string> = {
+    online: "bg-noc-green",
+    warning: "bg-noc-yellow",
+    critical: "bg-destructive",
+    offline: "bg-muted-foreground",
+  };
 
   return (
     <Card className="flex flex-col h-full bg-card/50 backdrop-blur-sm" data-testid="rack-view">
@@ -73,26 +105,59 @@ export function RackView() {
             ))}
           </div>
 
-          {/*
-            Every U renders as an empty slot. The occupied-slot rendering that
-            used to live here keyed off slot.serverId, a field no rack slot has
-            ever carried: a slot holds only { uPosition, equipmentInstanceId },
-            and nothing in the data model ties a ServerConfig to a slot. The
-            lookup therefore never matched and every U fell through to this
-            branch, so removing it changes nothing on screen. Showing rack
-            contents here means reading rack.installedEquipment against the
-            equipment catalog, the way RackDetailPanel does.
-          */}
           <div className="flex-1 border border-border rounded-md bg-background/30 overflow-hidden">
-            {usSlots.map((u) => (
-              <div
-                key={u}
-                className="h-8 border-b border-border/50 px-2 flex items-center justify-center hover-elevate cursor-pointer"
-                data-testid={`rack-slot-${u}`}
-              >
-                <Plus className="w-4 h-4 text-muted-foreground/30" />
-              </div>
-            ))}
+            {usSlots.map((u) => {
+              const here = startsAt.get(u);
+
+              // A row inside a multi-U device that is not its first U. The
+              // device above already drew itself; this row only holds the
+              // height so the column stays aligned with the U ruler.
+              if (!here && covered.has(u)) {
+                return (
+                  <div
+                    key={u}
+                    className="h-8 border-b border-border/50 bg-primary/5"
+                    data-testid={`rack-slot-${u}`}
+                    aria-hidden
+                  />
+                );
+              }
+
+              if (here) {
+                const { equipment, installed } = here;
+                const spanned = installed.uEnd - installed.uStart + 1;
+                return (
+                  <div
+                    key={u}
+                    className="h-8 border-b border-border/50 px-2 flex items-center gap-2 bg-primary/10"
+                    data-testid={`rack-slot-${u}`}
+                    title={`${equipment.name} · ${installed.uStart}U to ${installed.uEnd}U · ${installed.status}`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full flex-none ${STATUS_DOT[installed.status]}`}
+                      aria-hidden
+                    />
+                    <span className="font-mono text-xs truncate">{equipment.name}</span>
+                    <span className="ml-auto font-mono text-[10px] text-muted-foreground flex-none">
+                      {spanned}U
+                      {typeof installed.cpuLoad === "number"
+                        ? ` · ${Math.round(installed.cpuLoad)}%`
+                        : ""}
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={u}
+                  className="h-8 border-b border-border/50 px-2 flex items-center justify-center hover-elevate cursor-pointer"
+                  data-testid={`rack-slot-${u}`}
+                >
+                  <Plus className="w-4 h-4 text-muted-foreground/30" />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
