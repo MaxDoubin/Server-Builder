@@ -62,3 +62,11 @@
 /legacy/blog/*   /             200
 /legacy/projects /             200
 /legacy/contact  /             200
+
+# Retired writing.
+#
+# A post that was published, indexed and linked cannot simply vanish: the URL
+# is already in Google's index and in anyone's bookmarks. A 301 to the page
+# that covers the same ground keeps those arrivals useful and hands the link
+# equity somewhere sensible, which a bare 404 throws away.
+/blog/running-a-cyber-club  /cyber-club  301

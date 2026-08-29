@@ -239,7 +239,27 @@ async function writePage(
 ): Promise<void> {
   const target = path.join(DIST, `${relDir}.html`);
   await mkdir(path.dirname(target), { recursive: true });
-  const html = buildPageHtml(base, meta);
+
+  /*
+    Standalone pages get their own social card when one has been generated,
+    the same way posts do. /resume, /projects and /certifications are the
+    pages most likely to be sent to an admissions officer or a recruiter, and
+    they used to share the one generic site image with everything else, so a
+    shared link said nothing about what it pointed at.
+
+    Resolved here rather than at each call site so a new page picks its card
+    up automatically: add the slug to STANDALONE in scripts-ci/make-og-images.py,
+    regenerate, and this finds it. Falls back to the generic image when no
+    card exists, which is correct for the home page and for utility pages.
+  */
+  const cardPath = `/images/og/${relDir}.jpg`;
+  const ogImage =
+    meta.ogImage ??
+    (existsSync(path.join(DIST, cardPath.slice(1)))
+      ? `${SITE_URL}${cardPath}`
+      : undefined);
+
+  const html = buildPageHtml(base, { ...meta, ogImage });
   await writeFile(target, html, "utf-8");
 }
 

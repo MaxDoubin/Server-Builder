@@ -34,6 +34,174 @@ const POPULAR_POSTS = [
   },
 ];
 
+
+/*
+  A traceroute rendered in perspective, dead-ending where the page should be.
+
+  A 404 is a routing failure, so the page says so in the language of the rest
+  of the site: hops recede into depth, the packet walks them, and the last
+  hop never answers. The final plate is drawn as an outline rather than a
+  solid because there is nothing there, which is the whole point.
+
+  Built from CSS transforms for the same reason the loader is: `perspective`
+  and `transform-style: preserve-3d` give real projection for zero bytes, and
+  a mistyped URL is the last place that should pay to download a 3D engine.
+  Only transform and opacity animate, so this composites on the GPU.
+*/
+const HOPS = [
+  { label: "edge", rtt: "2 ms" },
+  { label: "cdn", rtt: "9 ms" },
+  { label: "origin", rtt: "14 ms" },
+  { label: "router", rtt: "21 ms" },
+  { label: "?", rtt: "* * *" },
+];
+
+function TracerouteScene({ attempted }: { attempted: string }) {
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  return (
+    <div
+      aria-hidden
+      data-testid="scene-404-traceroute"
+      className="relative mt-8 h-[215px] w-full select-none md:h-[275px]"
+      style={{ perspective: "1000px", perspectiveOrigin: "50% 50%" }}
+    >
+      <div
+        className="absolute left-1/2 top-1/2 [--trace-scale:0.62] md:[--trace-scale:1]"
+        style={{
+          transformStyle: "preserve-3d",
+          transform:
+            "translate(-50%, -62%) scale(var(--trace-scale)) rotateX(15deg) rotateY(-18deg)",
+        }}
+      >
+        {HOPS.map((hop, i) => {
+          const dead = i === HOPS.length - 1;
+          const z = -i * 120;
+          const x = (i - (HOPS.length - 1) / 2) * 96;
+          return (
+            <div key={hop.label + i} style={{ transformStyle: "preserve-3d" }}>
+              {/* The link into this hop. Nothing runs into the dead one. */}
+              {i > 0 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    width: 153.7,
+                    height: 2,
+                    transformOrigin: "0 50%",
+                    transform: `translate3d(${x - 96}px, 0, ${z + 120}px) rotateY(51.34deg)`,
+                    background: dead
+                      ? "repeating-linear-gradient(90deg, hsl(var(--brand-danger) / 0.5) 0 4px, transparent 4px 9px)"
+                      : "linear-gradient(90deg, hsl(var(--brand-signal) / 0.7), hsl(var(--brand-cyan) / 0.5))",
+                    boxShadow: dead ? "none" : "0 0 10px hsl(var(--brand-signal) / 0.35)",
+                  }}
+                />
+              )}
+
+              {/* The hop itself. */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  width: 84,
+                  height: 58,
+                  marginLeft: -42,
+                  marginTop: -29,
+                  transform: `translate3d(${x}px, 0, ${z}px)`,
+                  transformStyle: "preserve-3d",
+                  borderRadius: 5,
+                  border: `1px ${dead ? "dashed" : "solid"} ${
+                    dead ? "hsl(var(--brand-danger) / 0.75)" : "hsl(var(--brand-iron))"
+                  }`,
+                  background: dead
+                    ? "hsl(var(--brand-danger) / 0.05)"
+                    : "linear-gradient(180deg, #0e141c 0%, #070a10 100%)",
+                  boxShadow: dead
+                    ? "0 0 22px -6px hsl(var(--brand-danger) / 0.55)"
+                    : "0 18px 26px -18px rgba(0,0,0,0.95)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  animation:
+                    reduceMotion || !dead
+                      ? undefined
+                      : "hop-unreachable 2.2s ease-in-out infinite",
+                }}
+              >
+                <span
+                  style={{
+                    height: 7,
+                    width: 7,
+                    borderRadius: 999,
+                    background: dead
+                      ? "hsl(var(--brand-danger))"
+                      : "hsl(var(--brand-signal))",
+                    boxShadow: `0 0 8px ${
+                      dead ? "hsl(var(--brand-danger))" : "hsl(var(--brand-signal))"
+                    }`,
+                  }}
+                />
+                <span
+                  className="font-mono-tight"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: dead
+                      ? "hsl(var(--brand-danger))"
+                      : "hsl(var(--brand-bone-dim))",
+                  }}
+                >
+                  {hop.label}
+                </span>
+                <span
+                  className="font-mono-tight"
+                  style={{
+                    fontSize: 10,
+                    color: dead ? "hsl(var(--brand-danger))" : "hsl(var(--brand-ash))",
+                  }}
+                >
+                  {hop.rtt}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* The packet, walking the path and stalling where the route breaks. */}
+        {!reduceMotion && (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: 12,
+              height: 12,
+              marginLeft: -6,
+              marginTop: -6,
+              borderRadius: 999,
+              background: "hsl(var(--brand-signal))",
+              boxShadow:
+                "0 0 14px hsl(var(--brand-signal)), 0 0 30px hsl(var(--brand-signal) / 0.5)",
+              animation: "packet-walk 4.4s cubic-bezier(.6,0,.4,1) infinite",
+            }}
+          />
+        )}
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+        traceroute {attempted} · no route to host
+      </div>
+    </div>
+  );
+}
+
 export function CinematicNotFound() {
   useSEO({
     title: "404 · Signal Lost | Max Doubin",
@@ -83,6 +251,8 @@ export function CinematicNotFound() {
               still here.
             </p>
           </header>
+
+          <TracerouteScene attempted={attempted} />
 
           {/* A <pre> maps to a generic element, which many screen readers will
               not announce an aria-label on. figure takes a name properly. */}
