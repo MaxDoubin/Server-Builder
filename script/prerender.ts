@@ -529,6 +529,27 @@ async function prerenderPost(
   const ogImage = `${SITE_URL}${hasCard ? cardPath : post.coverImage}`;
   const coverImage = `${SITE_URL}${post.coverImage}`;
 
+  /*
+    articleSection is the one section-level fact a BlogPosting can carry, and
+    it is what lets a result be understood as part of a subject rather than as
+    a loose page. The section is the post's primary tag, which is the tag the
+    listing pages already treat as primary, resolved through the topic hub so
+    the JSON-LD says "Networking" exactly as /topics/networking does rather
+    than the lowercase slug the reader never sees.
+
+    Three primary tags have no hub (three.js, proxmox, community). Those fall
+    back to the tag verbatim: a tag is a real value, and title-casing it here
+    would invent a section name the site does not use anywhere else.
+
+    Left undefined, never empty, when a post somehow has no tags at all.
+    JSON.stringify drops an undefined property, and an absent articleSection
+    is correct where an empty one would claim a section named nothing.
+  */
+  const primaryTag: string | undefined = post.tags[0];
+  const articleSection = primaryTag
+    ? (getTagPage(primaryTag)?.title ?? primaryTag)
+    : undefined;
+
   const schema = `<script type="application/ld+json">
 ${JSON.stringify({
   "@context": "https://schema.org",
@@ -544,6 +565,7 @@ ${JSON.stringify({
   publisher: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin", url: SITE_URL },
   isPartOf: { "@type": "Blog", "@id": `${SITE_URL}/#blog` },
   keywords: post.tags.join(", "),
+  articleSection,
   inLanguage: "en-US",
   wordCount: post.wordCount,
   mainEntityOfPage: { "@type": "WebPage", "@id": url },
@@ -764,6 +786,39 @@ ${JSON.stringify({
   });
 
   /*
+    The competition hub as a list of its nine children.
+
+    A hub page whose only markup is a BreadcrumbList tells Google what is
+    above it and nothing about what is below it, so the nine category guides
+    read as nine unrelated pages that happen to share a path prefix. An
+    ItemList is how a hub says "these are my children, in this order", and it
+    is what makes the set eligible to appear together rather than one guide
+    at a time.
+
+    Sorted by the guides' own `order` field, which is documented as the sort
+    order for this index, so the list Google reads is the list a reader sees.
+  */
+  const nclIndexSchema = `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "National Cyber League category guides",
+  url: `${SITE_URL}/ncl`,
+  numberOfItems: NCL_GUIDE_DATA.length,
+  itemListOrder: "https://schema.org/ItemListOrderAscending",
+  itemListElement: [...NCL_GUIDE_DATA]
+    .sort((a, b) => a.order - b.order)
+    .map((guide, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: guide.category,
+      description: guide.tagline,
+      url: `${SITE_URL}/ncl/${guide.slug}`,
+    })),
+})}
+</script>`;
+
+  /*
     Standalone pages.
 
     Every one of these is a real page in the router, so every one needs a
@@ -891,6 +946,7 @@ ${JSON.stringify({
       description:
         "What the National Cyber League is, how scoring works, how to prepare, and guides to all nine challenge categories, from a top 1 percent competitor.",
       canonical: `${SITE_URL}/ncl`,
+      schema: nclIndexSchema,
       // The seven guides were reachable from nowhere: this index rendered its
       // list client side, so a crawler saw an empty page with no links out.
       rootContent: `
