@@ -1,12 +1,12 @@
 import { useGame } from "@/lib/game-context";
+import type { Equipment, InstalledEquipment } from "@shared/schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Server, Plus, Thermometer, Zap } from "lucide-react";
 
 export function RackView() {
-  const { racks, selectedRackId, setSelectedRackId, servers } = useGame();
+  const { racks, selectedRackId, setSelectedRackId, equipmentCatalog } = useGame();
   const selectedRack = racks.find((r) => r.id === selectedRackId);
 
   if (!selectedRack) {
@@ -35,6 +35,37 @@ export function RackView() {
   }
 
   const usSlots = Array.from({ length: selectedRack.totalUs }, (_, i) => i + 1).reverse();
+
+  /*
+    Rack contents, read the way the data model actually stores them.
+
+    This pane used to look occupancy up as `slot.serverId`, a field no rack
+    slot has ever carried: a slot is { uPosition, equipmentInstanceId }, and
+    `serverId` appears nowhere in the repository. The lookup never matched, so
+    the occupied branch was unreachable and every rack drew a column of empty
+    Us no matter what was installed in it.
+
+    The real link is rack.installedEquipment joined against the equipment
+    catalog, which is what RackDetailPanel does. Equipment spans uStart to
+    uEnd, so a 2U box occupies two rows: the row equal to uStart renders the
+    device and the rows above it are covered, which keeps the column the same
+    height as the U ruler beside it.
+  */
+  const startsAt = new Map<number, { equipment: Equipment; installed: InstalledEquipment }>();
+  const covered = new Set<number>();
+  for (const installed of selectedRack.installedEquipment ?? []) {
+    const equipment = equipmentCatalog.find((item) => item.id === installed.equipmentId);
+    if (!equipment) continue;
+    startsAt.set(installed.uStart, { equipment, installed });
+    for (let u = installed.uStart; u <= installed.uEnd; u += 1) covered.add(u);
+  }
+
+  const STATUS_DOT: Record<InstalledEquipment["status"], string> = {
+    online: "bg-noc-green",
+    warning: "bg-noc-yellow",
+    critical: "bg-destructive",
+    offline: "bg-muted-foreground",
+  };
 
   return (
     <Card className="flex flex-col h-full bg-card/50 backdrop-blur-sm" data-testid="rack-view">
@@ -76,79 +107,44 @@ export function RackView() {
 
           <div className="flex-1 border border-border rounded-md bg-background/30 overflow-hidden">
             {usSlots.map((u) => {
-              const slot = selectedRack.slots.find((s) => s.uPosition === u);
-              const server = slot?.serverId
-                ? servers.find((s) => s.id === slot.serverId)
-                : null;
+              const here = startsAt.get(u);
 
-              if (server) {
-                const serverHeight =
-                  server.chassisType === "1U"
-                    ? 1
-                    : server.chassisType === "2U"
-                    ? 2
-                    : 4;
-                if (u !== parseInt(server.name.split("-U")[1])) return null;
-
+              // A row inside a multi-U device that is not its first U. The
+              // device above already drew itself; this row only holds the
+              // height so the column stays aligned with the U ruler.
+              if (!here && covered.has(u)) {
                 return (
-                  <Tooltip key={u}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`h-${serverHeight * 8} border-b border-border px-2 flex items-center gap-2 bg-muted/50 hover-elevate cursor-pointer`}
-                        style={{ height: serverHeight * 32 }}
-                        data-testid={`rack-slot-${u}`}
-                      >
-                        <div className="flex flex-col gap-0.5">
-                          {Array.from({ length: 4 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                i === 0
-                                  ? server.status === "online"
-                                    ? "bg-noc-green"
-                                    : server.status === "warning"
-                                    ? "bg-noc-yellow"
-                                    : "bg-noc-red"
-                                  : "bg-muted-foreground/30"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-mono truncate">
-                            {server.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            {server.chassisType} • {server.installedCpus.length}×CPU • {server.installedRam.length}×RAM
-                          </p>
-                        </div>
-                        <div className="text-[10px] font-mono text-muted-foreground">
-                          {server.powerDraw}W
-                        </div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <div className="text-xs space-y-1">
-                        <p className="font-semibold">{server.name}</p>
-                        <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Power:</span>
-                          <span className="font-mono">{server.powerDraw}W</span>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Temp:</span>
-                          <span className="font-mono">
-                            {server.inletTemp.toFixed(1)}°C → {server.exhaustTemp.toFixed(1)}°C
-                          </span>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">RAID:</span>
-                          <span className="font-mono">
-                            {server.raidLevel ? `RAID ${server.raidLevel}` : "None"}
-                          </span>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
+                  <div
+                    key={u}
+                    className="h-8 border-b border-border/50 bg-primary/5"
+                    data-testid={`rack-slot-${u}`}
+                    aria-hidden
+                  />
+                );
+              }
+
+              if (here) {
+                const { equipment, installed } = here;
+                const spanned = installed.uEnd - installed.uStart + 1;
+                return (
+                  <div
+                    key={u}
+                    className="h-8 border-b border-border/50 px-2 flex items-center gap-2 bg-primary/10"
+                    data-testid={`rack-slot-${u}`}
+                    title={`${equipment.name} · ${installed.uStart}U to ${installed.uEnd}U · ${installed.status}`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full flex-none ${STATUS_DOT[installed.status]}`}
+                      aria-hidden
+                    />
+                    <span className="font-mono text-xs truncate">{equipment.name}</span>
+                    <span className="ml-auto font-mono text-[10px] text-muted-foreground flex-none">
+                      {spanned}U
+                      {typeof installed.cpuLoad === "number"
+                        ? ` · ${Math.round(installed.cpuLoad)}%`
+                        : ""}
+                    </span>
+                  </div>
                 );
               }
 

@@ -52,20 +52,25 @@ export function CameraController({
   minHeight,
 }: CameraControllerProps) {
   const { camera } = useThree();
+  // useThree() hands back the base THREE.Camera, and only a perspective camera has an fov.
+  // The scene mounts a PerspectiveCamera as the default, so narrow once here and leave the
+  // fov work out entirely for anything else, since an orthographic projection ignores fov.
+  const perspectiveCamera = camera instanceof THREE.PerspectiveCamera ? camera : null;
+  const cameraFov = perspectiveCamera?.fov;
   const targetPosition = useRef(new THREE.Vector3(20, 15, 20));
   const targetLookAt = useRef(new THREE.Vector3(0, 1, 0));
   const currentLookAt = useRef(new THREE.Vector3(0, 1, 0));
   const orbitAngle = useRef(0);
-  const targetFov = useRef(camera.fov);
+  const targetFov = useRef(cameraFov);
 
   useEffect(() => {
     const preset = CAMERA_PRESETS.find((p) => p.name === targetPreset);
     if (preset) {
       targetPosition.current.set(...preset.position);
       targetLookAt.current.set(...preset.target);
-      targetFov.current = preset.fov ?? camera.fov;
+      targetFov.current = preset.fov ?? cameraFov;
     }
-  }, [camera.fov, targetPreset]);
+  }, [cameraFov, targetPreset]);
 
   useFrame((_, delta) => {
     if (autoOrbit && !isTransitioning) {
@@ -85,7 +90,10 @@ export function CameraController({
 
     camera.position.lerp(targetPosition.current, positionLerp);
     currentLookAt.current.lerp(targetLookAt.current, targetLerp);
-    camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov.current, fovLerp);
+    const nextFov = targetFov.current;
+    if (perspectiveCamera && nextFov !== undefined) {
+      perspectiveCamera.fov = THREE.MathUtils.lerp(perspectiveCamera.fov, nextFov, fovLerp);
+    }
     if (maxHeight !== undefined && camera.position.y > maxHeight) {
       camera.position.y = maxHeight;
     }
@@ -125,10 +133,15 @@ export function CinematicFlythrough({
   const progress = useRef(0);
   const lookAtTarget = useRef(new THREE.Vector3());
 
+  // CatmullRomCurve3 takes (points, closed, curveType, tension). A looping flythrough wants a
+  // closed curve so the last waypoint joins back onto the first, and centripetal
+  // parameterisation keeps that join free of cusps. An open path uses the uniform form, which
+  // is the only one that reads the tension argument.
   const positionCurve = useMemo(
     () =>
       new THREE.CatmullRomCurve3(
         waypoints.map((point) => new THREE.Vector3(...point.position)),
+        loop,
         loop ? "centripetal" : "catmullrom",
         0.45,
       ),
@@ -139,6 +152,7 @@ export function CinematicFlythrough({
     () =>
       new THREE.CatmullRomCurve3(
         waypoints.map((point) => new THREE.Vector3(...point.target)),
+        loop,
         loop ? "centripetal" : "catmullrom",
         0.4,
       ),

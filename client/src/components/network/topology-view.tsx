@@ -105,7 +105,6 @@ export function TopologyView() {
                             ? "secondary"
                             : "destructive"
                         }
-                        size="sm"
                       >
                         {node.status.toUpperCase()}
                       </Badge>

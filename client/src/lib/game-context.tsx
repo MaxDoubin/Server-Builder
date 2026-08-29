@@ -209,34 +209,55 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const hasLoadedAutosave = useRef(false);
 
   // Fetch initial game data
-  const { data, isLoading, refetch: refetchInit } = useQuery<InitData>({
+  const { data, isLoading, error: initError, refetch: refetchInit } = useQuery<InitData>({
     queryKey: ["/api/init"],
     staleTime: 30000,
     enabled: !useStaticData,
-    onError: (error) => {
-      logError("Failed to load initial game data.", error);
-    },
   });
 
   // Separate racks query for more granular updates
-  const { data: racksData, refetch: refetchRacksQuery } = useQuery<Rack[]>({
+  const { data: racksData, error: racksError, refetch: refetchRacksQuery } = useQuery<Rack[]>({
     queryKey: ["/api/racks"],
     staleTime: 5000,
     enabled: !useStaticData,
-    onError: (error) => {
-      logError("Failed to load racks.", error);
-    },
   });
 
   // Equipment catalog query
-  const { data: equipmentData } = useQuery<Equipment[]>({
+  const { data: equipmentData, error: equipmentError } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
     staleTime: 60000,
     enabled: !useStaticData,
-    onError: (error) => {
-      logError("Failed to load equipment catalog.", error);
-    },
   });
+
+  /**
+   * Failed fetches are reported from here.
+   *
+   * All three queries above carried an onError option, which react-query
+   * removed from useQuery in v5. It was accepted as an unknown extra key and
+   * never called, so a failed fetch logged nothing at all. v5 surfaces the
+   * failure as `error` on the query result instead, so each query reports
+   * through its own effect: one shared effect would re-log a query that is
+   * still failing every time a different query changed.
+   *
+   * Nothing fires today because useStaticData disables all three queries.
+   */
+  useEffect(() => {
+    if (initError) {
+      logError("Failed to load initial game data.", initError);
+    }
+  }, [initError]);
+
+  useEffect(() => {
+    if (racksError) {
+      logError("Failed to load racks.", racksError);
+    }
+  }, [racksError]);
+
+  useEffect(() => {
+    if (equipmentError) {
+      logError("Failed to load equipment catalog.", equipmentError);
+    }
+  }, [equipmentError]);
 
   useEffect(() => {
     const catalog = useStaticData ? staticEquipmentCatalog : equipmentData ?? [];

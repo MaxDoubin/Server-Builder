@@ -17,6 +17,27 @@ function readRendererName(gl: WebGLRenderingContext | WebGL2RenderingContext) {
   return typeof renderer === "string" ? renderer : undefined;
 }
 
+/**
+ * `getContext("experimental-webgl")` has no entry in the DOM overload list, so
+ * the legacy fallback below widens the result all the way to `RenderingContext`.
+ * Narrow it back with instanceof rather than asserting. The `typeof` checks keep
+ * the guard from throwing on browsers that never define the constructor.
+ */
+function isWebGLContext(
+  context: RenderingContext,
+): context is WebGLRenderingContext | WebGL2RenderingContext {
+  if (
+    typeof WebGLRenderingContext !== "undefined" &&
+    context instanceof WebGLRenderingContext
+  ) {
+    return true;
+  }
+  return (
+    typeof WebGL2RenderingContext !== "undefined" &&
+    context instanceof WebGL2RenderingContext
+  );
+}
+
 function isSoftwareRenderer(renderer?: string) {
   if (!renderer) return false;
   return /swiftshader|llvmpipe|software|basic render driver|microsoft/i.test(renderer);
@@ -120,7 +141,10 @@ export function detectWebGLSupport(): WebGLSupportState {
         canvas.getContext("webgl", attrs) ||
         canvas.getContext("experimental-webgl", attrs);
       if (gl) {
-        const renderer = readRendererName(gl);
+        // Only WebGL 1 context ids were requested, so a non-WebGL context is
+        // unreachable here. Skipping the renderer probe is still safer than
+        // asserting: an unknown context just loses the software-renderer hint.
+        const renderer = isWebGLContext(gl) ? readRendererName(gl) : undefined;
         const softwareRenderer = isSoftwareRenderer(renderer);
         return {
           supported: true,

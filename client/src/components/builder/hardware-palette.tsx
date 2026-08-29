@@ -66,13 +66,13 @@ export function HardwarePalette() {
                   <div>
                     <p className="text-sm font-medium">{cpu.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {cpu.cores}C/{cpu.threads}T
                       </Badge>
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {cpu.tdp}W
                       </Badge>
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {cpu.architecture}
                       </Badge>
                     </div>
@@ -97,14 +97,14 @@ export function HardwarePalette() {
                   <div>
                     <p className="text-sm font-medium">{ram.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {ram.capacity}GB
                       </Badge>
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {ram.speed}MHz
                       </Badge>
                       {ram.ecc && (
-                        <Badge variant="secondary" size="sm">
+                        <Badge variant="secondary">
                           ECC
                         </Badge>
                       )}
@@ -130,15 +130,15 @@ export function HardwarePalette() {
                   <div>
                     <p className="text-sm font-medium">{stor.name}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {stor.capacity >= 1000
                           ? `${(stor.capacity / 1000).toFixed(1)}TB`
                           : `${stor.capacity}GB`}
                       </Badge>
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {(stor.iops / 1000).toFixed(0)}K IOPS
                       </Badge>
-                      <Badge variant="secondary" size="sm">
+                      <Badge variant="secondary">
                         {stor.type.replace("_", " ")}
                       </Badge>
                     </div>
@@ -163,13 +163,13 @@ export function HardwarePalette() {
                   <div>
                     <p className="text-sm font-medium">{nic.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {nic.speed}GbE
                       </Badge>
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {nic.ports} ports
                       </Badge>
-                      <Badge variant="secondary" size="sm">
+                      <Badge variant="secondary">
                         {nic.type}
                       </Badge>
                     </div>
@@ -194,14 +194,14 @@ export function HardwarePalette() {
                   <div>
                     <p className="text-sm font-medium">{raid.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {raid.ports} ports
                       </Badge>
-                      <Badge variant="outline" size="sm" className="font-mono">
+                      <Badge variant="outline" className="font-mono">
                         {raid.cacheSize}MB
                       </Badge>
                       {raid.batteryBackup && (
-                        <Badge variant="secondary" size="sm">
+                        <Badge variant="secondary">
                           BBU
                         </Badge>
                       )}
