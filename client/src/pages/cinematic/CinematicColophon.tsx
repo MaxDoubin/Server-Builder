@@ -229,8 +229,8 @@ export function CinematicColophon() {
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   Space Grotesk and Inter for display and body, JetBrains Mono for anything that is
                   data, a label, or code, and Orbitron for the small technical eyebrow labels. They
-                  load from Google Fonts with a preconnect and a preloaded stylesheet, which is the
-                  only third party request a page makes.
+                  load from Google Fonts with a preconnect and a preloaded stylesheet. That and the
+                  Cloudflare Web Analytics beacon are the only third party requests a page makes.
                 </p>
               </div>
               <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm">
@@ -258,7 +258,7 @@ export function CinematicColophon() {
             </h2>
             <ul className="mt-6 space-y-3">
               {[
-                "No analytics and no tracking scripts. Nothing on this site reports what you read.",
+                "Cloudflare Web Analytics is enabled on the Pages project, so the edge injects a beacon that counts page views and Core Web Vitals. It sets no cookie, records no identifier, and follows nobody between sites. Nothing else reports what you read.",
                 "No content management system. A post is a markdown file and a commit, so there is no admin login to secure and no database to back up.",
                 "No comment system, no chat widget, no newsletter modal.",
                 "No server. The whole site is static files, which is also the strongest security posture available to it.",

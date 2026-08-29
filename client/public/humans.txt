@@ -28,5 +28,7 @@
   marked, for the blog
   Static prerendering, deployed on Cloudflare Pages
 
-  No analytics, no cookies, no third party scripts. Google Fonts is the
-  only origin the browser talks to besides this one.
+  Cloudflare Web Analytics counts page views and Core Web Vitals. The beacon
+  is injected at the edge, sets no cookie, records no identifier, and follows
+  nobody between sites. Besides this one, the browser talks to exactly two
+  origins: fonts.googleapis.com and static.cloudflareinsights.com.

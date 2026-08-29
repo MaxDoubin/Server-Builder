@@ -84,7 +84,7 @@ export function ManifestoAct() {
   );
 
   const lines = [
-    "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas.",
+    "Max Doubin is a 10th grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada.",
     "Top 1 percent National Cyber League competitor, Blue Ribbon Commissioner, and real-world systems builder.",
     "Focused on enterprise networking, cybersecurity, systems engineering, community leadership, mentorship, and public service.",
   ];

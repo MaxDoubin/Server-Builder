@@ -3,7 +3,7 @@ import { trimTitle } from "@/lib/pageTitle";
 
 const SITE_URL = "https://maxdoubin.com";
 const DEFAULT_TITLE =
-  "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert";
+  "Max Doubin | Cybersecurity Student, Las Vegas";
 const DEFAULT_DESC =
   "Max Doubin, cybersecurity student in Las Vegas. Top 1 percent National Cyber League, CompTIA Tech plus, and field notes on networking, servers, and security.";
 const DEFAULT_IMAGE = `${SITE_URL}/images/og-image.jpg`;
@@ -94,7 +94,7 @@ export function useSEO({
       setMeta('meta[property="og:url"]', "content", DEFAULT_CANONICAL);
       setMeta('meta[property="og:type"]', "content", DEFAULT_OG_TYPE);
       setMeta('meta[property="og:image"]', "content", DEFAULT_IMAGE);
-      setMeta('meta[property="og:image:alt"]', "content", "Max Doubin - Cybersecurity Specialist");
+      setMeta('meta[property="og:image:alt"]', "content", "Max Doubin, cybersecurity student");
       setMeta('meta[name="twitter:title"]', "content", DEFAULT_TITLE);
       setMeta('meta[name="twitter:description"]', "content", DEFAULT_DESC);
       setMeta('meta[name="twitter:image"]', "content", DEFAULT_IMAGE);

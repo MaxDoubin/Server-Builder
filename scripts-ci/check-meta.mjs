@@ -146,7 +146,46 @@ for (const file of pages) {
   }
 }
 
+/*
+  Claims that must never reappear in the built output.
+
+  The site described a 10th grader as a "nationally recognized cybersecurity
+  specialist and enterprise networking expert" with jobTitle "Cybersecurity
+  Specialist", on all 331 pages, in the machine readable Person node that an
+  assistant or a search engine quotes when asked who he is. The FAQ on the
+  same site correctly said "10th-grade cybersecurity student", so the site
+  contradicted itself.
+
+  The facts around it are all real and all stay: top 1 percent NCL, the
+  commission seat, five years of hands on infrastructure, the percussion
+  ranking. Only the framing that implied a working professional is gone.
+
+  This is a truthfulness gate, not a style one. An admissions officer who
+  spots one inflated claim discounts every honest one next to it.
+*/
+const FORBIDDEN = [
+  ["nationally recognized", "implies a standing a 10th grader does not have"],
+  ['"jobTitle": "Cybersecurity Specialist"', "he is a student, not an employee"],
+  ['name="twitter:site"', "claims an X account that siteConfig.social does not list"],
+];
+
+const forbidden = [];
+for (const file of pages) {
+  const html = readFileSync(file, "utf8");
+  const rel = path.relative(DIST, file);
+  for (const [needle, why] of FORBIDDEN) {
+    if (html.includes(needle)) forbidden.push(`  ${rel}: ${needle}  (${why})`);
+  }
+}
+
 const problems = [];
+if (forbidden.length > 0) {
+  const shown = forbidden.slice(0, 6).join("\n");
+  problems.push(
+    `${forbidden.length} page(s) carry a claim that was deliberately removed:\n${shown}` +
+      (forbidden.length > 6 ? `\n  ...and ${forbidden.length - 6} more` : ""),
+  );
+}
 if (brokenCards.length > 0) {
   problems.push(
     `${brokenCards.length} broken social card reference(s):\n${brokenCards.slice(0, 15).join("\n")}` +
