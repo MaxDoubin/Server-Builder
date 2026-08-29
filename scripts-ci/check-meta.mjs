@@ -119,6 +119,9 @@ console.log(
   the HTML points at an image that was never written.
 */
 const SITE = "https://maxdoubin.com";
+/** The site-wide card, correct for the home page and the 404 and nowhere else. */
+const GENERIC_CARD = "images/og-image.jpg";
+const GENERIC_CARD_OK = new Set(["index.html", "404.html"]);
 const brokenCards = [];
 const seenCard = new Set();
 for (const file of pages) {
@@ -142,6 +145,20 @@ for (const file of pages) {
     seenCard.add(key);
     if (!existsSync(path.join(DIST, asset))) {
       brokenCards.push(`  ${rel}: ${prop} points at a missing file: /${asset}`);
+      continue;
+    }
+    /*
+      Falling back to the site-wide card is a silent failure, not a broken
+      one: the link previews, it just previews as every other page. Two NCL
+      guides shipped that way, because the generator reads the build and had
+      not been re-run since they were added. Only the home page and the 404
+      legitimately carry the generic card.
+    */
+    if (asset === GENERIC_CARD && !GENERIC_CARD_OK.has(rel)) {
+      brokenCards.push(
+        `  ${rel}: ${prop} falls back to the site-wide card.\n` +
+          `      Run: python3 scripts-ci/make-og-images.py`,
+      );
     }
   }
 }
