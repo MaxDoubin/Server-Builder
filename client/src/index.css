@@ -227,6 +227,34 @@
     transform: rotateX(5deg) rotateY(-20deg) translateY(-4px);
   }
 }
+/*
+  The loader rack's idle camera move.
+
+  A slow asymmetric orbit rather than a constant spin: it never returns to
+  the same angle at the same speed, so a second of it does not read as a
+  looping GIF. Rotation only, so it composites on the GPU.
+*/
+@keyframes rack-orbit {
+  0% {
+    transform: rotateX(-5deg) rotateY(-27deg) translateZ(0);
+  }
+  35% {
+    transform: rotateX(-9deg) rotateY(-13deg) translateZ(6px);
+  }
+  70% {
+    transform: rotateX(-3deg) rotateY(-31deg) translateZ(-4px);
+  }
+  100% {
+    transform: rotateX(-5deg) rotateY(-27deg) translateZ(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes rack-orbit {
+    0%, 100% { transform: rotateX(-6deg) rotateY(-24deg); }
+  }
+}
+
 @keyframes preloader-pulse {
   0%, 100% {
     opacity: 1;
