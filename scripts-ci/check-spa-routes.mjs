@@ -13,7 +13,7 @@
  * prerendered, or if a rewrite in _redirects covers it. Nothing else passes.
  */
 
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 const APP = "client/src/App.tsx";
@@ -76,6 +76,17 @@ function coveredByRule(route) {
   });
 }
 
+/** Every .html the build wrote, absolute paths. */
+function allPages(dir = DIST) {
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const full = path.join(dir, entry);
+    if (statSync(full).isDirectory()) out.push(...allPages(full));
+    else if (entry.endsWith(".html")) out.push(full);
+  }
+  return out;
+}
+
 function prerendered(route) {
   if (route === "/") return existsSync(path.join(DIST, "index.html"));
   const flat = path.join(DIST, `${route.slice(1)}.html`);
@@ -120,6 +131,49 @@ for (const route of routes) {
   }
   if (prerendered(route) || coveredByRule(route)) continue;
   unreachable.push(route);
+}
+
+/*
+  Every published path must have a published parent.
+
+  /study/ccna/ip-connectivity resolved while /study/ccna returned a 404, on
+  the live site, for all three certifications. Trimming a URL back a level is
+  ordinary navigation and crawlers do it too, so a deep page whose parent is
+  a dead end is a broken hierarchy the site publishes itself.
+
+  This walks the built output rather than the route table, because the route
+  table is what looked correct: /study/:exam/:domain was registered and
+  served, and nothing in it said the level above was missing.
+*/
+const built = new Set();
+for (const file of allPages()) {
+  const rel = path.relative(DIST, file);
+  if (rel === "404.html") continue;
+  built.add(rel === "index.html" ? "/" : "/" + rel.slice(0, -".html".length));
+}
+
+const orphanParents = new Map();
+for (const page of built) {
+  if (page === "/") continue;
+  const parts = page.slice(1).split("/");
+  for (let i = 1; i < parts.length; i += 1) {
+    const parent = "/" + parts.slice(0, i).join("/");
+    if (built.has(parent) || coveredByRule(parent)) continue;
+    if (!orphanParents.has(parent)) orphanParents.set(parent, page);
+  }
+}
+
+if (orphanParents.size > 0) {
+  console.error("FAIL  these paths are published but their parent 404s.\n");
+  for (const [parent, child] of orphanParents) {
+    console.error(`  ${parent}   is the parent of ${child}, and is not a page`);
+  }
+  console.error(
+    "\n  Someone who trims a URL, and any crawler that does the same, lands on" +
+      "\n  a dead end inside a path this site publishes. Give the parent a page" +
+      "\n  in script/prerender.ts, or a rewrite in " + REDIRECTS + ".",
+  );
+  process.exit(1);
 }
 
 if (unreachable.length > 0) {
