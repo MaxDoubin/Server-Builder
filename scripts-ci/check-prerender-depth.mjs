@@ -43,6 +43,15 @@ function bodyText(html) {
   if (start === -1) return null;
   const end = html.indexOf("<script", start);
   let body = html.slice(start, end === -1 ? html.length : end);
+  /*
+    Strip whole <style> and <script> elements, contents included, before the
+    tag strip. Stripping tags alone leaves what was between them: the critical
+    CSS injected into #root is about 1,100 characters, so every page scored
+    1,100 for free and a genuinely empty one would have cleared the floor
+    without a word of prose on it. A gate that always passes is worse than no
+    gate, because it is trusted.
+  */
+  body = body.replace(/<(style|script)\b[^>]*>[\s\S]*?<\/\1>/gi, " ");
   body = body.replace(/<nav aria-label="Site">[\s\S]*?<\/nav>/g, " ");
   return body
     .replace(/<[^>]+>/g, " ")
