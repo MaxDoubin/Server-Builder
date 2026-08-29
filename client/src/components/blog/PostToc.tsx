@@ -15,6 +15,7 @@
 
 import { useEffect, useState, type RefObject } from "react";
 import { useSmoothScroll } from "@/lib/motion/SmoothScrollProvider";
+import { slugifyHeading } from "@/lib/headingSlug";
 
 export interface TocHeading {
   id: string;
@@ -25,16 +26,6 @@ export interface TocHeading {
 
 /** Distance from the top of the viewport that counts as "at the top". */
 const NAV_OFFSET = 96;
-
-function slugifyHeading(text: string): string {
-  const slug = text
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return slug || "section";
-}
 
 /**
  * Read the headings out of the rendered article.
