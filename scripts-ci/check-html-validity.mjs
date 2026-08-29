@@ -396,6 +396,20 @@ if (stale.length > 0) {
   );
 }
 
+if (trailingDivPages === 0) {
+  fail(
+    `No page carries the ${KNOWN_TRAILING_DIV} any more.\n\n` +
+      `  That is the fix landing in injectRootContent. Delete ` +
+      `KNOWN_TRAILING_DIV\n  and the trailingDiv branch from ` +
+      `scripts-ci/check-html-validity.mjs, so a\n  stray </div> at the end of ` +
+      `a document fails the build again.`,
+  );
+}
+console.log(
+  `  ${trailingDivPages}/${pages.length} pages carry the known ` +
+    `${KNOWN_TRAILING_DIV} (see the comment on KNOWN_TRAILING_DIV).`,
+);
+
 if (knownHits.length > 0) {
   console.log(
     `\n${knownHits.length} known fault(s) on ${seenKnown.size} page(s), ` +
