@@ -4,8 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
     <meta name="theme-color" content="#0a0a0a" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <!--
+      Google renders a favicon beside the result on mobile search, and it wants
+      a square whose side is a multiple of 48px. The old icon was 128px, which
+      is not, and there was no /favicon.ico for Google to fall back to. Both
+      are fixed here. Keep every size a multiple of 48 and keep the URLs
+      stable: Google recrawls favicons on its own schedule, and a changed path
+      restarts that clock.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="canonical" href="https://maxdoubin.com" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
