@@ -102,6 +102,13 @@ jobs:
       - name: Prefetch map
         run: node scripts-ci/check-prefetch-map.mjs
 
+      # --brand-ash is muted-foreground: every timestamp, tag row and form
+      # hint. It shipped at 3.62:1 on the page background, under the 4.5:1 AA
+      # floor, and none of that text is large enough for the 3:1 allowance.
+      # Source-only, so it runs before the build.
+      - name: Colour contrast
+        run: node scripts-ci/check-contrast.mjs
+
       # An in-view threshold above viewportHeight / elementHeight can never
       # fire, so the content it gates stays at opacity 0 while still taking up
       # its full scroll height. The whole blog index shipped invisible on
