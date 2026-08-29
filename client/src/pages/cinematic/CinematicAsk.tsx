@@ -14,6 +14,7 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { CopyButton } from "@/components/ui/copy-button";
 import { siteConfig } from "@/lib/siteConfig";
 import { useSEO } from "@/lib/useSEO";
+import { ANSWERED } from "@/lib/askConfig";
 
 const SITE_URL = "https://maxdoubin.com";
 const DISCUSSIONS_NEW =
@@ -27,40 +28,6 @@ const DISCUSSIONS_NEW =
  */
 const LONG_MESSAGE = 1500;
 
-interface Answered {
-  question: string;
-  /** Internal path. These all go through the router. */
-  href: string;
-  answer: string;
-}
-
-const ANSWERED: Answered[] = [
-  {
-    question: "How do I get started with a homelab?",
-    href: "/blog/why-homelabs-matter",
-    answer: "Why homelabs matter for learning networking",
-  },
-  {
-    question: "Should I chase certifications or build projects?",
-    href: "/blog/certifications-versus-projects",
-    answer: "Certifications versus projects, and how I split my time",
-  },
-  {
-    question: "What is the National Cyber League actually like?",
-    href: "/blog/ncl-competition-lessons",
-    answer: "Lessons from competing in the National Cyber League",
-  },
-  {
-    question: "How should I segment a network with VLANs?",
-    href: "/blog/vlan-segmentation-guide",
-    answer: "Network segmentation with VLANs, a practical guide",
-  },
-  {
-    question: "What have you actually built?",
-    href: "/projects",
-    answer: "The projects page, with the lab, the club, and the simulator",
-  },
-];
 
 /** First line of the question, trimmed to something a subject line can hold. */
 function subjectFrom(question: string): string {

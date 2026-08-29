@@ -134,6 +134,12 @@ jobs:
       - name: Routes reachable
         run: node scripts-ci/check-spa-routes.mjs
 
+      # Nineteen routes, /resume among them, prerendered the site nav and
+      # nothing else. React filled them in on the client, which does not help
+      # a crawler, a preview card, or an assistant reading the page.
+      - name: Prerendered content
+        run: node scripts-ci/check-prerender-depth.mjs
+
       - name: Bundle budget
         run: node scripts-ci/check-bundle-budget.mjs
 
