@@ -95,12 +95,12 @@ export function BlogPost() {
   }, [post]);
 
   useSEO({
-    title: post ? `${post.title} | Max Doubin` : "Max Doubin | Cybersecurity Specialist & Enterprise Networking Expert",
-    description: post?.excerpt ?? "Max Doubin is a nationally recognized cybersecurity specialist and enterprise networking expert based in Las Vegas, Nevada.",
+    title: post ? `${post.title} | Max Doubin` : "Max Doubin | Cybersecurity Student, Las Vegas",
+    description: post?.excerpt ?? "Max Doubin is a 10th grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada.",
     canonical: post ? `${SITE_URL}/blog/${post.slug}` : SITE_URL,
     ogType: post ? "article" : "profile",
     ogImage: post ? `${SITE_URL}${post.coverImage}` : `${SITE_URL}/images/og-image.jpg`,
-    ogImageAlt: post ? post.title : "Max Doubin - Cybersecurity Specialist",
+    ogImageAlt: post ? post.title : "Max Doubin, cybersecurity student",
     schema: postSchema,
     schemaId: "post-schema",
   });

@@ -1,6 +1,7 @@
 import { Suspense, lazy, useRef, type ReactNode, type RefObject } from "react";
 import { useScrollScene } from "@/lib/motion/useScrollScene";
 import { useReducedMotion } from "@/lib/motion/useReducedMotion";
+import { useHeavySceneAllowed } from "@/lib/motion/useHeavySceneAllowed";
 
 const ContinuousRackScene = lazy(() =>
   import("@/components/cinematic/rack3d/ContinuousRackScene").then((m) => ({
@@ -241,6 +242,7 @@ function SystemsActStatic() {
 
 export function SystemsAct() {
   const reducedMotion = useReducedMotion();
+  const heavySceneAllowed = useHeavySceneAllowed();
 
   const rootRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
@@ -377,7 +379,12 @@ export function SystemsAct() {
     },
   );
 
-  if (reducedMotion) return <SystemsActStatic />;
+  /*
+    The static beats also stand in for a visitor on Save-Data or a 2g class
+    connection, who would otherwise wait on 804 KB of WebGL. The scene is
+    behind `lazy()`, so returning here means the chunk is never requested.
+  */
+  if (!heavySceneAllowed) return <SystemsActStatic />;
 
   return (
     <section
