@@ -20,7 +20,7 @@ Step one carries more weight than it looks. The answer format is usually specifi
 
 ## Tools I Use Most
 
-- **Wireshark** for packet analysis challenges. Understanding TCP flows, DNS queries, and HTTP headers at the packet level is essential.
+- **[Wireshark](/blog/wireshark-packet-analysis)** for packet analysis challenges. Understanding TCP flows, DNS queries, and HTTP headers at the packet level is essential.
 - **Nmap** for scanning and reconnaissance. Knowing how to interpret scan results tells you a lot about a target's configuration.
 - **Python** for quick scripting when a challenge requires processing data or automating repetitive tasks.
 - **Linux command line** for log analysis, file manipulation, and general problem solving.

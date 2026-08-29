@@ -87,7 +87,7 @@ interface GigabitEthernet1/0/24
   switchport trunk allowed vlan 100,200,300
 ```
 
-The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
+The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range [VLANs](/blog/vlan-segmentation-guide), so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
 
 The 802.1Q tag adds four bytes to the frame, taking the maximum from 1518 to 1522. Any device in the path that does not accept these baby giants drops full-size tagged frames while small ones pass, producing the maddening symptom where ping works and file transfers hang.
 

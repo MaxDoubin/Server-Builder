@@ -55,7 +55,7 @@ ones).
 
 Where the smaller MTU usually comes from:
 
-- any tunnel: IPsec, WireGuard, GRE, VXLAN, PPPoE. Every encapsulation eats
+- any tunnel: IPsec, WireGuard, GRE, [VXLAN](/blog/vxlan-network-virtualization), PPPoE. Every encapsulation eats
   header bytes from the payload budget.
 - a mismatched jumbo frame configuration, where one switch port or one host
   interface believes in 9000 and its neighbor does not.

@@ -71,7 +71,7 @@ expires, so users never pay the miss.
 ## Message Size, EDNS, And Fallback
 
 Original DNS over UDP capped a message at 512 bytes. Anything larger set the
-truncated bit and the client was supposed to retry over TCP. DNSSEC and IPv6
+truncated bit and the client was supposed to retry over TCP. [DNSSEC](/blog/dns-security-dnssec) and IPv6
 records blew past that limit routinely, so EDNS added an OPT pseudo record that
 lets a client advertise a larger buffer it can receive.
 

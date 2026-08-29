@@ -90,7 +90,7 @@ For datacenter use where density matters, the Mac Pro loses. For a lab or studio
 
 **Planning around a 120 V circuit.** People install a loaded Mac Pro plus monitors plus a UPS on one household 15 A circuit and trip the breaker under a render. Work out the continuous VA before you plug it in, not after.
 
-**Expecting server-style remote management.** There is no BMC, no IPMI, no out-of-band port. Everything about the hardware is serviceable and nothing about it is remotely manageable when macOS is down. That gap is the single biggest practical difference from a PowerEdge, and no amount of build quality closes it.
+**Expecting server-style remote management.** There is no BMC, no [IPMI](/blog/ipmi-remote-management), no out-of-band port. Everything about the hardware is serviceable and nothing about it is remotely manageable when macOS is down. That gap is the single biggest practical difference from a PowerEdge, and no amount of build quality closes it.
 
 ## References
 

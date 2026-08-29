@@ -29,7 +29,7 @@ There is no broadcast address in IPv6 at all. Everything broadcast used to do is
 
 **No more NAT (mostly):** With enough addresses for every device to have a globally routable address, NAT is no longer necessary. Devices can communicate end-to-end directly.
 
-**Stateless Address Autoconfiguration (SLAAC):** Devices can self-configure IPv6 addresses based on the network prefix advertised by routers. DHCP is still used in many enterprise environments, but SLAAC simplifies device configuration.
+**Stateless Address Autoconfiguration ([SLAAC](/blog/slaac-vs-dhcpv6)):** Devices can self-configure IPv6 addresses based on the network prefix advertised by routers. DHCP is still used in many enterprise environments, but SLAAC simplifies device configuration.
 
 **Link-local addresses:** Every IPv6 interface automatically gets a link-local address (`fe80::/10`) that is used for on-link communication without needing global routing.
 
@@ -43,7 +43,7 @@ Address selection also changed. A modern host does not use a stable EUI-64 addre
 
 ## What stays the same
 
-Routing, firewall rules, VLANs, and most other networking concepts work the same way. You apply them to IPv6 addresses instead of IPv4 addresses. Your firewall still needs rules. Your switches still handle frames the same way. The mental model transfers directly.
+Routing, firewall rules, [VLANs](/blog/vlan-segmentation-guide), and most other networking concepts work the same way. You apply them to IPv6 addresses instead of IPv4 addresses. Your firewall still needs rules. Your switches still handle frames the same way. The mental model transfers directly.
 
 ## Seeing it work on a Linux host
 

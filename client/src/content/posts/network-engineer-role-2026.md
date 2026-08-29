@@ -1,7 +1,7 @@
 
 ## What Has Changed
 
-The network engineer of five years ago spent most of their time on physical infrastructure: racking switches, running cables, configuring VLANs, and troubleshooting Layer 2 problems. While all of that still exists, the center of gravity has shifted.
+The network engineer of five years ago spent most of their time on physical infrastructure: racking switches, running cables, configuring [VLANs](/blog/vlan-segmentation-guide), and troubleshooting Layer 2 problems. While all of that still exists, the center of gravity has shifted.
 
 Today, a significant portion of enterprise networking happens in software. Cloud networking, overlay fabrics, SD-WAN, and software-defined controllers mean that network configuration is increasingly declarative, API-driven, and version-controlled.
 
@@ -9,11 +9,11 @@ Concretely, that means a set of interfaces that did not exist in most job descri
 
 Telemetry moved too. SNMP polls on an interval and gives you whatever the device felt like counting. gNMI and the OpenConfig models push subscriptions: the device streams a value when it changes, at subsecond resolution, without you asking every sixty seconds. On a fabric with thousands of interfaces, that difference is not incremental.
 
-The campus and data center designs changed underneath all of it. Large Layer 2 domains held together by spanning tree are giving way to routed access and EVPN-VXLAN fabrics, where the loop prevention is a routing protocol rather than a protocol whose job is to break links on purpose.
+The campus and data center designs changed underneath all of it. Large Layer 2 domains held together by [spanning tree](/blog/spanning-tree-protocol-deep-dive) are giving way to routed access and EVPN-VXLAN fabrics, where the loop prevention is a routing protocol rather than a protocol whose job is to break links on purpose.
 
 ## What Has Not Changed
 
-The fundamentals remain completely relevant. If you do not understand IP routing, BGP, spanning tree, and firewall policy design, you cannot be effective regardless of what tools are in use. The abstractions built on top of these fundamentals require understanding what is underneath to troubleshoot effectively.
+The fundamentals remain completely relevant. If you do not understand IP routing, [BGP](/blog/bgp-for-network-engineers), spanning tree, and firewall policy design, you cannot be effective regardless of what tools are in use. The abstractions built on top of these fundamentals require understanding what is underneath to troubleshoot effectively.
 
 Take BGP, which is now the control plane for the data center fabric, the WAN, the internet edge, and half the cloud interconnects you will ever build. The timers in RFC 4271 have not moved: the default Hold Time is 90 seconds and the keepalive interval is one third of that, 30 seconds. That means a session can be dead for a minute and a half before the protocol notices, which is why BFD exists and why anyone who tells you BGP converges instantly has not watched it fail.
 
@@ -61,7 +61,7 @@ That combination is not common, which makes it worth investing in.
 
 For me at this stage that means the boring order: protocols first, because they are the part that does not get deprecated. Then packet captures, because every abstraction eventually fails in a way that only the wire explains. Then automation on top, applied to a lab I actually run, because a playbook that has never touched real hardware has never been tested.
 
-The thing I keep reminding myself is that the tooling turns over every few years and the fundamentals do not. A person who learned subnetting, TCP behavior, and routing loop prevention in 2010 can read a 2026 EVPN fabric. A person who only learned one vendor's CLI in 2010 cannot.
+The thing I keep reminding myself is that the tooling turns over every few years and the fundamentals do not. A person who learned [subnetting](/blog/subnetting-practical-guide), TCP behavior, and routing loop prevention in 2010 can read a 2026 EVPN fabric. A person who only learned one vendor's CLI in 2010 cannot.
 
 ## References
 

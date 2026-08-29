@@ -9,7 +9,7 @@ Here is the arithmetic that makes the difference concrete. A gigabit link carrie
 
 ## The Hardware
 
-For the network side, I picked up a used Mellanox ConnectX-3 SFP+ card for each server. These are dual-port 10GbE cards that you can find for very little money on the used market. They are well-supported in Linux with the mlx4 driver and work out of the box on most distributions.
+For the network side, I picked up a used Mellanox ConnectX-3 [SFP+](/blog/sfp-transceivers-explained) card for each server. These are dual-port 10GbE cards that you can find for very little money on the used market. They are well-supported in Linux with the mlx4 driver and work out of the box on most distributions.
 
 Two things about ConnectX-3 that nobody tells you before you buy. First, many of these cards are VPI models, meaning each port can run either InfiniBand or Ethernet, and a lot of used cards arrive configured for InfiniBand. The symptom is that `lspci` shows the card, the driver loads, and no Ethernet interface ever appears. The fix is to set the port type to Ethernet in firmware with the Mellanox tooling, or to set `mlx4_core` module parameters, and then reboot. Second, ConnectX-3 was removed from the supported hardware list in VMware ESXi 7.0. If you are running ESXi on modern versions, this card is a dead end and you want ConnectX-4 or later. On Linux it remains fine.
 

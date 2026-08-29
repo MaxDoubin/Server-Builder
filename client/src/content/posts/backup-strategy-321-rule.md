@@ -1,7 +1,7 @@
 
 ## The rule
 
-You have data you cannot lose, you have a RAID array, and somewhere in the back of your head you know that is not actually a backup. You are right. The question is what a real backup looks like when you are running it yourself, on your own hardware, with no budget for a vendor to hold your hand.
+You have data you cannot lose, you have a [RAID](/blog/raid-levels-comparison) array, and somewhere in the back of your head you know that is not actually a backup. You are right. The question is what a real backup looks like when you are running it yourself, on your own hardware, with no budget for a vendor to hold your hand.
 
 The 3-2-1 rule is simple: keep at least 3 copies of your data, on at least 2 different types of media, with at least 1 copy offsite. It has been the gold standard for backup strategy for decades, and it works. The phrasing comes from photographer Peter Krogh, who wrote it down for digital asset management in the mid 2000s, and it has survived because the arithmetic behind it does not care what decade you are in.
 

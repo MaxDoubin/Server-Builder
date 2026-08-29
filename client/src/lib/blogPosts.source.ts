@@ -120,7 +120,7 @@ The split I use is by question type, not by device class.
 
 Slow moving inventory and environmental data stays on SNMP: chassis serial, power supply state, temperature, PDU outlet draw. Poll it every minute or five. Nobody needs sub second fan speed.
 
-Fast moving or event shaped data goes to streaming where the platform supports it: interface counters, queue depth and drops, BGP neighbor state, optic light levels. That is where resolution changes conclusions.
+Fast moving or event shaped data goes to streaming where the platform supports it: interface counters, queue depth and drops, [BGP](/blog/bgp-for-network-engineers) neighbor state, optic light levels. That is where resolution changes conclusions.
 
 Then normalize both into the same time series store with the same label scheme, so a dashboard does not care which transport delivered the sample. If a device name and interface name mean the same thing in both pipelines, you can migrate one platform at a time without rewriting a single panel. That normalization layer is the actual project. The protocol choice is easy by comparison.
 
@@ -476,7 +476,7 @@ Five practices, in order of how much they buy you.
 
 **Scrub on a schedule.** A scrub reads every block and verifies parity or checksums while the array is healthy and redundant. It finds the latent bad sector months before a rebuild would find it, and it can repair it while there is still parity to repair from. Monthly is a reasonable cadence. An array that is never scrubbed is an array where all the errors are saved up for the worst possible moment.
 
-**Use double parity or mirrors for large drives.** With RAID 6 or equivalent, a URE during a rebuild is recoverable because there is a second parity block. Mirrored pairs rebuild by copying one drive rather than reading all of them, which shortens the window and reduces the load, at the cost of half your raw capacity.
+**Use double parity or mirrors for large drives.** With [RAID](/blog/raid-levels-comparison) 6 or equivalent, a URE during a rebuild is recoverable because there is a second parity block. Mirrored pairs rebuild by copying one drive rather than reading all of them, which shortens the window and reduces the load, at the cost of half your raw capacity.
 
 **Keep a hot spare, and mind the shelf spare.** A hot spare removes human latency from the front of the window. It does nothing about the rebuild itself, but the time between failure and someone noticing is often longer than the rebuild.
 
@@ -634,7 +634,7 @@ After enough acquisitions you learn that failures cluster in a predictable set o
 
 **Power supply capacitors.** Electrolytics age with heat and hours. Visible bulging is the obvious sign, but the common failure is a supply that works until asked for a load step and then drops the rail.
 
-**Batteries.** RAID controller cache batteries, CMOS cells, and the battery in a UPS are all consumables that were probably at end of life when the unit was retired. A controller with a dead cache battery drops back to write through mode, and the machine gets mysteriously slow rather than obviously broken.
+**Batteries.** [RAID](/blog/raid-levels-comparison) controller cache batteries, CMOS cells, and the battery in a UPS are all consumables that were probably at end of life when the unit was retired. A controller with a dead cache battery drops back to write through mode, and the machine gets mysteriously slow rather than obviously broken.
 
 **Drives.** Always assume the drives are the oldest part. Enterprise drives are rated for continuous duty and often have very high power on hours, and the drive is the one component whose failure loses data rather than availability.
 
@@ -772,7 +772,7 @@ The rule I use: merge when a variant is the only thing a deployment serves and l
 
 ## Treat adapters like build artifacts
 
-The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different quantization of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
+The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different [quantization](/blog/model-quantization-by-the-bytes) of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
 
 So every adapter I would consider deploying carries a manifest next to it:
 
@@ -3455,7 +3455,7 @@ tracepath -n 198.51.100.10
 ping -D -s 1472 -c 2 198.51.100.10
 \`\`\`
 
-If 1472 fails and 1422 succeeds, your path MTU is 1450, and 1450 is a number with a story attached. Add the 8 bytes of VXLAN header, 8 bytes of UDP, 20 bytes of outer IP, and 14 bytes of outer Ethernet, and you have exactly the overhead of VXLAN encapsulation over a 1500 byte underlay. The number tells you what is in the path.
+If 1472 fails and 1422 succeeds, your path MTU is 1450, and 1450 is a number with a story attached. Add the 8 bytes of [VXLAN](/blog/vxlan-network-virtualization) header, 8 bytes of UDP, 20 bytes of outer IP, and 14 bytes of outer Ethernet, and you have exactly the overhead of VXLAN encapsulation over a 1500 byte underlay. The number tells you what is in the path.
 
 A short table of the overheads worth memorizing:
 
@@ -3630,7 +3630,7 @@ servers a boot image.
 How I treat that:
 
 - Provisioning lives on a dedicated VLAN that is not the user VLAN, with
-  DHCP snooping upstream so only the real server can answer.
+  [DHCP snooping](/blog/dhcp-snooping-arp-inspection) upstream so only the real server can answer.
 - Second stage transfers use HTTP inside that segment and HTTPS when they
   cross a boundary. iPXE can be built with a trusted CA baked in.
 - Secure Boot machines chain a signed shim rather than a raw loader, so the
@@ -3661,7 +3661,7 @@ curl -sfI http://192.0.2.10/boot.ipxe
 \`\`\`
 
 Three symptoms cover most cases. No DHCP offer at all usually means the client
-is on the wrong VLAN or spanning tree has not converged before the firmware
+is on the wrong VLAN or [spanning tree](/blog/spanning-tree-protocol-deep-dive) has not converged before the firmware
 gives up, which is what portfast on access ports is for. An offer followed by
 a timeout usually means the firewall is blocking the TFTP data transfer, since
 the server replies from an ephemeral UDP port rather than 69. A loader that
@@ -5544,7 +5544,7 @@ at short context may not fit at long context with several users attached.
   per-user speed degrades slowly. This is why serving stacks care so much
   about continuous batching, and why a benchmark run with batch size one
   tells you almost nothing about a shared service.
-- **Quantization.** Fewer bits per weight means fewer bytes read per token,
+- **[Quantization](/blog/model-quantization-by-the-bytes).** Fewer bits per weight means fewer bytes read per token,
   so it speeds up decode directly rather than only saving space.
 
 ## How I spec a box for this
@@ -5598,7 +5598,7 @@ not looked yet.
 
 Every link has a maximum transmission unit, the largest frame payload it will
 carry. Classic Ethernet is 1500 bytes. Tunnels subtract from that, because
-the encapsulation header has to live somewhere: a VPN, VXLAN, PPPoE, or a
+the encapsulation header has to live somewhere: a VPN, [VXLAN](/blog/vxlan-network-virtualization), PPPoE, or a
 GRE tunnel all leave less room for your data.
 
 A TCP handshake is tiny. So is an interactive SSH keystroke. Those fit under
@@ -6312,7 +6312,7 @@ HTTP mapped onto it. The important pieces:
 **Streams are a transport concept.** Loss recovery is per stream. A lost
 packet carrying stream 7 delays stream 7 and nothing else.
 
-**TLS 1.3 is not layered on top, it is integrated.** There is no separate TCP
+**[TLS 1.3](/blog/tls-modern-encryption) is not layered on top, it is integrated.** There is no separate TCP
 handshake followed by a TLS handshake. The cryptographic handshake and the
 transport handshake happen together, which is where most of the connection
 setup saving comes from.
@@ -6657,7 +6657,7 @@ depends entirely on which failure you are worried about.
 **It does not help if the hardware lies.** Journalling depends on being able to
 say "these blocks must be durable before those blocks". That is implemented as
 cache flush and forced unit access requests down the stack. A drive with a
-volatile write cache that reports completion early, or a RAID controller with
+volatile write cache that reports completion early, or a [RAID](/blog/raid-levels-comparison) controller with
 an unprotected cache, breaks the ordering the journal is built on. The
 filesystem is correct and the data is still wrong.
 
@@ -7508,7 +7508,7 @@ training framework can execute the model. That portability is the point, and
 the cost is that the graph is a fixed lowering of what your framework did.
 
 **Single file quantized formats** such as GGUF exist to make a model one
-self-contained artifact for a specific runtime. Weights, quantization scheme,
+self-contained artifact for a specific runtime. Weights, [quantization](/blog/model-quantization-by-the-bytes) scheme,
 tokenizer, and a key value metadata block travel together, which is exactly
 what you want when the deployment target is somebody's laptop and there is no
 package manager involved.
@@ -7810,7 +7810,7 @@ expires, so users never pay the miss.
 ## Message Size, EDNS, And Fallback
 
 Original DNS over UDP capped a message at 512 bytes. Anything larger set the
-truncated bit and the client was supposed to retry over TCP. DNSSEC and IPv6
+truncated bit and the client was supposed to retry over TCP. [DNSSEC](/blog/dns-security-dnssec) and IPv6
 records blew past that limit routinely, so EDNS added an OPT pseudo record that
 lets a client advertise a larger buffer it can receive.
 
@@ -8301,7 +8301,7 @@ One more thing, because it causes more bad results than any index choice: the di
 
 Before I touch anything other people depend on, I want to have already made the mistake somewhere cheap. Simulators are fine for concepts, but they do not use the same routing table code, the same ARP behavior, or the same firewall. Linux network namespaces do, because they are the same kernel networking stack with a separate instance of everything.
 
-A network namespace gets its own interfaces, routing tables, neighbor tables, netfilter rules, and socket bindings. Two namespaces on one host are as isolated from each other as two machines, and they talk through virtual ethernet pairs that behave like a cable with an interface on each end. Containers use exactly this machinery. Learning it directly makes container networking stop being magic.
+A network namespace gets its own interfaces, routing tables, neighbor tables, netfilter rules, and socket bindings. Two namespaces on one host are as isolated from each other as two machines, and they talk through virtual ethernet pairs that behave like a cable with an interface on each end. Containers use exactly this machinery. Learning it directly makes [container networking](/blog/container-networking-fundamentals) stop being magic.
 
 ## A three node routed topology
 
@@ -8522,7 +8522,7 @@ which loads iPXE, forever. Every network boot setup hits that loop once.
 ## The Failures I Actually Hit
 
 **Nothing happens at all.** Check that the interface is actually in the right
-VLAN and that DHCP snooping or a rogue server guard on the switch is not eating
+VLAN and that [DHCP snooping](/blog/dhcp-snooping-arp-inspection) or a rogue server guard on the switch is not eating
 the offer. Turn on \`log-dhcp\` and watch for the DISCOVER. If you never see it,
 the problem is layer 2, not boot.
 
@@ -8536,7 +8536,7 @@ rules that only allow port 69 break it after the first packet. Connection
 tracking with the TFTP helper, or just moving to HTTP as early as possible,
 solves it.
 
-**Boots, then the installer cannot reach anything.** Spanning tree. The port
+**Boots, then the installer cannot reach anything.** [Spanning tree](/blog/spanning-tree-protocol-deep-dive). The port
 went into forwarding after the firmware gave up waiting. Portfast, or its
 equivalent, on access ports fixes this and you should have it anyway.
 
@@ -9500,7 +9500,7 @@ Reliable ordered delivery, congestion control, and loss recovery used to live in
 the kernel's TCP implementation. In QUIC they live in a userspace library
 alongside the application. Encryption used to be a layer sitting on top of the
 transport, negotiated after the transport connection was established. In QUIC,
-TLS 1.3 is integrated into the transport handshake, so there is no unencrypted
+[TLS 1.3](/blog/tls-modern-encryption) is integrated into the transport handshake, so there is no unencrypted
 transport phase to speak of. And stream multiplexing, which HTTP/2 implemented
 on top of a single TCP connection, moved down into the transport itself.
 
@@ -9688,7 +9688,7 @@ ones).
 
 Where the smaller MTU usually comes from:
 
-- any tunnel: IPsec, WireGuard, GRE, VXLAN, PPPoE. Every encapsulation eats
+- any tunnel: IPsec, WireGuard, GRE, [VXLAN](/blog/vxlan-network-virtualization), PPPoE. Every encapsulation eats
   header bytes from the payload budget.
 - a mismatched jumbo frame configuration, where one switch port or one host
   interface believes in 9000 and its neighbor does not.
@@ -11736,7 +11736,7 @@ the client on a different VLAN never reaches your server. The fix is a DHCP
 relay, configured on the gateway interface for that VLAN. On Cisco style
 hardware that is \`ip helper-address\` pointing at the DHCP server.
 
-A long pause and then a timeout. Spanning tree. A port that has just come up
+A long pause and then a timeout. [Spanning tree](/blog/spanning-tree-protocol-deep-dive). A port that has just come up
 spends time in listening and learning before it forwards, and the firmware's
 DHCP retry budget can expire first. Edge port or portfast on access ports fixes
 this and is correct regardless.
@@ -11958,7 +11958,7 @@ estimate, and all three are computable before you download a single file.
 Weights are the easy part. Take the parameter count, multiply by bytes per
 parameter, done. A model with 8 billion parameters at 16 bit precision is
 8e9 times 2 bytes, which is 16 GB. The same model at 8 bit is 8 GB. At roughly
-4 bits it is around 4 GB plus the overhead the quantization format carries for
+4 bits it is around 4 GB plus the overhead the [quantization](/blog/model-quantization-by-the-bytes) format carries for
 its scaling metadata.
 
 That last point is worth stating clearly: quantization formats are not exactly
@@ -12094,7 +12094,7 @@ and the message saying so never made it back to the sender.
 
 Every link has a maximum transmission unit, the largest frame it will carry.
 Standard Ethernet is 1500 bytes of payload. A tunnel of any kind, a VPN, an
-encapsulation like VXLAN or GRE, or a PPPoE connection, wraps your packet in
+encapsulation like [VXLAN](/blog/vxlan-network-virtualization) or GRE, or a PPPoE connection, wraps your packet in
 extra headers and therefore has a smaller effective MTU than the link it rides
 on.
 
@@ -12988,7 +12988,7 @@ There are more places your data can sit than people expect.
 2. **Kernel page cache.** After \`write()\`, before writeback.
 3. **Device write cache.** Drives have volatile RAM caches and will acknowledge
    a write that is only in that cache.
-4. **Controller cache.** RAID controllers add another layer, which is why
+4. **Controller cache.** [RAID](/blog/raid-levels-comparison) controllers add another layer, which is why
    battery or capacitor backed cache exists as a product.
 5. **The actual persistent medium.**
 
@@ -13219,7 +13219,7 @@ does matter for training pipelines that stream data continuously.
 There are only a few honest options, and they all reduce to moving fewer bytes.
 
 Reduce precision. Half the bytes per weight is roughly half the read time per
-token. This is the single biggest lever available and it is why quantization is
+token. This is the single biggest lever available and it is why [quantization](/blog/model-quantization-by-the-bytes) is
 so central to local inference.
 
 Batch. Reading the weights once and using them for many sequences raises
@@ -13977,7 +13977,7 @@ This only helps TCP. UDP based protocols have to handle it themselves, which is 
 
 ## How I decide whether to bother
 
-I enable jumbo frames on segments where I control every device and the traffic is bulk: storage networks, backup targets, replication links, hypervisor migration networks. Those are isolated VLANs with a known device list, so the "every device must agree" requirement is actually checkable.
+I enable jumbo frames on segments where I control every device and the traffic is bulk: storage networks, backup targets, replication links, hypervisor migration networks. Those are isolated [VLANs](/blog/vlan-segmentation-guide) with a known device list, so the "every device must agree" requirement is actually checkable.
 
 I leave general purpose and client VLANs at 1500. The gain is small, the blast radius of one misconfigured device is large, and client devices come and go without asking me.
 
@@ -15140,7 +15140,7 @@ That is not a dodge. It is the actual finding. The data plumbing is the project.
 
 ## Where I think it fits
 
-**Log and alert triage.** A model summarizing three hundred correlated syslog lines into "these forty messages are one interface flapping, here is the interface" is doing something genuinely hard for a human at 3am and easy for a language model. It is a reading comprehension task over text, which is exactly the shape of the problem these models are good at.
+**Log and alert triage.** A model summarizing three hundred correlated [syslog](/blog/syslog-centralized-logging) lines into "these forty messages are one interface flapping, here is the interface" is doing something genuinely hard for a human at 3am and easy for a language model. It is a reading comprehension task over text, which is exactly the shape of the problem these models are good at.
 
 **Explaining a config diff.** A diff of two device configurations is precise and unreadable. "This change adds VLAN 40 to the trunk on ports 1 through 8 and removes the storm control threshold" is a summary a reviewer can act on. The diff remains the source of truth. The summary is a reading aid.
 
@@ -15460,7 +15460,7 @@ Weight memory is parameters times bytes per parameter. That is the whole formula
 
 At 16-bit precision each parameter is two bytes, so a 7 billion parameter model wants roughly 14 GB just to sit in memory. At 8-bit it is roughly 7 GB. At 4-bit it is roughly 3.5 GB, plus a bit of overhead because quantized formats store scale and zero point metadata per block of weights. Call it 10 to 20 percent above the naive number and you will not be surprised.
 
-Quantization is not free. Reducing precision loses information, and how much that hurts depends on the format and on what you are asking the model to do. My rule is that 8-bit is close to invisible for most tasks, 4-bit is usually fine for chat and summarizing, and anything below 4-bit is a science experiment I would not put behind a service.
+[Quantization](/blog/model-quantization-by-the-bytes) is not free. Reducing precision loses information, and how much that hurts depends on the format and on what you are asking the model to do. My rule is that 8-bit is close to invisible for most tasks, 4-bit is usually fine for chat and summarizing, and anything below 4-bit is a science experiment I would not put behind a service.
 
 ## Bucket two: the KV cache
 
@@ -15929,7 +15929,7 @@ HNSW builds a layered graph. Every vector is a node connected to its near neighb
 
 IVF partitions the space into clusters, usually with k means, and stores which vectors belong to which cluster. A query finds the nearest few cluster centroids and only searches inside those. It is cheaper on memory and faster to build, but recall depends on how many clusters you probe, and vectors near a cluster boundary can be missed.
 
-Both expose a knob that trades recall for latency: \`ef_search\` for HNSW, \`nprobe\` for IVF. Tune it against a real query set and measure recall, because the default is a guess about someone else's data. Product quantization compresses the stored vectors on top of either, saving a lot of memory at some further accuracy cost.
+Both expose a knob that trades recall for latency: \`ef_search\` for HNSW, \`nprobe\` for IVF. Tune it against a real query set and measure recall, because the default is a guess about someone else's data. Product [quantization](/blog/model-quantization-by-the-bytes) compresses the stored vectors on top of either, saving a lot of memory at some further accuracy cost.
 
 ## The filtering trap
 
@@ -16065,7 +16065,7 @@ Also watch for a bandwidth number that starts high and collapses partway through
 
 If you are comparing two devices or two configurations, change exactly one thing. Same block sizes, same queue depths, same runtime, same filesystem, same fill level, same test file size. Write the parameters down next to the results, because in a month you will not remember whether the good number came from a queue depth of 32 or 1.
 
-Two more habits. Benchmark through the layer you will actually use: if the workload runs on a VM on a filesystem on a RAID set, testing the raw device tells you about the device, not about your stack. And never point a write test at a filename on a device that holds data, because \`fio\` will happily create and overwrite exactly what you told it to.
+Two more habits. Benchmark through the layer you will actually use: if the workload runs on a VM on a filesystem on a [RAID](/blog/raid-levels-comparison) set, testing the raw device tells you about the device, not about your stack. And never point a write test at a filename on a device that holds data, because \`fio\` will happily create and overwrite exactly what you told it to.
 
 ## The honest limitation
 
@@ -17229,7 +17229,7 @@ You can define a VLAN, recite the OSI layers, and pass the practice exam, and st
 
 ## Beyond the textbook
 
-Reading about VLANs and subnetting is one thing. Configuring them on real hardware, breaking something, and spending two hours figuring out why your trunk port is dropping tagged traffic is a completely different experience. That is why I run a homelab.
+Reading about [VLANs](/blog/vlan-segmentation-guide) and [subnetting](/blog/subnetting-practical-guide) is one thing. Configuring them on real hardware, breaking something, and spending two hours figuring out why your trunk port is dropping tagged traffic is a completely different experience. That is why I run a homelab.
 
 My homelab runs multiple Dell enterprise servers with serious compute and storage capacity. It is not a Raspberry Pi cluster or a single tower PC. It is enterprise hardware running enterprise workloads, and that is the point.
 
@@ -17408,7 +17408,7 @@ Step one carries more weight than it looks. The answer format is usually specifi
 
 ## Tools I Use Most
 
-- **Wireshark** for packet analysis challenges. Understanding TCP flows, DNS queries, and HTTP headers at the packet level is essential.
+- **[Wireshark](/blog/wireshark-packet-analysis)** for packet analysis challenges. Understanding TCP flows, DNS queries, and HTTP headers at the packet level is essential.
 - **Nmap** for scanning and reconnaissance. Knowing how to interpret scan results tells you a lot about a target's configuration.
 - **Python** for quick scripting when a challenge requires processing data or automating repetitive tasks.
 - **Linux command line** for log analysis, file manipulation, and general problem solving.
@@ -17591,7 +17591,7 @@ A thermal level of 0 means no throttling. If you see a non-zero thermal level un
 
 Running macOS Server alongside Linux VMs is not as smooth as you might hope. Apple has been slowly pulling back from the server space for years. The Server app had most of its services stripped out in 2018 and Apple stopped selling it entirely in 2022, so "macOS Server" is now just macOS with file sharing and a caching service.
 
-There is no iDRAC equivalent, no IPMI, and remote management is limited compared to what Dell offers. This is the difference that shapes daily operations. On a PowerEdge, iDRAC has its own network port, its own processor, and its own power domain, so I can watch POST, mount an ISO over the network, read hardware logs, and force a power cycle while the operating system is completely dead. On the Mac Pro, every one of those capabilities requires macOS to be running and on the network. When it is not, someone walks to the rack.
+There is no iDRAC equivalent, no [IPMI](/blog/ipmi-remote-management), and remote management is limited compared to what Dell offers. This is the difference that shapes daily operations. On a PowerEdge, iDRAC has its own network port, its own processor, and its own power domain, so I can watch POST, mount an ISO over the network, read hardware logs, and force a power cycle while the operating system is completely dead. On the Mac Pro, every one of those capabilities requires macOS to be running and on the network. When it is not, someone walks to the rack.
 
 The workaround I use is to rebuild the pieces out of separate boxes. A switched PDU gives me remote power cycling per outlet, which covers the single most common recovery action. A KVM-over-IP appliance on the Mac's HDMI output and a USB port gives me console access at boot. Neither is as good as a BMC and together they cost rack space and money, but they turn "drive to the rack" into "open a browser".
 
@@ -17666,7 +17666,7 @@ Now the honest part, and it is the thing to check before you buy: the two featur
 
 Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use \`root\` / \`calvin\`; later ones have a unique default password printed on the pull-out service tag at the front of the chassis. Change it either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
 
-For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. IPMI over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
+For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. [IPMI](/blog/ipmi-remote-management) over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
 
 \`\`\`bash
 # Chassis power state and sensor readings over IPMI, once enabled.
@@ -17676,7 +17676,7 @@ ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' sdr type temperature
 
 ## Storage Configuration
 
-I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P RAID controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
+I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P [RAID](/blog/raid-levels-comparison) controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
 
 That last experiment deserves a warning, because it is where the R740 and ZFS genuinely fight each other. The H740P is a RAID controller with 8 GB of battery-backed cache and no true IT mode. Its "Non-RAID" disks are presented to the OS, but the I/O still crosses the RAID stack and its cache. ZFS assumes it owns the write path: it needs SMART data to pass through unmodified, and it needs a write to be on stable media when the drive says it is. A cache it cannot see or flush undermines the guarantee ZFS exists to provide, and putting each disk in a single-drive RAID 0 to fake passthrough does not help. The right part is the HBA330, a plain SAS host bus adapter in IT mode that is cheap on the used market. Swap the controller rather than fighting the H740P.
 
@@ -17766,7 +17766,7 @@ Servers also need PCIe lanes for network cards, storage controllers, and acceler
 
 This is the part that gets least attention and matters most operationally. A server is expected to be manageable when the operating system is dead.
 
-An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardised: IPMI over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
+An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardised: [IPMI](/blog/ipmi-remote-management) over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
 
 Apple Silicon has none of this. There is no BMC, no out-of-band port, no Redfish endpoint. Remote access means SSH on port 22 or Screen Sharing on TCP 5900, and both of those require macOS to be up and on the network. If the machine hangs at boot, somebody walks to the rack. Apple Silicon also does not implement UEFI or ACPI, and it does not conform to Arm's SystemReady specifications, which are the reason a Graviton or Ampere box boots a stock ARM64 Linux ISO the same way an x86 server boots one.
 
@@ -17856,7 +17856,7 @@ Apple Silicon is incredible technology. It just solves a different problem than 
     content: `
 ## Why ZFS
 
-You have a PowerEdge with a stack of drives in it, you want a filesystem that will tell you when something is quietly rotting, and the RAID controller in the front of the machine is standing in your way. That is the whole problem in one sentence, and most of the work in getting ZFS running on Dell hardware is convincing the storage controller to get out of the way and then choosing a pool layout you will not regret in two years.
+You have a PowerEdge with a stack of drives in it, you want a filesystem that will tell you when something is quietly rotting, and the [RAID](/blog/raid-levels-comparison) controller in the front of the machine is standing in your way. That is the whole problem in one sentence, and most of the work in getting ZFS running on Dell hardware is convincing the storage controller to get out of the way and then choosing a pool layout you will not regret in two years.
 
 ZFS is a filesystem and volume manager that handles things most filesystems leave to external tools. It does its own RAID (called RAIDZ), snapshots, compression, deduplication, checksumming, and self-healing. Once you use ZFS, going back to traditional RAID controllers and ext4 feels primitive.
 
@@ -18014,7 +18014,7 @@ Here is the arithmetic that makes the difference concrete. A gigabit link carrie
 
 ## The Hardware
 
-For the network side, I picked up a used Mellanox ConnectX-3 SFP+ card for each server. These are dual-port 10GbE cards that you can find for very little money on the used market. They are well-supported in Linux with the mlx4 driver and work out of the box on most distributions.
+For the network side, I picked up a used Mellanox ConnectX-3 [SFP+](/blog/sfp-transceivers-explained) card for each server. These are dual-port 10GbE cards that you can find for very little money on the used market. They are well-supported in Linux with the mlx4 driver and work out of the box on most distributions.
 
 Two things about ConnectX-3 that nobody tells you before you buy. First, many of these cards are VPI models, meaning each port can run either InfiniBand or Ethernet, and a lot of used cards arrive configured for InfiniBand. The symptom is that \`lspci\` shows the card, the driver loads, and no Ethernet interface ever appears. The fix is to set the port type to Ethernet in firmware with the Mellanox tooling, or to set \`mlx4_core\` module parameters, and then reboot. Second, ConnectX-3 was removed from the supported hardware list in VMware ESXi 7.0. If you are running ESXi on modern versions, this card is a dead end and you want ConnectX-4 or later. On Linux it remains fine.
 
@@ -18125,7 +18125,7 @@ In a production environment, walking up to a server to plug in a monitor and key
 
 In a homelab, it still matters. My servers are in a closet, and I manage them entirely from my desk. If an OS hangs during a kernel update, I can remote into iDRAC, access the virtual console, and fix it without getting up. That might sound like a convenience, but multiply it by dozens of incidents over time and it becomes essential.
 
-The other thing it buys you is evidence. The BMC keeps a system event log that survives OS crashes and reboots, so you can read what the hardware saw instead of reconstructing it from a syslog that stopped mid-sentence.
+The other thing it buys you is evidence. The BMC keeps a system event log that survives OS crashes and reboots, so you can read what the hardware saw instead of reconstructing it from a [syslog](/blog/syslog-centralized-logging) that stopped mid-sentence.
 
 ## How it works
 
@@ -18529,7 +18529,7 @@ No Extlog errors.
 No MCE errors.
 \`\`\`
 
-When something does go wrong, \`ras-mc-ctl --errors\` prints the location down to the DIMM label, which is what you need to know which slot to pull. Cross-check against the out of band log on the service processor, the iDRAC or IPMI system event log, because that records memory events even when the host operating system is not running.
+When something does go wrong, \`ras-mc-ctl --errors\` prints the location down to the DIMM label, which is what you need to know which slot to pull. Cross-check against the out of band log on the service processor, the iDRAC or [IPMI](/blog/ipmi-remote-management) system event log, because that records memory events even when the host operating system is not running.
 
 ## The performance question
 
@@ -18629,7 +18629,7 @@ iDRAC versus nothing. Dell gives you full out-of-band management with remote con
 
 This is probably the biggest practical difference for server use. iDRAC means I can manage my Dell servers from anywhere. The Mac Pro requires me to be in front of it (or use VNC when macOS is running, which is not the same thing).
 
-Worth spelling out what "out-of-band" buys you, because the phrase gets thrown around loosely. iDRAC is a small computer with its own processor, its own network port, and its own power rail, running whether or not the host is powered on. It exposes IPMI over UDP port 623 and the DMTF Redfish REST API over HTTPS on 443. Through those you get remote console from POST onward, virtual media so you can boot an ISO sitting on your laptop, sensor readings, hardware event logs, and firmware updates.
+Worth spelling out what "out-of-band" buys you, because the phrase gets thrown around loosely. iDRAC is a small computer with its own processor, its own network port, and its own power rail, running whether or not the host is powered on. It exposes [IPMI](/blog/ipmi-remote-management) over UDP port 623 and the DMTF Redfish REST API over HTTPS on 443. Through those you get remote console from POST onward, virtual media so you can boot an ISO sitting on your laptop, sensor readings, hardware event logs, and firmware updates.
 
 Concretely, this is me checking a server's health without any cooperation from its operating system:
 
@@ -19013,7 +19013,7 @@ I picked up a FortiGate 60F, which is designed for small office deployments but 
 
 The throughput numbers on the datasheet are worth reading carefully, because they explain how the box actually works. Fortinet rates the 60F at 10 Gbps of raw stateful firewall throughput, 1.4 Gbps with IPS enabled, 1 Gbps in NGFW mode, and 700 Mbps with the full threat protection stack turned on. That is not marketing inconsistency. The 60F's SoC4 processor offloads plain firewall sessions to hardware, but **the moment a policy has any security profile attached, that session can no longer be offloaded and the general-purpose CPU handles every packet.** A fourteen-fold drop between line-rate filtering and full inspection is the price of inspection, and every vendor pays some version of it. For a homelab on a residential connection none of this matters. On a gigabit fiber line with deep inspection on every policy, the 60F is at its limit.
 
-There is one honest downside to buying used Fortinet gear, and it is the thing nobody mentions in the "cheap enterprise firewall" videos. IPS signatures, antivirus definitions, web filtering categories, and application control all come from FortiGuard, which is a paid subscription. A 60F with an expired contract still routes, still does stateful firewalling, still does VPN and VLANs and logging, and still runs the IPS engine, but the signature database is frozen at whatever date the contract lapsed. If you want current threat intel you are paying for it annually. Decide that before you buy.
+There is one honest downside to buying used Fortinet gear, and it is the thing nobody mentions in the "cheap enterprise firewall" videos. IPS signatures, antivirus definitions, web filtering categories, and application control all come from FortiGuard, which is a paid subscription. A 60F with an expired contract still routes, still does stateful firewalling, still does VPN and [VLANs](/blog/vlan-segmentation-guide) and logging, and still runs the IPS engine, but the signature database is frozen at whatever date the contract lapsed. If you want current threat intel you are paying for it annually. Decide that before you buy.
 
 ## Initial Setup
 
@@ -19392,7 +19392,7 @@ Two form factors matter when you go shopping. A 1U or 2U horizontal PDU bolts in
 
 **Switched PDU:** Everything a monitored PDU does, plus you can remotely power-cycle individual outlets. This is incredibly useful when a server hangs and iDRAC is not responding.
 
-Two honest caveats. Check the metering accuracy spec, not just the presence of a display: inexpensive metered units are often only good to within a few percent, which is fine for "am I near the limit" and useless for attributing watts to individual workloads. And a switched outlet is a hard power cut. It does not flush write caches or unmount filesystems, so cutting power mid-write is how you find out whether your filesystem journaling actually works. Try a graceful shutdown through IPMI or iDRAC first. Many switched PDUs also enforce a minimum off-time of several seconds during a reboot cycle, because the PSU's bulk capacitors need to discharge before the board will cold-start. If your one-second power blip does not bring the server back, that is why.
+Two honest caveats. Check the metering accuracy spec, not just the presence of a display: inexpensive metered units are often only good to within a few percent, which is fine for "am I near the limit" and useless for attributing watts to individual workloads. And a switched outlet is a hard power cut. It does not flush write caches or unmount filesystems, so cutting power mid-write is how you find out whether your filesystem journaling actually works. Try a graceful shutdown through [IPMI](/blog/ipmi-remote-management) or iDRAC first. Many switched PDUs also enforce a minimum off-time of several seconds during a reboot cycle, because the PSU's bulk capacitors need to discharge before the board will cold-start. If your one-second power blip does not bring the server back, that is why.
 
 ## Sizing: The 80 Percent Rule
 
@@ -19453,7 +19453,7 @@ One more term you will meet on spec sheets: power factor. VA is volts times amps
 
 A networked PDU is an embedded computer with a web server, and it is usually one running firmware nobody has updated since it shipped. Treat it accordingly.
 
-Change the default credentials first. Put the management interface on the management VLAN with no route to the internet and none from user VLANs. If the unit only supports SNMPv1 or v2c, the community string is a plaintext password readable by anyone who can capture the traffic; SNMPv3, whose architecture is defined in RFC 3411, adds real authentication and encryption. Keep SNMP read-only unless you truly need writes, because SNMP write access to a switched PDU means anyone who learns the community string can power off your rack.
+Change the default credentials first. Put the management interface on the management VLAN with no route to the internet and none from user [VLANs](/blog/vlan-segmentation-guide). If the unit only supports SNMPv1 or v2c, the community string is a plaintext password readable by anyone who can capture the traffic; SNMPv3, whose architecture is defined in RFC 3411, adds real authentication and encryption. Keep SNMP read-only unless you truly need writes, because SNMP write access to a switched PDU means anyone who learns the community string can power off your rack.
 
 ## What a PDU Will Not Do
 
@@ -19620,7 +19620,7 @@ Add \`-E header=y -E separator=,\` when you want a real CSV with a header row ra
 
 ## Decrypting TLS
 
-Most traffic worth analysing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with TLS 1.3 that would not help anyway because the key exchange is always ephemeral.
+Most traffic worth analysing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with [TLS 1.3](/blog/tls-modern-encryption) that would not help anyway because the key exchange is always ephemeral.
 
 Instead, have the client write out its session secrets:
 
@@ -19897,7 +19897,7 @@ For datacenter use where density matters, the Mac Pro loses. For a lab or studio
 
 **Planning around a 120 V circuit.** People install a loaded Mac Pro plus monitors plus a UPS on one household 15 A circuit and trip the breaker under a render. Work out the continuous VA before you plug it in, not after.
 
-**Expecting server-style remote management.** There is no BMC, no IPMI, no out-of-band port. Everything about the hardware is serviceable and nothing about it is remotely manageable when macOS is down. That gap is the single biggest practical difference from a PowerEdge, and no amount of build quality closes it.
+**Expecting server-style remote management.** There is no BMC, no [IPMI](/blog/ipmi-remote-management), no out-of-band port. Everything about the hardware is serviceable and nothing about it is remotely manageable when macOS is down. That gap is the single biggest practical difference from a PowerEdge, and no amount of build quality closes it.
 
 ## References
 
@@ -20039,7 +20039,7 @@ Sudo rules belong in files under \`/etc/sudoers.d/\`, edited with \`visudo -f\`,
 
 ## Logging
 
-I send all system logs to a central syslog server using rsyslog. This means that even if a server is compromised and the attacker clears local logs, the copies on the syslog server are intact.
+I send all system logs to a central [syslog](/blog/syslog-centralized-logging) server using rsyslog. This means that even if a server is compromised and the attacker clears local logs, the copies on the syslog server are intact.
 
 Log everything. Disk space is cheap. Missing logs during an incident investigation is expensive.
 
@@ -20337,7 +20337,7 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
     content: `
 ## The rule
 
-You have data you cannot lose, you have a RAID array, and somewhere in the back of your head you know that is not actually a backup. You are right. The question is what a real backup looks like when you are running it yourself, on your own hardware, with no budget for a vendor to hold your hand.
+You have data you cannot lose, you have a [RAID](/blog/raid-levels-comparison) array, and somewhere in the back of your head you know that is not actually a backup. You are right. The question is what a real backup looks like when you are running it yourself, on your own hardware, with no budget for a vendor to hold your hand.
 
 The 3-2-1 rule is simple: keep at least 3 copies of your data, on at least 2 different types of media, with at least 1 copy offsite. It has been the gold standard for backup strategy for decades, and it works. The phrasing comes from photographer Peter Krogh, who wrote it down for digital asset management in the mid 2000s, and it has survived because the arithmetic behind it does not care what decade you are in.
 
@@ -20757,7 +20757,7 @@ In my lab, I have used Thunderbolt networking between my Mac Pro and a Mac Mini 
 
 Thunderbolt networking is point-to-point. You cannot build a network fabric with Thunderbolt. There are no Thunderbolt switches. If you need to connect more than two devices, you need to use standard Ethernet.
 
-One partial exception, because \`bridge0\` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless spanning tree is on.
+One partial exception, because \`bridge0\` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless [spanning tree](/blog/spanning-tree-protocol-deep-dive) is on.
 
 Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a metre, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
 
@@ -20824,7 +20824,7 @@ Keep track of which parts are standards and which are Cisco's. 802.1Q trunking, 
 
 ## The CLI
 
-Cisco IOS uses a hierarchical CLI with different privilege levels. You start in user EXEC mode, move to privileged EXEC mode with \`enable\`, and enter configuration mode with \`configure terminal\`. Every configuration change happens in this global configuration mode or a sub-mode.
+[Cisco IOS](/blog/cisco-ios-fundamentals) uses a hierarchical CLI with different privilege levels. You start in user EXEC mode, move to privileged EXEC mode with \`enable\`, and enter configuration mode with \`configure terminal\`. Every configuration change happens in this global configuration mode or a sub-mode.
 
 \`\`\`
 Switch> enable
@@ -20857,7 +20857,7 @@ Two protections belong on every access port. \`spanning-tree portfast\` skips li
 
 ## Port Security
 
-Port security limits which MAC addresses can use a switch port. In a lab, I use it to prevent unknown devices from connecting to sensitive VLANs. In production environments, it is a basic access control mechanism.
+Port security limits which MAC addresses can use a switch port. In a lab, I use it to prevent unknown devices from connecting to sensitive [VLANs](/blog/vlan-segmentation-guide). In production environments, it is a basic access control mechanism.
 
 \`\`\`
 LabSwitch(config-if)# switchport port-security
@@ -20972,7 +20972,7 @@ The configuration is layered, and missing a layer is why people report that aler
 
 The other trap is authentication. Older iDRAC9 firmware had no SMTP authentication or TLS at all, so it could only relay through a server that accepted unauthenticated mail from its IP. Support for SMTP authentication and SSL/TLS arrived in later 4.x firmware. If you are on older firmware, or you just want this to be reliable, point iDRAC at a small Postfix or msmtp relay on your LAN and let that host deal with Gmail or your provider. That also means one place to fix when a provider changes its rules, rather than one per server.
 
-Note that IPMI Platform Event Traps and email alerts are separate mechanisms. \`iDRAC.IPMILan.AlertEnable\` governs the former and is unrelated to whether email goes out, which is a common source of confusion when copying racadm snippets around.
+Note that [IPMI](/blog/ipmi-remote-management) Platform Event Traps and email alerts are separate mechanisms. \`iDRAC.IPMILan.AlertEnable\` governs the former and is unrelated to whether email goes out, which is a common source of confusion when copying racadm snippets around.
 
 ## Firmware Updates
 
@@ -21006,7 +21006,7 @@ That returns power supply state, voltages, and the current wattage reading as st
 
 ## Lifecycle Controller
 
-The Lifecycle Controller is a separate environment built into iDRAC that provides hardware diagnostics, OS deployment tools, and RAID configuration. It boots independently of the OS and does not require any installed software. It is essentially a built-in recovery environment that is always available.
+The Lifecycle Controller is a separate environment built into iDRAC that provides hardware diagnostics, OS deployment tools, and [RAID](/blog/raid-levels-comparison) configuration. It boots independently of the OS and does not require any installed software. It is essentially a built-in recovery environment that is always available.
 
 You reach it with F10 during POST. Two caveats: it can be disabled in BIOS, in which case F10 does nothing and you will assume the feature is missing; and the Part Replacement feature, which automatically restores firmware and configuration onto a newly installed component, only works if it was enabled *before* you swapped the part. Turn it on now, on every server, so it is there when you need it.
 
@@ -21346,7 +21346,7 @@ ip route get 10.0.30.15
 
 ## Common mistakes
 
-**Overlapping subnets.** The most common subnetting mistake I see. If two VLANs have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range. The overlaps that catch people are the ones they did not choose: Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs hand out 10.x space. If your lab uses 10.0.x, a VPN route for 10.0.0.0/8 will swallow your whole network the moment you connect.
+**Overlapping subnets.** The most common subnetting mistake I see. If two [VLANs](/blog/vlan-segmentation-guide) have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range. The overlaps that catch people are the ones they did not choose: Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs hand out 10.x space. If your lab uses 10.0.x, a VPN route for 10.0.0.0/8 will swallow your whole network the moment you connect.
 
 **Forgetting the gateway.** Every subnet needs a gateway address (usually .1) configured on the router or L3 switch for inter-subnet traffic to work. A host with a correct address and no reachable gateway can talk to its neighbours perfectly and nothing else, which reads like a firewall problem and is not.
 
@@ -21535,7 +21535,7 @@ options timeout:1 attempts:2 rotate
 
 ## Split DNS
 
-I use split DNS (also called split-horizon DNS) so internal queries resolve to internal addresses and external queries resolve normally. My FortiGate handles this by directing DNS queries from internal VLANs to my internal DNS servers, while guest VLAN queries go directly to public DNS.
+I use split DNS (also called split-horizon DNS) so internal queries resolve to internal addresses and external queries resolve normally. My FortiGate handles this by directing DNS queries from internal [VLANs](/blog/vlan-segmentation-guide) to my internal DNS servers, while guest VLAN queries go directly to public DNS.
 
 Split DNS has a specific set of ways it goes wrong. The classic one is a name that exists internally and not externally, so the service works from inside and produces NXDOMAIN from a phone on cellular. The second is a certificate mismatch, where the internal address is reached over a name that the certificate does not cover. The third, and the modern one, is DNS over HTTPS. Browsers can be configured to send DNS queries to a public resolver over HTTPS, entirely bypassing the resolver your DHCP handed out. The symptom is unmistakable once you know it: \`dig\` resolves the internal name fine, and the browser on the same machine cannot reach it. Check the browser's secure DNS setting before you touch the server.
 
@@ -21642,7 +21642,7 @@ The Apple Xserve was a 1U rack-mount server that Apple sold from 2002 to 2011. I
 
 Announced in May 2002, it was the first machine Apple ever designed for a rack rather than a desk. The generations went roughly like this: dual PowerPC G4 at the start, the Xserve G5 in 2004 with PowerPC 970FX processors and ECC DDR memory, then the switch to Intel in 2006 with dual dual-core Xeons, a quad-core Xeon refresh in early 2008, and a final Nehalem-generation Xeon model in early 2009. Apple announced the end on 5 November 2010 and took the last orders on 31 January 2011.
 
-Two details separated it from a Mac in a rack tray. Drives lived in Apple Drive Modules, proprietary hot-swap sleds you could pull from the front while the machine ran, up to three or four depending on generation. And there was lights-out management, reached through a management port with Apple's Server Monitor application, so you could check temperatures, fans, and power state on a machine that was not responding, which is exactly the job a BMC does on a Dell or HP box. The Intel models also offered redundant power supplies as an option. Alongside it Apple sold the Xserve RAID, a 3U 14-bay Fibre Channel array, which is what most of the big Xsan deployments were built on.
+Two details separated it from a Mac in a rack tray. Drives lived in Apple Drive Modules, proprietary hot-swap sleds you could pull from the front while the machine ran, up to three or four depending on generation. And there was lights-out management, reached through a management port with Apple's Server Monitor application, so you could check temperatures, fans, and power state on a machine that was not responding, which is exactly the job a BMC does on a Dell or HP box. The Intel models also offered redundant power supplies as an option. Alongside it Apple sold the Xserve [RAID](/blog/raid-levels-comparison), a 3U 14-bay Fibre Channel array, which is what most of the big Xsan deployments were built on.
 
 ## Why it mattered
 
@@ -21664,7 +21664,7 @@ The software followed the hardware down, just slowly enough that people kept hop
 
 ## The Mac Pro as spiritual successor
 
-The 2019 Mac Pro in rack-mount configuration is the closest thing to a modern Xserve. It fits in a standard rack, supports ECC memory, and can run macOS server workloads. But it is designed as a workstation, not a server. It lacks the server-specific features (hot-swap drives, redundant power supplies, IPMI) that made the Xserve a real server.
+The 2019 Mac Pro in rack-mount configuration is the closest thing to a modern Xserve. It fits in a standard rack, supports ECC memory, and can run macOS server workloads. But it is designed as a workstation, not a server. It lacks the server-specific features (hot-swap drives, redundant power supplies, [IPMI](/blog/ipmi-remote-management)) that made the Xserve a real server.
 
 The specifics are worth stating because they set the ceiling on what you can build. The rack Mac Pro is 4U, not 1U, so four of them fill sixteen rack units where sixteen Xserves once fit. The Intel version takes ECC DDR4 up to 1.5 TB in the top configurations. The 2023 Apple silicon version replaced that with unified memory that is soldered to the package and capped far lower, and its PCIe slots will not take a GPU. There is no out-of-band management on either one. No IPMI, no Redfish, no serial console redirection, no way to watch the boot process from another building.
 
@@ -22226,7 +22226,7 @@ Do the weight sum before you fill the top half. Frames have a static load rating
 
 The network is down, every link light on every switch is blinking in perfect unison, the switch console takes ten seconds to echo a character, and nothing you ping responds. That specific combination has one likely cause, and you need to stop it before you can investigate it.
 
-Spanning Tree Protocol runs on every enterprise switch, usually without anyone thinking about it. It prevents Layer 2 loops by blocking redundant paths, and it is absolutely essential for network stability. But when STP goes wrong, it goes wrong fast.
+[Spanning Tree Protocol](/blog/spanning-tree-protocol-deep-dive) runs on every enterprise switch, usually without anyone thinking about it. It prevents Layer 2 loops by blocking redundant paths, and it is absolutely essential for network stability. But when STP goes wrong, it goes wrong fast.
 
 ## The broadcast storm
 
@@ -22240,7 +22240,7 @@ A layer 2 loop looks different from most outages, and learning the signature sav
 
 - Link lights on many ports flashing in lockstep at the same rhythm, including ports that should be nearly idle.
 - Switch CPU at or near 100 percent, with the console noticeably slow to respond.
-- Total loss of connectivity for everything in the affected VLAN, while devices in other VLANs are unaffected.
+- Total loss of connectivity for everything in the affected VLAN, while devices in other [VLANs](/blog/vlan-segmentation-guide) are unaffected.
 - MAC flapping messages in the log, which are the single most diagnostic clue available.
 
 That last one is worth knowing by sight. Cisco switches log something like this:
@@ -22322,7 +22322,7 @@ A single BPDU decodes roughly like this:
 
 The two fields to read are \`root-id\` and \`bridge-id\`. If they are equal, the sender believes it is the root. Capture on two ports and compare: if two switches each claim to be root, they are not exchanging BPDUs and you have a segmented spanning tree, which is a loop waiting to happen.
 
-In Wireshark, the display filter is simply \`stp\`. Two patterns are worth recognising in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
+In [Wireshark](/blog/wireshark-packet-analysis), the display filter is simply \`stp\`. Two patterns are worth recognising in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
 
 Capture from a mirrored port or a host attached to the affected VLAN, not from the switch console, since the console is the thing under load.
 
@@ -22575,7 +22575,7 @@ Example zones in my FortiGate:
 - Guest
 - Internet
 
-Check the intra-zone setting on every zone you create. When two interfaces belong to the same zone, whether traffic between them is permitted is a per-zone toggle, and it is not always set to deny. The symptom of getting this wrong is genuinely confusing: two VLANs you believe are isolated can reach each other, and no policy in the list explains why, because the traffic never gets evaluated against a policy at all.
+Check the intra-zone setting on every zone you create. When two interfaces belong to the same zone, whether traffic between them is permitted is a per-zone toggle, and it is not always set to deny. The symptom of getting this wrong is genuinely confusing: two [VLANs](/blog/vlan-segmentation-guide) you believe are isolated can reach each other, and no policy in the list explains why, because the traffic never gets evaluated against a policy at all.
 
 Zones also have a hard limit: they enforce at the boundary and can do nothing about traffic that never crosses it. If a switch access port is misconfigured and drops an IoT device into the Servers VLAN, that device is inside the segment and the firewall never sees its traffic. Policy design assumes the segmentation underneath it is correct. Port security, private VLANs, and 802.1X are what make that assumption true, and none of them live on the firewall.
 
@@ -22664,7 +22664,7 @@ That last sentence is not quite true and the difference matters. The physical sw
 
 ## VLAN tagging
 
-To put VMs on different VLANs, you configure VLAN tagging on the virtual switch. The hypervisor adds VLAN tags to traffic leaving the vSwitch, and the physical switch must be configured with a trunk port that accepts those VLAN tags.
+To put VMs on different [VLANs](/blog/vlan-segmentation-guide), you configure VLAN tagging on the virtual switch. The hypervisor adds VLAN tags to traffic leaving the vSwitch, and the physical switch must be configured with a trunk port that accepts those VLAN tags.
 
 In Proxmox, you create VLAN-aware bridges or separate bridge interfaces for each VLAN. In ESXi, you create port groups with VLAN IDs. Either way, the result is the same: VMs can be placed on different VLANs without dedicated physical NICs for each VLAN.
 
@@ -23129,10 +23129,10 @@ My documentation covers four categories:
 
 ### Diagrams: draw three, not one
 
-The mistake almost everyone makes is trying to put physical cabling, VLANs, and IP subnets on a single canvas. By the time you have twelve devices it is unreadable and you stop updating it. Split it by layer:
+The mistake almost everyone makes is trying to put physical cabling, [VLANs](/blog/vlan-segmentation-guide), and IP subnets on a single canvas. By the time you have twelve devices it is unreadable and you stop updating it. Split it by layer:
 
 - **Layer 1** shows what is physically plugged into what, including patch panel port numbers and cable IDs. This is the diagram you need when a link is down.
-- **Layer 2** shows VLANs, trunk links, which VLANs are allowed on each trunk, and where the spanning tree root is. This is the diagram you need when a loop takes out a segment.
+- **Layer 2** shows VLANs, trunk links, which VLANs are allowed on each trunk, and where the [spanning tree](/blog/spanning-tree-protocol-deep-dive) root is. This is the diagram you need when a loop takes out a segment.
 - **Layer 3** shows subnets, gateway addresses, and routing between them. This is the diagram you need when two hosts cannot reach each other.
 
 On every diagram, label **both ends of every link with the actual interface name**. "Core switch to access switch" tells you nothing at 2 AM. "Core Gi1/0/47 to Access-2 Gi1/0/48" tells you exactly which port to check and which cable to reseat. If you take one thing from this post, take that.
@@ -23183,7 +23183,7 @@ Store the draw.io files as \`.drawio\` XML in the same git repository as the con
 
 Good documentation passes the "2 AM test": if your network goes down at 2 AM and you are half asleep, can you find the information you need to diagnose and fix the problem? If the answer is no, your documentation needs work.
 
-The version of this test that catches most people is not "can I find it" but "can I reach it." If the wiki is a VM on the cluster that just died, if the IPAM spreadsheet is on a NAS behind the switch you are trying to fix, or if the credentials are in a password manager that syncs over the VPN that is currently down, then during an outage your documentation does not exist. Keep an offline copy of the minimum set: a printed or PDF rack sheet, a local git clone on your laptop, and the out-of-band access details. Those out-of-band details are their own category worth writing down explicitly: iDRAC and IPMI addresses, console server ports, the serial console baud rate, and the local break-glass account on each device.
+The version of this test that catches most people is not "can I find it" but "can I reach it." If the wiki is a VM on the cluster that just died, if the IPAM spreadsheet is on a NAS behind the switch you are trying to fix, or if the credentials are in a password manager that syncs over the VPN that is currently down, then during an outage your documentation does not exist. Keep an offline copy of the minimum set: a printed or PDF rack sheet, a local git clone on your laptop, and the out-of-band access details. Those out-of-band details are their own category worth writing down explicitly: iDRAC and [IPMI](/blog/ipmi-remote-management) addresses, console server ports, the serial console baud rate, and the local break-glass account on each device.
 
 ## Keeping It Current
 
@@ -23228,7 +23228,7 @@ Together, these give me a complete picture of where power is going.
 
 Know the limits of each tool before you trust a number. A Kill A Watt is rated to 15 A and about 1875 W, so it cannot legally or safely sit in front of a rack pulling more than that, and consumer meters lose accuracy badly at low loads. A metered PDU is typically specified to around 1 percent accuracy and does not care about load level. iDRAC's reading comes from the power supply's own instrumentation and is the number to trust for a single server. Also watch the units: a Kill A Watt reports both watts and volt-amps, and only watts is what you are billed for. Modern server supplies use active power factor correction and run above 0.95 power factor, so the two numbers are close, but a cheap UPS rated in VA will have a lower watt rating and the watt rating is the one that binds.
 
-For the per-server number without leaving the shell, IPMI exposes it directly:
+For the per-server number without leaving the shell, [IPMI](/blog/ipmi-remote-management) exposes it directly:
 
 \`\`\`bash
 # Instantaneous system power draw, in watts
@@ -23368,7 +23368,7 @@ Verification means checking from the user's position, not from the server. A ser
 
 Write down what happened, when it happened, what caused it, how it was fixed, and what will prevent it from happening again. This is the step most people skip, and it is arguably the most important one. Good incident documentation prevents recurring problems and helps you respond faster next time.
 
-A postmortem that is worth writing has six parts: impact (who was affected and for how long), a timeline in absolute timestamps, the trigger (what set it off), the root cause (why the trigger had that effect), how it was detected, and action items. Separating trigger from root cause matters. "A switch reboot" is a trigger. "Spanning tree had no redundant path because both uplinks were on the same switch" is a root cause, and only the second one generates useful work.
+A postmortem that is worth writing has six parts: impact (who was affected and for how long), a timeline in absolute timestamps, the trigger (what set it off), the root cause (why the trigger had that effect), how it was detected, and action items. Separating trigger from root cause matters. "A switch reboot" is a trigger. "[Spanning tree](/blog/spanning-tree-protocol-deep-dive) had no redundant path because both uplinks were on the same switch" is a root cause, and only the second one generates useful work.
 
 Action items need an owner and a date or they are not action items, they are regrets. The Google SRE book's chapter on postmortem culture makes the other essential point: the document is blameless. The moment a postmortem can be used against someone, people stop writing down the parts that matter, and you lose the only mechanism you had for finding systemic problems.
 
@@ -23624,7 +23624,7 @@ The name check is the part people get wrong. Hostname verification is done again
 
 ## The handshake, briefly
 
-Over TLS 1.3, defined in RFC 8446, the client opens a connection to TCP port 443 and sends a ClientHello that already includes a key share guess. The server replies with its ServerHello, its certificate chain, a CertificateVerify signature proving it holds the matching private key, and a Finished message. One round trip, and application data flows.
+Over [TLS 1.3](/blog/tls-modern-encryption), defined in RFC 8446, the client opens a connection to TCP port 443 and sends a ClientHello that already includes a key share guess. The server replies with its ServerHello, its certificate chain, a CertificateVerify signature proving it holds the matching private key, and a Finished message. One round trip, and application data flows.
 
 Two details matter. The certificate proves nothing on its own, since anyone can copy a public certificate; CertificateVerify, a signature over the handshake transcript made with the private key, is what proves possession. And TLS 1.3 removed static RSA key exchange, so every connection uses ephemeral keys and gets forward secrecy: recording the traffic today and stealing the server key later does not decrypt it.
 
@@ -23864,7 +23864,7 @@ APFS does not checksum file data. It checksums metadata (directory structures, f
 
 There is also no scrub. Nothing in APFS periodically walks your data verifying it is still what you wrote. \`diskutil verifyVolume\` and \`fsck_apfs\` check that the structures are coherent, which is a different question from whether your file contents are intact. A flipped bit inside a photo passes every check APFS knows how to run.
 
-APFS also does not support software RAID. There is no APFS equivalent of ZFS RAIDZ or Linux md RAID. For redundant storage, you need either hardware RAID (which APFS sits on top of) or Apple's AppleRAID layer, which Disk Utility exposes as mirroring, striping, and concatenation only. There is no parity RAID in the box, and because AppleRAID sits below APFS, a mirror can tell you the two sides disagree but has no checksum to decide which side is right.
+APFS also does not support software [RAID](/blog/raid-levels-comparison). There is no APFS equivalent of ZFS RAIDZ or Linux md RAID. For redundant storage, you need either hardware RAID (which APFS sits on top of) or Apple's AppleRAID layer, which Disk Utility exposes as mirroring, striping, and concatenation only. There is no parity RAID in the box, and because AppleRAID sits below APFS, a mirror can tell you the two sides disagree but has no checksum to decide which side is right.
 
 Last, replication. ZFS has \`zfs send\` and \`zfs receive\`, which move snapshot deltas between machines as a stream. APFS snapshots are local objects, and there is no general purpose, scriptable equivalent exposed to you.
 
@@ -23936,7 +23936,7 @@ This hybrid approach uses each filesystem where it is strongest.
     content: `
 ## Stage 1: Consumer Router
 
-Like most people, I started with the router my ISP provided. A single device handled routing, switching, WiFi, DHCP, DNS, and firewall. It worked fine for basic internet access, but it was a black box. I could not configure VLANs, could not see detailed traffic logs, and had no visibility into what was happening on my network.
+Like most people, I started with the router my ISP provided. A single device handled routing, switching, WiFi, DHCP, DNS, and firewall. It worked fine for basic internet access, but it was a black box. I could not configure [VLANs](/blog/vlan-segmentation-guide), could not see detailed traffic logs, and had no visibility into what was happening on my network.
 
 Two things about that box are worth spelling out, because they explain why the upgrade path goes the way it does.
 
@@ -23962,7 +23962,7 @@ Three things go wrong here, in roughly this order:
 
 **Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. Effective inter-VLAN throughput is roughly 500 Mbps total, shared by every VLAN pair. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
 
-Once you have two switches, spanning tree stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
+Once you have two switches, [spanning tree](/blog/spanning-tree-protocol-deep-dive) stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
 
 ## Stage 3: Enterprise Hardware
 
@@ -23970,7 +23970,7 @@ Adding Dell PowerEdge servers was the next step. This required proper network in
 
 This is also when I started treating the network as infrastructure rather than an accessory. Documentation, change management, monitoring, and backups all became necessary.
 
-The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 metres, while Category 6A is rated for the full 100 metres because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than SFP+ and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 metres, and beyond that you are buying active cable or optics.
+The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 metres, while Category 6A is rated for the full 100 metres because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than [SFP+](/blog/sfp-transceivers-explained) and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 metres, and beyond that you are buying active cable or optics.
 
 The used-gear trap here is transceiver vendor locking. Many switches check the vendor ID in an SFP+ module's EEPROM and refuse anything that is not their own brand, and server NICs sometimes do the same. A perfectly good Dell-coded transceiver will be rejected by a Cisco switch and vice versa. Most platforms have an unsupported-transceiver override command, but find out whether yours does before the parts arrive.
 
@@ -24126,7 +24126,7 @@ Written as a decision sequence: does it need a non-Linux OS, a different kernel,
     content: `
 ## What BGP Actually Is
 
-BGP (Border Gateway Protocol) is the routing protocol that connects autonomous systems on the internet. Unlike interior routing protocols like OSPF or EIGRP, BGP is designed for policy-based routing between organizations. It is not just about finding the shortest path. It is about controlling which paths are preferred, which ones are advertised, and which ones are filtered entirely.
+BGP (Border Gateway Protocol) is the routing protocol that connects autonomous systems on the internet. Unlike interior routing protocols like [OSPF](/blog/ospf-routing-protocol) or EIGRP, BGP is designed for policy-based routing between organizations. It is not just about finding the shortest path. It is about controlling which paths are preferred, which ones are advertised, and which ones are filtered entirely.
 
 If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
 
@@ -24425,7 +24425,7 @@ ESXi is the industry standard in enterprise environments. If you work in a large
 
 On the free edition specifically, the situation has changed twice. Broadcom removed the free vSphere Hypervisor in February 2024, then quietly reinstated it in April 2025 with ESXi 8.0 Update 3e, available from the Broadcom support portal to anyone with a registered account, with the license embedded in the download. It is a standalone host and nothing more: no vCenter, no vMotion, no HA, no supported backup API, and no support. For learning the ESXi interface that is genuinely fine. For anything that needs the features people actually buy VMware for, it is not.
 
-The bigger obstacle in a homelab is not licensing, it is the hardware compatibility list, and this is where ESXi differs most sharply from the Linux-based options. ESXi ships a curated set of drivers and will refuse to install rather than fall back to something generic. Realtek NICs, which are on most consumer motherboards, are not supported. Whole generations of RAID controllers were dropped between major versions. ESXi 7.0 also raised the boot device requirement to 8 GB minimum with 32 GB recommended, and deprecated SD cards and USB sticks as standalone boot media because the new ESX-OSData partition writes constantly and wears them out. A perfectly good server that Proxmox installs on in ten minutes can be flatly incompatible with ESXi, and there is no fixing it from the installer.
+The bigger obstacle in a homelab is not licensing, it is the hardware compatibility list, and this is where ESXi differs most sharply from the Linux-based options. ESXi ships a curated set of drivers and will refuse to install rather than fall back to something generic. Realtek NICs, which are on most consumer motherboards, are not supported. Whole generations of [RAID](/blog/raid-levels-comparison) controllers were dropped between major versions. ESXi 7.0 also raised the boot device requirement to 8 GB minimum with 32 GB recommended, and deprecated SD cards and USB sticks as standalone boot media because the new ESX-OSData partition writes constantly and wears them out. A perfectly good server that Proxmox installs on in ten minutes can be flatly incompatible with ESXi, and there is no fixing it from the installer.
 
 Then there is vCenter. Without it, an ESXi host is a single box with a local web UI: no vMotion, no DRS, no cluster HA, no central management. With it, you are running an appliance whose smallest deployment size wants roughly 2 vCPUs, 14 GB of RAM, and several hundred gigabytes of disk before it manages anything. That is a substantial slice of a homelab dedicated to management overhead, and it is the resource comparison people forget when they say ESXi has a thin footprint. The hypervisor does. The platform does not.
 
@@ -24604,7 +24604,7 @@ media_errors                        : 0
 
 Commercial network monitoring tools are expensive and often overkill for a lab or small environment. Building your own gives you deep understanding of how monitoring works and exactly the visibility you need without paying for features you never use.
 
-The honest counterpoint: you are also signing up to maintain it. A turnkey system like LibreNMS or Zabbix will auto-discover a switch, pick sane graphs, and be useful in an afternoon. A Prometheus stack will not do any of that for you. Build your own when the learning is part of the point, or when you have a specific question the packaged tools answer badly. Do not build your own because it looked cheaper.
+The honest counterpoint: you are also signing up to maintain it. A turnkey system like LibreNMS or Zabbix will auto-discover a switch, pick sane graphs, and be useful in an afternoon. A [Prometheus](/blog/prometheus-server-monitoring) stack will not do any of that for you. Build your own when the learning is part of the point, or when you have a specific question the packaged tools answer badly. Do not build your own because it looked cheaper.
 
 ## The Stack
 
@@ -24616,7 +24616,7 @@ My monitoring stack uses four main components:
 
 **Alertmanager for notifications:** When metrics cross thresholds, Alertmanager routes alerts to email or other destinations. A down interface or a device with 95 percent CPU should wake you up.
 
-**Syslog collection with Loki:** Devices send syslog messages to a central collector. Loki stores them, and Grafana lets you search and correlate logs with metrics.
+**[Syslog](/blog/syslog-centralized-logging) collection with Loki:** Devices send syslog messages to a central collector. Loki stores them, and Grafana lets you search and correlate logs with metrics.
 
 ## Setting Up SNMP
 
@@ -24672,7 +24672,7 @@ The beginner mistake is alerting on every interface going down. On an access por
 
 ## What to Monitor
 
-Focus first on the things that cause outages or degraded service: interface utilization and error rates, device CPU and memory, BGP session state if applicable, and power supply status. Add more metrics over time as you understand your environment better.
+Focus first on the things that cause outages or degraded service: interface utilization and error rates, device CPU and memory, [BGP](/blog/bgp-for-network-engineers) session state if applicable, and power supply status. Add more metrics over time as you understand your environment better.
 
 The goal is not to collect everything. It is to make sure you find out about real problems before your users do.
 
@@ -24781,7 +24781,7 @@ The three things worth alerting on are the redundancy state itself, the input vo
 
 ## What Redundant PSUs Do Not Cover
 
-They protect against one specific failure and are sometimes mistaken for general availability. Inside the chassis, the power distribution board that the supplies plug into is itself a single point of failure, as is the motherboard, the backplane, and the RAID controller. If a workload genuinely cannot go down, the answer is two servers, not one server with two supplies.
+They protect against one specific failure and are sometimes mistaken for general availability. Inside the chassis, the power distribution board that the supplies plug into is itself a single point of failure, as is the motherboard, the backplane, and the [RAID](/blog/raid-levels-comparison) controller. If a workload genuinely cannot go down, the answer is two servers, not one server with two supplies.
 
 They also do nothing about correlated failures upstream. Two PSUs plugged into two PDUs that are fed by the same UPS, or the same panel, or the same utility drop, share every failure mode above the point where they diverge. Trace the path back and find where the two feeds actually become one, because that point is your real availability limit.
 
@@ -24924,7 +24924,7 @@ Two additions worth the time. Set the secondary root explicitly too, so a failur
 
 **MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behaviour rarely matches what anyone expected.
 
-**Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual VLANs you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
+**Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual [VLANs](/blog/vlan-segmentation-guide) you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
 
 ## References
 
@@ -25165,7 +25165,7 @@ There is no broadcast address in IPv6 at all. Everything broadcast used to do is
 
 **No more NAT (mostly):** With enough addresses for every device to have a globally routable address, NAT is no longer necessary. Devices can communicate end-to-end directly.
 
-**Stateless Address Autoconfiguration (SLAAC):** Devices can self-configure IPv6 addresses based on the network prefix advertised by routers. DHCP is still used in many enterprise environments, but SLAAC simplifies device configuration.
+**Stateless Address Autoconfiguration ([SLAAC](/blog/slaac-vs-dhcpv6)):** Devices can self-configure IPv6 addresses based on the network prefix advertised by routers. DHCP is still used in many enterprise environments, but SLAAC simplifies device configuration.
 
 **Link-local addresses:** Every IPv6 interface automatically gets a link-local address (\`fe80::/10\`) that is used for on-link communication without needing global routing.
 
@@ -25179,7 +25179,7 @@ Address selection also changed. A modern host does not use a stable EUI-64 addre
 
 ## What stays the same
 
-Routing, firewall rules, VLANs, and most other networking concepts work the same way. You apply them to IPv6 addresses instead of IPv4 addresses. Your firewall still needs rules. Your switches still handle frames the same way. The mental model transfers directly.
+Routing, firewall rules, [VLANs](/blog/vlan-segmentation-guide), and most other networking concepts work the same way. You apply them to IPv6 addresses instead of IPv4 addresses. Your firewall still needs rules. Your switches still handle frames the same way. The mental model transfers directly.
 
 ## Seeing it work on a Linux host
 
@@ -25360,7 +25360,7 @@ interface GigabitEthernet1/0/24
   switchport trunk allowed vlan 100,200,300
 \`\`\`
 
-The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
+The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range [VLANs](/blog/vlan-segmentation-guide), so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
 
 The 802.1Q tag adds four bytes to the frame, taking the maximum from 1518 to 1522. Any device in the path that does not accept these baby giants drops full-size tagged frames while small ones pass, producing the maddening symptom where ping works and file transfers hang.
 
@@ -25903,7 +25903,7 @@ The classic zone model has three zones:
 - **Outside (WAN/Internet):** Untrusted external network
 - **DMZ:** Semi-trusted zone for systems that must be accessible from outside
 
-The word "zone" does two jobs at once and it helps to separate them. On the firewall, a zone is a named container that one or more interfaces or VLANs get assigned to, so you can write policy against a name instead of against interface numbers. In the design, a zone is an assertion about trust: everything in here may talk to everything else in here without inspection. The second meaning is the one that causes problems, because a zone is only as strong as the assumption that nothing inside it is hostile.
+The word "zone" does two jobs at once and it helps to separate them. On the firewall, a zone is a named container that one or more interfaces or [VLANs](/blog/vlan-segmentation-guide) get assigned to, so you can write policy against a name instead of against interface numbers. In the design, a zone is an assertion about trust: everything in here may talk to everything else in here without inspection. The second meaning is the one that causes problems, because a zone is only as strong as the assumption that nothing inside it is hostile.
 
 Some platforms encode trust as a number. On a Cisco ASA, every interface carries a security level from 0 to 100, conventionally 0 for outside, 100 for inside, and something in between such as 50 for the DMZ. Traffic from a higher security level to a lower one is permitted by default and the return traffic is allowed by the state table, while traffic from lower to higher is dropped unless an access list says otherwise. Zone-based policy on IOS, on FortiGate, and on pfSense expresses the same idea without the number: no policy, no traffic.
 
@@ -26438,7 +26438,7 @@ Two practical notes. One-way CHAP authenticates the initiator to the target; mut
 
 **It cannot hide the network.** iSCSI runs over TCP, so a lossy or congested link produces retransmissions, and retransmissions on a storage path look like a slow disk to everything above. Sharing the storage VLAN with user traffic is a reliable way to make your storage mysteriously slow at 4pm.
 
-When the SCSI translation overhead itself is the bottleneck, NVMe over Fabrics, particularly NVMe/TCP, is the modern answer for flash-backed storage. It runs on the same Ethernet and skips a protocol layer designed around spinning disks.
+When the SCSI translation overhead itself is the bottleneck, [NVMe over Fabrics](/blog/nvme-over-fabrics-explained), particularly NVMe/TCP, is the modern answer for flash-backed storage. It runs on the same Ethernet and skips a protocol layer designed around spinning disks.
 
 ## Practical Uses in a Lab
 
@@ -26641,7 +26641,7 @@ pcs stonith create ipmi-node1 fence_ipmilan   ipaddr=192.168.10.101 username=adm
 
 \`stonith-enabled\` defaults to \`true\`, and Pacemaker will refuse to start resources on a cluster with no working fence device. The standard bad advice on forums is \`pcs property set stonith-enabled=false\`. That does silence the error, and it converts your data corruption risk from theoretical to scheduled. On shared storage, two nodes mounting the same non-cluster filesystem at once destroys it, and there is no fsck that puts it back.
 
-Two fencing mistakes are specific to small setups. First, the fence race: in a two node cluster a network partition makes each node try to fence the other, and depending on timing you can lose both. Add \`pcmk_delay_base=5\` to one node's fence device so there is a deterministic winner. Second, a fence device that shares a failure domain with the thing it fences is not a fence device. An IPMI BMC on the same power supply as the node cannot power-cycle it after a PSU failure, and a network-controlled PDU on the same switch as the cluster ring is unreachable in exactly the partition you needed it for. Put the BMC network and the PDU somewhere independent.
+Two fencing mistakes are specific to small setups. First, the fence race: in a two node cluster a network partition makes each node try to fence the other, and depending on timing you can lose both. Add \`pcmk_delay_base=5\` to one node's fence device so there is a deterministic winner. Second, a fence device that shares a failure domain with the thing it fences is not a fence device. An [IPMI](/blog/ipmi-remote-management) BMC on the same power supply as the node cannot power-cycle it after a PSU failure, and a network-controlled PDU on the same switch as the cluster ring is unreachable in exactly the partition you needed it for. Put the BMC network and the PDU somewhere independent.
 
 Test fencing before you need it. \`pcs stonith fence node2\` should power-cycle node2 within a few seconds. If you have never run that command, you do not have fencing, you have a fence configuration.
 
@@ -26781,7 +26781,7 @@ jsmith  Cleartext-Password := "password123"
 
 **Deploying in enforcement mode first.** Turning on 802.1X across a campus without a discovery phase takes out every device you did not know about, and you find out at 8 a.m. Every serious deployment starts in monitor mode, Cisco's \`authentication open\`, where the port authenticates and logs but permits traffic regardless of outcome. Run that for weeks, read the RADIUS logs, fix or MAB everything that fails, and only then close the ports.
 
-**IP phones with a PC behind them.** One switch port, two devices, two VLANs. That needs multi-domain authentication, \`authentication host-mode multi-domain\`, so the phone authenticates into the voice VLAN and the PC into the data VLAN independently. Single-host mode allows exactly one MAC address and will shut the port when it sees the second.
+**IP phones with a PC behind them.** One switch port, two devices, two [VLANs](/blog/vlan-segmentation-guide). That needs multi-domain authentication, \`authentication host-mode multi-domain\`, so the phone authenticates into the voice VLAN and the PC into the data VLAN independently. Single-host mode allows exactly one MAC address and will shut the port when it sees the second.
 
 **Certificate expiry.** With EAP-TLS or PEAP, the RADIUS server's own certificate has an expiry date. When it passes, every client on the network fails authentication simultaneously. Put that date in a calendar and monitor it, because the outage is total and the error clients report is unhelpful.
 
@@ -26821,7 +26821,7 @@ You brought up a VXLAN interface on two hosts, the tunnel says it is up, and eit
 
 Traditional VLANs are limited to 4096 IDs. In a cloud or large multi-tenant datacenter environment, you need isolation for thousands or millions of tenants. You also need to stretch Layer 2 networks across physical boundaries, which traditional VLANs cannot do without complex MPLS configurations.
 
-There is a second limit that bites before the ID space does. A stretched Layer 2 domain shares one spanning tree, and spanning tree prevents loops by blocking links. In a fabric with many equal-cost paths, that wastes half of what you paid for. An overlay lets you run the underlay as a routed network where every link forwards.
+There is a second limit that bites before the ID space does. A stretched Layer 2 domain shares one [spanning tree](/blog/spanning-tree-protocol-deep-dive), and spanning tree prevents loops by blocking links. In a fabric with many equal-cost paths, that wastes half of what you paid for. An overlay lets you run the underlay as a routed network where every link forwards.
 
 ## What VXLAN does
 
@@ -26996,7 +26996,7 @@ Also make sure the clocks agree. Two captures taken on machines whose time diffe
 
 ## Capture filters and display filters are different languages
 
-This trips up everyone once. A capture filter uses BPF syntax and decides what gets written to disk. A display filter uses Wireshark's own syntax and decides what you see afterwards. They are not interchangeable, and typing one where the other belongs gives a syntax error or, worse, silently matches nothing.
+This trips up everyone once. A capture filter uses BPF syntax and decides what gets written to disk. A display filter uses [Wireshark](/blog/wireshark-packet-analysis)'s own syntax and decides what you see afterwards. They are not interchangeable, and typing one where the other belongs gives a syntax error or, worse, silently matches nothing.
 
 \`\`\`
 # capture filter (BPF): what tcpdump and dumpcap accept
@@ -27159,7 +27159,7 @@ Each of those failures has a recognizable shape, and once you can name the shape
 
 **The prose runbook.** Someone wrote three good paragraphs explaining how the queue drains. That is real documentation, and it is not a runbook. Nobody reads paragraphs at 2 AM. Split it: background lives in a design doc the runbook links to, and the runbook is numbered steps.
 
-**The unfindable runbook.** The document is excellent and the on-call engineer has never seen it. The fix is mechanical. Put the runbook link in the alert itself. Prometheus alerting rules carry an \`annotations\` block, and a \`runbook_url\` annotation rides through Alertmanager into the notification, so the page that wakes you up contains the link to the page that tells you what to do.
+**The unfindable runbook.** The document is excellent and the on-call engineer has never seen it. The fix is mechanical. Put the runbook link in the alert itself. [Prometheus](/blog/prometheus-server-monitoring) alerting rules carry an \`annotations\` block, and a \`runbook_url\` annotation rides through Alertmanager into the notification, so the page that wakes you up contains the link to the page that tells you what to do.
 
 There is a fifth failure that only shows up in the worst incidents: the runbook hosted on the infrastructure that is currently broken. If the wiki runs on the cluster that is down, or sits behind the identity provider that is the outage, you have no runbook. Keep an exported copy in a different failure domain. A PDF on a laptop is unglamorous and it works.
 
@@ -27343,7 +27343,7 @@ interface GigabitEthernet0/0
 
 **Stuck in EXSTART or EXCHANGE.** This is an MTU mismatch, nearly every time. Database Description packets carry the sending interface's MTU, and RFC 2328 says a router must reject a DD packet whose MTU exceeds its own. So a 1500-byte side and a 9000-byte side exchange hellos happily, form a neighbor relationship, and then hang forever at ExStart. Fix the MTU on both interfaces. \`ip ospf mtu-ignore\` will paper over it, and then large LSAs get dropped and you get a much worse intermittent problem later.
 
-**Adjacency never forms at all.** Area ID, hello and dead intervals, authentication type and key, stub or NSSA flags, and (on broadcast networks) subnet mask must all match. \`debug ip ospf adj\` names the specific mismatch, which is faster than comparing configs by eye.
+**Adjacency never forms at all.** Area ID, hello and dead intervals, authentication type and key, stub or NSSA flags, and (on broadcast networks) [subnet mask](/blog/subnetting-practical-guide) must all match. \`debug ip ospf adj\` names the specific mismatch, which is faster than comparing configs by eye.
 
 ## OSPF Authentication
 
@@ -27363,7 +27363,7 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
 
 **It cannot filter routes inside an area.** Every router in an area must hold an identical link state database, or SPF produces inconsistent results and loops. That is not a limitation of any implementation, it is the definition of link state. So there is no way to stop one router in area 10 from learning a prefix another router in area 10 advertises. Filtering only exists at boundaries: \`area X range\` and \`area X filter-list\` at an ABR for type 3 summaries, and \`distribute-list\`/route maps on redistribution at an ASBR. When someone asks you to hide a subnet from one router in the same area, the honest answer is to change the area design.
 
-**It cannot do policy.** There is no equivalent of BGP communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
+**It cannot do policy.** There is no equivalent of [BGP](/blog/bgp-for-network-engineers) communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
 
 **It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analogue, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
 
@@ -27401,7 +27401,7 @@ The Lifecycle Controller is a firmware-based management environment that runs in
 
 - Update firmware for all components (BIOS, iDRAC, PERC, NICs) without an OS
 - Perform OS deployments via Dell OpenManage integration
-- Configure RAID arrays before installing an OS
+- Configure [RAID](/blog/raid-levels-comparison) arrays before installing an OS
 - Run hardware diagnostics
 
 Access it by pressing F10 during POST or from the iDRAC web interface under Maintenance.
@@ -27451,7 +27451,7 @@ The catch is that Group Manager discovers members using IPv6 link-local multicas
 
 ## Alert Configuration
 
-Configure iDRAC alerts to notify you immediately when hardware events occur. Options include email, SNMP traps, and syslog. Set up alerts for: drive failures, PSU failures, temperature warnings, memory errors, and POST errors. Do not wait to find out about hardware failures through a monitoring system with a five-minute polling interval.
+Configure iDRAC alerts to notify you immediately when hardware events occur. Options include email, SNMP traps, and [syslog](/blog/syslog-centralized-logging). Set up alerts for: drive failures, PSU failures, temperature warnings, memory errors, and POST errors. Do not wait to find out about hardware failures through a monitoring system with a five-minute polling interval.
 
 Of those transports, remote syslog is the one to configure first, because it gets the SEL and the LC log off the BMC and into the same place as everything else you search. SNMP traps are useful if you already run a trap receiver. Redfish EventService subscriptions are the modern option and push JSON to an HTTP endpoint you control. Email works and is worth setting up for exactly one category: events that mean a part is dead.
 
@@ -27463,7 +27463,7 @@ The BMC is a small computer with its own network stack that can power cycle the 
 
 Older PowerEdge servers shipped with the famous \`root\` and \`calvin\` default. Current ones ship with a unique factory password printed on the pull-out information tag on the front of the chassis, which is better but still means the credential is written on the outside of the box. Change it, and do not put the BMC on a routable path from user VLANs, let alone the internet.
 
-Turn IPMI over LAN off if you are not using it. It listens on UDP 623, and the IPMI 2.0 RAKP authentication exchange hands back a salted hash of a user's password to anyone who asks with a valid username, which can then be cracked offline. That is a protocol design flaw rather than a Dell bug, and no patch fixes it. Redfish over HTTPS does everything IPMI does, so on a modern PowerEdge there is rarely a reason to leave 623 open. If you do need IPMI, for instance because a fencing agent or an older monitoring tool speaks nothing else, restrict it to the management VLAN and never allow cipher suite 0, which disables authentication entirely.
+Turn [IPMI](/blog/ipmi-remote-management) over LAN off if you are not using it. It listens on UDP 623, and the IPMI 2.0 RAKP authentication exchange hands back a salted hash of a user's password to anyone who asks with a valid username, which can then be cracked offline. That is a protocol design flaw rather than a Dell bug, and no patch fixes it. Redfish over HTTPS does everything IPMI does, so on a modern PowerEdge there is rarely a reason to leave 623 open. If you do need IPMI, for instance because a fencing agent or an older monitoring tool speaks nothing else, restrict it to the management VLAN and never allow cipher suite 0, which disables authentication entirely.
 
 Use the dedicated management port rather than shared LOM. Shared LOM puts BMC traffic on the same physical NIC as the host's production traffic, which means your management plane rides your data plane and a compromised host is one VLAN away from the controller that owns it.
 
@@ -27681,7 +27681,7 @@ CNI itself is deliberately tiny: plugins are just executables in \`/opt/cni/bin\
 
 ## How Calico Works
 
-Calico uses BGP to distribute pod routes across nodes. Each node peers with a route reflector (or directly with other nodes) and advertises the pod CIDR it is responsible for. Packets between pods on different nodes follow the BGP-learned routes, flowing directly without encapsulation.
+Calico uses [BGP](/blog/bgp-for-network-engineers) to distribute pod routes across nodes. Each node peers with a route reflector (or directly with other nodes) and advertises the pod CIDR it is responsible for. Packets between pods on different nodes follow the BGP-learned routes, flowing directly without encapsulation.
 
 This makes Calico extremely performant and easy to troubleshoot because the routing is standard IP routing.
 
@@ -27689,7 +27689,7 @@ BGP here is ordinary BGP-4 as specified in RFC 4271, speaking TCP on port 179, a
 
 The honest limitation: unencapsulated BGP routing only works if the underlay will actually forward packets addressed to your pod CIDR. On a flat L2 lab network it works beautifully. Across a router that does not know about the pod CIDR, or on AWS and Azure where the fabric drops frames whose source IP is not a registered instance address, packets vanish. Calico's answer is \`ipipMode\` or \`vxlanMode\` set to \`CrossSubnet\`, which keeps native routing inside a subnet and encapsulates only when crossing one.
 
-Encapsulation is also the number one source of the weirdest failure in container networking: **small requests work, large ones hang.** SSH connects and then freezes at the banner. \`curl\` returns headers and stalls. That is an MTU mismatch. VXLAN adds 50 bytes of overhead, IP-in-IP adds 20, and WireGuard adds 60, so on a 1500 byte underlay the pod MTU must be 1450, 1480, or 1440 respectively. If the pod MTU is left at 1500 and the intermediate ICMP "fragmentation needed" messages are filtered, Path MTU Discovery never completes and every packet over the limit is silently dropped. Test it directly with \`ping -M do -s 1472\` and walk the size down until it succeeds.
+Encapsulation is also the number one source of the weirdest failure in container networking: **small requests work, large ones hang.** SSH connects and then freezes at the banner. \`curl\` returns headers and stalls. That is an MTU mismatch. [VXLAN](/blog/vxlan-network-virtualization) adds 50 bytes of overhead, IP-in-IP adds 20, and WireGuard adds 60, so on a 1500 byte underlay the pod MTU must be 1450, 1480, or 1440 respectively. If the pod MTU is left at 1500 and the intermediate ICMP "fragmentation needed" messages are filtered, Path MTU Discovery never completes and every packet over the limit is silently dropped. Test it directly with \`ping -M do -s 1472\` and walk the size down until it succeeds.
 
 ## Service Networking
 
@@ -28038,7 +28038,7 @@ Serving the same dataset over both protocols at once is the one thing I would te
     content: `
 ## Why Time Matters
 
-Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. DNSSEC and many security protocols depend on accurate time.
+Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. [DNSSEC](/blog/dns-security-dnssec) and many security protocols depend on accurate time.
 
 The five minute figure is not folklore, it is the default maximum clock skew configured in MIT Kerberos and in Active Directory, and it exists to bound replay attacks on authenticators. Cross it and users get "clock skew too great" rather than anything that hints at the real cause.
 
@@ -28249,7 +28249,7 @@ The 397 day figure is not arbitrary. Apple platforms reject TLS server certifica
 
 One more nginx-specific detail: \`ssl_certificate\` must point at the leaf certificate followed by any intermediates, concatenated into one file, leaf first. If you serve only the leaf, browsers that have cached the intermediate from another site will succeed while \`curl\`, \`openssl s_client\`, and Java clients fail with an unknown-issuer error. An inconsistent failure across clients almost always means an incomplete chain.
 
-Finally, \`ssl_ciphers HIGH:!aNULL:!MD5\` is the nginx default and is looser than it looks; it still permits CBC and 3DES suites on many OpenSSL builds. It also has no effect on TLS 1.3, whose cipher suites are configured separately in OpenSSL. Use the Mozilla intermediate list if you want a defensible setting.
+Finally, \`ssl_ciphers HIGH:!aNULL:!MD5\` is the nginx default and is looser than it looks; it still permits CBC and 3DES suites on many OpenSSL builds. It also has no effect on [TLS 1.3](/blog/tls-modern-encryption), whose cipher suites are configured separately in OpenSSL. Use the Mozilla intermediate list if you want a defensible setting.
 
 ## Rate Limiting
 
@@ -28384,7 +28384,7 @@ Note that \`Mode=802.3ad\` is the only bonding mode that requires switch configu
 
 It cannot make one flow faster. A single iSCSI session, a single SMB copy, or a single backup stream between two hosts uses one member link and one member link only. If that is your workload, the answer is not a bigger bundle; it is multipath at a higher layer (MPIO for iSCSI, SMB Multichannel for SMB) or a faster single link.
 
-It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that spanning tree will have to block.
+It cannot span two independent switches. A standard 802.3ax aggregation is point to point. Splitting members across two switches requires those switches to present one system ID, which means stacking, vPC, MC-LAG, or an equivalent. Without it, the far end sees two different partner system IDs, drops half the members, and you have built a loop that [spanning tree](/blog/spanning-tree-protocol-deep-dive) will have to block.
 
 It cannot merge links of different speeds usefully. A 1 Gbps and a 10 Gbps member get different operational keys and land in different aggregators, and only one aggregator forwards. You do not get 11 Gbps, you get whichever aggregator won.
 
@@ -28571,7 +28571,7 @@ interface range GigabitEthernet1/0/1-47
 
 Specifically, an untrusted port is not allowed to source the four server-side message types: DHCPOFFER, DHCPACK, DHCPNAK, and DHCPLEASEQUERY. A client port that sends one is either running a DHCP server or attacking you, and either way the frame does not deserve forwarding. The switch also drops a DHCPRELEASE or DHCPDECLINE whose source MAC does not match the binding for that address, which stops one host from tearing down another host's lease.
 
-The two global commands are both required. \`ip dhcp snooping\` on its own enables the feature and inspects nothing. Nothing happens until \`ip dhcp snooping vlan\` names the VLANs. This is the single most common reason someone configures snooping, tests it with a rogue server, and finds it does not work.
+The two global commands are both required. \`ip dhcp snooping\` on its own enables the feature and inspects nothing. Nothing happens until \`ip dhcp snooping vlan\` names the [VLANs](/blog/vlan-segmentation-guide). This is the single most common reason someone configures snooping, tests it with a rogue server, and finds it does not work.
 
 ## The Binding Table Is the Whole Thing
 
@@ -28947,7 +28947,7 @@ The layers that actually matter in a small or mid-sized network are the boring o
 
 Every device and every user should only have network access to what they need. A printer should not be able to reach your domain controllers. A guest WiFi network should not be able to reach anything internal. A database server should only accept connections from the application servers that query it.
 
-Enforce this with firewall rules, ACLs, and VLAN segmentation. Document what should be allowed and deny everything else by default.
+Enforce this with firewall rules, ACLs, and [VLAN segmentation](/blog/vlan-segmentation-guide). Document what should be allowed and deny everything else by default.
 
 The order matters. Write the default-deny first, then add the allows, and let the ruleset be uncomfortable for a week while you find what you forgot. The reverse approach, denying specific bad things and permitting the rest, is unbounded work: you have to enumerate every threat, forever, and you will miss one.
 
@@ -28959,7 +28959,7 @@ Segmentation is not about departments. It is about answering one question for ea
 
 Group by trust level and by what an attacker gains. Untrusted devices that phone home to vendors and never get patched belong together and belong nowhere near anything else. Infrastructure that can reconfigure other infrastructure belongs in its own zone with the smallest possible number of ways in. Workloads that hold data you care about belong behind a control point that logs.
 
-The failure most people hit is stopping at VLANs. A VLAN is a broadcast domain, not a security boundary. If two VLANs are routed by the same device with no ACL between them, an attacker on one reaches the other with a single hop and no obstacle. The boundary is the filter you put on the routed interface, not the tag on the frame.
+The failure most people hit is stopping at [VLANs](/blog/vlan-segmentation-guide). A VLAN is a broadcast domain, not a security boundary. If two VLANs are routed by the same device with no ACL between them, an attacker on one reaches the other with a single hop and no obstacle. The boundary is the filter you put on the routed interface, not the tag on the frame.
 
 ## Separate management plane
 
@@ -28969,7 +28969,7 @@ This means that even if an attacker compromises a server, they cannot reach your
 
 Two practical notes. First, reach the management network through a single jump host that requires its own authentication and logs every session, rather than routing to it from anywhere on the trusted network. The moment the management VLAN is reachable from a laptop, it is reachable from whatever compromises that laptop.
 
-Second, baseboard management controllers deserve special paranoia. IPMI, iDRAC, iLO, and their equivalents are full computers with independent power, their own network stack, and complete control over the host, including remote console and virtual media. They have a long history of firmware vulnerabilities and default credentials. A BMC reachable from a general-purpose network is a full compromise of that server waiting to happen. Put them on the management VLAN, change the default credentials, and never expose them to the internet.
+Second, baseboard management controllers deserve special paranoia. [IPMI](/blog/ipmi-remote-management), iDRAC, iLO, and their equivalents are full computers with independent power, their own network stack, and complete control over the host, including remote console and virtual media. They have a long history of firmware vulnerabilities and default credentials. A BMC reachable from a general-purpose network is a full compromise of that server waiting to happen. Put them on the management VLAN, change the default credentials, and never expose them to the internet.
 
 ## Assume breach
 
@@ -29083,7 +29083,7 @@ The lab worked fine with one server. Now there are five, two of them need isolat
 
 The biggest mistake in homelab growth is treating the network as an afterthought. When you add your fifth server and third VLAN, suddenly the flat network you started with is a mess. Traffic that should stay local hops through random paths. Troubleshooting is painful.
 
-Plan for segmentation from the beginning, even if you only have one server. A managed switch, a few VLANs, and a firewall cost relatively little and provide the structure you need to grow cleanly.
+Plan for segmentation from the beginning, even if you only have one server. A managed switch, a few [VLANs](/blog/vlan-segmentation-guide), and a firewall cost relatively little and provide the structure you need to grow cleanly.
 
 ## An addressing plan you will not regret
 
@@ -29093,7 +29093,7 @@ The scheme that has held up for me is one /24 per VLAN with the VLAN ID encoded 
 
 | VLAN | Purpose | Subnet | Gateway |
 |---|---|---|---|
-| 10 | Management (switches, IPMI, hypervisor) | 10.0.10.0/24 | 10.0.10.1 |
+| 10 | Management (switches, [IPMI](/blog/ipmi-remote-management), hypervisor) | 10.0.10.0/24 | 10.0.10.1 |
 | 20 | Servers and VMs | 10.0.20.0/24 | 10.0.20.1 |
 | 30 | Trusted clients | 10.0.30.0/24 | 10.0.30.1 |
 | 40 | IoT and untrusted devices | 10.0.40.0/24 | 10.0.40.1 |
@@ -29602,7 +29602,7 @@ The \`state: merged\` on the module is doing critical work and is easy to get wr
 - \`overridden\` makes the entire VLAN database on the device match your list, which means it deletes every VLAN you did not mention. Running \`overridden\` with a single VLAN in \`config\` against a production switch removes all the others. This has taken down real networks.
 - \`gathered\`, \`rendered\`, and \`parsed\` produce data without touching the device, and are how you build the initial config from what is already there.
 
-Also be careful with the VLAN ID itself. Cisco standard-range VLANs are 1 to 1005, with 1002 to 1005 reserved for legacy Token Ring and FDDI, and extended range is 1006 to 4094. VTP version 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch in a VTP domain will not appear on the others and the playbook will look like it silently did nothing on some hosts.
+Also be careful with the VLAN ID itself. Cisco standard-range [VLANs](/blog/vlan-segmentation-guide) are 1 to 1005, with 1002 to 1005 reserved for legacy Token Ring and FDDI, and extended range is 1006 to 4094. VTP version 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch in a VTP domain will not appear on the others and the playbook will look like it silently did nothing on some hosts.
 
 \`write memory\` runs unconditionally in this playbook, including on hosts where nothing changed, which produces a "changed" result every run and makes it impossible to tell real changes from noise. Gate it:
 
@@ -29684,7 +29684,7 @@ Finally, Ansible is push-based and stateless. It has no continuous reconciliatio
     content: `
 ## What Has Changed
 
-The network engineer of five years ago spent most of their time on physical infrastructure: racking switches, running cables, configuring VLANs, and troubleshooting Layer 2 problems. While all of that still exists, the center of gravity has shifted.
+The network engineer of five years ago spent most of their time on physical infrastructure: racking switches, running cables, configuring [VLANs](/blog/vlan-segmentation-guide), and troubleshooting Layer 2 problems. While all of that still exists, the center of gravity has shifted.
 
 Today, a significant portion of enterprise networking happens in software. Cloud networking, overlay fabrics, SD-WAN, and software-defined controllers mean that network configuration is increasingly declarative, API-driven, and version-controlled.
 
@@ -29692,11 +29692,11 @@ Concretely, that means a set of interfaces that did not exist in most job descri
 
 Telemetry moved too. SNMP polls on an interval and gives you whatever the device felt like counting. gNMI and the OpenConfig models push subscriptions: the device streams a value when it changes, at subsecond resolution, without you asking every sixty seconds. On a fabric with thousands of interfaces, that difference is not incremental.
 
-The campus and data center designs changed underneath all of it. Large Layer 2 domains held together by spanning tree are giving way to routed access and EVPN-VXLAN fabrics, where the loop prevention is a routing protocol rather than a protocol whose job is to break links on purpose.
+The campus and data center designs changed underneath all of it. Large Layer 2 domains held together by [spanning tree](/blog/spanning-tree-protocol-deep-dive) are giving way to routed access and EVPN-VXLAN fabrics, where the loop prevention is a routing protocol rather than a protocol whose job is to break links on purpose.
 
 ## What Has Not Changed
 
-The fundamentals remain completely relevant. If you do not understand IP routing, BGP, spanning tree, and firewall policy design, you cannot be effective regardless of what tools are in use. The abstractions built on top of these fundamentals require understanding what is underneath to troubleshoot effectively.
+The fundamentals remain completely relevant. If you do not understand IP routing, [BGP](/blog/bgp-for-network-engineers), spanning tree, and firewall policy design, you cannot be effective regardless of what tools are in use. The abstractions built on top of these fundamentals require understanding what is underneath to troubleshoot effectively.
 
 Take BGP, which is now the control plane for the data center fabric, the WAN, the internet edge, and half the cloud interconnects you will ever build. The timers in RFC 4271 have not moved: the default Hold Time is 90 seconds and the keepalive interval is one third of that, 30 seconds. That means a session can be dead for a minute and a half before the protocol notices, which is why BFD exists and why anyone who tells you BGP converges instantly has not watched it fail.
 
@@ -29744,7 +29744,7 @@ That combination is not common, which makes it worth investing in.
 
 For me at this stage that means the boring order: protocols first, because they are the part that does not get deprecated. Then packet captures, because every abstraction eventually fails in a way that only the wire explains. Then automation on top, applied to a lab I actually run, because a playbook that has never touched real hardware has never been tested.
 
-The thing I keep reminding myself is that the tooling turns over every few years and the fundamentals do not. A person who learned subnetting, TCP behavior, and routing loop prevention in 2010 can read a 2026 EVPN fabric. A person who only learned one vendor's CLI in 2010 cannot.
+The thing I keep reminding myself is that the tooling turns over every few years and the fundamentals do not. A person who learned [subnetting](/blog/subnetting-practical-guide), TCP behavior, and routing loop prevention in 2010 can read a 2026 EVPN fabric. A person who only learned one vendor's CLI in 2010 cannot.
 
 ## References
 

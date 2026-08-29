@@ -6,7 +6,7 @@ You brought up a VXLAN interface on two hosts, the tunnel says it is up, and eit
 
 Traditional VLANs are limited to 4096 IDs. In a cloud or large multi-tenant datacenter environment, you need isolation for thousands or millions of tenants. You also need to stretch Layer 2 networks across physical boundaries, which traditional VLANs cannot do without complex MPLS configurations.
 
-There is a second limit that bites before the ID space does. A stretched Layer 2 domain shares one spanning tree, and spanning tree prevents loops by blocking links. In a fabric with many equal-cost paths, that wastes half of what you paid for. An overlay lets you run the underlay as a routed network where every link forwards.
+There is a second limit that bites before the ID space does. A stretched Layer 2 domain shares one [spanning tree](/blog/spanning-tree-protocol-deep-dive), and spanning tree prevents loops by blocking links. In a fabric with many equal-cost paths, that wastes half of what you paid for. An overlay lets you run the underlay as a routed network where every link forwards.
 
 ## What VXLAN does
 

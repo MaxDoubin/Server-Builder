@@ -136,7 +136,7 @@ Add `-E header=y -E separator=,` when you want a real CSV with a header row rath
 
 ## Decrypting TLS
 
-Most traffic worth analysing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with TLS 1.3 that would not help anyway because the key exchange is always ephemeral.
+Most traffic worth analysing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with [TLS 1.3](/blog/tls-modern-encryption) that would not help anyway because the key exchange is always ephemeral.
 
 Instead, have the client write out its session secrets:
 

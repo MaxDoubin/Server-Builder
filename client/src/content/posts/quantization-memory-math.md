@@ -9,7 +9,7 @@ estimate, and all three are computable before you download a single file.
 Weights are the easy part. Take the parameter count, multiply by bytes per
 parameter, done. A model with 8 billion parameters at 16 bit precision is
 8e9 times 2 bytes, which is 16 GB. The same model at 8 bit is 8 GB. At roughly
-4 bits it is around 4 GB plus the overhead the quantization format carries for
+4 bits it is around 4 GB plus the overhead the [quantization](/blog/model-quantization-by-the-bytes) format carries for
 its scaling metadata.
 
 That last point is worth stating clearly: quantization formats are not exactly

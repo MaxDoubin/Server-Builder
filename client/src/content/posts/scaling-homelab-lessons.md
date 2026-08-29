@@ -5,7 +5,7 @@ The lab worked fine with one server. Now there are five, two of them need isolat
 
 The biggest mistake in homelab growth is treating the network as an afterthought. When you add your fifth server and third VLAN, suddenly the flat network you started with is a mess. Traffic that should stay local hops through random paths. Troubleshooting is painful.
 
-Plan for segmentation from the beginning, even if you only have one server. A managed switch, a few VLANs, and a firewall cost relatively little and provide the structure you need to grow cleanly.
+Plan for segmentation from the beginning, even if you only have one server. A managed switch, a few [VLANs](/blog/vlan-segmentation-guide), and a firewall cost relatively little and provide the structure you need to grow cleanly.
 
 ## An addressing plan you will not regret
 
@@ -15,7 +15,7 @@ The scheme that has held up for me is one /24 per VLAN with the VLAN ID encoded 
 
 | VLAN | Purpose | Subnet | Gateway |
 |---|---|---|---|
-| 10 | Management (switches, IPMI, hypervisor) | 10.0.10.0/24 | 10.0.10.1 |
+| 10 | Management (switches, [IPMI](/blog/ipmi-remote-management), hypervisor) | 10.0.10.0/24 | 10.0.10.1 |
 | 20 | Servers and VMs | 10.0.20.0/24 | 10.0.20.1 |
 | 30 | Trusted clients | 10.0.30.0/24 | 10.0.30.1 |
 | 40 | IoT and untrusted devices | 10.0.40.0/24 | 10.0.40.1 |

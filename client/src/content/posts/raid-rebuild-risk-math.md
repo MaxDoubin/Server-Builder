@@ -41,7 +41,7 @@ Five practices, in order of how much they buy you.
 
 **Scrub on a schedule.** A scrub reads every block and verifies parity or checksums while the array is healthy and redundant. It finds the latent bad sector months before a rebuild would find it, and it can repair it while there is still parity to repair from. Monthly is a reasonable cadence. An array that is never scrubbed is an array where all the errors are saved up for the worst possible moment.
 
-**Use double parity or mirrors for large drives.** With RAID 6 or equivalent, a URE during a rebuild is recoverable because there is a second parity block. Mirrored pairs rebuild by copying one drive rather than reading all of them, which shortens the window and reduces the load, at the cost of half your raw capacity.
+**Use double parity or mirrors for large drives.** With [RAID](/blog/raid-levels-comparison) 6 or equivalent, a URE during a rebuild is recoverable because there is a second parity block. Mirrored pairs rebuild by copying one drive rather than reading all of them, which shortens the window and reduces the load, at the cost of half your raw capacity.
 
 **Keep a hot spare, and mind the shelf spare.** A hot spare removes human latency from the front of the window. It does nothing about the rebuild itself, but the time between failure and someone noticing is often longer than the rebuild.
 

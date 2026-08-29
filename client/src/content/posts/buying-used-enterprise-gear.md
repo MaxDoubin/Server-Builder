@@ -13,7 +13,7 @@ After enough acquisitions you learn that failures cluster in a predictable set o
 
 **Power supply capacitors.** Electrolytics age with heat and hours. Visible bulging is the obvious sign, but the common failure is a supply that works until asked for a load step and then drops the rail.
 
-**Batteries.** RAID controller cache batteries, CMOS cells, and the battery in a UPS are all consumables that were probably at end of life when the unit was retired. A controller with a dead cache battery drops back to write through mode, and the machine gets mysteriously slow rather than obviously broken.
+**Batteries.** [RAID](/blog/raid-levels-comparison) controller cache batteries, CMOS cells, and the battery in a UPS are all consumables that were probably at end of life when the unit was retired. A controller with a dead cache battery drops back to write through mode, and the machine gets mysteriously slow rather than obviously broken.
 
 **Drives.** Always assume the drives are the oldest part. Enterprise drives are rated for continuous duty and often have very high power on hours, and the drive is the one component whose failure loses data rather than availability.
 

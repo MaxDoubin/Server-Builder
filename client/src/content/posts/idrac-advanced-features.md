@@ -11,7 +11,7 @@ The Lifecycle Controller is a firmware-based management environment that runs in
 
 - Update firmware for all components (BIOS, iDRAC, PERC, NICs) without an OS
 - Perform OS deployments via Dell OpenManage integration
-- Configure RAID arrays before installing an OS
+- Configure [RAID](/blog/raid-levels-comparison) arrays before installing an OS
 - Run hardware diagnostics
 
 Access it by pressing F10 during POST or from the iDRAC web interface under Maintenance.
@@ -61,7 +61,7 @@ The catch is that Group Manager discovers members using IPv6 link-local multicas
 
 ## Alert Configuration
 
-Configure iDRAC alerts to notify you immediately when hardware events occur. Options include email, SNMP traps, and syslog. Set up alerts for: drive failures, PSU failures, temperature warnings, memory errors, and POST errors. Do not wait to find out about hardware failures through a monitoring system with a five-minute polling interval.
+Configure iDRAC alerts to notify you immediately when hardware events occur. Options include email, SNMP traps, and [syslog](/blog/syslog-centralized-logging). Set up alerts for: drive failures, PSU failures, temperature warnings, memory errors, and POST errors. Do not wait to find out about hardware failures through a monitoring system with a five-minute polling interval.
 
 Of those transports, remote syslog is the one to configure first, because it gets the SEL and the LC log off the BMC and into the same place as everything else you search. SNMP traps are useful if you already run a trap receiver. Redfish EventService subscriptions are the modern option and push JSON to an HTTP endpoint you control. Email works and is worth setting up for exactly one category: events that mean a part is dead.
 
@@ -73,7 +73,7 @@ The BMC is a small computer with its own network stack that can power cycle the 
 
 Older PowerEdge servers shipped with the famous `root` and `calvin` default. Current ones ship with a unique factory password printed on the pull-out information tag on the front of the chassis, which is better but still means the credential is written on the outside of the box. Change it, and do not put the BMC on a routable path from user VLANs, let alone the internet.
 
-Turn IPMI over LAN off if you are not using it. It listens on UDP 623, and the IPMI 2.0 RAKP authentication exchange hands back a salted hash of a user's password to anyone who asks with a valid username, which can then be cracked offline. That is a protocol design flaw rather than a Dell bug, and no patch fixes it. Redfish over HTTPS does everything IPMI does, so on a modern PowerEdge there is rarely a reason to leave 623 open. If you do need IPMI, for instance because a fencing agent or an older monitoring tool speaks nothing else, restrict it to the management VLAN and never allow cipher suite 0, which disables authentication entirely.
+Turn [IPMI](/blog/ipmi-remote-management) over LAN off if you are not using it. It listens on UDP 623, and the IPMI 2.0 RAKP authentication exchange hands back a salted hash of a user's password to anyone who asks with a valid username, which can then be cracked offline. That is a protocol design flaw rather than a Dell bug, and no patch fixes it. Redfish over HTTPS does everything IPMI does, so on a modern PowerEdge there is rarely a reason to leave 623 open. If you do need IPMI, for instance because a fencing agent or an older monitoring tool speaks nothing else, restrict it to the management VLAN and never allow cipher suite 0, which disables authentication entirely.
 
 Use the dedicated management port rather than shared LOM. Shared LOM puts BMC traffic on the same physical NIC as the host's production traffic, which means your management plane rides your data plane and a compromised host is one VLAN away from the controller that owns it.
 

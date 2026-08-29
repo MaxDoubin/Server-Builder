@@ -74,7 +74,7 @@ training framework can execute the model. That portability is the point, and
 the cost is that the graph is a fixed lowering of what your framework did.
 
 **Single file quantized formats** such as GGUF exist to make a model one
-self-contained artifact for a specific runtime. Weights, quantization scheme,
+self-contained artifact for a specific runtime. Weights, [quantization](/blog/model-quantization-by-the-bytes) scheme,
 tokenizer, and a key value metadata block travel together, which is exactly
 what you want when the deployment target is somebody's laptop and there is no
 package manager involved.

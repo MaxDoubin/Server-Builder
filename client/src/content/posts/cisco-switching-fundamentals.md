@@ -7,7 +7,7 @@ Keep track of which parts are standards and which are Cisco's. 802.1Q trunking, 
 
 ## The CLI
 
-Cisco IOS uses a hierarchical CLI with different privilege levels. You start in user EXEC mode, move to privileged EXEC mode with `enable`, and enter configuration mode with `configure terminal`. Every configuration change happens in this global configuration mode or a sub-mode.
+[Cisco IOS](/blog/cisco-ios-fundamentals) uses a hierarchical CLI with different privilege levels. You start in user EXEC mode, move to privileged EXEC mode with `enable`, and enter configuration mode with `configure terminal`. Every configuration change happens in this global configuration mode or a sub-mode.
 
 ```
 Switch> enable
@@ -40,7 +40,7 @@ Two protections belong on every access port. `spanning-tree portfast` skips list
 
 ## Port Security
 
-Port security limits which MAC addresses can use a switch port. In a lab, I use it to prevent unknown devices from connecting to sensitive VLANs. In production environments, it is a basic access control mechanism.
+Port security limits which MAC addresses can use a switch port. In a lab, I use it to prevent unknown devices from connecting to sensitive [VLANs](/blog/vlan-segmentation-guide). In production environments, it is a basic access control mechanism.
 
 ```
 LabSwitch(config-if)# switchport port-security

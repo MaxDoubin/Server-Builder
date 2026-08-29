@@ -54,7 +54,7 @@ options timeout:1 attempts:2 rotate
 
 ## Split DNS
 
-I use split DNS (also called split-horizon DNS) so internal queries resolve to internal addresses and external queries resolve normally. My FortiGate handles this by directing DNS queries from internal VLANs to my internal DNS servers, while guest VLAN queries go directly to public DNS.
+I use split DNS (also called split-horizon DNS) so internal queries resolve to internal addresses and external queries resolve normally. My FortiGate handles this by directing DNS queries from internal [VLANs](/blog/vlan-segmentation-guide) to my internal DNS servers, while guest VLAN queries go directly to public DNS.
 
 Split DNS has a specific set of ways it goes wrong. The classic one is a name that exists internally and not externally, so the service works from inside and produces NXDOMAIN from a phone on cellular. The second is a certificate mismatch, where the internal address is reached over a name that the certificate does not cover. The third, and the modern one, is DNS over HTTPS. Browsers can be configured to send DNS queries to a public resolver over HTTPS, entirely bypassing the resolver your DHCP handed out. The symptom is unmistakable once you know it: `dig` resolves the internal name fine, and the browser on the same machine cannot reach it. Check the browser's secure DNS setting before you touch the server.
 

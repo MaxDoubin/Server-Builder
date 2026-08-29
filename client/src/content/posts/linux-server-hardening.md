@@ -113,7 +113,7 @@ Sudo rules belong in files under `/etc/sudoers.d/`, edited with `visudo -f`, nev
 
 ## Logging
 
-I send all system logs to a central syslog server using rsyslog. This means that even if a server is compromised and the attacker clears local logs, the copies on the syslog server are intact.
+I send all system logs to a central [syslog](/blog/syslog-centralized-logging) server using rsyslog. This means that even if a server is compromised and the attacker clears local logs, the copies on the syslog server are intact.
 
 Log everything. Disk space is cheap. Missing logs during an incident investigation is expensive.
 

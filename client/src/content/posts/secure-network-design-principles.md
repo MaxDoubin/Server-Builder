@@ -13,7 +13,7 @@ The layers that actually matter in a small or mid-sized network are the boring o
 
 Every device and every user should only have network access to what they need. A printer should not be able to reach your domain controllers. A guest WiFi network should not be able to reach anything internal. A database server should only accept connections from the application servers that query it.
 
-Enforce this with firewall rules, ACLs, and VLAN segmentation. Document what should be allowed and deny everything else by default.
+Enforce this with firewall rules, ACLs, and [VLAN segmentation](/blog/vlan-segmentation-guide). Document what should be allowed and deny everything else by default.
 
 The order matters. Write the default-deny first, then add the allows, and let the ruleset be uncomfortable for a week while you find what you forgot. The reverse approach, denying specific bad things and permitting the rest, is unbounded work: you have to enumerate every threat, forever, and you will miss one.
 
@@ -25,7 +25,7 @@ Segmentation is not about departments. It is about answering one question for ea
 
 Group by trust level and by what an attacker gains. Untrusted devices that phone home to vendors and never get patched belong together and belong nowhere near anything else. Infrastructure that can reconfigure other infrastructure belongs in its own zone with the smallest possible number of ways in. Workloads that hold data you care about belong behind a control point that logs.
 
-The failure most people hit is stopping at VLANs. A VLAN is a broadcast domain, not a security boundary. If two VLANs are routed by the same device with no ACL between them, an attacker on one reaches the other with a single hop and no obstacle. The boundary is the filter you put on the routed interface, not the tag on the frame.
+The failure most people hit is stopping at [VLANs](/blog/vlan-segmentation-guide). A VLAN is a broadcast domain, not a security boundary. If two VLANs are routed by the same device with no ACL between them, an attacker on one reaches the other with a single hop and no obstacle. The boundary is the filter you put on the routed interface, not the tag on the frame.
 
 ## Separate management plane
 
@@ -35,7 +35,7 @@ This means that even if an attacker compromises a server, they cannot reach your
 
 Two practical notes. First, reach the management network through a single jump host that requires its own authentication and logs every session, rather than routing to it from anywhere on the trusted network. The moment the management VLAN is reachable from a laptop, it is reachable from whatever compromises that laptop.
 
-Second, baseboard management controllers deserve special paranoia. IPMI, iDRAC, iLO, and their equivalents are full computers with independent power, their own network stack, and complete control over the host, including remote console and virtual media. They have a long history of firmware vulnerabilities and default credentials. A BMC reachable from a general-purpose network is a full compromise of that server waiting to happen. Put them on the management VLAN, change the default credentials, and never expose them to the internet.
+Second, baseboard management controllers deserve special paranoia. [IPMI](/blog/ipmi-remote-management), iDRAC, iLO, and their equivalents are full computers with independent power, their own network stack, and complete control over the host, including remote console and virtual media. They have a long history of firmware vulnerabilities and default credentials. A BMC reachable from a general-purpose network is a full compromise of that server waiting to happen. Put them on the management VLAN, change the default credentials, and never expose them to the internet.
 
 ## Assume breach
 

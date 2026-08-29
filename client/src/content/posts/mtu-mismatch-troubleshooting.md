@@ -15,7 +15,7 @@ not looked yet.
 
 Every link has a maximum transmission unit, the largest frame payload it will
 carry. Classic Ethernet is 1500 bytes. Tunnels subtract from that, because
-the encapsulation header has to live somewhere: a VPN, VXLAN, PPPoE, or a
+the encapsulation header has to live somewhere: a VPN, [VXLAN](/blog/vxlan-network-virtualization), PPPoE, or a
 GRE tunnel all leave less room for your data.
 
 A TCP handshake is tiny. So is an interactive SSH keystroke. Those fit under

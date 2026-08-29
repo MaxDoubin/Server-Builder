@@ -3,7 +3,7 @@
 
 The network is down, every link light on every switch is blinking in perfect unison, the switch console takes ten seconds to echo a character, and nothing you ping responds. That specific combination has one likely cause, and you need to stop it before you can investigate it.
 
-Spanning Tree Protocol runs on every enterprise switch, usually without anyone thinking about it. It prevents Layer 2 loops by blocking redundant paths, and it is absolutely essential for network stability. But when STP goes wrong, it goes wrong fast.
+[Spanning Tree Protocol](/blog/spanning-tree-protocol-deep-dive) runs on every enterprise switch, usually without anyone thinking about it. It prevents Layer 2 loops by blocking redundant paths, and it is absolutely essential for network stability. But when STP goes wrong, it goes wrong fast.
 
 ## The broadcast storm
 
@@ -17,7 +17,7 @@ A layer 2 loop looks different from most outages, and learning the signature sav
 
 - Link lights on many ports flashing in lockstep at the same rhythm, including ports that should be nearly idle.
 - Switch CPU at or near 100 percent, with the console noticeably slow to respond.
-- Total loss of connectivity for everything in the affected VLAN, while devices in other VLANs are unaffected.
+- Total loss of connectivity for everything in the affected VLAN, while devices in other [VLANs](/blog/vlan-segmentation-guide) are unaffected.
 - MAC flapping messages in the log, which are the single most diagnostic clue available.
 
 That last one is worth knowing by sight. Cisco switches log something like this:
@@ -99,7 +99,7 @@ A single BPDU decodes roughly like this:
 
 The two fields to read are `root-id` and `bridge-id`. If they are equal, the sender believes it is the root. Capture on two ports and compare: if two switches each claim to be root, they are not exchanging BPDUs and you have a segmented spanning tree, which is a loop waiting to happen.
 
-In Wireshark, the display filter is simply `stp`. Two patterns are worth recognising in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
+In [Wireshark](/blog/wireshark-packet-analysis), the display filter is simply `stp`. Two patterns are worth recognising in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
 
 Capture from a mirrored port or a host attached to the affected VLAN, not from the switch console, since the console is the thing under load.
 

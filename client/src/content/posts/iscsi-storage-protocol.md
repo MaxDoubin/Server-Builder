@@ -101,7 +101,7 @@ Two practical notes. One-way CHAP authenticates the initiator to the target; mut
 
 **It cannot hide the network.** iSCSI runs over TCP, so a lossy or congested link produces retransmissions, and retransmissions on a storage path look like a slow disk to everything above. Sharing the storage VLAN with user traffic is a reliable way to make your storage mysteriously slow at 4pm.
 
-When the SCSI translation overhead itself is the bottleneck, NVMe over Fabrics, particularly NVMe/TCP, is the modern answer for flash-backed storage. It runs on the same Ethernet and skips a protocol layer designed around spinning disks.
+When the SCSI translation overhead itself is the bottleneck, [NVMe over Fabrics](/blog/nvme-over-fabrics-explained), particularly NVMe/TCP, is the modern answer for flash-backed storage. It runs on the same Ethernet and skips a protocol layer designed around spinning disks.
 
 ## Practical Uses in a Lab
 

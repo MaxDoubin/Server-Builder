@@ -21,7 +21,7 @@ There are more places your data can sit than people expect.
 2. **Kernel page cache.** After `write()`, before writeback.
 3. **Device write cache.** Drives have volatile RAM caches and will acknowledge
    a write that is only in that cache.
-4. **Controller cache.** RAID controllers add another layer, which is why
+4. **Controller cache.** [RAID](/blog/raid-levels-comparison) controllers add another layer, which is why
    battery or capacitor backed cache exists as a product.
 5. **The actual persistent medium.**
 

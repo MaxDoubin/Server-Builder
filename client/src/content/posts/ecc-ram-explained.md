@@ -67,7 +67,7 @@ No Extlog errors.
 No MCE errors.
 ```
 
-When something does go wrong, `ras-mc-ctl --errors` prints the location down to the DIMM label, which is what you need to know which slot to pull. Cross-check against the out of band log on the service processor, the iDRAC or IPMI system event log, because that records memory events even when the host operating system is not running.
+When something does go wrong, `ras-mc-ctl --errors` prints the location down to the DIMM label, which is what you need to know which slot to pull. Cross-check against the out of band log on the service processor, the iDRAC or [IPMI](/blog/ipmi-remote-management) system event log, because that records memory events even when the host operating system is not running.
 
 ## The performance question
 

@@ -66,7 +66,7 @@ This only helps TCP. UDP based protocols have to handle it themselves, which is 
 
 ## How I decide whether to bother
 
-I enable jumbo frames on segments where I control every device and the traffic is bulk: storage networks, backup targets, replication links, hypervisor migration networks. Those are isolated VLANs with a known device list, so the "every device must agree" requirement is actually checkable.
+I enable jumbo frames on segments where I control every device and the traffic is bulk: storage networks, backup targets, replication links, hypervisor migration networks. Those are isolated [VLANs](/blog/vlan-segmentation-guide) with a known device list, so the "every device must agree" requirement is actually checkable.
 
 I leave general purpose and client VLANs at 1500. The gain is small, the blast radius of one misconfigured device is large, and client devices come and go without asking me.
 

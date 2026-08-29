@@ -154,7 +154,7 @@ ip route get 10.0.30.15
 
 ## Common mistakes
 
-**Overlapping subnets.** The most common subnetting mistake I see. If two VLANs have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range. The overlaps that catch people are the ones they did not choose: Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs hand out 10.x space. If your lab uses 10.0.x, a VPN route for 10.0.0.0/8 will swallow your whole network the moment you connect.
+**Overlapping subnets.** The most common subnetting mistake I see. If two [VLANs](/blog/vlan-segmentation-guide) have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range. The overlaps that catch people are the ones they did not choose: Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs hand out 10.x space. If your lab uses 10.0.x, a VPN route for 10.0.0.0/8 will swallow your whole network the moment you connect.
 
 **Forgetting the gateway.** Every subnet needs a gateway address (usually .1) configured on the router or L3 switch for inter-subnet traffic to work. A host with a correct address and no reachable gateway can talk to its neighbours perfectly and nothing else, which reads like a firewall problem and is not.
 

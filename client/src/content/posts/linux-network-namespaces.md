@@ -3,7 +3,7 @@
 
 Before I touch anything other people depend on, I want to have already made the mistake somewhere cheap. Simulators are fine for concepts, but they do not use the same routing table code, the same ARP behavior, or the same firewall. Linux network namespaces do, because they are the same kernel networking stack with a separate instance of everything.
 
-A network namespace gets its own interfaces, routing tables, neighbor tables, netfilter rules, and socket bindings. Two namespaces on one host are as isolated from each other as two machines, and they talk through virtual ethernet pairs that behave like a cable with an interface on each end. Containers use exactly this machinery. Learning it directly makes container networking stop being magic.
+A network namespace gets its own interfaces, routing tables, neighbor tables, netfilter rules, and socket bindings. Two namespaces on one host are as isolated from each other as two machines, and they talk through virtual ethernet pairs that behave like a cable with an interface on each end. Containers use exactly this machinery. Learning it directly makes [container networking](/blog/container-networking-fundamentals) stop being magic.
 
 ## A three node routed topology
 

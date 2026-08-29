@@ -85,7 +85,7 @@ depends entirely on which failure you are worried about.
 **It does not help if the hardware lies.** Journalling depends on being able to
 say "these blocks must be durable before those blocks". That is implemented as
 cache flush and forced unit access requests down the stack. A drive with a
-volatile write cache that reports completion early, or a RAID controller with
+volatile write cache that reports completion early, or a [RAID](/blog/raid-levels-comparison) controller with
 an unprotected cache, breaks the ordering the journal is built on. The
 filesystem is correct and the data is still wrong.
 

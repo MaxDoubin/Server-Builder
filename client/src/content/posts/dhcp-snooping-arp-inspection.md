@@ -28,7 +28,7 @@ interface range GigabitEthernet1/0/1-47
 
 Specifically, an untrusted port is not allowed to source the four server-side message types: DHCPOFFER, DHCPACK, DHCPNAK, and DHCPLEASEQUERY. A client port that sends one is either running a DHCP server or attacking you, and either way the frame does not deserve forwarding. The switch also drops a DHCPRELEASE or DHCPDECLINE whose source MAC does not match the binding for that address, which stops one host from tearing down another host's lease.
 
-The two global commands are both required. `ip dhcp snooping` on its own enables the feature and inspects nothing. Nothing happens until `ip dhcp snooping vlan` names the VLANs. This is the single most common reason someone configures snooping, tests it with a rogue server, and finds it does not work.
+The two global commands are both required. `ip dhcp snooping` on its own enables the feature and inspects nothing. Nothing happens until `ip dhcp snooping vlan` names the [VLANs](/blog/vlan-segmentation-guide). This is the single most common reason someone configures snooping, tests it with a rogue server, and finds it does not work.
 
 ## The Binding Table Is the Whole Thing
 

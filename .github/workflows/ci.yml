@@ -129,6 +129,12 @@ jobs:
       - name: Post archive in sync
         run: node scripts-ci/check-post-sync.mjs
 
+      # The archive linked outward 554 times and inward zero. A new post that
+      # mentions a topic another post is the canonical explainer for should
+      # link it, and this fails the build when one does not.
+      - name: Internal links in post bodies
+        run: npx tsx script/addInternalLinks.ts --check
+
       # Every route must be prerendered or listed in _redirects, and the
       # catch-all must stay gone so unknown URLs get a real 404.
       - name: Routes reachable

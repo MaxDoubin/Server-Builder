@@ -87,7 +87,7 @@ The 397 day figure is not arbitrary. Apple platforms reject TLS server certifica
 
 One more nginx-specific detail: `ssl_certificate` must point at the leaf certificate followed by any intermediates, concatenated into one file, leaf first. If you serve only the leaf, browsers that have cached the intermediate from another site will succeed while `curl`, `openssl s_client`, and Java clients fail with an unknown-issuer error. An inconsistent failure across clients almost always means an incomplete chain.
 
-Finally, `ssl_ciphers HIGH:!aNULL:!MD5` is the nginx default and is looser than it looks; it still permits CBC and 3DES suites on many OpenSSL builds. It also has no effect on TLS 1.3, whose cipher suites are configured separately in OpenSSL. Use the Mozilla intermediate list if you want a defensible setting.
+Finally, `ssl_ciphers HIGH:!aNULL:!MD5` is the nginx default and is looser than it looks; it still permits CBC and 3DES suites on many OpenSSL builds. It also has no effect on [TLS 1.3](/blog/tls-modern-encryption), whose cipher suites are configured separately in OpenSSL. Use the Mozilla intermediate list if you want a defensible setting.
 
 ## Rate Limiting
 

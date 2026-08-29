@@ -26,7 +26,7 @@ Also make sure the clocks agree. Two captures taken on machines whose time diffe
 
 ## Capture filters and display filters are different languages
 
-This trips up everyone once. A capture filter uses BPF syntax and decides what gets written to disk. A display filter uses Wireshark's own syntax and decides what you see afterwards. They are not interchangeable, and typing one where the other belongs gives a syntax error or, worse, silently matches nothing.
+This trips up everyone once. A capture filter uses BPF syntax and decides what gets written to disk. A display filter uses [Wireshark](/blog/wireshark-packet-analysis)'s own syntax and decides what you see afterwards. They are not interchangeable, and typing one where the other belongs gives a syntax error or, worse, silently matches nothing.
 
 ```
 # capture filter (BPF): what tcpdump and dumpcap accept

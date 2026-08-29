@@ -45,7 +45,7 @@ HNSW builds a layered graph. Every vector is a node connected to its near neighb
 
 IVF partitions the space into clusters, usually with k means, and stores which vectors belong to which cluster. A query finds the nearest few cluster centroids and only searches inside those. It is cheaper on memory and faster to build, but recall depends on how many clusters you probe, and vectors near a cluster boundary can be missed.
 
-Both expose a knob that trades recall for latency: `ef_search` for HNSW, `nprobe` for IVF. Tune it against a real query set and measure recall, because the default is a guess about someone else's data. Product quantization compresses the stored vectors on top of either, saving a lot of memory at some further accuracy cost.
+Both expose a knob that trades recall for latency: `ef_search` for HNSW, `nprobe` for IVF. Tune it against a real query set and measure recall, because the default is a guess about someone else's data. Product [quantization](/blog/model-quantization-by-the-bytes) compresses the stored vectors on top of either, saving a lot of memory at some further accuracy cost.
 
 ## The filtering trap
 

@@ -11,7 +11,7 @@ Together, these give me a complete picture of where power is going.
 
 Know the limits of each tool before you trust a number. A Kill A Watt is rated to 15 A and about 1875 W, so it cannot legally or safely sit in front of a rack pulling more than that, and consumer meters lose accuracy badly at low loads. A metered PDU is typically specified to around 1 percent accuracy and does not care about load level. iDRAC's reading comes from the power supply's own instrumentation and is the number to trust for a single server. Also watch the units: a Kill A Watt reports both watts and volt-amps, and only watts is what you are billed for. Modern server supplies use active power factor correction and run above 0.95 power factor, so the two numbers are close, but a cheap UPS rated in VA will have a lower watt rating and the watt rating is the one that binds.
 
-For the per-server number without leaving the shell, IPMI exposes it directly:
+For the per-server number without leaving the shell, [IPMI](/blog/ipmi-remote-management) exposes it directly:
 
 ```bash
 # Instantaneous system power draw, in watts

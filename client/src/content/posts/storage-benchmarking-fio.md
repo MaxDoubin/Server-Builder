@@ -91,7 +91,7 @@ Also watch for a bandwidth number that starts high and collapses partway through
 
 If you are comparing two devices or two configurations, change exactly one thing. Same block sizes, same queue depths, same runtime, same filesystem, same fill level, same test file size. Write the parameters down next to the results, because in a month you will not remember whether the good number came from a queue depth of 32 or 1.
 
-Two more habits. Benchmark through the layer you will actually use: if the workload runs on a VM on a filesystem on a RAID set, testing the raw device tells you about the device, not about your stack. And never point a write test at a filename on a device that holds data, because `fio` will happily create and overwrite exactly what you told it to.
+Two more habits. Benchmark through the layer you will actually use: if the workload runs on a VM on a filesystem on a [RAID](/blog/raid-levels-comparison) set, testing the raw device tells you about the device, not about your stack. And never point a write test at a filename on a device that holds data, because `fio` will happily create and overwrite exactly what you told it to.
 
 ## The honest limitation
 

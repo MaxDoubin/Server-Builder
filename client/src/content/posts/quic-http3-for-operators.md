@@ -9,7 +9,7 @@ Reliable ordered delivery, congestion control, and loss recovery used to live in
 the kernel's TCP implementation. In QUIC they live in a userspace library
 alongside the application. Encryption used to be a layer sitting on top of the
 transport, negotiated after the transport connection was established. In QUIC,
-TLS 1.3 is integrated into the transport handshake, so there is no unencrypted
+[TLS 1.3](/blog/tls-modern-encryption) is integrated into the transport handshake, so there is no unencrypted
 transport phase to speak of. And stream multiplexing, which HTTP/2 implemented
 on top of a single TCP connection, moved down into the transport itself.
 

@@ -19,10 +19,10 @@ My documentation covers four categories:
 
 ### Diagrams: draw three, not one
 
-The mistake almost everyone makes is trying to put physical cabling, VLANs, and IP subnets on a single canvas. By the time you have twelve devices it is unreadable and you stop updating it. Split it by layer:
+The mistake almost everyone makes is trying to put physical cabling, [VLANs](/blog/vlan-segmentation-guide), and IP subnets on a single canvas. By the time you have twelve devices it is unreadable and you stop updating it. Split it by layer:
 
 - **Layer 1** shows what is physically plugged into what, including patch panel port numbers and cable IDs. This is the diagram you need when a link is down.
-- **Layer 2** shows VLANs, trunk links, which VLANs are allowed on each trunk, and where the spanning tree root is. This is the diagram you need when a loop takes out a segment.
+- **Layer 2** shows VLANs, trunk links, which VLANs are allowed on each trunk, and where the [spanning tree](/blog/spanning-tree-protocol-deep-dive) root is. This is the diagram you need when a loop takes out a segment.
 - **Layer 3** shows subnets, gateway addresses, and routing between them. This is the diagram you need when two hosts cannot reach each other.
 
 On every diagram, label **both ends of every link with the actual interface name**. "Core switch to access switch" tells you nothing at 2 AM. "Core Gi1/0/47 to Access-2 Gi1/0/48" tells you exactly which port to check and which cable to reseat. If you take one thing from this post, take that.
@@ -73,7 +73,7 @@ Store the draw.io files as `.drawio` XML in the same git repository as the confi
 
 Good documentation passes the "2 AM test": if your network goes down at 2 AM and you are half asleep, can you find the information you need to diagnose and fix the problem? If the answer is no, your documentation needs work.
 
-The version of this test that catches most people is not "can I find it" but "can I reach it." If the wiki is a VM on the cluster that just died, if the IPAM spreadsheet is on a NAS behind the switch you are trying to fix, or if the credentials are in a password manager that syncs over the VPN that is currently down, then during an outage your documentation does not exist. Keep an offline copy of the minimum set: a printed or PDF rack sheet, a local git clone on your laptop, and the out-of-band access details. Those out-of-band details are their own category worth writing down explicitly: iDRAC and IPMI addresses, console server ports, the serial console baud rate, and the local break-glass account on each device.
+The version of this test that catches most people is not "can I find it" but "can I reach it." If the wiki is a VM on the cluster that just died, if the IPAM spreadsheet is on a NAS behind the switch you are trying to fix, or if the credentials are in a password manager that syncs over the VPN that is currently down, then during an outage your documentation does not exist. Keep an offline copy of the minimum set: a printed or PDF rack sheet, a local git clone on your laptop, and the out-of-band access details. Those out-of-band details are their own category worth writing down explicitly: iDRAC and [IPMI](/blog/ipmi-remote-management) addresses, console server ports, the serial console baud rate, and the local break-glass account on each device.
 
 ## Keeping It Current
 
