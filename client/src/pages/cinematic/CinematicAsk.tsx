@@ -51,11 +51,6 @@ const ANSWERED: Answered[] = [
     answer: "Lessons from competing in the National Cyber League",
   },
   {
-    question: "How do you run a high school cyber club?",
-    href: "/blog/running-a-cyber-club",
-    answer: "What I have learned running a high school cyber club",
-  },
-  {
     question: "How should I segment a network with VLANs?",
     href: "/blog/vlan-segmentation-guide",
     answer: "Network segmentation with VLANs, a practical guide",

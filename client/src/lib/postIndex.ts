@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 236 of them. Regenerate with script/generatePostIndex.ts.
+ * 235 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -991,16 +991,6 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/sriov-and-device-passthrough.jpg",
     coverCredit: {"author":"Richard Masoner / Cyclelicious","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/99247795@N00/309012841"},
     wordCount: 960,
-  },
-  {
-    slug: "running-a-cyber-club",
-    title: "What I Have Learned Running A High School Cyber Club",
-    date: "2026-08-23",
-    tags: ["career","learning","cybersecurity"],
-    excerpt: "A club with a wide skill range is an operations problem before it is a teaching problem. How I structure meetings, lab infrastructure, and competition prep.",
-    coverImage: "/images/blog/running-a-cyber-club.jpg",
-    coverCredit: {"author":"flickingerbrad","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/56155476@N08/6660076003"},
-    wordCount: 1099,
   },
   {
     slug: "running-llms-locally-hardware",
@@ -2364,10 +2354,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 858;
+export const CITATION_COUNT = 854;
 
 /** Unique cover image attribution and licence URLs. */
-export const ATTRIBUTION_URL_COUNT = 160;
+export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1018;
+export const CHECKED_URL_COUNT = 1013;
