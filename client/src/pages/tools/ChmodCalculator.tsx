@@ -199,50 +199,6 @@ export function ChmodCalculator() {
   return (
     <ToolShell
       slug="chmod-calculator"
-      notes={
-        <>
-          <p>
-            A Unix mode is twelve bits, printed as four octal digits. The right three digits
-            are read (4), write (2) and execute (1) for the owner, the group and everyone
-            else, added together: 6 is read plus write, 7 is all three, 5 is read plus
-            execute. The leading digit carries setuid (4), setgid (2) and the sticky bit (1),
-            and it is the digit most people forget exists, which is why <code>chmod 755</code>{" "}
-            quietly clears a setgid bit that someone set on purpose. Writing the mode as four
-            digits every time makes that intent explicit.
-          </p>
-          <p>
-            The three permission bits mean different things on a directory than on a file. On
-            a file they are what you expect. On a directory, read lets you list the names
-            inside, write lets you create and remove entries, and execute (often called the
-            search bit) lets you traverse into it to reach a known path. A directory with
-            read but no execute gives you the file names and nothing else; a directory with
-            execute but no read lets you open <code>/srv/app/config.yml</code> if you already
-            know that exact name, but <code>ls</code> returns permission denied. That
-            asymmetry is what makes mode 711 on a home directory a real pattern rather than a
-            mistake.
-          </p>
-          <p>
-            setuid on an executable makes the process run with the file owner's identity
-            instead of the caller's, which is how an unprivileged user runs{" "}
-            <code>passwd</code> and still gets a write to <code>/etc/shadow</code>. It is also
-            the single richest source of local privilege escalation, so a setuid root binary
-            that shells out, honours <code>$PATH</code>, or is writable by anyone but root is
-            a finding, not a curiosity. setgid does the same trick for the group, and on a
-            directory it does something different and much more useful: files created inside
-            inherit the directory's group, which is the normal way to keep a shared project
-            tree consistently group-owned.
-          </p>
-          <p>
-            The sticky bit only matters on directories now. Without it, write permission on a
-            directory is permission to delete anything in it, including files you do not own,
-            because deletion modifies the directory rather than the file. That is intolerable
-            for a world-writable scratch space, so <code>/tmp</code> is mode 1777: anyone may
-            create files there, but only a file's owner, the directory's owner, or root may
-            rename or remove a given file. If you ever create a shared drop directory, mode
-            1777 or 1770 is almost always what you actually meant by 777.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <ToolPanel title="Permission bits">

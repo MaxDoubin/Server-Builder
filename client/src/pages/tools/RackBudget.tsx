@@ -102,32 +102,6 @@ export function RackBudget() {
   return (
     <ToolShell
       slug="rack-budget"
-      notes={
-        <>
-          <p>
-            Every figure here comes from the same constants the datacenter
-            simulator on this site runs on, imported rather than copied, so
-            the two cannot disagree. Watts convert to BTU per hour at{" "}
-            {BTU_PER_WATT}, a cooling ton is 12,000 BTU per hour, and cooling
-            is sized against IT load times {IN_ROOM_LOSS_FACTOR} to cover
-            in-room losses rather than against IT load alone, which is the
-            mistake that leaves a room short on a hot day.
-          </p>
-          <p>
-            PUE is modelled, not measured. A small floor spreads fixed plant
-            losses over less IT load, so it starts at 1.12 and worsens with
-            scale up to a 1.40 cap. Real facilities vary widely; treat it as
-            a planning figure and measure your own once there is something to
-            meter.
-          </p>
-          <p>
-            The N+1 column adds one spare air handler so a single unit failing
-            is not an outage. That is the minimum most designs assume, and it
-            is why the unit count is usually one higher than the arithmetic
-            alone suggests.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
         <div className="space-y-5">

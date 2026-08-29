@@ -435,37 +435,6 @@ export function PacketHeaders() {
   return (
     <ToolShell
       slug="packet-headers"
-      notes={
-        <>
-          <p>
-            Every one of these diagrams is 32 bits wide because that is how the RFCs draw them, and
-            because both IPv4 and TCP measure their own header length in 32-bit words. That is what
-            IHL and Data Offset are: a count of rows. A value of 5 in either field means five rows,
-            twenty bytes, no options. Anything larger means options are present, and both fields cap
-            at 15, which is why options can never exceed 40 bytes in either protocol.
-          </p>
-          <p>
-            The two checksums do not cover the same thing. The IPv4 header checksum covers the header
-            alone, so a router that decrements TTL has to recompute it at every hop. The TCP and UDP
-            checksums cover their header, their payload, and a pseudo-header assembled from the IP
-            source, destination, and protocol number. That pseudo-header is the reason a NAT device
-            has to fix up the transport checksum after it rewrites an address, and it is why UDP's
-            checksum is optional over IPv4 but mandatory over IPv6.
-          </p>
-          <p>
-            The flag bits are where most analysis actually happens. A segment with SYN set and ACK
-            clear is a connection attempt, so a burst of them from one source is a scan or a SYN
-            flood. A RST is a refusal, and telling RST apart from no answer at all is what separates
-            a closed port from a filtered one. Nonsense combinations, all flags clear or FIN with PSH
-            and URG together, are scan fingerprints rather than anything a real stack sends.
-          </p>
-          <p>
-            Reading the numbers here is a habit worth building, because it is the difference between
-            "Wireshark says the packet is malformed" and knowing which byte is wrong. Click any field
-            to see its bit offset, its width, and which byte of the header it starts in.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <div role="tablist" aria-label="Protocol" onKeyDown={onTabKeyDown} className="flex flex-wrap gap-2">

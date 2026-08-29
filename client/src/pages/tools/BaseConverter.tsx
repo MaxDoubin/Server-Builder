@@ -152,47 +152,6 @@ export function BaseConverter() {
   return (
     <ToolShell
       slug="base-converter"
-      notes={
-        <>
-          <p>
-            Binary, octal and hex are all just binary in different sized groups. One hex digit
-            is exactly four bits and one octal digit is exactly three, which is why hex won:
-            four divides evenly into 8, 16, 32 and 64, so a byte is always two hex digits and
-            the boundary between digits never moves. Octal does not divide evenly into a byte,
-            which is why it survives in exactly one place people still meet it every day, Unix
-            file modes, where three bits per digit is precisely what read, write and execute
-            need.
-          </p>
-          <p>
-            Two's complement is how every modern machine stores a signed integer. Take the
-            top bit and give it a negative weight: in eight bits the bits are worth -128, 64,
-            32, 16, 8, 4, 2, 1 instead of 128, 64, 32 and so on. That single change means
-            addition, subtraction and comparison hardware does not need to know or care
-            whether a value is signed. To negate a number you invert every bit and add one,
-            which is the same as subtracting it from 2^n. All ones is -1, not the largest
-            value, and the sign bit alone, 1000 0000, is the most negative value rather than
-            zero.
-          </p>
-          <p>
-            The asymmetry is worth internalising because it causes real bugs. An n bit signed
-            range runs from -2^(n-1) to 2^(n-1) - 1, so there is one more negative number
-            than positive: -128 to 127 in a byte, -2147483648 to 2147483647 in a 32 bit int.
-            That means the most negative value has no positive counterpart, so negating it
-            overflows and gives you back itself, and taking its absolute value does the same.
-            That is CWE-191, integer underflow, and it is the mechanism behind a long list of
-            memory corruption bugs where a length check passed because a negative number
-            wrapped around into a very large unsigned one.
-          </p>
-          <p>
-            Width matters as much as signedness. Truncating to a narrower type keeps the low
-            bits and throws the rest away, so 300 stored in a byte becomes 44, and a value
-            that passed a bounds check as a 32 bit integer can fail it as a 16 bit one. This
-            page shows the truncation rather than hiding it: type a number too large for the
-            selected width and it keeps the low bits and says so, which is exactly what the
-            C cast would do.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         <div className="space-y-6">

@@ -442,50 +442,6 @@ export function CronExplainer() {
   return (
     <ToolShell
       slug="cron-explainer"
-      notes={
-        <>
-          <p>
-            A crontab line is five whitespace separated fields: minute, hour, day of month,
-            month, day of week, then the command. Each field takes an asterisk for "every",
-            a number, a range like <code>1-5</code>, a comma separated list, or a step like{" "}
-            <code>*/15</code>. Months accept <code>JAN</code> through <code>DEC</code> and
-            days accept <code>SUN</code> through <code>SAT</code>. Day of week runs 0 to 7
-            with both 0 and 7 meaning Sunday, which is a small mercy given how often people
-            guess wrong about which end the week starts.
-          </p>
-          <p>
-            The rule that catches everyone is how the two day fields combine. When day of
-            month and day of week are both restricted, cron fires if <em>either</em> one
-            matches, not both. <code>0 0 13 * 5</code> does not mean "Friday the 13th"; it
-            means every 13th of the month <em>and</em> every Friday. To get the intersection
-            you have to leave one field as an asterisk, or do the check inside the command
-            itself. In the original Vixie implementation the switch is literally whether the
-            field starts with an asterisk, so <code>*/2</code> in the day-of-month field
-            still counts as unrestricted for the purposes of that test.
-          </p>
-          <p>
-            Cron has no timezone of its own. It runs in whatever timezone the daemon's system
-            clock is set to, which on a server is usually UTC and on a laptop usually is not.
-            The times listed above are computed in {timeZone}, so they are what you would see
-            if the machine running the job shared your clock. If it does not, translate
-            first. Daylight saving makes this worse: on the spring transition the skipped
-            hour means jobs scheduled inside it may not run at all, and on the autumn
-            transition the repeated hour means they may run twice. Anything financial,
-            billing related, or ordering sensitive belongs at a time of day that never
-            disappears, or on a UTC clock, or on a systemd timer with{" "}
-            <code>Persistent=true</code> so a missed run is caught up rather than lost.
-          </p>
-          <p>
-            Two smaller habits worth having. Cron runs with a nearly empty environment, so a
-            script that works in your shell frequently fails under cron because{" "}
-            <code>$PATH</code> is short and your profile was never sourced: use absolute
-            paths and set the variables you need inside the script. And a percent sign in a
-            crontab command is not a percent sign, it is a newline that feeds the rest of the
-            line to the command on standard input, so any date format string with{" "}
-            <code>%Y</code> in it has to be escaped as <code>\%Y</code>.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
         <div className="space-y-6">

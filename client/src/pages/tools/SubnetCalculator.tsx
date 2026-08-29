@@ -318,37 +318,6 @@ export function SubnetCalculator() {
   return (
     <ToolShell
       slug="subnet-calculator"
-      notes={
-        <>
-          <p>
-            A subnet mask is not really a number, it is a boundary. The router ANDs the destination
-            address with the mask, compares the answer to the network address in its table, and
-            forwards on a match. Everything on this page falls out of that one operation: the
-            network address is the address with all host bits cleared, the broadcast address is the
-            same address with all host bits set, and the usable range is whatever sits between them.
-          </p>
-          <p>
-            Masks have to be contiguous, a run of 1 bits followed by a run of 0 bits, which is why
-            255.255.255.192 is legal and 255.255.192.255 is not. The wildcard mask is just the
-            bitwise inverse, and it shows up in Cisco ACLs and OSPF network statements because those
-            match on the bits that are allowed to vary rather than the bits that must agree.
-          </p>
-          <p>
-            Two prefixes are special. A /31 has only two addresses, and RFC 3021 says both of them
-            are usable on a point-to-point link, because a link with exactly two ends has no use for
-            a broadcast address. A /32 is a single host: a loopback on a router, a host route, or one
-            line in a firewall rule. Subtracting two for network and broadcast is correct for /30 and
-            shorter, and wrong for both of these.
-          </p>
-          <p>
-            The class letter shown here is historical. Classful addressing was replaced by CIDR in
-            1993 (RFC 1518 and RFC 1519), and no modern router looks at the first octet to guess a
-            mask. It is still worth recognising, because exam questions and older documentation lean
-            on it, and because the class boundaries explain why the RFC 1918 private ranges are the
-            sizes they are.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Address">

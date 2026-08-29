@@ -379,38 +379,6 @@ export function VlsmPractice() {
   return (
     <ToolShell
       slug="vlsm-practice"
-      notes={
-        <>
-          <p>
-            Subnetting questions come in two flavours and it is worth spotting which one you are
-            looking at before you start. If the requirement is a number of <em>subnets</em>, you
-            borrow bits from the host field until 2 to the power of the borrowed bits covers the
-            count. If the requirement is a number of <em>hosts</em>, you size the host field first,
-            because 2 to the power of the host bits minus 2 has to cover the count, and the prefix is
-            whatever 32 minus that leaves. Working the wrong way round is the most common way to lose
-            marks on these.
-          </p>
-          <p>
-            The minus 2 is the network address and the broadcast address, which no host can use on a
-            /30 or shorter. It does not apply to a /31, where RFC 3021 makes both addresses usable on
-            a point-to-point link, or to a /32, which is a single host route. This drill never
-            generates prefixes longer than /30, so minus 2 is always the right rule here, but the
-            exception is worth carrying into the exam room.
-          </p>
-          <p>
-            The fast way to find the Nth subnet by hand is the block size, sometimes taught as the
-            magic number. Take 256 minus the value of the interesting octet in the mask: a /26 has
-            192 in the fourth octet, 256 minus 192 is 64, so networks appear at .0, .64, .128 and
-            .192. Real VLSM then allocates largest requirement first, so that the big blocks land on
-            their natural boundaries and the small ones fill in behind them without overlapping.
-          </p>
-          <p>
-            The worked solution under each question is generated from the same numbers as the answer
-            key, so it always matches. Read it even when you got the question right, because the
-            useful thing to check is whether your method matches, not just your answer.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Difficulty">

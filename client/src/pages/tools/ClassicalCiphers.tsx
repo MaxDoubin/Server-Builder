@@ -188,55 +188,6 @@ export function ClassicalCiphers() {
   return (
     <ToolShell
       slug="classical-ciphers"
-      notes={
-        <>
-          <p>
-            A Caesar cipher shifts every letter by a fixed amount, so there are only 25 keys
-            worth trying and the whole thing falls to a brute force you can read with your
-            eyes. That is what the panel of 25 shifts is for: it is faster than reasoning
-            about the key, and it is exactly what you do first in a competition when a string
-            looks like English with the letters wrong. ROT13 is a Caesar shift of thirteen,
-            and because thirteen is half of twenty six it is its own inverse, which is why it
-            became the convention for hiding spoilers rather than for hiding anything that
-            mattered. Atbash maps A to Z, B to Y and so on, which is a fixed substitution with
-            no key at all.
-          </p>
-          <p>
-            When brute force is not available, letter frequency is the next move, and the
-            chart above is the standard first look at an unknown substitution cipher. English
-            text has a very distinctive profile: E at about 12.7 percent, then T, A, O, I and
-            N, with J, Q, X and Z all under a quarter of a percent between them. Any cipher
-            that maps each plaintext letter to one ciphertext letter preserves that shape
-            exactly, it only relabels the bars. So if the tallest bar in a ciphertext is at K,
-            K is probably E, and for a Caesar cipher that single guess gives you the key. This
-            page ranks the 25 candidates by chi-squared distance from English, which is the
-            same reasoning done arithmetically instead of by eye.
-          </p>
-          <p>
-            Vigenere is the one that resists that attack, and understanding why is the point
-            of it. The key repeats over the message and each key letter applies its own
-            Caesar shift, so the same plaintext letter becomes different ciphertext letters
-            depending on where it falls. That flattens the frequency chart and defeats naive
-            counting, which is why it was called{" "}
-            <span className="italic">le chiffre indechiffrable</span> for three centuries. It
-            is not indecipherable. Kasiski examination finds repeated ciphertext sequences and
-            takes the distances between them, whose common factors reveal the key length. Once
-            you know the length, the message splits into that many independent Caesar ciphers,
-            one for every key position, and each falls to frequency analysis on its own.
-          </p>
-          <p>
-            None of this is security, and it is worth being precise about why. A cipher whose
-            keyspace is 25 is broken by counting, and a repeating key is broken by finding the
-            period. The one classical scheme that is genuinely unbreakable is the one time
-            pad, which is Vigenere with a key as long as the message, used once, and truly
-            random. Break any one of those three conditions and it collapses back into
-            something analysable. These ciphers remain useful for one thing: they show up
-            constantly in capture the flag puzzles, in the National Cyber League, and in
-            beginner forensics challenges, usually stacked on top of Base64 or hex. Recognising
-            them quickly is a real skill even though the ciphers themselves are museum pieces.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Cipher">

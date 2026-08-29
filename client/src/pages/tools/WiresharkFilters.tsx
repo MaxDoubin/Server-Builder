@@ -265,41 +265,6 @@ export function WiresharkFilters() {
   return (
     <ToolShell
       slug="wireshark-filters"
-      notes={
-        <>
-          <p>
-            A display filter is a boolean expression over the fields Wireshark has already dissected.
-            Naming a protocol on its own, <code>dns</code> or <code>tls</code>, matches any packet the
-            dissector recognised as that protocol. Naming a field on its own, <code>http.cookie</code>,
-            matches any packet where that field exists at all. Comparing a field to a value narrows it
-            further, and <code>&amp;&amp;</code>, <code>||</code> and <code>!</code> combine the
-            results.
-          </p>
-          <p>
-            The one trap worth learning early is negation on fields that can appear more than once in
-            a packet. <code>ip.addr != 10.0.0.5</code> reads as "some occurrence of ip.addr is not
-            10.0.0.5", and since every IP packet has both a source and a destination, that is true for
-            almost everything. The expression you want is{" "}
-            <code>!(ip.addr == 10.0.0.5)</code>, which negates the whole match instead of the
-            comparison. The same applies to tcp.port, eth.addr, and any other field with two
-            occurrences.
-          </p>
-          <p>
-            The tcp.analysis fields are not in the packets at all. Wireshark computes them by tracking
-            sequence numbers across a stream, then attaches the verdict to the frame. That is why{" "}
-            <code>tcp.analysis.retransmission</code> can be right about a problem your capture point
-            never directly observed, and also why it can be wrong when you are capturing in the middle
-            of a path and missing one direction.
-          </p>
-          <p>
-            Everything on this page is a display filter. Capture filters are a different language with
-            a different job, and the section below covers where they diverge. If a filter you paste in
-            turns the bar red, the usual causes are a capture filter typed into the display box, a
-            protocol name Wireshark renamed between versions (bootp became dhcp, ssl became tls), or a
-            single equals sign where two were needed.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Search">

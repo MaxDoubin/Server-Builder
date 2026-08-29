@@ -224,35 +224,6 @@ export function DnsRecords() {
   return (
     <ToolShell
       slug="dns-records"
-      notes={
-        <>
-          <p>
-            A DNS answer is never a single record, it is a resource record set: every record of the
-            same name, class, and type, returned together and sharing one TTL. That detail explains
-            most of the rules here. It is why all the A records for a name expire at the same moment,
-            why DNSSEC signs a set rather than a record, and why a name holding a CNAME cannot hold
-            anything else, since the alias would have to apply to some sets and not others.
-          </p>
-          <p>
-            TTLs are the only cache invalidation DNS has. Whatever value you publish is how long
-            resolvers may keep serving the old answer after you change it, and nothing you do can pull
-            it back early. The working practice is to drop the TTL to sixty seconds a day or two
-            before a planned migration, make the change, confirm it, then raise the TTL again.
-          </p>
-          <p>
-            Underscore labels mark names that are protocol data rather than hosts: _dmarc for DMARC
-            policy, _sip._tcp for SRV lookups, _acme-challenge for certificate validation. The
-            underscore is not special to DNS itself, it is a convention that keeps these names from
-            ever colliding with a real hostname, because a hostname is not allowed to contain one.
-          </p>
-          <p>
-            When something is broken, query the authoritative server directly with{" "}
-            <code>dig +norecurse @ns1.example.net</code> before you trust anything a recursive
-            resolver tells you. Half of all DNS problems are a stale cache, and the other half are a
-            change that was made on one nameserver out of four.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Jump to a record type">

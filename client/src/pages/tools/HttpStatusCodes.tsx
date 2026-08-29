@@ -484,48 +484,6 @@ export function HttpStatusCodes() {
   return (
     <ToolShell
       slug="http-status-codes"
-      notes={
-        <>
-          <p>
-            A status code is the only part of a response that every piece of infrastructure
-            between the server and the client understands without parsing anything. Caches
-            decide what to store from it, proxies decide what to retry, load balancers decide
-            whether a backend is healthy, and monitoring decides whether to wake somebody up.
-            That is why choosing one carelessly costs more than it looks like it should: an
-            error hidden inside a 200 body is invisible to all of them, and a 500 returned for
-            a client's malformed input sends an engineer to investigate a server that is
-            working perfectly.
-          </p>
-          <p>
-            The class digit carries most of the meaning, and it is what a client should fall
-            back to when it meets a code it does not recognise. RFC 9110 is explicit about
-            this: an unknown 4xx must be treated as a generic 400, an unknown 5xx as a generic
-            500. That is what makes it safe to introduce a new code. The classes also encode
-            the retry decision. A 4xx will fail the same way if you repeat it unchanged, so
-            retrying is pointless. A 5xx might succeed later, so retrying with exponential
-            backoff and jitter is correct. 429 and 503 are the two that tell you explicitly
-            when to come back, via Retry-After, and honouring that header is the difference
-            between a well behaved client and a participant in an outage.
-          </p>
-          <p>
-            Every code on this page is in the IANA HTTP Status Code Registry. Codes you will
-            meet in the wild that are not include nginx's 499, which it logs when the client
-            closes the connection before a response, and Cloudflare's 520 through 530 range
-            for its own edge conditions. AWS load balancers add 460 and 463. These are useful
-            in a log file and wrong in an API: an unregistered code means every client library
-            falls back to guessing from the class digit, and you have gained nothing over the
-            standard code that already describes the situation.
-          </p>
-          <p>
-            A last practical point about error bodies. RFC 9457, which replaced RFC 7807,
-            defines a small JSON shape for the detail behind an error: a type URI, a title, a
-            status, a detail string, and an instance. Using it costs nothing and means client
-            code can read your errors without a bespoke parser for your service. Pair it with
-            the right status code and a client can behave correctly on the status alone, then
-            show something useful to a human from the body.
-          </p>
-        </>
-      }
     >
       <div className="mb-8">
         <label

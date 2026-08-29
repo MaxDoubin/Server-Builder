@@ -339,59 +339,6 @@ export function EncoderDecoder() {
   return (
     <ToolShell
       slug="encoder-decoder"
-      notes={
-        <>
-          <p>
-            Every conversion here goes through raw bytes. That sounds like an implementation
-            detail and it is actually the whole point: Base64 encodes bytes, not characters,
-            and the step everyone skips is deciding how the text became bytes in the first
-            place. This page uses UTF-8, because that is what the web uses. The browser's own{" "}
-            <code>btoa</code> does not: it expects a string where every character fits in one
-            byte, so it throws an InvalidCharacterError the first time it meets a character
-            above U+00FF, and the usual workaround of{" "}
-            <code>btoa(unescape(encodeURIComponent(s)))</code> works only because it is doing
-            the UTF-8 step by hand. <code>TextEncoder</code> and <code>TextDecoder</code> do
-            it properly, and they can also tell you when a byte sequence is not valid UTF-8
-            at all, which is information you usually want rather than a string full of
-            replacement characters.
-          </p>
-          <p>
-            Base64 turns three bytes into four characters, so the output is always about a
-            third larger than the input. The padding at the end exists because the last group
-            may be short: one leftover byte becomes two characters and two equals signs, two
-            leftover bytes become three characters and one equals sign. A length that leaves
-            a remainder of exactly one character is therefore impossible, which is a quick
-            way to spot truncated data. Base64URL is the same encoding with two substitutions,
-            minus for plus and underscore for slash, and usually with the padding stripped,
-            because plus, slash and equals all mean something in a URL or a filename. JWTs use
-            Base64URL, which is why pasting a token into a standard Base64 decoder sometimes
-            works and sometimes does not: it depends on whether the random bytes in that
-            particular token happened to produce a minus or an underscore.
-          </p>
-          <p>
-            Percent encoding has a trap worth knowing. In a URL path or query, <code>+</code>{" "}
-            is a literal plus sign, and this tool treats it that way. In an HTML form
-            submission with the content type{" "}
-            <code>application/x-www-form-urlencoded</code>, a plus means a space. Same
-            looking string, two different meanings, decided entirely by context, and the
-            reason a search for "C++" occasionally comes back as "C  ". Note also that the
-            unreserved set is small: letters, digits, hyphen, period, underscore and tilde.
-            Everything else is safest encoded, and encoding something that did not need it is
-            harmless while the reverse is not.
-          </p>
-          <p>
-            ROT13 and hex are here because they are the first two things to try on a capture
-            the flag string, not because either is a security control. ROT13 is a Caesar
-            shift of thirteen, which on a 26 letter alphabet makes it its own inverse: apply
-            it twice and you are back where you started. Encoding is not encryption, and the
-            practical consequence is that a value which is merely Base64 encoded in a cookie,
-            a URL, or a config file is public. If a capture the flag string does not decode
-            cleanly here, check the length: a hex string with an odd number of digits, or a
-            Base64 string whose length leaves a remainder of one, has usually lost a
-            character somewhere in a copy and paste.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-start">
         <ToolPanel title="Input">

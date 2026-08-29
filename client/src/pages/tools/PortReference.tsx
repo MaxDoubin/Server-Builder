@@ -974,36 +974,6 @@ export function PortReference() {
   return (
     <ToolShell
       slug="port-reference"
-      notes={
-        <>
-          <p>
-            Port numbers come in three ranges. 0 to 1023 are the well-known ports, which on Unix
-            require root to bind, and that privilege requirement is the only real security property
-            the range has. 1024 to 49151 are registered ports, assigned by IANA on request but not
-            enforced by anything. 49152 to 65535 are dynamic or ephemeral, which is where your
-            outbound connections get their source port from.
-          </p>
-          <p>
-            None of this is enforced by the protocol. A port number is just a 16-bit field in a TCP
-            or UDP header, and nothing stops SSH from listening on 8080 or a backdoor from listening
-            on 443. That is why service detection matters more than the number: nmap's -sV probes the
-            service rather than trusting the port, and Wireshark will happily decode as HTTP whatever
-            you tell it to.
-          </p>
-          <p>
-            The security notes here are the ones worth internalising. A short list of ports should
-            never be reachable from the internet under any circumstances: 445 SMB, 135 MS RPC, 3389
-            RDP, 23 Telnet, 3306 and 5432 and 27017 for databases, 6379 Redis, 2375 Docker, 623 IPMI,
-            and 11211 Memcached. Several of those had no authentication at all in their default
-            configuration, and every one of them is scanned continuously.
-          </p>
-          <p>
-            Ports marked as conventional rather than assigned, 8080, 9000, 4444 and similar, are
-            habits rather than standards. They are still worth knowing, because a scan result is a
-            hypothesis and the conventional meaning is usually the right first guess.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Filter">
