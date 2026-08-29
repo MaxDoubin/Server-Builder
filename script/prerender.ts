@@ -152,12 +152,54 @@ const SITE_NAV = `
   <a href="${SITE_URL}/contact">Contact</a>
 </nav>`;
 
+/*
+  Critical styles for the prerendered body, shipped inside #root.
+
+  The prerendered HTML carries no classes, because it is written for readers
+  that do not run JavaScript. Nothing in the stylesheet can reach it, and the
+  dark theme lives on .cinematic, a class React adds when it mounts, while
+  :root sets --background to a near-white. So the first paint of every page
+  was a black-on-white text dump: the whole document plus a wall of 27 nav
+  links, for as long as it takes 623KB of JavaScript to download and execute.
+  On a phone that is not a flicker, it is a second or more of a page that
+  looks broken.
+
+  Painting it in the site's own colours is the honest fix. Hiding it would
+  show crawlers something readers never see, and it would throw away the
+  no-JavaScript fallback that the whole prerendering effort exists to
+  provide. Styled, the same markup reads as the page arriving rather than
+  the page failing.
+
+  Values are literal rather than var() because this must paint before the
+  stylesheet defining those tokens is guaranteed to have applied. It sits
+  inside #root, so document order beats the stylesheet on the body rule, and
+  createRoot removes the whole block on mount: nothing here can leak into the
+  app.
+*/
+const PRERENDER_CSS = `<style>
+body{background:hsl(220 12% 4%);margin:0}
+#prerender{color:hsl(40 16% 92%);font:400 15px/1.7 "Space Grotesk",Inter,system-ui,-apple-system,sans-serif;max-width:68ch;margin:0 auto;padding:12vh 7vw 8vh;-webkit-font-smoothing:antialiased}
+#prerender h1{font-size:clamp(1.7rem,6vw,2.4rem);line-height:1.1;letter-spacing:-.03em;margin:0 0 .55em;font-weight:500}
+#prerender h2{font-size:1.1rem;font-weight:500;margin:2.2em 0 .5em;letter-spacing:-.01em}
+#prerender h3{font-size:.95rem;font-weight:500;margin:1.6em 0 .35em}
+#prerender p,#prerender li,#prerender dd{color:hsl(40 10% 72%);margin:0 0 .85em}
+#prerender dt{color:hsl(40 16% 92%);margin-top:1.1em}
+#prerender dd{margin:.15em 0 .6em}
+#prerender ul,#prerender ol{padding-left:1.2em;margin:0 0 1em}
+#prerender li{margin:0 0 .35em}
+#prerender a{color:hsl(72 100% 50%);text-decoration:none}
+#prerender code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.9em;color:hsl(180 85% 62%)}
+#prerender nav{margin-top:2.5em;font-size:12px;line-height:2.1;color:hsl(220 5% 56%)}
+#prerender nav a{color:hsl(220 5% 56%);margin-right:1.1em;white-space:nowrap}
+#prerender nav[aria-label="Site"]{margin-top:4em;padding-top:1.5em;border-top:1px solid hsl(220 6% 22%)}
+</style>`;
+
 function injectRootContent(html: string, content: string): string {
   // Replace the spinner placeholder with pre-rendered content.
-  // React's createRoot overwrites this on hydration. Purely for crawlers.
+  // React's createRoot overwrites this on mount, styles and all.
   return html.replace(
     /<div id="root">[\s\S]*?<\/div>\s*<style>/,
-    `<div id="root">${content}${SITE_NAV}</div>\n    <style>`,
+    `<div id="root">${PRERENDER_CSS}<div id="prerender">${content}${SITE_NAV}</div></div>\n    <style>`,
   );
 }
 
