@@ -26157,7 +26157,7 @@ Install \`rasdaemon\` if you want the errors decoded down to the specific DIMM l
 - https://en.wikipedia.org/wiki/Multi-channel_memory_architecture
 - https://www.kernel.org/doc/html/latest/admin-guide/RAS/main.html
 - https://research.google/pubs/dram-errors-in-the-wild-a-large-scale-field-study/
-- https://downloads.dell.com/topicspdf/poweredge-r740_owners-manual2_en-us.pdf
+- https://dl.dell.com/topicspdf/poweredge-r740_owners-manual_en-us.pdf
 `,
   },
   {
