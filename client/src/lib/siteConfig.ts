@@ -156,7 +156,7 @@ export const siteConfig = {
       org: "South CTA Cyber Club",
       details: [
         "Leads cybersecurity preparation, training, and student engagement",
-        "Helped guide South CTA to a 7th-ranked school finish in the nation in National Cyber League competition",
+        "Helped guide South CTA to 7th nationally among high schools in the Fall 2025 Cyber Power Rankings",
       ],
     },
     {
@@ -213,9 +213,9 @@ export const siteConfig = {
         "Placed in the top 1 percent of National Cyber League competitors, across open source intelligence, cryptography, log analysis, password cracking, network forensics and web exploitation.",
     },
     {
-      title: "7th-Ranked School in the Nation",
+      title: "7th Among U.S. High Schools",
       description:
-        "Helped lead South CTA to a 7th-place national school finish in National Cyber League competition.",
+        "South Career Technical Academy placed 7th nationally among high schools in the Fall 2025 Cyber Power Rankings, which Cyber Skyline compiles from each school's top team, its top individual, and the participation of its students. The school ranked 6th on the individual component.",
     },
     {
       title: "CompTIA Tech+ Certified",
@@ -294,7 +294,7 @@ export const siteConfig = {
       id: "competition",
       title: "Competitive Cybersecurity",
       description:
-        "National Cyber League and Cyber Skyline competition across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation. Top 1 percent individually, with a team placing 7th nationally.",
+        "National Cyber League and Cyber Skyline competition across OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation. Top 1 percent individually, at a school placing 7th nationally among high schools.",
       tech: ["OSINT", "Cryptography", "Forensics", "Web Exploitation"],
       category: "security",
       link: "/ncl",

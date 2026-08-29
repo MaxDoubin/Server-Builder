@@ -402,8 +402,8 @@ export function Home() {
               },
               {
                 icon: Shield,
-                title: "South CTA Ranked 7th in the Nation",
-                desc: "Helped lead South Career Technical Academy to a 7th-place national school finish in National Cyber League competition.",
+                title: "South CTA Ranked 7th Among U.S. High Schools",
+                desc: "Helped lead South Career Technical Academy to 7th nationally among high schools in the Fall 2025 Cyber Power Rankings.",
               },
               {
                 icon: Music,

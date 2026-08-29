@@ -86,9 +86,9 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Scored in the top 1 percent of National Cyber League competitors, across open source intelligence, cryptography, log analysis, hash cracking, network forensics, and web exploitation.",
       },
       {
-        title: "South CTA finishes 7th in the nation",
+        title: "South CTA finishes 7th among U.S. high schools",
         description:
-          "Helped lead the school to a 7th place national finish among schools in National Cyber League competition.",
+          "Helped lead the school to 7th nationally among high schools in the Fall 2025 Cyber Power Rankings, which Cyber Skyline compiles from each school's top team, top individual and participation.",
       },
       {
         title: "CompTIA Tech+ certified",

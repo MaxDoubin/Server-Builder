@@ -197,6 +197,14 @@ const FORBIDDEN = [
   ['name="twitter:site"', "claims an X account that siteConfig.social does not list"],
   ["Diamond Tier", "the NCL scouting report awards no division or tier"],
   ["Diamond Division", "the NCL scouting report awards no division or tier"],
+  /*
+    South CTA placed 7th OVERALL in the Fall 2025 Cyber Power Rankings, which
+    Cyber Skyline builds from three columns. Its team column is 10th. The site
+    called the 7 a team result in six places, which is the same failure as the
+    Diamond claim: a number lifted from the wrong row of a document anyone can
+    look up. The ranking is a school result, so say school.
+  */
+  ["Cyber Team Competition", "the 7th place is the overall school ranking, not the team column, which is 10th"],
 ];
 
 const forbidden = [];
