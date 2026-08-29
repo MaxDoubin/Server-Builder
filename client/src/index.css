@@ -255,6 +255,35 @@
   }
 }
 
+/*
+  The 404 traceroute.
+
+  The packet walks four hops, then stalls in the gap before the fifth and
+  fades, because that is where the route dies. Positions are the same
+  translate3d values the hops use, so the packet lands on them exactly.
+*/
+@keyframes packet-walk {
+  0%   { transform: translate3d(-192px, 0, 0) scale(1); opacity: 0; }
+  6%   { opacity: 1; }
+  22%  { transform: translate3d(-96px, 0, -120px) scale(1); opacity: 1; }
+  44%  { transform: translate3d(0px, 0, -240px) scale(1); opacity: 1; }
+  64%  { transform: translate3d(96px, 0, -360px) scale(1); opacity: 1; }
+  80%  { transform: translate3d(150px, 0, -428px) scale(0.75); opacity: 0.65; }
+  90%  { transform: translate3d(162px, 0, -444px) scale(0.3); opacity: 0; }
+  100% { transform: translate3d(-192px, 0, 0) scale(1); opacity: 0; }
+}
+
+/* The unreachable hop, breathing rather than blinking. */
+@keyframes hop-unreachable {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.95; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes packet-walk { 0%, 100% { opacity: 0; } }
+  @keyframes hop-unreachable { 0%, 100% { opacity: 0.7; } }
+}
+
 @keyframes preloader-pulse {
   0%, 100% {
     opacity: 1;
