@@ -42,7 +42,7 @@ export const siteConfig = {
     {
       category: "Cybersecurity & Competition",
       items: [
-        "Ranked in the top 1 percent of National Cyber League competitors",
+        "National Cyber League Diamond Tier 1, the highest division and tier, and top 1 percent of competitors",
         "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
         "Currently pursuing CompTIA Security+, CompTIA Network+, and Cisco CCNA",
       ],
@@ -208,9 +208,9 @@ export const siteConfig = {
 
   achievements: [
     {
-      title: "Top 1% National Cyber League",
+      title: "National Cyber League Diamond Tier 1",
       description:
-        "Scored in the top 1 percent of National Cyber League competitors through challenge work across multiple cybersecurity disciplines.",
+        "The highest badge the National Cyber League awards: the top tier of Diamond, its top division, above Platinum, Gold, Silver and Bronze. Top 1 percent of competitors, across open source intelligence, cryptography, log analysis, password cracking, network forensics and web exploitation.",
     },
     {
       title: "7th-Ranked School in the Nation",

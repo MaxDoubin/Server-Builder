@@ -156,9 +156,14 @@ for (const file of pages) {
   same site correctly said "10th-grade cybersecurity student", so the site
   contradicted itself.
 
-  The facts around it are all real and all stay: top 1 percent NCL, the
-  commission seat, five years of hands on infrastructure, the percussion
-  ranking. Only the framing that implied a working professional is gone.
+  "Specialist" itself is fine and is Max's own choice of word: it describes
+  a focus, not an employer, and the work behind it is real. What is banned is
+  "nationally recognized", which asserted a standing with nothing behind it,
+  and the jobTitle field, which in schema.org means employment.
+
+  The replacement says "nationally ranked" instead, which is a fact anyone
+  can ask him to evidence: National Cyber League Diamond Tier 1, the highest
+  division and tier the competition awards.
 
   This is a truthfulness gate, not a style one. An admissions officer who
   spots one inflated claim discounts every honest one next to it.

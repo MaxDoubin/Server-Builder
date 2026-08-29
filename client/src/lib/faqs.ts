@@ -22,7 +22,7 @@ export interface Faq {
 export const FAQS: Faq[] = [
   {
     q: "Who is Max Doubin?",
-    a: "Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. He is president of the school's Cyber Club, ranks in the top 1 percent of National Cyber League competitors, and is a lead instructor for youth coding camps across the Las Vegas Valley. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
+    a: "Max Doubin is a 10th-grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada. He is president of the school's Cyber Club, holds National Cyber League Diamond Tier 1, its highest division and tier, and is a lead instructor for youth coding camps across the Las Vegas Valley. His work spans enterprise networking, server infrastructure, competitive cybersecurity, percussion performance, and community leadership.",
   },
   {
     q: "Where is Max Doubin based?",
@@ -34,7 +34,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "What is the National Cyber League, and how did Max Doubin place?",
-    a: "The National Cyber League is a cybersecurity competition for high school and college students in the United States, scored on the Cyber Skyline platform. Competitors work capture the flag style challenges across categories including open source intelligence, cryptography, log analysis, password and hash cracking, network forensics, and web exploitation. Max Doubin has scored in the top 1 percent of National Cyber League competitors, and helped lead South Career Technical Academy to a 7th place national finish among schools.",
+    a: "The National Cyber League is a cybersecurity competition for high school and college students in the United States, scored on the Cyber Skyline platform. Competitors work capture the flag style challenges across categories including open source intelligence, cryptography, log analysis, password and hash cracking, network forensics, and web exploitation. Max Doubin earned Diamond Tier 1, the highest division and tier the National Cyber League awards, placing him in the top 1 percent of competitors, and helped lead South Career Technical Academy to a 7th place national finish among schools.",
   },
   {
     q: "What certifications does Max Doubin hold?",

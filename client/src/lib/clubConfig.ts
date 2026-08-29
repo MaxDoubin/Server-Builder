@@ -153,7 +153,7 @@ export const clubConfig = {
     },
     {
       q: "Who runs the club?",
-      a: "Max Doubin, a cybersecurity student at South Career Technical Academy, serves as president. He ranks in the top 1 percent of National Cyber League competitors and teaches youth coding camps across the Las Vegas Valley.",
+      a: "Max Doubin, a cybersecurity student at South Career Technical Academy, serves as president. He holds National Cyber League Diamond Tier 1, its highest division and tier, and teaches youth coding camps across the Las Vegas Valley.",
     },
   ] as ClubQA[],
 };
