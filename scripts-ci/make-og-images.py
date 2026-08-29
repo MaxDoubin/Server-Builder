@@ -44,23 +44,39 @@ OUT_DIR = os.path.join(ROOT, "client/public/images/og")
 COVER_DIR = os.path.join(ROOT, "client/public")
 DIST_DIR = os.path.join(ROOT, "dist/public")
 
-# Standalone pages worth a card of their own, with the eyebrow each should
-# carry. Anything not listed keeps the generic site image, which is the right
-# outcome for /404 and for utility pages nobody links to deliberately.
-STANDALONE = {
+W, H = 1200, 630
+
+FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+
+# Matches the site's --brand-signal (72 100% 50%) and --brand-bone.
+SIGNAL = (176, 255, 0)
+BONE = (238, 236, 231)
+ASH = (150, 152, 158)
+
+# Eyebrow for a page, chosen by its URL prefix. Longest prefix wins, so
+# study/ccna beats study. Anything unmatched falls back to the site name.
+SECTION_EYEBROWS = [
+    ("study/security-plus", "COMPTIA SECURITY+"),
+    ("study/network-plus", "COMPTIA NETWORK+"),
+    ("study/ccna", "CISCO CCNA"),
+    ("cyber-club", "CYBER CLUB"),
+    ("coding-camps", "CODING CAMPS"),
+    ("topics", "FIELD NOTES · TOPIC"),
+    ("tools", "TOOLS"),
+    ("study", "STUDY"),
+    ("ncl", "NATIONAL CYBER LEAGUE"),
+]
+
+# Exact eyebrows for the top level pages, where the slug alone is a poor label.
+PAGE_EYEBROWS = {
     "resume": "RESUME",
     "projects": "PROJECTS",
     "certifications": "CERTIFICATIONS",
-    "cyber-club": "CYBER CLUB",
-    "coding-camps": "CODING CAMPS",
-    "ncl": "NATIONAL CYBER LEAGUE",
-    "tools": "TOOLS",
     "blog": "FIELD NOTES",
     "archive": "ARCHIVE",
-    "topics": "TOPICS",
     "data": "OPEN DATA",
     "paths": "READING PATHS",
-    "study": "STUDY",
     "flashcards": "FLASHCARDS",
     "study-timer": "STUDY TIMER",
     "game": "BUILD SIMULATOR",
@@ -77,15 +93,44 @@ STANDALONE = {
     "subscribe": "SUBSCRIBE",
 }
 
-W, H = 1200, 630
+# Pages that keep the generic site image on purpose. The home page's card IS
+# the site card, and nobody deliberately shares a 404.
+SKIP = {"index", "404"}
 
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 
-# Matches the site's --brand-signal (72 100% 50%) and --brand-bone.
-SIGNAL = (176, 255, 0)
-BONE = (238, 236, 231)
-ASH = (150, 152, 158)
+def eyebrow_for(slug):
+    if slug in PAGE_EYEBROWS:
+        return PAGE_EYEBROWS[slug]
+    for prefix, label in SECTION_EYEBROWS:
+        if slug == prefix or slug.startswith(prefix + "/"):
+            return label
+    return "MAX DOUBIN"
+
+
+def discover_standalone():
+    """Every prerendered page that is not a blog post.
+
+    Discovered from the build rather than listed by hand. The hand written
+    list covered 27 pages and missed 69 others, among them all 17 tool pages
+    and all 26 topic hubs, which are some of the most shareable things here.
+    A list that has to be remembered is a list that goes stale.
+    """
+    found = []
+    for root, _dirs, files in os.walk(DIST_DIR):
+        for name in files:
+            if not name.endswith(".html"):
+                continue
+            rel = os.path.relpath(os.path.join(root, name), DIST_DIR)
+            slug = rel[: -len(".html")]
+            if slug in SKIP:
+                continue
+            # Posts already get photographic cards from build_card.
+            if slug == "blog" or not slug.startswith("blog/"):
+                found.append(slug)
+    return sorted(found)
+
+
+
 
 
 def load_posts():
@@ -274,6 +319,7 @@ def build_standalone_card(slug, eyebrow, title, desc=None):
 
 
 def save_card(img, name):
+    os.makedirs(os.path.dirname(os.path.join(OUT_DIR, f"{name}.jpg")), exist_ok=True)
     img.save(
         os.path.join(OUT_DIR, f"{name}.jpg"),
         "JPEG",
@@ -306,12 +352,12 @@ def main():
             "Run `npm run build` first."
         )
     else:
-        for slug, eyebrow in sorted(STANDALONE.items()):
+        for slug in discover_standalone():
             title, desc = read_page_meta(slug)
             if not title:
                 problems.append(f"no <title> found for standalone page: {slug}")
                 continue
-            save_card(build_standalone_card(slug, eyebrow, title, desc), slug)
+            save_card(build_standalone_card(slug, eyebrow_for(slug), title, desc), slug)
             made += 1
 
     total_kb = sum(
