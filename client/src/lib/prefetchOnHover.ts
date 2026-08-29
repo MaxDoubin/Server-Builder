@@ -35,6 +35,13 @@ type ImportThunk = () => Promise<unknown>;
 interface RouteChunk {
   load: ImportThunk;
   /**
+   * Chunk for a path one segment deeper than this prefix, where the two
+   * depths are different pages. /study/ccna is the exam page and
+   * /study/ccna/ip-connectivity is one of its domains, so a prefix alone
+   * cannot tell them apart.
+   */
+  deeper?: RouteChunk;
+  /**
    * True for a route whose chunk is large enough that speculatively pulling
    * it is a real cost. /game drags in three.js and react-three-fiber, roughly
    * 800KB. Worth prefetching on a fast link, rude on a metered one.
@@ -111,7 +118,11 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
  */
 const PREFIX_ROUTES: Record<string, RouteChunk> = {
   "/blog/": { load: () => import("@/pages/cinematic/CinematicBlogPost") },
-  "/study/": { load: () => import("@/pages/cinematic/CinematicStudyDomain") },
+  // One segment is a certification, two is one of its exam domains.
+  "/study/": {
+    load: () => import("@/pages/cinematic/CinematicStudyExam"),
+    deeper: { load: () => import("@/pages/cinematic/CinematicStudyDomain") },
+  },
   "/topics/": { load: () => import("@/pages/cinematic/CinematicTag") },
   "/ncl/": { load: () => import("@/pages/cinematic/CinematicNclGuide") },
   "/legacy/blog/": { load: () => import("@/pages/BlogPost") },
@@ -142,7 +153,15 @@ function resolveRoute(path: string): { key: string; chunk: RouteChunk } | null {
   for (const key of Object.keys(PREFIX_ROUTES)) {
     if (path.startsWith(key) && key.length > bestKey.length) bestKey = key;
   }
-  if (bestKey) return { key: bestKey, chunk: PREFIX_ROUTES[bestKey] };
+  if (bestKey) {
+    const chunk = PREFIX_ROUTES[bestKey];
+    // "/study/ccna" has one segment after the prefix, "/study/ccna/ip-x" has two.
+    const rest = path.slice(bestKey.length);
+    if (chunk.deeper && rest.includes("/")) {
+      return { key: `${bestKey}*/`, chunk: chunk.deeper };
+    }
+    return { key: bestKey, chunk };
+  }
 
   return null;
 }

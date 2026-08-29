@@ -293,6 +293,11 @@ const CinematicClubKit = lazyWithRetry(() =>
 const CinematicStudy = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicStudy").then((m) => ({ default: m.CinematicStudy })),
 );
+const CinematicStudyExam = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicStudyExam").then((m) => ({
+    default: m.CinematicStudyExam,
+  })),
+);
 const CinematicStudyDomain = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicStudyDomain").then((m) => ({
     default: m.CinematicStudyDomain,
@@ -848,6 +853,11 @@ function AnimatedRoutes() {
           <Route path="/study">
             <Suspense fallback={<RouteLoading />}>
               <CinematicStudy />
+            </Suspense>
+          </Route>
+          <Route path="/study/:exam">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicStudyExam />
             </Suspense>
           </Route>
           <Route path="/study/:exam/:domain">

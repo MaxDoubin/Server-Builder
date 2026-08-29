@@ -288,6 +288,87 @@ function addHeadingIds(html: string): string {
   );
 }
 
+/**
+ * Display names for the path segments that are also real pages.
+ *
+ * A breadcrumb item must point somewhere. /study/ccna/ip-connectivity has
+ * three segments but only two of them are pages: there is no /study/ccna, so
+ * the trail is Home > Study > IP Connectivity rather than inventing a level
+ * that would send a crawler to a 404.
+ */
+const CRUMB_NAMES: Record<string, string> = {
+  blog: "Field Notes",
+  topics: "Topics",
+  tools: "Tools",
+  ncl: "National Cyber League",
+  study: "Study",
+  "cyber-club": "Cyber Club",
+  // Derived, so a fourth certification appears in the trail without an edit.
+  ...Object.fromEntries(
+    EXAMS.map((e: { slug: string; name: string; code: string }) => [
+      `study/${e.slug}`,
+      `${e.name} ${e.code}`,
+    ]),
+  ),
+};
+
+/**
+ * "Resume | Max Doubin" -> "Resume".
+ *
+ * The site name is already the root crumb, and everything after the first
+ * pipe is context the trail now carries itself: an exam domain titled
+ * "IP Connectivity | Cisco CCNA 200-301" sits under a Cisco CCNA 200-301
+ * crumb, so repeating it in the leaf is noise.
+ */
+function crumbLabel(title: string): string {
+  const withoutSite = title.replace(/\s*\|\s*Max Doubin\s*$/, "").trim();
+  const head = withoutSite.split(" | ")[0].trim();
+  return head || withoutSite || title;
+}
+
+/**
+ * BreadcrumbList for a page, derived from its own path.
+ *
+ * Google replaces the bare URL in a result with this trail, which matters
+ * most on the pages furthest from the root: the seventeen exam domain pages
+ * under /study were three levels deep and showed a raw URL.
+ *
+ * Pages that build a richer trail themselves pass one in meta.schema; this
+ * only fills the gap, and never emits a second list beside an existing one.
+ */
+function breadcrumbSchema(relDir: string, title: string): string {
+  const segments = relDir.split("/");
+  const items: Array<{ "@type": string; position: number; name: string; item: string }> = [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+  ];
+
+  let prefix = "";
+  for (const seg of segments.slice(0, -1)) {
+    prefix = prefix ? `${prefix}/${seg}` : seg;
+    const name = CRUMB_NAMES[prefix];
+    if (!name) continue; // not a page, so not a crumb
+    items.push({
+      "@type": "ListItem",
+      position: items.length + 1,
+      name,
+      item: `${SITE_URL}/${prefix}`,
+    });
+  }
+
+  // A page that is itself a named node uses that name, so the same node reads
+  // identically whether it is the leaf or an ancestor.
+  items.push({
+    "@type": "ListItem",
+    position: items.length + 1,
+    name: CRUMB_NAMES[relDir] ?? crumbLabel(title),
+    item: `${SITE_URL}/${relDir}`,
+  });
+
+  return `<script type="application/ld+json">
+${JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items })}
+</script>`;
+}
+
 async function writePage(
   relDir: string,
   base: string,
@@ -315,7 +396,17 @@ async function writePage(
       ? `${SITE_URL}${cardPath}`
       : undefined);
 
-  const html = buildPageHtml(base, { ...meta, ogImage });
+  /*
+    Every page gets a breadcrumb unless it already carries one. Blog posts,
+    tool pages, topic hubs and the competition guides build richer trails at
+    their call sites; everything else had none, including the seventeen exam
+    domain pages three levels down.
+  */
+  const schema = (meta.schema ?? "").includes("BreadcrumbList")
+    ? meta.schema
+    : `${meta.schema ?? ""}\n${breadcrumbSchema(relDir, meta.title)}`.trim();
+
+  const html = buildPageHtml(base, { ...meta, ogImage, schema });
   await writeFile(target, html, "utf-8");
 }
 
@@ -1663,6 +1754,36 @@ ${EXAMS.map(
   });
 
   for (const exam of EXAMS) {
+    /*
+      The exam level itself. /study/ccna/ip-connectivity resolved while
+      /study/ccna returned a 404, so trimming a URL, which is ordinary
+      navigation and something crawlers do, walked into a dead end on a path
+      this site publishes.
+    */
+    await writePage(`study/${exam.slug}`, base, {
+      title: pageTitle(`${exam.name} ${exam.code} objectives`),
+      description: `Every ${exam.name} ${exam.code} exam domain, its published weighting, and what each one actually asks of you.`,
+      canonical: `${SITE_URL}/study/${exam.slug}`,
+      rootContent: `
+<main>
+  <nav><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/study">Study</a></nav>
+  <h1>${esc(exam.name)} ${esc(exam.code)}</h1>
+  <p>${esc(exam.intro)}</p>
+  <p>${esc(exam.status)}</p>
+  <h2>Exam domains</h2>
+  <dl>${exam.domains
+    .map(
+      (d: { slug: string; name: string; weight: number | null; summary: string }) =>
+        `<dt><a href="${SITE_URL}/study/${exam.slug}/${d.slug}">${esc(d.name)}</a>${
+          d.weight === null ? "" : ` (${d.weight}% of the exam)`
+        }</dt><dd>${esc(d.summary)}</dd>`,
+    )
+    .join("\n    ")}</dl>
+  <p><a href="${exam.officialUrl}">Official ${esc(exam.code)} objectives</a>. Weightings follow the published objectives; the vendor revises them, so treat their document as the source of truth.</p>
+  <nav><a href="${SITE_URL}/study">All exams</a> · <a href="${SITE_URL}/certifications">Certifications</a> · <a href="${SITE_URL}/flashcards">Flashcards</a></nav>
+</main>`,
+    });
+
     for (const domain of exam.domains) {
       const matched = posts.filter((post) => {
         const title = post.title.toLowerCase();
@@ -1779,6 +1900,14 @@ async function writeSitemap(
   for (const tool of TOOLS) {
     urls.push({
       loc: `${SITE_URL}/tools/${tool.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const exam of EXAMS) {
+    urls.push({
+      loc: `${SITE_URL}/study/${exam.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
