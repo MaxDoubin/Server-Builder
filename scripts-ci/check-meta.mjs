@@ -162,8 +162,14 @@ for (const file of pages) {
   and the jobTitle field, which in schema.org means employment.
 
   The replacement says "nationally ranked" instead, which is a fact anyone
-  can ask him to evidence: National Cyber League Diamond Tier 1, the highest
-  division and tier the competition awards.
+  can ask him to evidence: his National Cyber League scouting report puts him
+  in the 99th percentile nationally.
+
+  A later revision claimed "Diamond Tier 1, the highest division and tier".
+  That is banned below. The scouting report awards no division at all: it
+  reports a rank and a percentile, and the words Diamond, tier, bracket and
+  division appear nowhere in its eight pages. A credential nobody issued is
+  the one kind of claim that cannot survive being checked.
 
   This is a truthfulness gate, not a style one. An admissions officer who
   spots one inflated claim discounts every honest one next to it.
@@ -172,6 +178,8 @@ const FORBIDDEN = [
   ["nationally recognized", "implies a standing a 10th grader does not have"],
   ['"jobTitle": "Cybersecurity Specialist"', "he is a student, not an employee"],
   ['name="twitter:site"', "claims an X account that siteConfig.social does not list"],
+  ["Diamond Tier", "the NCL scouting report awards no division or tier"],
+  ["Diamond Division", "the NCL scouting report awards no division or tier"],
 ];
 
 const forbidden = [];
