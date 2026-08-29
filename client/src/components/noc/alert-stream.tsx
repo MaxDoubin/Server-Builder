@@ -52,7 +52,7 @@ export function AlertStream() {
         <h3 className="font-display text-sm font-semibold uppercase tracking-wider">
           Alert Stream
         </h3>
-        <Badge variant="secondary" size="sm" className="font-mono">
+        <Badge variant="secondary" className="font-mono">
           {alerts.filter((a) => !a.acknowledged).length} ACTIVE
         </Badge>
       </div>
@@ -76,7 +76,7 @@ export function AlertStream() {
                   <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${config.color}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant={config.variant} size="sm">
+                      <Badge variant={config.variant}>
                         {alert.severity.toUpperCase()}
                       </Badge>
                       <span className="text-xs font-mono text-muted-foreground">

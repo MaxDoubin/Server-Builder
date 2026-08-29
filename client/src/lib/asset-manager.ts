@@ -10,7 +10,11 @@ interface StreamingCanvasOptions {
 
 const scheduleIdle = (callback: () => void) => {
   if (typeof window === "undefined") return;
-  if ("requestIdleCallback" in window) {
+  // Feature-detect with typeof rather than `in`: lib.dom declares
+  // requestIdleCallback as a required Window method, so an `in` test narrows
+  // the fallback branch to never. Safari before 16.4 genuinely lacks the API,
+  // so that branch has to stay reachable.
+  if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(callback, { timeout: 500 });
   } else {
     window.setTimeout(callback, 120);

@@ -10,7 +10,12 @@
  * the prerender entry in script/prerender.ts.
  */
 
-export type ToolCategory = "networking" | "security" | "systems" | "encoding";
+export type ToolCategory =
+  | "networking"
+  | "security"
+  | "systems"
+  | "encoding"
+  | "infrastructure";
 
 export interface ToolEntry {
   /** URL segment under /tools. */
@@ -40,6 +45,10 @@ export const TOOL_CATEGORIES: Record<ToolCategory, { label: string; blurb: strin
   encoding: {
     label: "Encoding",
     blurb: "Converting between representations.",
+  },
+  infrastructure: {
+    label: "Infrastructure",
+    blurb: "Data center power, cooling, and capacity.",
   },
 };
 
@@ -175,9 +184,9 @@ export const TOOLS: ToolEntry[] = [
   {
     slug: "rack-budget",
     name: "Rack power and cooling budget",
-    category: "infrastructure",
     blurb:
       "Size a data center floor: IT load, PUE, facility power, heat in BTU and tons, how many CRAH units, and what the electricity costs per year.",
+    category: "infrastructure",
     keywords: ["power", "cooling", "pue", "btu", "crah", "capacity", "datacenter", "rack", "kw", "tons", "budget"],
   },
 ];

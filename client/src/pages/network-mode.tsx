@@ -74,7 +74,6 @@ export function NetworkMode() {
                             ? "secondary"
                             : "destructive"
                         }
-                        size="sm"
                       >
                         {node.status}
                       </Badge>

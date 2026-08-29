@@ -26,26 +26,18 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Informational only. Never fails the build.
+  # A real gate as of the commit that cleared the backlog to zero.
   #
-  # `tsc --noEmit` currently reports a few dozen pre-existing errors, almost
-  # all of them in the 3D and simulator code: react-three-fiber JSX intrinsics,
-  # a react-query v5 migration that left `onError` on useQuery, Badge props
-  # that no longer exist, and a handful of downlevelIteration complaints. None
-  # of them stop Vite, which strips types rather than checking them, so the
-  # build and the deployed site are unaffected.
-  #
-  # They are logged here so the number is visible and can be driven down, and
-  # so a NEW error is at least readable in the run output. Blocking on them
-  # today would mean every PR is red for reasons it did not cause.
-  #
-  # When the count reaches zero: delete the `|| true` and the `continue-on-
-  # error`, and this becomes a real gate.
-  # ---------------------------------------------------------------------------
+  # This was "informational" with continue-on-error for a long time, which meant it
+  # could never fail a build and 56 errors accumulated behind it. Among them:
+  # a camera curve given its arguments one slot out, so the cinematic
+  # flythrough followed another curve's leftover coefficients; every useQuery
+  # error handler in the game silently dead since the TanStack v5 upgrade; and
+  # a rack view whose entire occupied-slot branch was unreachable. All of it
+  # was visible to tsc the whole time and nothing was listening.
   typecheck:
-    name: Typecheck (informational)
+    name: Typecheck
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -71,7 +63,7 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: tsc --noEmit
-        run: npx tsc --noEmit || true
+        run: npx tsc --noEmit
 
   # ---------------------------------------------------------------------------
   # The real gate. The build must pass, and then every check runs against the

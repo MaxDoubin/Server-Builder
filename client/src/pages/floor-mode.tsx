@@ -70,7 +70,7 @@ export function FloorMode() {
                             </div>
                           </div>
                           {rack.airflowRestriction > 25 && (
-                            <Badge variant="destructive" size="sm" className="mt-2">
+                            <Badge variant="destructive" className="mt-2">
                               Airflow Blocked
                             </Badge>
                           )}

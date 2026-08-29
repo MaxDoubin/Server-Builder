@@ -9,7 +9,14 @@ interface DebugOverlayProps {
 export function DebugOverlay({ visible = true }: DebugOverlayProps) {
   const [entries, setEntries] = useState(() => getLogEntries());
 
-  useEffect(() => subscribeToLogEntries(setEntries), []);
+  useEffect(() => {
+    const unsubscribe = subscribeToLogEntries(setEntries);
+    // subscribeToLogEntries hands back Set.delete, which returns a boolean, so wrap it:
+    // an effect cleanup has to return nothing.
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const summary = useMemo(() => {
     const errors = entries.filter((entry) => entry.level === "error").length;
