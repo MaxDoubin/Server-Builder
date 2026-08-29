@@ -46,6 +46,7 @@ const { READERS } = await import("../client/src/lib/subscribeConfig.ts");
 const { ANSWERED } = await import("../client/src/lib/askConfig.ts");
 const { COVERS, TAKEAWAYS } = await import("../client/src/lib/campsConfig.ts");
 const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig.ts");
+const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -1451,6 +1452,29 @@ ${JSON.stringify({
   <h1>${esc(tool.name)}</h1>
   <p>${esc(tool.blurb)}</p>
   <p>Runs in your browser. Nothing is uploaded.</p>
+  ${
+    // The same paragraphs ToolShell renders. Without them the pages aimed at
+    // the highest-traffic queries on this site were the emptiest ones a
+    // crawler could fetch: a heading and a one-line blurb.
+    (TOOL_NOTES[tool.slug] ?? []).length
+      ? `<section>
+    <h2>Notes</h2>
+    ${(TOOL_NOTES[tool.slug] ?? [])
+      .map(
+        (para: Array<string | { code: string } | { em: string }>) =>
+          `<p>${para
+            .map((span) => {
+              if (typeof span === "string") return esc(span);
+              if ("code" in span) return `<code>${esc(span.code)}</code>`;
+              return `<em>${esc(span.em)}</em>`;
+            })
+            .join("")}</p>`,
+      )
+      .join("\n    ")}
+  </section>`
+      : ""
+  }
+  <nav><a href="${SITE_URL}/tools">All tools</a> · <a href="${SITE_URL}/study">Study guides</a> · <a href="${SITE_URL}/blog">Field Notes</a></nav>
 </main>`,
     });
   }

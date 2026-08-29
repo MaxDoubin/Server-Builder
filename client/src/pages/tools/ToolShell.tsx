@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { getTool } from "@/lib/toolsRegistry";
+import { TOOL_NOTES, type NotePara } from "@/lib/toolNotes";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -20,13 +21,33 @@ interface Props {
   slug: string;
   children: ReactNode;
   /**
-   * Optional longer explanation rendered under the tool. Worth writing:
-   * it is the indexable prose on what would otherwise be a page of inputs.
+   * Extra JSX under the shared notes, for anything a tool can only say at
+   * runtime. The prose itself comes from TOOL_NOTES, keyed by slug, so the
+   * prerenderer can emit the same words into the static HTML.
    */
   notes?: ReactNode;
 }
 
+/** One paragraph of TOOL_NOTES, with inline code and emphasis preserved. */
+function NoteParagraph({ para }: { para: NotePara }) {
+  return (
+    <p>
+      {para.map((span, i) => {
+        if (typeof span === "string") return <span key={i}>{span}</span>;
+        if ("code" in span)
+          return (
+            <code key={i} className="text-[hsl(var(--brand-cyan))]">
+              {span.code}
+            </code>
+          );
+        return <em key={i}>{span.em}</em>;
+      })}
+    </p>
+  );
+}
+
 export function ToolShell({ slug, children, notes }: Props) {
+  const paras = TOOL_NOTES[slug] ?? [];
   const tool = getTool(slug);
   const name = tool?.name ?? "Tool";
   const blurb = tool?.blurb ?? "";
@@ -84,12 +105,15 @@ export function ToolShell({ slug, children, notes }: Props) {
 
           <div className="mt-10">{children}</div>
 
-          {notes ? (
+          {paras.length || notes ? (
             <section className="mt-16 border-t border-[hsl(var(--brand-iron))] pt-8">
               <h2 className="font-display text-xl font-medium text-[hsl(var(--brand-bone))]">
                 Notes
               </h2>
               <div className="mt-4 space-y-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                {paras.map((para, i) => (
+                  <NoteParagraph key={i} para={para} />
+                ))}
                 {notes}
               </div>
             </section>

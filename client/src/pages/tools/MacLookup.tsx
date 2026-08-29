@@ -251,40 +251,6 @@ export function MacLookup() {
   return (
     <ToolShell
       slug="mac-lookup"
-      notes={
-        <>
-          <p>
-            A MAC address is 48 bits, and it is split in two. The first 24 bits are the
-            Organisationally Unique Identifier, bought from the IEEE by the manufacturer, and the last
-            24 bits are whatever that manufacturer assigns to the individual interface. Twenty-four
-            bits gives each OUI holder about sixteen million addresses, which is why large vendors own
-            dozens of prefixes rather than one.
-          </p>
-          <p>
-            Two bits in the very first octet change the meaning of everything after them. The least
-            significant bit is I/G: zero for a unicast address aimed at one interface, one for a group
-            address. The next bit up is U/L: zero means the address came out of a registered OUI, one
-            means it was made up locally. Both are the low bits of the first octet when the address is
-            written in hex, and both are the first bits on the wire, because Ethernet transmits each
-            octet least significant bit first.
-          </p>
-          <p>
-            A locally administered address is almost never a mystery, it is a hint. It usually means a
-            virtual machine (QEMU and KVM use 52:54:00), a container (Docker's bridge hands out 02:42
-            followed by the container's IP), a bonded or bridged interface that inherited a synthetic
-            address, or a phone doing MAC randomisation. Every modern mobile operating system now
-            generates a fresh locally administered address per Wi-Fi network by default, which is why
-            MAC-based device tracking and MAC-based access control both stopped working reliably.
-          </p>
-          <p>
-            The vendor table on this page holds roughly ninety prefixes chosen for how often they turn
-            up, not for coverage. The IEEE Registration Authority publishes the authoritative list of
-            every assignment, and that is what to check before putting a vendor attribution in a
-            report. A lookup here that comes back empty means the prefix is not in this table, not
-            that it is unassigned.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Address">

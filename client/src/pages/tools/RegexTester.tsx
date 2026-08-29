@@ -12,8 +12,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ToolShell, ToolPanel } from "./ToolShell";
+import { TIME_BUDGET_MS } from "@/lib/toolLimits";
 
-const TIME_BUDGET_MS = 250;
 const MAX_MATCHES = 2000;
 const MAX_TEXT = 100000;
 const SHOWN_MATCHES = 60;
@@ -374,54 +374,6 @@ export function RegexTester() {
   return (
     <ToolShell
       slug="regex-tester"
-      notes={
-        <>
-          <p>
-            The flags matter more than people expect. Without <code>g</code> a match is the
-            first one and nothing else, which is why a replace that "only fixed one line"
-            was never broken, it was just not global. <code>m</code> changes{" "}
-            <code>^</code> and <code>$</code> from "start and end of the string" to "start
-            and end of every line", which is what you nearly always want against a log file.{" "}
-            <code>s</code> lets <code>.</code> cross a newline, and without it a pattern that
-            spans two lines silently matches nothing. <code>i</code> is case insensitivity,
-            and <code>u</code> switches the pattern to code point semantics so that an emoji
-            or an astral character counts as one thing rather than two halves.
-          </p>
-          <p>
-            Catastrophic backtracking is the reason this page runs the match in a Web Worker.
-            When a pattern contains nested quantifiers over overlapping alternatives, such as{" "}
-            <code>(a+)+$</code> or <code>(\d+|\s)*$</code>, the engine has an exponential
-            number of ways to divide the input between the inner and outer repetition. On a
-            string that nearly matches but fails at the end it will try all of them. Twenty
-            characters is instant, thirty characters takes seconds, forty takes longer than
-            you will wait. A JavaScript regex cannot be interrupted once it starts, so the
-            only real defence on a web page is to run it somewhere you can kill, and
-            terminating the worker is exactly that. If a pattern here times out at{" "}
-            {TIME_BUDGET_MS} ms, that is not a bug in the tool, it is the tool telling you
-            the pattern is dangerous.
-          </p>
-          <p>
-            The same problem is a real denial of service class, ReDoS, and it is worth
-            recognising in code review: a user supplied string fed to a regex with nested
-            quantifiers, or an innocent looking validation pattern in a dependency, can take
-            a whole request thread down. The fixes are boring and effective. Anchor the
-            pattern, replace nested quantifiers with a possessive or atomic equivalent where
-            the engine supports it, bound repetition with an explicit maximum such as{" "}
-            <code>{"{1,64}"}</code>, and validate length before you validate shape. Go's
-            RE2 and Rust's regex crate avoid the problem entirely by refusing backreferences
-            and lookaround in exchange for a linear time guarantee.
-          </p>
-          <p>
-            A note on the preloaded patterns: the email one is not RFC 5322, and no honest
-            pattern claiming to be will fit in a text box. The full grammar allows quoted
-            local parts, comments, and addresses that no real mail system accepts, so
-            matching it exactly is both hard and useless. The pragmatic pattern above rejects
-            what is obviously wrong and lets a confirmation email decide the rest. That is
-            the usual right answer: use the regex to filter, then verify with the thing that
-            actually knows.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">

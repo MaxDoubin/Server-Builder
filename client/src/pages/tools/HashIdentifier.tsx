@@ -341,44 +341,6 @@ export function HashIdentifier() {
   return (
     <ToolShell
       slug="hash-identifier"
-      notes={
-        <>
-          <p>
-            Identifying a hash from the value alone is a matter of shape, not
-            content. A digest is a fixed number of bytes with no header and
-            no metadata, so two algorithms that produce the same length are
-            genuinely indistinguishable. MD5 and NTLM are both 32
-            hexadecimal characters, and nothing in the string itself will
-            ever tell you which one you are holding.
-          </p>
-          <p>
-            That is why context usually decides. A 32-character hex string
-            pulled out of a Windows domain controller is almost certainly
-            NTLM. The same string in a web application database is almost
-            certainly MD5. A 40-character hex string inside a git repository
-            is a commit identifier rather than a password. The value tells
-            you the length; where you found it tells you the algorithm.
-          </p>
-          <p>
-            The exception is the modular crypt formats, the ones beginning
-            with a dollar sign. Those were designed to be self-describing:
-            <code> $2y$</code> is bcrypt, <code> $6$</code> is sha512crypt,
-            <code> $argon2id$</code> is Argon2. They also carry their
-            parameters, so you can read the bcrypt cost factor or the PBKDF2
-            iteration count straight out of the string. Those are the only
-            cases where identification is certain rather than probable.
-          </p>
-          <p>
-            One thing worth internalising while studying for competitions:
-            fast hashes are the wrong tool for passwords. MD5, SHA-1 and
-            SHA-256 are designed to be quick, and a modern GPU computes
-            billions of them per second. bcrypt, scrypt, yescrypt and Argon2
-            are deliberately slow and, in the later ones, deliberately
-            memory-hungry, which is what makes large-scale guessing
-            expensive rather than merely tedious.
-          </p>
-        </>
-      }
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <ToolPanel title="Hash">

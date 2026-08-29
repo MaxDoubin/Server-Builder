@@ -10,6 +10,7 @@
 
 import { useMemo, useState } from "react";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
+import { MAX_LEVELS, MAX_LISTED } from "@/lib/toolLimits";
 
 /* ------------------------------------------------------------- uint32 kit */
 
@@ -91,8 +92,6 @@ function parseCidr(raw: string): Parsed {
 
 // Deeper rows would be sub-pixel on a phone, and 64 list rows is already
 // more than anyone reads. Both caps are stated in the UI rather than hidden.
-const MAX_LEVELS = 6;
-const MAX_LISTED = 64;
 
 interface Selection {
   prefix: number;
@@ -154,36 +153,6 @@ export function CidrVisualizer() {
   return (
     <ToolShell
       slug="cidr-visualizer"
-      notes={
-        <>
-          <p>
-            CIDR replaced the old class A, B, and C boundaries in 1993 (RFC 1518 and RFC 1519) with a
-            single idea: a prefix length says how many leading bits are fixed, and everything after
-            them is free. That makes address space a binary tree. Adding one bit to the mask splits a
-            block cleanly into two halves, adding two bits gives four quarters, and no block can ever
-            straddle a boundary, which is why 192.168.8.0/22 is legal and 192.168.9.0/22 is not.
-          </p>
-          <p>
-            The same property running in reverse is route aggregation. Two adjacent blocks of the
-            same size that share every bit except the last one of the prefix can be advertised as a
-            single shorter prefix. That is why an ISP hands out 203.0.113.0/24 rather than 256
-            scattered host routes, and why the global routing table is roughly a million entries
-            instead of billions.
-          </p>
-          <p>
-            Reading a block boundary by hand is easier than it looks. Find the octet the prefix ends
-            in, subtract the mask value in that octet from 256, and you have the step between
-            networks: a /26 has 192 in the fourth octet, so blocks appear every 64 addresses. The
-            same trick tells you at a glance whether an address belongs to a block, which is the
-            question an ACL or a firewall rule is really asking.
-          </p>
-          <p>
-            The diagram stops after {MAX_LEVELS} levels and the list stops at {MAX_LISTED} blocks.
-            Deeper splits are still counted correctly, they are just not drawn, because a /8 divided
-            into /24s is 65,536 rectangles and none of them would be a pixel wide.
-          </p>
-        </>
-      }
     >
       <div className="space-y-6">
         <ToolPanel title="Block">
