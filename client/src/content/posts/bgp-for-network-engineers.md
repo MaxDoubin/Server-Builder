@@ -1,7 +1,7 @@
 
 ## What BGP Actually Is
 
-BGP (Border Gateway Protocol) is the routing protocol that connects autonomous systems on the internet. Unlike interior routing protocols like OSPF or EIGRP, BGP is designed for policy-based routing between organizations. It is not just about finding the shortest path. It is about controlling which paths are preferred, which ones are advertised, and which ones are filtered entirely.
+BGP (Border Gateway Protocol) is the routing protocol that connects autonomous systems on the internet. Unlike interior routing protocols like [OSPF](/blog/ospf-routing-protocol) or EIGRP, BGP is designed for policy-based routing between organizations. It is not just about finding the shortest path. It is about controlling which paths are preferred, which ones are advertised, and which ones are filtered entirely.
 
 If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
 

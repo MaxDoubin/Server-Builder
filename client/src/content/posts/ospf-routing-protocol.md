@@ -80,7 +80,7 @@ interface GigabitEthernet0/0
 
 **Stuck in EXSTART or EXCHANGE.** This is an MTU mismatch, nearly every time. Database Description packets carry the sending interface's MTU, and RFC 2328 says a router must reject a DD packet whose MTU exceeds its own. So a 1500-byte side and a 9000-byte side exchange hellos happily, form a neighbor relationship, and then hang forever at ExStart. Fix the MTU on both interfaces. `ip ospf mtu-ignore` will paper over it, and then large LSAs get dropped and you get a much worse intermittent problem later.
 
-**Adjacency never forms at all.** Area ID, hello and dead intervals, authentication type and key, stub or NSSA flags, and (on broadcast networks) subnet mask must all match. `debug ip ospf adj` names the specific mismatch, which is faster than comparing configs by eye.
+**Adjacency never forms at all.** Area ID, hello and dead intervals, authentication type and key, stub or NSSA flags, and (on broadcast networks) [subnet mask](/blog/subnetting-practical-guide) must all match. `debug ip ospf adj` names the specific mismatch, which is faster than comparing configs by eye.
 
 ## OSPF Authentication
 
@@ -100,7 +100,7 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
 
 **It cannot filter routes inside an area.** Every router in an area must hold an identical link state database, or SPF produces inconsistent results and loops. That is not a limitation of any implementation, it is the definition of link state. So there is no way to stop one router in area 10 from learning a prefix another router in area 10 advertises. Filtering only exists at boundaries: `area X range` and `area X filter-list` at an ABR for type 3 summaries, and `distribute-list`/route maps on redistribution at an ASBR. When someone asks you to hide a subnet from one router in the same area, the honest answer is to change the area design.
 
-**It cannot do policy.** There is no equivalent of BGP communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
+**It cannot do policy.** There is no equivalent of [BGP](/blog/bgp-for-network-engineers) communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
 
 **It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analogue, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
 

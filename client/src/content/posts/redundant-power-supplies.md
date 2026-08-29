@@ -58,7 +58,7 @@ The three things worth alerting on are the redundancy state itself, the input vo
 
 ## What Redundant PSUs Do Not Cover
 
-They protect against one specific failure and are sometimes mistaken for general availability. Inside the chassis, the power distribution board that the supplies plug into is itself a single point of failure, as is the motherboard, the backplane, and the RAID controller. If a workload genuinely cannot go down, the answer is two servers, not one server with two supplies.
+They protect against one specific failure and are sometimes mistaken for general availability. Inside the chassis, the power distribution board that the supplies plug into is itself a single point of failure, as is the motherboard, the backplane, and the [RAID](/blog/raid-levels-comparison) controller. If a workload genuinely cannot go down, the answer is two servers, not one server with two supplies.
 
 They also do nothing about correlated failures upstream. Two PSUs plugged into two PDUs that are fed by the same UPS, or the same panel, or the same utility drop, share every failure mode above the point where they diverge. Trace the path back and find where the two feeds actually become one, because that point is your real availability limit.
 

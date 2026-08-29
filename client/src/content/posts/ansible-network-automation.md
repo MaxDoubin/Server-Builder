@@ -82,7 +82,7 @@ The `state: merged` on the module is doing critical work and is easy to get wron
 - `overridden` makes the entire VLAN database on the device match your list, which means it deletes every VLAN you did not mention. Running `overridden` with a single VLAN in `config` against a production switch removes all the others. This has taken down real networks.
 - `gathered`, `rendered`, and `parsed` produce data without touching the device, and are how you build the initial config from what is already there.
 
-Also be careful with the VLAN ID itself. Cisco standard-range VLANs are 1 to 1005, with 1002 to 1005 reserved for legacy Token Ring and FDDI, and extended range is 1006 to 4094. VTP version 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch in a VTP domain will not appear on the others and the playbook will look like it silently did nothing on some hosts.
+Also be careful with the VLAN ID itself. Cisco standard-range [VLANs](/blog/vlan-segmentation-guide) are 1 to 1005, with 1002 to 1005 reserved for legacy Token Ring and FDDI, and extended range is 1006 to 4094. VTP version 1 and 2 cannot propagate extended-range VLANs, so a VLAN 2000 created on one switch in a VTP domain will not appear on the others and the playbook will look like it silently did nothing on some hosts.
 
 `write memory` runs unconditionally in this playbook, including on hosts where nothing changed, which produces a "changed" result every run and makes it impossible to tell real changes from noise. Gate it:
 

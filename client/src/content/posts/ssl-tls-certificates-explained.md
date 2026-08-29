@@ -30,7 +30,7 @@ The name check is the part people get wrong. Hostname verification is done again
 
 ## The handshake, briefly
 
-Over TLS 1.3, defined in RFC 8446, the client opens a connection to TCP port 443 and sends a ClientHello that already includes a key share guess. The server replies with its ServerHello, its certificate chain, a CertificateVerify signature proving it holds the matching private key, and a Finished message. One round trip, and application data flows.
+Over [TLS 1.3](/blog/tls-modern-encryption), defined in RFC 8446, the client opens a connection to TCP port 443 and sends a ClientHello that already includes a key share guess. The server replies with its ServerHello, its certificate chain, a CertificateVerify signature proving it holds the matching private key, and a Finished message. One round trip, and application data flows.
 
 Two details matter. The certificate proves nothing on its own, since anyone can copy a public certificate; CertificateVerify, a signature over the handshake transcript made with the private key, is what proves possession. And TLS 1.3 removed static RSA key exchange, so every connection uses ephemeral keys and gets forward secrecy: recording the traffic today and stealing the server key later does not decrypt it.
 

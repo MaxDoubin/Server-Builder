@@ -55,7 +55,7 @@ The split I use is by question type, not by device class.
 
 Slow moving inventory and environmental data stays on SNMP: chassis serial, power supply state, temperature, PDU outlet draw. Poll it every minute or five. Nobody needs sub second fan speed.
 
-Fast moving or event shaped data goes to streaming where the platform supports it: interface counters, queue depth and drops, BGP neighbor state, optic light levels. That is where resolution changes conclusions.
+Fast moving or event shaped data goes to streaming where the platform supports it: interface counters, queue depth and drops, [BGP](/blog/bgp-for-network-engineers) neighbor state, optic light levels. That is where resolution changes conclusions.
 
 Then normalize both into the same time series store with the same label scheme, so a dashboard does not care which transport delivered the sample. If a device name and interface name mean the same thing in both pipelines, you can migrate one platform at a time without rewriting a single panel. That normalization layer is the actual project. The protocol choice is easy by comparison.
 

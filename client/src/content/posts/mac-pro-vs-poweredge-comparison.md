@@ -41,7 +41,7 @@ iDRAC versus nothing. Dell gives you full out-of-band management with remote con
 
 This is probably the biggest practical difference for server use. iDRAC means I can manage my Dell servers from anywhere. The Mac Pro requires me to be in front of it (or use VNC when macOS is running, which is not the same thing).
 
-Worth spelling out what "out-of-band" buys you, because the phrase gets thrown around loosely. iDRAC is a small computer with its own processor, its own network port, and its own power rail, running whether or not the host is powered on. It exposes IPMI over UDP port 623 and the DMTF Redfish REST API over HTTPS on 443. Through those you get remote console from POST onward, virtual media so you can boot an ISO sitting on your laptop, sensor readings, hardware event logs, and firmware updates.
+Worth spelling out what "out-of-band" buys you, because the phrase gets thrown around loosely. iDRAC is a small computer with its own processor, its own network port, and its own power rail, running whether or not the host is powered on. It exposes [IPMI](/blog/ipmi-remote-management) over UDP port 623 and the DMTF Redfish REST API over HTTPS on 443. Through those you get remote console from POST onward, virtual media so you can boot an ISO sitting on your laptop, sensor readings, hardware event logs, and firmware updates.
 
 Concretely, this is me checking a server's health without any cooperation from its operating system:
 

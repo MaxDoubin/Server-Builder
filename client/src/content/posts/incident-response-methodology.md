@@ -57,7 +57,7 @@ Verification means checking from the user's position, not from the server. A ser
 
 Write down what happened, when it happened, what caused it, how it was fixed, and what will prevent it from happening again. This is the step most people skip, and it is arguably the most important one. Good incident documentation prevents recurring problems and helps you respond faster next time.
 
-A postmortem that is worth writing has six parts: impact (who was affected and for how long), a timeline in absolute timestamps, the trigger (what set it off), the root cause (why the trigger had that effect), how it was detected, and action items. Separating trigger from root cause matters. "A switch reboot" is a trigger. "Spanning tree had no redundant path because both uplinks were on the same switch" is a root cause, and only the second one generates useful work.
+A postmortem that is worth writing has six parts: impact (who was affected and for how long), a timeline in absolute timestamps, the trigger (what set it off), the root cause (why the trigger had that effect), how it was detected, and action items. Separating trigger from root cause matters. "A switch reboot" is a trigger. "[Spanning tree](/blog/spanning-tree-protocol-deep-dive) had no redundant path because both uplinks were on the same switch" is a root cause, and only the second one generates useful work.
 
 Action items need an owner and a date or they are not action items, they are regrets. The Google SRE book's chapter on postmortem culture makes the other essential point: the document is blameless. The moment a postmortem can be used against someone, people stop writing down the parts that matter, and you lose the only mechanism you had for finding systemic problems.
 

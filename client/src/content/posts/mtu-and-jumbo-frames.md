@@ -33,7 +33,7 @@ tracepath -n 198.51.100.10
 ping -D -s 1472 -c 2 198.51.100.10
 ```
 
-If 1472 fails and 1422 succeeds, your path MTU is 1450, and 1450 is a number with a story attached. Add the 8 bytes of VXLAN header, 8 bytes of UDP, 20 bytes of outer IP, and 14 bytes of outer Ethernet, and you have exactly the overhead of VXLAN encapsulation over a 1500 byte underlay. The number tells you what is in the path.
+If 1472 fails and 1422 succeeds, your path MTU is 1450, and 1450 is a number with a story attached. Add the 8 bytes of [VXLAN](/blog/vxlan-network-virtualization) header, 8 bytes of UDP, 20 bytes of outer IP, and 14 bytes of outer Ethernet, and you have exactly the overhead of VXLAN encapsulation over a 1500 byte underlay. The number tells you what is in the path.
 
 A short table of the overheads worth memorizing:
 

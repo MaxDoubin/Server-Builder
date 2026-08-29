@@ -42,7 +42,7 @@ The configuration is layered, and missing a layer is why people report that aler
 
 The other trap is authentication. Older iDRAC9 firmware had no SMTP authentication or TLS at all, so it could only relay through a server that accepted unauthenticated mail from its IP. Support for SMTP authentication and SSL/TLS arrived in later 4.x firmware. If you are on older firmware, or you just want this to be reliable, point iDRAC at a small Postfix or msmtp relay on your LAN and let that host deal with Gmail or your provider. That also means one place to fix when a provider changes its rules, rather than one per server.
 
-Note that IPMI Platform Event Traps and email alerts are separate mechanisms. `iDRAC.IPMILan.AlertEnable` governs the former and is unrelated to whether email goes out, which is a common source of confusion when copying racadm snippets around.
+Note that [IPMI](/blog/ipmi-remote-management) Platform Event Traps and email alerts are separate mechanisms. `iDRAC.IPMILan.AlertEnable` governs the former and is unrelated to whether email goes out, which is a common source of confusion when copying racadm snippets around.
 
 ## Firmware Updates
 
@@ -76,7 +76,7 @@ That returns power supply state, voltages, and the current wattage reading as st
 
 ## Lifecycle Controller
 
-The Lifecycle Controller is a separate environment built into iDRAC that provides hardware diagnostics, OS deployment tools, and RAID configuration. It boots independently of the OS and does not require any installed software. It is essentially a built-in recovery environment that is always available.
+The Lifecycle Controller is a separate environment built into iDRAC that provides hardware diagnostics, OS deployment tools, and [RAID](/blog/raid-levels-comparison) configuration. It boots independently of the OS and does not require any installed software. It is essentially a built-in recovery environment that is always available.
 
 You reach it with F10 during POST. Two caveats: it can be disabled in BIOS, in which case F10 does nothing and you will assume the feature is missing; and the Part Replacement feature, which automatically restores firmware and configuration onto a newly installed component, only works if it was enabled *before* you swapped the part. Turn it on now, on every server, so it is there when you need it.
 

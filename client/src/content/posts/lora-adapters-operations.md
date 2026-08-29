@@ -59,7 +59,7 @@ The rule I use: merge when a variant is the only thing a deployment serves and l
 
 ## Treat adapters like build artifacts
 
-The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different quantization of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
+The failure mode I watch for is an adapter that exists as a file on someone's machine with no record of how it was produced. An adapter is only meaningful relative to an exact base model. Apply one to a different base, even a different [quantization](/blog/model-quantization-by-the-bytes) of the same base, and you get output that is subtly wrong rather than loudly broken. That is the worst kind of wrong.
 
 So every adapter I would consider deploying carries a manifest next to it:
 

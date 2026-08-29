@@ -105,7 +105,7 @@ which loads iPXE, forever. Every network boot setup hits that loop once.
 ## The Failures I Actually Hit
 
 **Nothing happens at all.** Check that the interface is actually in the right
-VLAN and that DHCP snooping or a rogue server guard on the switch is not eating
+VLAN and that [DHCP snooping](/blog/dhcp-snooping-arp-inspection) or a rogue server guard on the switch is not eating
 the offer. Turn on `log-dhcp` and watch for the DISCOVER. If you never see it,
 the problem is layer 2, not boot.
 
@@ -119,7 +119,7 @@ rules that only allow port 69 break it after the first packet. Connection
 tracking with the TFTP helper, or just moving to HTTP as early as possible,
 solves it.
 
-**Boots, then the installer cannot reach anything.** Spanning tree. The port
+**Boots, then the installer cannot reach anything.** [Spanning tree](/blog/spanning-tree-protocol-deep-dive). The port
 went into forwarding after the firmware gave up waiting. Portfast, or its
 equivalent, on access ports fixes this and you should have it anyway.
 

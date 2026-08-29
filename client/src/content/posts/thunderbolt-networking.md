@@ -90,7 +90,7 @@ In my lab, I have used Thunderbolt networking between my Mac Pro and a Mac Mini 
 
 Thunderbolt networking is point-to-point. You cannot build a network fabric with Thunderbolt. There are no Thunderbolt switches. If you need to connect more than two devices, you need to use standard Ethernet.
 
-One partial exception, because `bridge0` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless spanning tree is on.
+One partial exception, because `bridge0` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless [spanning tree](/blog/spanning-tree-protocol-deep-dive) is on.
 
 Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a metre, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
 

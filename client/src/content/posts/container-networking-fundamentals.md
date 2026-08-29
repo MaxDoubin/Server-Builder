@@ -51,7 +51,7 @@ CNI itself is deliberately tiny: plugins are just executables in `/opt/cni/bin` 
 
 ## How Calico Works
 
-Calico uses BGP to distribute pod routes across nodes. Each node peers with a route reflector (or directly with other nodes) and advertises the pod CIDR it is responsible for. Packets between pods on different nodes follow the BGP-learned routes, flowing directly without encapsulation.
+Calico uses [BGP](/blog/bgp-for-network-engineers) to distribute pod routes across nodes. Each node peers with a route reflector (or directly with other nodes) and advertises the pod CIDR it is responsible for. Packets between pods on different nodes follow the BGP-learned routes, flowing directly without encapsulation.
 
 This makes Calico extremely performant and easy to troubleshoot because the routing is standard IP routing.
 
@@ -59,7 +59,7 @@ BGP here is ordinary BGP-4 as specified in RFC 4271, speaking TCP on port 179, a
 
 The honest limitation: unencapsulated BGP routing only works if the underlay will actually forward packets addressed to your pod CIDR. On a flat L2 lab network it works beautifully. Across a router that does not know about the pod CIDR, or on AWS and Azure where the fabric drops frames whose source IP is not a registered instance address, packets vanish. Calico's answer is `ipipMode` or `vxlanMode` set to `CrossSubnet`, which keeps native routing inside a subnet and encapsulates only when crossing one.
 
-Encapsulation is also the number one source of the weirdest failure in container networking: **small requests work, large ones hang.** SSH connects and then freezes at the banner. `curl` returns headers and stalls. That is an MTU mismatch. VXLAN adds 50 bytes of overhead, IP-in-IP adds 20, and WireGuard adds 60, so on a 1500 byte underlay the pod MTU must be 1450, 1480, or 1440 respectively. If the pod MTU is left at 1500 and the intermediate ICMP "fragmentation needed" messages are filtered, Path MTU Discovery never completes and every packet over the limit is silently dropped. Test it directly with `ping -M do -s 1472` and walk the size down until it succeeds.
+Encapsulation is also the number one source of the weirdest failure in container networking: **small requests work, large ones hang.** SSH connects and then freezes at the banner. `curl` returns headers and stalls. That is an MTU mismatch. [VXLAN](/blog/vxlan-network-virtualization) adds 50 bytes of overhead, IP-in-IP adds 20, and WireGuard adds 60, so on a 1500 byte underlay the pod MTU must be 1450, 1480, or 1440 respectively. If the pod MTU is left at 1500 and the intermediate ICMP "fragmentation needed" messages are filtered, Path MTU Discovery never completes and every packet over the limit is silently dropped. Test it directly with `ping -M do -s 1472` and walk the size down until it succeeds.
 
 ## Service Networking
 

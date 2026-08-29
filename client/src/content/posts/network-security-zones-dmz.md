@@ -8,7 +8,7 @@ The classic zone model has three zones:
 - **Outside (WAN/Internet):** Untrusted external network
 - **DMZ:** Semi-trusted zone for systems that must be accessible from outside
 
-The word "zone" does two jobs at once and it helps to separate them. On the firewall, a zone is a named container that one or more interfaces or VLANs get assigned to, so you can write policy against a name instead of against interface numbers. In the design, a zone is an assertion about trust: everything in here may talk to everything else in here without inspection. The second meaning is the one that causes problems, because a zone is only as strong as the assumption that nothing inside it is hostile.
+The word "zone" does two jobs at once and it helps to separate them. On the firewall, a zone is a named container that one or more interfaces or [VLANs](/blog/vlan-segmentation-guide) get assigned to, so you can write policy against a name instead of against interface numbers. In the design, a zone is an assertion about trust: everything in here may talk to everything else in here without inspection. The second meaning is the one that causes problems, because a zone is only as strong as the assumption that nothing inside it is hostile.
 
 Some platforms encode trust as a number. On a Cisco ASA, every interface carries a security level from 0 to 100, conventionally 0 for outside, 100 for inside, and something in between such as 50 for the DMZ. Traffic from a higher security level to a lower one is permitted by default and the return traffic is allowed by the state table, while traffic from lower to higher is dropped unless an access list says otherwise. Zone-based policy on IOS, on FortiGate, and on pfSense expresses the same idea without the number: no policy, no traffic.
 

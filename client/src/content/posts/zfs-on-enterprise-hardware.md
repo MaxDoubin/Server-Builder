@@ -1,7 +1,7 @@
 
 ## Why ZFS
 
-You have a PowerEdge with a stack of drives in it, you want a filesystem that will tell you when something is quietly rotting, and the RAID controller in the front of the machine is standing in your way. That is the whole problem in one sentence, and most of the work in getting ZFS running on Dell hardware is convincing the storage controller to get out of the way and then choosing a pool layout you will not regret in two years.
+You have a PowerEdge with a stack of drives in it, you want a filesystem that will tell you when something is quietly rotting, and the [RAID](/blog/raid-levels-comparison) controller in the front of the machine is standing in your way. That is the whole problem in one sentence, and most of the work in getting ZFS running on Dell hardware is convincing the storage controller to get out of the way and then choosing a pool layout you will not regret in two years.
 
 ZFS is a filesystem and volume manager that handles things most filesystems leave to external tools. It does its own RAID (called RAIDZ), snapshots, compression, deduplication, checksumming, and self-healing. Once you use ZFS, going back to traditional RAID controllers and ext4 feels primitive.
 

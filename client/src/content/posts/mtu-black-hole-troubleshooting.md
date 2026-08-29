@@ -15,7 +15,7 @@ and the message saying so never made it back to the sender.
 
 Every link has a maximum transmission unit, the largest frame it will carry.
 Standard Ethernet is 1500 bytes of payload. A tunnel of any kind, a VPN, an
-encapsulation like VXLAN or GRE, or a PPPoE connection, wraps your packet in
+encapsulation like [VXLAN](/blog/vxlan-network-virtualization) or GRE, or a PPPoE connection, wraps your packet in
 extra headers and therefore has a smaller effective MTU than the link it rides
 on.
 

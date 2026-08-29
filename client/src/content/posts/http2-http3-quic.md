@@ -26,7 +26,7 @@ HTTP mapped onto it. The important pieces:
 **Streams are a transport concept.** Loss recovery is per stream. A lost
 packet carrying stream 7 delays stream 7 and nothing else.
 
-**TLS 1.3 is not layered on top, it is integrated.** There is no separate TCP
+**[TLS 1.3](/blog/tls-modern-encryption) is not layered on top, it is integrated.** There is no separate TCP
 handshake followed by a TLS handshake. The cryptographic handshake and the
 transport handshake happen together, which is where most of the connection
 setup saving comes from.

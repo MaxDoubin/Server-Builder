@@ -4,7 +4,7 @@ You can define a VLAN, recite the OSI layers, and pass the practice exam, and st
 
 ## Beyond the textbook
 
-Reading about VLANs and subnetting is one thing. Configuring them on real hardware, breaking something, and spending two hours figuring out why your trunk port is dropping tagged traffic is a completely different experience. That is why I run a homelab.
+Reading about [VLANs](/blog/vlan-segmentation-guide) and [subnetting](/blog/subnetting-practical-guide) is one thing. Configuring them on real hardware, breaking something, and spending two hours figuring out why your trunk port is dropping tagged traffic is a completely different experience. That is why I run a homelab.
 
 My homelab runs multiple Dell enterprise servers with serious compute and storage capacity. It is not a Raspberry Pi cluster or a single tower PC. It is enterprise hardware running enterprise workloads, and that is the point.
 

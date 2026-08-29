@@ -17,7 +17,7 @@ In a production environment, walking up to a server to plug in a monitor and key
 
 In a homelab, it still matters. My servers are in a closet, and I manage them entirely from my desk. If an OS hangs during a kernel update, I can remote into iDRAC, access the virtual console, and fix it without getting up. That might sound like a convenience, but multiply it by dozens of incidents over time and it becomes essential.
 
-The other thing it buys you is evidence. The BMC keeps a system event log that survives OS crashes and reboots, so you can read what the hardware saw instead of reconstructing it from a syslog that stopped mid-sentence.
+The other thing it buys you is evidence. The BMC keeps a system event log that survives OS crashes and reboots, so you can read what the hardware saw instead of reconstructing it from a [syslog](/blog/syslog-centralized-logging) that stopped mid-sentence.
 
 ## How it works
 

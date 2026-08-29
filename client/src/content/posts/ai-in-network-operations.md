@@ -13,7 +13,7 @@ That is not a dodge. It is the actual finding. The data plumbing is the project.
 
 ## Where I think it fits
 
-**Log and alert triage.** A model summarizing three hundred correlated syslog lines into "these forty messages are one interface flapping, here is the interface" is doing something genuinely hard for a human at 3am and easy for a language model. It is a reading comprehension task over text, which is exactly the shape of the problem these models are good at.
+**Log and alert triage.** A model summarizing three hundred correlated [syslog](/blog/syslog-centralized-logging) lines into "these forty messages are one interface flapping, here is the interface" is doing something genuinely hard for a human at 3am and easy for a language model. It is a reading comprehension task over text, which is exactly the shape of the problem these models are good at.
 
 **Explaining a config diff.** A diff of two device configurations is precise and unreadable. "This change adds VLAN 40 to the trunk on ports 1 through 8 and removes the storm control threshold" is a summary a reviewer can act on. The diff remains the source of truth. The summary is a reading aid.
 

@@ -105,7 +105,7 @@ Two additions worth the time. Set the secondary root explicitly too, so a failur
 
 **MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behaviour rarely matches what anyone expected.
 
-**Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual VLANs you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
+**Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual [VLANs](/blog/vlan-segmentation-guide) you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
 
 ## References
 

@@ -100,7 +100,7 @@ the client on a different VLAN never reaches your server. The fix is a DHCP
 relay, configured on the gateway interface for that VLAN. On Cisco style
 hardware that is `ip helper-address` pointing at the DHCP server.
 
-A long pause and then a timeout. Spanning tree. A port that has just come up
+A long pause and then a timeout. [Spanning tree](/blog/spanning-tree-protocol-deep-dive). A port that has just come up
 spends time in listening and learning before it forwards, and the firmware's
 DHCP retry budget can expire first. Edge port or portfast on access ports fixes
 this and is correct regardless.

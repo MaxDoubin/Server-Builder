@@ -15,7 +15,7 @@ Two form factors matter when you go shopping. A 1U or 2U horizontal PDU bolts in
 
 **Switched PDU:** Everything a monitored PDU does, plus you can remotely power-cycle individual outlets. This is incredibly useful when a server hangs and iDRAC is not responding.
 
-Two honest caveats. Check the metering accuracy spec, not just the presence of a display: inexpensive metered units are often only good to within a few percent, which is fine for "am I near the limit" and useless for attributing watts to individual workloads. And a switched outlet is a hard power cut. It does not flush write caches or unmount filesystems, so cutting power mid-write is how you find out whether your filesystem journaling actually works. Try a graceful shutdown through IPMI or iDRAC first. Many switched PDUs also enforce a minimum off-time of several seconds during a reboot cycle, because the PSU's bulk capacitors need to discharge before the board will cold-start. If your one-second power blip does not bring the server back, that is why.
+Two honest caveats. Check the metering accuracy spec, not just the presence of a display: inexpensive metered units are often only good to within a few percent, which is fine for "am I near the limit" and useless for attributing watts to individual workloads. And a switched outlet is a hard power cut. It does not flush write caches or unmount filesystems, so cutting power mid-write is how you find out whether your filesystem journaling actually works. Try a graceful shutdown through [IPMI](/blog/ipmi-remote-management) or iDRAC first. Many switched PDUs also enforce a minimum off-time of several seconds during a reboot cycle, because the PSU's bulk capacitors need to discharge before the board will cold-start. If your one-second power blip does not bring the server back, that is why.
 
 ## Sizing: The 80 Percent Rule
 
@@ -76,7 +76,7 @@ One more term you will meet on spec sheets: power factor. VA is volts times amps
 
 A networked PDU is an embedded computer with a web server, and it is usually one running firmware nobody has updated since it shipped. Treat it accordingly.
 
-Change the default credentials first. Put the management interface on the management VLAN with no route to the internet and none from user VLANs. If the unit only supports SNMPv1 or v2c, the community string is a plaintext password readable by anyone who can capture the traffic; SNMPv3, whose architecture is defined in RFC 3411, adds real authentication and encryption. Keep SNMP read-only unless you truly need writes, because SNMP write access to a switched PDU means anyone who learns the community string can power off your rack.
+Change the default credentials first. Put the management interface on the management VLAN with no route to the internet and none from user [VLANs](/blog/vlan-segmentation-guide). If the unit only supports SNMPv1 or v2c, the community string is a plaintext password readable by anyone who can capture the traffic; SNMPv3, whose architecture is defined in RFC 3411, adds real authentication and encryption. Keep SNMP read-only unless you truly need writes, because SNMP write access to a switched PDU means anyone who learns the community string can power off your rack.
 
 ## What a PDU Will Not Do
 

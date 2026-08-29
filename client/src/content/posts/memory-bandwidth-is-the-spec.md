@@ -98,7 +98,7 @@ does matter for training pipelines that stream data continuously.
 There are only a few honest options, and they all reduce to moving fewer bytes.
 
 Reduce precision. Half the bytes per weight is roughly half the read time per
-token. This is the single biggest lever available and it is why quantization is
+token. This is the single biggest lever available and it is why [quantization](/blog/model-quantization-by-the-bytes) is
 so central to local inference.
 
 Batch. Reading the weights once and using them for many sequences raises

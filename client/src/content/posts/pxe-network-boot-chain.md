@@ -108,7 +108,7 @@ servers a boot image.
 How I treat that:
 
 - Provisioning lives on a dedicated VLAN that is not the user VLAN, with
-  DHCP snooping upstream so only the real server can answer.
+  [DHCP snooping](/blog/dhcp-snooping-arp-inspection) upstream so only the real server can answer.
 - Second stage transfers use HTTP inside that segment and HTTPS when they
   cross a boundary. iPXE can be built with a trusted CA baked in.
 - Secure Boot machines chain a signed shim rather than a raw loader, so the
@@ -139,7 +139,7 @@ curl -sfI http://192.0.2.10/boot.ipxe
 ```
 
 Three symptoms cover most cases. No DHCP offer at all usually means the client
-is on the wrong VLAN or spanning tree has not converged before the firmware
+is on the wrong VLAN or [spanning tree](/blog/spanning-tree-protocol-deep-dive) has not converged before the firmware
 gives up, which is what portfast on access ports is for. An offer followed by
 a timeout usually means the firewall is blocking the TFTP data transfer, since
 the server replies from an ephemeral UDP port rather than 69. A loader that

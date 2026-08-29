@@ -9,7 +9,7 @@ The Apple Xserve was a 1U rack-mount server that Apple sold from 2002 to 2011. I
 
 Announced in May 2002, it was the first machine Apple ever designed for a rack rather than a desk. The generations went roughly like this: dual PowerPC G4 at the start, the Xserve G5 in 2004 with PowerPC 970FX processors and ECC DDR memory, then the switch to Intel in 2006 with dual dual-core Xeons, a quad-core Xeon refresh in early 2008, and a final Nehalem-generation Xeon model in early 2009. Apple announced the end on 5 November 2010 and took the last orders on 31 January 2011.
 
-Two details separated it from a Mac in a rack tray. Drives lived in Apple Drive Modules, proprietary hot-swap sleds you could pull from the front while the machine ran, up to three or four depending on generation. And there was lights-out management, reached through a management port with Apple's Server Monitor application, so you could check temperatures, fans, and power state on a machine that was not responding, which is exactly the job a BMC does on a Dell or HP box. The Intel models also offered redundant power supplies as an option. Alongside it Apple sold the Xserve RAID, a 3U 14-bay Fibre Channel array, which is what most of the big Xsan deployments were built on.
+Two details separated it from a Mac in a rack tray. Drives lived in Apple Drive Modules, proprietary hot-swap sleds you could pull from the front while the machine ran, up to three or four depending on generation. And there was lights-out management, reached through a management port with Apple's Server Monitor application, so you could check temperatures, fans, and power state on a machine that was not responding, which is exactly the job a BMC does on a Dell or HP box. The Intel models also offered redundant power supplies as an option. Alongside it Apple sold the Xserve [RAID](/blog/raid-levels-comparison), a 3U 14-bay Fibre Channel array, which is what most of the big Xsan deployments were built on.
 
 ## Why it mattered
 
@@ -31,7 +31,7 @@ The software followed the hardware down, just slowly enough that people kept hop
 
 ## The Mac Pro as spiritual successor
 
-The 2019 Mac Pro in rack-mount configuration is the closest thing to a modern Xserve. It fits in a standard rack, supports ECC memory, and can run macOS server workloads. But it is designed as a workstation, not a server. It lacks the server-specific features (hot-swap drives, redundant power supplies, IPMI) that made the Xserve a real server.
+The 2019 Mac Pro in rack-mount configuration is the closest thing to a modern Xserve. It fits in a standard rack, supports ECC memory, and can run macOS server workloads. But it is designed as a workstation, not a server. It lacks the server-specific features (hot-swap drives, redundant power supplies, [IPMI](/blog/ipmi-remote-management)) that made the Xserve a real server.
 
 The specifics are worth stating because they set the ceiling on what you can build. The rack Mac Pro is 4U, not 1U, so four of them fill sixteen rack units where sixteen Xserves once fit. The Intel version takes ECC DDR4 up to 1.5 TB in the top configurations. The 2023 Apple silicon version replaced that with unified memory that is soldered to the package and capped far lower, and its PCIe slots will not take a GPU. There is no out-of-band management on either one. No IPMI, no Redfish, no serial console redirection, no way to watch the boot process from another building.
 

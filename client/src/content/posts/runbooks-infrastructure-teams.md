@@ -13,7 +13,7 @@ Each of those failures has a recognizable shape, and once you can name the shape
 
 **The prose runbook.** Someone wrote three good paragraphs explaining how the queue drains. That is real documentation, and it is not a runbook. Nobody reads paragraphs at 2 AM. Split it: background lives in a design doc the runbook links to, and the runbook is numbered steps.
 
-**The unfindable runbook.** The document is excellent and the on-call engineer has never seen it. The fix is mechanical. Put the runbook link in the alert itself. Prometheus alerting rules carry an `annotations` block, and a `runbook_url` annotation rides through Alertmanager into the notification, so the page that wakes you up contains the link to the page that tells you what to do.
+**The unfindable runbook.** The document is excellent and the on-call engineer has never seen it. The fix is mechanical. Put the runbook link in the alert itself. [Prometheus](/blog/prometheus-server-monitoring) alerting rules carry an `annotations` block, and a `runbook_url` annotation rides through Alertmanager into the notification, so the page that wakes you up contains the link to the page that tells you what to do.
 
 There is a fifth failure that only shows up in the worst incidents: the runbook hosted on the infrastructure that is currently broken. If the wiki runs on the cluster that is down, or sits behind the identity provider that is the outage, you have no runbook. Keep an exported copy in a different failure domain. A PDF on a laptop is unglamorous and it works.
 

@@ -1,7 +1,7 @@
 
 ## Stage 1: Consumer Router
 
-Like most people, I started with the router my ISP provided. A single device handled routing, switching, WiFi, DHCP, DNS, and firewall. It worked fine for basic internet access, but it was a black box. I could not configure VLANs, could not see detailed traffic logs, and had no visibility into what was happening on my network.
+Like most people, I started with the router my ISP provided. A single device handled routing, switching, WiFi, DHCP, DNS, and firewall. It worked fine for basic internet access, but it was a black box. I could not configure [VLANs](/blog/vlan-segmentation-guide), could not see detailed traffic logs, and had no visibility into what was happening on my network.
 
 Two things about that box are worth spelling out, because they explain why the upgrade path goes the way it does.
 
@@ -27,7 +27,7 @@ Three things go wrong here, in roughly this order:
 
 **Router on a stick has a real ceiling.** If all your VLANs trunk to the router over one 1 Gbps link, every inter-VLAN packet crosses that link twice, in and back out. Effective inter-VLAN throughput is roughly 500 Mbps total, shared by every VLAN pair. On a network where clients and servers live in different VLANs, that is your file transfer speed, and no amount of switch tuning changes it. The fix is either a layer 3 switch doing inter-VLAN routing in hardware, or a faster uplink to the router.
 
-Once you have two switches, spanning tree stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
+Once you have two switches, [spanning tree](/blog/spanning-tree-protocol-deep-dive) stops being a diagram in a textbook. Default bridge priority is 32768, and the bridge ID is priority plus MAC address, so with everything at defaults the switch with the lowest MAC becomes root. That is usually the oldest, slowest device in the building, and now all your traffic routes through it. Set the priority explicitly on the switch you want as root. Also know the timers: classic 802.1D takes 30 seconds to move a port to forwarding (15 seconds listening plus 15 learning) and up to 50 seconds to recover from an indirect link failure once the 20 second max age expires. RSTP does the same job in a few seconds. If a link flap takes your network down for the better part of a minute, you are running 802.1D and should not be.
 
 ## Stage 3: Enterprise Hardware
 
@@ -35,7 +35,7 @@ Adding Dell PowerEdge servers was the next step. This required proper network in
 
 This is also when I started treating the network as infrastructure rather than an accessory. Documentation, change management, monitoring, and backups all became necessary.
 
-The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 metres, while Category 6A is rated for the full 100 metres because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than SFP+ and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 metres, and beyond that you are buying active cable or optics.
+The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 metres, while Category 6A is rated for the full 100 metres because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than [SFP+](/blog/sfp-transceivers-explained) and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 metres, and beyond that you are buying active cable or optics.
 
 The used-gear trap here is transceiver vendor locking. Many switches check the vendor ID in an SFP+ module's EEPROM and refuse anything that is not their own brand, and server NICs sometimes do the same. A perfectly good Dell-coded transceiver will be rejected by a Cisco switch and vice versa. Most platforms have an unsupported-transceiver override command, but find out whether yours does before the parts arrive.
 

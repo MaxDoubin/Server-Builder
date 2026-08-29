@@ -89,7 +89,7 @@ at short context may not fit at long context with several users attached.
   per-user speed degrades slowly. This is why serving stacks care so much
   about continuous batching, and why a benchmark run with batch size one
   tells you almost nothing about a shared service.
-- **Quantization.** Fewer bits per weight means fewer bytes read per token,
+- **[Quantization](/blog/model-quantization-by-the-bytes).** Fewer bits per weight means fewer bytes read per token,
   so it speeds up decode directly rather than only saving space.
 
 ## How I spec a box for this

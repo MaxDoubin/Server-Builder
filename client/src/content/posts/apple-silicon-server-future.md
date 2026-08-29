@@ -25,7 +25,7 @@ Servers also need PCIe lanes for network cards, storage controllers, and acceler
 
 This is the part that gets least attention and matters most operationally. A server is expected to be manageable when the operating system is dead.
 
-An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardised: IPMI over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
+An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardised: [IPMI](/blog/ipmi-remote-management) over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
 
 Apple Silicon has none of this. There is no BMC, no out-of-band port, no Redfish endpoint. Remote access means SSH on port 22 or Screen Sharing on TCP 5900, and both of those require macOS to be up and on the network. If the machine hangs at boot, somebody walks to the rack. Apple Silicon also does not implement UEFI or ACPI, and it does not conform to Arm's SystemReady specifications, which are the reason a Graviton or Ampere box boots a stock ARM64 Linux ISO the same way an x86 server boots one.
 

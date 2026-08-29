@@ -29,7 +29,7 @@ Now the honest part, and it is the thing to check before you buy: the two featur
 
 Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use `root` / `calvin`; later ones have a unique default password printed on the pull-out service tag at the front of the chassis. Change it either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
 
-For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. IPMI over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
+For automation, iDRAC9 exposes a Redfish API over HTTPS, which is the modern way to script inventory, power state, and firmware updates. [IPMI](/blog/ipmi-remote-management) over LAN also exists but is disabled by default on iDRAC9 and has to be turned on deliberately, which is the correct default given IPMI's authentication history.
 
 ```bash
 # Chassis power state and sensor readings over IPMI, once enabled.
@@ -39,7 +39,7 @@ ipmitool -I lanplus -H 10.0.10.20 -U root -P '<password>' sdr type temperature
 
 ## Storage Configuration
 
-I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P RAID controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
+I run my R740s with a mix of SSDs and spinning drives. The front bays hold NVMe and SATA SSDs for VM storage, while a separate chassis extension handles bulk storage on larger drives. The PERC H740P [RAID](/blog/raid-levels-comparison) controller handles the hardware RAID, though I have been experimenting with passing drives through to ZFS for more flexibility.
 
 That last experiment deserves a warning, because it is where the R740 and ZFS genuinely fight each other. The H740P is a RAID controller with 8 GB of battery-backed cache and no true IT mode. Its "Non-RAID" disks are presented to the OS, but the I/O still crosses the RAID stack and its cache. ZFS assumes it owns the write path: it needs SMART data to pass through unmodified, and it needs a write to be on stable media when the drive says it is. A cache it cannot see or flush undermines the guarantee ZFS exists to provide, and putting each disk in a single-drive RAID 0 to fake passthrough does not help. The right part is the HBA330, a plain SAS host bus adapter in IT mode that is cheap on the used market. Swap the controller rather than fighting the H740P.
 

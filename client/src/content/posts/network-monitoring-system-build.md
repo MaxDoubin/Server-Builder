@@ -3,7 +3,7 @@
 
 Commercial network monitoring tools are expensive and often overkill for a lab or small environment. Building your own gives you deep understanding of how monitoring works and exactly the visibility you need without paying for features you never use.
 
-The honest counterpoint: you are also signing up to maintain it. A turnkey system like LibreNMS or Zabbix will auto-discover a switch, pick sane graphs, and be useful in an afternoon. A Prometheus stack will not do any of that for you. Build your own when the learning is part of the point, or when you have a specific question the packaged tools answer badly. Do not build your own because it looked cheaper.
+The honest counterpoint: you are also signing up to maintain it. A turnkey system like LibreNMS or Zabbix will auto-discover a switch, pick sane graphs, and be useful in an afternoon. A [Prometheus](/blog/prometheus-server-monitoring) stack will not do any of that for you. Build your own when the learning is part of the point, or when you have a specific question the packaged tools answer badly. Do not build your own because it looked cheaper.
 
 ## The Stack
 
@@ -15,7 +15,7 @@ My monitoring stack uses four main components:
 
 **Alertmanager for notifications:** When metrics cross thresholds, Alertmanager routes alerts to email or other destinations. A down interface or a device with 95 percent CPU should wake you up.
 
-**Syslog collection with Loki:** Devices send syslog messages to a central collector. Loki stores them, and Grafana lets you search and correlate logs with metrics.
+**[Syslog](/blog/syslog-centralized-logging) collection with Loki:** Devices send syslog messages to a central collector. Loki stores them, and Grafana lets you search and correlate logs with metrics.
 
 ## Setting Up SNMP
 
@@ -71,7 +71,7 @@ The beginner mistake is alerting on every interface going down. On an access por
 
 ## What to Monitor
 
-Focus first on the things that cause outages or degraded service: interface utilization and error rates, device CPU and memory, BGP session state if applicable, and power supply status. Add more metrics over time as you understand your environment better.
+Focus first on the things that cause outages or degraded service: interface utilization and error rates, device CPU and memory, [BGP](/blog/bgp-for-network-engineers) session state if applicable, and power supply status. Add more metrics over time as you understand your environment better.
 
 The goal is not to collect everything. It is to make sure you find out about real problems before your users do.
 

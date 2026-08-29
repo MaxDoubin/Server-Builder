@@ -1,7 +1,7 @@
 
 ## Why Time Matters
 
-Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. DNSSEC and many security protocols depend on accurate time.
+Time synchronization is invisible when it works and catastrophic when it does not. Kerberos authentication (the backbone of Active Directory) fails if clocks are more than five minutes apart. TLS certificate validation uses timestamps. Log correlation across multiple systems is impossible if logs have different timestamps. [DNSSEC](/blog/dns-security-dnssec) and many security protocols depend on accurate time.
 
 The five minute figure is not folklore, it is the default maximum clock skew configured in MIT Kerberos and in Active Directory, and it exists to bound replay attacks on authenticators. Cross it and users get "clock skew too great" rather than anything that hints at the real cause.
 

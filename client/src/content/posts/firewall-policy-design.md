@@ -44,7 +44,7 @@ Example zones in my FortiGate:
 - Guest
 - Internet
 
-Check the intra-zone setting on every zone you create. When two interfaces belong to the same zone, whether traffic between them is permitted is a per-zone toggle, and it is not always set to deny. The symptom of getting this wrong is genuinely confusing: two VLANs you believe are isolated can reach each other, and no policy in the list explains why, because the traffic never gets evaluated against a policy at all.
+Check the intra-zone setting on every zone you create. When two interfaces belong to the same zone, whether traffic between them is permitted is a per-zone toggle, and it is not always set to deny. The symptom of getting this wrong is genuinely confusing: two [VLANs](/blog/vlan-segmentation-guide) you believe are isolated can reach each other, and no policy in the list explains why, because the traffic never gets evaluated against a policy at all.
 
 Zones also have a hard limit: they enforce at the boundary and can do nothing about traffic that never crosses it. If a switch access port is misconfigured and drops an IoT device into the Servers VLAN, that device is inside the segment and the firewall never sees its traffic. Policy design assumes the segmentation underneath it is correct. Port security, private VLANs, and 802.1X are what make that assumption true, and none of them live on the firewall.
 

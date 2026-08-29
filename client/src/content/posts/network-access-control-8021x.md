@@ -101,7 +101,7 @@ jsmith  Cleartext-Password := "password123"
 
 **Deploying in enforcement mode first.** Turning on 802.1X across a campus without a discovery phase takes out every device you did not know about, and you find out at 8 a.m. Every serious deployment starts in monitor mode, Cisco's `authentication open`, where the port authenticates and logs but permits traffic regardless of outcome. Run that for weeks, read the RADIUS logs, fix or MAB everything that fails, and only then close the ports.
 
-**IP phones with a PC behind them.** One switch port, two devices, two VLANs. That needs multi-domain authentication, `authentication host-mode multi-domain`, so the phone authenticates into the voice VLAN and the PC into the data VLAN independently. Single-host mode allows exactly one MAC address and will shut the port when it sees the second.
+**IP phones with a PC behind them.** One switch port, two devices, two [VLANs](/blog/vlan-segmentation-guide). That needs multi-domain authentication, `authentication host-mode multi-domain`, so the phone authenticates into the voice VLAN and the PC into the data VLAN independently. Single-host mode allows exactly one MAC address and will shut the port when it sees the second.
 
 **Certificate expiry.** With EAP-TLS or PEAP, the RADIUS server's own certificate has an expiry date. When it passes, every client on the network fails authentication simultaneously. Put that date in a calendar and monitor it, because the outage is total and the error clients report is unhelpful.
 

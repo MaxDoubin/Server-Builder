@@ -96,7 +96,7 @@ APFS does not checksum file data. It checksums metadata (directory structures, f
 
 There is also no scrub. Nothing in APFS periodically walks your data verifying it is still what you wrote. `diskutil verifyVolume` and `fsck_apfs` check that the structures are coherent, which is a different question from whether your file contents are intact. A flipped bit inside a photo passes every check APFS knows how to run.
 
-APFS also does not support software RAID. There is no APFS equivalent of ZFS RAIDZ or Linux md RAID. For redundant storage, you need either hardware RAID (which APFS sits on top of) or Apple's AppleRAID layer, which Disk Utility exposes as mirroring, striping, and concatenation only. There is no parity RAID in the box, and because AppleRAID sits below APFS, a mirror can tell you the two sides disagree but has no checksum to decide which side is right.
+APFS also does not support software [RAID](/blog/raid-levels-comparison). There is no APFS equivalent of ZFS RAIDZ or Linux md RAID. For redundant storage, you need either hardware RAID (which APFS sits on top of) or Apple's AppleRAID layer, which Disk Utility exposes as mirroring, striping, and concatenation only. There is no parity RAID in the box, and because AppleRAID sits below APFS, a mirror can tell you the two sides disagree but has no checksum to decide which side is right.
 
 Last, replication. ZFS has `zfs send` and `zfs receive`, which move snapshot deltas between machines as a stream. APFS snapshots are local objects, and there is no general purpose, scriptable equivalent exposed to you.
 
