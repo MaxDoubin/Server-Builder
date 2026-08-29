@@ -75,7 +75,7 @@ export default defineConfig({
           // Both are scheduler 0.21.0, pinned by the WebGL stack against the
           // app's own 0.23.2, so npm cannot dedupe them. The regex claimed
           // them for the react chunk, which every visitor downloads, and
-          // shipped 10KB of a 3D engine's private dependency on the landing
+          // shipped 7.9KB of a 3D engine's private dependency on the landing
           // page. Worse than the bytes: a chunk's modules are evaluated when
           // the chunk is, and scheduler opens a MessageChannel at module
           // scope, so first paint stood up three scheduler runtimes and three

@@ -37,6 +37,54 @@ export interface ReadingPath {
 
 export const readingPaths: ReadingPath[] = [
   {
+    id: "start-here",
+    title: "Start here",
+    blurb:
+      "For the reader starting from zero: what the field is, how to learn it, and a first server worth being proud of.",
+    steps: [
+      {
+        slug: "network-engineer-role-2026",
+        why: "Start with the destination. What the role actually involves now, so you know what you are aiming at.",
+      },
+      {
+        slug: "certifications-versus-projects",
+        why: "Knowing the destination, decide how to travel. The split between studying and building shapes every hour after this one.",
+      },
+      {
+        slug: "homelab-network-evolution",
+        why: "However you split it, the building half needs a shape. Three years of one lab, wrong turns included, shows the road ahead.",
+      },
+      {
+        slug: "cli-tools-i-actually-use",
+        why: "Now start. Nearly everything in this field happens at a shell prompt, and fluency there pays interest forever.",
+      },
+      {
+        slug: "linux-server-hardening",
+        why: "Your first server should be boring to attackers before it is interesting to you. These basics keep a learning box from becoming someone's bot.",
+      },
+      {
+        slug: "nginx-reverse-proxy-setup",
+        why: "Hardened, the box can do something. A reverse proxy ties Linux and networking together and fronts everything you build next.",
+      },
+      {
+        slug: "network-documentation-best-practices",
+        why: "Write down what you built while you still remember why. In six months the diagram is the only colleague you have.",
+      },
+      {
+        slug: "network-monitoring-tools",
+        why: "Documented, now watched. Learn that something broke from a graph, not by discovering it mid-demo.",
+      },
+      {
+        slug: "how-to-read-an-rfc",
+        why: "By now you have questions the tutorials do not answer. The answers live in primary sources, and reading one is a learnable skill.",
+      },
+      {
+        slug: "scaling-homelab-lessons",
+        why: "Finish with the lessons that only appear once a lab grows, then pick whichever of the other paths matches the itch.",
+      },
+    ],
+  },
+  {
     id: "networking-from-scratch",
     title: "Networking from scratch",
     blurb:
@@ -129,6 +177,54 @@ export const readingPaths: ReadingPath[] = [
     ],
   },
   {
+    id: "security-operations",
+    title: "Security operations and detection",
+    blurb:
+      "Security fundamentals builds the walls. This path watches them: logging, analysis, practice, response, and the write-up.",
+    steps: [
+      {
+        slug: "threat-modeling-services-you-run",
+        why: "You can only detect what you understand. Inventory what is actually running and how each piece would be abused.",
+      },
+      {
+        slug: "nmap-scanning-techniques",
+        why: "Then look at it from outside. Scanning your own network shows the map an attacker starts from, and it is rarely the one you drew.",
+      },
+      {
+        slug: "syslog-centralized-logging",
+        why: "Detection runs on logs, and logs left on a compromised box belong to the attacker. Get them off the machines first.",
+      },
+      {
+        slug: "log-analysis-methodology",
+        why: "A pile of centralised logs is not visibility. A method for asking them questions, and for noticing what is missing.",
+      },
+      {
+        slug: "troubleshooting-packet-captures",
+        why: "When the logs disagree or go quiet, the wire is ground truth. Captures settle arguments that log lines start.",
+      },
+      {
+        slug: "penetration-testing-basics",
+        why: "Now the other side's playbook, read defensively. Knowing the standard moves tells you which of your logs would light up.",
+      },
+      {
+        slug: "soc-home-lab-build",
+        why: "Put attack and detection in one lab and practise both. Mistakes are free here; the production version of this lesson is not.",
+      },
+      {
+        slug: "incident-response-methodology",
+        why: "Sooner or later an alert is real. What happens next should be a rehearsed sequence, not a thing you improvise on the day.",
+      },
+      {
+        slug: "postmortems-team-of-one",
+        why: "After the incident, the write-up. Done honestly, it is the only part of a bad day that appreciates in value.",
+      },
+      {
+        slug: "ai-in-security-operations",
+        why: "Close with the pitch from every vendor call: what models can genuinely do in a SOC, judged with the scepticism you have earned.",
+      },
+    ],
+  },
+  {
     id: "ai-meets-infrastructure",
     title: "AI meets infrastructure",
     blurb:
@@ -217,6 +313,102 @@ export const readingPaths: ReadingPath[] = [
       {
         slug: "runbooks-infrastructure-teams",
         why: "Finally, write down what you did, so the version of you at 3am can just follow it.",
+      },
+    ],
+  },
+  {
+    id: "storage-from-the-disk-up",
+    title: "Storage, from the disk up",
+    blurb:
+      "Media, then arrays, then what a filesystem actually promises, then ZFS, and finally proof that your numbers are real.",
+    steps: [
+      {
+        slug: "nvme-vs-sata-enterprise-storage",
+        why: "Start at the device. What the interface changes, what the medium changes, and which datasheet numbers are real.",
+      },
+      {
+        slug: "write-amplification-ssd-endurance",
+        why: "Interfaces sorted, look inside the flash. Every write costs more than you asked for, which is why drives have a wear budget.",
+      },
+      {
+        slug: "raid-levels-comparison",
+        why: "Once you accept that drives die, redundancy stops being optional. What each RAID level actually trades away.",
+      },
+      {
+        slug: "raid-rebuild-risk-math",
+        why: "The fine print on that redundancy. A rebuild window is exactly when a second failure hurts, and the arithmetic is not on your side.",
+      },
+      {
+        slug: "filesystem-journal-explained",
+        why: "Up one layer. RAID keeps blocks available; the journal is what keeps the filesystem on top of them consistent through a crash.",
+      },
+      {
+        slug: "linux-page-cache-and-io",
+        why: "Between your program and that filesystem sits a cache with opinions. Most of what you call disk I/O never touches a disk.",
+      },
+      {
+        slug: "fsync-and-what-saved-means",
+        why: "Given that cache, saved is a claim rather than a fact. fsync and write barriers are how the claim becomes true.",
+      },
+      {
+        slug: "zfs-on-enterprise-hardware",
+        why: "Now meet the filesystem that folds the last five posts into one design: checksums, redundancy and caching under one roof.",
+      },
+      {
+        slug: "zfs-arc-l2arc-tuning",
+        why: "Running ZFS means meeting its caches. ARC, L2ARC and the SLOG make sense now that you know what caching and fsync really do.",
+      },
+      {
+        slug: "storage-benchmarking-fio",
+        why: "Close by measuring what you built. fio will cheerfully benchmark the page cache instead of the disks unless you stop it.",
+      },
+    ],
+  },
+  {
+    id: "virtualisation-and-containers",
+    title: "Virtualisation and containers",
+    blurb:
+      "From consolidation economics to hypervisors, passthrough, containers, and the cluster that survives a dead host.",
+    steps: [
+      {
+        slug: "server-consolidation-virtualization",
+        why: "Start with why any of this exists. Most servers are idle most of the time, and consolidation is how that stops being waste.",
+      },
+      {
+        slug: "kvm-proxmox-esxi-comparison",
+        why: "With the goal clear, pick the platform. The serious options differ in licensing, tooling and philosophy more than in speed.",
+      },
+      {
+        slug: "virtualization-networking-concepts",
+        why: "The first thing every new VM needs is a way out. Bridges, virtual switches, and how a guest reaches the physical wire.",
+      },
+      {
+        slug: "numa-and-cpu-pinning",
+        why: "Once guests multiply, the first performance mystery arrives. Memory locality is why a big VM can be slower than a small one.",
+      },
+      {
+        slug: "sriov-and-device-passthrough",
+        why: "When virtual devices cost too much, hand the guest real ones. SR-IOV and passthrough are the escape hatch from that overhead.",
+      },
+      {
+        slug: "cgroups-v2-resource-limits",
+        why: "Now the other isolation model. Containers are not small VMs; they are processes with limits, and cgroups are the limits half.",
+      },
+      {
+        slug: "linux-network-namespaces",
+        why: "Namespaces are the isolation half. Building a network lab inside one box makes the boundary visible in a way no diagram does.",
+      },
+      {
+        slug: "container-networking-fundamentals",
+        why: "Put the two halves together and you get containers, whose networking is bridges and namespaces wearing new names.",
+      },
+      {
+        slug: "live-migration-internals",
+        why: "Back to VMs for the trick containers still envy: moving a running machine between hosts without dropping it.",
+      },
+      {
+        slug: "proxmox-clustering-high-availability",
+        why: "Migration plus quorum is a cluster. Finish with high availability, where workloads restart before you finish reading the alert.",
       },
     ],
   },

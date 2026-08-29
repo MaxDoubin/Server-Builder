@@ -437,7 +437,10 @@ if (failures.length > 0) {
   );
 }
 
+const clean = pages.length - seenKnown.size;
 console.log(
-  `\nOK  every page parses cleanly: no duplicate ids, no nested anchors, ` +
-    `no blocks inside a <p>, every element closed.`,
+  `\nOK  ${clean} of ${pages.length} pages parse cleanly: no duplicate ids, no ` +
+    `nested\n    anchors, no blocks inside a <p>, every element closed. The ` +
+    `remaining\n    ${seenKnown.size} carry only the known faults listed above, ` +
+    `and no new fault\n    was found anywhere.`,
 );
