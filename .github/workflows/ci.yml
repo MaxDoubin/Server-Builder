@@ -109,6 +109,12 @@ jobs:
       - name: Colour contrast
         run: node scripts-ci/check-contrast.mjs
 
+      # The notes are the only prose on a tool page. Without them the page is
+      # a heading and a box of inputs, which clears the prerender-depth floor
+      # while being exactly the empty page that floor exists to catch.
+      - name: Tool notes
+        run: node scripts-ci/check-tool-notes.mjs
+
       # An in-view threshold above viewportHeight / elementHeight can never
       # fire, so the content it gates stays at opacity 0 while still taking up
       # its full scroll height. The whole blog index shipped invisible on

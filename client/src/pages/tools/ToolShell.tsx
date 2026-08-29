@@ -2,9 +2,10 @@
  * Shared chrome for every tool page.
  *
  * Each tool supplies only its own controls and output. The heading, the SEO
- * head, the breadcrumb back to the index, and the notes section all come
- * from here, so sixteen separate tools stay visually identical and a new
- * one cannot drift.
+ * head, the breadcrumb back to the index, and the explanatory notes all come
+ * from here, so every tool stays visually identical and a new one cannot
+ * drift. The notes are looked up from TOOL_NOTES by slug rather than passed
+ * in, which is what lets the prerenderer emit the same words.
  */
 
 import type { ReactNode } from "react";
