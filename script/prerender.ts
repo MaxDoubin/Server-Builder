@@ -14,6 +14,7 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { Marked } from "marked";
+import { uniqueHeadingId } from "../client/src/lib/headingSlug";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -232,6 +233,44 @@ function buildPageHtml(base: string, meta: PageMeta): string {
  * from 404.html while /404.html returned a 308, which is the same rule in the
  * other direction.
  */
+
+/*
+  Stamp ids onto the h2 and h3 of a rendered article.
+
+  Without these a section is not linkable until the page hydrates: the
+  table of contents assigns ids client side, so a visitor arriving on a
+  #section URL, and every crawler, sees headings with no targets at all.
+  Google cannot offer a jump to a section it cannot address.
+
+  The slug rule is shared with usePostHeadings rather than reimplemented, so
+  the id the crawler indexes is the id the page still has after hydration.
+
+  Heading text can contain inline markup like <code>, and the client derives
+  its slug from textContent, so tags are stripped and entities decoded before
+  slugifying. scroll-margin-top matches the client's NAV_OFFSET, otherwise an
+  anchor jump lands underneath the fixed nav.
+*/
+function addHeadingIds(html: string): string {
+  const used = new Set<string>();
+  return html.replace(
+    /<(h[23])>([\s\S]*?)<\/\1>/g,
+    (whole, tag: string, inner: string) => {
+      const text = inner
+        .replace(/<[^>]*>/g, "")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!text) return whole;
+      const id = uniqueHeadingId(text, used);
+      return `<${tag} id="${id}" style="scroll-margin-top:96px">${inner}</${tag}>`;
+    },
+  );
+}
+
 async function writePage(
   relDir: string,
   base: string,
@@ -367,7 +406,7 @@ ${JSON.stringify({
 </script>`;
 
   // Full article HTML. Google reads this on the first HTML crawl
-  const contentHtml = await Promise.resolve(marked.parse(body));
+  const contentHtml = addHeadingIds(await Promise.resolve(marked.parse(body)));
   /*
     Formatted from the string parts, not through a Date.
 
