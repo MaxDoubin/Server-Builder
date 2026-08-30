@@ -142,7 +142,22 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
     the columns each family actually needs, weight a cage as the wider part
     it is, and divide the face between them.
   */
-  const rows = copperSrc.length >= 8 ? 2 : 1;
+  /*
+    Stack into two rows only when one row will not fit.
+    
+    The rule was "eight or more ports stack", which is what a Catalyst
+    does and not what a UniFi switch does: a Pro 24 puts all twenty four
+    jacks in a single row across the panel, and that single row is one of
+    the most recognisable things about the product. Twenty four jacks at
+    the 0.6 inch pitch is 366mm, which fits inside a 442mm chassis; forty
+    eight is 731mm, which does not, so a 48 port face stacks and a 24 port
+    face does not. Physics decides, not a threshold.
+
+    `singleRow` in the data still wins, for the handful of faces that
+    refuse to stack whatever the arithmetic says.
+  */
+  const fitsOneRow = copperSrc.length * JACK_PITCH <= CHASSIS_WIDTH * 0.94;
+  const rows = device.singleRow || fitsOneRow ? 1 : 2;
   const cols = Math.ceil(copperSrc.length / rows) || 0;
   const cageRows = cageSrc.length > 4 ? 2 : 1;
   const cageCols = Math.ceil(cageSrc.length / cageRows) || 0;

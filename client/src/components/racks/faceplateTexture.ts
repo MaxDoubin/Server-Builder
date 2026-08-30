@@ -140,20 +140,35 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
     lip along its top edge that a punched slot actually has.
   */
   if (device.family === "blank" && (device.look ?? "solid") === "vented") {
-    const slots = 46;
-    const slotW = mm(2.4);
-    const slotH = TEX_H * 0.56;
-    const y0 = (TEX_H - slotH) / 2;
-    const step = (TEX_W * 0.9) / (slots - 1);
+    /*
+      A drilled grid, not a row of slots. Vented panels and equipment lids
+      are perforated with a staggered field of small round holes, because
+      that passes air without losing the panel's stiffness, and a row of
+      long slots is a different part that looks like a cartoon of this one.
+    */
+    const cols = 58;
+    const rows = 5;
+    const r = mm(1.15);
+    const fieldW = TEX_W * 0.9;
+    const fieldH = TEX_H * 0.56;
     const x0 = TEX_W * 0.05;
-    for (let i = 0; i < slots; i += 1) {
-      const x = x0 + i * step - slotW / 2;
-      ctx.fillStyle = pale ? "rgba(16,20,26,0.88)" : "rgba(0,0,0,0.92)";
-      ctx.fillRect(x, y0, slotW, slotH);
-      // The lip: light catches the near edge of a punched slot along its
-      // top, and that single bright line is what gives it depth.
-      ctx.fillStyle = pale ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.16)";
-      ctx.fillRect(x, y0 - Math.max(1, mm(0.35)), slotW, Math.max(1, mm(0.35)));
+    const y0 = (TEX_H - fieldH) / 2;
+    for (let iz = 0; iz < rows; iz += 1) {
+      const stagger = iz % 2 ? fieldW / cols / 2 : 0;
+      for (let ix = 0; ix < cols; ix += 1) {
+        const cx = x0 + ((ix + 0.5) * fieldW) / cols + stagger;
+        const cy = y0 + ((iz + 0.5) * fieldH) / rows;
+        if (cx > x0 + fieldW) continue;
+        // Lit rim on the near side of the hole, then the hole itself.
+        ctx.beginPath();
+        ctx.arc(cx, cy - r * 0.22, r * 1.1, 0, Math.PI * 2);
+        ctx.fillStyle = pale ? "rgba(255,255,255,0.42)" : "rgba(255,255,255,0.12)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = pale ? "rgba(14,18,24,0.9)" : "rgba(0,0,0,0.92)";
+        ctx.fill();
+      }
     }
   }
 

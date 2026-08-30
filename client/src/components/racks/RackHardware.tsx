@@ -12,9 +12,10 @@
  * possible, which is why this is not simply part of BrandedChassis.
  */
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import type { RackDefinition } from "@/lib/rackTypes";
+import { useFrame } from "@react-three/fiber";
+import type { LedState, RackDefinition } from "@/lib/rackTypes";
 import { CHASSIS_WIDTH, chassisLayout, deviceDepth } from "./chassisLayout";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 import { blankRim, fanGuard, jackCavity, jackContacts, jackRim, outlet, rackScrew, sfpCage } from "./parts";
@@ -40,6 +41,14 @@ const place = (x: number, y: number, z: number, w: number, h: number, d: number)
     new THREE.Vector3(w, h, d),
   );
 
+const LED_HEX: Record<string, string> = {
+  green: "#4ef08a",
+  blue: "#5ad2ff",
+  amber: "#ffc043",
+  red: "#ff5f5f",
+  off: "#191d22",
+};
+
 const MATS = {
   rim: new THREE.MeshStandardMaterial({ color: "#1a1e24", metalness: 0.35, roughness: 0.55, envMapIntensity: 0.55 }),
   gold: new THREE.MeshStandardMaterial({ color: "#e0b45a", metalness: 0.95, roughness: 0.24 }),
@@ -58,6 +67,59 @@ function cavityMaterial(tint: string): THREE.MeshStandardMaterial {
     cavityMaterials.set(tint, m);
   }
   return m;
+}
+
+/**
+ * Every lit indicator in the rack, in one instanced mesh.
+ *
+ * They were a mesh each, sitting in a group per device: three hundred draw
+ * calls for three hundred one millimetre squares, and positioned inboard
+ * enough that a patched port hid its own LED behind the plug. Now they sit
+ * in the top corner of the bezel where the real ones are, they are one
+ * draw call for the rack, and the blink is a per-instance colour written
+ * on the frame loop rather than a visibility toggle per object.
+ *
+ * They flicker out of step. A switch across a room does not pulse in
+ * unison, and a rack that does is the most distracting thing in a scene.
+ */
+function PortLeds({ spots }: { spots: Array<{ m: THREE.Matrix4; colour: string; seed: number }> }) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+
+  const mesh = useMemo(() => {
+    if (!spots.length) return null;
+    const m = new THREE.InstancedMesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({ toneMapped: false }),
+      spots.length,
+    );
+    const c = new THREE.Color();
+    spots.forEach((spot, i) => {
+      m.setMatrixAt(i, spot.m);
+      m.setColorAt(i, c.set(spot.colour));
+    });
+    m.instanceMatrix.needsUpdate = true;
+    m.frustumCulled = false;
+    return m;
+  }, [spots]);
+
+  const lit = useMemo(() => spots.map((s) => new THREE.Color(s.colour)), [spots]);
+  const dim = useMemo(() => spots.map((s) => new THREE.Color(s.colour).multiplyScalar(0.12)), [spots]);
+
+  useFrame(({ clock }) => {
+    const m = ref.current;
+    if (!m || !m.instanceColor) return;
+    const t = clock.elapsedTime;
+    for (let i = 0; i < spots.length; i += 1) {
+      const seed = spots[i].seed;
+      const rate = 1.5 + (seed % 7) * 0.31;
+      const phase = ((seed * 0.37) % 1) * 10;
+      m.setColorAt(i, Math.sin((t + phase) * rate) > -0.35 ? lit[i] : dim[i]);
+    }
+    m.instanceColor.needsUpdate = true;
+  });
+
+  if (!mesh) return null;
+  return <primitive ref={ref} object={mesh} />;
 }
 
 export function RackHardware({
@@ -80,6 +142,8 @@ export function RackHardware({
     const guards: THREE.Matrix4[] = [];
     const outlets: THREE.Matrix4[] = [];
     const cavities = new Map<string, THREE.Matrix4[]>();
+    const leds: Array<{ m: THREE.Matrix4; colour: string; seed: number }> = [];
+    let ledSeed = 0;
 
     const addCavity = (tint: string, m: THREE.Matrix4) => {
       const bucket = cavities.get(tint);
@@ -144,11 +208,51 @@ export function RackHardware({
           (tabUp ? rimUp : rimDown).push(m);
           (tabUp ? contactsUp : contactsDown).push(m);
           addCavity(tint, m);
+
+          /*
+            Two indicators per jack, at the outer corners of the cage: link
+            on one side, activity on the other. That is where a real 8P8C
+            jack puts them, and it is also the only place they survive
+            being patched, since a plug body is narrower than the cage it
+            goes into and would hide anything set further in.
+          */
+          const led = slot.port.led;
+          if (led && led !== "off") {
+            const lens = Math.min(slot.w * 0.12, slot.h * 0.11);
+            const ly = y0 + slot.y + (tabUp ? -slot.h * 0.33 : slot.h * 0.33);
+            for (const [side, colour] of [
+              [-1, LED_HEX[led as LedState] ?? LED_HEX.off],
+              [1, LED_HEX.amber],
+            ] as const) {
+              ledSeed += 1;
+              leds.push({
+                m: place(slot.x + side * slot.w * 0.46, ly, faceZ + 0.0022, lens, lens, 1),
+                colour,
+                seed: ledSeed,
+              });
+            }
+          }
         }
         for (const slot of layout.cages) {
           const m = place(slot.x, y0 + slot.y, faceZ + 0.0008, slot.w, slot.h, slot.w * 0.8);
           cages.push(m);
           addCavity(tint, m);
+          const led = slot.port.led;
+          if (led && led !== "off") {
+            ledSeed += 1;
+            leds.push({
+              m: place(
+                slot.x - slot.w * 0.36,
+                y0 + slot.y + slot.h * 0.36,
+                faceZ + 0.0022,
+                slot.w * 0.14,
+                slot.h * 0.12,
+                1,
+              ),
+              colour: LED_HEX[led as LedState] ?? LED_HEX.off,
+              seed: ledSeed,
+            });
+          }
         }
       }
 
@@ -184,14 +288,15 @@ export function RackHardware({
     push(instance(fanGuard(), MATS.guard, guards));
     push(instance(outlet(), MATS.outletFace, outlets));
     cavities.forEach((list, tint) => push(instance(jackCavity(), cavityMaterial(tint), list)));
-    return out;
+    return { out, leds };
   }, [rack, yOf, faceZ]);
 
   return (
     <group>
-      {meshes.map((m, i) => (
+      {meshes.out.map((m, i) => (
         <primitive key={i} object={m} />
       ))}
+      <PortLeds spots={meshes.leds} />
     </group>
   );
 }

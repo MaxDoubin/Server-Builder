@@ -234,22 +234,6 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           <mesh position={[layout.field.x, layout.field.y, faceZ - 0.0014]} material={recessMaterial}>
             <boxGeometry args={[layout.field.w + 0.006, layout.field.h + 0.004, 0.003]} />
           </mesh>
-          {/* Emissive indicators, one per lit port, blinked by the frame
-              loop above. Separated into their own group so the loop walks
-              only the lights and not the whole chassis. */}
-          <group ref={blinkRef}>
-            {[...layout.copper, ...layout.cages]
-              .filter((it) => it.port.led && it.port.led !== "off")
-              .map((it, i) => (
-                <mesh
-                  key={`l${i}`}
-                  position={[it.x - it.w * 0.28, it.y + it.h * 0.42, faceZ + 0.0012]}
-                  material={ledMaterial(it.port.led as string)}
-                >
-                  <boxGeometry args={[it.w * 0.13, it.h * 0.075, 0.001]} />
-                </mesh>
-              ))}
-          </group>
         </>
       )}
 
