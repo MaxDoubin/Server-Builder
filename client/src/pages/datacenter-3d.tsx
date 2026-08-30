@@ -40,6 +40,17 @@ type CameraMode = "orbit" | "auto" | "cinematic";
 type SessionMode = "build" | "explore";
 type DockTab = "cost" | "scenarios" | "layouts" | "awards";
 
+/*
+  Routes that are already a request for the simulator, so the entry gate has
+  nothing left to ask. It rendered over the scene as a full-bleed landing
+  screen (site name, tagline, credential badges, three profile cards), which
+  made /game read as the home page rather than the game: the visitor asked
+  for the game by name and got asked again what they wanted. Build is the
+  mode its Build button chose, and Explore is one click away in the control
+  dock once the scene is up, so nothing the gate offered is lost.
+*/
+const DIRECT_ENTRY_PATHS = new Set(["/game", "/legacy/game", "/floor"]);
+
 const DOCK_TABS: Array<{ id: DockTab; label: string; tour?: string }> = [
   { id: "scenarios", label: "Scenarios", tour: "scenarios" },
   { id: "cost", label: "Cost" },
@@ -75,7 +86,11 @@ export function DataCenter3D({
   const [location] = useLocation();
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  const [sessionMode, setSessionMode] = useState<SessionMode | null>(null);
+  // Seeded rather than set from the effect below so the gate never gets a
+  // frame of its own on the way in.
+  const [sessionMode, setSessionMode] = useState<SessionMode | null>(() =>
+    DIRECT_ENTRY_PATHS.has(location) ? "build" : null,
+  );
   const introVisible = sessionMode === null;
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [cameraMode, setCameraMode] = useState<CameraMode>("orbit");
@@ -386,8 +401,9 @@ export function DataCenter3D({
   );
 
   useEffect(() => {
-    if (location === "/floor") {
+    if (DIRECT_ENTRY_PATHS.has(location)) {
       handleSetMode("build");
+      return;
     }
     if (location === "/") {
       setSessionMode(null);
