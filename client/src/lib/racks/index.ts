@@ -19,6 +19,7 @@ import { juniperCoreRack } from "./juniperCore";
 import { serverRack } from "./server";
 import { dellComputeRack } from "./dellCompute";
 import { storageRack } from "./storage";
+import { storageDenseRack } from "./storageDense";
 
 export const RACKS: RackDefinition[] = [
   ubiquitiRack,
@@ -31,6 +32,7 @@ export const RACKS: RackDefinition[] = [
   serverRack,
   dellComputeRack,
   storageRack,
+  storageDenseRack,
   homelabRack,
 ];
 

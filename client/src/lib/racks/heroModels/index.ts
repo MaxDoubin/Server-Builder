@@ -14,6 +14,7 @@ import { CISCO_PARTS, CISCO_SCENERY } from "./cisco";
 import { JUNIPER_PARTS, JUNIPER_SCENERY } from "./juniper";
 import { MIKROTIK_PARTS, MIKROTIK_SCENERY } from "./mikrotik";
 import { DELL_PARTS, DELL_SCENERY } from "./dell";
+import { STORAGE_PARTS, STORAGE_SCENERY } from "./storage";
 
 export type { HeroModel, HeroPart } from "./types";
 
@@ -23,6 +24,12 @@ export const HERO_MODELS: Record<string, HeroModel> = {
     parts: UNIFI_PARTS,
     scenery: UNIFI_SCENERY,
     note: "A UniFi studio frame on casters, patched one to one across 24 ports.",
+  },
+  "storage-dense-42u": {
+    url: "/models/storage-42u.glb",
+    parts: STORAGE_PARTS,
+    scenery: STORAGE_SCENERY,
+    note: "A 42U dense storage rack: a controller head, top load shelves, a flash tier and a tape library.",
   },
   "dell-compute-42u": {
     url: "/models/dell-compute-42u.glb",
