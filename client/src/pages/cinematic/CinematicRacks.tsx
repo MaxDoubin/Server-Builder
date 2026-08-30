@@ -34,6 +34,43 @@ const SITE_URL = "https://maxdoubin.com";
 const portHue = (i: number, n: number) => `hsl(${Math.round(4 + (i / (n - 1)) * 236)}, 92%, 62%)`;
 
 /**
+ * A part filled frame, which is what the builder looks like on arrival.
+ *
+ * Deliberately not full. The card has to say "there is room here" in the
+ * one glance somebody gives it, and a rack drawn full says the opposite.
+ */
+function BuilderMini() {
+  const u = 8.4;
+  const filled = [0, 1, 2, 4];
+  return (
+    <svg viewBox="0 0 220 150" className="h-full w-full" role="img" aria-label="A part filled rack">
+      <rect x="34" y="6" width="152" height={12 * u + 8} rx="3" className="fill-[hsl(220_10%_9%)] stroke-[hsl(var(--brand-iron))]" strokeWidth="1" />
+      {Array.from({ length: 12 }, (_, i) => (
+        <rect
+          key={i}
+          x="42"
+          y={10 + i * u}
+          width="136"
+          height={u - 1.6}
+          rx="1.2"
+          className={
+            filled.includes(i)
+              ? "fill-[hsl(220_8%_20%)] stroke-[hsl(var(--brand-iron))]"
+              : "fill-none stroke-[hsl(var(--brand-iron)/0.45)]"
+          }
+          strokeWidth="0.6"
+          strokeDasharray={filled.includes(i) ? undefined : "2 2.5"}
+        />
+      ))}
+      <g className="fill-[hsl(var(--brand-signal))]">
+        <rect x="150" y={10 + 5 * u + u / 2 - 5} width="10" height="1.6" rx="0.8" />
+        <rect x="154.2" y={10 + 5 * u + u / 2 - 9.2} width="1.6" height="10" rx="0.8" />
+      </g>
+    </svg>
+  );
+}
+
+/**
  * A patched rack at card scale, drawn rather than photographed.
  *
  * Same rule as the elevations below: the thumbnail is the data, so it
@@ -139,6 +176,16 @@ export function CinematicRacks() {
   const fibre = WIRED_PATCHES.filter((p) => p.fibre).length;
   const FEATURED = [
     {
+      slug: "build",
+      href: "/racks/build",
+      kicker: "Build your own",
+      title: "The rack builder",
+      blurb:
+        "Fifty one rack mountable UniFi devices and an empty frame. Pick hardware, stack it, and see what the build weighs. Saves in your browser and shares as a link.",
+      stats: ["51 devices", "6U to 42U", "shareable"],
+      art: <BuilderMini />,
+    },
+    {
       slug: "wired",
       href: "/racks/wired",
       kicker: "Ubiquiti geometry",
@@ -207,13 +254,14 @@ export function CinematicRacks() {
               <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
             </div>
             <p className="mt-4 max-w-3xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
-              These two are not drawings of hardware. They are the hardware, from geometry
+              These three are not drawings of hardware. They are the hardware, from geometry
               Ubiquiti and Dell publish themselves, which means the panels are the panels and the
-              parts are the parts. Both run in the browser and both take a while to load, so they
-              sit apart from the elevations rather than in the grid with them.
+              parts are the parts. The first one is yours to fill. All three run in the browser
+              and all three take a while to load, so they sit apart from the elevations rather
+              than in the grid with them.
             </p>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {FEATURED.map((f) => (
                 <Link
                   key={f.href}
