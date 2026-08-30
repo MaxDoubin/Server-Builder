@@ -304,6 +304,17 @@ def export_glb(scene, path: Path) -> Path:
 
 
 class UniFiHeroRack(Builder):
+    #: Scene metadata, which every subclass inherits unless it says
+    #: otherwise. It was hardcoded here, so five vendor racks shipped
+    #: claiming to be this one, by an author who did not build them.
+    #: Anyone who opens one of these files in Blender reads this.
+    scene_title = 'UniFi Hero Rack - Clean Aligned Wordless Edition'
+    scene_author = 'OpenAI for Max Doubin'
+    scene_note = (
+        'Original procedural geometry built to match the user-approved rack concept. '
+        'No TurboSquid mesh or textures were copied. Ubiquiti and UniFi are third-party trademarks.'
+    )
+
     def __init__(self) -> None:
         super().__init__('extreme')
         self.front_y = -0.335
@@ -1078,13 +1089,10 @@ class UniFiHeroRack(Builder):
                     merged.visual = TextureVisuals(material=material)
                 name = f'{group}__{material_name}'
                 scene.add_geometry(merged, geom_name=name, node_name=name)
-        scene.metadata['title'] = 'UniFi Hero Rack - Clean Aligned Wordless Edition'
-        scene.metadata['author'] = 'OpenAI for Max Doubin'
+        scene.metadata['title'] = self.scene_title
+        scene.metadata['author'] = self.scene_author
         scene.metadata['units'] = 'meters'
-        scene.metadata['note'] = (
-            'Original procedural geometry built to match the user-approved rack concept. '
-            'No TurboSquid mesh or textures were copied. Ubiquiti and UniFi are third-party trademarks.'
-        )
+        scene.metadata['note'] = self.scene_note
         return scene
 
 

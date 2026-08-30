@@ -36,6 +36,7 @@ from build_unifi_hero_rack_clean_aligned import pbr
 
 
 class DellComputeRack(EnterpriseRack):
+    scene_title = 'Dell Compute Rack, 42U'
     frame_material = 'nexus_black_dark'
     panel_material = 'dell_graphite'
     inset_material = 'dell_graphite_dark'

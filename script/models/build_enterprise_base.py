@@ -54,6 +54,16 @@ class EnterpriseRack(UniFiHeroRack):
     panel_material = 'cisco_grey'
     #: Finish used for recessed sub-panels, card faces and bezels.
     inset_material = 'cisco_grey_dark'
+    #: Scene metadata. These racks are not the UniFi hero model and must
+    #: not claim to be: the title is what a modelling tool shows when the
+    #: file is opened, and it was the base class's until now.
+    scene_author = 'Max Doubin'
+    scene_note = (
+        'Original procedural geometry generated from published vendor dimensions. '
+        'No vendor mesh, texture or logo is included; product names are third-party trademarks '
+        'used to identify the hardware being illustrated.'
+    )
+
     #: The punched mounting rails. Every vendor at this end of the market
     #: paints theirs to match the cabinet, and the bright zinc this started
     #: with read as two strip lights running down the inside of the rack

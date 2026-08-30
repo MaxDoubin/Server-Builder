@@ -40,6 +40,7 @@ from build_unifi_hero_rack_clean_aligned import pbr
 
 
 class MikroTikIspRack(EnterpriseRack):
+    scene_title = 'MikroTik ISP Rack, 24U'
     units = 24
     frame_material = 'nexus_black_dark'
     panel_material = 'mt_black'

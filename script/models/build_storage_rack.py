@@ -38,6 +38,7 @@ from build_unifi_hero_rack_clean_aligned import pbr
 
 
 class StorageRack(EnterpriseRack):
+    scene_title = 'Dense Storage Rack, 42U'
     frame_material = 'nexus_black_dark'
     panel_material = 'store_grey'
     inset_material = 'store_grey_dark'

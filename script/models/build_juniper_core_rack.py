@@ -35,6 +35,7 @@ from build_enterprise_base import export_glb, EnterpriseRack, OUT, PANEL_W, U
 
 
 class JuniperCoreRack(EnterpriseRack):
+    scene_title = 'Juniper Core Rack, 42U'
     frame_material = 'nexus_black_dark'
     panel_material = 'juniper_graphite'
     inset_material = 'juniper_graphite_dark'

@@ -43,6 +43,7 @@ CHASSIS_DEPTH_DEEP = 0.815
 
 
 class CiscoEnterpriseRack(EnterpriseRack):
+    scene_title = 'Cisco Enterprise Rack, 42U'
     """Cisco's range, drawn to show how little of it looks alike."""
 
     frame_material = 'nexus_black'
