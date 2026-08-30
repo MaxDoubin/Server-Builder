@@ -24,39 +24,42 @@ export function CinematicData() {
   const count = staticEquipmentCatalog.length;
   const rackDevices = RACKS.reduce((n, r) => n + r.devices.length, 0);
   const rackSourced = RACKS.reduce((n, r) => n + r.devices.filter((d) => d.url).length, 0);
+  const creator = { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" };
 
   useSEO({
-    title: "Open rack hardware dataset | Max Doubin",
-    description: `An openly licensed table of ${count} rack-mount devices with power draw, heat output, rack units, port count and indicative cost, as JSON and CSV under CC BY 4.0.`,
+    title: "Open rack hardware datasets | Max Doubin",
+    description: `Two CC BY 4.0 datasets as JSON and CSV: ${count} rack-mount devices with power draw, heat output, rack units and port count, and ${rackDevices} devices across ${RACKS.length} rack elevations with the vendor figures and datasheet pages behind them.`,
     canonical: `${SITE_URL}/data`,
     schema: {
       "@context": "https://schema.org",
-      "@type": "Dataset",
-      name: "Rack hardware power and thermal catalog",
-      description: `Modelling figures for ${count} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost.`,
+      "@type": "DataCatalog",
+      name: "Max Doubin open rack data",
+      description: `Two openly licensed datasets: modelling figures for ${count} rack-mount devices, and ${rackDevices} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
       url: `${SITE_URL}/data`,
       license: "https://creativecommons.org/licenses/by/4.0/",
-      creator: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
-      distribution: [
+      creator: creator,
+      dataset: [
         {
-          "@type": "DataDownload",
-          encodingFormat: "application/json",
-          contentUrl: `${SITE_URL}/data/equipment-catalog.json`,
+          "@type": "Dataset",
+          name: "Rack hardware power and thermal catalog",
+          description: `Modelling figures for ${count} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
+          license: "https://creativecommons.org/licenses/by/4.0/",
+          creator,
+          distribution: [
+            { "@type": "DataDownload", encodingFormat: "application/json", contentUrl: `${SITE_URL}/data/equipment-catalog.json` },
+            { "@type": "DataDownload", encodingFormat: "text/csv", contentUrl: `${SITE_URL}/data/equipment-catalog.csv` },
+          ],
         },
         {
-          "@type": "DataDownload",
-          encodingFormat: "text/csv",
-          contentUrl: `${SITE_URL}/data/equipment-catalog.csv`,
-        },
-        {
-          "@type": "DataDownload",
-          encodingFormat: "application/json",
-          contentUrl: `${SITE_URL}/data/rack-library.json`,
-        },
-        {
-          "@type": "DataDownload",
-          encodingFormat: "text/csv",
-          contentUrl: `${SITE_URL}/data/rack-library.csv`,
+          "@type": "Dataset",
+          name: "Rack library elevations",
+          description: `${rackDevices} devices across ${RACKS.length} rack elevations with vendor, model, rack units, position and published draw. Vendor published figures, cited per device, with a null draw wherever the vendor publishes a supply rating rather than a consumption figure.`,
+          license: "https://creativecommons.org/licenses/by/4.0/",
+          creator,
+          distribution: [
+            { "@type": "DataDownload", encodingFormat: "application/json", contentUrl: `${SITE_URL}/data/rack-library.json` },
+            { "@type": "DataDownload", encodingFormat: "text/csv", contentUrl: `${SITE_URL}/data/rack-library.csv` },
+          ],
         },
       ],
     },
@@ -72,13 +75,17 @@ export function CinematicData() {
               · Open data
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
-              Rack hardware dataset
+              Rack hardware datasets
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              Two of them, and they are honest about different things. First,{" "}
               {count} rack-mount devices with power draw, heat output, rack
-              units, port count and indicative cost. It is the table the
-              datacenter simulator on this site runs on, published because a
-              clean openly licensed version of it is genuinely hard to find.
+              units, port count and indicative cost: the table the datacenter
+              simulator on this site runs on, published because a clean openly
+              licensed version of it is genuinely hard to find. Second, the{" "}
+              {rackDevices} devices in this site&rsquo;s {RACKS.length} rack
+              elevations, where the figures are the vendors&rsquo; own and each
+              one carries the page it came from.
             </p>
           </header>
 
