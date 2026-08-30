@@ -901,9 +901,9 @@ ${JSON.stringify({
     },
     {
       dir: "teardown",
-      title: "PowerEdge R660 teardown | Max Doubin",
+      title: "PowerEdge R760 teardown | Max Doubin",
       description:
-        "A Dell PowerEdge R660 taken apart in the browser, one assembly at a time, using Dell's own service geometry: bezel, cover, air shroud, fans, drives, memory, heatsinks, risers, power supplies and system board.",
+        "A Dell PowerEdge R760 taken apart in the browser, thirty four assemblies at a time, using Dell's own service geometry: bezel, cover, shrouds, drives, fans, GPUs, four expansion risers, memory, heatsinks, power supplies and system board.",
       canonical: `${SITE_URL}/teardown`,
     },
     {
@@ -1509,20 +1509,22 @@ const wiredRackContent = `
 
 const teardownContent = `
   <h2>A PowerEdge, opened</h2>
-  <p>This is a Dell PowerEdge R660 coming apart in the order a technician
+  <p>This is a Dell PowerEdge R760 coming apart in the order a technician
   would take it apart, and the geometry is Dell's own. Their repair guides are
-  built on a service model of the machine as twenty two named assemblies, so
+  built on a service model of the machine as thirty four named assemblies, so
   these are the real parts in their real positions, not a chassis drawn from a
-  photograph.</p>
+  photograph. A 2U rather than a 1U on purpose: the GPUs, the four expansion
+  risers, the RAID controller and the rear drive cage are the parts that do
+  not fit in a 1U at all, and they are the ones worth watching come out.</p>
   <h3>The order of removal</h3>
   <ol>
     <li>Front bezel. Unlocks and pulls straight off. Nothing can be reached until it is gone.</li>
-    <li>System cover, and the drive backplane cover behind it.</li>
-    <li>Air shroud, which directs every cubic foot the fans move over the processors.</li>
-    <li>Drive carriers, which are hot swap and come out with the machine running.</li>
-    <li>Cooling fans and power supplies, also hot swap.</li>
-    <li>Heatsinks, memory, and the two expansion risers.</li>
-    <li>BOSS-N1 module, drive backplane, internal USB card, intrusion switch and control panels.</li>
+    <li>System cover, and the backplane cover behind it.</li>
+    <li>Air shroud and rear drive shroud, which direct every cubic foot the fans move over the processors, then the drive carriers.</li>
+    <li>Cooling fans, power supplies and the rear drive cage. The first two are hot swap.</li>
+    <li>Both GPUs, all four expansion risers, and the PERC controller the front drives hang off.</li>
+    <li>Processors and heatsinks, thirty two memory slots, the BOSS-N1 boot carrier, LOM, OCP and rear I/O.</li>
+    <li>Drive backplane, internal USB, intrusion switch, control panels, side wall brackets, system battery and TPM.</li>
     <li>System board, last, because everything else is bolted to it or plugged into it.</li>
   </ol>
   <h3>Where the geometry came from</h3>
@@ -1531,9 +1533,12 @@ const teardownContent = `
   download and nothing links to it: the guide list is a POST only endpoint,
   the viewer is a lazily loaded iframe, and the scene name sits inside a
   hashed JavaScript bundle. What ships here is that scene with the Unity
-  furniture removed, a camera, five lights and an alternate parts tree that
-  renders inside the real components, which took it from 13,392 nodes to 1,401
-  and from 16.5MB to 7.1MB without touching a single part of the machine.</p>
+  furniture removed, a camera, several lights and an alternate parts tree of
+  37 duplicate assemblies that render inside the real components. That took
+  55.9MB to 31.8MB, still over what a static host will serve as one file, and
+  then the useful discovery: 94 percent of what was left was 77 textures
+  against 1.9MB of actual geometry. Resized to 1024 and encoded webp, the
+  whole machine is 4.2MB, smaller than the 1U it replaced.</p>
   <p>The 3D model is Dell's work and their copyright, used here to show their
   hardware. The teardown order, the travel directions and the notes are mine.</p>
 `;

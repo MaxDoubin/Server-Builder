@@ -21,7 +21,7 @@ export function CinematicWiredRack() {
   useSEO({
     title: "The wired UniFi rack | Max Doubin",
     description:
-      "A sixteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fibre uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
+      "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fibre uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
     canonical: "https://maxdoubin.com/racks/wired",
   });
 
@@ -42,7 +42,7 @@ export function CinematicWiredRack() {
               The wired rack.
             </h1>
             <p className="mt-6 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              Sixteen units of UniFi, patched the way somebody would actually patch it. The
+              Fourteen units of UniFi, patched the way somebody would actually patch it. The
               hardware is Ubiquiti's own geometry, the same models their store loads into its 3D
               viewer, so the panels are the panels and the ports are where the ports are. The
               build is mine: two PoE switches coming down to surge panels, fibre uplinks to the
@@ -73,7 +73,7 @@ export function CinematicWiredRack() {
                 <Suspense
                   fallback={
                     <div className="flex h-full items-center justify-center font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                      Loading ten Ubiquiti models...
+                      Loading nine Ubiquiti models...
                     </div>
                   }
                 >
@@ -117,8 +117,9 @@ export function CinematicWiredRack() {
                 })}
               </ol>
               <p className="font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
-                Ten of these are Ubiquiti models. The distribution unit is not: Ubiquiti publish no
-                model for it, so it is built by hand from their own dimensioned elevation.
+                All but one of these is an Ubiquiti model. The distribution unit is not: Ubiquiti
+                publish no model for it, so it is built by hand from their own dimensioned
+                elevation.
               </p>
             </aside>
           </div>
