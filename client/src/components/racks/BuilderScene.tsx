@@ -107,14 +107,22 @@ function MountedDevice({
   }, [scene, dimmed, selected]);
 
   /*
-    The exports do not agree which horizontal axis carries the width: 35 of
-    the 51 rack devices put it on Z and 16 on X. Measuring the box beats
-    trusting the catalogue field, because the measurement cannot go stale.
+    Our own generators emit Z up, so their geometry has to be laid back
+    before anything else is true of it. Vendor exports are already Y up.
+  */
+  const pitch = device.up === "z" ? -Math.PI / 2 : 0;
+
+  /*
+    The vendor exports do not agree which horizontal axis carries the width:
+    35 of the 51 rack devices put it on Z and 16 on X. Measuring the box
+    beats trusting a catalogue field, because a measurement cannot go stale.
+    Our own models are drawn width on X by construction, so they need no turn.
   */
   const yaw = useMemo(() => {
+    if (device.up === "z") return 0;
     const size = new THREE.Box3().setFromObject(gltf.scene).getSize(new THREE.Vector3());
     return Math.abs(size.x - PANEL_W) <= Math.abs(size.z - PANEL_W) ? 0 : -Math.PI / 2;
-  }, [gltf]);
+  }, [gltf, device.up]);
 
   /*
     Sit the panel on the mounting plane rather than trusting the file's
@@ -123,12 +131,12 @@ function MountedDevice({
   */
   const offset = useMemo(() => {
     const probe = gltf.scene.clone(true);
-    probe.rotation.set(0, yaw, 0);
+    probe.rotation.set(pitch, yaw, 0);
     probe.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(probe);
     const c = box.getCenter(new THREE.Vector3());
     return new THREE.Vector3(-c.x, -box.min.y, -box.max.z);
-  }, [gltf, yaw]);
+  }, [gltf, yaw, pitch]);
 
   const fromBottom = frame - placement.at - unitsOf(device);
   const y = FRAME_FOOT + fromBottom * U;
@@ -141,7 +149,7 @@ function MountedDevice({
         onPick(selected ? null : placement.id);
       }}
     >
-      <group rotation={[0, yaw, 0]} position={offset.toArray()}>
+      <group rotation={[pitch, yaw, 0]} position={offset.toArray()}>
         <primitive object={scene} />
       </group>
     </group>

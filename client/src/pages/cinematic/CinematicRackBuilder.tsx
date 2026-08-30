@@ -53,16 +53,37 @@ export function CinematicRackBuilder() {
   const [selected, setSelected] = useState<number | null>(null);
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string>("All");
+  const [vendor, setVendor] = useState<string>("All");
   const [nextId, setNextId] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  /*
+    Two catalogues, because there are two kinds of hardware here and the
+    difference is worth keeping: Ubiquiti's own exports, and the devices
+    modelled here from photographs and dimensioned drawings. They are merged
+    into one palette because nobody building a rack cares which of us drew
+    the switch, but the entries stay tagged so the page can say.
+
+    Both are awaited together. Loading one first would give a palette that
+    grows under the cursor while somebody is reading it.
+  */
   useEffect(() => {
     let live = true;
-    fetch("/data/ubiquiti-catalogue.json")
-      .then((r) => r.json())
-      .then((c: Catalogue) => {
-        if (live) setCatalogue(c);
+    Promise.all([
+      fetch("/data/ubiquiti-catalogue.json").then((r) => r.json()),
+      fetch("/data/own-catalogue.json").then((r) => r.json()),
+    ])
+      .then(([vendor, own]: [Catalogue, Catalogue]) => {
+        if (!live) return;
+        setCatalogue({
+          ...vendor,
+          count: vendor.devices.length + own.devices.length,
+          devices: [
+            ...vendor.devices,
+            ...own.devices.map((d) => ({ ...d, own: true as const })),
+          ],
+        });
       })
       .catch(() => {
         if (live) setMessage("The catalogue did not load. Reload the page to try again.");
@@ -76,6 +97,12 @@ export function CinematicRackBuilder() {
     () => (catalogue?.devices ?? []).filter((d) => d.mount === "rack"),
     [catalogue],
   );
+
+  /* Vendor is the axis people actually shop along, so it gets its own row. */
+  const vendors = useMemo(() => {
+    const set = new Set(rackDevices.map((d) => d.vendor ?? "Ubiquiti"));
+    return ["All", ...[...set].sort()];
+  }, [rackDevices]);
 
   const byslug = useMemo(
     () => new Map(rackDevices.map((d) => [d.slug, d] as const)),
@@ -146,6 +173,7 @@ export function CinematicRackBuilder() {
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rackDevices
+      .filter((d) => vendor === "All" || (d.vendor ?? "Ubiquiti") === vendor)
       .filter((d) => group === "All" || d.group === group)
       .filter(
         (d) =>
@@ -155,7 +183,7 @@ export function CinematicRackBuilder() {
           d.short.toLowerCase().includes(q),
       )
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [rackDevices, group, query]);
+  }, [rackDevices, group, vendor, query]);
 
   const add = useCallback(
     (d: CatalogueDevice) => {
@@ -264,10 +292,27 @@ export function CinematicRackBuilder() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search 51 devices"
+                placeholder={`Search ${rackDevices.length || 51} devices`}
                 aria-label="Search hardware"
                 className="w-full rounded border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-void))] px-3 py-2 font-mono-tight text-xs text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
               />
+              <div className="flex flex-wrap gap-1.5">
+                {vendors.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setVendor(v)}
+                    aria-pressed={vendor === v}
+                    className={`rounded-full border px-2.5 py-1 font-mono-tight text-[10px] transition-colors ${
+                      vendor === v
+                        ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
+                        : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone-dim))]"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
               <div className="flex flex-wrap gap-1.5">
                 {groups.map((g) => (
                   <button
@@ -295,13 +340,23 @@ export function CinematicRackBuilder() {
                       className="group flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-[hsl(var(--brand-iron)/0.3)]"
                       data-testid={`add-${d.slug}`}
                     >
+                      {/*
+                        A missing thumbnail hides the image rather than
+                        showing a broken one. Renders are generated per model
+                        and a device can land in the catalogue before its
+                        thumbnail does; a grey box in that gap is fine, a
+                        broken image icon is not.
+                      */}
                       <img
                         src={d.thumb}
                         alt=""
                         loading="lazy"
                         width={64}
                         height={22}
-                        className="h-auto w-16 shrink-0 rounded-[2px] bg-white/90"
+                        onError={(e) => {
+                          e.currentTarget.style.visibility = "hidden";
+                        }}
+                        className="h-5 w-16 shrink-0 rounded-[2px] bg-white/85 object-contain"
                       />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-mono-tight text-[11px] text-[hsl(var(--brand-bone))]">
@@ -309,6 +364,7 @@ export function CinematicRackBuilder() {
                         </span>
                         <span className="block font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
                           {unitsOf(d)}U · {mb(d.bytes)}
+                          {d.own ? " · built here" : ""}
                         </span>
                       </span>
                       <span className="shrink-0 font-mono-tight text-sm text-[hsl(var(--brand-ash))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
@@ -509,14 +565,20 @@ export function CinematicRackBuilder() {
                         <p className="mt-1.5 font-mono-tight text-[10px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                           {d.short}
                         </p>
-                        <a
-                          href={d.store}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 inline-block font-mono-tight text-[10px] text-[hsl(var(--brand-signal))] underline underline-offset-4"
-                        >
-                          {d.sku} at Ubiquiti
-                        </a>
+                        {d.store ? (
+                          <a
+                            href={d.store}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block font-mono-tight text-[10px] text-[hsl(var(--brand-signal))] underline underline-offset-4"
+                          >
+                            {d.sku} at Ubiquiti
+                          </a>
+                        ) : (
+                          <span className="mt-2 block font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                            {d.vendor} {d.sku}. Modelled here from photographs.
+                          </span>
+                        )}
                       </div>
                     );
                   })()

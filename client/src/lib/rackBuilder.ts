@@ -17,6 +17,19 @@
 /** One device as the catalogue describes it. Only what a build needs. */
 export interface CatalogueDevice {
   slug: string;
+  /**
+   * Which frame the geometry is drawn in.
+   *
+   * Ubiquiti export Y up in metres; our own generators emit raw Z up,
+   * because that is the frame the rack builders draw in. A device laid on
+   * its back in a rack is unmistakable, so this is carried per device rather
+   * than guessed from a bounding box.
+   */
+  up?: "y" | "z";
+  /** True for hardware modelled here rather than published by its vendor. */
+  own?: boolean;
+  /** Who makes it. Only our own catalogue records this; Ubiquiti's is all one. */
+  vendor?: string;
   name: string;
   sku: string;
   short: string;
