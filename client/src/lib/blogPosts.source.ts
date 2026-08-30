@@ -30596,9 +30596,10 @@ otpauth://totp/lab.example:max?secret=JBSWY3DPEHPK3PXP
 \`\`\`
 
 The \`secret\` is the shared secret, encoded in base32 (RFC 4648) because base32
-survives being typed by a human when the camera will not focus. Twenty
-characters of base32 is 100 bits; most services issue 128 or 160. The rest is
-metadata: which hash, how many digits, how long a step lasts.
+survives being typed by a human when the camera will not focus. Each character
+carries five bits, so the sixteen above are 80 bits, and RFC 4226 asks for at
+least 128. The rest is metadata: which hash, how many digits, how long a step
+lasts.
 
 The moment that secret is generated, two copies of it exist. That fact drives
 most of what follows.

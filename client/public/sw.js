@@ -555,14 +555,26 @@ async function fontStylesheet(event, request) {
 
 /**
  * Only store a response we can actually read the status of, that the origin
- * did not mark uncacheable, and that is not big enough to matter on its own.
+ * did not mark uncacheable, that did not arrive via a redirect, and that is
+ * not big enough to matter on its own.
  *
  * An opaque response has status 0, so response.ok already excludes it; the
  * explicit type check is there to say that is intentional rather than lucky.
+ * It also excludes "opaqueredirect", which is what fetch hands back for a 3xx
+ * on a navigation (a navigation request's redirect mode is "manual"), and
+ * which must be returned to the browser untouched so it can follow the
+ * redirect itself.
+ *
+ * The redirected check is the one that matters most here. A browser refuses a
+ * cached response with redirected set when it is used to answer a NAVIGATION,
+ * and the symptom is not a stale page, it is a navigation that fails outright
+ * with no obvious cause. _redirects sends /blog/running-a-cyber-club to
+ * /cyber-club today, so responses like that do exist on this origin.
  */
 function isStorable(response) {
   if (!response || !response.ok) return false;
   if (response.type !== "basic" && response.type !== "cors") return false;
+  if (response.redirected) return false;
 
   const control = response.headers.get("Cache-Control") || "";
   if (control.includes("no-store")) return false;

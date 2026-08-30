@@ -13,6 +13,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { FAST_HASH_GUESSES_PER_SECOND, SLOW_HASH_GUESSES_PER_SECOND } from "@/lib/toolLimits";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
 /* ------------------------------------------------------------ characters */
@@ -165,8 +166,8 @@ const ATTACKS: Attack[] = [
   },
   {
     label: "Offline, bcrypt cost 12",
-    rate: 1e4,
-    rateLabel: "10^4 per second",
+    rate: SLOW_HASH_GUESSES_PER_SECOND,
+    rateLabel: `10^${Math.log10(SLOW_HASH_GUESSES_PER_SECOND)} per second`,
     note: "A deliberately slow hash on a GPU rig. This is what a stolen database should cost.",
   },
   {
@@ -177,8 +178,8 @@ const ATTACKS: Attack[] = [
   },
   {
     label: "Offline, MD5 or NTLM",
-    rate: 1e12,
-    rateLabel: "10^12 per second",
+    rate: FAST_HASH_GUESSES_PER_SECOND,
+    rateLabel: `10^${Math.log10(FAST_HASH_GUESSES_PER_SECOND)} per second`,
     note: "Small and fast. A domain controller dump against a rig clears a trillion a second.",
   },
 ];
