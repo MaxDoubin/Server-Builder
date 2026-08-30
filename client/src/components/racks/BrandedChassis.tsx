@@ -30,7 +30,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import type { RackDevice } from "@/lib/rackTypes";
 import { MATERIALS } from "./RackDefs";
-import { chassisLayout, deviceDepth } from "./chassisLayout";
+import { CHASSIS_WIDTH, chassisLayout, deviceDepth } from "./chassisLayout";
 import { chassisShell } from "./parts";
 import { faceplateTexture } from "./faceplateTexture";
 import { surfaceGrain } from "./surfaces";
@@ -93,12 +93,20 @@ const screenMaterial = new THREE.MeshStandardMaterial({
   emissiveIntensity: 0.7,
 });
 const earMaterial = new THREE.MeshStandardMaterial({ color: "#2b3036", metalness: 0.7, roughness: 0.5 });
-/** The milled pocket the port block sits in: same metal, in shadow. */
+/**
+ * The port band.
+ *
+ * On a real UniFi switch the jacks do not sit on the white face. They sit
+ * in a dark inset panel that runs the height of the port block, and that
+ * band is most of what makes the product recognisable at a glance. Drawn
+ * as a pale milled pocket, which is what it was, the ports read as loose
+ * holes punched in a blank plate and the whole face looked like a mockup.
+ */
 const recessMaterial = new THREE.MeshStandardMaterial({
-  color: "#9aa1a9",
-  metalness: 0.45,
-  roughness: 0.62,
-  envMapIntensity: 0.5,
+  color: "#1e2126",
+  metalness: 0.3,
+  roughness: 0.66,
+  envMapIntensity: 0.45,
 });
 
 const ledMaterials = new Map<string, THREE.MeshBasicMaterial>();
@@ -174,17 +182,21 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
       <mesh
         position={[0, 0, faceZ]}
         material={body}
-        geometry={chassisShell(RACK_INNER_WIDTH, h - 0.0012, depth)}
+        geometry={chassisShell(CHASSIS_WIDTH, h - 0.0012, depth)}
       />
       {silkMaterial && (
         <mesh position={[0, 0, faceZ + 0.0003]} material={silkMaterial}>
-          <planeGeometry args={[RACK_INNER_WIDTH - 0.003, h - 0.004]} />
+          <planeGeometry args={[CHASSIS_WIDTH - 0.003, h - 0.004]} />
         </mesh>
       )}
       {/* Mounting ears, always steel regardless of the chassis finish. */}
       {[-1, 1].map((s) => (
-        <mesh key={s} position={[s * (RACK_INNER_WIDTH / 2 + 0.012), 0, faceZ - 0.004]} material={earMaterial}>
-          <boxGeometry args={[0.024, h - 0.002, 0.004]} />
+        <mesh
+          key={s}
+          position={[s * (CHASSIS_WIDTH / 2 + (RACK_INNER_WIDTH - CHASSIS_WIDTH) / 4), 0, faceZ - 0.0025]}
+          material={earMaterial}
+        >
+          <boxGeometry args={[(RACK_INNER_WIDTH - CHASSIS_WIDTH) / 2 + 0.006, h - 0.002, 0.0025]} />
         </mesh>
       ))}
       {/* A thin accent inlay, the one marking that is ours and not the
@@ -193,7 +205,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           photographic render it stopped reading as an index mark and
           started reading as a sticker somebody put on the hardware. */}
       {device.accent && (
-        <mesh position={[-RACK_INNER_WIDTH / 2 + 0.0035, 0, faceZ + 0.0006]}>
+        <mesh position={[-CHASSIS_WIDTH / 2 + 0.0035, 0, faceZ + 0.0006]}>
           <boxGeometry args={[0.0022, h * 0.6, 0.001]} />
           <meshBasicMaterial color={device.accent} />
         </mesh>
@@ -203,7 +215,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           reference renders it is the one bright square on an otherwise
           featureless white face, and leaving it off made them read blank. */}
       {device.display && (
-        <group position={[-RACK_INNER_WIDTH / 2 + h * 0.42, 0, faceZ]}>
+        <group position={[-CHASSIS_WIDTH / 2 + h * 0.42, 0, faceZ]}>
           <mesh position={[0, 0, -0.001]} material={shellMaterial}>
             <boxGeometry args={[h * 0.5, h * 0.5, 0.004]} />
           </mesh>
@@ -218,8 +230,8 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           {/* The port field is milled into the face, not printed on it. On
               the real hardware that recess is a couple of millimetres deep
               and it is what stops a switch front reading as a sticker. */}
-          <mesh position={[layout.field.x, layout.field.y, faceZ - 0.0016]} material={recessMaterial}>
-            <boxGeometry args={[layout.field.w, layout.field.h, 0.003]} />
+          <mesh position={[layout.field.x, layout.field.y, faceZ - 0.0014]} material={recessMaterial}>
+            <boxGeometry args={[layout.field.w + 0.006, layout.field.h + 0.004, 0.003]} />
           </mesh>
           {/* Emissive indicators, one per lit port, blinked by the frame
               loop above. Separated into their own group so the loop walks
@@ -247,7 +259,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
         Array.from({ length: 22 }, (_, i) => (
           <mesh
             key={`v${i}`}
-            position={[-RACK_INNER_WIDTH * 0.44 + i * (RACK_INNER_WIDTH * 0.88) / 21, 0, faceZ - 0.002]}
+            position={[-CHASSIS_WIDTH * 0.44 + (i * CHASSIS_WIDTH * 0.88) / 21, 0, faceZ - 0.002]}
             material={throatMaterial}
           >
             <boxGeometry args={[0.006, h * 0.52, 0.006]} />
@@ -257,7 +269,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
         Array.from({ length: 9 }, (_, i) => (
           <mesh
             key={`f${i}`}
-            position={[-RACK_INNER_WIDTH * 0.42 + i * (RACK_INNER_WIDTH * 0.84) / 8, 0, faceZ + 0.018]}
+            position={[-CHASSIS_WIDTH * 0.42 + (i * CHASSIS_WIDTH * 0.84) / 8, 0, faceZ + 0.018]}
             material={body}
           >
             <boxGeometry args={[0.012, h * 0.86, 0.04]} />
@@ -270,11 +282,11 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           {Array.from({ length: bays.count }, (_, i) => {
             const rows = device.u >= 2 ? 2 : 1;
             const cols = Math.ceil(bays.count / rows);
-            const bw = (RACK_INNER_WIDTH * 0.86) / cols;
+            const bw = (CHASSIS_WIDTH * 0.86) / cols;
             const bh = (h * 0.8) / rows;
             const col = i % cols;
             const row = Math.floor(i / cols);
-            const x = -RACK_INNER_WIDTH * 0.43 + col * bw + bw / 2;
+            const x = -CHASSIS_WIDTH * 0.43 + col * bw + bw / 2;
             const y = rows === 2 ? (row === 0 ? bh * 0.52 : -bh * 0.52) : 0;
             const filled = i < bays.occupied;
             return (

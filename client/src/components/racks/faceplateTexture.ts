@@ -22,12 +22,12 @@
 import * as THREE from "three";
 import type { RackDevice } from "@/lib/rackTypes";
 import { MATERIALS } from "./RackDefs";
-import { chassisLayout } from "./chassisLayout";
-import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
+import { CHASSIS_WIDTH, chassisLayout } from "./chassisLayout";
+import { U } from "@/components/cinematic/rack3d/rackConfig";
 
-/** 19 inches at this resolution. Wide enough that 2mm print is legible. */
+/** The chassis width at this resolution, enough that 2mm print is legible. */
 const TEX_W = 2048;
-const PX_PER_M = TEX_W / RACK_INNER_WIDTH;
+const PX_PER_M = TEX_W / CHASSIS_WIDTH;
 
 const cache = new Map<string, THREE.CanvasTexture | null>();
 
@@ -62,7 +62,7 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   const pale = spec.pale;
 
   /** Metres to texture pixels. x from the chassis centre, y from its top. */
-  const px = (x: number) => (x + RACK_INNER_WIDTH / 2) * PX_PER_M;
+  const px = (x: number) => (x + CHASSIS_WIDTH / 2) * PX_PER_M;
   const py = (y: number) => (h / 2 - y) * PX_PER_M;
   const mm = (n: number) => (n / 1000) * PX_PER_M;
 
@@ -83,8 +83,49 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   }
   ctx.restore();
 
+  /*
+    Baked occlusion.
+    
+    Nothing in the scene casts a shadow on anything else, and that is the
+    last thing that reads as computer generated once the shapes and the
+    print are right: a stack of boxes in a rack, each perfectly evenly lit
+    from edge to edge, with no sign that there is another box a millimetre
+    above it. Real ambient occlusion would mean a depth pass per frame for
+    an object that never moves. This is the same information, drawn once.
+
+    The gradient is asymmetric on purpose. The rack is lit from above, so
+    the device overhead throws a real shadow onto the top of this face and
+    the one below it catches only bounce.
+  */
+  const shade = (grad: CanvasGradient, rect: [number, number, number, number]) => {
+    ctx.fillStyle = grad;
+    ctx.fillRect(...rect);
+  };
+  const topShade = ctx.createLinearGradient(0, 0, 0, TEX_H * 0.34);
+  topShade.addColorStop(0, pale ? "rgba(22,28,38,0.34)" : "rgba(0,0,0,0.5)");
+  topShade.addColorStop(0.35, pale ? "rgba(22,28,38,0.1)" : "rgba(0,0,0,0.18)");
+  topShade.addColorStop(1, "rgba(0,0,0,0)");
+  shade(topShade, [0, 0, TEX_W, TEX_H * 0.34]);
+
+  const bottomShade = ctx.createLinearGradient(0, TEX_H, 0, TEX_H * 0.78);
+  bottomShade.addColorStop(0, pale ? "rgba(22,28,38,0.2)" : "rgba(0,0,0,0.32)");
+  bottomShade.addColorStop(1, "rgba(0,0,0,0)");
+  shade(bottomShade, [0, TEX_H * 0.78, TEX_W, TEX_H * 0.22]);
+
+  // The rails shade the ends of every face the same way.
+  for (const [x0, x1] of [
+    [0, TEX_W * 0.05],
+    [TEX_W, TEX_W * 0.95],
+  ] as const) {
+    const g = ctx.createLinearGradient(x0, 0, x1, 0);
+    g.addColorStop(0, pale ? "rgba(22,28,38,0.22)" : "rgba(0,0,0,0.34)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0), TEX_H);
+  }
+
   // A shallow seam along the top and bottom edges, where the lid folds over.
-  ctx.fillStyle = pale ? "rgba(0,0,0,0.14)" : "rgba(0,0,0,0.35)";
+  ctx.fillStyle = pale ? "rgba(0,0,0,0.22)" : "rgba(0,0,0,0.45)";
   ctx.fillRect(0, 0, TEX_W, Math.max(1, mm(0.5)));
   ctx.fillRect(0, TEX_H - Math.max(1, mm(0.5)), TEX_W, Math.max(1, mm(0.5)));
 

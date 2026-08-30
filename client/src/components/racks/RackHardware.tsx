@@ -15,7 +15,7 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import type { RackDefinition } from "@/lib/rackTypes";
-import { chassisLayout, deviceDepth } from "./chassisLayout";
+import { CHASSIS_WIDTH, chassisLayout, deviceDepth } from "./chassisLayout";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 import { blankRim, fanGuard, jackCavity, jackContacts, jackRim, outlet, rackScrew, sfpCage } from "./parts";
 
@@ -102,7 +102,7 @@ export function RackHardware({
         for (const sx of [-1, 1]) {
           const yc = y0 - h / 2 + (u + 0.5) * U;
           for (const dy of [-U * 0.28, U * 0.28]) {
-            screws.push(place(sx * (RACK_INNER_WIDTH / 2 + 0.012), yc + dy, faceZ + 0.0005, 0.008, 0.008, 0.008));
+            screws.push(place(sx * (RACK_INNER_WIDTH / 2 - 0.008), yc + dy, faceZ + 0.0005, 0.0085, 0.0085, 0.0085));
           }
         }
       }
@@ -112,7 +112,7 @@ export function RackHardware({
         const sockets = (device.ports ?? []).filter((p) => p.kind === "power");
         const rows = sockets.length > 8 ? 2 : 1;
         const cols = Math.ceil(sockets.length / Math.max(1, rows));
-        const size = Math.min((RACK_INNER_WIDTH * 0.84) / Math.max(1, cols), (h * 0.86) / rows);
+        const size = Math.min((CHASSIS_WIDTH * 0.8) / Math.max(1, cols), (h * 0.84) / rows);
         const startX = -(cols * size) / 2 + size / 2;
         sockets.forEach((_, i) => {
           const col = rows === 2 ? Math.floor(i / 2) : i;
@@ -162,7 +162,7 @@ export function RackHardware({
         const n = device.u >= 2 ? 2 : 1;
         const d = Math.min(h * 0.7, 0.09);
         for (let i = 0; i < n; i += 1) {
-          const gx = n === 1 ? RACK_INNER_WIDTH * 0.28 : RACK_INNER_WIDTH * (i === 0 ? 0.18 : 0.36);
+          const gx = n === 1 ? CHASSIS_WIDTH * 0.28 : CHASSIS_WIDTH * (i === 0 ? 0.18 : 0.36);
           const gm = place(gx, y0, rearZ - 0.001, d, d, d);
           gm.multiply(new THREE.Matrix4().makeRotationY(Math.PI));
           guards.push(gm);

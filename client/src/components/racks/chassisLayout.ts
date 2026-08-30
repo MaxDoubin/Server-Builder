@@ -15,7 +15,7 @@
  */
 
 import type { RackDefinition, RackDevice, RackPort } from "@/lib/rackTypes";
-import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
+import { U } from "@/components/cinematic/rack3d/rackConfig";
 
 /**
  * How deep each family of hardware actually is, in meters.
@@ -103,6 +103,19 @@ const JACK_H = 0.0152;
 const CAGE_W = 0.0139;
 
 /**
+ * A rack device's body is not 19 inches wide. The 482.6mm figure is the
+ * width across the mounting ears; the chassis they are bolted to is
+ * narrower, and Ubiquiti publish 442mm for the Pro series, which is the
+ * usual figure. Drawing the body at the full rack width made every device
+ * nine percent too wide and left the ears looking like they were welded to
+ * a panel that already reached the posts.
+ */
+export const CHASSIS_WIDTH = 0.442;
+
+/** Ganged modular jacks sit on a 0.6 inch pitch. That is not negotiable. */
+export const JACK_PITCH = 0.01524;
+
+/**
  * Lay a device's front panel out in 3D.
  *
  * Copper stacks two rows deep past eight ports, the way every dense panel
@@ -136,12 +149,12 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
 
   /** A cage is roughly 1.6 copper jacks wide. */
   const CAGE_RATIO = 1.6;
-  const avail = RACK_INNER_WIDTH * 0.86;
+  const avail = CHASSIS_WIDTH * 0.94;
   const weight = cols + cageCols * CAGE_RATIO;
   const pitch = weight ? avail / weight : 0;
   // A jack never grows past what the unit height allows, whatever the width
   // left over: a 4 port switch has 4 normal jacks, not 4 enormous ones.
-  const cw = Math.min(pitch, JACK_W / 0.88);
+  const cw = Math.min(pitch, JACK_PITCH);
   const jw = Math.min(cw * 0.88, h * 0.42, JACK_W);
   const jh = Math.min(h * 0.4, jw * 1.15, JACK_H);
   const copperSpan = cols * cw;
