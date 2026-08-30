@@ -22,7 +22,35 @@ import { RackElevation } from "@/components/racks/RackElevation";
   so the 3D view arrives on its own chunk and only when asked for.
 */
 const Rack3DView = lazy(() => import("@/components/racks/Rack3DView"));
+/*
+  The hero model is a separate chunk again, and a separate view. It is one
+  authored GLB shown exactly as authored rather than the procedural
+  renderer, and only the UniFi rack has one, so the tab only appears there.
+*/
+const HeroRackModel = lazy(() => import("@/components/racks/HeroRackModel"));
+
+/** The one rack in the library that ships an authored model. */
+const HERO_MODEL_SLUG = "unifi-12u";
+
+type RackView = "elevation" | "3d" | "model";
+
+const VIEW_LABELS: Record<RackView, string> = {
+  elevation: "Elevation",
+  "3d": "3D",
+  model: "Hero model",
+};
+
+/* Light, because both 3D views are a white studio. A dark placeholder
+   flashed black for the second the three.js chunk took to arrive. */
+function ModelLoading() {
+  return (
+    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3] font-techno text-[10px] uppercase tracking-[0.3em] text-[#5c6472]">
+      Loading model
+    </div>
+  );
+}
 import { DeviceDetailPanel } from "@/components/racks/DeviceDetailPanel";
+import { heroPartByGroup } from "@/lib/racks/heroModel";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -39,16 +67,17 @@ export function CinematicRackDetail() {
     selected device, so "look at this rack in 3D" is a link rather than a
     link plus instructions.
   */
-  const [view, setViewState] = useState<"elevation" | "3d">(() => {
+  const [view, setViewState] = useState<RackView>(() => {
     if (typeof window === "undefined") return "elevation";
-    return new URLSearchParams(window.location.search).get("view") === "3d" ? "3d" : "elevation";
+    const q = new URLSearchParams(window.location.search).get("view");
+    return q === "3d" || q === "model" ? q : "elevation";
   });
-  const setView = useCallback((v: "elevation" | "3d") => {
+  const setView = useCallback((v: RackView) => {
     setViewState(v);
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    if (v === "3d") url.searchParams.set("view", "3d");
-    else url.searchParams.delete("view");
+    if (v === "elevation") url.searchParams.delete("view");
+    else url.searchParams.set("view", v);
     window.history.replaceState(null, "", url);
   }, []);
   const [selectedId, setSelectedId] = useState<string | null>(() => {
@@ -106,7 +135,17 @@ export function CinematicRackDetail() {
     );
   }
 
-  const selected = rack.devices.find((d) => d.id === selectedId) ?? null;
+  const hasModel = rack.slug === HERO_MODEL_SLUG;
+  const views: RackView[] = hasModel ? ["elevation", "3d", "model"] : ["elevation", "3d"];
+  /*
+    The model's parts carry their own device records, because the model
+    shows hardware the elevation does not: a recorder, an RPS, a transfer
+    stage. Look there first when the model view is the one selecting.
+  */
+  const selected =
+    rack.devices.find((d) => d.id === selectedId) ??
+    heroPartByGroup.get(selectedId ?? "")?.device ??
+    null;
   const power = publishedWatts(rack);
 
   return (
@@ -138,7 +177,7 @@ export function CinematicRackDetail() {
           <div className="mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <div className="lg:sticky lg:top-24">
               <div className="mb-3 flex gap-2" role="group" aria-label="View">
-                {(["elevation", "3d"] as const).map((v) => (
+                {views.map((v) => (
                   <button
                     key={v}
                     type="button"
@@ -150,23 +189,18 @@ export function CinematicRackDetail() {
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
                     }`}
                   >
-                    {v === "elevation" ? "Elevation" : "3D model"}
+                    {VIEW_LABELS[v]}
                   </button>
                 ))}
               </div>
               {view === "elevation" ? (
                 <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
+              ) : view === "model" ? (
+                <Suspense fallback={<ModelLoading />}>
+                  <HeroRackModel selectedId={selectedId} onSelect={(id) => select(id)} />
+                </Suspense>
               ) : (
-                <Suspense
-                  fallback={
-                    /* Light, because the 3D view is a white studio. A dark
-                       placeholder flashed black for the second it took the
-                       three.js chunk to arrive. */
-                    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3] font-techno text-[10px] uppercase tracking-[0.3em] text-[#5c6472]">
-                      Loading 3D
-                    </div>
-                  }
-                >
+                <Suspense fallback={<ModelLoading />}>
                   <Rack3DView rack={rack} />
                 </Suspense>
               )}
