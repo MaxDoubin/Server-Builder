@@ -40,48 +40,48 @@ opening is about as tall as it is wide) before trusting a height.
 All 20 URLs verified (HTTP 200, `image/png`, all >20 KB). Every one was also opened and visually inspected before selection.
 
 PRODUCT: CRS354-48G-4S+2Q+RM
-    https://cdn.mikrotik.com/web-assets/rb_images/1901_hi_res.png   (image/png, 1001639 B, 4382x1652 — front-on with slight top-down; full 48x RJ45 in two rows, 4x SFP+, 2x QSFP+, console + MGMT RJ45, PWR1/PWR2/FAULT LEDs, reset, rack ears; model text "CRS354-48G-4S+2Q+" readable)
-    https://cdn.mikrotik.com/web-assets/rb_images/1899_hi_res.png   (image/png, 3175953 B, 5687x2687 — front 3/4 from the left; gives bezel depth, side vent grille and rack-ear profile)
+    https://cdn.mikrotik.com/web-assets/rb_images/1901_hi_res.png   (image/png, 1001639 B, 4382x1652, front-on with slight top-down; full 48x RJ45 in two rows, 4x SFP+, 2x QSFP+, console + MGMT RJ45, PWR1/PWR2/FAULT LEDs, reset, rack ears; model text "CRS354-48G-4S+2Q+" readable)
+    https://cdn.mikrotik.com/web-assets/rb_images/1899_hi_res.png   (image/png, 3175953 B, 5687x2687, front 3/4 from the left; gives bezel depth, side vent grille and rack-ear profile)
 
 PRODUCT: CRS326-24G-2S+RM
-    https://cdn.mikrotik.com/web-assets/rb_images/1301_hi_res.png   (image/png, 479973 B, 2560x1695 — essentially front-on, mild top-down; console RJ45, PWR/RES/USR LEDs, 24x RJ45 as three 8-port blocks in two rows, SFP+1/SFP+2, "Cloud Router Switch" badge, MikroTik logo)
-    https://help.mikrotik.com/docs/download/attachments/17956889/crs326-24g-2s.png   (image/png, 40476 B, 600x109 — manual's front 3/4; same panel, useful only as a cross-check, low resolution)
-    Note: MikroTik's gallery for this model has only three images — this front shot, an internal PCB photo, and the rear. No higher-res straight-on front exists on their CDN.
+    https://cdn.mikrotik.com/web-assets/rb_images/1301_hi_res.png   (image/png, 479973 B, 2560x1695, essentially front-on, mild top-down; console RJ45, PWR/RES/USR LEDs, 24x RJ45 as three 8-port blocks in two rows, SFP+1/SFP+2, "Cloud Router Switch" badge, MikroTik logo)
+    https://help.mikrotik.com/docs/download/attachments/17956889/crs326-24g-2s.png   (image/png, 40476 B, 600x109, manual's front 3/4; same panel, useful only as a cross-check, low resolution)
+    Note: MikroTik's gallery for this model has only three images: this front shot, an internal PCB photo, and the rear. No higher-res straight-on front exists on their CDN.
 
 PRODUCT: CRS328-24P-4S+RM
-    https://cdn.mikrotik.com/web-assets/rb_images/1493_hi_res.png   (image/png, 494929 B, 2560x951 — front-on with slight top-down; orange PoE band, 24x RJ45 in two rows, 4x SFP+ in a 2x2 block, CONSOLE RJ45, RESET and MODE buttons, PoE/status LED cluster at far left)
-    https://cdn.mikrotik.com/web-assets/rb_images/1494_hi_res.png   (image/png, 312496 B, 2560x1560 — front 3/4 from the left, shows chassis depth and rack ears)
+    https://cdn.mikrotik.com/web-assets/rb_images/1493_hi_res.png   (image/png, 494929 B, 2560x951, front-on with slight top-down; orange PoE band, 24x RJ45 in two rows, 4x SFP+ in a 2x2 block, CONSOLE RJ45, RESET and MODE buttons, PoE/status LED cluster at far left)
+    https://cdn.mikrotik.com/web-assets/rb_images/1494_hi_res.png   (image/png, 312496 B, 2560x1560, front 3/4 from the left, shows chassis depth and rack ears)
 
 PRODUCT: CRS518-16XS-2XQ-RM
-    https://cdn.mikrotik.com/web-assets/rb_images/2196_hi_res.png   (image/png, 1052344 B, 2793x802 — dead-on straight front, the cleanest shot in this set; 2x QSFP28 40/100G, 16x SFP28 in eight stacked pairs, console RJ45, MANAGEMENT RJ45, RESET, USB-A, USER/FAULT/PWR2/PWR1 LEDs, full-width chevron vent band)
-    https://cdn.mikrotik.com/web-assets/rb_images/2198_hi_res.png   (image/png, 1398665 B, 2924x933 — high 3/4 from the left, for lid contour and side panel)
+    https://cdn.mikrotik.com/web-assets/rb_images/2196_hi_res.png   (image/png, 1052344 B, 2793x802, dead-on straight front, the cleanest shot in this set; 2x QSFP28 40/100G, 16x SFP28 in eight stacked pairs, console RJ45, MANAGEMENT RJ45, RESET, USB-A, USER/FAULT/PWR2/PWR1 LEDs, full-width chevron vent band)
+    https://cdn.mikrotik.com/web-assets/rb_images/2198_hi_res.png   (image/png, 1398665 B, 2924x933, high 3/4 from the left, for lid contour and side panel)
 
 PRODUCT: CRS309-1G-8S+IN
-    https://cdn.mikrotik.com/web-assets/rb_images/1730_hi_res.png   (image/png, 1395349 B, 3840x2407 — front-on; 8x SFP+ with per-port ACT/10G LED pairs, hexagonal honeycomb vent band above the ports, PoE/BOOT RJ45, DB9 console, RESET, USER/PWR LEDs)
-    https://cdn.mikrotik.com/web-assets/rb_images/1733_hi_res.png   (image/png, 946922 B, 3840x2407 — same front panel fitted into the 1U rackmount plate, angled left; shows how the half-width unit sits in the ear kit)
+    https://cdn.mikrotik.com/web-assets/rb_images/1730_hi_res.png   (image/png, 1395349 B, 3840x2407, front-on; 8x SFP+ with per-port ACT/10G LED pairs, hexagonal honeycomb vent band above the ports, PoE/BOOT RJ45, DB9 console, RESET, USER/PWR LEDs)
+    https://cdn.mikrotik.com/web-assets/rb_images/1733_hi_res.png   (image/png, 946922 B, 3840x2407, same front panel fitted into the 1U rackmount plate, angled left; shows how the half-width unit sits in the ear kit)
 
 PRODUCT: CRS310-1G-5S-4S+IN
-    https://cdn.mikrotik.com/web-assets/rb_images/2147_hi_res.png   (image/png, 2629211 B, 2880x1620 — front-on; CONSOLE RJ45, ETH/PoE-in RJ45, RESET, USR/PWR LEDs, 5x SFP 1G then 4x SFP+ 10G, diagonal-hatch vent motif, MikroTik badge with model text)
-    https://cdn.mikrotik.com/web-assets/rb_images/2149_hi_res.png   (image/png, 2745345 B, 2880x1620 — front 3/4 from the left, desktop-case body and side profile)
+    https://cdn.mikrotik.com/web-assets/rb_images/2147_hi_res.png   (image/png, 2629211 B, 2880x1620, front-on; CONSOLE RJ45, ETH/PoE-in RJ45, RESET, USR/PWR LEDs, 5x SFP 1G then 4x SFP+ 10G, diagonal-hatch vent motif, MikroTik badge with model text)
+    https://cdn.mikrotik.com/web-assets/rb_images/2149_hi_res.png   (image/png, 2745345 B, 2880x1620, front 3/4 from the left, desktop-case body and side profile)
 
 PRODUCT: CCR2216-1G-12XS-2XQ
-    https://cdn.mikrotik.com/web-assets/rb_images/2123_hi_res.png   (image/png, 1307705 B, 3000x1600 — front-on with rack ears; 2x QSFP28 100G, 12x SFP28 25G in six stacked pairs, ETH/BOOT + CONSOLE RJ45s, RESET, USER/FAULT/PWR2/PWR1 LEDs, chevron vent band)
-    https://cdn.mikrotik.com/web-assets/rb_images/2122_hi_res.png   (image/png, 1999869 B, 3000x1600 — high 3/4 from the left, shows 1U lid, side venting and ear geometry)
-    https://cdn.mikrotik.com/web-assets/rb_images/2125_hi_res.png   (image/png, 1752016 B, 1967x802 — front panel straight-on in the lower half with the lid removed above; good for correlating port cages to internal cards)
+    https://cdn.mikrotik.com/web-assets/rb_images/2123_hi_res.png   (image/png, 1307705 B, 3000x1600, front-on with rack ears; 2x QSFP28 100G, 12x SFP28 25G in six stacked pairs, ETH/BOOT + CONSOLE RJ45s, RESET, USER/FAULT/PWR2/PWR1 LEDs, chevron vent band)
+    https://cdn.mikrotik.com/web-assets/rb_images/2122_hi_res.png   (image/png, 1999869 B, 3000x1600, high 3/4 from the left, shows 1U lid, side venting and ear geometry)
+    https://cdn.mikrotik.com/web-assets/rb_images/2125_hi_res.png   (image/png, 1752016 B, 1967x802, front panel straight-on in the lower half with the lid removed above; good for correlating port cages to internal cards)
 
 PRODUCT: CCR2004-1G-12S+2XS
-    https://cdn.mikrotik.com/web-assets/rb_images/1937_hi_res.png   (image/png, 1822904 B, 3722x1657 — front-on; 2x SFP28 stacked at far left, 12x SFP+ in a single row with ACT/10G LED pairs, MGMT/BOOT RJ45, CONSOLE, RESET, four status LEDs, "Cloud Core Router" badge, arc-shaped slot vent band)
-    https://cdn.mikrotik.com/web-assets/rb_images/1935_hi_res.png   (image/png, 2860090 B, 3804x2191 — front 3/4 from the left, ribbed lid and rear heatsink visible)
+    https://cdn.mikrotik.com/web-assets/rb_images/1937_hi_res.png   (image/png, 1822904 B, 3722x1657, front-on; 2x SFP28 stacked at far left, 12x SFP+ in a single row with ACT/10G LED pairs, MGMT/BOOT RJ45, CONSOLE, RESET, four status LEDs, "Cloud Core Router" badge, arc-shaped slot vent band)
+    https://cdn.mikrotik.com/web-assets/rb_images/1935_hi_res.png   (image/png, 2860090 B, 3804x2191, front 3/4 from the left, ribbed lid and rear heatsink visible)
 
 PRODUCT: netPower 16P (CRS318-16P-2S+OUT)
-    https://cdn.mikrotik.com/web-assets/rb_images/1953_hi_res.png   (image/png, 4530503 B, 3167x3055 — outdoor enclosure with the lid swung open, port panel fully exposed at a moderate angle: DC1 18-30V and DC2 48-57V barrel jacks, 16x RJ45 in two rows as 8+8 blocks under an orange PoE-out band, Power LED, Reset, SFP+1/SFP+2 with ACT/10G LEDs, "netPower 16P / CRS318-16P-2S+OUT" label. Not straight-on — no straight-on port-panel photo exists on MikroTik's CDN)
-    https://cdn.mikrotik.com/web-assets/rb_images/1951_hi_res.png   (image/png, 3808130 B, 2621x3646 — closed enclosure, near-front 3/4: finned heatsink cover, MikroTik logo, side latches, sealed lower cable bay)
-    https://help.mikrotik.com/docs/download/attachments/28606548/netpower16p.png   (image/png, 147423 B, 600x569 — same lid-open framing from the user manual, tighter crop on the port panel but low resolution)
+    https://cdn.mikrotik.com/web-assets/rb_images/1953_hi_res.png   (image/png, 4530503 B, 3167x3055, outdoor enclosure with the lid swung open, port panel fully exposed at a moderate angle: DC1 18-30V and DC2 48-57V barrel jacks, 16x RJ45 in two rows as 8+8 blocks under an orange PoE-out band, Power LED, Reset, SFP+1/SFP+2 with ACT/10G LEDs, "netPower 16P / CRS318-16P-2S+OUT" label. Not straight-on, no straight-on port-panel photo exists on MikroTik's CDN)
+    https://cdn.mikrotik.com/web-assets/rb_images/1951_hi_res.png   (image/png, 3808130 B, 2621x3646, closed enclosure, near-front 3/4: finned heatsink cover, MikroTik logo, side latches, sealed lower cable bay)
+    https://help.mikrotik.com/docs/download/attachments/28606548/netpower16p.png   (image/png, 147423 B, 600x569, same lid-open framing from the user manual, tighter crop on the port panel but low resolution)
 
 Notes on method and gaps:
 - Correct MikroTik page slugs are irregular; I scraped them from `https://mikrotik.com/products/group/switches`. The pattern `+` → `plus` applies only to some (`crs354_48g_4splus2qplusrm`, `CRS326-24G-2SplusRM`), while others drop it (`crs309_1g_8s_in`).
 - The CDN serves five variants per gallery image: `<id>_ts.webp`, `_tm.webp`, `_lg.webp`, `_xl.webp`, `_hi_res.png`. `_hi_res.png` is the original, so that is what I reported throughout.
-- Wikimedia Commons has nothing for any of these nine models — only RB260GS board shots — so it contributed nothing.
+- Wikimedia Commons has nothing for any of these nine models, only RB260GS board shots, so it contributed nothing.
 - Reseller listings (Baltic Networks, wifi-stock) for the netPower 16P reuse MikroTik's own closed-enclosure render at lower resolution; no independent straight-on port photo turned up.
 - Two products have no straight-on front render in existence as far as I can find: CRS326-24G-2S+RM (1301 is close, mild perspective) and netPower 16P (angled by necessity, since the ports are behind a hinged lid).
 
@@ -92,32 +92,32 @@ All 26 URLs verified (HTTP 200, image/*, >20 KB). I viewed every primary image t
 
 PRODUCT: EX4300-48T
   https://www.networktigers.com/cdn/shop/files/juniper-EX4300-48T-2.jpg   (image/jpeg, 54617) Real photo, dead straight-on front: all 48 RJ-45 in two rows, honeycomb vent strip above, mini-USB CON port, LCD reading "EX4300 / RUNNING JUNOS" with Menu/Enter buttons, ALM/SYS/MST LEDs, blank uplink-module slot at right. Small NetworkTigers watermark across the lower third.
-  https://www.networktigers.com/cdn/shop/files/juniper-EX4300-48T.jpg   (image/jpeg, 63856) Same unit, 3/4 front-left angle — good for bezel depth, chassis edge and embossed "juniper networks" top lid. Watermarked.
-  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/ex-series/ex4300/ex4300-48p-front-high.jpg   (image/jpeg, 74758) Juniper studio front-on of the 48-port EX4300 — this is the 48P (PoE) SKU, physically the same 1U chassis, port grid, LCD and uplink slot as the 48T. Clean, no watermark. Use with that caveat.
+  https://www.networktigers.com/cdn/shop/files/juniper-EX4300-48T.jpg   (image/jpeg, 63856) Same unit, 3/4 front-left angle, good for bezel depth, chassis edge and embossed "juniper networks" top lid. Watermarked.
+  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/ex-series/ex4300/ex4300-48p-front-high.jpg   (image/jpeg, 74758) Juniper studio front-on of the 48-port EX4300, this is the 48P (PoE) SKU, physically the same 1U chassis, port grid, LCD and uplink slot as the 48T. Clean, no watermark. Use with that caveat.
 
 PRODUCT: EX4400-48MP
-  https://www.juniper.net/documentation/us/en/hardware/ex4400/images/g022645.png   (image/png, 213457) Juniper hardware-guide Figure 38 "Front View of an EX4400-48MP Switch" — photoreal render, straight-on: 48 RJ-45 in two rows (4 banks of 12), "juniper driven by Mist AI" logo left, "EX4400 MG PoE++" badge, USB-C console, SYS/ALM/MST/CLD + SPD/DX/EN/POE LED block, mode button, 4-port SFP+ extension module at right.
-  https://www.juniper.net/documentation/us/en/hardware/ex4400/images/g022556.png   (image/png, 67353) Figure 40, labelled front-panel line drawing with numbered callouts 1-7 and full port numbering — best reference for exact port pitch, LED block and extension-module cutout.
+  https://www.juniper.net/documentation/us/en/hardware/ex4400/images/g022645.png   (image/png, 213457) Juniper hardware-guide Figure 38 "Front View of an EX4400-48MP Switch", photoreal render, straight-on: 48 RJ-45 in two rows (4 banks of 12), "juniper driven by Mist AI" logo left, "EX4400 MG PoE++" badge, USB-C console, SYS/ALM/MST/CLD + SPD/DX/EN/POE LED block, mode button, 4-port SFP+ extension module at right.
+  https://www.juniper.net/documentation/us/en/hardware/ex4400/images/g022556.png   (image/png, 67353) Figure 40, labelled front-panel line drawing with numbered callouts 1-7 and full port numbering, best reference for exact port pitch, LED block and extension-module cutout.
   Note: no genuine photograph of the -48MP exists in Juniper's image library or on the resellers I checked. The NetworkTigers "EX4400-48MP" listing image is actually an EX4400-48P (badge reads "EX4400 PoE++", not "MG PoE++"), so I discarded it.
 
 PRODUCT: QFX5120-48Y
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5120-48y/qfx5120-48y-front-high.jpg   (image/jpeg, 529727) Official studio photo, straight-on: 48 SFP28 cages in two rows (4 banks of 12) plus 8 QSFP28 at right, punched vent strips top and bottom, cyan accent at right edge.
-  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5120-48y/qfx5120-48y-frontwtop-high.jpg   (image/jpeg, 582982) Same shot with the top lid visible — front-on but slightly elevated, gives chassis depth.
-  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5120-48y/qfx5120-48y-front-low.png   (image/png, 219528) Same front view as PNG with transparent/alpha background — easiest to use as a texture reference.
+  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5120-48y/qfx5120-48y-frontwtop-high.jpg   (image/jpeg, 582982) Same shot with the top lid visible, front-on but slightly elevated, gives chassis depth.
+  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5120-48y/qfx5120-48y-front-low.png   (image/png, 219528) Same front view as PNG with transparent/alpha background, easiest to use as a texture reference.
 
 PRODUCT: QFX5220-32CD
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5220-32cd/qfx5220-32cd-front-high.jpg   (image/jpeg, 546795) Studio photo, straight-on: MGMT RJ-45 and PPS/10M SMB coax at far left, 32 QSFP56-DD cages in two rows of 16, then 2 SFP+ ports, second mgmt RJ-45, USB and RESET, cyan "QFX5220-32CD" badge bottom right.
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/qfx-series/qfx5220-32cd/qfx5220-32cd-frontwtop-high.jpg   (image/jpeg, 589726) Same, top lid visible.
-  https://www.juniper.net/documentation/us/en/hardware/qfx5220/images/g051050.png   (image/png, 79050) Labelled port-panel line drawing with callouts 1-11 and port numbering 0-31 — exact geometry reference.
+  https://www.juniper.net/documentation/us/en/hardware/qfx5220/images/g051050.png   (image/png, 79050) Labelled port-panel line drawing with callouts 1-11 and port numbering 0-31, exact geometry reference.
 
 PRODUCT: MX204
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/mx-series/mx204/mx204-front-high.jpg   (image/jpeg, 257593) Studio photo, straight-on 1U with integral rack ears and captive thumbscrews: GM/PTP SFP, 4 QSFP28 (0/0-0/3), 8 SFP+ (1/0-1/7), MGMT, BITS, CON, ToD, USB, PPS/100MHz SMB, LED row, OFFLINE/RESET, "MX204" badge top right.
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/mx-series/mx204/mx204-frontwtop-high.jpg   (image/jpeg, 272787) Same with top lid visible.
-  https://www.juniper.net/documentation/us/en/hardware/mx204/images/g009860.png   (image/png, 59415) Hardware-guide Figure 1 "Front View of the MX204" — labelled line drawing showing every port label and the rack-ear hole pattern.
+  https://www.juniper.net/documentation/us/en/hardware/mx204/images/g009860.png   (image/png, 59415) Hardware-guide Figure 1 "Front View of the MX204", labelled line drawing showing every port label and the rack-ear hole pattern.
 
 PRODUCT: MX240
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/mx-series/mx240/mx240-front-high.jpg   (image/jpeg, 378693) Studio photo, straight-on 5U: top fan-tray honeycomb vent, craft interface (JUNIPER MX240 badge, RE0/RE1 MASTER/ONLINE/OFFLINE, FAN, PEM 0-3, yellow+red alarm lamps, ACO/LT button, two green alarm-relay terminal blocks), then 4 card slots populated with DPC/SCB/RE, dark grey ejector levers on both sides.
-  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/mx-series/mx240/mx240-frontwtop-high.jpg   (image/jpeg, 378573) Same with the chassis top visible — best single shot for overall proportions.
+  https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/mx-series/mx240/mx240-frontwtop-high.jpg   (image/jpeg, 378573) Same with the chassis top visible, best single shot for overall proportions.
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/mx-series/mx240/lbox-mx240-front.jpg   (image/jpeg, 90167) Smaller lightbox version of the front-on shot.
 
 PRODUCT: EX9204
@@ -133,14 +133,14 @@ PRODUCT: SRX4600
 PRODUCT: SRX1500
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/srx-series/srx1500/srx1500-front-high.jpg   (image/jpeg, 335530) Studio photo, straight-on 1U: perforated left panel with "JUNIPER SRX1500", 16 RJ-45 in two rows, 4 SFP 1G + 4 SFP+ 10G, then darker right section with HA CONTROL SFP, USB, console RJ-45 + mini-USB, MGMT, STAT/ALARM/SSD/PWR/HA/RPS LEDs, RESET CONFIG pinhole and round power button.
   https://www.juniper.net/content/dam/www/assets/images/us/en/image-library/srx-series/srx1500/srx1500-frontwtop-high.jpg   (image/jpeg, 334142) Same with top lid visible.
-  https://www.juniper.net/documentation/us/en/hardware/srx1500/images/g000860.png   (image/png, 94640) Hardware-guide Figure 1 "SRX1500 Firewall Front Panel" — labelled line drawing, callouts 1-12, shows the two blanked expansion-module bays at top right.
+  https://www.juniper.net/documentation/us/en/hardware/srx1500/images/g000860.png   (image/png, 94640) Hardware-guide Figure 1 "SRX1500 Firewall Front Panel", labelled line drawing, callouts 1-12, shows the two blanked expansion-module bays at top right.
 
 Useful for further digging: Juniper's own product photo library indexes every SKU at https://www.juniper.net/us/en/company/images/image-library-logos-and-product-photos/products.html, and each product page exposes direct `/content/dam/www/assets/images/us/en/image-library/<series>/<model>/<model>-{front,frontwtop,left,right,rear}-high.jpg` paths.
 
 
 ## Dell
 
-All 24 URLs below were verified with the exact command specified — every one returned HTTP 200, an `image/*` content type, and >20000 bytes. I also opened and visually inspected each image to confirm what it shows.
+All 24 URLs below were verified with the exact command specified, and every one returned HTTP 200, an `image/*` content type, and >20000 bytes. I also opened and visually inspected each image to confirm what it shows.
 
 ```
 PRODUCT: PowerEdge R660 (1U)
@@ -210,9 +210,9 @@ PRODUCT: PowerSwitch S5248F-ON (1U)
     (image/jpeg, 94423) Real photograph, straight-on front elevation on a bench (top cover removed). Confirms real-world port-cage depth, faceplate bezel edge and the Stack-ID window. Front face itself is fully front-on.
 ```
 
-One honest gap worth knowing about: Dell's own Installation and Service Manual diagrams live at `https://dl.dell.com/content/guides/public/Html/<manual>_pub/images/GUID-*-low.jpg` (e.g. `per760_ism_pub`, `xe9680_ism_pub`) and are excellent labelled front views at ~600KB each — but Akamai blocks curl's default User-Agent there, so they return **403** under your verification command and I excluded them. They do return `200 image/jpeg` if you add `-A "Mozilla/5.0"`. The R960, ME5024 and S5248F entries above are those same Dell diagrams re-hosted on a CDN that does serve plain curl.
+One honest gap worth knowing about: Dell's own Installation and Service Manual diagrams live at `https://dl.dell.com/content/guides/public/Html/<manual>_pub/images/GUID-*-low.jpg` (e.g. `per760_ism_pub`, `xe9680_ism_pub`) and are excellent labelled front views at ~600KB each, but Akamai blocks curl's default User-Agent there, so they return **403** under your verification command and I excluded them. They do return `200 image/jpeg` if you add `-A "Mozilla/5.0"`. The R960, ME5024 and S5248F entries above are those same Dell diagrams re-hosted on a CDN that does serve plain curl.
 
-Two sizing knobs: on the `i.dell.com` Scene7 URLs change `wid=1600` to go larger (2000+ works); on the Shopify ones change `_1600x` (the `_1600x` and bare filename return the same source pixels — roughly 1080px square — so those are already at native resolution).
+Two sizing knobs: on the `i.dell.com` Scene7 URLs change `wid=1600` to go larger (2000+ works); on the Shopify ones change `_1600x` (the `_1600x` and bare filename return the same source pixels, roughly 1080px square, so those are already at native resolution).
 
 
 ## Cisco
@@ -288,8 +288,8 @@ Notes worth knowing before you model:
 - **ISR 4331 / 4451-X face naming.** Cisco calls the PSU/vent face the "bezel side" and the connector face the "back panel (I/O side)". I gave you both faces for each so you can pick whichever you're treating as rack-front.
 - **Uplink modules.** No photo exists of a 9300-48P shipping with an NM-8X or a 9300-24P with an NM-4G fitted, so I supplied dead-on shots of each bare module to composite into the uplink bay. The Cisco 385446 figure does show a 48P with an 8-port SFP+ module installed.
 - **C240 24-SFF.** The only real 24-SFF photo I found has empty bays; the 12-LFF shot is included purely for populated-carrier and bezel detail.
-- **Wikimedia Commons is essentially empty for this generation of gear.** Its API is also hard rate-limited from this egress IP. The one genuinely valuable Commons hit is the UCS 5108 photo. `Cisco_Nexus_N9K.jpg` on Commons is a **93180YC-EX**, not a 9336C-FX2 — discarded.
-- Two watermark warnings: the NetworkTigers images carry a large centre watermark (it generally sits below the port row, so panels stay readable), and the networkdevicesinc 9200L PNG has a faint diagonal watermark across the chassis. The networkoutlet.com images (`C9300-48P-E.jpg`, `Cisco_Catalyst_C9300-24P-A.jpg`, `C9200L-24T-4G-E.jpg`, `C9300-NM-4G1.jpg`) are 2580x1600 and completely clean — those are your best references.
+- **Wikimedia Commons is essentially empty for this generation of gear.** Its API is also hard rate-limited from this egress IP. The one genuinely valuable Commons hit is the UCS 5108 photo. `Cisco_Nexus_N9K.jpg` on Commons is a **93180YC-EX**, not a 9336C-FX2, so it is discarded.
+- Two watermark warnings: the NetworkTigers images carry a large centre watermark (it generally sits below the port row, so panels stay readable), and the networkdevicesinc 9200L PNG has a faint diagonal watermark across the chassis. The networkoutlet.com images (`C9300-48P-E.jpg`, `Cisco_Catalyst_C9300-24P-A.jpg`, `C9200L-24T-4G-E.jpg`, `C9300-NM-4G1.jpg`) are 2580x1600 and completely clean, and those are your best references.
 
 
 ## Ubiquiti, Supermicro, APC and the rest
@@ -390,4 +390,4 @@ PRODUCT: Generic 24 port keystone patch panel, 1U (StarTech)
   NOTE: blankpatch24.main.jpg on the same CDN is a superb dead straight-on front, but that SKU is 2U, not 1U.
 ```
 
-Two things worth flagging: Ubiquiti's own product pages carry front+rear labeled elevation diagrams for all six powered devices, which are considerably better modeling references than the marketing renders, so I led with those. And the Ubiquiti patch panel page mixes five different products' images under separate CDN UUIDs — the panel itself is UUID `6ab1a848-c395-4ba6-8295-5caf711dd19e`; the other four are keystone jacks.
+Two things worth flagging: Ubiquiti's own product pages carry front+rear labeled elevation diagrams for all six powered devices, which are considerably better modeling references than the marketing renders, so I led with those. And the Ubiquiti patch panel page mixes five different products' images under separate CDN UUIDs. The panel itself is UUID `6ab1a848-c395-4ba6-8295-5caf711dd19e`; the other four are keystone jacks.
