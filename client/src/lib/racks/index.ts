@@ -10,6 +10,7 @@
 import type { RackDefinition, RackDevice } from "@/lib/rackTypes";
 import { ubiquitiRack } from "./ubiquiti";
 import { ciscoRack } from "./cisco";
+import { ciscoEnterpriseRack } from "./ciscoEnterprise";
 import { mikrotikRack } from "./mikrotik";
 import { homelabRack } from "./homelab";
 import { juniperRack } from "./juniper";
@@ -19,6 +20,7 @@ import { storageRack } from "./storage";
 export const RACKS: RackDefinition[] = [
   ubiquitiRack,
   ciscoRack,
+  ciscoEnterpriseRack,
   juniperRack,
   mikrotikRack,
   serverRack,

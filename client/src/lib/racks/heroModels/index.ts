@@ -21,7 +21,7 @@ export const HERO_MODELS: Record<string, HeroModel> = {
     scenery: UNIFI_SCENERY,
     note: "A UniFi studio frame on casters, patched one to one across 24 ports.",
   },
-  "catalyst-12u": {
+  "cisco-enterprise-42u": {
     url: "/models/cisco-enterprise-42u.glb",
     parts: CISCO_PARTS,
     scenery: CISCO_SCENERY,
