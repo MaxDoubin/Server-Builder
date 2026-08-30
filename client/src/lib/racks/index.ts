@@ -12,6 +12,7 @@ import { ubiquitiRack } from "./ubiquiti";
 import { ciscoRack } from "./cisco";
 import { ciscoEnterpriseRack } from "./ciscoEnterprise";
 import { mikrotikRack } from "./mikrotik";
+import { mikrotikIspRack } from "./mikrotikIsp";
 import { homelabRack } from "./homelab";
 import { juniperRack } from "./juniper";
 import { juniperCoreRack } from "./juniperCore";
@@ -25,6 +26,7 @@ export const RACKS: RackDefinition[] = [
   juniperRack,
   juniperCoreRack,
   mikrotikRack,
+  mikrotikIspRack,
   serverRack,
   storageRack,
   homelabRack,

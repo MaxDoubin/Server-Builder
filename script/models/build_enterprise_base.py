@@ -34,15 +34,20 @@ from build_unifi_hero_rack_clean_aligned import UniFiHeroRack, pbr, make_screen_
 OUT = Path(os.environ.get("RACK_OUT", "."))
 
 U = 0.04445
-UNITS = 42
 RAIL_BOTTOM = 0.160
-RAIL_TOP = RAIL_BOTTOM + UNITS * U
 PANEL_W = 0.442
+
+#: Default frame height. Override `units` on a subclass for a smaller rack:
+#: a 42U cabinet is a data centre object and plenty of vendors are deployed
+#: in half that, which is itself worth drawing.
+UNITS = 42
 
 
 class EnterpriseRack(UniFiHeroRack):
     """A 42U four post rack. Subclass it and describe your own hardware."""
 
+    #: Rack units of mounting space. A vendor rack does not have to be 42.
+    units = UNITS
     #: Powder coat on the frame itself.
     frame_material = 'nexus_black'
     #: Default front panel finish for this vendor.
@@ -52,6 +57,7 @@ class EnterpriseRack(UniFiHeroRack):
 
     def __init__(self) -> None:
         super().__init__()
+        self.rail_top = RAIL_BOTTOM + self.units * U
         self.materials.update({
             'cisco_grey': pbr('Panel Grey', [206, 209, 208, 255], 0.34, 0.44),
             'cisco_grey_dark': pbr('Panel Shadow', [166, 170, 170, 255], 0.34, 0.52),
@@ -75,7 +81,7 @@ class EnterpriseRack(UniFiHeroRack):
 
     def u_centre(self, u_from_top: float, u_high: int = 1) -> float:
         """Vertical centre of a device `u_from_top` units below the top rail."""
-        return RAIL_TOP - (u_from_top + u_high / 2) * U
+        return self.rail_top - (u_from_top + u_high / 2) * U
 
     def panel_shell(self, group: str, z: float, u: int, depth: float,
                     face: str | None = None, panel_width: float = PANEL_W) -> None:
@@ -152,7 +158,7 @@ class EnterpriseRack(UniFiHeroRack):
         """
         g = 'RACK_FRAME'
         W, D = 0.605, 0.940
-        z0, z1 = 0.055, RAIL_TOP + 0.070
+        z0, z1 = 0.055, self.rail_top + 0.070
         post = 0.036
         xp, yp = W / 2 - post / 2, D / 2 - post / 2
         for x in (-xp, xp):
@@ -170,16 +176,16 @@ class EnterpriseRack(UniFiHeroRack):
         # square holes per unit, which is what a rack rail actually is.
         for x in (-0.258, 0.258):
             for y in (self.front_y + 0.030, 0.330):
-                self.uv_box('MOUNTING_RAILS', 'cisco_grey_dark', (x, y, (RAIL_BOTTOM + RAIL_TOP) / 2),
-                            (0.022, 0.022, RAIL_TOP - RAIL_BOTTOM + 0.02))
-                for i in range(UNITS):
+                self.uv_box('MOUNTING_RAILS', 'cisco_grey_dark', (x, y, (RAIL_BOTTOM + self.rail_top) / 2),
+                            (0.022, 0.022, self.rail_top - RAIL_BOTTOM + 0.02))
+                for i in range(self.units):
                     base = RAIL_BOTTOM + i * U
                     for frac in (0.18, 0.5, 0.82):
                         self.rounded_prism('RACK_HOLES', 'black_matte',
                                            (x, y - 0.011 if y < 0 else y + 0.011, base + frac * U),
                                            (0.0062, 0.0024, 0.0060), radius=0.0008, bevel=0.0002, steps=4)
         for x in (-xp, xp):
-            for z in np.linspace(0.30, RAIL_TOP - 0.10, 7):
+            for z in np.linspace(0.30, self.rail_top - 0.10, max(3, self.units // 6)):
                 self.uv_box('SIDE_BRACES', 'nexus_black', (x, 0, float(z)), (0.016, D - 0.060, 0.016))
         # Levelling feet, because a 42U rack does not roll around a studio.
         for x in (-xp, xp):

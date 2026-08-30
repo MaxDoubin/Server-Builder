@@ -31,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_enterprise_base import OUT, PANEL_W, RAIL_TOP, U, EnterpriseRack
+from build_enterprise_base import OUT, PANEL_W, U, EnterpriseRack
 
 
 class JuniperCoreRack(EnterpriseRack):
@@ -277,7 +277,7 @@ class JuniperCoreRack(EnterpriseRack):
 
     def build(self) -> trimesh.Scene:
         at = self.u_centre
-        top = RAIL_TOP
+        top = self.rail_top
 
         print('BUILD frame', flush=True)
         self.build_frame()

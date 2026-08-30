@@ -12,6 +12,7 @@ import type { HeroModel } from "./types";
 import { UNIFI_PARTS, UNIFI_SCENERY } from "./unifi";
 import { CISCO_PARTS, CISCO_SCENERY } from "./cisco";
 import { JUNIPER_PARTS, JUNIPER_SCENERY } from "./juniper";
+import { MIKROTIK_PARTS, MIKROTIK_SCENERY } from "./mikrotik";
 
 export type { HeroModel, HeroPart } from "./types";
 
@@ -21,6 +22,12 @@ export const HERO_MODELS: Record<string, HeroModel> = {
     parts: UNIFI_PARTS,
     scenery: UNIFI_SCENERY,
     note: "A UniFi studio frame on casters, patched one to one across 24 ports.",
+  },
+  "mikrotik-isp-24u": {
+    url: "/models/mikrotik-isp-24u.glb",
+    parts: MIKROTIK_PARTS,
+    scenery: MIKROTIK_SCENERY,
+    note: "A 24U wireless ISP rack: switching, routing, a shelf of desktop units and an optical distribution frame.",
   },
   "juniper-core-42u": {
     url: "/models/juniper-core-42u.glb",

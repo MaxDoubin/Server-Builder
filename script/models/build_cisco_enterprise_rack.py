@@ -37,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_enterprise_base import OUT, PANEL_W, RAIL_TOP, U, UNITS, EnterpriseRack
+from build_enterprise_base import OUT, PANEL_W, U, EnterpriseRack
 
 CHASSIS_DEPTH_DEEP = 0.815
 
@@ -326,7 +326,7 @@ class CiscoEnterpriseRack(EnterpriseRack):
     # --------------------------------------------------------------- build
 
     def build(self) -> trimesh.Scene:
-        top = RAIL_TOP
+        top = self.rail_top
 
         at = self.u_centre
 
