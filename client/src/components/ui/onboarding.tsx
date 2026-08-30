@@ -65,8 +65,18 @@ export function Onboarding({ steps = defaultSteps, storageKey = "hyperscale-onbo
             <p className="text-xs font-mono uppercase tracking-wider text-cyan-400">Guided Tour</p>
             <h3 className="font-display text-base font-semibold">{activeStep.title}</h3>
           </div>
-          <Button size="icon" variant="ghost" onClick={handleClose} className="h-7 w-7">
-            <X className="h-4 w-4" />
+          {/*
+            Icon-only, so with no label it announced as a bare "button" and
+            the only way to dismiss the tour was unreachable non-visually.
+          */}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleClose}
+            aria-label="Dismiss guided tour"
+            className="h-7 w-7"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">{activeStep.description}</p>

@@ -81,7 +81,13 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <X className="h-4 w-4" />
+    <X className="h-4 w-4" aria-hidden="true" />
+    {/*
+      The X glyph is the only child, so without this the dismiss control had
+      no accessible name at all and was announced as a bare "button". Dialog
+      and Sheet already carry the same sr-only label.
+    */}
+    <span className="sr-only">Close</span>
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName

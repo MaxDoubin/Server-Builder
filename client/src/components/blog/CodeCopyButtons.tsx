@@ -39,7 +39,13 @@ export function CodeCopyButtons({ contentRef, contentKey }: Props) {
       return;
     }
 
-    const created: Array<{ entry: CodeHost; pre: HTMLElement; wrap: HTMLElement }> = [];
+    const created: Array<{
+      entry: CodeHost;
+      pre: HTMLElement;
+      wrap: HTMLElement;
+      /** Whether the markup already carried one, so cleanup restores it. */
+      hadTabIndex: boolean;
+    }> = [];
 
     root.querySelectorAll("pre").forEach((pre, i) => {
       const codeEl = pre.querySelector("code");
@@ -65,14 +71,27 @@ export function CodeCopyButtons({ contentRef, contentKey }: Props) {
       // of the first line of code.
       pre.style.paddingTop = "2.9em";
 
-      created.push({ entry: { key: `code-${i}`, host, code }, pre, wrap });
+      /*
+        A code block wider than the column scrolls sideways (overflow-x: auto
+        on .cinematic-prose pre), and a scroll container that cannot take
+        focus cannot be scrolled without a pointer. Every long command in
+        every post was therefore cut off at the right edge for anyone on a
+        keyboard, with no way to reach the rest of the line. tabindex makes
+        the block a tab stop, which is what gives the arrow keys something to
+        scroll.
+      */
+      const hadTabIndex = pre.hasAttribute("tabindex");
+      if (!hadTabIndex) pre.setAttribute("tabindex", "0");
+
+      created.push({ entry: { key: `code-${i}`, host, code }, pre, wrap, hadTabIndex });
     });
 
     setHosts(created.map((c) => c.entry));
 
     return () => {
-      for (const { pre, wrap } of created) {
+      for (const { pre, wrap, hadTabIndex } of created) {
         pre.style.paddingTop = "";
+        if (!hadTabIndex) pre.removeAttribute("tabindex");
         if (wrap.parentNode) {
           wrap.parentNode.insertBefore(pre, wrap);
           wrap.remove();

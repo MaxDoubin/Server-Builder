@@ -264,6 +264,15 @@ const ClassicalCiphers = lazyWithRetry(() =>
 const HashIdentifier = lazyWithRetry(() =>
   import("@/pages/tools/HashIdentifier").then((m) => ({ default: m.HashIdentifier })),
 );
+const JwtDecoder = lazyWithRetry(() =>
+  import("@/pages/tools/JwtDecoder").then((m) => ({ default: m.JwtDecoder })),
+);
+const PasswordEntropy = lazyWithRetry(() =>
+  import("@/pages/tools/PasswordEntropy").then((m) => ({ default: m.PasswordEntropy })),
+);
+const TimestampConverter = lazyWithRetry(() =>
+  import("@/pages/tools/TimestampConverter").then((m) => ({ default: m.TimestampConverter })),
+);
 const CinematicTools = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTools").then((m) => ({ default: m.CinematicTools })),
 );
@@ -843,6 +852,21 @@ function AnimatedRoutes() {
           <Route path="/tools/classical-ciphers">
             <Suspense fallback={<RouteLoading />}>
               <ClassicalCiphers />
+            </Suspense>
+          </Route>
+          <Route path="/tools/jwt-decoder">
+            <Suspense fallback={<RouteLoading />}>
+              <JwtDecoder />
+            </Suspense>
+          </Route>
+          <Route path="/tools/password-entropy">
+            <Suspense fallback={<RouteLoading />}>
+              <PasswordEntropy />
+            </Suspense>
+          </Route>
+          <Route path="/tools/timestamp-converter">
+            <Suspense fallback={<RouteLoading />}>
+              <TimestampConverter />
             </Suspense>
           </Route>
           <Route path="/data">

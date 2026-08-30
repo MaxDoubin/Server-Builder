@@ -332,7 +332,16 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
               style={{ pointerEvents: "none" }}
               wrapperClass="cinematic-label"
             >
+              {/*
+                Captions for the exploded view, faded in and out by scroll
+                position. opacity:0 hides them from eyes only, so all eight
+                sat in the accessibility tree at once and a screen reader
+                read the whole parts list out of the middle of the page
+                whatever the scene was showing. They caption a WebGL
+                animation and carry nothing a reader can act on.
+              */}
               <div
+                aria-hidden
                 ref={(el) => {
                   labelRefs.current[l.id] = el;
                 }}

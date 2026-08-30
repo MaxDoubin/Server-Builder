@@ -15,3 +15,11 @@ export const MAX_LISTED = 64;
 
 /** Regex tester: how long a match may run in the worker before it is cut off. */
 export const TIME_BUDGET_MS = 250;
+
+/**
+ * Password entropy: guesses per second for the two offline rows, which the
+ * notes quote as well as the table. Order of magnitude figures for current
+ * GPU hardware, bcrypt at cost 12 against a bare MD5 or NTLM digest.
+ */
+export const SLOW_HASH_GUESSES_PER_SECOND = 1e4;
+export const FAST_HASH_GUESSES_PER_SECOND = 1e12;

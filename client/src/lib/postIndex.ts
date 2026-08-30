@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 235 of them. Regenerate with script/generatePostIndex.ts.
+ * 238 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -2345,6 +2345,33 @@ export const postIndex: PostMeta[] = [
     coverCredit: {"author":"expertinfantry","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/58297778@N04/5431970803"},
     wordCount: 1596,
   },
+  {
+    slug: "encrypted-dns-and-internal-name-resolution",
+    title: "Encrypted DNS And Internal Name Resolution",
+    date: "2026-08-23",
+    tags: ["networking","security","dns"],
+    excerpt: "DoH and DoT move the choice of resolver from the network to the application. That is what breaks split-horizon DNS, and here is what actually works on a network you run.",
+    coverImage: "/images/blog/encrypted-dns-and-internal-name-resolution.jpg",
+    wordCount: 1260,
+  },
+  {
+    slug: "how-totp-codes-actually-work",
+    title: "How TOTP Codes Actually Work",
+    date: "2026-08-24",
+    tags: ["security","cybersecurity","operations"],
+    excerpt: "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
+    coverImage: "/images/blog/how-totp-codes-actually-work.jpg",
+    wordCount: 1339,
+  },
+  {
+    slug: "init-scripts-to-systemd-units",
+    title: "From Init Scripts To Unit Files",
+    date: "2026-08-25",
+    tags: ["linux","operations","servers"],
+    excerpt: "If you can write a SysV init script, most of a unit file is a translation exercise. The parts that are not are dependency ordering, restart policy, and the journal.",
+    coverImage: "/images/blog/init-scripts-to-systemd-units.jpg",
+    wordCount: 1344,
+  },
 ];
 
 /**
@@ -2354,10 +2381,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 854;
+export const CITATION_COUNT = 872;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1013;
+export const CHECKED_URL_COUNT = 1031;

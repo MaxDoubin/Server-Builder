@@ -86,13 +86,16 @@ export function ContinueReading() {
                     {percent}% · {left} min left
                   </span>
                 </div>
+                {/*
+                  Decorative. The bar draws the same number the line above
+                  already states in words, and as a labelled progressbar
+                  inside the link its own name was appended to the link's,
+                  which came out as "Title, 62% - 4 min left, Progress
+                  through Title, link".
+                */}
                 <div
+                  aria-hidden
                   className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-[hsl(var(--brand-iron))]"
-                  role="progressbar"
-                  aria-valuenow={percent}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`Progress through ${post.title}`}
                 >
                   <div
                     className="h-full rounded-full bg-[hsl(var(--brand-signal))]"

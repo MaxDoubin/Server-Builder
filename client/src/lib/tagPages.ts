@@ -155,6 +155,14 @@ export const TAG_PAGES: TagPage[] = [
       "Apple systems examined the same way as any other platform. Filesystem design, the security hardware, the silicon architecture, and what happens when you treat these machines as infrastructure rather than as laptops.",
   },
   {
+    tag: "mac-pro",
+    title: "The Mac Pro",
+    description:
+      "One workstation studied as infrastructure: the 2019 Mac Pro's engineering, storage, GPU compute, security silicon, and life in a rack.",
+    intro:
+      "Most of this archive treats machines as categories. This tag is the opposite: one machine, the rack-mount Mac Pro, examined until it stops being mysterious. Teardown and thermals, storage expansion, the T2 and Afterburner cards, GPU compute, and an honest comparison with the PowerEdge below it in the rack.",
+  },
+  {
     tag: "career",
     title: "Career and learning",
     description:

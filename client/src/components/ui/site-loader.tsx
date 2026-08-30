@@ -12,7 +12,18 @@ export function SiteLoader({
   status = "Initializing",
 }: SiteLoaderProps) {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[hsl(var(--brand-obsidian))] px-6 text-[hsl(var(--brand-bone))]">
+    /*
+      role="status" + aria-busy. This is the Suspense fallback for every lazy
+      route, so it swaps in with no user action behind it. Without a live
+      region a screen reader user got silence between activating a link and
+      the next page mounting, with no way to tell a slow chunk from a dead one.
+    */
+    <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[hsl(var(--brand-obsidian))] px-6 text-[hsl(var(--brand-bone))]"
+    >
       <div
         className="absolute inset-0"
         style={{

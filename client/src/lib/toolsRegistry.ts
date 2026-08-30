@@ -158,6 +158,14 @@ export const TOOLS: ToolEntry[] = [
     keywords: ["binary", "hex", "octal", "decimal", "twos complement", "bitwise"],
   },
   {
+    slug: "timestamp-converter",
+    name: "Unix timestamp converter",
+    blurb:
+      "Epoch seconds, milliseconds, microseconds and nanoseconds to a date and back, in UTC and local, with ISO 8601 and RFC 2822.",
+    category: "encoding",
+    keywords: ["unix", "epoch", "timestamp", "iso 8601", "rfc 2822", "utc", "time_t", "2038", "date"],
+  },
+  {
     slug: "classical-ciphers",
     name: "Classical ciphers",
     blurb:
@@ -172,6 +180,22 @@ export const TOOLS: ToolEntry[] = [
       "Paste a hash and see which algorithms produce that shape, ranked by how likely each is.",
     category: "security",
     keywords: ["hash", "md5", "sha", "bcrypt", "ntlm", "identify", "cracking", "hashcat"],
+  },
+  {
+    slug: "jwt-decoder",
+    name: "JWT decoder",
+    blurb:
+      "Read the header, payload and claim times inside a JSON Web Token. Decodes only: the signature is shown and never verified.",
+    category: "security",
+    keywords: ["jwt", "jws", "bearer", "token", "oauth", "oidc", "claims", "base64url"],
+  },
+  {
+    slug: "password-entropy",
+    name: "Password entropy calculator",
+    blurb:
+      "Search space bits, Shannon entropy and time to crack at five attack rates, with the patterns that make all three optimistic.",
+    category: "security",
+    keywords: ["password", "entropy", "bits", "crack", "hashcat", "bcrypt", "shannon", "strength", "diceware"],
   },
   {
     slug: "mac-lookup",

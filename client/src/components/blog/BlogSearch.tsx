@@ -382,6 +382,9 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
           className="min-h-[44px] w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] py-3 pl-9 pr-24 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
         />
         {query && (
+          // 32px of drawn button on a control that is mostly used on a phone.
+          // The pseudo-element takes the hit area to 44 inside the input's own
+          // 44px row, so the target grows and nothing moves.
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -391,7 +394,7 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
             }}
             aria-label="Clear search"
             data-testid="button-clear-search"
-            className="absolute right-2 top-1/2 inline-flex min-h-[32px] -translate-y-1/2 items-center rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+            className="absolute right-2 top-1/2 inline-flex min-h-[32px] -translate-y-1/2 items-center rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-full before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
           >
             Esc
           </button>
@@ -460,7 +463,12 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
               </li>
             ))}
             {suggestions.length === 0 && (
+              // A listbox may only own options, and this row is a message
+              // rather than something to choose, so it drops its own
+              // semantics instead of leaving a bare li inside the listbox.
+              // The count is announced by the live region above either way.
               <li
+                role="presentation"
                 className="px-4 py-5 text-center font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                 data-testid="search-no-results"
               >

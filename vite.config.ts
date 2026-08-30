@@ -62,6 +62,38 @@ export default defineConfig({
             return "react";
           }
           if (!id.includes("node_modules")) return;
+          // Anything living in a nested node_modules under the WebGL stack is
+          // that stack's private copy, so claim it for r3f before the React
+          // rule below can take it.
+          //
+          // This is the r3f incident above running the other way: instead of
+          // r3f absorbing React, the react chunk was absorbing r3f. The React
+          // test is a substring match, and "node_modules/scheduler/" is also a
+          // substring of
+          //   node_modules/@react-three/fiber/node_modules/scheduler/
+          //   node_modules/react-reconciler/node_modules/scheduler/
+          // Both are scheduler 0.21.0, pinned by the WebGL stack against the
+          // app's own 0.23.2, so npm cannot dedupe them and both stay on disk.
+          // The React rule claimed them, which put 7.9KB of a 3D engine's
+          // private dependency in the one chunk every visitor downloads.
+          // Worse than the bytes: a chunk's modules are evaluated when the
+          // chunk is, and scheduler opens a MessageChannel at module scope, so
+          // first paint stood up three scheduler runtimes and three
+          // MessageChannels where one is used. Nothing outside /game ever
+          // referenced the two extras.
+          //
+          // Matching the owning package rather than "is this path nested"
+          // keeps the app's own React safe under any install layout: a store
+          // that puts every package behind a nested path (pnpm) would trip a
+          // generic nesting test and knock react itself out of this chunk,
+          // which is the original incident all over again.
+          if (
+            /node_modules\/(@react-three\/[^/]+|react-reconciler)\/node_modules\//.test(
+              id,
+            )
+          ) {
+            return "r3f";
+          }
           if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
             return "react";
           }

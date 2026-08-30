@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   motion,
@@ -8,6 +8,13 @@ import {
 } from "framer-motion";
 import { Magnetic, GlitchText } from "@/lib/framer-animations";
 import { prefetchHandlers } from "@/lib/prefetchOnHover";
+
+/**
+ * Everything the browser will hand a Tab to. Same selector the shortcuts
+ * dialog uses, so the two focus loops behave identically.
+ */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 const NAV_LINKS = [
   { label: "Index", href: "/" },
@@ -83,6 +90,10 @@ export function CinematicNav() {
   const { scrollYProgress } = useScroll();
   const headerBlur = useTransform(scrollYProgress, [0, 0.02], [0, 12]);
 
+  const headerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -103,12 +114,84 @@ export function CinematicNav() {
     };
   }, [open]);
 
+  /*
+    The open drawer is a scrim across the whole page, so it has to behave
+    like one. It did not. Opening it left focus on the hamburger, Tab then
+    walked straight past the menu into the links hidden behind the scrim,
+    Escape did nothing at all, and closing dropped focus on <body> so the
+    next Tab restarted at the top of the document.
+
+    The header stays above the scrim (z-50 against z-30) and remains visible
+    and clickable, so the loop spans the header controls and the drawer
+    together rather than the drawer alone. That is also why this stays a
+    disclosure with aria-expanded instead of becoming an aria-modal dialog:
+    the button that closes the menu lives in the header, and aria-modal
+    would hide it from assistive tech.
+  */
+  useEffect(() => {
+    if (!open) return;
+
+    const cycle = () =>
+      [
+        ...Array.from(headerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []),
+        ...Array.from(drawerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []),
+        // Anything display:none (the desktop nav, the CTA on a narrow phone)
+        // is in the markup but not on screen, so it must not take a Tab.
+      ].filter((el) => el.getClientRects().length > 0);
+
+    drawerRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        // Whatever is underneath must not also act on this Escape.
+        event.stopPropagation();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const loop = cycle();
+      if (loop.length === 0) return;
+      const first = loop[0];
+      const last = loop[loop.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      const at = active ? loop.indexOf(active) : -1;
+
+      if (at === -1) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, true);
+      // Focus goes back to the trigger, but only when it is still inside the
+      // menu that just closed. Closing by clicking something else on the page
+      // must not yank the caret away from whatever the reader moved to.
+      const active = document.activeElement;
+      if (!active || active === document.body || drawerRef.current?.contains(active)) {
+        toggleRef.current?.focus();
+      }
+    };
+  }, [open]);
+
   const isActive = (href: string) =>
     href === "/" ? location === "/" : location.startsWith(href);
 
   return (
     <>
       <motion.header
+        ref={headerRef}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
@@ -163,7 +246,7 @@ export function CinematicNav() {
             </Magnetic>
           </motion.div>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
             {NAV_LINKS.map((link, i) => {
               const active = isActive(link.href);
               return (
@@ -178,6 +261,7 @@ export function CinematicNav() {
                     <Link
                       href={link.href}
                     {...prefetchHandlers(link.href)}
+                      aria-current={active ? "page" : undefined}
                       data-testid={`link-nav-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
                       className={`relative px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.22em] transition-colors ${
                         active
@@ -235,7 +319,10 @@ export function CinematicNav() {
                       transition={{ duration: 1.5, repeat: Infinity }}
                     />
                     Get in touch
+                    {/* Decoration. Without aria-hidden the link is announced
+                        as "Get in touch right arrow". */}
                     <motion.span
+                      aria-hidden
                       className="ml-1"
                       animate={{ x: [0, 3, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
@@ -247,14 +334,20 @@ export function CinematicNav() {
               </Magnetic>
             </motion.div>
 
+            {/* The drawn box is 40x40, under the 44px touch target this one
+                needs: it exists on phones alone and it is the only way into
+                the menu. The pseudo-element grows the hit area to 44 without
+                moving the border, the same trick ui/dialog and ui/sheet use
+                on their close buttons. */}
             <motion.button
+              ref={toggleRef}
               type="button"
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="cinematic-mobile-nav"
               aria-label={open ? "Close menu" : "Open menu"}
               data-testid="button-nav-toggle"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/.6)] md:hidden"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] md:hidden"
               whileHover={{ scale: 1.1, borderColor: "hsl(72 100% 50% / 0.6)" }}
               whileTap={{ scale: 0.9 }}
               initial={{ opacity: 0, rotate: -90 }}
@@ -286,7 +379,11 @@ export function CinematicNav() {
       <AnimatePresence>
         {open && (
           <>
+            {/* A bare div with onClick is not a control. It stays a pointer
+                shortcut and is hidden from assistive tech; Escape and the
+                toggle are the keyboard routes out. */}
             <motion.div
+              aria-hidden
               className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -295,6 +392,7 @@ export function CinematicNav() {
               onClick={() => setOpen(false)}
             />
             <motion.div
+              ref={drawerRef}
               id="cinematic-mobile-nav"
               data-testid="mobile-nav-drawer"
               className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md md:hidden"
@@ -303,7 +401,10 @@ export function CinematicNav() {
               exit={{ opacity: 0, y: -10, clipPath: "inset(0 0 100% 0)" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <nav className="mx-auto flex max-w-[1400px] flex-col gap-1 px-6 py-4">
+              <nav
+                aria-label="Site menu"
+                className="mx-auto flex max-w-[1400px] flex-col gap-1 px-6 py-4"
+              >
                 {NAV_LINKS.map((link, i) => {
                   const active = isActive(link.href);
                   return (
@@ -318,6 +419,7 @@ export function CinematicNav() {
                       <Link
                         href={link.href}
                     {...prefetchHandlers(link.href)}
+                        aria-current={active ? "page" : undefined}
                         data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
                         className={`flex items-center justify-between rounded-md border border-transparent px-4 py-3 font-mono-tight text-[13px] uppercase tracking-[0.22em] transition-colors ${
                           active

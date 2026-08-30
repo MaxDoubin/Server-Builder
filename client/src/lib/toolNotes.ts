@@ -14,7 +14,13 @@
  * retyped, so prose and behaviour cannot disagree.
  */
 import { BTU_PER_WATT, IN_ROOM_LOSS_FACTOR } from "./capacity";
-import { MAX_LEVELS, MAX_LISTED, TIME_BUDGET_MS } from "./toolLimits";
+import {
+  FAST_HASH_GUESSES_PER_SECOND,
+  MAX_LEVELS,
+  MAX_LISTED,
+  SLOW_HASH_GUESSES_PER_SECOND,
+  TIME_BUDGET_MS,
+} from "./toolLimits";
 
 /** Inline code, emphasised text, or a run of plain prose. */
 export type NoteSpan = string | { code: string } | { em: string };
@@ -217,6 +223,46 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "A last practical point about error bodies. RFC 9457, which replaced RFC 7807, defines a small JSON shape for the detail behind an error: a type URI, a title, a status, a detail string, and an instance. Using it costs nothing and means client code can read your errors without a bespoke parser for your service. Pair it with the right status code and a client can behave correctly on the status alone, then show something useful to a human from the body.",
     ],
   ],
+  "jwt-decoder": [
+    [
+      "A JWT is three Base64URL segments with dots between them, and what the issuer actually signed is the text of the first two joined by that dot, not the JSON inside them. Almost every confusing JWT bug comes back to that. Pretty print the payload, reorder its keys, re-serialise it with a different library, and the bytes change while every claim stays identical, so verification fails on a token nobody tampered with. The same detail explains why every token you have ever seen starts with ",
+      { code: "eyJ" },
+      ": that is what an opening brace and a quote encode to. Base64URL is an encoding, not encryption, so the header and the payload are public to anyone holding the token.",
+    ],
+    [
+      { em: "Verifying" },
+      " is a different operation from decoding and it needs a key, which is why this page does not attempt it. The classic failures all share one shape: a verifier that lets the token decide how it will be checked. ",
+      { code: "alg: none" },
+      " was a legal value in the original specification and real libraries honoured it, so a token with an empty signature verified. Algorithm confusion is the subtler cousin: hand an ",
+      { code: "HS256" },
+      " token to a service expecting ",
+      { code: "RS256" },
+      " and a naive library HMACs it with the RSA public key that the service publishes, which the attacker also has. Then there are the header parameters that point outward, ",
+      { code: "jku" },
+      ", ",
+      { code: "jwk" },
+      " and ",
+      { code: "kid" },
+      ". A verifier that fetches a key from a URL inside the token, or drops kid into a file path or a query, is taking instructions from the thing it is meant to be checking. The fix is the same every time: the verifier chooses the algorithm and the key from its own configuration and treats the header as a hint at most.",
+    ],
+    [
+      { code: "exp" },
+      ", ",
+      { code: "nbf" },
+      " and ",
+      { code: "iat" },
+      " are NumericDate values, seconds since the Unix epoch in UTC, and the most common mistake is writing milliseconds into them. A token stamped ",
+      { code: "1756483200000" },
+      " expires in the year 57,000 and will pass an expiry check for the rest of your career. Expiry is measured against the verifier's own clock, so a minute or two of leeway is normal and an hour is a way of never noticing that a machine's time sync has been broken for a month. Expiry is also the entire revocation story for a stateless token: until exp passes, the token is good everywhere it is accepted, and deleting a row on the server changes nothing. That, rather than fashion, is why access tokens are minted for minutes and paired with a refresh token that lives somewhere revocable.",
+    ],
+    [
+      "Treat the token as the credential it is. Whatever can read it becomes that user for as long as it lasts, so a JWT in ",
+      { code: "localStorage" },
+      " is worth exactly as much to a cross-site scripting bug as the password would be, and an ",
+      { code: "HttpOnly" },
+      " cookie with a CSRF defence is usually the better trade. Because the payload is readable, nothing sensitive belongs in it: internal identifiers, email addresses and role names all travel to the browser in clear text. And because every claim is signed, every claim is also sent on every request, so a token that accumulates group memberships grows until it meets an 8KB header limit on some proxy and fails in a way nobody enjoys debugging.",
+    ],
+  ],
   "mac-lookup": [
     [
       "A MAC address is 48 bits, and it is split in two. The first 24 bits are the Organisationally Unique Identifier, bought from the IEEE by the manufacturer, and the last 24 bits are whatever that manufacturer assigns to the individual interface. Twenty-four bits gives each OUI holder about sixteen million addresses, which is why large vendors own dozens of prefixes rather than one.",
@@ -243,6 +289,34 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
     ],
     [
       "Reading the numbers here is a habit worth building, because it is the difference between \"Wireshark says the packet is malformed\" and knowing which byte is wrong. Click any field to see its bit offset, its width, and which byte of the header it starts in.",
+    ],
+  ],
+  "password-entropy": [
+    [
+      "Two different numbers get called entropy and they answer different questions. Search space entropy is the length times the base two logarithm of the pool, so twelve characters drawn from the 95 printable ASCII characters is about 79 bits. That is a claim about the ",
+      { em: "process" },
+      " that produced the password, and it holds only if the process really did pick every character uniformly and independently. Shannon entropy is computed from the characters that are actually there, and it measures variety inside this one string: ",
+      { code: "abababab" },
+      " scores one bit per character, and so does a genuinely random string of nothing but a and b. Neither number can tell whether a human chose the password, which is the only question an attacker cares about.",
+    ],
+    [
+      "Real guessing does not start at aaaaaaaa and count upward. It starts with passwords people have already used, tens of billions of them out of breach corpora, and applies rules to each one: capitalise the first letter, append a year, swap a for @, add an exclamation mark. The ",
+      { code: "best64" },
+      " rule set that ships with hashcat is 64 such transformations and the popular community rule files run to tens of thousands. Only after the wordlists come masks, patterns like ",
+      { code: "?u?l?l?l?l?l?d?d?s" },
+      " that fix the shape and search only inside it. That is why the mask figure on this page deserves more attention than the raw bit count: a policy demanding one capital, one digit and one symbol pushes nearly everybody onto the same few shapes, and searching one shape is thousands of times cheaper than searching the alphabet.",
+    ],
+    [
+      "The attacker's rate is set by your hash, not by their password guessing. A rig of current GPUs clears something like 10^",
+      String(Math.log10(FAST_HASH_GUESSES_PER_SECOND)),
+      " guesses a second against MD5 or NTLM and around 10^",
+      String(Math.log10(SLOW_HASH_GUESSES_PER_SECOND)),
+      " against bcrypt at cost 12. That is eight orders of magnitude for the same password, decided entirely by a choice made in your code. It is the whole purpose of a password hashing function: bcrypt, scrypt, yescrypt and Argon2id are slow deliberately, and the memory hard ones are also awkward to parallelise, which is what removes the GPU's advantage rather than merely taxing it. A salt is a different control and solves a different problem: unique salts stop one precomputed table from covering every account, and they do nothing whatsoever to slow a targeted guess.",
+    ],
+    [
+      "NIST SP 800-63B settled the practical argument years ago and most policies still have not caught up. Length is the control that works, because each extra character multiplies the space while each extra composition rule narrows it. Forced periodic rotation and composition rules are both discouraged now, for the same reason: they push people into predictable transformations of one base they can remember. Screen new passwords against a breach corpus instead, because a password that has already leaked sits at the front of every wordlist no matter how many bits it scores here. And if you want a number you can defend, ",
+      { em: "generate" },
+      " it: five words drawn from a 7,776 word list is about 64 bits, and that arithmetic is honest because the dice really were uniform.",
     ],
   ],
   "port-reference": [
@@ -324,6 +398,42 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
     ],
     [
       "The class letter shown here is historical. Classful addressing was replaced by CIDR in 1993 (RFC 1518 and RFC 1519), and no modern router looks at the first octet to guess a mask. It is still worth recognising, because exam questions and older documentation lean on it, and because the class boundaries explain why the RFC 1918 private ranges are the sizes they are.",
+    ],
+  ],
+  "timestamp-converter": [
+    [
+      "Unix time counts seconds from 1970-01-01T00:00:00Z, and it carries no zone, no offset and no daylight saving, which is exactly why it is the right thing to store. What it also fails to carry is leap seconds. POSIX defines a day as exactly 86,400 seconds, so when a leap second is inserted the counter either repeats a value or a smear spreads the extra second across a whole day, and the 27 leap seconds added since 1972 are simply not in the number. Unix time is therefore not the count of SI seconds since 1970, it is a calendar formula: correct for timestamping an event, wrong for measuring an interval that crosses one of those moments. For a duration, read a monotonic clock instead.",
+    ],
+    [
+      "The units are where the bugs live. Ten digits is seconds and stays that way until 2286, thirteen is milliseconds, sixteen is microseconds and nineteen is nanoseconds, which is enough to tell them apart by digit count alone. Getting it wrong is loud in one direction and silent in the other: milliseconds read as seconds land in the year 57,000 and somebody notices immediately, while seconds read as milliseconds land on 20 January 1970 and look like an old record nobody cleaned up. ",
+      { code: "Date.now()" },
+      " hands you milliseconds, Go's ",
+      { code: "UnixNano" },
+      " and most tracing systems use nanoseconds, and Python's ",
+      { code: "time.time()" },
+      " returns a float of seconds, so this conversion sits at the boundary of nearly every system you integrate with.",
+    ],
+    [
+      "The 2038 problem is the same arithmetic in a smaller box. A signed 32 bit ",
+      { code: "time_t" },
+      " runs out at ",
+      { code: "2147483647" },
+      ", which is 03:14:07 UTC on 19 January 2038, and the following second wraps to December 1901. 64 bit platforms fixed the type long ago, so what is left is everything that stored the value rather than computed it: file formats with a 32 bit field, embedded firmware nobody intends to update, and column types such as MySQL's TIMESTAMP, which is 32 bit while DATETIME is not. Anything that computes a date decades ahead, a certificate expiry or a mortgage schedule, reaches the boundary years before the boundary reaches us.",
+    ],
+    [
+      "The other half of the job is the difference between an ",
+      { em: "instant" },
+      " and a wall clock reading. ",
+      { code: "2026-08-29T14:30:00Z" },
+      " is an instant, and so is the same string ending ",
+      { code: "+02:00" },
+      ". ",
+      { code: "2026-08-29T14:30:00" },
+      " is not: it describes a clock face, and it names a different instant in every zone on earth. JavaScript's own parser is inconsistent about exactly this, reading a date-only string as UTC and a date-time without an offset as local, which is why this page asks instead of guessing. The rule that follows is worth keeping: store a past event as an instant in UTC, store a future appointment as a local time plus a zone name such as ",
+      { code: "Europe/Berlin" },
+      ", because governments move offsets and only the zone name survives the change. An offset is not a zone. ",
+      { code: "+01:00" },
+      " tells you nothing about what that clock will read in July.",
     ],
   ],
   "vlsm-practice": [

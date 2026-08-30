@@ -32,8 +32,15 @@ export function DebugOverlay({ visible = true }: DebugOverlayProps) {
     const link = document.createElement("a");
     link.href = url;
     link.download = `hyperscale-debug-${Date.now()}.log`;
+    // Firefox ignores click() on an anchor that is not in the document, so the
+    // export silently did nothing there.
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    // Revoking in the same tick tears the blob down before the browser has
+    // finished reading it, which lands an empty or failed download. Defer to
+    // the next task so the URL outlives the click.
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
   const recent = entries.slice(0, 3);
