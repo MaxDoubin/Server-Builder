@@ -15,13 +15,28 @@ looking at photographs of that product, and the reference images it was
 drawn from are recorded on the class so the next person can check the
 work.
 
-WHAT IS STILL SHARED, and why that is not the same shortcut: true
-primitives. An M6 cage screw is the same screw in a Cisco rack and a
-Juniper one. An 8P8C jack is the same moulding whoever solders it down.
-An SFP+ cage is a MSA part with a published outline. Drawing a different
-screw per vendor would be inventing a difference that does not exist,
-which is the same error as pretending a difference away. The line is:
-share the parts that are genuinely identical, never the chassis.
+NOTHING IS SHARED, including the connectors, and the reasoning that said
+otherwise is worth recording because it was wrong in an instructive way.
+
+The argument for sharing went: an SFP+ cage is an MSA part with a
+published outline, an 8P8C jack is one moulding whoever solders it down,
+so drawing a different one per vendor invents a difference that does not
+exist. Every clause of that is true about the plug interface, and the
+plug interface is not what anybody looks at. What you see on a front
+panel is the vendor sheet metal around the connector, and that is not
+standardised at all. Cisco stamps its cages into the panel with a flange
+and a coloured bail latch. MikroTik mills a recess and silkscreens the
+port number above it in their own typeface. Ubiquiti sinks its jacks in a
+black inset band with the indicators built into the jack corners. Juniper
+uses a raised lip and puts the lamps somewhere else entirely.
+
+One jackRim and one sfpCage at fixed proportions went onto all six racks,
+and the result reads as a generic port on every one of them, because a
+generic port is exactly what it is. So each product draws its own
+connectors at its own proportions from its own photographs, along with
+everything else. If two products genuinely share a detail, that will show
+up as two pieces of code that happen to agree, which is honest, rather
+than one piece of code asserting a sameness nobody checked.
 """
 
 from __future__ import annotations
