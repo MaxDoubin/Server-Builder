@@ -8,6 +8,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const q = new URLSearchParams(location.search);
@@ -41,15 +42,38 @@ scene.add(new THREE.AmbientLight('#ffffff', 0.3));
 
 const camera = new THREE.PerspectiveCamera(28, W / H, 0.001, 40);
 
-new GLTFLoader().load(file, (gltf) => {
+// Vendor supplied models are Draco compressed; ours are not. Wiring
+// the decoder in unconditionally costs nothing and loads both.
+const draco = new DRACOLoader().setDecoderPath('/node_modules/three/examples/jsm/libs/draco/');
+new GLTFLoader().setDRACOLoader(draco).load(file, (gltf) => {
   const root = gltf.scene;
-  // Generators work Z-up; glTF is Y-up.
-  root.rotation.set(-Math.PI / 2, 0, 0);
-  root.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(root);
+  /*
+    Two conventions, and it takes measuring the world bounds through the
+    node tree to tell them apart rather than reading the accessors, which
+    is what made this confusing. Our generators emit Z-up geometry with no
+    root transform, so the whole scene has to be laid back a quarter turn
+    about X. Ubiquiti's exports look Z-up in their accessors but carry that
+    same quarter turn on the root node already, so they arrive correctly
+    Y-up and in metres, and laying them back again puts the camera on the
+    lid.
+
+    What they do not agree on is which horizontal axis the panel runs
+    along. Ours is X. Theirs is Z, so a Ubiquiti model loaded square on
+    frames the side of the box, 288mm by 44mm of blank sheet metal, which
+    reads as a rendering failure and is not one. A quarter turn about
+    whichever axis is up fixes it.
+  */
+  const yaw = (parseFloat(q.get('yaw') || '0') * Math.PI) / 180;
+  const up = q.get('up') || 'z';
+  root.rotation[up === 'z' ? 'z' : 'y'] = yaw;
+  const stage = new THREE.Group();
+  if (up === 'z') stage.rotation.x = -Math.PI / 2;
+  stage.add(root);
+  stage.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(stage);
   const size = box.getSize(new THREE.Vector3());
-  root.position.sub(box.getCenter(new THREE.Vector3()));
-  scene.add(root);
+  stage.position.sub(box.getCenter(new THREE.Vector3()));
+  scene.add(stage);
 
   const fov = (camera.fov * Math.PI) / 180;
   // Frame the wider of the two face axes, then apply the requested zoom.
