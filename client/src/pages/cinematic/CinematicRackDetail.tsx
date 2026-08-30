@@ -132,6 +132,19 @@ export function CinematicRackDetail() {
     );
   }
 
+  /*
+    Which vendors in this rack decline to publish a draw. Naming them
+    beats a fixed list: the note used to say "Cisco, Juniper and Dell" on
+    every page including the MikroTik one, where none of the three appear.
+  */
+  const silentVendors = Array.from(
+    new Set(
+      rack.devices
+        .filter((d) => d.watts === null && d.vendor !== "Generic" && d.family !== "patch" && d.family !== "blank")
+        .map((d) => d.vendor),
+    ),
+  );
+
   const heroModel = heroModelFor(rack.slug);
   const views: RackView[] = heroModel ? ["elevation", "3d", "model"] : ["elevation", "3d"];
   /*
@@ -230,6 +243,43 @@ export function CinematicRackDetail() {
                       </div>
                     ))}
                   </dl>
+
+                  {/*
+                    Why that row is empty, said out loud.
+
+                    Five of the six racks here report no consumption figure
+                    at all, and without this the page reads as though the
+                    data is missing. It is not: the vendors publish a power
+                    supply rating and a PoE budget, which are both capacity
+                    and neither of them draw. A 715W supply is not a 715W
+                    switch. Leaving the row blank is the honest answer and
+                    explaining it is what makes it legible as an answer.
+                  */}
+                  {power.unpublished > 0 && (
+                    <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                      {power.total > 0
+                        ? `${power.unpublished} device${power.unpublished === 1 ? "" : "s"} here publish${power.unpublished === 1 ? "es" : ""} no consumption figure.`
+                        : "Nothing here publishes a consumption figure."}{" "}
+                      {silentVendors.length > 0 ? (
+                        <>
+                          That is the vendors' doing, not an omission on this page.{" "}
+                          {silentVendors.join(", ")} publish what a device's power supply
+                          is rated for, which is capacity rather than draw: a 715W supply
+                          is not a 715W device. Quoting one as the other would overstate a
+                          rack's load several times over, so it reads as not published,
+                          which is true.
+                        </>
+                      ) : (
+                        <>
+                          Those are the power distribution and battery units, and there is
+                          nothing to publish: a PDU passes through whatever is plugged into
+                          it and a UPS draws whatever it is carrying, so neither has a
+                          consumption figure of its own. The number above is the equipment
+                          they feed.
+                        </>
+                      )}
+                    </p>
+                  )}
 
                   <h2 className="mt-10 font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                     Top to bottom
