@@ -21,6 +21,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { RackDefinition, RackPatch } from "@/lib/rackTypes";
 import { chassisLayout, type ChassisLayout } from "./chassisLayout";
+import { plugBoot } from "./parts";
 
 /**
  * Jacket radius. Cat6A patch cord is about 6mm over the jacket; the UniFi
@@ -57,6 +58,9 @@ interface Ends {
   jacket: string;
   boot: string;
   style: "plain" | "etherlighting";
+  /** Direction the lead leaves each jack, for pointing the plug body. */
+  outA?: THREE.Vector3;
+  outB?: THREE.Vector3;
 }
 
 /**
@@ -167,6 +171,16 @@ export function RackCables3D({
       else byJacket.set(e.jacket, [geom]);
     });
 
+    // Record which way each lead leaves its jack, so the plug body points
+    // along the cable instead of straight out of the panel. A plug that
+    // ignores the direction of its own cable is the tell that a render was
+    // assembled rather than modelled.
+    ends.forEach((e, i) => {
+      const curve = leadCurve(e.a, e.b, i);
+      e.outA = curve.getTangentAt(0.001).normalize();
+      e.outB = curve.getTangentAt(0.999).normalize().negate();
+    });
+
     const runs: Array<{ colour: string; geometry: THREE.BufferGeometry }> = [];
     byJacket.forEach((parts, colour) => {
       const merged = parts.length === 1 ? parts[0] : mergeGeometries(parts, false);
@@ -187,16 +201,28 @@ export function RackCables3D({
     if (!built) return null;
     const count = built.ends.length * 2;
     const mesh = new THREE.InstancedMesh(
-      // 11.7 by 13.4mm is the real RJ45 body; the boot runs about 20mm back.
-      new THREE.BoxGeometry(0.0117, 0.0134, 0.02),
-      new THREE.MeshStandardMaterial({ metalness: 0.05, roughness: 0.4, envMapIntensity: 1 }),
+      // Normalised to an 11.7mm plug body; the boot runs about 25mm back.
+      plugBoot(),
+      new THREE.MeshStandardMaterial({ metalness: 0.04, roughness: 0.38, envMapIntensity: 1 }),
       count,
     );
     const m = new THREE.Matrix4();
     const colour = new THREE.Color();
+    const q = new THREE.Quaternion();
+    const scale = new THREE.Vector3(0.0117, 0.0117, 0.0117);
+    const nose = new THREE.Vector3(0, 0, 1);
+    const dir = new THREE.Vector3();
     built.ends.forEach((e, i) => {
-      [e.a, e.b].forEach((p, k) => {
-        m.makeTranslation(p.x, p.y, p.z + 0.009);
+      [
+        [e.a, e.outA] as const,
+        [e.b, e.outB] as const,
+      ].forEach(([p, out], k) => {
+        // The plug's nose sits on z = 0 with its body running back along
+        // -Z, so +Z has to point into the jack, opposite the way the cable
+        // leaves it.
+        dir.copy(out ?? new THREE.Vector3(0, 0, 1)).negate();
+        q.setFromUnitVectors(nose, dir);
+        m.compose(p, q, scale);
         mesh.setMatrixAt(i * 2 + k, m);
         mesh.setColorAt(i * 2 + k, colour.set(e.boot));
       });

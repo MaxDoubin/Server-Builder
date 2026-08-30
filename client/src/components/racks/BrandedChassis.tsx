@@ -158,10 +158,13 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
         </mesh>
       ))}
       {/* A thin accent inlay, the one marking that is ours and not the
-          vendor's, kept to the far left edge as the elevation does. */}
+          vendor's, kept to the far left edge as the elevation does. It is
+          a hairline here rather than the elevation's bar: at 5mm on a
+          photographic render it stopped reading as an index mark and
+          started reading as a sticker somebody put on the hardware. */}
       {device.accent && (
-        <mesh position={[-RACK_INNER_WIDTH / 2 + 0.006, 0, faceZ + 0.0006]}>
-          <boxGeometry args={[0.005, h * 0.72, 0.001]} />
+        <mesh position={[-RACK_INNER_WIDTH / 2 + 0.0035, 0, faceZ + 0.0006]}>
+          <boxGeometry args={[0.0022, h * 0.6, 0.001]} />
           <meshBasicMaterial color={device.accent} />
         </mesh>
       )}
