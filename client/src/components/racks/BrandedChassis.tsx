@@ -32,6 +32,7 @@ import type { RackDevice } from "@/lib/rackTypes";
 import { MATERIALS } from "./RackDefs";
 import { chassisLayout, deviceDepth } from "./chassisLayout";
 import { chassisShell } from "./parts";
+import { faceplateTexture } from "./faceplateTexture";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 
 const LED_HEX: Record<string, string> = {
@@ -125,6 +126,27 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
 
   const layout = useMemo(() => chassisLayout(device), [device]);
 
+  /*
+    The silkscreen. Drawn to a canvas once per device and laid on the face
+    as a thin plane, with the port block punched transparent so the
+    modelled jacks show through rather than being painted over.
+  */
+  const silkscreen = useMemo(() => faceplateTexture(device), [device]);
+  const silkMaterial = useMemo(() => {
+    if (!silkscreen) return null;
+    const spec = MATERIALS[finish] ?? MATERIALS.dark;
+    return new THREE.MeshStandardMaterial({
+      map: silkscreen,
+      transparent: true,
+      metalness: spec.pale ? 0.5 : 0.36,
+      roughness: spec.pale ? 0.34 : 0.58,
+      envMapIntensity: 1.1,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1,
+    });
+  }, [silkscreen, finish]);
+
   // Indicators flicker rather than pulse in unison, which is what a live
   // switch actually looks like across a room.
   useFrame(({ clock }) => {
@@ -151,6 +173,11 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
         material={body}
         geometry={chassisShell(RACK_INNER_WIDTH, h - 0.0012, depth)}
       />
+      {silkMaterial && (
+        <mesh position={[0, 0, faceZ + 0.0003]} material={silkMaterial}>
+          <planeGeometry args={[RACK_INNER_WIDTH - 0.003, h - 0.004]} />
+        </mesh>
+      )}
       {/* Mounting ears, always steel regardless of the chassis finish. */}
       {[-1, 1].map((s) => (
         <mesh key={s} position={[s * (RACK_INNER_WIDTH / 2 + 0.012), 0, faceZ - 0.004]} material={earMaterial}>
