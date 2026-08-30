@@ -15,6 +15,7 @@ import { PostPreviewLink } from "@/components/blog/PostPreviewLink";
 import { PostToc, useActiveHeading, usePostHeadings } from "@/components/blog/PostToc";
 import { SuggestEdit } from "@/components/blog/SuggestEdit";
 import { postDifficulty } from "@/lib/postDifficulty";
+import { relatedPosts } from "@/lib/relatedPosts";
 import { recordProgress } from "@/lib/readingHistory";
 import { useSEO } from "@/lib/useSEO";
 import { getTagPage } from "@/lib/tagPages";
@@ -65,36 +66,18 @@ export function CinematicBlogPost() {
    * A post used to end with a single "all field notes" link, so every one
    * of 236 pages was a dead end: nothing to read next, and nothing linking
    * posts to each other for a crawler to follow. Neighbours come from the
-   * date ordering; related posts are the nearest by shared tags, most
-   * specific tag first so a post about one narrow subject does not just
-   * pull in whatever else is tagged "networking".
+   * date ordering; what to read next is scored in `relatedPosts`, which
+   * explains at length why shared tags alone were not enough.
    */
   const { prev, next, related } = useMemo(() => {
     const all = getAllPosts();
     const i = all.findIndex((p) => p.slug === slug);
     if (i === -1) return { prev: undefined, next: undefined, related: [] };
-
-    const tagCounts = new Map<string, number>();
-    all.forEach((p) => p.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)));
-
-    const current = all[i];
-    const scored = all
-      .filter((p) => p.slug !== slug)
-      .map((p) => ({
-        post: p,
-        score: p.tags
-          .filter((t) => current.tags.includes(t))
-          // A tag shared by few posts says more than one shared by many.
-          .reduce((sum, t) => sum + 1 / (tagCounts.get(t) ?? 1), 0),
-      }))
-      .filter((x) => x.score > 0)
-      .sort((a, b) => b.score - a.score || (a.post.date < b.post.date ? 1 : -1));
-
     return {
       // getAllPosts is newest first, so the later index is the older post.
       next: all[i - 1],
       prev: all[i + 1],
-      related: scored.slice(0, 3).map((x) => x.post),
+      related: relatedPosts(all[i], all),
     };
   }, [slug]);
   const [mounted, setMounted] = useState(false);
