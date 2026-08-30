@@ -12,8 +12,8 @@ import { useId } from "react";
 import type { RackDefinition, RackDevice } from "@/lib/rackTypes";
 import { KIND_LABELS, portSummary } from "@/lib/racks";
 import { DeviceFaceplate } from "./DeviceFaceplate";
-import { MATERIALS, RackDefs, defUrl } from "./RackDefs";
-import { RU_ASPECT } from "./portLayout";
+import { RackDefs } from "./RackDefs";
+import { unitHeightFor } from "./portLayout";
 
 const FAMILY_LABELS: Record<RackDevice["family"], string> = {
   router: "Router",
@@ -90,83 +90,17 @@ export function DeviceDetailPanel({
         </button>
       </div>
 
-      {/*
-        The device as a product shot rather than as an elevation.
-
-        The camera geometry is lifted off Ubiquiti's own photograph of this
-        hardware, measured rather than guessed: against the front panel's
-        width, the lid stands 6 percent tall and its back edge insets 11.3
-        percent on each side, and the front face is foreshortened to 60
-        percent of its true height by the downward viewing angle. Drawing a
-        flat rectangle was the single largest reason these read as diagrams
-        next to a photograph: a real switch is an object with a top.
-
-        The elevation on the left stays orthographic, because that is what a
-        rack drawing is for and you cannot see the lid of a mounted unit.
-      */}
-      <div className="mt-6 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_12%_5%)] px-3 pb-5 pt-4">
-        {(() => {
-          const Wd = 760;
-          const squash = 0.6;
-          const trueUnit = Wd / RU_ASPECT;
-          const frontH = device.u * trueUnit * squash;
-          const lidH = Wd * 0.06;
-          const inset = Wd * 0.113;
-          const shadowH = Wd * 0.035;
-          const mat = MATERIALS[device.finish ?? "dark"];
-          const total = lidH + frontH + shadowH;
-          return (
-            <svg
-              viewBox={`0 0 ${Wd} ${total}`}
-              width="100%"
-              role="img"
-              aria-label={`${device.model}, front and top`}
-              style={{ display: "block" }}
-            >
-              <RackDefs uid={uid} />
-              <style>{`.rk-brand{font-family:"Space Grotesk",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+      {/* The device, pulled out of the rack at detail scale. */}
+      <div className="mt-6 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_12%_5%)] p-3">
+        <svg viewBox={`0 0 760 ${device.u * unitHeightFor(760)}`} width="100%" role="img" aria-label={`${device.model} front panel, enlarged`} style={{ display: "block" }}>
+          <RackDefs uid={uid} />
+          <style>{`.rk-brand{font-family:"Space Grotesk",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
 .rk-portnum{font-family:ui-monospace,monospace}
 @keyframes rk-blink{0%,100%{opacity:1}50%{opacity:.3}}
 .rk-led-on{animation:rk-blink 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.rk-led-on{animation:none}}`}</style>
-
-              {/* Contact shadow, so the object sits on something. */}
-              <ellipse
-                cx={Wd / 2}
-                cy={lidH + frontH + shadowH * 0.45}
-                rx={Wd * 0.47}
-                ry={shadowH * 0.6}
-                fill={defUrl(uid, "groundshadow")}
-              />
-
-              {/* The lid, receding to its back edge. */}
-              <path
-                d={`M 0 ${lidH} L ${inset} 0 L ${Wd - inset} 0 L ${Wd} ${lidH} Z`}
-                fill={defUrl(uid, `lid-${device.finish ?? "dark"}`)}
-              />
-              <path
-                d={`M 0 ${lidH} L ${inset} 0 L ${Wd - inset} 0 L ${Wd} ${lidH} Z`}
-                fill={defUrl(uid, mat.pale ? "grain-l" : "grain-d")}
-              />
-              <path
-                d={`M 0 ${lidH} L ${inset} 0 L ${Wd - inset} 0 L ${Wd} ${lidH} Z`}
-                fill="none"
-                stroke="#000"
-                strokeOpacity={0.4}
-                strokeWidth={0.7}
-              />
-              {/* The back edge catches the light it is turned toward. */}
-              <line x1={inset} y1={0.5} x2={Wd - inset} y2={0.5} stroke="#fff" strokeOpacity={mat.pale ? 0.7 : 0.2} strokeWidth={0.9} />
-              {/* The machined seam where the lid meets the front panel. */}
-              <rect x={0} y={lidH - 1.1} width={Wd} height={1.1} fill={mat.pale ? "#ffffff" : "#5a6068"} opacity={mat.pale ? 0.9 : 0.5} />
-
-              {/* The front face, foreshortened by the viewing angle. */}
-              <g transform={`translate(0, ${lidH}) scale(1, ${squash})`}>
-                <DeviceFaceplate device={device} width={Wd} unitH={trueUnit} detail uid={uid} bare />
-              </g>
-            </svg>
-          );
-        })()}
+          <DeviceFaceplate device={device} width={760} unitH={unitHeightFor(760)} detail uid={uid} />
+        </svg>
       </div>
 
       <p className="mt-6 font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
