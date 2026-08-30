@@ -37,91 +37,22 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_unifi_hero_rack_clean_aligned import UniFiHeroRack, pbr, make_screen_texture
+from build_enterprise_base import OUT, PANEL_W, RAIL_TOP, U, UNITS, EnterpriseRack
 
-OUT = Path(__file__).resolve().parents[1]
-
-U = 0.04445
-UNITS = 42
-RAIL_BOTTOM = 0.160
-RAIL_TOP = RAIL_BOTTOM + UNITS * U
-PANEL_W = 0.442
+CHASSIS_DEPTH_DEEP = 0.815
 
 
-class CiscoEnterpriseRack(UniFiHeroRack):
-    def __init__(self) -> None:
-        super().__init__()
-        # Cisco's front panels are a warmer, flatter grey than UniFi's
-        # anodised aluminium, and the data centre lines are near black.
-        self.materials.update({
-            'cisco_grey': pbr('Cisco Panel Grey', [206, 209, 208, 255], 0.34, 0.44),
-            'cisco_grey_dark': pbr('Cisco Panel Shadow', [166, 170, 170, 255], 0.34, 0.52),
-            'cisco_edge': pbr('Cisco Panel Edge', [232, 234, 233, 255], 0.40, 0.28),
-            'nexus_black': pbr('Nexus Chassis Black', [42, 45, 49, 255], 0.44, 0.46),
-            'nexus_black_dark': pbr('Nexus Shadow', [26, 28, 31, 255], 0.40, 0.56),
-            'ucs_grey': pbr('UCS Chassis', [58, 62, 66, 255], 0.52, 0.42),
-            'ucs_bezel': pbr('UCS Bezel', [30, 33, 36, 255], 0.30, 0.58),
-            'teal_throat': pbr('Catalyst Port Throat', [16, 74, 68, 255], 0.24, 0.72),
-            'drive_face': pbr('Drive Carrier', [46, 50, 54, 255], 0.46, 0.44),
-            'drive_handle': pbr('Carrier Handle', [150, 155, 158, 255], 0.72, 0.34),
-        })
-        self._register_screen('c9400', make_screen_texture('Chassis', (86, 190, 240), 'network'))
-        self._register_screen('ucs', make_screen_texture('Compute', (110, 190, 255), 'storage'))
+class CiscoEnterpriseRack(EnterpriseRack):
+    """Cisco's range, drawn to show how little of it looks alike."""
 
-    # ---------------------------------------------------------------- shell
-
-    def cisco_shell(self, group: str, z: float, u: int, depth: float,
-                    face: str = 'cisco_grey', panel_width: float = PANEL_W) -> None:
-        """A Cisco front panel: squarer than UniFi's, with a hard top lip.
-
-        Cisco folds its panels rather than machining them, so the edges are
-        a crease and a shadow line rather than a generous radius, and that
-        difference is most of why a Catalyst does not look like a UniFi
-        switch even before the ports go on.
-        """
-        height = u * U - 0.0015
-        body_y = self.front_y + 0.010 + depth / 2
-        self.uv_box(group, 'steel_textured', (0, body_y, z), (panel_width - 0.008, depth, height * 0.9))
-        self.rounded_prism(group, face, (0, self.front_y, z), (panel_width, 0.0110, height),
-                           radius=0.0018, bevel=0.0008, steps=6)
-        # Crease lines top and bottom.
-        self.box(group, 'cisco_edge', (0, self.front_y - 0.0060, z + height * 0.47),
-                 (panel_width - 0.010, 0.0009, 0.0011))
-        self.box(group, 'cisco_grey_dark', (0, self.front_y - 0.0060, z - height * 0.47),
-                 (panel_width - 0.010, 0.0009, 0.0011))
-        # Rack ears with the oval slots Cisco uses, and their screws.
-        for x in (-0.236, 0.236):
-            self.rounded_prism(group, face, (x, self.front_y + 0.0008, z), (0.030, 0.0100, height * 0.99),
-                               radius=0.0018, bevel=0.0007, steps=6)
-            for zz in (z - height * 0.32, z + height * 0.32):
-                self.screw(group, x, zz)
-        # Rear face and side vents.
-        rear_y = self.front_y + 0.010 + depth
-        self.uv_box(group, 'cisco_grey_dark', (0, rear_y, z), (panel_width - 0.010, 0.0070, height * 0.86))
-        for side_x in (-panel_width * 0.48, panel_width * 0.48):
-            for iz in np.linspace(z - height * 0.3, z + height * 0.3, 5):
-                self.box(group, 'black_matte', (side_x, body_y, float(iz)), (0.0012, depth * 0.4, 0.0020))
-
-    def status_cluster(self, group: str, x: float, z: float, height: float) -> None:
-        """Beacon/UID button, status LEDs and the USB console, far left.
-
-        Cisco's hardware guide puts the beacon LED and UID button at the far
-        left of a Catalyst front panel, then the status indicators, then the
-        console port. It is the same block on every switch in the family and
-        it is how you tell one from the far end of a room.
-        """
-        self.rounded_prism(group, 'black_plastic', (x, self.front_y - 0.0035, z + height * 0.22),
-                           (0.0090, 0.0035, 0.0090), radius=0.0012, bevel=0.0004, steps=6)
-        self.lens(group, x, z + height * 0.22, 'blue_led', 0.0026, self.front_y - 0.0055)
-        for i, mat in enumerate(('green_led', 'green_led', 'amber_led', 'green_led')):
-            self.lens(group, x - 0.0075 + i * 0.0050, z - height * 0.10, mat, 0.0013, self.front_y - 0.0048)
-        self.rounded_prism(group, 'black_plastic', (x + 0.019, self.front_y - 0.0035, z - height * 0.26),
-                           (0.0100, 0.0035, 0.0056), radius=0.0009, bevel=0.0003, steps=5)
+    frame_material = 'nexus_black'
+    panel_material = 'cisco_grey'
+    inset_material = 'cisco_grey_dark'
 
     # ------------------------------------------------------------- devices
 
     def build_patch_panel(self, z: float, group: str, patched: int = 24) -> list[float]:
-        self.cisco_shell(group, z, 1, 0.060, face='cisco_grey_dark')
+        self.panel_shell(group, z, 1, 0.060, face='cisco_grey_dark')
         xs = list(np.linspace(-0.185, 0.160, 24))
         for i, x in enumerate(xs):
             self.rj45_socket(group, float(x), z, plugged=i < patched, led=False,
@@ -131,7 +62,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
     def build_c9300_48p(self, z: float) -> list[float]:
         """48 PoE+ copper in two rows, with the uplink module bay at the right."""
         g = 'C9300_48P'
-        self.cisco_shell(g, z, 1, 0.445)
+        self.panel_shell(g, z, 1, 0.445)
         h = U
         self.status_cluster(g, -0.209, z, h)
         xs = []
@@ -151,7 +82,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
 
     def build_c9300_24p(self, z: float) -> list[float]:
         g = 'C9300_24P'
-        self.cisco_shell(g, z, 1, 0.445)
+        self.panel_shell(g, z, 1, 0.445)
         self.status_cluster(g, -0.209, z, U)
         xs = [float(x) for x in np.linspace(-0.176, 0.100, 24)]
         for i, x in enumerate(xs):
@@ -165,7 +96,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
     def build_c9500(self, z: float) -> None:
         """A fiber core switch: 48 SFP28 and four 100G, no copper at all."""
         g = 'C9500_48Y4C'
-        self.cisco_shell(g, z, 1, 0.460)
+        self.panel_shell(g, z, 1, 0.460)
         self.status_cluster(g, -0.209, z, U)
         for col in range(24):
             x = -0.178 + col * 0.01380
@@ -184,7 +115,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
     def build_nexus(self, z: float) -> None:
         """A spine switch: 36 QSFP28 in two rows, black, fiber only."""
         g = 'NEXUS_9336C'
-        self.cisco_shell(g, z, 1, 0.485, face='nexus_black')
+        self.panel_shell(g, z, 1, 0.485, face='nexus_black')
         self.status_cluster(g, -0.209, z, U)
         for col in range(18):
             x = -0.176 + col * 0.01950
@@ -209,7 +140,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
         g = 'C9404R'
         h = 6 * U
         z = z_top - h / 2
-        self.cisco_shell(g, z, 6, 0.470, face='cisco_grey')
+        self.panel_shell(g, z, 6, 0.470, face='cisco_grey')
         # Four horizontal slots: two supervisors in the middle, line cards
         # above and below, which is the published slot assignment.
         slot_h = h * 0.135
@@ -224,7 +155,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
                                    (0.0075, 0.0040, slot_h * 0.82), radius=0.0012, bevel=0.0004, steps=5)
                 self.screw(g, lx, cz, y=self.front_y - 0.0090, radius=0.0022)
             if supervisor:
-                self.screen(g, 'c9400', -0.150, cz, 0.040, slot_h * 0.44)
+                self.screen(g, 'chassis', -0.150, cz, 0.040, slot_h * 0.44)
                 for k in range(4):
                     self.sfp_cage(g, -0.088 + k * 0.0210, cz, transceiver=(k < 2), blue=(k == 0))
                 for k in range(2):
@@ -249,7 +180,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
         g = 'UCS_5108'
         h = 6 * U
         z = z_top - h / 2
-        self.cisco_shell(g, z, 6, 0.815, face='ucs_grey')
+        self.panel_shell(g, z, 6, 0.815, face='ucs_grey')
         # Eight half-width blades, four across and two high.
         bay_w = 0.0985
         bay_h = h * 0.29
@@ -286,7 +217,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
         g = 'UCS_C240'
         h = 2 * U
         z = z_top - h / 2
-        self.cisco_shell(g, z, 2, 0.760, face='ucs_grey')
+        self.panel_shell(g, z, 2, 0.760, face='ucs_grey')
         for row in range(3):
             for col in range(8):
                 bx = -0.150 + col * 0.0345
@@ -306,7 +237,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
 
     def build_ucs_c220(self, z: float, group: str) -> None:
         """1RU rack server: ten small form factor bays in a single row."""
-        self.cisco_shell(group, z, 1, 0.760, face='ucs_grey')
+        self.panel_shell(group, z, 1, 0.760, face='ucs_grey')
         for col in range(10):
             bx = -0.150 + col * 0.0300
             self.rounded_prism(group, 'drive_face', (bx, self.front_y - 0.0028, z),
@@ -320,7 +251,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
 
     def build_asr1001x(self, z: float) -> None:
         g = 'ASR_1001X'
-        self.cisco_shell(g, z, 1, 0.470)
+        self.panel_shell(g, z, 1, 0.470)
         self.status_cluster(g, -0.209, z, U)
         for i in range(6):
             self.sfp_cage(g, -0.150 + i * 0.0215, z, transceiver=(i < 3), blue=(i == 0))
@@ -333,7 +264,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
         g = 'ISR_4451X'
         h = 2 * U
         z = z_top - h / 2
-        self.cisco_shell(g, z, 2, 0.470)
+        self.panel_shell(g, z, 2, 0.470)
         self.status_cluster(g, -0.209, z + h * 0.24, U)
         for i in range(4):
             self.rj45_socket(g, -0.160 + i * 0.0170, z + h * 0.24, plugged=(i < 2), led=True)
@@ -352,7 +283,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
 
     def build_firepower(self, z: float) -> None:
         g = 'FIREPOWER_2140'
-        self.cisco_shell(g, z, 1, 0.470, face='nexus_black')
+        self.panel_shell(g, z, 1, 0.470, face='nexus_black')
         self.status_cluster(g, -0.209, z, U)
         for i in range(12):
             self.rj45_socket(g, -0.166 + i * 0.0165, z, plugged=(i < 6), led=True)
@@ -360,25 +291,13 @@ class CiscoEnterpriseRack(UniFiHeroRack):
             self.sfp_cage(g, 0.050 + i * 0.0215, z, transceiver=(i < 2), blue=(i == 0))
         self.perforations(g, 0.165, z, 0.090, 0.024, 15, 4)
 
-    def build_cable_manager(self, z: float, group: str) -> None:
-        self.cisco_shell(group, z, 1, 0.080, face='cisco_grey_dark')
-        self.rounded_prism(group, 'cisco_grey', (0, self.front_y - 0.0098, z), (0.398, 0.0038, 0.015),
-                           radius=0.0035, bevel=0.0006, steps=8)
-        for x in np.linspace(-0.180, 0.180, 12):
-            self.front_cylinder(group, 'silver_plain', (float(x), self.front_y - 0.0136, z), 0.0040, 0.0038, 24)
-            self.torus_front(group, 'silver_plain', (float(x), self.front_y - 0.0160, z - 0.009), 0.0100, 0.0016, 36, 8)
 
-    def build_blank(self, z: float, u: int, group: str, vented: bool = True) -> None:
-        self.cisco_shell(group, z, u, 0.024, face='cisco_grey_dark')
-        if vented:
-            self.perforations(group, 0, z, 0.360, u * U * 0.54, 44, max(2, u * 3),
-                              y=self.front_y - 0.0060, radius=0.0011)
 
     def build_pdu(self, z_top: float) -> None:
         g = 'CISCO_PDU'
         h = 2 * U
         z = z_top - h / 2
-        self.cisco_shell(g, z, 2, 0.120, face='nexus_black')
+        self.panel_shell(g, z, 2, 0.120, face='nexus_black')
         for row in range(2):
             for col in range(8):
                 self.nema_outlet(g, -0.164 + col * 0.0468, z + (h * 0.20 if row == 0 else -h * 0.20),
@@ -389,7 +308,7 @@ class CiscoEnterpriseRack(UniFiHeroRack):
         g = 'CISCO_UPS'
         h = 4 * U
         z = z_top - h / 2
-        self.cisco_shell(g, z, 4, 0.640, face='nexus_black')
+        self.panel_shell(g, z, 4, 0.640, face='nexus_black')
         self.screen(g, 'ups', -0.150, z + h * 0.18, 0.062, 0.046)
         for i in range(4):
             self.lens(g, -0.070 + i * 0.014, z + h * 0.18, 'green_led', 0.0022)
@@ -402,55 +321,14 @@ class CiscoEnterpriseRack(UniFiHeroRack):
 
     # --------------------------------------------------------------- frame
 
-    def build_frame(self) -> None:
-        """A full height 42U four post rack, not a studio frame on casters."""
-        g = 'RACK_FRAME'
-        W, D = 0.605, 0.940
-        z0, z1 = 0.055, RAIL_TOP + 0.070
-        post = 0.036
-        xp, yp = W / 2 - post / 2, D / 2 - post / 2
-        for x in (-xp, xp):
-            for y in (-yp, yp):
-                self.uv_box(g, 'nexus_black', (x, y, (z0 + z1) / 2), (post, post, z1 - z0))
-                self.box('FRAME_EDGE_HIGHLIGHTS', 'silver_highlight',
-                         (x + (-0.011 if x > 0 else 0.011), y - (0.011 if y > 0 else -0.011), (z0 + z1) / 2),
-                         (0.0018, 0.0018, z1 - z0 - 0.03))
-        for z in (z0, z1):
-            for y in (-yp, yp):
-                self.uv_box(g, 'nexus_black', (0, y, z), (W, post, post))
-            for x in (-xp, xp):
-                self.uv_box(g, 'nexus_black', (x, 0, z), (post, D, post))
-        # Front and rear mounting rails, punched at real 1U spacing: three
-        # square holes per unit, which is what a rack rail actually is.
-        for x in (-0.258, 0.258):
-            for y in (self.front_y + 0.030, 0.330):
-                self.uv_box('MOUNTING_RAILS', 'cisco_grey_dark', (x, y, (RAIL_BOTTOM + RAIL_TOP) / 2),
-                            (0.022, 0.022, RAIL_TOP - RAIL_BOTTOM + 0.02))
-                for i in range(UNITS):
-                    base = RAIL_BOTTOM + i * U
-                    for frac in (0.18, 0.5, 0.82):
-                        self.rounded_prism('RACK_HOLES', 'black_matte',
-                                           (x, y - 0.011 if y < 0 else y + 0.011, base + frac * U),
-                                           (0.0062, 0.0024, 0.0060), radius=0.0008, bevel=0.0002, steps=4)
-        for x in (-xp, xp):
-            for z in np.linspace(0.30, RAIL_TOP - 0.10, 7):
-                self.uv_box('SIDE_BRACES', 'nexus_black', (x, 0, float(z)), (0.016, D - 0.060, 0.016))
-        # Levelling feet, because a 42U rack does not roll around a studio.
-        for x in (-xp, xp):
-            for y in (-yp, yp):
-                self.front_cylinder('SHELF_FEET', 'steel_plain', (x, y, z0 - 0.018), 0.020, 0.014, 28)
-                self.cylinder_between('SHELF_FEET', 'nickel', (x, y, z0 - 0.030), (x, y, z0), 0.0075, 20)
 
-    def build_casters(self) -> None:  # noqa: D102 - a 42U rack is bolted down.
-        return
 
     # --------------------------------------------------------------- build
 
     def build(self) -> trimesh.Scene:
         top = RAIL_TOP
 
-        def at(u_from_top: float, u_high: int = 1) -> float:
-            return top - (u_from_top + u_high / 2) * U
+        at = self.u_centre
 
         print('BUILD frame', flush=True)
         self.build_frame()

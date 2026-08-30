@@ -9,3 +9,8 @@ vite.config.ts.*
 # and it was only masked because the prerenderer happens to overwrite it.
 /client/public/sitemap.xml
 /client/public/feed.xml
+
+# Uncompressed rack model output. 12 to 18 MB each; only the compressed
+# artifacts in client/public/models are committed.
+script/models/*.glb
+__pycache__/
