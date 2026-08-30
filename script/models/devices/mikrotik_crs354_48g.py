@@ -112,9 +112,17 @@ class CRS354_48G(Device):
             "mt354_jack_gold": pbr("CRS354 Jack Contacts", [198, 158, 74, 255], 0.86, 0.24),
             "mt354_cage": pbr("CRS354 Cage", [58, 59, 60, 255], 0.52, 0.44),
             "mt354_cage_bore": pbr("CRS354 Cage Bore", [12, 12, 13, 255], 0.20, 0.86),
+            # The card edge connector inside an empty cage, which is white
+            # plastic and the brightest thing anywhere near the optics.
+            "mt354_cage_edge": pbr("CRS354 Card Edge", [238, 238, 234, 255], 0.0, 0.52),
+            # The shield frames are not all one grey. The gigabit and optics
+            # housings are a mid grey; the console housing is near white.
+            "mt354_frame": pbr("CRS354 Shield Frame", [150, 151, 148, 255], 0.34, 0.46),
+            # The strip between two rows of cages, which the lamps print on.
+            "mt354_lampbar": pbr("CRS354 Lamp Strip", [176, 177, 173, 255], 0.22, 0.50),
             "mt354_silk": pbr("CRS354 Silkscreen", [92, 93, 92, 255], 0.05, 0.72),
             "mt354_wordmark": pbr("CRS354 Wordmark", [24, 24, 25, 255], 0.05, 0.66),
-            "mt354_button": pbr("CRS354 Reset", [70, 71, 72, 255], 0.42, 0.42),
+            "mt354_button": pbr("CRS354 Reset", [26, 26, 28, 255], 0.30, 0.44),
             "mt354_pipe": pbr("CRS354 Light Pipe", [150, 151, 149, 255], 0.24, 0.34),
             # Lenses, not lamps. These are moulded plastic that happens to
             # be green and amber; a link light is the exception on a panel,
@@ -302,11 +310,18 @@ class CRS354_48G(Device):
 
     # --------------------------------------------------------------- parts
 
-    def housing(self, rack, g: str, z: float, x0: float, x1: float) -> tuple[float, float]:
-        """The pale shield frame a group of ports is ganged into.
+    def housing(self, rack, g: str, z: float, x0: float, x1: float,
+                bright: bool = False) -> tuple[float, float]:
+        """The shield frame a group of ports is ganged into.
 
         Returns the frame's centre and width so a caller can hang ports off
         it without recomputing the same two numbers.
+
+        `bright` picks the console housing's near white frame over the mid
+        grey the gigabit and optics housings wear. They are visibly two
+        different greys in the photograph and painting them the same loses
+        the one thing that separates the right hand end of the panel from
+        the rest of it.
         """
         y = self.face(rack)
         cx, w = (x0 + x1) / 2, x1 - x0
@@ -315,9 +330,26 @@ class CRS354_48G(Device):
         hz = (top - bottom) * self.height
         # A hairline, not a border. At 0.8mm it covered the port numbers
         # printed a millimetre clear of the housing, and CONSOLE with them.
-        rack.box(g, "mt354_lip", (cx, y - 0.0008, cz), (w + 0.0007, 0.0008, hz + 0.0006))
+        rack.box(g, "mt354_lip" if bright else "mt354_frame",
+                 (cx, y - 0.0008, cz), (w + 0.0007, 0.0008, hz + 0.0006))
         rack.box(g, "mt354_pocket", (cx, y - 0.0004, cz), (w, 0.0009, hz))
+        # The frame catches the light along its top edge on every housing.
+        rack.box(g, "mt354_lip", (cx, y - 0.0009, cz + hz / 2), (w + 0.0007, 0.0006, 0.0004))
         return cx, w
+
+    def lamp_strip(self, rack, g: str, z: float, x0: float, x1: float) -> float:
+        """The pale strip between two rows of cages that the lamps print on.
+
+        Without it the triangles float on the dark housing and read as
+        smudges. In the photograph they sit on a raised grey band that runs
+        the full width of the housing, and that band is what makes them
+        legible from any distance at all.
+        """
+        y = self.face(rack)
+        cz = z + (self.ROW_TOP[1] + self.ROW_BOT[0]) / 2 * self.height
+        hz = (self.ROW_TOP[1] - self.ROW_BOT[0]) * self.height
+        rack.box(g, "mt354_lampbar", ((x0 + x1) / 2, y - 0.0011, cz), (x1 - x0, 0.0009, hz))
+        return cz
 
     def jack(self, rack, g: str, x: float, z: float, w: float, h: float, top_row: bool) -> None:
         """One gigabit jack as this switch wears it.
@@ -366,23 +398,34 @@ class CRS354_48G(Device):
         for dx, mat in ((-w * 0.30, "mt354_led_green"), (w * 0.30, "mt354_led_amber")):
             rack.box(g, mat, (x + dx, y - 0.0021, lamp_z), (w * 0.19, 0.0010, h * 0.12))
 
-    def cage(self, rack, g: str, x: float, z: float, w: float, h: float, top_row: bool) -> None:
-        """An SFP+ or QSFP+ opening, drawn as this panel presents it.
+    def cage(self, rack, g: str, x: float, z: float, w: float, h: float, top_row: bool,
+             lanes: int = 1) -> None:
+        """An empty SFP+ or QSFP+ opening, drawn as this panel presents it.
 
-        The two rows are inverted castings, so the EMI fingers show along
-        the outer edge of each: the top row wears them high and the bottom
-        row low. Getting that backwards makes a stack of cages look printed
-        rather than fitted.
+        The two rows are inverted castings, so everything inside is
+        mirrored: the stamped ridges run along the outer edge of each cage
+        and the card edge connector sits against the inner one. Getting
+        that backwards makes a stack of cages look printed rather than
+        fitted.
+
+        The one thing that stops an empty cage reading as a black rectangle
+        is the connector inside it. It is white plastic, it is the
+        brightest thing anywhere near the optics, and it is a third of the
+        way across the mouth near the inner edge. Leave it out, as the
+        first pass did, and four cages come out as four holes.
         """
         y = self.face(rack)
         rack.box(g, "mt354_cage", (x, y - 0.0014, z), (w, 0.0014, h))
-        rack.box(g, "mt354_cage_bore", (x, y + 0.0040, z), (w * 0.88, 0.0100, h * 0.80))
-        edge = h * (0.34 if top_row else -0.34)
-        for i in range(7):
-            fx = x - w * 0.36 + i * (w * 0.72 / 6)
-            rack.box(g, "mt354_cage", (fx, y - 0.0022, z + edge), (w * 0.05, 0.0010, h * 0.16))
-        # The bail latch tab, a pale sliver on the inner edge of the mouth.
-        rack.box(g, "mt354_lip", (x, y - 0.0024, z - edge * 0.62), (w * 0.30, 0.0008, h * 0.07))
+        rack.box(g, "mt354_cage_bore", (x, y + 0.0040, z), (w * 0.90, 0.0110, h * 0.84))
+        outer = h * (0.34 if top_row else -0.34)
+        # Two stamped ridges across the roof of the mouth.
+        for k in (0.86, 0.62):
+            rack.box(g, "mt354_cage", (x, y - 0.0020, z + outer * k), (w * 0.74, 0.0009, h * 0.045))
+        # The card edge connector, one per lane on a QSFP.
+        for i in range(lanes):
+            ex = x + (i - (lanes - 1) / 2) * (w / max(lanes, 1))
+            rack.box(g, "mt354_cage_edge", (ex, y - 0.0021, z - outer * 0.74),
+                     (w * (0.34 if lanes == 1 else 0.20), 0.0008, h * 0.075))
 
     def triangle_lamp(self, rack, g: str, x: float, z: float, s: float, up: bool) -> None:
         """The solid triangle MikroTik uses for a port lamp.
@@ -461,36 +504,41 @@ class CRS354_48G(Device):
         # ---- SFP+, four cages two by two in one housing ----------------
         sfp_l, sfp_r = self.SFP_X
         self.housing(rack, g, z, X(sfp_l), X(sfp_r))
-        cage_w = (sfp_r - sfp_l) * 0.42
+        lamp_z = self.lamp_strip(rack, g, z, X(sfp_l), X(sfp_r))
+        cage_w = (sfp_r - sfp_l) * 0.46
         cage_h = jah_t * h
         for col in range(2):
-            cx = X(sfp_l + (sfp_r - sfp_l) * (0.25 + col * 0.50))
+            cx = X(sfp_l + (sfp_r - sfp_l) * (0.26 + col * 0.48))
             self.cage(rack, g, cx, Z(top_z), cage_w, cage_h, True)
             self.cage(rack, g, cx, Z(bot_z), cage_w, jah_b * h, False)
             # Two lamps a port, so four to a column, alternating which cage
             # they point at. This row of little triangles between the cages
             # is the single most MikroTik thing on the panel.
             for k in range(4):
-                lx = cx + (k - 1.5) * (cage_w * 0.30)
-                self.triangle_lamp(rack, g, lx, Z(-0.088), 0.0032, up=(k % 2 == (0 if col else 1)))
+                lx = cx + (k - 1.5) * (cage_w * 0.25)
+                self.triangle_lamp(rack, g, lx, lamp_z, 0.0032, up=(k % 2 == (0 if col else 1)))
 
         # ---- QSFP+, two cages stacked ----------------------------------
         qs_l, qs_r = self.QSFP_X
         self.housing(rack, g, z, X(qs_l), X(qs_r))
+        qlz = self.lamp_strip(rack, g, z, X(qs_l), X(qs_r))
         qcx = X((qs_l + qs_r) / 2)
-        qcw = (qs_r - qs_l) * 0.86
-        self.cage(rack, g, qcx, Z(top_z), qcw, cage_h, True)
-        self.cage(rack, g, qcx, Z(bot_z), qcw, jah_b * h, False)
-        # A triangle at each end with the four lane squares between them.
-        self.triangle_lamp(rack, g, qcx - qcw * 0.40, Z(-0.088), 0.0032, up=True)
-        self.triangle_lamp(rack, g, qcx + qcw * 0.40, Z(-0.088), 0.0032, up=False)
-        for k in range(4):
-            rack.box(g, "mt354_silk", (qcx + (k - 1.5) * 0.0026, y - 0.0012, Z(-0.088)),
-                     (0.0016, 0.0008, 0.0013))
+        qcw = (qs_r - qs_l) * 0.90
+        self.cage(rack, g, qcx, Z(top_z), qcw, cage_h, True, lanes=4)
+        self.cage(rack, g, qcx, Z(bot_z), qcw, jah_b * h, False, lanes=4)
+        # A triangle at each end, and between them two rows of four lane
+        # squares, one row for each of the two ports rather than the single
+        # row the first pass drew.
+        self.triangle_lamp(rack, g, qcx - qcw * 0.40, qlz, 0.0032, up=True)
+        self.triangle_lamp(rack, g, qcx + qcw * 0.40, qlz, 0.0032, up=False)
+        for row in (1, -1):
+            for k in range(4):
+                rack.box(g, "mt354_silk", (qcx + (k - 1.5) * 0.0032, y - 0.0013, qlz + row * 0.0009),
+                         (0.0021, 0.0008, 0.0007))
 
         # ---- console above, management below, in their own housing -----
         mg_l, mg_r = self.MGMT_X
-        mcx, mcw = self.housing(rack, g, z, X(mg_l), X(mg_r))
+        mcx, mcw = self.housing(rack, g, z, X(mg_l), X(mg_r), bright=True)
         self.jack(rack, g, mcx, Z(top_z), mcw * 0.80, jah_t * h, True)
         # Console is the one jack on the panel with no lamps in it.
         rack.box(g, "mt354_jack_shell", (mcx, y - 0.0022, Z(top_z + jah_t * 0.36)),
