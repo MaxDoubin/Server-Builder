@@ -8,9 +8,11 @@
  * vendor link every number traces back to.
  */
 
+import { useId } from "react";
 import type { RackDefinition, RackDevice } from "@/lib/rackTypes";
 import { KIND_LABELS, portSummary } from "@/lib/racks";
 import { DeviceFaceplate } from "./DeviceFaceplate";
+import { RackDefs } from "./RackDefs";
 
 const FAMILY_LABELS: Record<RackDevice["family"], string> = {
   router: "Router",
@@ -58,6 +60,9 @@ export function DeviceDetailPanel({
   device: RackDevice;
   onClose: () => void;
 }) {
+  // Its own def prefix: this SVG is a sibling of the elevation's, and the
+  // material ids would otherwise collide across the two.
+  const uid = useId().replace(/:/g, "");
   const ports = portSummary(device);
   const litLeds = (device.leds ?? []).filter((l) => l !== "off").length;
 
@@ -87,7 +92,13 @@ export function DeviceDetailPanel({
       {/* The device, pulled out of the rack at detail scale. */}
       <div className="mt-6 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_12%_5%)] p-3">
         <svg viewBox={`0 0 760 ${device.u * 88}`} width="100%" role="img" aria-label={`${device.model} front panel, enlarged`} style={{ display: "block" }}>
-          <DeviceFaceplate device={device} width={760} unitH={88} detail />
+          <RackDefs uid={uid} />
+          <style>{`.rk-brand{font-family:"Space Grotesk",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.rk-portnum{font-family:ui-monospace,monospace}
+@keyframes rk-blink{0%,100%{opacity:1}50%{opacity:.3}}
+.rk-led-on{animation:rk-blink 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.rk-led-on{animation:none}}`}</style>
+          <DeviceFaceplate device={device} width={760} unitH={88} detail uid={uid} />
         </svg>
       </div>
 
