@@ -53,6 +53,22 @@ export const LED_COLOURS: Record<string, string> = {
   off: "#20242a",
 };
 
+/**
+ * Patch lead jackets. A round cable lit from above is bright along its
+ * upper surface and falls into shadow underneath, and that gradient across
+ * the stroke width is what makes a line read as a cylinder rather than a
+ * ribbon. White is the UniFi Etherlighting TPE; the rest are the standard
+ * moulded colours every other closet colour-codes with.
+ */
+export const JACKETS: Record<string, { hi: string; base: string; lo: string; dk: string }> = {
+  white: { hi: "#f7f9fa", base: "#dfe3e7", lo: "#a5abb2", dk: "#696f76" },
+  blue: { hi: "#7aa8d4", base: "#3671ad", lo: "#234c76", dk: "#152f49" },
+  grey: { hi: "#b9c0c7", base: "#7d858d", lo: "#525960", dk: "#31363b" },
+  yellow: { hi: "#f2dc84", base: "#ceac35", lo: "#8f761d", dk: "#584910" },
+  red: { hi: "#e29191", base: "#b64a4a", lo: "#7d3033", dk: "#4c1e20" },
+  green: { hi: "#8fe6a8", base: "#33a457", lo: "#1e6c39", dk: "#124121" },
+};
+
 /** Build the prefixed id for a def. */
 export const defId = (uid: string, name: string) => `${uid}-${name}`;
 /** Reference a prefixed def from a fill or stroke. */
@@ -218,6 +234,21 @@ export function RackDefs({ uid }: { uid: string }) {
         <stop offset="55%" stopColor="#dceaff" stopOpacity="0.02" />
         <stop offset="100%" stopColor="#dceaff" stopOpacity="0" />
       </radialGradient>
+
+      {/*
+        Patch cable jacket. A round cable lit from above is bright along
+        its upper surface and falls into shadow underneath, and that
+        gradient across the stroke width is what makes a line read as a
+        cylinder. White TPE, as the Etherlighting lead ships.
+      */}
+      {Object.entries(JACKETS).map(([name, j]) => (
+        <linearGradient key={name} id={defId(uid, `jacket-${name}`)} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={j.hi} />
+          <stop offset="38%" stopColor={j.base} />
+          <stop offset="72%" stopColor={j.lo} />
+          <stop offset="100%" stopColor={j.dk} />
+        </linearGradient>
+      ))}
 
       {/* Vent slot: a slit with light on its lower lip. */}
       <linearGradient id={defId(uid, "vent")} x1="0" y1="0" x2="0" y2="1">

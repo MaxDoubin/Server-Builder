@@ -15,7 +15,7 @@
  * side. That is how network closets are actually documented.
  */
 
-import type { LedState, RackDefinition, RackPort } from "@/lib/rackTypes";
+import type { LedState, RackDefinition, RackPatch, RackPort } from "@/lib/rackTypes";
 
 /** Two-digit label for a patch field position, so A01 sorts next to A02. */
 const pad2 = (n: number): string => String(n).padStart(2, "0");
@@ -224,6 +224,31 @@ export const ciscoRack: RackDefinition = {
       accent: ACCENT.power,
       url: "https://www.apc.com/us/en/product/SMT1500RM2U/",
     },
+  ],
+
+  /*
+    Patch leads, colour coded the way an enterprise closet actually is:
+    blue for ordinary data drops, yellow for the voice VLAN, red for the
+    carrier handoff so nobody unplugs the WAN while chasing a desk port.
+    Ordinary moulded boots, not Etherlighting, which is a UniFi part.
+
+    The 9300's port array starts with its console, so copper port n is
+    index n in that array.
+  */
+  patches: [
+    ...Array.from({ length: 24 }, (_, i) => ({
+      from: { device: "patch-a", port: i },
+      to: { device: "c9300-48p", port: i + 1 },
+      jacket: (i >= 18 ? "yellow" : "blue") as RackPatch["jacket"],
+    })),
+    ...Array.from({ length: 10 }, (_, i) => ({
+      from: { device: "patch-b", port: i },
+      to: { device: "c9200l", port: i },
+      jacket: "grey" as const,
+    })),
+    // The carrier drop into the router, and the router into the core.
+    { from: { device: "isr4331", port: 1 }, to: { device: "patch-a", port: 12 }, jacket: "red" as const },
+    { from: { device: "isr4331", port: 2 }, to: { device: "c9300-48p", port: 21 }, jacket: "red" as const },
   ],
 
   sources: [

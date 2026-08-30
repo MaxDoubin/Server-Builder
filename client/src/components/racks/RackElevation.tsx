@@ -16,6 +16,7 @@ import { useId, useMemo } from "react";
 import type { RackDefinition } from "@/lib/rackTypes";
 import { DeviceFaceplate } from "./DeviceFaceplate";
 import { RackDefs, defUrl } from "./RackDefs";
+import { PatchCables } from "./PatchCables";
 
 /** Shared styles for every rack SVG on the page. */
 const RACK_CSS = `
@@ -35,6 +36,8 @@ const RACK_CSS = `
     .rk-slide { transition: none; }
     .rk-dev:hover .rk-slide, .rk-sel .rk-slide { transform: none; }
   }
+  .rk-cables { transition: opacity 400ms ease; }
+  .rk-has-sel .rk-cables { opacity: 0.22; }
   @keyframes rk-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
   .rk-led-on { animation: rk-blink 1.6s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) { .rk-led-on { animation: none; } }
@@ -105,6 +108,7 @@ export function RackElevation({ rack, selectedId, onSelect, mini = false }: Prop
           ? `${rack.name} rack elevation. Each device is a button; select one to read its details.`
           : `${rack.name} rack elevation, ${rack.height} rack units`
       }
+      className={selectedId ? "rk-has-sel" : undefined}
       style={{ display: "block" }}
     >
       <RackDefs uid={uid} />
@@ -175,6 +179,10 @@ export function RackElevation({ rack, selectedId, onSelect, mini = false }: Prop
           </g>
         );
       })}
+
+      <g className="rk-cables">
+        <PatchCables rack={rack} faceW={faceW} unitH={unitH} originX={pad + railW} originY={pad} uid={uid} />
+      </g>
 
       {/*
         The lighting pass. Everything above is lit as if each part were on

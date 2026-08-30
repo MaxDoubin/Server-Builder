@@ -19,7 +19,7 @@
  *    always agree. They are not a measurement of anything.
  */
 
-import type { LedState, RackDefinition, RackPort } from "@/lib/rackTypes";
+import type { LedState, RackDefinition, RackPatch, RackPort } from "@/lib/rackTypes";
 
 /** Two-digit label for a patch field position, so A01 sorts next to A02. */
 const pad2 = (n: number): string => String(n).padStart(2, "0");
@@ -177,6 +177,23 @@ export const mikrotikRack: RackDefinition = {
       watts: null,
       accent: ACCENT.passive,
     },
+  ],
+
+  /*
+    Plain moulded leads. A budget ISP stack is cabled in whatever the reel
+    was, which in practice means grey, with blue kept for the handful of
+    runs someone wanted to be able to find again.
+  */
+  patches: [
+    ...Array.from({ length: 12 }, (_, i) => ({
+      from: { device: "patch-a", port: i },
+      to: { device: "crs328", port: i },
+      jacket: (i >= 9 ? "blue" : "grey") as RackPatch["jacket"],
+    })),
+    // The core switch down to the PoE switch, and up to the router.
+    { from: { device: "crs354", port: 0 }, to: { device: "crs328", port: 20 }, jacket: "blue" as const },
+    { from: { device: "crs354", port: 1 }, to: { device: "crs328", port: 21 }, jacket: "blue" as const },
+    { from: { device: "ccr2004", port: 0 }, to: { device: "crs354", port: 2 }, jacket: "yellow" as const },
   ],
 
   sources: [
