@@ -99,7 +99,12 @@ class CRS354_48G(Device):
             "mt354_lid": pbr("CRS354 Lid", [231, 231, 227, 255], 0.18, 0.46),
             "mt354_ear": pbr("CRS354 Ear", [214, 214, 209, 255], 0.22, 0.44),
             # The milled pocket the ports sit in, and its pale lip.
-            "mt354_pocket": pbr("CRS354 Port Pocket", [176, 177, 172, 255], 0.24, 0.58),
+            # The recessed face a ganged housing presents around its
+            # openings. Measured at 117 of 255 off the photograph, against
+            # the 176 this was painted, which is the difference between a
+            # dark port bank with lighter jacks in it and the pale slab
+            # with dark squares on it that the first pass rendered.
+            "mt354_pocket": pbr("CRS354 Port Pocket", [119, 120, 117, 255], 0.24, 0.58),
             "mt354_lip": pbr("CRS354 Pocket Lip", [236, 236, 232, 255], 0.20, 0.44),
             # A MikroTik RJ45 is a black moulding deep in the pocket with a
             # dull nickel shield and gold contacts well back from the mouth.
@@ -108,7 +113,7 @@ class CRS354_48G(Device):
             # moulding around it or the whole opening reads as a grey tile.
             "mt354_jack_throat": pbr("CRS354 Jack Throat", [11, 11, 12, 255], 0.06, 0.92),
             "mt354_jack_tongue": pbr("CRS354 Jack Tongue", [44, 44, 46, 255], 0.08, 0.78),
-            "mt354_jack_shield": pbr("CRS354 Jack Shield", [96, 98, 99, 255], 0.68, 0.36),
+            "mt354_jack_shield": pbr("CRS354 Jack Shield", [74, 76, 77, 255], 0.62, 0.38),
             "mt354_jack_gold": pbr("CRS354 Jack Contacts", [198, 158, 74, 255], 0.86, 0.24),
             "mt354_cage": pbr("CRS354 Cage", [58, 59, 60, 255], 0.52, 0.44),
             "mt354_cage_bore": pbr("CRS354 Cage Bore", [12, 12, 13, 255], 0.20, 0.86),
