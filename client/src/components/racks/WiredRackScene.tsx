@@ -83,6 +83,22 @@ function anchor(deviceIndex: number, portIndex: number): THREE.Vector3 | null {
   return d.ports ? portAt(d, d.ports, portIndex) : null;
 }
 
+/**
+ * A blank at a device's mounting position, while its model downloads.
+ *
+ * Exactly the volume the real thing will occupy, so nothing jumps when it
+ * arrives. The alternative, drawing nothing, is what made this page look
+ * broken on a real connection.
+ */
+function DeviceSlab({ device }: { device: WiredDevice }) {
+  return (
+    <mesh position={[0, deviceY(device), FACE_Z - 0.19]}>
+      <boxGeometry args={[PANEL_W, device.u * U - 0.002, 0.38]} />
+      <meshStandardMaterial color="#c9ccd2" roughness={0.85} transparent opacity={0.3} />
+    </mesh>
+  );
+}
+
 /** One vendor model, mounted at its rack position. */
 function MountedDevice({
   device,
@@ -374,23 +390,50 @@ export function WiredRackScene({ onPick }: { onPick?: (label: string | null) => 
       <directionalLight position={[1.4, 2.4, 1.9]} intensity={2.0} />
       <directionalLight position={[-1.9, 1.4, 1.1]} intensity={0.7} color="#cfdcf2" />
       <directionalLight position={[0, 1.0, -2.2]} intensity={0.5} color="#93a5c0" />
-      <Suspense fallback={null}>
-        {/* The site's own procedural studio rather than drei's Environment,
-            which fetches an HDR from a third party CDN on every load. */}
-        <StudioEnvironment />
-        <group position={[0, -height / 2 - FRAME_FOOT, 0]}>
-          <OpenRackFrame units={WIRED_RACK_UNITS} depth={0.62} style="white" />
-          {WIRED_DEVICES.map((d, i) => (
+      {/*
+        The frame stands outside every Suspense boundary, because it needs no
+        network at all: it is generated geometry. Anything that has to be
+        fetched sits behind its own boundary below.
+      */}
+      <group position={[0, -height / 2 - FRAME_FOOT, 0]}>
+        <OpenRackFrame units={WIRED_RACK_UNITS} depth={0.62} style="white" />
+        {/*
+          One boundary per device rather than one around all ten.
+
+          With a single boundary and a null fallback, this canvas was blank
+          until the last of ten models finished downloading and decoding, and
+          on anything slower than a local dev server that is a long look at
+          nothing: no frame, no spinner, no evidence the page works. The
+          reader cannot tell a slow load from a broken one, so they reasonably
+          conclude it is broken.
+
+          Per device, each model appears as it lands, standing in meanwhile as
+          a slab of exactly the volume it will occupy, so the rack fills in
+          rather than flicking from empty to complete.
+        */}
+        {WIRED_DEVICES.map((d, i) => (
+          <Suspense key={`${d.slug}-${i}`} fallback={<DeviceSlab device={d} />}>
             <MountedDevice
-              key={`${d.slug}-${i}`}
               device={d}
               onPick={pick}
               dimmed={picked !== null && picked !== d.label}
             />
-          ))}
+          </Suspense>
+        ))}
+        {/*
+          Leads last, and behind their own boundary, because they are drawn
+          between port positions that come from the build definition rather
+          than from the models, so they do not need to wait for any of them.
+        */}
+        <Suspense fallback={null}>
           <Leads />
           <PowerLeads />
-        </group>
+        </Suspense>
+      </group>
+      <Suspense fallback={null}>
+        {/* The site's own procedural studio rather than drei's Environment,
+            which fetches an HDR from a third party CDN on every load. */}
+        <StudioEnvironment />
       </Suspense>
       <OrbitControls
         ref={controls}

@@ -167,12 +167,19 @@ function LoadingSlab({ at, height, frame }: { at: number; height: number; frame:
 }
 
 /**
- * The empty units, drawn as a faint plate each.
+ * The empty units, marked at the rails only.
  *
- * A rack with gaps in it should look like a rack with gaps in it. Without
- * these the frame reads as full whenever the devices happen to be adjacent,
- * and there is no way to see at a glance how much room is left, which is the
- * single most useful thing an elevation tells you.
+ * The first version drew a full width plate across every free unit at 7
+ * percent opacity, on the theory that a rack with gaps should look like a
+ * rack with gaps. In a 12U with devices in it that was invisible, which is
+ * why it survived review. In a tall empty frame it is a stack of forty two
+ * pale slabs and the rack reads as a bookcase.
+ *
+ * The mistake was drawing the gap rather than the mounting position. A real
+ * empty rack is mostly air: what tells you where a unit is, is the punched
+ * strip on the post, and the frame already draws that. So this marks the
+ * rails and nothing in between, which reads as a rack you could put
+ * something into rather than one full of shelves.
  */
 function EmptyUnits({ used, frame }: { used: boolean[]; frame: number }) {
   const free = useMemo(() => {
@@ -181,14 +188,29 @@ function EmptyUnits({ used, frame }: { used: boolean[]; frame: number }) {
     return out;
   }, [used, frame]);
 
+  const tab = 0.026;
+  const x = PANEL_W / 2 - tab / 2;
+
   return (
     <>
-      {free.map((at) => (
-        <mesh key={at} position={[0, FRAME_FOOT + (frame - at - 1) * U + U / 2, FACE_Z - 0.008]}>
-          <planeGeometry args={[PANEL_W, U - 0.004]} />
-          <meshBasicMaterial color="#8f959e" transparent opacity={0.07} side={THREE.DoubleSide} />
-        </mesh>
-      ))}
+      {free.map((at) => {
+        const y = FRAME_FOOT + (frame - at - 1) * U + U / 2;
+        return (
+          <group key={at}>
+            {[-x, x].map((sx) => (
+              <mesh key={sx} position={[sx, y, FACE_Z - 0.004]}>
+                <planeGeometry args={[tab, U * 0.5]} />
+                <meshBasicMaterial
+                  color="#7d8590"
+                  transparent
+                  opacity={0.16}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+            ))}
+          </group>
+        );
+      })}
     </>
   );
 }
