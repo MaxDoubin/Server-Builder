@@ -25,7 +25,14 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { U } from "@/components/cinematic/rack3d/rackConfig";
 import { FRAME_FOOT, OpenRackFrame } from "./OpenRackFrame";
-import { CABLE_RADIUS, JACKET_HEX, leadCurve, powerCurve } from "./cableShape";
+import {
+  CABLE_RADIUS,
+  ETHERLIGHT_JACKET,
+  JACKET_HEX,
+  etherlightHue,
+  leadCurve,
+  powerCurve,
+} from "./cableShape";
 import { plugBoot } from "./parts";
 import {
   OPTIC_BASE,
@@ -176,40 +183,54 @@ function MountedDevice({
 }
 
 /**
- * Every patch lead, merged by jacket so the rack is a handful of draws.
+ * Every patch lead, and every plug on the end of one.
  *
- * Ubiquiti publish no model for any of their cables, which sounds like a gap
- * and is not one. A patch lead is not an object you place, it is a path
- * between two ports that do not exist until somebody decides what is plugged
- * into what, so a downloaded cable at a fixed length in a fixed pose would
- * have to be deformed along a curve computed here anyway. The tube is that
- * curve, swept.
+ * Ubiquiti publish no model for any of their 27 cable products, which sounds
+ * like a gap and is not one. A patch lead is not an object you place, it is
+ * a path between two ports that do not exist until somebody decides what is
+ * plugged into what, so a downloaded cable at a fixed length in a fixed pose
+ * would have to be deformed along a curve computed here anyway.
  *
- * The plug is the part worth modelling, and it is the part a bare tube
- * misses: without it a lead simply stops at the panel, and forty leads
- * stopping at a panel is the thing that reads as computer graphics. It is
- * one instanced boot over the lot, tinted per instance, so an Etherlighting
- * plug can carry its own glow without costing a material.
+ * What their photography does settle is what the lead looks like, and the
+ * first attempt had it wrong in the most basic way. A bank of Etherlighting
+ * leads is not colour coded: every jacket is the same plain white, slim, and
+ * the colour lives entirely in the plug, which is a clear moulding lit from
+ * the port behind it. Across a bank the hue sweeps from red at one end
+ * through green to blue at the other, and that sweep is the entire visual
+ * signature. Coloured jackets, the way an ordinary patch panel is coded,
+ * produce something that looks like every other rack in the world.
+ *
+ * So: one white jacket colour, a slim radius, and the work goes into the
+ * plugs. Each is a translucent body with a lit collar behind it, both
+ * instanced over the whole rack and tinted per instance. The collar is an
+ * unlit material on purpose, because a lit plug is emitting rather than
+ * reflecting and shading it would make it look like painted plastic.
  */
 function Leads() {
-  const { tubes, boots } = useMemo(() => {
+  const { tubes, plugs } = useMemo(() => {
     const byColour = new Map<string, THREE.BufferGeometry[]>();
-    const ends: Array<{ at: THREE.Vector3; colour: string; el: boolean }> = [];
+    const ends: Array<{ at: THREE.Vector3; hue: string; lit: boolean }> = [];
+    const litCount = WIRED_PATCHES.filter((p) => !p.fibre).length;
+    let litIndex = 0;
     WIRED_PATCHES.forEach((p, i) => {
       const a = anchor(p.from[0], p.from[1]);
       const b = anchor(p.to[0], p.to[1]);
       if (!a || !b) return;
       const reach = Math.min(1, Math.abs(a.y - b.y) / (WIRED_RACK_UNITS * U));
       const curve = leadCurve(a, b, i, reach);
-      const radius = p.fibre ? CABLE_RADIUS.etherlighting : CABLE_RADIUS.plain;
-      const list = byColour.get(p.jacket) ?? [];
-      list.push(new THREE.TubeGeometry(curve, 44, radius, 7, false));
-      byColour.set(p.jacket, list);
-      // Fibre lands in a cage rather than a jack, and an LC duplex has no
-      // moulded boot to speak of, so only the copper gets one.
-      if (!p.fibre) {
-        ends.push({ at: a, colour: p.jacket, el: !!p.el });
-        ends.push({ at: b, colour: p.jacket, el: !!p.el });
+      const fibre = !!p.fibre;
+      const jacket = fibre ? p.jacket : "etherlight";
+      const radius = fibre ? CABLE_RADIUS.etherlighting : CABLE_RADIUS.etherlighting * 1.15;
+      const list = byColour.get(jacket) ?? [];
+      list.push(new THREE.TubeGeometry(curve, 44, radius, 8, false));
+      byColour.set(jacket, list);
+      if (!fibre) {
+        // The sweep runs across the whole rack rather than restarting per
+        // switch, so the gradient reads as one continuous thing the way it
+        // does in the photograph.
+        const hue = etherlightHue(litIndex, litCount);
+        litIndex += 1;
+        ends.push({ at: a, hue, lit: true }, { at: b, hue, lit: true });
       }
     });
     return {
@@ -217,33 +238,42 @@ function Leads() {
         colour,
         geometry: mergeGeometries(list, false),
       })),
-      boots: ends,
+      plugs: ends,
     };
   }, []);
 
-  const bootRef = useRef<THREE.InstancedMesh>(null);
+  const bodyRef = useRef<THREE.InstancedMesh>(null);
+  const glowRef = useRef<THREE.InstancedMesh>(null);
+
   useEffect(() => {
-    const mesh = bootRef.current;
-    if (!mesh) return;
     const m = new THREE.Matrix4();
-    const colour = new THREE.Color();
-    // A booted RJ45 plug is about 11.5mm across the body and 24mm from the
-    // face of the jack to the back of the strain relief.
-    const scale = new THREE.Vector3(0.0115, 0.0115, 0.0115);
-    const quat = new THREE.Quaternion();
-    boots.forEach((b, i) => {
-      // The geometry is built with the plug body at the origin running back
-      // along -Z, which is already the direction a lead leaves a panel here.
-      m.compose(b.at, quat, scale);
-      mesh.setMatrixAt(i, m);
-      colour.set(b.el ? "#dfe9ff" : JACKET_HEX[b.colour] ?? "#8d949f");
-      mesh.setColorAt(i, colour);
+    const c = new THREE.Color();
+    const q = new THREE.Quaternion();
+    // A nano thin plug is about 9.5mm across the body and 19mm deep with its
+    // strain relief, which is noticeably smaller than a moulded Cat6A boot.
+    const bodyScale = new THREE.Vector3(0.0095, 0.0095, 0.0095);
+    plugs.forEach((plug, i) => {
+      m.compose(plug.at, q, bodyScale);
+      bodyRef.current?.setMatrixAt(i, m);
+      // The lit collar sits just behind the plug body, where the moulding
+      // meets the jacket, which is where the light actually shows.
+      m.compose(
+        new THREE.Vector3(plug.at.x, plug.at.y, plug.at.z + 0.0132),
+        q,
+        new THREE.Vector3(0.0068, 0.0068, 0.0068),
+      );
+      glowRef.current?.setMatrixAt(i, m);
+      glowRef.current?.setColorAt(i, c.set(plug.hue));
     });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  }, [boots]);
+    if (bodyRef.current) bodyRef.current.instanceMatrix.needsUpdate = true;
+    if (glowRef.current) {
+      glowRef.current.instanceMatrix.needsUpdate = true;
+      if (glowRef.current.instanceColor) glowRef.current.instanceColor.needsUpdate = true;
+    }
+  }, [plugs]);
 
   const bootGeometry = useMemo(() => plugBoot(), []);
+  const glowGeometry = useMemo(() => new THREE.SphereGeometry(1, 12, 8), []);
 
   return (
     <>
@@ -251,21 +281,36 @@ function Leads() {
         geometry ? (
           <mesh key={colour} geometry={geometry}>
             <meshStandardMaterial
-              color={JACKET_HEX[colour] ?? "#8d949f"}
-              roughness={0.52}
+              color={colour === "etherlight" ? ETHERLIGHT_JACKET : JACKET_HEX[colour] ?? "#8d949f"}
+              roughness={colour === "etherlight" ? 0.34 : 0.5}
               metalness={0.02}
             />
           </mesh>
         ) : null,
       )}
-      {boots.length > 0 ? (
-        <instancedMesh
-          ref={bootRef}
-          args={[bootGeometry, undefined, boots.length]}
-          frustumCulled={false}
-        >
-          <meshStandardMaterial roughness={0.44} metalness={0.04} vertexColors={false} />
-        </instancedMesh>
+      {plugs.length > 0 ? (
+        <>
+          <instancedMesh
+            ref={bodyRef}
+            args={[bootGeometry, undefined, plugs.length]}
+            frustumCulled={false}
+          >
+            <meshStandardMaterial
+              color="#f2f5f9"
+              roughness={0.22}
+              metalness={0.0}
+              transparent
+              opacity={0.92}
+            />
+          </instancedMesh>
+          <instancedMesh
+            ref={glowRef}
+            args={[glowGeometry, undefined, plugs.length]}
+            frustumCulled={false}
+          >
+            <meshBasicMaterial toneMapped={false} />
+          </instancedMesh>
+        </>
       ) : null}
     </>
   );

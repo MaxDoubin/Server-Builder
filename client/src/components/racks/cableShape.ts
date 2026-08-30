@@ -34,6 +34,27 @@ import * as THREE from "three";
  */
 export const CABLE_RADIUS = { plain: 0.0029, etherlighting: 0.0019 } as const;
 
+/**
+ * What a UniFi Etherlighting lead actually looks like.
+ *
+ * Not what the first pass assumed. Ubiquiti's own product photography shows
+ * a bank of them plugged into a switch and every jacket is the same plain
+ * white: the colour is not in the cable at all, it is in the plug, which is
+ * a clear moulding lit from the port behind it. A bank runs a hue sweep
+ * from red at one end through green to blue at the other, and that sweep is
+ * the whole visual signature. Colouring the jackets instead, the way an
+ * ordinary patch panel is colour coded, produces something that looks like
+ * every other rack and nothing like a UniFi one.
+ */
+export const ETHERLIGHT_JACKET = "#eceff4";
+
+/** The hue a plug glows, stepped across a bank the way the photograph does. */
+export function etherlightHue(index: number, count: number): string {
+  const t = count > 1 ? index / (count - 1) : 0;
+  // Red through amber and green to blue, which is the sweep Ubiquiti show.
+  return `hsl(${Math.round(4 + t * 236)}, 92%, 62%)`;
+}
+
 export const JACKET_HEX: Record<string, string> = {
   blue: "#2f6fd0",
   grey: "#8d949f",
