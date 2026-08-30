@@ -1,35 +1,51 @@
-# unifi-hero-rack.glb
+# Rack models
 
-A procedurally generated UniFi rack, used by the hero model view on
-`/racks/unifi-12u`. Original geometry, not a redistributed commercial mesh.
+Six procedurally generated racks, one per vendor, used by the hero model
+view on each rack page. Original geometry, not redistributed commercial
+meshes.
 
-## Where it came from
+| File | Page | Size | Triangles | Nodes |
+| --- | --- | --- | --- | --- |
+| `unifi-hero-rack.glb` | `/racks/unifi-12u` | 647 KB | 117,068 | 162 |
+| `cisco-enterprise-42u.glb` | `/racks/cisco-enterprise-42u` | 961 KB | 226,066 | 249 |
+| `juniper-core-42u.glb` | `/racks/juniper-core-42u` | 846 KB | 200,740 | 230 |
+| `mikrotik-isp-24u.glb` | `/racks/mikrotik-isp-24u` | 641 KB | 145,942 | 179 |
+| `dell-compute-42u.glb` | `/racks/dell-compute-42u` | 429 KB | 78,394 | 173 |
+| `storage-42u.glb` | `/racks/storage-dense-42u` | 317 KB | 52,920 | 122 |
 
-The source is a Python generator that emits a 12.72 MB binary glTF with
-484,958 triangles across 162 nodes. That is a fine thing to open in Blender
-and a bad thing to send to a phone, so what ships here is a compressed
-build of it.
+## Where they came from
 
-## How it was compressed
+The sources are the Python generators in `script/models/`. Each emits an
+uncompressed binary glTF of 5 to 18 MB, which is a fine thing to open in
+Blender and a bad thing to send to a phone, so what ships here is a
+compressed build.
+
+## How they were compressed
 
 ```
-npx @gltf-transform/cli@4.4.2 optimize in.glb unifi-hero-rack.glb \
+npx @gltf-transform/cli@4.4.2 optimize in.glb out.glb \
   --compress meshopt --texture-compress webp \
   --join false --flatten false --instance false --palette false \
   --simplify-error 0.0005
 ```
 
-12.72 MB to 629 KB, and 484,958 triangles to 110,150.
-
 `--join`, `--flatten`, `--instance` and `--palette` are all off on purpose.
 Every one of them merges meshes, and the node names are load bearing: the
 model view picks parts by their top level group (`USW_PRO_24_POE`,
-`UNVR_PRO_7`, and so on) and maps that to the device data, so a click on a
+`MX7000`, and so on) and maps that to the device data, so a click on a
 switch can open the switch's real figures. Merge the meshes and there is
 nothing left to click.
 
-The toolchain is deliberately not a dependency of this project. It runs once
-by hand when the model changes, and the artifact is what gets committed.
+The toolchain is deliberately not a dependency of this project. It runs
+once by hand when a model changes, and the artifact is what gets committed.
+
+## Colour
+
+`baseColorFactor` is linear in glTF, and every colour in the generators is
+authored as the sRGB triple you would read off a photograph, so
+`export_glb` converts on the way out. Skipping that conversion brightens
+everything by roughly a 2.2 gamma, which is invisible on a white UniFi rack
+and turns a charcoal PowerEdge panel the colour of brushed aluminium.
 
 ## Decoding
 

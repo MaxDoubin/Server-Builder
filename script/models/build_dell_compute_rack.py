@@ -31,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_enterprise_base import OUT, PANEL_W, U, EnterpriseRack
+from build_enterprise_base import export_glb, EnterpriseRack, OUT, PANEL_W, U
 from build_unifi_hero_rack_clean_aligned import pbr
 
 
@@ -42,12 +42,22 @@ class DellComputeRack(EnterpriseRack):
 
     def __init__(self) -> None:
         super().__init__()
+        # PowerEdge graphite, read off a product photograph rather than
+        # guessed down. Two earlier passes hauled these numbers toward
+        # black chasing a rack that rendered silver, which was the export
+        # writing sRGB into a linear field and not the paint being wrong.
+        # `export_glb` fixes the gamma, so these can be honest again.
         self.materials.update({
-            'dell_graphite': pbr('Dell Graphite', [54, 57, 61, 255], 0.40, 0.46),
-            'dell_graphite_dark': pbr('Dell Graphite Shadow', [36, 38, 41, 255], 0.36, 0.56),
-            'dell_bezel': pbr('Dell Bezel', [24, 26, 28, 255], 0.22, 0.62),
+            'dell_graphite': pbr('Dell Graphite', [58, 61, 65, 255], 0.24, 0.52),
+            'dell_graphite_dark': pbr('Dell Graphite Shadow', [42, 45, 48, 255], 0.22, 0.60),
+            'dell_bezel': pbr('Dell Bezel', [32, 34, 37, 255], 0.18, 0.66),
             'dell_blue': pbr('Dell Status Blue', [70, 150, 220, 255], 0.10, 0.30,
                              emissive=[0.10, 0.38, 0.70]),
+            # A PowerEdge carrier is dark with one bright release lever, and
+            # a 2U server is twenty four of them across the whole face, so
+            # this pair decides the rack's colour more than the chassis does.
+            'drive_face': pbr('Carrier', [62, 66, 70, 255], 0.30, 0.50),
+            'drive_handle': pbr('Carrier Release', [150, 155, 158, 255], 0.58, 0.40),
         })
 
     # --------------------------------------------------------------- parts
@@ -249,7 +259,7 @@ if __name__ == '__main__':
     rack = DellComputeRack()
     scene = rack.build()
     out = OUT / 'Dell_Compute_42U.glb'
-    out.write_bytes(scene.export(file_type='glb'))
+    export_glb(scene, out)
     faces = sum(len(g.faces) for g in scene.geometry.values())
     print(out)
     print(f'{faces:,} triangles, {len(scene.geometry)} geometry groups')

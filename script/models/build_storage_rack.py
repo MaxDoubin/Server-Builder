@@ -33,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_enterprise_base import OUT, PANEL_W, U, EnterpriseRack
+from build_enterprise_base import export_glb, EnterpriseRack, OUT, PANEL_W, U
 from build_unifi_hero_rack_clean_aligned import pbr
 
 
@@ -44,13 +44,20 @@ class StorageRack(EnterpriseRack):
 
     def __init__(self) -> None:
         super().__init__()
+        # A dense shelf is graphite with a lighter drawer face, which is the
+        # only way to tell one drawer from the next on a wall of them. Same
+        # note as the compute rack: these were pulled toward black chasing a
+        # gamma bug in the exporter, and are back to what a photograph shows
+        # now that `export_glb` writes linear colour.
         self.materials.update({
-            'store_grey': pbr('Enclosure Grey', [72, 76, 80, 255], 0.44, 0.44),
-            'store_grey_dark': pbr('Enclosure Shadow', [48, 51, 54, 255], 0.40, 0.54),
-            'drawer_face': pbr('Drawer Face', [86, 90, 95, 255], 0.48, 0.40),
+            'store_grey': pbr('Enclosure Grey', [72, 76, 80, 255], 0.28, 0.50),
+            'store_grey_dark': pbr('Enclosure Shadow', [52, 55, 59, 255], 0.24, 0.58),
+            'drawer_face': pbr('Drawer Face', [84, 88, 92, 255], 0.30, 0.46),
             'smoked_window': pbr('Library Window', [16, 20, 26, 190], 0.10, 0.10,
                                  alphaMode='BLEND', doubleSided=True),
-            'tape_black': pbr('Library Black', [30, 32, 35, 255], 0.24, 0.58),
+            'tape_black': pbr('Library Black', [38, 40, 44, 255], 0.26, 0.56),
+            'drive_face': pbr('Carrier', [60, 64, 68, 255], 0.30, 0.50),
+            'drive_handle': pbr('Drawer Pull', [140, 145, 149, 255], 0.56, 0.40),
         })
 
     # --------------------------------------------------------------- parts
@@ -239,7 +246,7 @@ if __name__ == '__main__':
     rack = StorageRack()
     scene = rack.build()
     out = OUT / 'Storage_42U.glb'
-    out.write_bytes(scene.export(file_type='glb'))
+    export_glb(scene, out)
     faces = sum(len(g.faces) for g in scene.geometry.values())
     print(out)
     print(f'{faces:,} triangles, {len(scene.geometry)} geometry groups')

@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_unifi_hero_rack_clean_aligned import UniFiHeroRack, pbr, make_screen_texture
+from build_unifi_hero_rack_clean_aligned import UniFiHeroRack, export_glb, pbr, make_screen_texture
 
 # Uncompressed output. These are 12 to 18 MB and never ship, so they go
 # to the working directory by default and are gitignored, not into the
@@ -54,6 +54,11 @@ class EnterpriseRack(UniFiHeroRack):
     panel_material = 'cisco_grey'
     #: Finish used for recessed sub-panels, card faces and bezels.
     inset_material = 'cisco_grey_dark'
+    #: The punched mounting rails. Every vendor at this end of the market
+    #: paints theirs to match the cabinet, and the bright zinc this started
+    #: with read as two strip lights running down the inside of the rack
+    #: rather than as steel. Override it if a vendor really does ship zinc.
+    rail_material = 'nexus_black'
 
     def __init__(self) -> None:
         super().__init__()
@@ -101,7 +106,7 @@ class EnterpriseRack(UniFiHeroRack):
         # Crease lines top and bottom.
         self.box(group, 'cisco_edge', (0, self.front_y - 0.0060, z + height * 0.47),
                  (panel_width - 0.010, 0.0009, 0.0011))
-        self.box(group, 'cisco_grey_dark', (0, self.front_y - 0.0060, z - height * 0.47),
+        self.box(group, self.inset_material, (0, self.front_y - 0.0060, z - height * 0.47),
                  (panel_width - 0.010, 0.0009, 0.0011))
         # Rack ears and their screws.
         for x in (-0.236, 0.236):
@@ -111,7 +116,7 @@ class EnterpriseRack(UniFiHeroRack):
                 self.screw(group, x, zz)
         # Rear face and side vents.
         rear_y = self.front_y + 0.010 + depth
-        self.uv_box(group, 'cisco_grey_dark', (0, rear_y, z), (panel_width - 0.010, 0.0070, height * 0.86))
+        self.uv_box(group, self.inset_material, (0, rear_y, z), (panel_width - 0.010, 0.0070, height * 0.86))
         for side_x in (-panel_width * 0.48, panel_width * 0.48):
             for iz in np.linspace(z - height * 0.3, z + height * 0.3, 5):
                 self.box(group, 'black_matte', (side_x, body_y, float(iz)), (0.0012, depth * 0.4, 0.0020))
@@ -176,7 +181,7 @@ class EnterpriseRack(UniFiHeroRack):
         # square holes per unit, which is what a rack rail actually is.
         for x in (-0.258, 0.258):
             for y in (self.front_y + 0.030, 0.330):
-                self.uv_box('MOUNTING_RAILS', 'cisco_grey_dark', (x, y, (RAIL_BOTTOM + self.rail_top) / 2),
+                self.uv_box('MOUNTING_RAILS', self.rail_material, (x, y, (RAIL_BOTTOM + self.rail_top) / 2),
                             (0.022, 0.022, self.rail_top - RAIL_BOTTOM + 0.02))
                 for i in range(self.units):
                     base = RAIL_BOTTOM + i * U

@@ -35,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_enterprise_base import OUT, PANEL_W, U, EnterpriseRack
+from build_enterprise_base import export_glb, EnterpriseRack, OUT, PANEL_W, U
 from build_unifi_hero_rack_clean_aligned import pbr
 
 
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     rack = MikroTikIspRack()
     scene = rack.build()
     out = OUT / 'MikroTik_ISP_24U.glb'
-    out.write_bytes(scene.export(file_type='glb'))
+    export_glb(scene, out)
     faces = sum(len(g.faces) for g in scene.geometry.values())
     print(out)
     print(f'{faces:,} triangles, {len(scene.geometry)} geometry groups')

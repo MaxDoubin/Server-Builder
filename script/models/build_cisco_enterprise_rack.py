@@ -37,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from build_enterprise_base import OUT, PANEL_W, U, EnterpriseRack
+from build_enterprise_base import export_glb, EnterpriseRack, OUT, PANEL_W, U
 
 CHASSIS_DEPTH_DEEP = 0.815
 
@@ -378,7 +378,7 @@ if __name__ == '__main__':
     rack = CiscoEnterpriseRack()
     scene = rack.build()
     out = OUT / 'Cisco_Enterprise_42U.glb'
-    out.write_bytes(scene.export(file_type='glb'))
+    export_glb(scene, out)
     faces = sum(len(g.faces) for g in scene.geometry.values())
     verts = sum(len(g.vertices) for g in scene.geometry.values())
     print(out)

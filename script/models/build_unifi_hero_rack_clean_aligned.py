@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 import math
 import random
+import struct
 import sys
 from pathlib import Path
 from typing import Iterable, Sequence
@@ -239,11 +241,66 @@ STEEL_COLOR, STEEL_MR, STEEL_NORMAL = make_dark_steel()
 
 
 def pbr(name: str, rgba, metallic=0.0, roughness=0.5, emissive=None, **kwargs) -> PBRMaterial:
+    """A material from an sRGB colour, the way a colour is actually picked.
+
+    Every colour in this library is written as the 0 to 255 triple you would
+    read off a photograph or type into a hex field, because that is the only
+    way to author them by eye. glTF wants `baseColorFactor` in linear light,
+    so `export_glb` converts on the way out. Do not pre-convert here.
+    """
     args = dict(name=name, baseColorFactor=list(rgba), metallicFactor=metallic, roughnessFactor=roughness)
     if emissive is not None:
         args['emissiveFactor'] = list(emissive)
     args.update(kwargs)
     return PBRMaterial(**args)
+
+
+def srgb_to_linear(c: float) -> float:
+    """One channel, 0 to 1, from sRGB to linear light."""
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def export_glb(scene, path: Path) -> Path:
+    """Export a scene, correcting every base colour from sRGB to linear.
+
+    This is not a nicety. glTF defines `baseColorFactor` as linear, trimesh
+    writes whatever number it was handed, and the colours here are authored
+    in sRGB. Writing an sRGB value into a linear field brightens everything
+    by roughly a 2.2 gamma, which does almost nothing at the white end and
+    is catastrophic at the black end: a charcoal panel at 38 lands at 107,
+    a mid grey at 166 lands at 211. That is why the dark racks all came out
+    the colour of brushed aluminium no matter how far the numbers were
+    pulled down, and why the white UniFi rack looked right the whole time.
+
+    Colours that carry a texture are written as a white factor and are left
+    alone, because 1.0 is 1.0 in either space. Emissive factors are left
+    alone too: they are authored as linear floats already.
+    """
+    data = scene.export(file_type='glb')
+
+    header, rest = data[:12], data[12:]
+    json_len, json_type = struct.unpack('<II', rest[:8])
+    doc = json.loads(rest[8:8 + json_len])
+    tail = rest[8 + json_len:]
+
+    for material in doc.get('materials', []):
+        pbr_block = material.get('pbrMetallicRoughness')
+        if not pbr_block:
+            continue
+        factor = pbr_block.get('baseColorFactor')
+        if not factor:
+            continue
+        pbr_block['baseColorFactor'] = [srgb_to_linear(float(c)) for c in factor[:3]] + list(factor[3:])
+
+    payload = json.dumps(doc, separators=(',', ':')).encode('utf-8')
+    payload += b' ' * (-len(payload) % 4)
+    total = 12 + 8 + len(payload) + len(tail)
+    out = bytearray()
+    out += header[:8] + struct.pack('<I', total)
+    out += struct.pack('<II', len(payload), json_type) + payload
+    out += tail
+    path.write_bytes(bytes(out))
+    return path
 
 
 class UniFiHeroRack(Builder):
@@ -1035,7 +1092,7 @@ if __name__ == '__main__':
     rack = UniFiHeroRack()
     scene = rack.build()
     out = OUT / 'UniFi_Hero_Rack_CLEAN_ALIGNED.glb'
-    out.write_bytes(scene.export(file_type='glb'))
+    export_glb(scene, out)
     faces = sum(len(g.faces) for g in scene.geometry.values())
     verts = sum(len(g.vertices) for g in scene.geometry.values())
     print(out)
