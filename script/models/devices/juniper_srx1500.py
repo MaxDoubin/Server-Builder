@@ -94,8 +94,12 @@ class SRX1500(Device):
             "srx_shield": pbr("SRX1500 Jack Shield", [180, 183, 185, 255], 0.70, 0.30),
             "srx_shield_dark": pbr("SRX1500 Shield Shadow", [110, 112, 114, 255], 0.62, 0.38),
             # Sampled at 16,14,14 inside an RJ45. Effectively black.
-            "srx_bore": pbr("SRX1500 Jack Bore", [19, 18, 18, 255], 0.08, 0.92),
+            "srx_bore": pbr("SRX1500 Jack Bore", [14, 13, 13, 255], 0.06, 0.94),
             "srx_tongue": pbr("SRX1500 Jack Tongue", [48, 48, 50, 255], 0.10, 0.78),
+            # The clear lens over an unlit LED, which is pale rather than
+            # coloured. Painting these green put twenty four green chips on
+            # a panel whose lamps are all off.
+            "srx_window": pbr("SRX1500 Lamp Window", [184, 186, 188, 255], 0.30, 0.34),
             "srx_gold": pbr("SRX1500 Jack Contacts", [192, 156, 78, 255], 0.84, 0.26),
             "srx_cage": pbr("SRX1500 Cage Rim", [172, 175, 177, 255], 0.68, 0.32),
             "srx_cage_bore": pbr("SRX1500 Cage Bore", [26, 24, 22, 255], 0.14, 0.90),
@@ -166,15 +170,19 @@ class SRX1500(Device):
     RESETCFG_X, RESETCFG_Z = 0.37700, -0.2430
     POWER_X, POWER_Z, POWER_R = 0.38800, -0.2393, 0.00500
 
-    #: The hexagonal perforation. Measured off the studio photograph at a
-    #: 21 pixel horizontal pitch on a 1500 pixel wide 442mm panel, so
-    #: 6.19mm, with rows 0.866 of that apart. These holes are six times the
-    #: area of the QFX5120's and are unmistakably hexagons at any distance,
-    #: which is why they are drawn as three stacked bars rather than as the
-    #: single box that does for a 2mm hole.
-    HEX_PITCH = 0.00619
-    HEX_ROW = 0.00536
-    HEX_W, HEX_H = 0.00520, 0.00600
+    #: The hexagonal perforation, measured by counting rather than by
+    #: autocorrelation, which was the first attempt and was wrong by a
+    #: factor of two: reading the strongest peak off a single scan line
+    #: gave a 6.2mm pitch, because a honeycomb repeats along a row at twice
+    #: the spacing of its nearest neighbours. Labelling the holes instead
+    #: found 148 of them in 180 by 120 pixels, and at 0.866 d squared of
+    #: panel per hole that puts nearest neighbours 13 pixels apart, so
+    #: 3.83mm, with rows 0.866 of that. The holes themselves measure
+    #: 9 by 8 pixels, 2.65 by 2.36mm, which leaves the 1.2mm web the
+    #: photograph shows.
+    HEX_PITCH = 0.00383
+    HEX_ROW = 0.00332
+    HEX_W, HEX_H = 0.00265, 0.00245
     #: Where the perforation runs: x0, x1, z top, z bottom.
     PERF = (
         (0.0015, 0.0785, 0.470, -0.470),      # the whole left fifth
@@ -297,19 +305,25 @@ class SRX1500(Device):
     # --------------------------------------------------------------- parts
 
     def hexagon(self, rack, g: str, x: float, z: float) -> None:
-        """One punched hexagon, as three stacked bars.
+        """One punched hexagon, as a crossed pair of boxes.
 
-        A 6mm hole is not a 2mm hole. At this size a plain box reads as a
-        square and the whole left fifth of the firewall turns into graph
-        paper, so the shape has to be there: full width across the middle,
-        four fifths of it at the top and bottom edges. Three boxes buys the
-        silhouette for a twelfth of what a real prism would cost.
+        Two boxes, not one and not six. One box reads as a square, and on
+        this firewall the perforation is a third of the visible face, so a
+        field of squares is the first thing the eye finds. A real hexagonal
+        prism is eight times the geometry for a 2.6mm hole. Crossing a
+        full width bar with a full height one clips the four corners, which
+        is the whole of what separates a hexagon from a square at this
+        size.
+
+        Depth matters too. The panel behind is solid, so a hole has to be a
+        dark tile drawn in front of it, and only just: at the 5mm a real
+        perforation is deep, every hexagon comes out as a raised stud with
+        a highlight on its face.
         """
         y = self.face(rack) - 0.00010
         w, h = self.HEX_W, self.HEX_H
-        rack.box(g, "srx_vent", (x, y, z), (w, 0.0006, h * 0.42))
-        for dz in (h * 0.31, -h * 0.31):
-            rack.box(g, "srx_vent", (x, y, z + dz), (w * 0.78, 0.0006, h * 0.30))
+        rack.box(g, "srx_vent", (x, y, z), (w, 0.0006, h * 0.62))
+        rack.box(g, "srx_vent", (x, y, z), (w * 0.66, 0.0006, h))
 
     def perforate(self, rack, g: str, z: float) -> None:
         """Punch every region in PERF, skipping the logo plaque.
@@ -356,24 +370,29 @@ class SRX1500(Device):
             (w / 2 - rim / 2, 0, rim, h),
         ):
             mat = "srx_shield" if dz >= 0 else "srx_shield_dark"
-            rack.box(g, mat, (x + dx, y - 0.0014, z + dz), (bw, 0.0012, bh))
-        rack.box(g, "srx_bore", (x, y - 0.0019, z), (w - rim * 2, 0.0020, h - rim * 2))
+            rack.box(g, mat, (x + dx, y - 0.0016, z + dz), (bw, 0.0014, bh))
+        # The bore is drawn in front of the panel, because the panel behind
+        # it is solid, but behind the rim, because it is a hole in the rim.
+        # Getting that order the wrong way round hides everything that
+        # lives inside the mouth: the first pass showed the contacts and
+        # nothing else, no latch and no lamps.
+        rack.box(g, "srx_bore", (x, y - 0.0008, z), (w - rim * 2, 0.0022, h - rim * 2))
         rack.box(g, "srx_bore", (x, y + 0.0050, z), (w * 0.78, 0.0100, h * 0.76))
         out = 1.0 if top_row else -1.0
         # The latch slot, notched into the edge that faces out of the bank.
-        rack.box(g, "srx_shield", (x, y - 0.0023, z + out * h * 0.40),
+        rack.box(g, "srx_shield", (x, y - 0.0021, z + out * h * 0.40),
                  (w * 0.26, 0.0010, h * 0.20))
         # Two lamp windows in the outer corners, which is where Juniper put
         # them on this product rather than beside the port.
         for dx in (-w * 0.32, w * 0.32):
-            rack.box(g, "srx_lamp", (x + dx, y - 0.0023, z + out * h * 0.38),
+            rack.box(g, "srx_window", (x + dx, y - 0.0021, z + out * h * 0.38),
                      (w * 0.20, 0.0009, h * 0.16))
         # Tongue and contacts, hanging from the edge opposite the latch.
-        tz = z - out * h * 0.16
-        rack.box(g, "srx_tongue", (x, y - 0.0025, tz), (w * 0.52, 0.0006, h * 0.28))
+        tz = z - out * h * 0.18
+        rack.box(g, "srx_tongue", (x, y - 0.0020, tz), (w * 0.52, 0.0006, h * 0.28))
         for i in range(8):
             cx = x - w * 0.21 + i * (w * 0.42 / 7)
-            rack.box(g, "srx_gold", (cx, y - 0.0027, tz), (w * 0.027, 0.0005, h * 0.22))
+            rack.box(g, "srx_gold", (cx, y - 0.0022, tz), (w * 0.027, 0.0005, h * 0.22))
 
     def cage(self, rack, g: str, x: float, z: float, w: float, h: float,
              top_row: bool) -> None:
@@ -449,17 +468,21 @@ class SRX1500(Device):
         # The smooth plaque the wordmark prints on, standing a hair proud of
         # the perforated field around it.
         px0, px1, pzt, pzb = self.PLAQUE
-        rack.rounded_prism(g, "srx_panel", ((X(px0) + X(px1)) / 2, y - 0.0004,
+        # A tenth of a millimetre proud, and no more. The first pass stood
+        # this plaque 0.8mm off the panel, which put its face in front of
+        # the silkscreen sheet, and the wordmark printed on it disappeared
+        # behind the very plate it belongs to.
+        rack.rounded_prism(g, "srx_panel", ((X(px0) + X(px1)) / 2, y - 0.0001,
                                             Z((pzt + pzb) / 2)),
-                           (px1 - px0, 0.0008, (pzt - pzb) * h),
-                           radius=0.0012, bevel=0.0003, steps=6)
+                           (px1 - px0, 0.0005, (pzt - pzb) * h),
+                           radius=0.0012, bevel=0.0002, steps=6)
 
         self.perforate(rack, g, z)
 
         # ---- twelve RJ45 in one ganged shield ---------------------------
         plate("srx_shadow", self.RJ45_GANG[0] - 0.0008, self.RJ45_GANG[1] + 0.0008,
               self.RJ45_Z[0] + self.RJ45_H / 2 + 0.024,
-              self.RJ45_Z[1] - self.RJ45_H / 2 - 0.024, 0.0007, 0.0007)
+              self.RJ45_Z[1] - self.RJ45_H / 2 - 0.024, 0.0005, 0.0002)
         for i in range(6):
             cx = X(self.RJ45_X0 + i * self.RJ45_PITCH)
             self.jack(rack, g, cx, Z(self.RJ45_Z[0]), True)
@@ -469,7 +492,7 @@ class SRX1500(Device):
         for gang, xs in ((self.SFP_GANG, self.SFP_X), (self.SFPP_GANG, self.SFPP_X)):
             plate("srx_shadow", gang[0] - 0.0008, gang[1] + 0.0008,
                   self.OPTIC_Z[0] + self.OPTIC_H / 2 + 0.036,
-                  self.OPTIC_Z[1] - self.OPTIC_H / 2 - 0.036, 0.0007, 0.0007)
+                  self.OPTIC_Z[1] - self.OPTIC_H / 2 - 0.036, 0.0005, 0.0002)
             for cx_m in xs:
                 cx = X(cx_m)
                 self.cage(rack, g, cx, Z(self.OPTIC_Z[0]), self.OPTIC_W,
@@ -496,7 +519,7 @@ class SRX1500(Device):
 
         # ---- the recessed cluster under them ----------------------------
         cx0, cx1, czt, czb = self.CLUSTER
-        plate("srx_shadow", cx0, cx1, czt, czb, 0.0006, 0.0004)
+        plate("srx_shadow", cx0, cx1, czt, czb, 0.0005, 0.0001)
 
         rack.front_cylinder(g, "srx_stud", (X(self.STUD_X), y - 0.0012, Z(self.STUD_Z)),
                             self.STUD_R, 0.0012, 6)

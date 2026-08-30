@@ -110,7 +110,7 @@ class MX204(Device):
             # shield is what you see: Juniper gangs these four behind one
             # stamped plate rather than sinking them in a pocket.
             "mx204_jack_shield": pbr("MX204 Jack Shield", [150, 153, 155, 255], 0.66, 0.34),
-            "mx204_jack_bore": pbr("MX204 Jack Bore", [18, 18, 19, 255], 0.08, 0.92),
+            "mx204_jack_bore": pbr("MX204 Jack Bore", [13, 13, 14, 255], 0.06, 0.94),
             "mx204_jack_tongue": pbr("MX204 Jack Tongue", [52, 52, 54, 255], 0.10, 0.76),
             "mx204_gold": pbr("MX204 Jack Contacts", [196, 158, 78, 255], 0.84, 0.26),
             # SMB coax bodies are gold plated and read almost orange next to
@@ -408,19 +408,21 @@ class MX204(Device):
         # cavity never showed at all. The bore has to win the depth test, so
         # it is drawn further forward than the plate and only then stepped
         # back into the chassis.
-        rack.box(g, "mx204_jack_bore", (x, y - 0.0021, z), (w * 0.80, 0.0020, h * 0.78))
+        rack.box(g, "mx204_jack_bore", (x, y - 0.0018, z), (w * 0.80, 0.0020, h * 0.78))
         rack.box(g, "mx204_jack_bore", (x, y + 0.0050, z), (w * 0.70, 0.0100, h * 0.68))
-        # The latch slot notches the bottom of the mouth on all four.
-        rack.box(g, "mx204_jack_shield", (x, y - 0.0025, z - h * 0.40),
+        # The latch slot notches the bottom of the mouth on all four. It has
+        # to be drawn in front of the bore rather than inside it, or the
+        # bore swallows it along with the tongue.
+        rack.box(g, "mx204_jack_shield", (x, y - 0.0031, z - h * 0.40),
                  (w * 0.24, 0.0010, h * 0.18))
         # The tongue and its eight contacts, standing three tenths of a
         # millimetre off the cavity floor: level with it they vanish, level
         # with the rim they look printed on.
-        rack.box(g, "mx204_jack_tongue", (x, y - 0.0027, z + h * 0.14),
+        rack.box(g, "mx204_jack_tongue", (x, y - 0.0031, z + h * 0.14),
                  (w * 0.50, 0.0006, h * 0.26))
         for i in range(8):
             cx = x - w * 0.20 + i * (w * 0.40 / 7)
-            rack.box(g, "mx204_gold", (cx, y - 0.0029, z + h * 0.14),
+            rack.box(g, "mx204_gold", (cx, y - 0.0033, z + h * 0.14),
                      (w * 0.026, 0.0005, h * 0.20))
 
     def triangle_lamp(self, rack, g: str, x: float, z: float, s: float, up: bool) -> None:

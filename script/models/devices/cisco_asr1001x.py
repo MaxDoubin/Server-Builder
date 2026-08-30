@@ -148,7 +148,7 @@ class ASR1001X(Device):
     MGMT_BAR_Z = (-0.3980, -0.4901)
 
     #: The NIM bay: the opening, the blank filler in it and the vents below.
-    NIM_BAY_X = (0.2660, 0.4320)
+    NIM_BAY_X = (0.2683, 0.4297)
     NIM_PLATE_X = (0.2700, 0.4280)
     NIM_PLATE_Z = (0.3849, -0.0181)           # 5.0 to 22.5mm
     NIM_SCREW_X = (0.2725, 0.4255)
@@ -181,7 +181,7 @@ class ASR1001X(Device):
             # 168, 223 and 239 in the photograph came out 211, 212, 212. The
             # number that separates them again is metallic, not colour.
             "asr_spa_blank": pbr("ASR1001-X SPA Blank", [205, 205, 203, 255], 0.20, 0.40),
-            "asr_nim_blank": pbr("ASR1001-X NIM Blank", [224, 224, 221, 255], 0.16, 0.38),
+            "asr_nim_blank": pbr("ASR1001-X NIM Blank", [202, 202, 199, 255], 0.16, 0.38),
             # Every hole in sheet metal. The louvres read 104 and the ovals 79
             # because a louvre is a lip catching light and an oval is a hole,
             # so they are two materials rather than one.
@@ -303,9 +303,12 @@ class ASR1001X(Device):
         cz, h = (z0 + z1) / 2, z0 - z1
         rack.box(g, "asr_jack_shield", (cx, y - 0.0011, cz), (w, 0.0010, h))
         # The mouth has to sit in front of the shield that frames it, not
-        # behind it, or a USB port is a light grey tile with nothing in it.
-        rack.box(g, "asr_deep", (cx, y + 0.0006, cz), (w - 0.0016, 0.0044, h - 0.0014))
-        rack.box(g, "asr_cage_edge", (cx, y - 0.0018, cz - h * 0.16), (w - 0.0034, 0.0007, h * 0.32))
+        # behind it and not level with it, or a USB port is a light grey tile
+        # with nothing in it. Level lost the depth test to the shield.
+        rack.box(g, "asr_deep", (cx, y + 0.0004, cz), (w - 0.0016, 0.0050, h - 0.0014))
+        # The tongue is a thin band along the upper edge of the opening, not a
+        # slab filling it: a USB A receptacle is mostly hole.
+        rack.box(g, "asr_cage_edge", (cx, y - 0.0022, cz + h * 0.17), (w - 0.0040, 0.0007, h * 0.24))
         del x
 
     def lamp(self, rack, g: str, x: float, z: float, mat: str, r: float = 0.0018) -> None:
@@ -396,11 +399,12 @@ class ASR1001X(Device):
         # The wordmark, which on this panel is the bars over the letters and
         # sits between the USB block and the NIM bay.
         wm_x, wm_z = px(0.2620), py(-0.3600)
-        for i in range(9):
-            tall = 0.0028 if i % 3 == 1 else 0.0018
-            d.rectangle([wm_x + i * 0.0011 * ppm - 0.0044 * ppm, wm_z - tall * ppm,
-                         wm_x + i * 0.0011 * ppm - 0.0044 * ppm + 0.0004 * ppm, wm_z],
-                        fill=ink)
+        # Nine bars in an arch, short at the ends and full height across the
+        # middle. Alternating two heights, which is the quick way to write it,
+        # gives a picket fence and not the Cisco mark.
+        for i, tall in enumerate((0.42, 0.64, 0.86, 1.0, 1.0, 1.0, 0.86, 0.64, 0.42)):
+            bx = wm_x + (i - 4) * 0.0011 * ppm
+            d.rectangle([bx, wm_z - tall * 0.0030 * ppm, bx + 0.00042 * ppm, wm_z], fill=ink)
         centred("CISCO", wm_x, py(-0.4500), sized(1.9, True))
 
         tex = save_texture("asr1001x_silkscreen.png", img)
@@ -573,9 +577,12 @@ class ASR1001X(Device):
         # ---- the NIM bay, its blank and the vents under it -------------
         bx0, bx1 = self.NIM_BAY_X
         pz0, pz1 = self.NIM_PLATE_Z
+        # The opening the blank drops into. In the photograph it shows as a
+        # dark slot above the plate and a hairline everywhere else, so it is
+        # deliberately lopsided rather than an even border.
         rack.box(g, "asr_deep", ((X(bx0) + X(bx1)) / 2, y - 0.0002,
-                                 Z((pz0 + pz1) / 2 + 0.010)),
-                 (bx1 - bx0, 0.0010, (pz0 - pz1) * h + 0.0030))
+                                 Z((pz0 + pz1) / 2 + 0.014)),
+                 (bx1 - bx0, 0.0010, (pz0 - pz1) * h + 0.0026))
         px0, px1 = self.NIM_PLATE_X
         rack.rounded_prism(g, "asr_nim_blank", ((X(px0) + X(px1)) / 2, y - 0.0013,
                                                 Z((pz0 + pz1) / 2)),

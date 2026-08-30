@@ -175,7 +175,7 @@ class PowerEdgeR660(Device):
             "r660_gap": pbr("R660 Bay Gap", [6, 6, 9, 255], 0.0, 0.90),
             # The bright edge along the moulding. Chromed plastic: bright,
             # but not the mirror a high metallic would make of it.
-            "r660_edge": pbr("R660 Carrier Edge", [176, 177, 178, 255], 0.24, 0.46),
+            "r660_edge": pbr("R660 Carrier Edge", [168, 169, 170, 255], 0.22, 0.48),
             # Release ring. Sampled at 200,125,73 off Dell's render, which is
             # a warm copper rather than the safety orange it looks like at
             # thumbnail size.
@@ -236,7 +236,10 @@ class PowerEdgeR660(Device):
         for dz in (ch / 2 - self.EDGE_H / 2, -ch / 2 + self.EDGE_H / 2):
             slab("r660_edge", x, z + dz, self.CARRIER_W * 0.995, self.EDGE_H, 0.0005, 0.0008)
 
-        # ---- the two lenses, stacked, at the outboard end
+        # ---- the two lenses, stacked, on their own black tab at the
+        #      outboard end. Without the tab the lenses float on grey and
+        #      read as specks of paint rather than as windows.
+        slab("r660_vent", x + self.LED_DX, z, 0.0042, ch * 0.80, 0.0002)
         if populated:
             for dz in (self.LED_DZ * ch, -self.LED_DZ * ch):
                 slab("r660_led", x + self.LED_DX, z + dz, self.LED[0], self.LED[1], 0.0005, 0.0006)
@@ -263,7 +266,10 @@ class PowerEdgeR660(Device):
         slab("r660_vent", vcx, z, vw, vh, 0.0002, 0.0013)
         # A landscape field wants columns of cells, not courses of them, so
         # the web is walked along the length with the crossbars staggered.
-        cols = 16
+        # Nine cells along, which is the count the manual figure shows: the
+        # hexagons in this field are about 3.6mm across, not the 2mm the
+        # first pass drew, and at 2mm the vent read as fine gauze.
+        cols = 9
         for i in range(cols + 1):
             slab("r660_web", vcx + vw * (i / cols - 0.5), z, 0.00040, vh, 0.0004, 0.0006)
         for i in range(cols):
@@ -473,10 +479,10 @@ class PowerEdgeR660(Device):
         # band nobody could see at any distance.
         rack.box(g, "r660_vent", (X((field_l + field_r) / 2), y - 0.0004, tvz),
                  ((field_r - field_l), 0.0010, (tv0 - tv1) * h))
-        for i in range(47):
-            vx = field_l + 0.0030 + i * (field_r - field_l - 0.0060) / 46
-            rack.box(g, "r660_cast_lit", (X(vx), y - 0.0008, tvz),
-                     (0.0016, 0.0008, (tv0 - tv1) * h * 0.70))
+        for i in range(76):
+            vx = field_l + 0.0026 + i * (field_r - field_l - 0.0052) / 75
+            rack.box(g, "r660_cast", (X(vx), y - 0.0008, tvz),
+                     (0.0011, 0.0008, (tv0 - tv1) * h * 0.70))
 
         # The cage aperture the ten carriers sit in.
         top = self.ROW_Z[0] + self.CARRIER_H / 2

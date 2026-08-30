@@ -241,9 +241,19 @@ class C9200L_24T_4G(Device):
             centred("S≶◑⋔"[i], px(gx), py(0.372), f_gl, dark)
             centred("•✓≡⊡"[i], px(gx), py(0.268), f_gl, dark)
 
-        # ---- USB tridents, one beside each host port.
+        # ---- USB tridents, one beside each host port. Drawn, not set:
+        #      the font has no glyph at U+2442 and a missing character
+        #      comes out as a hollow rectangle on the panel.
         for ux in self.USBA_X:
-            centred("⑂", px(ux - self.USBA_W * 0.82), py(0.352), sized(1.8), ink)
+            tx, ty = px(ux - self.USBA_W * 0.84), py(0.352)
+            r = 0.0008 * ppm
+            d.line([(tx, ty + r * 2.2), (tx, ty - r * 2.2)], fill=ink, width=2)
+            d.ellipse([tx - r * 0.6, ty + r * 1.6, tx + r * 0.6, ty + r * 2.8], fill=ink)
+            d.line([(tx, ty + r * 0.4), (tx - r * 1.6, ty - r * 0.9)], fill=ink, width=2)
+            d.line([(tx, ty - r * 0.2), (tx + r * 1.6, ty - r * 1.5)], fill=ink, width=2)
+            d.rectangle([tx - r * 2.1, ty - r * 1.5, tx - r * 1.1, ty - r * 0.5], fill=ink)
+            d.polygon([(tx + r * 1.1, ty - r * 2.1), (tx + r * 2.1, ty - r * 1.6),
+                       (tx + r * 1.2, ty - r * 1.0)], fill=ink)
 
         # ---- the badge, dark type on the white label.
         bx0, bx1 = self.BADGE_X

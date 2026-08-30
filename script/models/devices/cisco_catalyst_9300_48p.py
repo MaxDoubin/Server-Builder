@@ -276,8 +276,19 @@ class C9300_48P(Device):
         #      the button rather than the word, so that is what goes here.
         centred(">•<", px(px1 - 0.0038), py(self.POCKET_Z[1] + 0.020), sized(1.3), dark)
 
-        # ---- USB trident under the host port, between it and the console.
-        centred("⑂", px(self.USBA_X - self.USBA_W * 0.90), py(0.300), sized(2.0), ink)
+        # ---- USB trident beside the host port. It is drawn rather than
+        #      set, because DejaVu has no glyph at U+2442 and PIL happily
+        #      renders a missing character as a hollow rectangle, which is
+        #      what the first pass put on the panel.
+        tx, ty = px(self.USBA_X - self.USBA_W * 0.92), py(0.300)
+        r = 0.0009 * ppm
+        d.line([(tx, ty + r * 2.2), (tx, ty - r * 2.2)], fill=ink, width=2)
+        d.ellipse([tx - r * 0.6, ty + r * 1.6, tx + r * 0.6, ty + r * 2.8], fill=ink)
+        d.line([(tx, ty + r * 0.4), (tx - r * 1.6, ty - r * 0.9)], fill=ink, width=2)
+        d.line([(tx, ty - r * 0.2), (tx + r * 1.6, ty - r * 1.5)], fill=ink, width=2)
+        d.rectangle([tx - r * 2.1, ty - r * 1.5, tx - r * 1.1, ty - r * 0.5], fill=ink)
+        d.polygon([(tx + r * 1.1, ty - r * 2.1), (tx + r * 2.1, ty - r * 1.6),
+                   (tx + r * 1.2, ty - r * 1.0)], fill=ink)
 
         # ---- port numbering in the groove. Cisco only mark the ends of
         #      each ganged block, so this is eight labels for forty eight
