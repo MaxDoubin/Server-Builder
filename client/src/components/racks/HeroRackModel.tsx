@@ -26,21 +26,20 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import { HERO_SCENERY, heroPartByGroup } from "@/lib/racks/heroModel";
+import { heroPartIndex, type HeroModel } from "@/lib/racks/heroModels";
 import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 import { StudioEnvironment } from "./StudioEnvironment";
 
-const MODEL_URL = "/models/unifi-hero-rack.glb";
-
 /** The group a mesh belongs to: the first path segment of its node name. */
-function groupOf(object: THREE.Object3D): string | null {
+function groupOf(object: THREE.Object3D, model: HeroModel): string | null {
+  const parts = heroPartIndex(model);
   let node: THREE.Object3D | null = object;
   while (node) {
     const name = node.name ?? "";
     if (name) {
       const head = name.split("__")[0].split(".")[0];
-      if (heroPartByGroup.has(head)) return head;
-      if (HERO_SCENERY.has(head)) return null;
+      if (parts.has(head)) return head;
+      if (model.scenery.has(head)) return null;
     }
     node = node.parent;
   }
@@ -48,16 +47,18 @@ function groupOf(object: THREE.Object3D): string | null {
 }
 
 function Model({
+  model,
   selected,
   onPick,
   onHover,
 }: {
+  model: HeroModel;
   selected: string | null;
   onPick: (group: string | null) => void;
   onHover: (group: string | null) => void;
 }) {
   const { camera, controls } = useThree();
-  const gltf = useLoader(GLTFLoader, MODEL_URL, (loader) => {
+  const gltf = useLoader(GLTFLoader, model.url, (loader) => {
     (loader as GLTFLoader).setMeshoptDecoder(MeshoptDecoder);
   });
 
@@ -72,7 +73,7 @@ function Model({
     const map = new Map<string, THREE.Mesh[]>();
     scene.traverse((o) => {
       if (!(o as THREE.Mesh).isMesh) return;
-      const g = groupOf(o);
+      const g = groupOf(o, model);
       if (!g) return;
       const mesh = o as THREE.Mesh;
       // Clone the material so highlighting one part cannot bleed into every
@@ -85,7 +86,7 @@ function Model({
       else map.set(g, [mesh]);
     });
     return map;
-  }, [scene]);
+  }, [scene, model]);
 
   // Highlight by lifting emissive rather than by swapping colour: the
   // selected part should look lit from within, not repainted.
@@ -146,17 +147,17 @@ function Model({
   const pick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
-      onPick(groupOf(e.object));
+      onPick(groupOf(e.object, model));
     },
-    [onPick],
+    [onPick, model],
   );
 
   const hover = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
-      onHover(groupOf(e.object));
+      onHover(groupOf(e.object, model));
     },
-    [onHover],
+    [onHover, model],
   );
 
   return (
@@ -170,16 +171,18 @@ function Model({
 }
 
 export function HeroRackModel({
+  model,
   selectedId,
   onSelect,
 }: {
+  model: HeroModel;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
 }) {
   const { dpr, tier } = useDeviceTier();
   const [hovered, setHovered] = useState<string | null>(null);
 
-  const hoveredName = hovered ? heroPartByGroup.get(hovered)?.device.model : null;
+  const hoveredName = hovered ? heroPartIndex(model).get(hovered)?.device.model : null;
 
   return (
     <div
@@ -202,6 +205,8 @@ export function HeroRackModel({
 
         <Suspense fallback={null}>
           <Model
+            key={model.url}
+            model={model}
             selected={selectedId ?? null}
             onPick={(g) => onSelect?.(g)}
             onHover={setHovered}

@@ -29,9 +29,6 @@ const Rack3DView = lazy(() => import("@/components/racks/Rack3DView"));
 */
 const HeroRackModel = lazy(() => import("@/components/racks/HeroRackModel"));
 
-/** The one rack in the library that ships an authored model. */
-const HERO_MODEL_SLUG = "unifi-12u";
-
 type RackView = "elevation" | "3d" | "model";
 
 const VIEW_LABELS: Record<RackView, string> = {
@@ -50,7 +47,7 @@ function ModelLoading() {
   );
 }
 import { DeviceDetailPanel } from "@/components/racks/DeviceDetailPanel";
-import { heroPartByGroup } from "@/lib/racks/heroModel";
+import { ALL_HERO_PARTS, heroModelFor } from "@/lib/racks/heroModels";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -135,8 +132,8 @@ export function CinematicRackDetail() {
     );
   }
 
-  const hasModel = rack.slug === HERO_MODEL_SLUG;
-  const views: RackView[] = hasModel ? ["elevation", "3d", "model"] : ["elevation", "3d"];
+  const heroModel = heroModelFor(rack.slug);
+  const views: RackView[] = heroModel ? ["elevation", "3d", "model"] : ["elevation", "3d"];
   /*
     The model's parts carry their own device records, because the model
     shows hardware the elevation does not: a recorder, an RPS, a transfer
@@ -144,7 +141,7 @@ export function CinematicRackDetail() {
   */
   const selected =
     rack.devices.find((d) => d.id === selectedId) ??
-    heroPartByGroup.get(selectedId ?? "")?.device ??
+    ALL_HERO_PARTS.get(selectedId ?? "")?.device ??
     null;
   const power = publishedWatts(rack);
 
@@ -195,9 +192,9 @@ export function CinematicRackDetail() {
               </div>
               {view === "elevation" ? (
                 <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
-              ) : view === "model" ? (
+              ) : view === "model" && heroModel ? (
                 <Suspense fallback={<ModelLoading />}>
-                  <HeroRackModel selectedId={selectedId} onSelect={(id) => select(id)} />
+                  <HeroRackModel model={heroModel} selectedId={selectedId} onSelect={(id) => select(id)} />
                 </Suspense>
               ) : (
                 <Suspense fallback={<ModelLoading />}>

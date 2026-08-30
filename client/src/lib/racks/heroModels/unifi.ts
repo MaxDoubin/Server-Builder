@@ -18,16 +18,10 @@
  * rather than the device's own draw, which is most of the time.
  */
 
-import type { RackDevice } from "@/lib/rackTypes";
-
-export interface HeroPart {
-  /** Top level node group in the GLB. */
-  group: string;
-  device: RackDevice;
-}
+import type { HeroPart } from "./types";
 
 /** Groups that are structure or cabling, not equipment. Never selectable. */
-export const HERO_SCENERY = new Set([
+export const UNIFI_SCENERY = new Set([
   "RACK_FRAME",
   "RACK_HOLES",
   "MOUNTING_RAILS",
@@ -64,7 +58,7 @@ const ACCENT = {
   power: "#9234ea",
 };
 
-export const HERO_PARTS: HeroPart[] = [
+export const UNIFI_PARTS: HeroPart[] = [
   {
     group: "UDM_PRO_MAX",
     device: {
@@ -220,5 +214,3 @@ export const HERO_PARTS: HeroPart[] = [
     },
   },
 ];
-
-export const heroPartByGroup = new Map(HERO_PARTS.map((p) => [p.group, p]));
