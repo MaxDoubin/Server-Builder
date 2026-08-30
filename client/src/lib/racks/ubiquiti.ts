@@ -110,6 +110,9 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi Dream Machine Special Edition (UDM-SE)",
       role: "Edge gateway, IDS/IPS at 3.5 Gbps, and the Network and Protect controllers",
       family: "router",
+      finish: "silver",
+      display: "unifi",
+      groupsOf: 4,
       // 8 GbE RJ45 + 1 2.5 GbE RJ45 + 2 10G SFP+ is the published port
       // layout, and 11 ports is the whole front panel. The 2.5 GbE RJ45 and
       // the first SFP+ are the two default WAN ports; here the copper one is
@@ -137,6 +140,9 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi Hi-Capacity Aggregation (USW-Pro-Aggregation)",
       role: "10G and 25G core, 760 Gbps switching capacity",
       family: "switch",
+      finish: "silver",
+      display: "unifi",
+      groupsOf: 8,
       ports: [
         ...run("sfp-plus", 28, (n) => `SFP+ ${n}`, 11),
         // SFP28 has no kind of its own in the contract, and it is not a QSFP
@@ -160,6 +166,8 @@ export const ubiquitiRack: RackDefinition = {
       model: "",
       role: "Empty U for airflow above the patch field",
       family: "blank",
+      finish: "silver",
+      look: "vented",
       watts: null,
     },
 
@@ -170,6 +178,8 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi 24-Port Blank Keystone Patch Panel (UACC-Rack-Panel-Patch-Blank-24)",
       role: "Floor 1 horizontal runs, fully populated with Cat6A keystone jacks",
       family: "patch",
+      finish: "silver",
+      groupsOf: 6,
       // The product ships blank, which is what "Blank Keystone" means: the
       // 24 positions are holes until someone clips jacks into them. All 24
       // are terminated here, which is why they read as rj45 rather than as
@@ -188,6 +198,9 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi Pro 48 PoE (USW-Pro-48-POE)",
       role: "Access layer, 40 PoE+ and 8 PoE++ ports against a 600W budget",
       family: "switch",
+      finish: "silver",
+      display: "unifi",
+      groupsOf: 8,
       ports: [
         ...run("rj45", 48, (n) => `${n}`, 34),
         ...run("sfp-plus", 4, (n) => `SFP+ ${n}`, 2),
@@ -206,6 +219,8 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi 24-Port Blank Keystone Patch Panel (UACC-Rack-Panel-Patch-Blank-24)",
       role: "Floor 2 horizontal runs, 16 of 24 positions terminated",
       family: "patch",
+      finish: "silver",
+      groupsOf: 6,
       ports: [
         ...passive("rj45", 16, (n) => `B${pad2(n)}`),
         // The eight positions nobody has pulled a run to are still open
@@ -223,6 +238,9 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi Pro 24 PoE (USW-Pro-24-POE)",
       role: "Access layer, 16 PoE+ and 8 PoE++ ports against a 400W budget",
       family: "switch",
+      finish: "silver",
+      display: "unifi",
+      groupsOf: 8,
       ports: [
         ...run("rj45", 24, (n) => `${n}`, 15),
         ...run("sfp-plus", 2, (n) => `SFP+ ${n}`, 1),
@@ -240,6 +258,8 @@ export const ubiquitiRack: RackDefinition = {
       model: "",
       role: "Empty U separating the switching from the power gear",
       family: "blank",
+      finish: "silver",
+      look: "vented",
       watts: null,
     },
 
@@ -252,6 +272,7 @@ export const ubiquitiRack: RackDefinition = {
       // give 87.4 mm of height, and the store files it under 2U Rack Mount.
       role: "Per-outlet switching and metering for the rack, 2U",
       family: "pdu",
+      finish: "silver",
       ports: [
         ...run("power", 16, (n) => `Outlet ${n}`, 9, "blue"),
         ...run("usb", 4, (n) => `USB-C ${n}`, 1, "blue"),
@@ -273,6 +294,7 @@ export const ubiquitiRack: RackDefinition = {
       model: "UniFi UPS 2U Pro (UPS-2U-Pro-US)",
       role: "Line interactive, 1920VA/1920W, 9 minutes at full load",
       family: "ups",
+      finish: "silver",
       ports: [
         ...run("power", 8, (n) => `5-20R ${n}`, 6, "blue"),
         { kind: "rj45", label: "Mgmt 100M", led: "green", activity: 0.03 },

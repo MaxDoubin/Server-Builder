@@ -284,6 +284,12 @@ const CinematicNcl = lazyWithRetry(() =>
 const CinematicNclGuide = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNclGuide").then((m) => ({ default: m.CinematicNclGuide })),
 );
+const CinematicRacks = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicRacks").then((m) => ({ default: m.CinematicRacks })),
+);
+const CinematicRackDetail = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicRackDetail").then((m) => ({ default: m.CinematicRackDetail })),
+);
 const CinematicFlashcards = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicFlashcards").then((m) => ({ default: m.CinematicFlashcards })),
 );
@@ -665,6 +671,16 @@ function AnimatedRoutes() {
           <Route path="/ncl/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicNclGuide />
+            </Suspense>
+          </Route>
+          <Route path="/racks/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicRackDetail />
+            </Suspense>
+          </Route>
+          <Route path="/racks">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicRacks />
             </Suspense>
           </Route>
           <Route path="/flashcards">

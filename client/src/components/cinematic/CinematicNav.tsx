@@ -22,6 +22,7 @@ const NAV_LINKS = [
   { label: "Projects", href: "/projects" },
   { label: "Field Notes", href: "/blog" },
   { label: "Tools", href: "/tools" },
+  { label: "Racks", href: "/racks" },
   { label: "Build", href: "/game" },
   { label: "Contact", href: "/contact" },
 ];
