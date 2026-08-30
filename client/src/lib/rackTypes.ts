@@ -28,7 +28,16 @@ export interface RackPort {
    * unpopulated position: an empty hole in a patch panel is not the same
    * thing as a dark rj45, and drawing them alike would misreport the build.
    */
-  kind: "rj45" | "sfp" | "sfp-plus" | "qsfp" | "power" | "usb" | "console" | "blank";
+  kind:
+    | "rj45"
+    | "sfp"
+    | "sfp-plus"
+    | "sfp28"
+    | "qsfp"
+    | "power"
+    | "usb"
+    | "console"
+    | "blank";
   /** What the panel silkscreen calls it. */
   label: string;
   /**
@@ -56,6 +65,17 @@ export interface RackDevice {
   ports?: RackPort[];
   /** Chassis indicators beyond the per-port ones, in the datasheet's order. */
   leds?: LedState[];
+  /**
+   * Front drive bays, for hardware whose face is storage rather than ports.
+   * `occupied` is illustrative in the same way port activity is: a plausible
+   * fit-out, stated as such, never a measurement.
+   */
+  bays?: { count: number; occupied: number; label: string };
+  /**
+   * How a passive filler panel presents: vent slots, a solid plate, the
+   * D-rings of a cable manager, or a shelf. Only read for family "blank".
+   */
+  look?: "vented" | "solid" | "fingers" | "shelf";
   /**
    * The vendor's published maximum draw for the device itself, excluding
    * power it only passes through. Null where the vendor publishes none.
