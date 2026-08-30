@@ -23,6 +23,7 @@ import * as THREE from "three";
 import type { RackDevice } from "@/lib/rackTypes";
 import { MATERIALS } from "./RackDefs";
 import { CHASSIS_WIDTH, chassisLayout } from "./chassisLayout";
+import { bodyColour } from "./surfaces";
 import { U } from "@/components/cinematic/rack3d/rackConfig";
 
 /** The chassis width at this resolution, enough that 2mm print is legible. */
@@ -66,7 +67,7 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   const py = (y: number) => (h / 2 - y) * PX_PER_M;
   const mm = (n: number) => (n / 1000) * PX_PER_M;
 
-  ctx.fillStyle = spec.base;
+  ctx.fillStyle = bodyColour(finish);
   ctx.fillRect(0, 0, TEX_W, TEX_H);
 
   /*
@@ -102,13 +103,13 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
     ctx.fillRect(...rect);
   };
   const topShade = ctx.createLinearGradient(0, 0, 0, TEX_H * 0.34);
-  topShade.addColorStop(0, pale ? "rgba(22,28,38,0.34)" : "rgba(0,0,0,0.5)");
+  topShade.addColorStop(0, pale ? "rgba(22,28,38,0.34)" : "rgba(0,0,0,0.34)");
   topShade.addColorStop(0.35, pale ? "rgba(22,28,38,0.1)" : "rgba(0,0,0,0.18)");
   topShade.addColorStop(1, "rgba(0,0,0,0)");
   shade(topShade, [0, 0, TEX_W, TEX_H * 0.34]);
 
   const bottomShade = ctx.createLinearGradient(0, TEX_H, 0, TEX_H * 0.78);
-  bottomShade.addColorStop(0, pale ? "rgba(22,28,38,0.2)" : "rgba(0,0,0,0.32)");
+  bottomShade.addColorStop(0, pale ? "rgba(22,28,38,0.2)" : "rgba(0,0,0,0.2)");
   bottomShade.addColorStop(1, "rgba(0,0,0,0)");
   shade(bottomShade, [0, TEX_H * 0.78, TEX_W, TEX_H * 0.22]);
 
@@ -118,7 +119,7 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
     [TEX_W, TEX_W * 0.95],
   ] as const) {
     const g = ctx.createLinearGradient(x0, 0, x1, 0);
-    g.addColorStop(0, pale ? "rgba(22,28,38,0.22)" : "rgba(0,0,0,0.34)");
+    g.addColorStop(0, pale ? "rgba(22,28,38,0.22)" : "rgba(0,0,0,0.22)");
     g.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = g;
     ctx.fillRect(Math.min(x0, x1), 0, Math.abs(x1 - x0), TEX_H);

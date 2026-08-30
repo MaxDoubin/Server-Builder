@@ -45,7 +45,7 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
   // UniFi frames ship in a satin white that photographs almost paper-pale.
   white: { metal: "#eceef1", metalness: 0.22, roughness: 0.44 },
   // Everyone else's open frame is black powder coat.
-  black: { metal: "#22262c", metalness: 0.4, roughness: 0.58 },
+  black: { metal: "#2a2e34", metalness: 0.52, roughness: 0.44 },
 };
 
 export function OpenRackFrame({

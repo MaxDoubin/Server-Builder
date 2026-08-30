@@ -68,3 +68,29 @@ export function surfaceGrain(): THREE.Texture | null {
   grainTex = tex;
   return tex;
 }
+
+/**
+ * Body colour in 3D, which is not the same number the elevation uses.
+ *
+ * The SVG paints a gradient from `hi` down to `lo`, so its `base` is a
+ * midtone that already has the highlight drawn on top of it. In 3D the
+ * lighting supplies that highlight, so reusing the midtone as the surface
+ * colour renders everything a stop and a half too dark.
+ *
+ * It lives here rather than in the chassis because the faceplate texture
+ * needs the same number. It did not have it: the silkscreen filled with
+ * the elevation's midtone while the chassis behind it used this, so the
+ * front of every dark device was a stop darker than its own sides and a
+ * rack of black gear came out as one silhouette.
+ */
+export const BODY_3D: Record<string, string> = {
+  silver: "#dfe2e5",
+  light: "#e4e6e7",
+  // Black powder coat does not photograph black. Under a studio key it
+  // sits around a quarter grey with a hard specular along every edge.
+  black: "#33373d",
+  dark: "#383d44",
+};
+
+/** The 3D surface colour for a finish, falling back to the dark chassis. */
+export const bodyColour = (finish: string): string => BODY_3D[finish] ?? BODY_3D.dark;

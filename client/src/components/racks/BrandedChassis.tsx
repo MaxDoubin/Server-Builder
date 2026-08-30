@@ -33,7 +33,7 @@ import { MATERIALS } from "./RackDefs";
 import { CHASSIS_WIDTH, chassisLayout, deviceDepth } from "./chassisLayout";
 import { chassisShell } from "./parts";
 import { faceplateTexture } from "./faceplateTexture";
-import { surfaceGrain } from "./surfaces";
+import { bodyColour, surfaceGrain } from "./surfaces";
 import { screenTexture } from "./screenTexture";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 
@@ -45,22 +45,6 @@ const LED_HEX: Record<string, string> = {
   off: "#191d22",
 };
 
-/**
- * Body colour in 3D, which is not the same number the elevation uses.
- *
- * The SVG paints a gradient from `hi` down to `lo`, so its `base` is a
- * midtone that already has the highlight drawn on top of it. In 3D the
- * lighting supplies that highlight, so reusing the midtone as the surface
- * colour renders everything a stop and a half too dark: UniFi's aluminium
- * came out battleship grey next to the white frame it is bolted to.
- */
-const BODY_3D: Record<string, string> = {
-  silver: "#dfe2e5",
-  light: "#e4e6e7",
-  black: "#26292e",
-  dark: "#2e3238",
-};
-
 /** One standing material per finish, shared by every device that wears it. */
 const chassisMaterials = new Map<string, THREE.MeshStandardMaterial>();
 function chassisMaterial(finish: string): THREE.MeshStandardMaterial {
@@ -68,16 +52,18 @@ function chassisMaterial(finish: string): THREE.MeshStandardMaterial {
   if (!m) {
     const spec = MATERIALS[finish] ?? MATERIALS.dark;
     m = new THREE.MeshStandardMaterial({
-      color: BODY_3D[finish] ?? spec.base,
+      color: bodyColour(finish),
       // Anodised aluminium is far more reflective than powder coated steel,
       // and that difference is most of how the two read apart in a photo.
       // Both need the scene's environment map: a metal surface with nothing
       // to reflect renders black, which is why the first pass came out grey
       // and dead however much light was thrown at it.
-      metalness: spec.pale ? 0.55 : 0.4,
-      roughness: spec.pale ? 0.3 : 0.55,
+      metalness: spec.pale ? 0.55 : 0.46,
+      roughness: spec.pale ? 0.3 : 0.44,
       roughnessMap: surfaceGrain(),
-      envMapIntensity: 1.15,
+      // Dark finishes lean harder on reflection, because that is all the
+      // shape information a dark surface has to give.
+      envMapIntensity: spec.pale ? 1.15 : 1.5,
     });
     chassisMaterials.set(finish, m);
   }
@@ -163,10 +149,10 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
     return new THREE.MeshStandardMaterial({
       map: silkscreen,
       transparent: true,
-      metalness: spec.pale ? 0.5 : 0.36,
-      roughness: spec.pale ? 0.34 : 0.58,
+      metalness: spec.pale ? 0.5 : 0.42,
+      roughness: spec.pale ? 0.34 : 0.46,
       roughnessMap: surfaceGrain(),
-      envMapIntensity: 1.1,
+      envMapIntensity: spec.pale ? 1.1 : 1.45,
       polygonOffset: true,
       polygonOffsetFactor: -1,
       polygonOffsetUnits: -1,
