@@ -73,6 +73,8 @@ export const homelabRack: RackDefinition = {
       model: "24-port keystone patch panel",
       role: "Eight runs terminated, sixteen keystones open. A patch panel in a homelab feels like overkill until the first time a cable needs re-terminating at midnight, at which point it becomes the best thirty dollars in the rack.",
       family: "patch",
+      finish: "dark",
+      groupsOf: 6,
       ports: [
         ...passive("rj45", 8, (n) => `A${pad2(n)}`),
         ...passive("blank", 16, (n) => `A${pad2(n + 8)}`),
@@ -87,6 +89,8 @@ export const homelabRack: RackDefinition = {
       model: "CRS326-24G-2S+RM",
       role: "The lab switch: 24 gigabit copper ports and two 10G SFP+ cages, passively cooled, at a published maximum of 24W. Silence is a real spec when the rack lives in a bedroom closet, and this switch has no fans to fail.",
       family: "switch",
+      finish: "black",
+      groupsOf: 8,
       // 24x GbE plus 2x SFP+, per the product page. One SFP+ carries 10G
       // to the R730 below; eight copper ports match the patch field above.
       ports: [
@@ -116,6 +120,8 @@ export const homelabRack: RackDefinition = {
       model: "PowerEdge R730, 8x 3.5 inch chassis",
       role: "The homelab workhorse: a two-socket 2U server that sold by the hundred thousand and now costs less used than a mid-range graphics card. This one is the eight-bay 3.5 inch chassis from Dell's spec sheet, running a hypervisor with six bays populated for the ZFS pool. Dell publishes supply ratings for it, not draw, so the honest wattage figure is the one on your own meter.",
       family: "server",
+      finish: "dark",
+      display: "server",
       // The 8x 3.5 inch hot-plug chassis is one of the factory
       // configurations on Dell's spec sheet. Six sleds fitted here for a
       // six-wide RAIDZ2, two bays open for the inevitable expansion.
@@ -154,6 +160,8 @@ export const homelabRack: RackDefinition = {
       model: "Smart-UPS SMT1500RM2U",
       role: "Line-interactive UPS, 1500VA at 120V, six NEMA 5-15R outlets on the rear. Its job here is not riding out an outage, it is surviving the two-second blink that would otherwise interrupt a ZFS write and force a scrub. Draw depends on load, so no single figure is quoted.",
       family: "ups",
+      finish: "dark",
+      display: "ups",
       leds: ["green", "off", "off"],
       watts: null,
       accent: ACCENT.power,

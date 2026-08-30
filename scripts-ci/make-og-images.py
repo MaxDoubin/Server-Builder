@@ -63,6 +63,7 @@ SECTION_EYEBROWS = [
     ("cyber-club", "CYBER CLUB"),
     ("coding-camps", "CODING CAMPS"),
     ("topics", "FIELD NOTES · TOPIC"),
+    ("racks", "RACK LIBRARY"),
     ("tools", "TOOLS"),
     ("study", "STUDY"),
     ("ncl", "NATIONAL CYBER LEAGUE"),
@@ -89,6 +90,7 @@ PAGE_EYEBROWS = {
     "colophon": "COLOPHON",
     "changelog": "CHANGELOG",
     "roadmap": "ROADMAP",
+    "racks": "RACK LIBRARY",
     "ask": "ASK",
     "subscribe": "SUBSCRIBE",
 }

@@ -75,6 +75,8 @@ export const ciscoRack: RackDefinition = {
       model: "24-port keystone patch panel A",
       role: "Positions A01 to A24, cross-connected to the top row of the 9300 below. In a tidy closet the patch panel position number and the wall jack number match, which is the whole trick to tracing a drop in seconds.",
       family: "patch",
+      finish: "dark",
+      groupsOf: 6,
       ports: passive("rj45", 24, (n) => `A${pad2(n)}`),
       watts: null,
       accent: ACCENT.passive,
@@ -86,6 +88,10 @@ export const ciscoRack: RackDefinition = {
       model: "Catalyst 9300-48P with C9300-NM-8X uplink module",
       role: "The access switch doing the heavy lifting: 48 PoE+ ports for desks, phones, cameras and access points, with the modular bay carrying an 8-port 10G SFP+ uplink module. The datasheet's default 715W power supply leaves a 437W PoE budget, and dividing that by loaded access points is a real capacity exercise.",
       family: "switch",
+      finish: "light",
+      portTint: "#1c6f6a",
+      groupsOf: 6,
+      moduleBay: true,
       // 48x 1G PoE+ copper plus the NM-8X module's 8x 10G SFP+ is the
       // published layout for this configuration; the RJ45 console lives on
       // the switch face. Thirty-four access ports lit, two uplinks in use.
@@ -108,6 +114,8 @@ export const ciscoRack: RackDefinition = {
       model: "24-port keystone patch panel B",
       role: "Positions B01 to B24 for the second cable tray. Ten runs are punched down; the open keystones are capacity for the next office reshuffle, which is cheaper to buy now than to retrofit later.",
       family: "patch",
+      finish: "dark",
+      groupsOf: 6,
       ports: [
         ...passive("rj45", 10, (n) => `B${pad2(n)}`),
         ...passive("blank", 14, (n) => `B${pad2(n + 10)}`),
@@ -122,6 +130,9 @@ export const ciscoRack: RackDefinition = {
       model: "Catalyst 9200L-24T-4G",
       role: "The overflow switch: 24 non-PoE data ports with four fixed gigabit SFP uplinks, for the printers, lab machines and wall clocks that neither need power nor justify a 9300 port. The L means the uplinks are fixed rather than modular, which is the price cut.",
       family: "switch",
+      finish: "light",
+      portTint: "#1c6f6a",
+      groupsOf: 6,
       // 24x 1G data plus 4x 1G fixed SFP uplinks is the published layout.
       ports: [
         ...run("rj45", 24, (n) => `${n}`, 9),
@@ -149,6 +160,8 @@ export const ciscoRack: RackDefinition = {
       model: "ISR 4331",
       role: "The WAN edge. Three gigabit copper ports and two SFP-based gigabit ports onboard, with NIM slots for whatever the carrier hands over. Shown from its port side, the side that faces the patching. Cisco publishes the 250W supply rating, not the router's own draw.",
       family: "router",
+      finish: "light",
+      portTint: "#1c6f6a",
       // The datasheet's onboard layout for the 4331 column: 3x 10/100/1000
       // copper and 2x SFP-based GE, plus the console. Combo pairs share, so
       // not every physical position runs at once.
@@ -204,6 +217,8 @@ export const ciscoRack: RackDefinition = {
       model: "Smart-UPS SMT1500RM2U",
       role: "Line-interactive UPS, 1500VA at 120V, feeding six NEMA 5-15R outlets on its rear. The front is the status display. Its draw from the wall depends entirely on the load it carries, so no single consumption figure would be honest here.",
       family: "ups",
+      finish: "dark",
+      display: "ups",
       leds: ["green", "off", "off"],
       watts: null,
       accent: ACCENT.power,

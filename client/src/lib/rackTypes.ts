@@ -83,6 +83,32 @@ export interface RackDevice {
   watts: number | null;
   /** Accent colour for this device's row. */
   accent?: string;
+  /**
+   * Chassis finish, taken from the vendor's product photography. This is
+   * not decoration: a UniFi rack is visibly silver, a Catalyst 9300 is pale
+   * grey with teal port throats, and MikroTik ships black. Drawing them all
+   * the same dark grey was the single biggest inaccuracy in the first pass.
+   */
+  finish?: "silver" | "light" | "black" | "dark";
+  /** Colour inside the port throat. Cisco's 9000 series is famously teal. */
+  portTint?: string;
+  /**
+   * Ports per visual block. Real switch faceplates group their jacks with a
+   * gap every 6, 8 or 12 so a technician can count to a port number without
+   * reading every label, and the gap is load bearing when you are tracing a
+   * cable at arm's length.
+   */
+  groupsOf?: number;
+  /**
+   * Force one row of ports. Dense panels stack into two rows with odd
+   * numbers on top and even below, which is what nearly every 24 and 48
+   * port switch does; a handful of low-density faces do not.
+   */
+  singleRow?: boolean;
+  /** A screen on the faceplate, drawn as one. */
+  display?: "unifi" | "ups" | "server";
+  /** A modular uplink bay, drawn as a seam with its own module face. */
+  moduleBay?: boolean;
   /** Optional short caption rendered beside the device. */
   label?: string;
   /** Link to this specific model's spec page, where one exists. */

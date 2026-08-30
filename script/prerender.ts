@@ -15,6 +15,7 @@ import { existsSync } from "fs";
 import path from "path";
 import { Marked } from "marked";
 import { uniqueHeadingId } from "../client/src/lib/headingSlug";
+import { RACKS, KIND_LABELS, portSummary, publishedWatts, unitsUsed } from "../client/src/lib/racks";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -348,6 +349,7 @@ const CRUMB_NAMES: Record<string, string> = {
   blog: "Field Notes",
   topics: "Topics",
   tools: "Tools",
+  racks: "Rack Library",
   ncl: "National Cyber League",
   study: "Study",
   "cyber-club": "Cyber Club",
@@ -2141,6 +2143,120 @@ ${matched
     rootContent: roadmapContent,
   });
 
+  // ── rack library ──
+  /*
+    Both the gallery and every rack page are prerendered from RACKS, so a
+    crawler gets the whole hardware inventory as text. These pages are the
+    most obviously "app-like" thing on the site and would otherwise ship an
+    empty shell, which is exactly the failure the depth gate exists to catch.
+  */
+  const rackListContent = `
+<main>
+  <h1>Rack library</h1>
+  <p>Annotated rack elevations drawn from vendor datasheets. Every port count, rack unit and wattage below is the vendor's published figure, and where a vendor publishes no consumption figure the page says so rather than guessing.</p>
+  <dl>${RACKS.map((r) => {
+    const p = publishedWatts(r);
+    const power = p.total > 0
+      ? `${p.total}W published${p.unpublished > 0 ? `, ${p.unpublished} devices publish none` : ""}`
+      : "no device publishes a consumption figure";
+    return `<dt><a href="${SITE_URL}/racks/${r.slug}">${esc(r.name)}</a></dt><dd>${esc(r.blurb)} ${r.height}U frame, ${unitsUsed(r)}U mounted across ${r.devices.length} devices, ${esc(power)}.</dd>`;
+  }).join("\n    ")}</dl>
+  ${backLinks([["/tools/rack-budget", "Rack budget tool"], ["/data", "Open hardware dataset"], ["/game", "Build simulator"]])}
+</main>`;
+
+  await writePage("racks", base, {
+    title: "Rack Library | Max Doubin",
+    description:
+      "Annotated rack elevations for Ubiquiti, Cisco, Juniper, MikroTik, HPE, Synology and homelab builds. Every port count and wattage from the vendor datasheet.",
+    canonical: `${SITE_URL}/racks`,
+    rootContent: rackListContent,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Rack library",
+  description: "Annotated rack elevations built from vendor datasheets.",
+  url: `${SITE_URL}/racks`,
+  numberOfItems: RACKS.length,
+  itemListElement: RACKS.map((r, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: r.name,
+    description: r.blurb,
+    url: `${SITE_URL}/racks/${r.slug}`,
+  })),
+}, null, 2)}
+</script>`,
+  });
+
+  for (const rack of RACKS) {
+    const url = `${SITE_URL}/racks/${rack.slug}`;
+    const p = publishedWatts(rack);
+    const body = `
+<main>
+  <h1>${esc(rack.name)}</h1>
+  <p>${esc(rack.blurb)}</p>
+  <p>${rack.height}U frame, ${unitsUsed(rack)}U mounted across ${rack.devices.length} devices. ${
+      p.total > 0
+        ? `${p.total}W of published draw${p.unpublished > 0 ? `, with ${p.unpublished} devices for which the vendor publishes no figure` : ""}.`
+        : "No device in this rack publishes a consumption figure; the vendors publish power supply ratings instead."
+    }</p>
+  <section>
+    <h2>Devices, top to bottom</h2>
+    ${rack.devices.map((d) => {
+      const ports = portSummary(d)
+        .map((x) => `${x.total} ${KIND_LABELS[x.kind] ?? x.kind}`)
+        .join(", ");
+      const bits = [
+        `${d.u}U`,
+        typeof d.watts === "number" ? `${d.watts}W published maximum` : "no published consumption figure",
+        ports || (d.bays ? `${d.bays.count} drive bays, ${d.bays.occupied} fitted` : "passive"),
+      ];
+      return `<article>
+      <h3>${esc(d.vendor === "Generic" ? d.model : `${d.vendor} ${d.model}`)}</h3>
+      <p>${esc(d.role)}</p>
+      <p>${esc(bits.join(". "))}.</p>
+    </article>`;
+    }).join("\n    ")}
+  </section>
+  <section>
+    <h2>Sources</h2>
+    <ul>${rack.sources.map((src) => `<li><a href="${src.url}">${esc(src.label)}</a></li>`).join("")}</ul>
+  </section>
+  ${backLinks([["/racks", "All racks"], ["/tools/rack-budget", "Rack budget tool"], ["/data", "Open hardware dataset"]])}
+</main>`;
+
+    await writePage(`racks/${rack.slug}`, base, {
+      title: `${rack.name} rack | Max Doubin`,
+      description: `An annotated ${rack.name} rack elevation: ${rack.devices.length} devices across ${rack.height} rack units, every port count and published wattage sourced from the vendor datasheet.`,
+      canonical: url,
+      rootContent: body,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${rack.name} rack elevation`,
+  description: rack.blurb,
+  url,
+  itemListOrder: "https://schema.org/ItemListOrderDescending",
+  numberOfItems: rack.devices.length,
+  itemListElement: rack.devices.map((d, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: d.vendor === "Generic" ? d.model : `${d.vendor} ${d.model}`,
+    item: {
+      "@type": "Product",
+      name: d.vendor === "Generic" ? d.model : `${d.vendor} ${d.model}`,
+      description: d.role,
+      ...(d.vendor === "Generic" ? {} : { brand: { "@type": "Brand", name: d.vendor } }),
+      ...(d.url ? { url: d.url } : {}),
+    },
+  })),
+}, null, 2)}
+</script>`,
+    });
+  }
+
   // ── sitemap ──
   // Generated here rather than hand-maintained. The checked-in sitemap had
   // gone stale, listing 105 URLs with a lastmod months behind the newest
@@ -2208,6 +2324,11 @@ async function writeSitemap(
     { loc: `${SITE_URL}/study-timer`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/roadmap`, lastmod: today, changefreq: "weekly", priority: "0.4" },
   ];
+
+  urls.push({ loc: `${SITE_URL}/racks`, lastmod: today, changefreq: "monthly", priority: "0.8" });
+  for (const rack of RACKS) {
+    urls.push({ loc: `${SITE_URL}/racks/${rack.slug}`, lastmod: today, changefreq: "monthly", priority: "0.7" });
+  }
 
   // Tools and the competition guides. /flashcards is deliberately absent:
   // it is noindex, and a sitemap should never advertise a page that tells

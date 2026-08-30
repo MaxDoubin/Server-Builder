@@ -78,6 +78,8 @@ export const mikrotikRack: RackDefinition = {
       model: "24-port keystone patch panel",
       role: "Where the building's horizontal cabling lands. The first fourteen positions have runs punched down; the rest are open keystones waiting for one.",
       family: "patch",
+      finish: "dark",
+      groupsOf: 6,
       ports: [
         ...passive("rj45", 14, (n) => `A${pad2(n)}`),
         ...passive("blank", 10, (n) => `A${pad2(n + 14)}`),
@@ -92,6 +94,8 @@ export const mikrotikRack: RackDefinition = {
       model: "CCR2004-1G-12S+2XS",
       role: "The edge router. Twelve 10G SFP+ ports and two 25G SFP28 ports on an Amazon Annapurna ARM chip, routing at wire speed. MikroTik publishes 60W as the maximum with all cages populated and 31W for the bare board.",
       family: "router",
+      finish: "black",
+      groupsOf: 8,
       // The published front panel: 1x GbE RJ45 for management, 12x SFP+,
       // 2x SFP28. Four SFP+ cages are lit here: two uplinks to the carriers
       // and two down to the switches. One SFP28 runs to the core switch.
@@ -114,6 +118,8 @@ export const mikrotikRack: RackDefinition = {
       model: "CRS354-48G-4S+2Q+RM",
       role: "The core switch. Forty-eight gigabit copper ports, four 10G SFP+ and two 40G QSFP+ in one rack unit, which is a port density the price bracket has no business offering. 60W published maximum.",
       family: "switch",
+      finish: "black",
+      groupsOf: 8,
       // 48x GbE + 4x SFP+ + 2x QSFP+ is the published layout. Thirty of the
       // copper ports are patched in this elevation, one SFP+ runs up to the
       // router, and one QSFP+ carries the 40G link to the PoE switch stack.
@@ -134,6 +140,8 @@ export const mikrotikRack: RackDefinition = {
       model: "CRS328-24P-4S+RM",
       role: "The PoE access switch: cameras, access points and phones hang off this. MikroTik publishes 44W for the switch itself and 494W as the ceiling with every PoE port loaded, and the gap between those two numbers is the whole story of PoE budgeting.",
       family: "switch",
+      finish: "black",
+      groupsOf: 8,
       // 24x GbE PoE-out + 4x SFP+, per the product page. Fourteen access
       // ports lit to match the patch panel above.
       ports: [

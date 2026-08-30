@@ -2,13 +2,15 @@
  * One rack, full size, with a panel that any device slides out into.
  *
  * The elevation is the navigation: every device in the SVG is a button,
- * and selecting one swaps the right-hand panel from the rack's summary to
- * that device's detail. Selection lives in component state rather than the
- * URL because a device is a reading position, not a destination: the page
- * is the rack.
+ * and selecting one slides it out of the frame and swaps the right-hand
+ * panel from the rack's summary to that device's detail.
+ *
+ * Selection is held in the query string rather than component state, so a
+ * device is a linkable thing. "Look at the 9300 in the Catalyst rack"
+ * should be a URL that opens on the 9300, not a URL plus instructions.
  */
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
@@ -21,7 +23,34 @@ const SITE_URL = "https://maxdoubin.com";
 export function CinematicRackDetail() {
   const [, params] = useRoute("/racks/:slug");
   const rack = rackBySlug(params?.slug ?? "");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  /*
+    Selection lives in the query string so a device is linkable. Sending
+    someone "the 9300 in the Catalyst rack" should open on that device
+    rather than on the rack with instructions to go find it.
+  */
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("device");
+  });
+
+  const select = useCallback((id: string | null) => {
+    setSelectedId(id);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("device", id);
+    else url.searchParams.delete("device");
+    window.history.replaceState(null, "", url);
+  }, []);
+
+  // Escape closes the panel, matching every other dismissible surface here.
+  useEffect(() => {
+    if (!selectedId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") select(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, select]);
 
   useSEO({
     title: rack ? `${rack.name} rack | Max Doubin` : "Rack not found | Max Doubin",
@@ -83,13 +112,13 @@ export function CinematicRackDetail() {
 
           <div className="mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <div className="lg:sticky lg:top-24">
-              <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => setSelectedId(id)} />
+              <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
             </div>
 
             <aside aria-live="polite">
               {selected ? (
                 <div key={selected.id}>
-                  <DeviceDetailPanel rack={rack} device={selected} onClose={() => setSelectedId(null)} />
+                  <DeviceDetailPanel rack={rack} device={selected} onClose={() => select(null)} />
                 </div>
               ) : (
                 <div>
@@ -122,7 +151,7 @@ export function CinematicRackDetail() {
                       <li key={d.id}>
                         <button
                           type="button"
-                          onClick={() => setSelectedId(d.id)}
+                          onClick={() => select(d.id)}
                           className="group flex w-full items-baseline justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[hsl(220_10%_9%)]"
                         >
                           <span className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">

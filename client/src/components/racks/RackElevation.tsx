@@ -47,6 +47,15 @@ const RACK_CSS = `
   .rk-dev:focus-visible { outline: none; }
   .rk-dev:focus-visible .rk-body { stroke: hsl(174 82% 55%); stroke-width: 1.4; }
   .rk-sel .rk-body { stroke-width: 1.6; filter: brightness(1.2); }
+  .rk-slide { transition: transform 420ms cubic-bezier(.16,.84,.34,1); }
+  .rk-dev:hover .rk-slide { transform: translateX(6px); }
+  .rk-sel .rk-slide { transform: translateX(26px); }
+  .rk-shadow { opacity: 0; transition: opacity 420ms ease; }
+  .rk-sel .rk-shadow { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .rk-slide { transition: none; }
+    .rk-dev:hover .rk-slide, .rk-sel .rk-slide { transform: none; }
+  }
   @keyframes rk-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
   .rk-led-on { animation: rk-blink 1.6s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) { .rk-led-on { animation: none; } }
@@ -152,19 +161,23 @@ export function RackElevation({ rack, selectedId, onSelect, mini = false }: Prop
             }}
           >
             <title>{`${d.vendor === "Generic" ? "" : `${d.vendor} `}${d.model}`}</title>
-            {face}
-            {selected && (
-              <rect
-                x={-2}
-                y={0.5}
-                width={innerW - railW * 2 + 4}
-                height={d.u * unitH - 1}
-                rx={3}
-                fill="none"
-                stroke={d.accent ?? "#4cf1f1"}
-                strokeWidth={1.6}
-              />
-            )}
+            {/* The empty rail slot revealed behind a device as it slides. */}
+            <rect x={-2} y={1} width={innerW - railW * 2 + 4} height={d.u * unitH - 2} rx={2} className="rk-shadow" fill="#05070a" />
+            <g className="rk-slide">
+              {face}
+              {selected && (
+                <rect
+                  x={-2}
+                  y={0.5}
+                  width={innerW - railW * 2 + 4}
+                  height={d.u * unitH - 1}
+                  rx={3}
+                  fill="none"
+                  stroke={d.accent ?? "#4cf1f1"}
+                  strokeWidth={1.6}
+                />
+              )}
+            </g>
           </g>
         );
       })}

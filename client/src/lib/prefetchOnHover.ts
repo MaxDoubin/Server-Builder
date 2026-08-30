@@ -78,6 +78,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/flashcards": { load: () => import("@/pages/cinematic/CinematicFlashcards") },
   "/links": { load: () => import("@/pages/cinematic/CinematicLinks") },
   "/ncl": { load: () => import("@/pages/cinematic/CinematicNcl") },
+  "/racks": { load: () => import("@/pages/cinematic/CinematicRacks") },
   "/now": { load: () => import("@/pages/cinematic/CinematicNow") },
   "/paths": { load: () => import("@/pages/cinematic/CinematicPaths") },
   "/resume": { load: () => import("@/pages/cinematic/CinematicResume") },
@@ -128,6 +129,7 @@ const PREFIX_ROUTES: Record<string, RouteChunk> = {
   },
   "/topics/": { load: () => import("@/pages/cinematic/CinematicTag") },
   "/ncl/": { load: () => import("@/pages/cinematic/CinematicNclGuide") },
+  "/racks/": { load: () => import("@/pages/cinematic/CinematicRackDetail") },
   "/legacy/blog/": { load: () => import("@/pages/BlogPost") },
 };
 
