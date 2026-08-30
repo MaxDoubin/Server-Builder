@@ -21,6 +21,8 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
+import { rackScrew } from "./parts";
+import { surfaceGrain } from "./surfaces";
 
 const POST = 0.03;
 /** Height of the bottom rail above the floor, which is where U1 starts. */
@@ -63,7 +65,13 @@ export function OpenRackFrame({
   const top = FOOT + inner;
 
   const mat = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: s.metal, metalness: s.metalness, roughness: s.roughness }),
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: s.metal,
+        metalness: s.metalness,
+        roughness: s.roughness,
+        roughnessMap: surfaceGrain(),
+      }),
     [s.metal, s.metalness, s.roughness],
   );
   const dark = useMemo(
@@ -177,6 +185,30 @@ export function OpenRackFrame({
           <torusGeometry args={[0.05, 0.006, 10, 24, Math.PI]} />
         </mesh>
       ))}
+
+      {/* Bolts through every corner casting, on both visible faces. The
+          castings are what the tube bolts into, and a casting with no
+          fastener in it is a moulding, not a joint. */}
+      {corners.flatMap(([sx, sz]) =>
+        [FOOT, top].flatMap((y) => [
+          <mesh
+            key={`bz${sx}${sz}${y}`}
+            position={[sx * halfW, y, sz * (halfD - POST / 2) + sz * CORNER * 0.5]}
+            rotation={[0, sz > 0 ? 0 : Math.PI, 0]}
+            geometry={rackScrew()}
+            material={chrome}
+            scale={0.011}
+          />,
+          <mesh
+            key={`bx${sx}${sz}${y}`}
+            position={[sx * halfW + sx * CORNER * 0.5, y, sz * (halfD - POST / 2)]}
+            rotation={[0, sx > 0 ? Math.PI / 2 : -Math.PI / 2, 0]}
+            geometry={rackScrew()}
+            material={chrome}
+            scale={0.011}
+          />,
+        ]),
+      )}
 
       {/* Casters: a chromed swivel yoke on an offset black rubber wheel,
           which is why a rolled rack tracks rather than shudders. */}

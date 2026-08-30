@@ -33,6 +33,7 @@ import { MATERIALS } from "./RackDefs";
 import { chassisLayout, deviceDepth } from "./chassisLayout";
 import { chassisShell } from "./parts";
 import { faceplateTexture } from "./faceplateTexture";
+import { surfaceGrain } from "./surfaces";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 
 const LED_HEX: Record<string, string> = {
@@ -74,6 +75,7 @@ function chassisMaterial(finish: string): THREE.MeshStandardMaterial {
       // and dead however much light was thrown at it.
       metalness: spec.pale ? 0.55 : 0.4,
       roughness: spec.pale ? 0.3 : 0.55,
+      roughnessMap: surfaceGrain(),
       envMapIntensity: 1.15,
     });
     chassisMaterials.set(finish, m);
@@ -140,6 +142,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
       transparent: true,
       metalness: spec.pale ? 0.5 : 0.36,
       roughness: spec.pale ? 0.34 : 0.58,
+      roughnessMap: surfaceGrain(),
       envMapIntensity: 1.1,
       polygonOffset: true,
       polygonOffsetFactor: -1,

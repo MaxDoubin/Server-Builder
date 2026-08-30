@@ -64,38 +64,54 @@ interface Ends {
 }
 
 /**
- * The path one lead takes: out of the jack along the plug axis, into a
- * belly that hangs below the shorter of the two ends, and back in.
+ * The path one lead takes.
+ *
+ * The first pass let every lead find its own way from A to B, and the
+ * result was a bowl of spaghetti across the front of the rack. That is not
+ * what a patched rack looks like, and it is not what a cable does either.
+ *
+ * A dressed bundle is four moves, and every lead in it makes the same
+ * four: out of the jack along the plug's axis, a turn down into a service
+ * loop, a run along the bottom of that loop to get under the far port, and
+ * back up into it. Because every lead turns at the same standoff from the
+ * panel and drops to the same belly, the vertical runs come out parallel
+ * and the bundle reads as combed rather than as tangled. The variation is
+ * only in how far out each one sits, and that is not arbitrary either: a
+ * long lead has to cross the ones under it, so it is layered further out.
+ *
+ * The dip below both ports is a real service loop, not a sag. It is the
+ * slack an installer leaves so a switch can be pulled forward on its rails
+ * without unplugging forty cables.
  */
-function leadCurve(a: THREE.Vector3, b: THREE.Vector3, n: number): THREE.CatmullRomCurve3 {
-  const span = a.distanceTo(b);
+function leadCurve(a: THREE.Vector3, b: THREE.Vector3, n: number, reach: number): THREE.CatmullRomCurve3 {
   const j = jitter(n + 1);
-  /*
-    A patched panel is a combed bundle, not a bowl of spaghetti. The first
-    pass let every lead swing a quarter of its own length out into the room
-    and the result crossed the whole face. Real leads leave the boot, turn
-    within a few centimetres and run down the panel, so the loop is tight
-    and the depth off the face barely changes between a short lead and a
-    long one. What varies is where the belly hangs.
-  */
-  const out = 0.016 + span * 0.05 + j * 0.005;
-  const sag = 0.006 + span * 0.1 + j * 0.004;
-  const bow = (a.x < b.x ? 1 : -1) * j * 0.002;
-  const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+  // Standoff from the panel. Near constant, so the bundle is one surface,
+  // with the long leads layered out over the short ones they cross.
+  const out = 0.019 + reach * 0.016 + j * 0.0018;
+  // Bottom of the service loop, just below whichever port is lower. A
+  // dressed loop clears its own switch and stops; the first attempt hung
+  // it eight centimetres out and two rack units down, which is a bundle
+  // nobody would leave and a shape that covered the hardware behind it.
+  const belly = Math.min(a.y, b.y) - 0.011 - reach * 0.013 - j * 0.002;
+  const mid = (a.x + b.x) / 2;
 
   return new THREE.CatmullRomCurve3(
     [
       new THREE.Vector3(a.x, a.y, a.z),
       new THREE.Vector3(a.x, a.y, a.z + 0.019),
-      new THREE.Vector3(a.x + bow, a.y - 0.008, a.z + out),
-      new THREE.Vector3(mid.x, mid.y - sag, a.z + out * 1.08),
-      new THREE.Vector3(b.x - bow, b.y + 0.008, b.z + out),
+      new THREE.Vector3(a.x, a.y - 0.008, a.z + out * 0.75),
+      new THREE.Vector3(a.x, (a.y + belly) / 2, a.z + out),
+      new THREE.Vector3(a.x, belly, a.z + out),
+      new THREE.Vector3(mid, belly - 0.0015, a.z + out),
+      new THREE.Vector3(b.x, belly, b.z + out),
+      new THREE.Vector3(b.x, (b.y + belly) / 2, b.z + out),
+      new THREE.Vector3(b.x, b.y - 0.008, b.z + out * 0.75),
       new THREE.Vector3(b.x, b.y, b.z + 0.019),
       new THREE.Vector3(b.x, b.y, b.z),
     ],
     false,
     "catmullrom",
-    0.35,
+    0.25,
   );
 }
 
@@ -158,27 +174,36 @@ export function RackCables3D({
     });
     if (!ends.length) return null;
 
-    // Long leads first, so the ones that hang furthest out sit behind the
-    // short ones rather than cutting through them.
-    ends.sort((p, q) => q.a.distanceTo(q.b) - p.a.distanceTo(p.b));
+    /*
+      Order the bundle the way an installer builds one: the leads with the
+      furthest to travel go in first and end up underneath, and each
+      shorter run lies on top of them. That ordering is what `reach` below
+      turns into a standoff, so the layering is consistent rather than
+      decided per cable.
+    */
+    ends.sort((p, q) => Math.abs(q.a.x - q.b.x) - Math.abs(p.a.x - p.b.x));
+    const widest = Math.max(...ends.map((e) => Math.abs(e.a.x - e.b.x)), 1e-6);
+
+    /*
+      Record which way each lead leaves its jack, so the plug body points
+      along the cable instead of straight out of the panel. A plug that
+      ignores the direction of its own cable is the tell that a render was
+      assembled rather than modelled.
+    */
+    const reachOf = (e: Ends) => Math.abs(e.a.x - e.b.x) / widest;
+    ends.forEach((e, i) => {
+      const curve = leadCurve(e.a, e.b, i, reachOf(e));
+      e.outA = curve.getTangentAt(0.001).normalize();
+      e.outB = curve.getTangentAt(0.999).normalize().negate();
+    });
 
     // One merged tube geometry per jacket colour.
     const byJacket = new Map<string, THREE.BufferGeometry[]>();
     ends.forEach((e, i) => {
-      const geom = new THREE.TubeGeometry(leadCurve(e.a, e.b, i), 26, RADIUS[e.style], 6, false);
+      const geom = new THREE.TubeGeometry(leadCurve(e.a, e.b, i, reachOf(e)), 40, RADIUS[e.style], 7, false);
       const bucket = byJacket.get(e.jacket);
       if (bucket) bucket.push(geom);
       else byJacket.set(e.jacket, [geom]);
-    });
-
-    // Record which way each lead leaves its jack, so the plug body points
-    // along the cable instead of straight out of the panel. A plug that
-    // ignores the direction of its own cable is the tell that a render was
-    // assembled rather than modelled.
-    ends.forEach((e, i) => {
-      const curve = leadCurve(e.a, e.b, i);
-      e.outA = curve.getTangentAt(0.001).normalize();
-      e.outB = curve.getTangentAt(0.999).normalize().negate();
     });
 
     const runs: Array<{ colour: string; geometry: THREE.BufferGeometry }> = [];
