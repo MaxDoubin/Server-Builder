@@ -339,3 +339,47 @@ export function cableRing(): THREE.BufferGeometry {
     return mergeGeometries([ring, post], false) ?? ring;
   });
 }
+
+/**
+ * A C14 appliance inlet: the three-pin socket every rack device is fed by.
+ *
+ * The rear of a powered box is not blank. It has an inlet, and the inlet
+ * has the unmistakable chamfered-top hexagon outline that tells you at a
+ * glance which end of a kettle lead goes where.
+ */
+export function c14Inlet(): THREE.BufferGeometry {
+  return cached("c14", () => {
+    const shape = new THREE.Shape();
+    // Chamfered top corners, square bottom: the IEC 60320 C14 outline.
+    shape.moveTo(-0.5, -0.34);
+    shape.lineTo(0.5, -0.34);
+    shape.lineTo(0.5, 0.16);
+    shape.lineTo(0.3, 0.36);
+    shape.lineTo(-0.3, 0.36);
+    shape.lineTo(-0.5, 0.16);
+    shape.closePath();
+    for (const [hx, hy] of [
+      [-0.24, -0.08],
+      [0.24, -0.08],
+      [0, 0.16],
+    ] as const) {
+      const hole = new THREE.Path();
+      hole.moveTo(hx - 0.055, hy - 0.1);
+      hole.lineTo(hx + 0.055, hy - 0.1);
+      hole.lineTo(hx + 0.055, hy + 0.1);
+      hole.lineTo(hx - 0.055, hy + 0.1);
+      hole.closePath();
+      shape.holes.push(hole);
+    }
+    return extrude(shape, 0.22, 0.03);
+  });
+}
+
+/** One drilled vent hole, for the perforated fields on a rear panel. */
+export function ventHole(): THREE.BufferGeometry {
+  return cached("vent", () => {
+    const g = new THREE.CylinderGeometry(0.5, 0.5, 0.6, 8);
+    g.rotateX(Math.PI / 2);
+    return faceForward(g, 0.3);
+  });
+}

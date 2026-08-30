@@ -28,8 +28,10 @@ import {
   outlet,
   rackScrew,
   sfpBore,
+  c14Inlet,
   sfpCage,
   sfpModule,
+  ventHole,
 } from "./parts";
 
 /** Build an InstancedMesh from a list of matrices, or nothing if empty. */
@@ -70,6 +72,8 @@ const MATS = {
   module: new THREE.MeshStandardMaterial({ color: "#6f7780", metalness: 0.82, roughness: 0.34 }),
   bore: new THREE.MeshStandardMaterial({ color: "#05070a", metalness: 0.1, roughness: 0.95 }),
   ring: new THREE.MeshStandardMaterial({ color: "#9aa2ab", metalness: 0.85, roughness: 0.32 }),
+  inlet: new THREE.MeshStandardMaterial({ color: "#101317", metalness: 0.2, roughness: 0.7 }),
+  hole: new THREE.MeshStandardMaterial({ color: "#04060a", metalness: 0.1, roughness: 0.95 }),
   outletFace: new THREE.MeshStandardMaterial({ color: "#e9ebee", metalness: 0.05, roughness: 0.55 }),
 };
 
@@ -159,6 +163,8 @@ export function RackHardware({
     const modules: THREE.Matrix4[] = [];
     const bores: THREE.Matrix4[] = [];
     const rings: THREE.Matrix4[] = [];
+    const inlets: THREE.Matrix4[] = [];
+    const vents: THREE.Matrix4[] = [];
     const cavities = new Map<string, THREE.Matrix4[]>();
     const leds: Array<{ m: THREE.Matrix4; colour: string; seed: number }> = [];
     let ledSeed = 0;
@@ -299,6 +305,38 @@ export function RackHardware({
         server has two.
       */
       const rearZ = faceZ - deviceDepth(device);
+
+      /*
+        Powered boxes get an inlet and a perforated field. The rear of this
+        rack used to be nine blank slabs, which is what you saw the moment
+        you orbited past ninety degrees, and it is the view half the
+        reference photography is shot from.
+      */
+      if (device.family !== "blank" && device.family !== "patch") {
+        const scale = Math.min(h * 0.5, 0.026);
+        inlets.push(place(CHASSIS_WIDTH * 0.38, y0, rearZ, scale, scale, scale));
+
+        const cols = 26;
+        const rows = device.u >= 2 ? 5 : 3;
+        const fieldW = CHASSIS_WIDTH * 0.6;
+        const fieldH = h * 0.62;
+        const d = Math.min(0.0032, (fieldH / rows) * 0.62);
+        for (let ix = 0; ix < cols; ix += 1) {
+          for (let iz = 0; iz < rows; iz += 1) {
+            vents.push(
+              place(
+                -CHASSIS_WIDTH * 0.42 + ((ix + 0.5) * fieldW) / cols + (iz % 2 ? fieldW / cols / 2 : 0),
+                y0 - fieldH / 2 + ((iz + 0.5) * fieldH) / rows,
+                rearZ,
+                d,
+                d,
+                d,
+              ),
+            );
+          }
+        }
+      }
+
       if (device.family === "server" || device.family === "storage" || device.family === "ups") {
         const n = device.u >= 2 ? 2 : 1;
         const d = Math.min(h * 0.7, 0.09);
@@ -327,6 +365,8 @@ export function RackHardware({
     push(instance(sfpModule(), MATS.module, modules));
     push(instance(sfpBore(), MATS.bore, bores));
     push(instance(cableRing(), MATS.ring, rings));
+    push(instance(c14Inlet(), MATS.inlet, inlets));
+    push(instance(ventHole(), MATS.hole, vents));
     cavities.forEach((list, tint) => push(instance(jackCavity(), cavityMaterial(tint), list)));
     return { out, leds };
   }, [rack, yOf, faceZ]);
