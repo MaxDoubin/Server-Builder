@@ -13,7 +13,7 @@
  * site rather than a CDN.
  */
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { StudioEnvironment } from "./StudioEnvironment";
@@ -26,6 +26,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { U } from "@/components/cinematic/rack3d/rackConfig";
 import { FRAME_FOOT, OpenRackFrame } from "./OpenRackFrame";
 import { CABLE_RADIUS, JACKET_HEX, leadCurve, powerCurve } from "./cableShape";
+import { plugBoot } from "./parts";
 import {
   OPTIC_BASE,
   PDU_INDEX,
@@ -174,10 +175,26 @@ function MountedDevice({
   );
 }
 
-/** Every patch lead, merged by jacket so the rack is a handful of draws. */
+/**
+ * Every patch lead, merged by jacket so the rack is a handful of draws.
+ *
+ * Ubiquiti publish no model for any of their cables, which sounds like a gap
+ * and is not one. A patch lead is not an object you place, it is a path
+ * between two ports that do not exist until somebody decides what is plugged
+ * into what, so a downloaded cable at a fixed length in a fixed pose would
+ * have to be deformed along a curve computed here anyway. The tube is that
+ * curve, swept.
+ *
+ * The plug is the part worth modelling, and it is the part a bare tube
+ * misses: without it a lead simply stops at the panel, and forty leads
+ * stopping at a panel is the thing that reads as computer graphics. It is
+ * one instanced boot over the lot, tinted per instance, so an Etherlighting
+ * plug can carry its own glow without costing a material.
+ */
 function Leads() {
-  const geoms = useMemo(() => {
+  const { tubes, boots } = useMemo(() => {
     const byColour = new Map<string, THREE.BufferGeometry[]>();
+    const ends: Array<{ at: THREE.Vector3; colour: string; el: boolean }> = [];
     WIRED_PATCHES.forEach((p, i) => {
       const a = anchor(p.from[0], p.from[1]);
       const b = anchor(p.to[0], p.to[1]);
@@ -185,20 +202,52 @@ function Leads() {
       const reach = Math.min(1, Math.abs(a.y - b.y) / (WIRED_RACK_UNITS * U));
       const curve = leadCurve(a, b, i, reach);
       const radius = p.fibre ? CABLE_RADIUS.etherlighting : CABLE_RADIUS.plain;
-      const g = new THREE.TubeGeometry(curve, 44, radius, 7, false);
       const list = byColour.get(p.jacket) ?? [];
-      list.push(g);
+      list.push(new THREE.TubeGeometry(curve, 44, radius, 7, false));
       byColour.set(p.jacket, list);
+      // Fibre lands in a cage rather than a jack, and an LC duplex has no
+      // moulded boot to speak of, so only the copper gets one.
+      if (!p.fibre) {
+        ends.push({ at: a, colour: p.jacket, el: !!p.el });
+        ends.push({ at: b, colour: p.jacket, el: !!p.el });
+      }
     });
-    return [...byColour.entries()].map(([colour, list]) => ({
-      colour,
-      geometry: mergeGeometries(list, false),
-    }));
+    return {
+      tubes: [...byColour.entries()].map(([colour, list]) => ({
+        colour,
+        geometry: mergeGeometries(list, false),
+      })),
+      boots: ends,
+    };
   }, []);
+
+  const bootRef = useRef<THREE.InstancedMesh>(null);
+  useEffect(() => {
+    const mesh = bootRef.current;
+    if (!mesh) return;
+    const m = new THREE.Matrix4();
+    const colour = new THREE.Color();
+    // A booted RJ45 plug is about 11.5mm across the body and 24mm from the
+    // face of the jack to the back of the strain relief.
+    const scale = new THREE.Vector3(0.0115, 0.0115, 0.0115);
+    const quat = new THREE.Quaternion();
+    boots.forEach((b, i) => {
+      // The geometry is built with the plug body at the origin running back
+      // along -Z, which is already the direction a lead leaves a panel here.
+      m.compose(b.at, quat, scale);
+      mesh.setMatrixAt(i, m);
+      colour.set(b.el ? "#dfe9ff" : JACKET_HEX[b.colour] ?? "#8d949f");
+      mesh.setColorAt(i, colour);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }, [boots]);
+
+  const bootGeometry = useMemo(() => plugBoot(), []);
 
   return (
     <>
-      {geoms.map(({ colour, geometry }) =>
+      {tubes.map(({ colour, geometry }) =>
         geometry ? (
           <mesh key={colour} geometry={geometry}>
             <meshStandardMaterial
@@ -209,6 +258,15 @@ function Leads() {
           </mesh>
         ) : null,
       )}
+      {boots.length > 0 ? (
+        <instancedMesh
+          ref={bootRef}
+          args={[bootGeometry, undefined, boots.length]}
+          frustumCulled={false}
+        >
+          <meshStandardMaterial roughness={0.44} metalness={0.04} vertexColors={false} />
+        </instancedMesh>
+      ) : null}
     </>
   );
 }

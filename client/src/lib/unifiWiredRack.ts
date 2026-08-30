@@ -62,6 +62,12 @@ export interface WiredPatch {
   jacket: string;
   /** Optics leads are thinner and take the fibre colours. */
   fibre?: boolean;
+  /**
+   * A UniFi Etherlighting lead, whose translucent jacket lights at the plug
+   * from the port's own indicator. It is the single most recognisable thing
+   * about UniFi cabling and the reason to bother tinting boots at all.
+   */
+  el?: boolean;
 }
 
 /**
@@ -183,9 +189,16 @@ function buildPatches(): WiredPatch[] {
       jacket: COPPER[i % COPPER.length],
     });
   }
-  // Pro 24 to surge panel B, which sits directly above it.
+  // Pro 24 to surge panel B, which sits directly above it. This run is
+  // Etherlighting, which is what somebody buying a Pro 24 in 2026 patches
+  // it with, and it gives the rack one bank of lit plugs rather than none.
   for (let i = 0; i < 11; i += 1) {
-    out.push({ from: [5, i], to: [4, i + 12], jacket: COPPER[(i + 3) % COPPER.length] });
+    out.push({
+      from: [5, i],
+      to: [4, i + 12],
+      jacket: COPPER[(i + 3) % COPPER.length],
+      el: true,
+    });
   }
   // Two red leads, because every rack has a couple of cables somebody was
   // told never to unplug.
