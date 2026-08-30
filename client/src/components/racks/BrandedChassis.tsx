@@ -244,14 +244,16 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
       {bays && (
         <group>
           {Array.from({ length: bays.count }, (_, i) => {
-            const rows = device.u >= 2 ? 2 : 1;
+            // A face given over to intake keeps its bays in one row along
+            // the bottom, the same as the elevation and the model do.
+            const rows = device.intake ? 1 : device.u >= 2 ? 2 : 1;
             const cols = Math.ceil(bays.count / rows);
             const bw = (CHASSIS_WIDTH * 0.86) / cols;
-            const bh = (h * 0.8) / rows;
+            const bh = device.intake ? h * 0.26 : (h * 0.8) / rows;
             const col = i % cols;
             const row = Math.floor(i / cols);
             const x = -CHASSIS_WIDTH * 0.43 + col * bw + bw / 2;
-            const y = rows === 2 ? (row === 0 ? bh * 0.52 : -bh * 0.52) : 0;
+            const y = device.intake ? -h * 0.3 : rows === 2 ? (row === 0 ? bh * 0.52 : -bh * 0.52) : 0;
             const filled = i < bays.occupied;
             return (
               <group key={`b${i}`} position={[x, y, faceZ]}>

@@ -192,6 +192,7 @@ export const dellComputeRack: RackDefinition = {
       family: "server",
       finish: "dark",
       bays: { count: 8, occupied: 6, label: "2.5 inch NVMe bays" },
+      intake: 5,
       watts: null,
       accent: ACCENT.compute,
       url: "https://www.dell.com/en-us/shop/dell-poweredge-servers/poweredge-xe9680-rack-server/spd/poweredge-xe9680/pe_xe9680_tm_vi_vp",

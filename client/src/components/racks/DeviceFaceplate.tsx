@@ -563,11 +563,15 @@ function BayFace(props: ContentProps) {
   const { device, fieldX, fieldW, unitH, still, uid } = props;
   const bays = device.bays!;
   const H = device.u * unitH;
-  const rows = device.u >= 2 ? 2 : 1;
+  /*
+    A face that is mostly intake gets its bays in one row along the
+    bottom, because that is where the only opening not given to a fan is.
+  */
+  const rows = device.intake ? 1 : device.u >= 2 ? 2 : 1;
   const cols = Math.ceil(bays.count / rows);
   const cellW = fieldW / cols;
-  const cellH = (H * 0.74) / rows;
-  const top = H * 0.13;
+  const cellH = device.intake ? H * 0.26 : (H * 0.74) / rows;
+  const top = device.intake ? H * 0.62 : H * 0.13;
 
   const sleds: JSX.Element[] = [];
   for (let i = 0; i < bays.count; i++) {
@@ -611,7 +615,65 @@ function BayFace(props: ContentProps) {
       </g>,
     );
   }
-  return <g>{sleds}</g>;
+  return (
+    <g>
+      {device.intake ? <IntakeWall {...props} count={device.intake} /> : null}
+      {sleds}
+    </g>
+  );
+}
+
+/**
+ * A wall of front fan modules, each a rotor behind a punched guard.
+ *
+ * Drawn as the concentric rings and radial blades you actually see through
+ * a guard, because a fan drawn as a grey circle is a hole and a hole is
+ * the one thing this is not.
+ */
+function IntakeWall(props: ContentProps & { count: number }) {
+  const { device, fieldX, fieldW, unitH, uid, count } = props;
+  const H = device.u * unitH;
+  const cellW = fieldW / count;
+  const top = H * 0.08;
+  const wallH = H * 0.5;
+  return (
+    <g>
+      {Array.from({ length: count }, (_, i) => {
+        const x = fieldX + i * cellW + cellW * 0.04;
+        const w = cellW * 0.92;
+        const r = Math.min(w * 0.44, wallH * 0.21);
+        return (
+          <g key={i}>
+            <title>{`Front fan module ${i + 1} of ${count}`}</title>
+            <rect x={x} y={top} width={w} height={wallH} rx={1.6} fill="#000" opacity={0.42} />
+            <rect x={x + 0.6} y={top + 0.6} width={w - 1.2} height={wallH - 1.2} rx={1.4} fill={defUrl(uid, "sled")} />
+            {[0.27, 0.73].map((f) => (
+              <g key={f}>
+                <circle cx={x + w / 2} cy={top + wallH * f} r={r} fill="#0a0c0f" opacity={0.86} />
+                <circle cx={x + w / 2} cy={top + wallH * f} r={r * 0.62} fill="none" stroke="#59606a" strokeWidth={Math.max(0.4, r * 0.07)} opacity={0.75} />
+                <circle cx={x + w / 2} cy={top + wallH * f} r={r * 0.28} fill="#3b4149" />
+                {[0, 60, 120, 180, 240, 300].map((deg) => {
+                  const a = (deg * Math.PI) / 180;
+                  return (
+                    <line
+                      key={deg}
+                      x1={x + w / 2 + Math.cos(a) * r * 0.3}
+                      y1={top + wallH * f + Math.sin(a) * r * 0.3}
+                      x2={x + w / 2 + Math.cos(a) * r * 0.9}
+                      y2={top + wallH * f + Math.sin(a) * r * 0.9}
+                      stroke="#4d545d"
+                      strokeWidth={Math.max(0.4, r * 0.1)}
+                      opacity={0.8}
+                    />
+                  );
+                })}
+              </g>
+            ))}
+          </g>
+        );
+      })}
+    </g>
+  );
 }
 
 /** A field of vent slots, for a face that is mostly airflow. */
@@ -691,7 +753,28 @@ function BlankFace(props: ContentProps) {
       </g>
     );
   }
-  return null;
+  /*
+    Solid. Not an empty rectangle: a steel panel this thin is pressed with
+    a stiffening rib per rack unit, without which a 4U sheet would oil can
+    every time somebody leaned on it, and those ribs are the only thing
+    that tells you a blanked run is four panels rather than one hole.
+  */
+  return (
+    <g>
+      {Array.from({ length: device.u }, (_, i) => {
+        const mid = (i + 0.5) * unitH;
+        return (
+          <g key={i}>
+            <rect x={bodyX + bodyW * 0.06} y={mid - unitH * 0.15} width={bodyW * 0.88} height={unitH * 0.3} rx={Math.max(0.6, unitH * 0.06)} fill="#000" opacity={0.34} />
+            <rect x={bodyX + bodyW * 0.06} y={mid - unitH * 0.15} width={bodyW * 0.88} height={Math.max(0.5, unitH * 0.05)} rx={0.5} fill={m.pale ? "#c3c9cf" : "#6a7178"} opacity={0.5} />
+            {i > 0 && (
+              <rect x={bodyX} y={i * unitH - Math.max(0.4, unitH * 0.02)} width={bodyW} height={Math.max(0.5, unitH * 0.035)} fill="#000" opacity={0.5} />
+            )}
+          </g>
+        );
+      })}
+    </g>
+  );
 }
 
 /** Chassis indicators from the datasheet, at the faceplate's right end. */

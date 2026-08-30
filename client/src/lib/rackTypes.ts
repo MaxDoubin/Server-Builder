@@ -72,6 +72,18 @@ export interface RackDevice {
    */
   bays?: { count: number; occupied: number; label: string };
   /**
+   * Number of front fan modules, for a face that is mostly intake.
+   *
+   * Some hardware cannot spare its front elevation for anything else. An
+   * eight accelerator node is roughly ten kilowatts under one lid, and
+   * that has to be fed air through the front, so everything above the
+   * drive row is fan. Drawn without this a 6U box with eight bays comes
+   * out as eight enormous drive carriers, which is a storage shelf and
+   * not the thing at all: the bays go in one row along the bottom and the
+   * intake wall takes the rest.
+   */
+  intake?: number;
+  /**
    * How a passive filler panel presents: vent slots, a solid plate, the
    * D-rings of a cable manager, or a shelf. Only read for family "blank".
    */
