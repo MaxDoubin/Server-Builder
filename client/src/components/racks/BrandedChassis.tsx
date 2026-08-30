@@ -246,7 +246,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           {Array.from({ length: bays.count }, (_, i) => {
             // A face given over to intake keeps its bays in one row along
             // the bottom, the same as the elevation and the model do.
-            const rows = device.intake ? 1 : device.u >= 2 ? 2 : 1;
+            const rows = bays.rows ?? (device.intake ? 1 : device.u >= 2 ? 2 : 1);
             const cols = Math.ceil(bays.count / rows);
             const bw = (CHASSIS_WIDTH * 0.86) / cols;
             const bh = device.intake ? h * 0.26 : (h * 0.8) / rows;

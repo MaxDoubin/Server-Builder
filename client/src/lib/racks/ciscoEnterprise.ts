@@ -293,7 +293,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       role: "Two rack units of storage-dense compute: twenty four small form factor bays in a three by eight grid, with the control panel and KVM on the right. Where a blade gives you density, this gives you spindles.",
       family: "server",
       finish: "dark",
-      bays: { count: 24, occupied: 18, label: "2.5 inch bays" },
+      bays: { count: 24, occupied: 18, label: "2.5 inch bays", rows: 3 },
       watts: null,
       accent: ACCENT.compute,
       url: "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-c240-m7-rack-server/index.html",
