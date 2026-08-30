@@ -129,7 +129,9 @@ export function CinematicRackDetail() {
             </p>
             <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
               Click any device in the elevation, or Tab to it and press Enter,
-              to pull it out and read its details.
+              to pull it out and read its details. Switch to the 3D model to
+              walk around the same rack: every device is built from the same
+              datasheet figures, down to the port pitch and the chassis depth.
             </p>
           </header>
 
@@ -148,7 +150,7 @@ export function CinematicRackDetail() {
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
                     }`}
                   >
-                    {v === "elevation" ? "Elevation" : "3D"}
+                    {v === "elevation" ? "Elevation" : "3D model"}
                   </button>
                 ))}
               </div>
@@ -157,7 +159,10 @@ export function CinematicRackDetail() {
               ) : (
                 <Suspense
                   fallback={
-                    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_14%_4%)] font-techno text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                    /* Light, because the 3D view is a white studio. A dark
+                       placeholder flashed black for the second it took the
+                       three.js chunk to arrive. */
+                    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3] font-techno text-[10px] uppercase tracking-[0.3em] text-[#5c6472]">
                       Loading 3D
                     </div>
                   }
