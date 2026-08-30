@@ -84,6 +84,8 @@ export function faceGeometry(device: RackDevice, width: number, unitH: number, d
 export interface PortCell {
   /** Index into device.ports. */
   index: number;
+  /** Which card band this cell belongs to, for chassis faces. */
+  card?: number;
   port: RackPort;
   x: number;
   y: number;
@@ -125,6 +127,56 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
   const denom = totalW + runGaps + groupGaps + plan.length * 0.3;
 
   const maxRows = Math.max(...plan.map((x) => x.rows));
+
+  /*
+    A card chassis is not one tall faceplate.
+
+    Drawn as one, a 6U chassis puts its ports in a thin strip across the
+    middle with four blank rack units around them, which is not what a
+    chassis looks like from any angle and is the reason it is six units
+    tall in the first place. So when `cards` is set, each run of like
+    connectors becomes its own horizontal band: a card, laid out across
+    the full width of the face, stacked with the others.
+  */
+  if (device.cards && plan.length > 1) {
+    const cells: PortCell[] = [];
+    const bandCount = plan.length;
+    const usable = H - inset * 2;
+    const bandH = usable / bandCount;
+    plan.forEach((run, band) => {
+      const cols = run.cols;
+      const runGroupGaps = group ? Math.max(0, Math.ceil(cols / group) - 1) * 0.45 : 0;
+      const denomRun = cols * run.shape.w + runGroupGaps + 0.6;
+      // Cards are the full width of the face, and a card's own two rows
+      // have to fit inside its band rather than inside the whole chassis.
+      const scaleRun = Math.min(fieldW / denomRun, (bandH * 0.62) / run.rows / 0.95);
+      const gapXr = scaleRun * 0.03;
+      const gapYr = scaleRun * 0.03;
+      const pw = run.shape.w * scaleRun - gapXr;
+      const ph = run.shape.h * scaleRun - gapYr;
+      const blockH = run.rows * ph + (run.rows - 1) * gapYr;
+      const bandMid = inset + bandH * (band + 0.5);
+      const top = bandMid - blockH / 2;
+      run.items.forEach((entry, k) => {
+        const col = run.rows === 2 ? Math.floor(k / 2) : k;
+        const row = run.rows === 2 ? k % 2 : 0;
+        const gx = group ? Math.floor(col / group) * scaleRun * 0.45 : 0;
+        cells.push({
+          index: entry.i,
+          card: band,
+          port: entry.p,
+          x: fieldX + col * (pw + gapXr) + gx,
+          y: top + row * (ph + gapYr),
+          w: pw,
+          h: ph,
+          row,
+          col,
+        });
+      });
+    });
+    return cells;
+  }
+
   /*
     Vertical allowance. Real switch faces give the jacks most of the unit's
     height: on the USW-Pro-48-POE the two rows plus their silkscreen occupy

@@ -109,6 +109,16 @@ export interface RackDevice {
   display?: "unifi" | "ups" | "server";
   /** A modular uplink bay, drawn as a seam with its own module face. */
   moduleBay?: boolean;
+  /**
+   * This device is a card chassis, so each run of like connectors is a
+   * separate card and gets its own horizontal band across the face.
+   *
+   * Without it a 6U chassis is drawn as one 6U faceplate with its ports
+   * in a thin strip across the middle and four blank rack units around
+   * them, which is not what a chassis looks like from any angle. A
+   * chassis is cards, and the cards are the reason it is six units tall.
+   */
+  cards?: boolean;
   /** Optional short caption rendered beside the device. */
   label?: string;
   /** Link to this specific model's spec page, where one exists. */

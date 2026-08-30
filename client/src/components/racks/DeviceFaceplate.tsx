@@ -222,6 +222,7 @@ function PortField(props: ContentProps) {
   const throat = device.portTint ? defUrl(uid, "throat-teal") : defUrl(uid, "throat");
   const cells = layoutPorts(device, width, unitH, detail);
   const copper = cells.filter((c) => c.port.kind === "rj45");
+  const { bodyX, bodyW } = faceGeometry(device, width, unitH, detail);
 
   /*
     The silkscreen. A real switch prints the odd port number above each
@@ -238,8 +239,60 @@ function PortField(props: ContentProps) {
 
   return (
     <g>
+      {/*
+        A card chassis gets a bezel per card rather than one recess round
+        the lot: the cards are separate parts with their own faceplate,
+        their own ejector at each end, and a seam between them, and that
+        seam is the thing that says this box comes apart.
+      */}
+      {device.cards &&
+        Array.from(new Set(cells.map((c) => c.card ?? 0))).map((band) => {
+          const own = cells.filter((c) => (c.card ?? 0) === band);
+          if (!own.length) return null;
+          const y0 = Math.min(...own.map((c) => c.y));
+          const y1 = Math.max(...own.map((c) => c.y + c.h));
+          const pad = (y1 - y0) * 0.42;
+          const top = y0 - pad;
+          const height = y1 - y0 + pad * 2;
+          const lever = Math.max(2, unitH * 0.055);
+          return (
+            <g key={`card${band}`}>
+              <rect
+                x={bodyX + unitH * 0.06}
+                y={top}
+                width={bodyW - unitH * 0.12}
+                height={height}
+                rx={Math.max(1, unitH * 0.03)}
+                fill="#000"
+                opacity={0.2}
+              />
+              <rect
+                x={bodyX + unitH * 0.06}
+                y={top}
+                width={bodyW - unitH * 0.12}
+                height={Math.max(1, unitH * 0.02)}
+                fill="#fff"
+                opacity={0.12}
+              />
+              {/* An ejector lever at each end, which is how a card comes out. */}
+              {[bodyX + unitH * 0.14, bodyX + bodyW - unitH * 0.14 - lever].map((lx) => (
+                <rect
+                  key={lx}
+                  x={lx}
+                  y={top + height * 0.18}
+                  width={lever}
+                  height={height * 0.64}
+                  rx={lever * 0.35}
+                  fill="#9aa2ab"
+                  opacity={0.75}
+                />
+              ))}
+            </g>
+          );
+        })}
+
       {/* The recess the connector bank is set into. */}
-      {cells.length > 0 &&
+      {!device.cards && cells.length > 0 &&
         (() => {
           const x0 = Math.min(...cells.map((c) => c.x));
           const x1 = Math.max(...cells.map((c) => c.x + c.w));

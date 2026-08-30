@@ -209,6 +209,7 @@ export const juniperCoreRack: RackDefinition = {
     },
     {
       id: "EX9204",
+      cards: true,
       u: 5,
       vendor: "Juniper",
       model: "EX9204 modular chassis",
@@ -227,6 +228,7 @@ export const juniperCoreRack: RackDefinition = {
     },
     {
       id: "MX240",
+      cards: true,
       u: 5,
       vendor: "Juniper",
       model: "MX240 universal routing platform",

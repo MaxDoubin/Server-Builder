@@ -197,6 +197,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
     },
     {
       id: "C9404R",
+      cards: true,
       u: 6,
       vendor: "Cisco",
       model: "Catalyst 9404R modular chassis",
