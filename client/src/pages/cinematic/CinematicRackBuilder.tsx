@@ -20,6 +20,7 @@ import {
   type FrameSize,
   type Placement,
 } from "@/lib/rackBuilder";
+import { LoadProgress } from "@/components/racks/LoadProgress";
 
 const BuilderScene = lazy(() =>
   import("@/components/racks/BuilderScene").then((m) => ({ default: m.BuilderScene })),
@@ -331,7 +332,7 @@ export function CinematicRackBuilder() {
 
             {/* The rack */}
             <div className="flex flex-col overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))]">
-              <div className="aspect-[4/5] w-full sm:aspect-[4/3] xl:aspect-[3/4]">
+              <div className="relative aspect-[4/5] w-full sm:aspect-[4/3] xl:aspect-[3/4]">
                 {catalogue ? (
                   <Suspense
                     fallback={
@@ -354,6 +355,7 @@ export function CinematicRackBuilder() {
                     Loading the catalogue...
                   </div>
                 )}
+                <LoadProgress />
               </div>
               <div className="flex flex-wrap items-center gap-3 border-t border-[hsl(var(--brand-iron)/0.6)] px-4 py-3">
                 <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">

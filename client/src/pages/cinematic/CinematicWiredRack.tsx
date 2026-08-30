@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { WIRED_DEVICES, WIRED_PATCHES, WIRED_RACK_UNITS } from "@/lib/unifiWiredRack";
+import { LoadProgress } from "@/components/racks/LoadProgress";
 
 const WiredRackScene = lazy(() =>
   import("@/components/racks/WiredRackScene").then((m) => ({ default: m.WiredRackScene })),
@@ -69,7 +70,7 @@ export function CinematicWiredRack() {
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
             <div className="overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))]">
-              <div className="aspect-[3/4] w-full sm:aspect-[4/3] lg:aspect-[5/4]">
+              <div className="relative aspect-[3/4] w-full sm:aspect-[4/3] lg:aspect-[5/4]">
                 <Suspense
                   fallback={
                     <div className="flex h-full items-center justify-center font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
@@ -79,6 +80,7 @@ export function CinematicWiredRack() {
                 >
                   <WiredRackScene onPick={setPicked} />
                 </Suspense>
+                <LoadProgress />
               </div>
               <p className="border-t border-[hsl(var(--brand-iron)/0.6)] px-5 py-3 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
                 Drag to orbit, scroll to zoom, click a device to isolate it.

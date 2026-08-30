@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { TEARDOWN_PARTS } from "@/components/teardown/teardownParts";
+import { LoadProgress } from "@/components/racks/LoadProgress";
 
 /*
   The viewer pulls in three.js, so it is loaded only when this page is, and
@@ -93,7 +94,7 @@ export function CinematicTeardown() {
 
           <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
             <div className="relative overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))]">
-              <div className="aspect-[16/10] w-full">
+              <div className="relative aspect-[16/10] w-full">
                 <Suspense
                   fallback={
                     <div className="flex h-full items-center justify-center font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
@@ -107,6 +108,7 @@ export function CinematicTeardown() {
                     onSelect={setSelected}
                   />
                 </Suspense>
+                <LoadProgress label="parts" />
               </div>
 
               <div className="flex flex-wrap items-center gap-4 border-t border-[hsl(var(--brand-iron)/0.6)] px-5 py-4">
