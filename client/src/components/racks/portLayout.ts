@@ -38,6 +38,8 @@ const STACKS = new Set(["rj45", "console", "sfp", "sfp-plus", "sfp28", "blank", 
 
 export interface FaceGeometry {
   H: number;
+  /** Width reserved for the silkscreen, so text can be sized to fit it. */
+  brandW: number;
   ear: number;
   bodyX: number;
   bodyW: number;
@@ -59,11 +61,11 @@ export function faceGeometry(device: RackDevice, width: number, unitH: number, d
   const showText = unitH >= 30;
   const dispW = device.display ? Math.min(H * 0.58, bodyW * 0.068) : 0;
   const dispPad = device.display ? unitH * 0.13 : 0;
-  const brandW = showText ? bodyW * (detail ? 0.095 : 0.125) : bodyW * 0.03;
+  const brandW = showText ? bodyW * (detail ? 0.055 : 0.075) : bodyW * 0.025;
   const textX = bodyX + dispW + dispPad + unitH * 0.15;
   const fieldX = bodyX + dispW + dispPad + brandW;
-  const fieldW = bodyW - (fieldX - bodyX) - unitH * 0.13;
-  return { H, ear, bodyX, bodyW, inset, showText, dispW, textX, fieldX, fieldW };
+  const fieldW = bodyW - (fieldX - bodyX) - unitH * 0.1;
+  return { H, ear, bodyX, bodyW, inset, showText, dispW, brandW, textX, fieldX, fieldW };
 }
 
 export interface PortCell {
@@ -110,10 +112,19 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
   const denom = totalW + runGaps + groupGaps + plan.length * 0.3;
 
   const maxRows = Math.max(...plan.map((x) => x.rows));
-  const vSpace = (H - inset * 2) * (detail ? 0.5 : 0.58);
+  /*
+    Vertical allowance. Real switch faces give the jacks most of the unit's
+    height: on the USW-Pro-48-POE the two rows plus their silkscreen occupy
+    roughly three quarters of the 44.45mm. Ours used 58%, which meant this
+    term bound before the width term did and every port came out a fifth
+    too small with the right of the panel left empty.
+  */
+  const vSpace = (H - inset * 2) * (detail ? 0.66 : 0.74);
   const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
-  const gapX = scale * 0.13;
-  const gapY = scale * 0.16;
+  // Jacks on a dense panel very nearly touch; the visible separation comes
+  // from the group gaps, not from space between neighbours.
+  const gapX = scale * 0.1;
+  const gapY = scale * 0.1;
   const midY = H / 2 + (detail ? unitH * 0.03 : 0);
 
   const cells: PortCell[] = [];

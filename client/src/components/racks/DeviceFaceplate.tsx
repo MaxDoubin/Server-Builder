@@ -40,7 +40,7 @@ interface Props {
 }
 
 export function DeviceFaceplate({ device, width, unitH, detail = false, still = false, uid }: Props) {
-  const { H, ear, bodyX, bodyW, inset, showText, dispW, textX, fieldX, fieldW } = faceGeometry(
+  const { H, ear, bodyX, bodyW, inset, showText, dispW, brandW, textX, fieldX, fieldW } = faceGeometry(
     device,
     width,
     unitH,
@@ -85,16 +85,34 @@ export function DeviceFaceplate({ device, width, unitH, detail = false, still = 
       {/* Role stripe, the one non-physical marking, kept to a thin inlay. */}
       <rect x={bodyX + 1.6} y={inset + 1.8} width={Math.max(1.6, bodyW * 0.0035)} height={H - inset * 2 - 3.6} fill={accent} opacity={0.92} />
 
-      {showText && (
-        <text x={textX} y={inset + unitH * 0.32} fill={m.ink} className="rk-brand" fontSize={Math.max(5.5, unitH * 0.125)} opacity={0.9}>
-          {device.vendor === "Generic" ? "" : device.vendor.toUpperCase()}
-        </text>
-      )}
-      {showText && detail && (
-        <text x={textX} y={inset + unitH * 0.53} fill={m.sub} className="rk-brand" fontSize={Math.max(4.5, unitH * 0.095)} opacity={0.85}>
-          {device.model.split("(")[0].trim().slice(0, 24)}
-        </text>
-      )}
+      {/*
+        Silkscreen branding, sized to the strip actually reserved for it.
+        Widening the port field to match the real part left the old fixed
+        font size overlapping the first jacks, so the size is derived from
+        the label length and the space available, and the text is dropped
+        outright when that space cannot hold it legibly. Real faceplates
+        set their branding small and out of the way for the same reason.
+      */}
+      {showText &&
+        device.vendor !== "Generic" &&
+        (() => {
+          const label = device.vendor.toUpperCase();
+          /*
+            Size against the gap actually left between the screen and the
+            first jack, not against brandW: textX already starts past the
+            screen, so measuring the full strip overran by the display's
+            width and clipped the wordmark. The 0.78 factor covers the
+            0.1em letter-spacing the class applies.
+          */
+          const avail = fieldX - textX - unitH * 0.06;
+          const size = Math.min(unitH * 0.105, avail / (label.length * 0.78));
+          if (size < 3.6 || avail <= 0) return null;
+          return (
+            <text x={textX} y={H / 2 + size * 0.36} fill={m.ink} className="rk-brand" fontSize={size} opacity={0.85}>
+              {label}
+            </text>
+          );
+        })()}
 
       {device.display && <Display uid={uid} kind={device.display} x={bodyX + unitH * 0.15} y={H / 2 - dispW / 2} s={dispW} />}
 
@@ -203,9 +221,76 @@ function PortField(props: ContentProps) {
   const isPatch = device.family === "patch";
   const throat = device.portTint ? defUrl(uid, "throat-teal") : defUrl(uid, "throat");
   const cells = layoutPorts(device, width, unitH, detail);
+  const copper = cells.filter((c) => c.port.kind === "rj45");
+
+  /*
+    The silkscreen. A real switch prints the odd port number above each
+    top-row jack, a PoE bolt beside it on ports that deliver power, and a
+    rule between groups of eight. It is a large part of why a photograph of
+    a switch reads as an instrument rather than as a block of connectors,
+    and leaving it off was the single biggest thing still missing.
+  */
+  const topRow = copper.filter((c) => c.row === 0);
+  const numSize = topRow.length ? Math.max(2.2, topRow[0].w * 0.34) : 0;
+  const showNumbers = numSize >= 2.9 && !isPatch;
+  const poe = /PoE/i.test(device.model) || /PoE/i.test(device.role);
+  const groupSize = device.groupsOf ?? 0;
 
   return (
     <g>
+      {showNumbers &&
+        topRow.map((c) => (
+          <text
+            key={`n${c.index}`}
+            x={c.x + c.w * (poe ? 0.36 : 0.5)}
+            y={c.y - c.h * 0.16}
+            textAnchor="middle"
+            fill={m.sub}
+            fontSize={numSize}
+            className="rk-portnum"
+            opacity={0.95}
+          >
+            {c.col * 2 + 1}
+          </text>
+        ))}
+      {showNumbers &&
+        poe &&
+        topRow.map((c) => (
+          // The lightning bolt beside a PoE port number, drawn rather than
+          // set as a glyph so it stays legible at three SVG units tall.
+          <path
+            key={`b${c.index}`}
+            d={`M ${c.x + c.w * 0.72} ${c.y - c.h * 0.42}
+                l ${-numSize * 0.26} ${numSize * 0.52}
+                h ${numSize * 0.2}
+                l ${-numSize * 0.16} ${numSize * 0.42}
+                l ${numSize * 0.46} ${-numSize * 0.6}
+                h ${-numSize * 0.22} Z`}
+            fill={m.sub}
+            opacity={0.9}
+          />
+        ))}
+      {/* Rules between groups of eight, as printed on the panel. */}
+      {showNumbers &&
+        groupSize > 0 &&
+        topRow
+          .filter((c) => c.col % groupSize === 0)
+          .map((c, gi, arr) => {
+            const last = arr[gi + 1];
+            const endX = last ? last.x - c.w * 0.35 : topRow[topRow.length - 1].x + topRow[topRow.length - 1].w;
+            return (
+              <rect
+                key={`r${c.index}`}
+                x={c.x}
+                y={c.y - c.h * 0.58}
+                width={Math.max(1, endX - c.x)}
+                height={Math.max(0.35, numSize * 0.13)}
+                fill={m.sub}
+                opacity={0.55}
+              />
+            );
+          })}
+
       {cells.map((c) => (
         <Port
           key={c.index}
@@ -221,23 +306,6 @@ function PortField(props: ContentProps) {
           index={c.index}
         />
       ))}
-      {detail &&
-        cells
-          .filter((c) => c.port.kind === "rj45" && c.h > 9)
-          .map((c) => (
-            <text
-              key={`n${c.index}`}
-              x={c.x + c.w / 2}
-              y={c.row === 0 ? c.y - 1.5 : c.y + c.h * 1.42}
-              textAnchor="middle"
-              fill={m.sub}
-              fontSize={Math.max(3.2, c.h * 0.28)}
-              className="rk-portnum"
-              opacity={0.85}
-            >
-              {c.col * (c.row === 0 ? 2 : 2) + c.row + 1}
-            </text>
-          ))}
     </g>
   );
 }
@@ -305,33 +373,70 @@ function Port(props: {
       <title>{`${port.label}${port.led ? (lit ? ", link up" : ", no link") : ""}`}</title>
       {copper ? (
         <>
-          {/* Shielded jack: metal shell with a lit top bevel. */}
+          {/*
+            An RJ45 jack as the product photography shows it: a thin bright
+            shield around a dark opening, eight gold contacts standing out
+            clearly at the back, and two large indicator windows filling the
+            jack's own top corners. The earlier version had a bright silver
+            body with a faint gold line, which read as a solid block rather
+            than as a hole with hardware inside it.
+          */}
           <rect x={x} y={y} width={w} height={h} rx={rr} fill={defUrl(uid, "shell")} />
-          <rect x={x} y={y} width={w} height={h * 0.1} rx={rr} fill="#fff" opacity={0.42} />
-          <rect x={x} y={y + h * 0.9} width={w} height={h * 0.1} fill="#000" opacity={0.3} />
-          {/* The opening, plus the clip slot notched out of its top edge. */}
-          <rect x={x + w * 0.1} y={y + h * 0.19} width={w * 0.8} height={h * 0.69} rx={rr * 0.7} fill={throat} />
-          <rect x={x + w * 0.41} y={y + h * 0.07} width={w * 0.18} height={h * 0.16} rx={0.25} fill={throat} />
-          {/* Eight contacts catching light at the back of the throat. */}
-          <rect x={x + w * 0.23} y={y + h * 0.29} width={w * 0.54} height={h * 0.055} fill={defUrl(uid, "pins")} opacity={0.42} />
-          {/* The lower lip of the opening picks up a reflection. */}
-          <rect x={x + w * 0.11} y={y + h * 0.83} width={w * 0.78} height={h * 0.04} fill="#7d858d" opacity={0.55} />
+          <rect x={x} y={y} width={w} height={h * 0.09} rx={rr} fill="#fff" opacity={0.5} />
+          <rect x={x} y={y + h * 0.91} width={w} height={h * 0.09} fill="#000" opacity={0.35} />
+
+          {/* The opening, with the clip channel notched out of its top. */}
+          <rect x={x + w * 0.08} y={y + h * 0.3} width={w * 0.84} height={h * 0.62} rx={rr * 0.6} fill={throat} />
+          <rect x={x + w * 0.4} y={y + h * 0.2} width={w * 0.2} height={h * 0.16} rx={0.25} fill={throat} />
+
+          {/* Eight contacts. Drawn individually because a solid band reads
+              as a painted stripe and separate pins read as hardware. */}
+          {!isPatch && (
+            <>
+              <rect x={x + w * 0.13} y={y + h * 0.38} width={w * 0.74} height={h * 0.36} fill={defUrl(uid, "pins")} opacity={0.92} />
+              {Array.from({ length: 7 }, (_, k) => (
+                <rect
+                  key={k}
+                  x={x + w * (0.22 + k * 0.093)}
+                  y={y + h * 0.38}
+                  width={Math.max(0.25, w * 0.028)}
+                  height={h * 0.36}
+                  fill="#4a3a12"
+                  opacity={0.55}
+                />
+              ))}
+              <rect x={x + w * 0.13} y={y + h * 0.38} width={w * 0.74} height={h * 0.07} fill="#fff3c4" opacity={0.5} />
+            </>
+          )}
+
+          {/* Indicator windows in the jack's top corners, which on the real
+              part are large and are most of what you see across a room. */}
           {!isPatch && port.led && (
             <>
-              {lit && <circle cx={x + w * 0.21} cy={y + h * 0.27} r={w * 0.26} fill={defUrl(uid, `glow-${port.led}`)} />}
+              {lit && <circle cx={x + w * 0.22} cy={y + h * 0.22} r={w * 0.42} fill={defUrl(uid, `glow-${port.led}`)} />}
               <rect
-                x={x + w * 0.13}
-                y={y + h * 0.21}
-                width={w * 0.15}
-                height={h * 0.13}
-                rx={0.3}
-                fill={lit ? colour : LED_COLOURS.off}
+                x={x + w * 0.06}
+                y={y + h * 0.08}
+                width={w * 0.3}
+                height={h * 0.2}
+                rx={rr * 0.5}
+                fill={lit ? LED_COLOURS.amber : LED_COLOURS.off}
                 className={lit && !still ? "rk-led rk-led-on" : undefined}
                 style={lit && !still ? { animationDelay: `${(index % 7) * 0.31}s`, animationDuration: `${1.3 + (index % 5) * 0.22}s` } : undefined}
               />
-              <rect x={x + w * 0.72} y={y + h * 0.21} width={w * 0.15} height={h * 0.13} rx={0.3} fill={lit ? LED_COLOURS.amber : LED_COLOURS.off} opacity={lit ? 0.9 : 1} />
+              <rect
+                x={x + w * 0.64}
+                y={y + h * 0.08}
+                width={w * 0.3}
+                height={h * 0.2}
+                rx={rr * 0.5}
+                fill={lit ? colour : LED_COLOURS.off}
+                opacity={lit ? 0.95 : 1}
+              />
             </>
           )}
+          {/* A keystone has no indicators, so its jack frame closes flat. */}
+          {isPatch && <rect x={x + w * 0.08} y={y + h * 0.12} width={w * 0.84} height={h * 0.14} rx={rr * 0.5} fill="#000" opacity={0.4} />}
         </>
       ) : (
         <>
