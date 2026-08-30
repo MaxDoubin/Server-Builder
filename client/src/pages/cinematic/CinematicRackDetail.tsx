@@ -10,12 +10,18 @@
  * should be a URL that opens on the 9300, not a URL plus instructions.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { publishedWatts, rackBySlug, unitsUsed } from "@/lib/racks";
 import { RackElevation } from "@/components/racks/RackElevation";
+
+/*
+  three.js is a large dependency and the elevation is the primary drawing,
+  so the 3D view arrives on its own chunk and only when asked for.
+*/
+const Rack3DView = lazy(() => import("@/components/racks/Rack3DView"));
 import { DeviceDetailPanel } from "@/components/racks/DeviceDetailPanel";
 
 const SITE_URL = "https://maxdoubin.com";
@@ -28,6 +34,23 @@ export function CinematicRackDetail() {
     someone "the 9300 in the Catalyst rack" should open on that device
     rather than on the rack with instructions to go find it.
   */
+  /*
+    Which drawing is showing lives in the query string alongside the
+    selected device, so "look at this rack in 3D" is a link rather than a
+    link plus instructions.
+  */
+  const [view, setViewState] = useState<"elevation" | "3d">(() => {
+    if (typeof window === "undefined") return "elevation";
+    return new URLSearchParams(window.location.search).get("view") === "3d" ? "3d" : "elevation";
+  });
+  const setView = useCallback((v: "elevation" | "3d") => {
+    setViewState(v);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (v === "3d") url.searchParams.set("view", "3d");
+    else url.searchParams.delete("view");
+    window.history.replaceState(null, "", url);
+  }, []);
   const [selectedId, setSelectedId] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("device");
@@ -112,7 +135,36 @@ export function CinematicRackDetail() {
 
           <div className="mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <div className="lg:sticky lg:top-24">
-              <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
+              <div className="mb-3 flex gap-2" role="group" aria-label="View">
+                {(["elevation", "3d"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setView(v)}
+                    aria-pressed={view === v}
+                    className={`rounded-full border px-3 py-1.5 font-techno text-[10px] uppercase tracking-[0.25em] transition-colors ${
+                      view === v
+                        ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-bone))]"
+                        : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
+                    }`}
+                  >
+                    {v === "elevation" ? "Elevation" : "3D"}
+                  </button>
+                ))}
+              </div>
+              {view === "elevation" ? (
+                <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
+              ) : (
+                <Suspense
+                  fallback={
+                    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_14%_4%)] font-techno text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                      Loading 3D
+                    </div>
+                  }
+                >
+                  <Rack3DView rack={rack} />
+                </Suspense>
+              )}
             </div>
 
             <aside aria-live="polite">
