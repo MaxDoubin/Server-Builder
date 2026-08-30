@@ -40,11 +40,42 @@ no model, so those three still need building by hand.
 
 ## Two things to settle before any of this ships
 
-**Weight.** The median model is 77,286 triangles, against 14,130 for the
-hand built CRS354. Five of these in one rack is more geometry than the
-entire site currently loads. They need decimating, and the parts are named
-well enough that decimation can be selective: nothing is lost by dropping
-the screw threads.
+**Weight, and what actually works.** The median model is 77,286 triangles
+against 14,130 for the hand built CRS354, so these need reducing before a
+rack of them is servable. Measured on the UDM-SE, which expands to 336,304
+faces once its instanced parts are counted:
+
+Uniform simplification does not work. `gltf-transform simplify` floors at
+about 39,600 triangles no matter how loose the error bound is given, and
+what comes out at that level is broken in exactly the places that matter:
+the LCD panel disappears entirely, the drive bay tears into faceted
+shading, and ports 10 and 11 collapse into a triangular smear. The screws
+and pins reduce beautifully, from 6,245 and 5,648 faces to 61 and 56, and
+the front panel is destroyed. That is the wrong trade in both directions.
+
+Selective reduction does work, because the weight is not where it looks
+like it is:
+
+| part | faces | share |
+| --- | --- | --- |
+| body | 216,777 | 64% |
+| screws, 11 instances | 68,695 | 20% |
+| pins, 9 instances | 50,832 | 15% |
+
+A third of the model is twenty instances of threaded fastener, each a few
+millimetres across on a 443mm panel. Crushing those two meshes alone takes
+119,527 faces to about 120. Then the body: 57% of it lies in the front
+30mm, and a rack mounted device shows nothing else, so culling behind that
+plane costs nothing visible and saves another 92,342.
+
+Together that is 336,304 faces down to roughly 124,500, a 63% cut with no
+visible change at all. Which is still too heavy to put ten of in one rack.
+
+So the honest conclusion is that these are not whole rack geometry. They
+are detail geometry. The architecture that fits is progressive: keep the
+light hand built models for the rack overview, and load the vendor model
+for the one device a reader has selected and zoomed into, which is the
+only time anybody can see 124,000 triangles' worth of difference.
 
 **Licence.** Ubiquiti's Terms of Service, section II(b), prohibits
 reproducing or distributing their content "without the prior written
