@@ -1,42 +1,28 @@
 /**
  * One device's front panel, drawn as SVG from its RackDevice data.
  *
- * The layout rules here are taken from vendor product photography rather
- * than invented, because the details are what make an elevation readable:
+ * Layout follows vendor product photography, because the details are what
+ * make an elevation readable:
  *
  * - Dense faceplates stack into TWO rows with odd port numbers on top and
- *   even below, numbered outward from the left. Nearly every 24 and 48 port
- *   switch made in the last twenty years does this, and a single row of 48
- *   jacks looks nothing like real hardware.
- * - Jacks are grouped in blocks with a gap every 6, 8 or 12, which is how a
+ *   even below. Nearly every 24 and 48 port switch made in the last twenty
+ *   years does this, and one flat row of 48 jacks looks nothing like real
+ *   hardware.
+ * - Jacks group in blocks with a gap every 6, 8 or 12, which is how a
  *   technician counts to port 34 without reading a label.
- * - The link LED lives in the top corners of the RJ45 throat itself, not on
- *   a separate strip above it.
- * - Chassis colour is a real identifying feature. UniFi is silver, a
- *   Catalyst 9300 is pale grey with teal port throats, MikroTik is black.
+ * - The link LED sits in the top corners of the RJ45 throat itself.
+ * - Chassis colour identifies a vendor: UniFi silver, Catalyst pale grey
+ *   with teal port throats, MikroTik black.
  *
- * SVG rather than WebGL: a rack elevation is a 2D drawing in real life,
- * vectors stay crisp at any zoom, every element can carry a native tooltip,
- * and the whole thing costs nothing at first paint.
+ * Everything is shaded from the material library in RackDefs rather than
+ * filled flat. A port is a metal shell with a bevel, a recessed throat that
+ * darkens toward the back, and gold pins catching light at the top; a lit
+ * LED is a bright core inside a soft bloom. Those three things are the
+ * difference between hardware and a wiring diagram.
  */
 
 import type { RackDevice, RackPort } from "@/lib/rackTypes";
-
-const LED_COLOURS: Record<string, string> = {
-  green: "#3ddc84",
-  blue: "#4cc3f1",
-  amber: "#ffb020",
-  red: "#ff4d4d",
-  off: "#2a2f37",
-};
-
-/** Chassis fill, stroke and silkscreen colour per finish. */
-const FINISHES: Record<string, { body: string; edge: string; ink: string; sub: string }> = {
-  silver: { body: "#c8ccd0", edge: "#9aa0a6", ink: "#3a3f45", sub: "#6b7178" },
-  light: { body: "#d6d9dc", edge: "#a8aeb4", ink: "#33383d", sub: "#666c72" },
-  black: { body: "#16181c", edge: "#2c3138", ink: "#c9ced4", sub: "#7b828a" },
-  dark: { body: "#1a1d22", edge: "#31363d", ink: "#c2c7cd", sub: "#787f87" },
-};
+import { LED_COLOURS, MATERIALS, defUrl } from "./RackDefs";
 
 /** Connector footprint in units of the port cell scale. */
 function portShape(kind: RackPort["kind"]): { w: number; h: number } {
@@ -58,7 +44,7 @@ function portShape(kind: RackPort["kind"]): { w: number; h: number } {
   }
 }
 
-/** SFP-family cages stack two-high; copper stacks two-high; USB does not. */
+/** Connector families that stack two-high on a dense panel. */
 const STACKS = new Set(["rj45", "console", "sfp", "sfp-plus", "sfp28", "blank", "power"]);
 
 interface Props {
@@ -71,83 +57,75 @@ interface Props {
   detail?: boolean;
   /** Disables blink animation, for thumbnails. */
   still?: boolean;
+  /** Per-SVG id prefix, so eight racks on one page do not collide. */
+  uid: string;
 }
 
-export function DeviceFaceplate({ device, width, unitH, detail = false, still = false }: Props) {
+export function DeviceFaceplate({ device, width, unitH, detail = false, still = false, uid }: Props) {
   const H = device.u * unitH;
   const ear = Math.max(9, width * 0.026);
   const bodyX = ear;
   const bodyW = width - ear * 2;
   const inset = Math.max(1, unitH * 0.05);
   const accent = device.accent ?? "#8a93a6";
-  const fin = FINISHES[device.finish ?? "dark"];
+  const finish = device.finish ?? "dark";
+  const m = MATERIALS[finish];
   const showText = unitH >= 30;
+  const r = Math.max(1.5, unitH * 0.05);
 
-  const screws: JSX.Element[] = [];
-  for (let u = 0; u < device.u; u++) {
-    for (const cx of [ear * 0.5, width - ear * 0.5]) {
-      screws.push(
-        <g key={`s${u}-${cx}`}>
-          <circle cx={cx} cy={u * unitH + unitH * 0.5} r={Math.max(1.5, unitH * 0.075)} className="rk-screw" />
-          <rect
-            x={cx - Math.max(0.9, unitH * 0.045)}
-            y={u * unitH + unitH * 0.5 - 0.4}
-            width={Math.max(1.8, unitH * 0.09)}
-            height={0.9}
-            fill="#0d0f12"
-            opacity={0.7}
-          />
-        </g>,
-      );
-    }
-  }
-
-  // Where the port field may live, after branding on the left and any
-  // module bay on the right have taken their share.
-  // A faceplate screen sits hard left, so the silkscreen starts after it.
-  // Drawing the two at the same origin put the brand text under the LCD.
-  const dispW = device.display ? Math.min(H * 0.62, bodyW * 0.07) : 0;
-  const dispPad = device.display ? unitH * 0.14 : 0;
-  const brandW = showText ? bodyW * (detail ? 0.1 : 0.13) : bodyW * 0.03;
-  const textX = bodyX + dispW + dispPad + unitH * 0.16;
+  const dispW = device.display ? Math.min(H * 0.58, bodyW * 0.068) : 0;
+  const dispPad = device.display ? unitH * 0.13 : 0;
+  const brandW = showText ? bodyW * (detail ? 0.095 : 0.125) : bodyW * 0.03;
+  const textX = bodyX + dispW + dispPad + unitH * 0.15;
   const fieldX = bodyX + dispW + dispPad + brandW;
-  const fieldW = bodyW - (fieldX - bodyX) - unitH * 0.14;
+  const fieldW = bodyW - (fieldX - bodyX) - unitH * 0.13;
 
   return (
     <g>
-      <rect x={0} y={inset} width={ear} height={H - inset * 2} className="rk-ear" />
-      <rect x={width - ear} y={inset} width={ear} height={H - inset * 2} className="rk-ear" />
-      {screws}
+      {/* Shadow the chassis casts down onto the rail below it. */}
+      <rect x={bodyX} y={H - inset} width={bodyW} height={Math.max(1.5, unitH * 0.1)} fill={defUrl(uid, "castshadow")} />
 
-      {/* Chassis. A hairline highlight along the top edge reads as sheet
-          metal catching light, which is most of what sells a faceplate. */}
+      <RackEars uid={uid} width={width} ear={ear} H={H} inset={inset} u={device.u} unitH={unitH} />
+
+      {/* Chassis: shaded metal, then the brushed grain, then the bevels. */}
+      <rect x={bodyX} y={inset} width={bodyW} height={H - inset * 2} rx={r} fill={defUrl(uid, `face-${finish}`)} />
       <rect
         x={bodyX}
         y={inset}
         width={bodyW}
         height={H - inset * 2}
-        rx={Math.max(1.5, unitH * 0.055)}
-        fill={fin.body}
-        stroke={fin.edge}
-        strokeWidth={0.8}
+        rx={r}
+        fill={defUrl(uid, m.pale ? "grain-l" : "grain-d")}
       />
-      <rect x={bodyX + 1.5} y={inset + 0.8} width={bodyW - 3} height={0.7} fill="#ffffff" opacity={device.finish === "silver" || device.finish === "light" ? 0.55 : 0.07} />
-      <rect x={bodyX + 2} y={inset + 2.2} width={Math.max(2, bodyW * 0.004)} height={H - inset * 2 - 4} fill={accent} opacity={0.9} />
+      {/* Machined top edge and the shadow line where it meets the next unit. */}
+      <rect x={bodyX + r} y={inset + 0.35} width={bodyW - r * 2} height={0.6} fill="#fff" opacity={m.pale ? 0.75 : 0.16} />
+      <rect x={bodyX + r} y={H - inset - 1} width={bodyW - r * 2} height={0.7} fill="#000" opacity={0.42} />
+      <rect
+        x={bodyX}
+        y={inset}
+        width={bodyW}
+        height={H - inset * 2}
+        rx={r}
+        fill="none"
+        stroke="#000"
+        strokeOpacity={0.34}
+        strokeWidth={0.6}
+      />
+      {/* Role stripe, the one non-physical marking, kept to a thin inlay. */}
+      <rect x={bodyX + 1.6} y={inset + 1.8} width={Math.max(1.6, bodyW * 0.0035)} height={H - inset * 2 - 3.6} fill={accent} opacity={0.92} />
 
       {showText && (
-        <text x={textX} y={inset + unitH * 0.34} fill={fin.ink} className="rk-brand" fontSize={Math.max(5.5, unitH * 0.13)}>
+        <text x={textX} y={inset + unitH * 0.32} fill={m.ink} className="rk-brand" fontSize={Math.max(5.5, unitH * 0.125)} opacity={0.9}>
           {device.vendor === "Generic" ? "" : device.vendor.toUpperCase()}
         </text>
       )}
       {showText && detail && (
-        <text x={textX} y={inset + unitH * 0.56} fill={fin.sub} className="rk-brand" fontSize={Math.max(4.5, unitH * 0.1)}>
-          {device.model.split("(")[0].trim().slice(0, 22)}
+        <text x={textX} y={inset + unitH * 0.53} fill={m.sub} className="rk-brand" fontSize={Math.max(4.5, unitH * 0.095)} opacity={0.85}>
+          {device.model.split("(")[0].trim().slice(0, 24)}
         </text>
       )}
 
-      {device.display && (
-        <Display kind={device.display} x={bodyX + unitH * 0.16} y={H / 2 - dispW / 2} w={dispW} h={dispW} fin={fin} />
-      )}
+      {device.display && <Display uid={uid} kind={device.display} x={bodyX + unitH * 0.15} y={H / 2 - dispW / 2} s={dispW} />}
 
       <FaceContent
         device={device}
@@ -159,36 +137,70 @@ export function DeviceFaceplate({ device, width, unitH, detail = false, still = 
         inset={inset}
         detail={detail}
         still={still}
-        fin={fin}
+        m={m}
+        uid={uid}
       />
-      <ChassisLeds device={device} bodyX={bodyX} bodyW={bodyW} unitH={unitH} inset={inset} still={still} />
+      <ChassisLeds device={device} bodyX={bodyX} bodyW={bodyW} unitH={unitH} inset={inset} still={still} uid={uid} />
     </g>
   );
 }
 
-/** A small screen on the faceplate. UniFi ships one on most rack gear. */
-function Display(props: { kind: string; x: number; y: number; w: number; h: number; fin: { edge: string } }) {
-  const { kind, x, y, w, h, fin } = props;
-  const s = Math.min(w, h);
+/** Rack ears with countersunk screws, one pair per rack unit. */
+function RackEars(props: { uid: string; width: number; ear: number; H: number; inset: number; u: number; unitH: number }) {
+  const { uid, width, ear, H, inset, u, unitH } = props;
+  const screws: JSX.Element[] = [];
+  for (let i = 0; i < u; i++) {
+    for (const cx of [ear * 0.5, width - ear * 0.5]) {
+      const cy = i * unitH + unitH * 0.5;
+      const rad = Math.max(1.5, unitH * 0.072);
+      screws.push(
+        <g key={`${i}-${cx}`}>
+          {/* Countersink well, then the head, then a specular fleck. */}
+          <circle cx={cx} cy={cy} r={rad * 1.28} fill="#000" opacity={0.42} />
+          <circle cx={cx} cy={cy} r={rad} fill={defUrl(uid, "screw")} />
+          <rect x={cx - rad * 0.62} y={cy - rad * 0.11} width={rad * 1.24} height={rad * 0.22} fill="#0a0c0f" opacity={0.85} />
+          <rect x={cx - rad * 0.11} y={cy - rad * 0.62} width={rad * 0.22} height={rad * 1.24} fill="#0a0c0f" opacity={0.85} />
+          <circle cx={cx - rad * 0.33} cy={cy - rad * 0.36} r={rad * 0.2} fill="#dfe3e7" opacity={0.5} />
+        </g>,
+      );
+    }
+  }
   return (
     <g>
-      <rect x={x} y={y} width={s} height={s} rx={s * 0.16} fill="#10141a" stroke={fin.edge} strokeWidth={0.6} />
+      <rect x={0} y={inset} width={ear} height={H - inset * 2} fill={defUrl(uid, "rail")} />
+      <rect x={width - ear} y={inset} width={ear} height={H - inset * 2} fill={defUrl(uid, "rail")} />
+      {screws}
+    </g>
+  );
+}
+
+/** A backlit screen on the faceplate. */
+function Display(props: { uid: string; kind: string; x: number; y: number; s: number }) {
+  const { uid, kind, x, y, s } = props;
+  return (
+    <g>
+      <rect x={x - 0.6} y={y - 0.6} width={s + 1.2} height={s + 1.2} rx={s * 0.19} fill="#000" opacity={0.5} />
+      <rect x={x} y={y} width={s} height={s} rx={s * 0.16} fill={defUrl(uid, "lcd")} />
+      {/* Glass reflection across the upper left. */}
+      <path d={`M ${x} ${y + s * 0.44} L ${x + s * 0.52} ${y} L ${x + s} ${y} L ${x} ${y + s * 0.9} Z`} fill="#fff" opacity={0.05} />
       {kind === "unifi" ? (
         <>
-          <circle cx={x + s / 2} cy={y + s / 2} r={s * 0.26} fill="none" stroke="#4cc3f1" strokeWidth={Math.max(0.6, s * 0.05)} opacity={0.9} />
-          <circle cx={x + s / 2} cy={y + s / 2} r={s * 0.07} fill="#4cc3f1" />
+          <circle cx={x + s / 2} cy={y + s / 2} r={s * 0.3} fill={defUrl(uid, "glow-blue")} />
+          <circle cx={x + s / 2} cy={y + s / 2} r={s * 0.25} fill="none" stroke={LED_COLOURS.blue} strokeWidth={Math.max(0.5, s * 0.045)} />
+          <circle cx={x + s / 2} cy={y + s / 2} r={s * 0.065} fill="#dff6ff" />
         </>
       ) : (
         <>
-          <rect x={x + s * 0.16} y={y + s * 0.3} width={s * 0.68} height={s * 0.16} rx={1} fill="#6fe3b1" opacity={0.85} />
-          <rect x={x + s * 0.16} y={y + s * 0.56} width={s * 0.42} height={s * 0.1} rx={1} fill="#6fe3b1" opacity={0.5} />
+          <rect x={x + s * 0.17} y={y + s * 0.29} width={s * 0.66} height={s * 0.14} rx={0.6} fill="#7cf0bd" opacity={0.9} />
+          <rect x={x + s * 0.17} y={y + s * 0.54} width={s * 0.4} height={s * 0.09} rx={0.6} fill="#7cf0bd" opacity={0.55} />
+          <rect x={x + s * 0.17} y={y + s * 0.71} width={s * 0.52} height={s * 0.07} rx={0.6} fill="#7cf0bd" opacity={0.35} />
         </>
       )}
     </g>
   );
 }
 
-function FaceContent(props: {
+interface ContentProps {
   device: RackDevice;
   fieldX: number;
   fieldW: number;
@@ -198,42 +210,27 @@ function FaceContent(props: {
   inset: number;
   detail: boolean;
   still: boolean;
-  fin: { body: string; edge: string; ink: string; sub: string };
-}) {
+  m: (typeof MATERIALS)[string];
+  uid: string;
+}
+
+function FaceContent(props: ContentProps) {
   const { device } = props;
-  if (device.family === "blank") {
-    return <BlankFace look={device.look ?? "solid"} bodyX={props.bodyX} bodyW={props.bodyW} unitH={props.unitH} inset={props.inset} u={device.u} fin={props.fin} />;
-  }
+  if (device.family === "blank") return <BlankFace {...props} />;
   if (device.bays) return <BayFace {...props} />;
   if (device.ports?.length) return <PortField {...props} />;
-  if (device.family === "ups") return <VentField bodyX={props.bodyX} bodyW={props.bodyW} unitH={props.unitH} u={device.u} fin={props.fin} />;
+  if (device.family === "ups") return <VentField {...props} count={24} />;
   return null;
 }
 
-/**
- * The port field: two rows, odd on top, grouped in blocks.
- *
- * Ports are laid out per kind-run so a 48 copper plus 4 SFP+ face puts the
- * copper in its own stacked block and the cages in theirs, which is how the
- * hardware is actually arranged.
- */
-function PortField(props: {
-  device: RackDevice;
-  fieldX: number;
-  fieldW: number;
-  unitH: number;
-  inset: number;
-  detail: boolean;
-  still: boolean;
-  fin: { edge: string; sub: string };
-}) {
-  const { device, fieldX, fieldW, unitH, inset, detail, still, fin } = props;
+/** Two rows, odd on top, grouped in blocks, one run per connector family. */
+function PortField(props: ContentProps) {
+  const { device, fieldX, fieldW, unitH, inset, detail, still, m, uid } = props;
   const ports = device.ports ?? [];
   const H = device.u * unitH;
   const isPatch = device.family === "patch";
-  const tint = device.portTint ?? "#0d1014";
+  const throat = device.portTint ? defUrl(uid, "throat-teal") : defUrl(uid, "throat");
 
-  // Split into runs of like connectors, preserving order.
   const runs: Array<{ kind: RackPort["kind"]; items: Array<{ p: RackPort; i: number }> }> = [];
   ports.forEach((p, i) => {
     const last = runs[runs.length - 1];
@@ -241,110 +238,93 @@ function PortField(props: {
     else runs.push({ kind: p.kind, items: [{ p, i }] });
   });
 
-  // Each run gets columns = ceil(n/rows). Total columns decide the scale.
   const group = device.groupsOf ?? 0;
-  const plan = runs.map((r) => {
-    const stack = !device.singleRow && STACKS.has(r.kind) && r.items.length >= 4;
+  const plan = runs.map((run) => {
+    const stack = !device.singleRow && STACKS.has(run.kind) && run.items.length >= 4;
     const rows = stack ? 2 : 1;
-    const cols = Math.ceil(r.items.length / rows);
-    return { ...r, rows, cols, shape: portShape(r.kind) };
+    return { ...run, rows, cols: Math.ceil(run.items.length / rows), shape: portShape(run.kind) };
   });
 
-  const totalW = plan.reduce((s, r) => s + r.cols * r.shape.w, 0);
-  const gapsBetweenRuns = (plan.length - 1) * 0.9;
-  const groupGaps = group ? plan.reduce((s, r) => s + Math.max(0, Math.ceil(r.cols / group) - 1) * 0.45, 0) : 0;
-  const denom = totalW + gapsBetweenRuns + groupGaps + plan.length * 0.3;
+  const totalW = plan.reduce((s, x) => s + x.cols * x.shape.w, 0);
+  const runGaps = (plan.length - 1) * 0.9;
+  const groupGaps = group ? plan.reduce((s, x) => s + Math.max(0, Math.ceil(x.cols / group) - 1) * 0.45, 0) : 0;
+  const denom = totalW + runGaps + groupGaps + plan.length * 0.3;
 
-  const maxRows = Math.max(...plan.map((r) => r.rows));
+  const maxRows = Math.max(...plan.map((x) => x.rows));
   const vSpace = (H - inset * 2) * (detail ? 0.5 : 0.58);
   const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
-  const cellGapX = scale * 0.13;
-  const cellGapY = scale * 0.16;
-  const midY = H / 2 + (detail ? unitH * 0.04 : 0);
+  const gapX = scale * 0.13;
+  const gapY = scale * 0.16;
+  const midY = H / 2 + (detail ? unitH * 0.03 : 0);
 
   const nodes: JSX.Element[] = [];
   let x = fieldX;
 
   for (const run of plan) {
-    const { shape } = run;
-    const pw = shape.w * scale - cellGapX;
-    const ph = shape.h * scale - cellGapY;
-    const blockH = run.rows * ph + (run.rows - 1) * cellGapY;
+    const pw = run.shape.w * scale - gapX;
+    const ph = run.shape.h * scale - gapY;
+    const blockH = run.rows * ph + (run.rows - 1) * gapY;
     const top = midY - blockH / 2;
 
     run.items.forEach((entry, k) => {
-      // Odd numbers on the top row, even on the bottom: index 0 top,
-      // 1 bottom, 2 top, and so on, which walks left to right in pairs.
       const col = run.rows === 2 ? Math.floor(k / 2) : k;
       const row = run.rows === 2 ? k % 2 : 0;
       const gx = group ? Math.floor(col / group) * scale * 0.45 : 0;
-      const px = x + col * (pw + cellGapX) + gx;
-      const py = top + row * (ph + cellGapY);
+      const px = x + col * (pw + gapX) + gx;
+      const py = top + row * (ph + gapY);
       nodes.push(
-        <Port
-          key={entry.i}
-          port={entry.p}
-          x={px}
-          y={py}
-          w={pw}
-          h={ph}
-          tint={tint}
-          edge={fin.edge}
-          isPatch={isPatch}
-          still={still}
-          index={entry.i}
-        />,
+        <Port key={entry.i} uid={uid} port={entry.p} x={px} y={py} w={pw} h={ph} throat={throat} isPatch={isPatch} still={still} index={entry.i} />,
       );
-      // Port numbers above the top row and below the bottom, the way the
-      // silkscreen does it, but only where they would actually be legible.
       if (detail && run.kind === "rj45" && ph > 9) {
-        const n = k + 1;
         nodes.push(
           <text
             key={`n${entry.i}`}
             x={px + pw / 2}
-            y={row === 0 ? top - 1.6 : top + blockH + ph * 0.42}
+            y={row === 0 ? top - 1.5 : top + blockH + ph * 0.4}
             textAnchor="middle"
-            fill={fin.sub}
-            fontSize={Math.max(3.2, ph * 0.3)}
+            fill={m.sub}
+            fontSize={Math.max(3.2, ph * 0.28)}
             className="rk-portnum"
+            opacity={0.85}
           >
-            {n}
+            {k + 1}
           </text>,
         );
       }
     });
 
-    const runW = run.cols * (pw + cellGapX) + (group ? Math.max(0, Math.ceil(run.cols / group) - 1) * scale * 0.45 : 0);
-    x += runW + scale * 0.9;
+    x += run.cols * (pw + gapX) + (group ? Math.max(0, Math.ceil(run.cols / group) - 1) * scale * 0.45 : 0) + scale * 0.9;
   }
 
   return <g>{nodes}</g>;
 }
 
-/** A single connector, drawn to its kind. */
+/** A single connector: shell, bevel, recessed throat, contacts, indicators. */
 function Port(props: {
+  uid: string;
   port: RackPort;
   x: number;
   y: number;
   w: number;
   h: number;
-  tint: string;
-  edge: string;
+  throat: string;
   isPatch: boolean;
   still: boolean;
   index: number;
 }) {
-  const { port, x, y, w, h, tint, edge, isPatch, still, index } = props;
+  const { uid, port, x, y, w, h, throat, isPatch, still, index } = props;
   const lit = Boolean(port.led && port.led !== "off");
   const colour = LED_COLOURS[port.led ?? "off"];
   const k = port.kind;
+  const rr = Math.max(0.4, w * 0.06);
 
   if (k === "blank") {
     return (
       <g>
         <title>{`${port.label}: open position`}</title>
-        <rect x={x} y={y} width={w} height={h} rx={1} fill="#0a0c0f" stroke={edge} strokeWidth={0.4} opacity={0.85} />
+        <rect x={x} y={y} width={w} height={h} rx={rr} fill="#05070a" />
+        <rect x={x} y={y} width={w} height={h * 0.14} fill="#000" opacity={0.85} />
+        <rect x={x} y={y + h - h * 0.1} width={w} height={h * 0.1} fill="#585f66" opacity={0.5} />
       </g>
     );
   }
@@ -353,10 +333,12 @@ function Port(props: {
     return (
       <g>
         <title>{port.label}</title>
-        <rect x={x} y={y} width={w} height={h} rx={1.5} fill="#101318" stroke={edge} strokeWidth={0.5} />
-        <rect x={x + w * 0.26} y={y + h * 0.22} width={w * 0.1} height={h * 0.3} rx={0.4} fill="#c8ccd0" opacity={0.55} />
-        <rect x={x + w * 0.64} y={y + h * 0.22} width={w * 0.1} height={h * 0.3} rx={0.4} fill="#c8ccd0" opacity={0.55} />
-        <circle cx={x + w * 0.5} cy={y + h * 0.72} r={Math.max(0.6, w * 0.08)} fill="#c8ccd0" opacity={0.55} />
+        <rect x={x} y={y} width={w} height={h} rx={rr * 2} fill={defUrl(uid, "shell-dark")} />
+        <rect x={x + w * 0.06} y={y + h * 0.06} width={w * 0.88} height={h * 0.88} rx={rr * 1.6} fill={throat} />
+        <rect x={x + w * 0.26} y={y + h * 0.2} width={w * 0.09} height={h * 0.3} rx={0.3} fill="#c3c9cf" opacity={0.7} />
+        <rect x={x + w * 0.65} y={y + h * 0.2} width={w * 0.09} height={h * 0.3} rx={0.3} fill="#c3c9cf" opacity={0.7} />
+        <circle cx={x + w * 0.5} cy={y + h * 0.71} r={Math.max(0.5, w * 0.075)} fill="#c3c9cf" opacity={0.7} />
+        <rect x={x} y={y} width={w} height={h * 0.1} rx={rr} fill="#fff" opacity={0.14} />
       </g>
     );
   }
@@ -365,74 +347,85 @@ function Port(props: {
     return (
       <g>
         <title>{port.label}</title>
-        <rect x={x} y={y} width={w} height={h} rx={0.8} fill="#101318" stroke={edge} strokeWidth={0.4} />
-        <rect x={x + w * 0.16} y={y + h * 0.42} width={w * 0.68} height={h * 0.3} fill="#3a6ea5" opacity={0.75} />
+        <rect x={x} y={y} width={w} height={h} rx={rr} fill={defUrl(uid, "shell")} />
+        <rect x={x + w * 0.1} y={y + h * 0.24} width={w * 0.8} height={h * 0.56} fill={throat} />
+        <rect x={x + w * 0.14} y={y + h * 0.44} width={w * 0.72} height={h * 0.26} fill="#2f6fb5" />
+        <rect x={x} y={y} width={w} height={h * 0.12} rx={rr} fill="#fff" opacity={0.3} />
       </g>
     );
   }
 
-  const isCopper = k === "rj45" || k === "console";
+  const copper = k === "rj45" || k === "console";
 
   return (
     <g>
       <title>{`${port.label}${port.led ? (lit ? ", link up" : ", no link") : ""}`}</title>
-      {isCopper ? (
+      {copper ? (
         <>
-          {/* Shielded jack body, then the dark throat, then the clip slot
-              cut into the top edge, which is what makes an RJ45 read as one. */}
-          <rect x={x} y={y} width={w} height={h} rx={0.8} fill="#8f959c" stroke={edge} strokeWidth={0.4} />
-          <rect x={x + w * 0.12} y={y + h * 0.2} width={w * 0.76} height={h * 0.66} rx={0.6} fill={tint} />
-          <rect x={x + w * 0.38} y={y + h * 0.06} width={w * 0.24} height={h * 0.2} rx={0.4} fill={tint} />
-          {/* Contact pins catching light at the back of the throat. */}
-          <rect x={x + w * 0.2} y={y + h * 0.34} width={w * 0.6} height={h * 0.13} fill="#d8b45a" opacity={0.5} />
-          {/* Link LEDs sit in the jack's own top corners on real hardware. */}
+          {/* Shielded jack: metal shell with a lit top bevel. */}
+          <rect x={x} y={y} width={w} height={h} rx={rr} fill={defUrl(uid, "shell")} />
+          <rect x={x} y={y} width={w} height={h * 0.1} rx={rr} fill="#fff" opacity={0.42} />
+          <rect x={x} y={y + h * 0.9} width={w} height={h * 0.1} fill="#000" opacity={0.3} />
+          {/* The opening, plus the clip slot notched out of its top edge. */}
+          <rect x={x + w * 0.1} y={y + h * 0.19} width={w * 0.8} height={h * 0.69} rx={rr * 0.7} fill={throat} />
+          <rect x={x + w * 0.41} y={y + h * 0.07} width={w * 0.18} height={h * 0.16} rx={0.25} fill={throat} />
+          {/* Eight contacts catching light at the back of the throat. */}
+          <rect x={x + w * 0.23} y={y + h * 0.29} width={w * 0.54} height={h * 0.055} fill={defUrl(uid, "pins")} opacity={0.42} />
+          {/* The lower lip of the opening picks up a reflection. */}
+          <rect x={x + w * 0.11} y={y + h * 0.83} width={w * 0.78} height={h * 0.04} fill="#7d858d" opacity={0.55} />
           {!isPatch && port.led && (
             <>
+              {lit && <circle cx={x + w * 0.21} cy={y + h * 0.27} r={w * 0.26} fill={defUrl(uid, `glow-${port.led}`)} />}
               <rect
                 x={x + w * 0.13}
-                y={y + h * 0.2}
-                width={w * 0.16}
-                height={h * 0.14}
-                fill={colour}
-                className={lit && !still ? "rk-led rk-led-on" : "rk-led"}
+                y={y + h * 0.21}
+                width={w * 0.15}
+                height={h * 0.13}
+                rx={0.3}
+                fill={lit ? colour : LED_COLOURS.off}
+                className={lit && !still ? "rk-led rk-led-on" : undefined}
                 style={lit && !still ? { animationDelay: `${(index % 7) * 0.31}s`, animationDuration: `${1.3 + (index % 5) * 0.22}s` } : undefined}
               />
-              <rect x={x + w * 0.71} y={y + h * 0.2} width={w * 0.16} height={h * 0.14} fill={lit ? "#ffb020" : LED_COLOURS.off} opacity={lit ? 0.8 : 1} />
+              <rect x={x + w * 0.72} y={y + h * 0.21} width={w * 0.15} height={h * 0.13} rx={0.3} fill={lit ? LED_COLOURS.amber : LED_COLOURS.off} opacity={lit ? 0.9 : 1} />
             </>
           )}
         </>
       ) : (
         <>
-          {/* An SFP cage: metal shell, dark aperture, latch bar, and a
-              coloured tab that identifies the speed class. */}
-          <rect x={x} y={y} width={w} height={h} rx={0.8} fill="#7e848b" stroke={edge} strokeWidth={0.4} />
-          <rect x={x + w * 0.08} y={y + h * 0.24} width={w * 0.84} height={h * 0.54} rx={0.6} fill="#0b0d10" />
-          <rect x={x + w * 0.08} y={y + h * 0.14} width={w * 0.84} height={h * 0.08} fill="#5c6169" />
+          {/* An SFP cage: EMI shell, dark aperture, latch bar, speed tab. */}
+          <rect x={x} y={y} width={w} height={h} rx={rr} fill={defUrl(uid, "shell-dark")} />
+          <rect x={x} y={y} width={w} height={h * 0.1} rx={rr} fill="#fff" opacity={0.3} />
+          <rect x={x + w * 0.07} y={y + h * 0.22} width={w * 0.86} height={h * 0.56} rx={rr * 0.6} fill={defUrl(uid, "throat")} />
+          <rect x={x + w * 0.07} y={y + h * 0.13} width={w * 0.86} height={h * 0.07} fill="#868d95" opacity={0.75} />
+          <rect x={x + w * 0.07} y={y + h * 0.74} width={w * 0.86} height={h * 0.035} fill="#6b7278" opacity={0.6} />
           {(k === "sfp28" || k === "qsfp") && (
-            <rect x={x + w * 0.08} y={y + h * 0.82} width={w * 0.84} height={h * 0.1} fill={k === "qsfp" ? "#9234ea" : "#4cc3f1"} opacity={0.85} />
+            <rect x={x + w * 0.07} y={y + h * 0.82} width={w * 0.86} height={h * 0.09} rx={0.3} fill={k === "qsfp" ? "#a855f7" : "#38bdf8"} opacity={0.9} />
           )}
           {lit && (
-            <circle
-              cx={x + w * 0.5}
-              cy={y + h * 0.51}
-              r={Math.max(0.7, h * 0.11)}
-              fill={colour}
-              className={still ? "rk-led" : "rk-led rk-led-on"}
-              style={still ? undefined : { animationDelay: `${(index % 5) * 0.4}s`, animationDuration: `${1.5 + (index % 4) * 0.3}s` }}
-            />
+            <>
+              <circle cx={x + w * 0.5} cy={y + h * 0.5} r={w * 0.3} fill={defUrl(uid, `glow-${port.led}`)} />
+              <circle
+                cx={x + w * 0.5}
+                cy={y + h * 0.5}
+                r={Math.max(0.6, h * 0.1)}
+                fill={colour}
+                className={still ? undefined : "rk-led rk-led-on"}
+                style={still ? undefined : { animationDelay: `${(index % 5) * 0.4}s`, animationDuration: `${1.5 + (index % 4) * 0.3}s` }}
+              />
+            </>
           )}
         </>
       )}
       {lit && typeof port.activity === "number" && (
-        <rect x={x} y={y + h + 0.9} width={Math.max(0.8, w * port.activity)} height={Math.max(0.7, h * 0.07)} fill={colour} opacity={0.7} />
+        <rect x={x} y={y + h + 0.8} width={Math.max(0.8, w * port.activity)} height={Math.max(0.6, h * 0.06)} rx={0.3} fill={colour} opacity={0.55} />
       )}
     </g>
   );
 }
 
-/** Drive sleds, with the latch handle and dual LEDs a real caddy carries. */
-function BayFace(props: { device: RackDevice; fieldX: number; fieldW: number; unitH: number; still: boolean; fin: { edge: string } }) {
-  const { device, fieldX, fieldW, unitH, still, fin } = props;
+/** Hot-plug drive sleds with caddy handles and status indicators. */
+function BayFace(props: ContentProps) {
+  const { device, fieldX, fieldW, unitH, still, uid } = props;
   const bays = device.bays!;
   const H = device.u * unitH;
   const rows = device.u >= 2 ? 2 : 1;
@@ -444,65 +437,75 @@ function BayFace(props: { device: RackDevice; fieldX: number; fieldW: number; un
   const sleds: JSX.Element[] = [];
   for (let i = 0; i < bays.count; i++) {
     const c = i % cols;
-    const r = Math.floor(i / cols);
+    const rw = Math.floor(i / cols);
     const x = fieldX + c * cellW + cellW * 0.05;
-    const y = top + r * cellH + cellH * 0.06;
+    const y = top + rw * cellH + cellH * 0.06;
     const w = cellW * 0.9;
     const h = cellH * 0.88;
     const on = i < bays.occupied;
     sleds.push(
       <g key={i}>
         <title>{`Bay ${i + 1}: ${on ? bays.label : "empty"}`}</title>
-        <rect x={x} y={y} width={w} height={h} rx={1.2} fill={on ? "#2b2f35" : "#0c0e11"} stroke={fin.edge} strokeWidth={0.5} />
+        <rect x={x - 0.5} y={y - 0.5} width={w + 1} height={h + 1} rx={1.4} fill="#000" opacity={0.55} />
+        <rect x={x} y={y} width={w} height={h} rx={1.2} fill={defUrl(uid, on ? "sled" : "sled-empty")} />
         {on && (
           <>
-            {/* The caddy handle: a vertical bar with a release catch. */}
-            <rect x={x + w * 0.07} y={y + h * 0.14} width={w * 0.11} height={h * 0.72} rx={0.8} fill="#40454c" />
-            <rect x={x + w * 0.09} y={y + h * 0.42} width={w * 0.07} height={h * 0.16} fill="#0b0d10" />
+            <rect x={x} y={y} width={w} height={h * 0.08} rx={1.2} fill="#fff" opacity={0.16} />
+            {/* Caddy handle with its release catch. */}
+            <rect x={x + w * 0.06} y={y + h * 0.13} width={w * 0.12} height={h * 0.74} rx={0.9} fill="#565c64" />
+            <rect x={x + w * 0.06} y={y + h * 0.13} width={w * 0.12} height={h * 0.08} rx={0.9} fill="#8d949c" opacity={0.7} />
+            <rect x={x + w * 0.085} y={y + h * 0.42} width={w * 0.07} height={h * 0.16} rx={0.4} fill="#0a0c0f" />
             {/* Vent slots across the sled face. */}
-            {[0.32, 0.46, 0.6, 0.74].map((f) => (
-              <rect key={f} x={x + w * f} y={y + h * 0.2} width={w * 0.05} height={h * 0.6} rx={0.5} fill="#14171b" />
+            {[0.3, 0.44, 0.58, 0.72].map((f) => (
+              <rect key={f} x={x + w * f} y={y + h * 0.18} width={w * 0.045} height={h * 0.64} rx={0.4} fill={defUrl(uid, "vent")} />
             ))}
-            <circle cx={x + w * 0.9} cy={y + h * 0.28} r={Math.max(0.9, h * 0.08)} fill={LED_COLOURS.green} />
+            <circle cx={x + w * 0.89} cy={y + h * 0.27} r={Math.max(1.2, h * 0.13)} fill={defUrl(uid, "glow-green")} />
+            <circle cx={x + w * 0.89} cy={y + h * 0.27} r={Math.max(0.7, h * 0.07)} fill={LED_COLOURS.green} />
+            <circle cx={x + w * 0.89} cy={y + h * 0.66} r={Math.max(1.2, h * 0.13)} fill={defUrl(uid, "glow-amber")} />
             <circle
-              cx={x + w * 0.9}
+              cx={x + w * 0.89}
               cy={y + h * 0.66}
-              r={Math.max(0.9, h * 0.08)}
+              r={Math.max(0.7, h * 0.07)}
               fill={LED_COLOURS.amber}
               className={still ? undefined : "rk-led rk-led-on"}
               style={still ? undefined : { animationDelay: `${(i % 6) * 0.24}s`, animationDuration: `${0.8 + (i % 4) * 0.35}s` }}
             />
           </>
         )}
+        {!on && <rect x={x + w * 0.1} y={y + h * 0.4} width={w * 0.8} height={h * 0.2} rx={0.6} fill="#000" opacity={0.6} />}
       </g>,
     );
   }
   return <g>{sleds}</g>;
 }
 
-/** A field of vent slots, for hardware whose face is mostly airflow. */
-function VentField(props: { bodyX: number; bodyW: number; unitH: number; u: number; fin: { edge: string } }) {
-  const { bodyX, bodyW, unitH, u } = props;
-  const H = u * unitH;
-  const n = 22;
+/** A field of vent slots, for a face that is mostly airflow. */
+function VentField(props: ContentProps & { count: number }) {
+  const { bodyX, bodyW, unitH, device, uid, count } = props;
+  const H = device.u * unitH;
+  const step = (bodyW * 0.56) / count;
   return (
     <g>
-      {Array.from({ length: n }, (_, i) => (
-        <rect key={i} x={bodyX + bodyW * 0.2 + i * bodyW * 0.028} y={H * 0.26} width={bodyW * 0.014} height={H * 0.48} rx={0.8} fill="#0d1014" opacity={0.8} />
+      {Array.from({ length: count }, (_, i) => (
+        <rect key={i} x={bodyX + bodyW * 0.22 + i * step} y={H * 0.24} width={Math.max(0.8, step * 0.42)} height={H * 0.52} rx={0.5} fill={defUrl(uid, "vent")} />
       ))}
     </g>
   );
 }
 
 /** Passive filler: vents, a solid plate, cable rings, or a loaded shelf. */
-function BlankFace(props: { look: string; bodyX: number; bodyW: number; unitH: number; inset: number; u: number; fin: { edge: string; sub: string } }) {
-  const { look, bodyX, bodyW, unitH, inset, u, fin } = props;
-  const H = u * unitH;
+function BlankFace(props: ContentProps) {
+  const { device, bodyX, bodyW, unitH, inset, uid, m } = props;
+  const look = device.look ?? "solid";
+  const H = device.u * unitH;
+
   if (look === "vented") {
+    const n = 30;
+    const step = (bodyW * 0.9) / n;
     return (
       <g>
-        {Array.from({ length: 26 }, (_, i) => (
-          <rect key={i} x={bodyX + bodyW * 0.05 + i * bodyW * 0.035} y={H * 0.3} width={bodyW * 0.018} height={H * 0.4} rx={0.8} fill="#0d1014" opacity={0.7} />
+        {Array.from({ length: n }, (_, i) => (
+          <rect key={i} x={bodyX + bodyW * 0.05 + i * step} y={H * 0.28} width={Math.max(0.7, step * 0.4)} height={H * 0.44} rx={0.5} fill={defUrl(uid, "vent")} />
         ))}
       </g>
     );
@@ -510,30 +513,46 @@ function BlankFace(props: { look: string; bodyX: number; bodyW: number; unitH: n
   if (look === "fingers") {
     return (
       <g>
-        {Array.from({ length: 7 }, (_, i) => (
-          <path
-            key={i}
-            d={`M ${bodyX + bodyW * 0.08 + i * bodyW * 0.128} ${H * 0.2}
-                h ${bodyW * 0.062} v ${H * 0.6} h ${-bodyW * 0.062}`}
-            fill="none"
-            stroke={fin.sub}
-            strokeWidth={Math.max(1, H * 0.05)}
-            strokeLinejoin="round"
-            opacity={0.75}
-          />
-        ))}
+        {Array.from({ length: 7 }, (_, i) => {
+          const x = bodyX + bodyW * 0.075 + i * bodyW * 0.129;
+          const w = bodyW * 0.066;
+          return (
+            <g key={i}>
+              <path
+                d={`M ${x} ${H * 0.18} h ${w} v ${H * 0.64} h ${-w}`}
+                fill="none"
+                stroke="#000"
+                strokeOpacity={0.5}
+                strokeWidth={Math.max(1.2, H * 0.062)}
+                strokeLinejoin="round"
+              />
+              <path
+                d={`M ${x} ${H * 0.18} h ${w} v ${H * 0.64} h ${-w}`}
+                fill="none"
+                stroke={m.pale ? "#9aa1a8" : "#5d646c"}
+                strokeWidth={Math.max(0.9, H * 0.045)}
+                strokeLinejoin="round"
+              />
+            </g>
+          );
+        })}
       </g>
     );
   }
   if (look === "shelf") {
     return (
       <g>
-        <rect x={bodyX + 2} y={H - inset - Math.max(2, H * 0.14)} width={bodyW - 4} height={Math.max(2, H * 0.11)} fill="#2a2e34" />
-        <rect x={bodyX + bodyW * 0.58} y={H * 0.2} width={bodyW * 0.24} height={H * 0.58} rx={2} fill="#1b1f24" stroke={fin.edge} strokeWidth={0.6} />
+        <rect x={bodyX + 2} y={H - inset - Math.max(2, H * 0.15)} width={bodyW - 4} height={Math.max(2, H * 0.12)} fill={defUrl(uid, "sled")} />
+        <rect x={bodyX + 2} y={H - inset - Math.max(2, H * 0.15)} width={bodyW - 4} height={0.7} fill="#fff" opacity={0.22} />
+        {/* The mini PC the shelf exists for. */}
+        <rect x={bodyX + bodyW * 0.575} y={H * 0.19} width={bodyW * 0.245} height={H * 0.59} rx={2} fill="#000" opacity={0.5} />
+        <rect x={bodyX + bodyW * 0.58} y={H * 0.2} width={bodyW * 0.235} height={H * 0.57} rx={1.8} fill={defUrl(uid, "sled")} />
+        <rect x={bodyX + bodyW * 0.58} y={H * 0.2} width={bodyW * 0.235} height={H * 0.05} rx={1.8} fill="#fff" opacity={0.14} />
         {[0.3, 0.44, 0.58].map((f) => (
-          <rect key={f} x={bodyX + bodyW * 0.61} y={H * f} width={bodyW * 0.05} height={H * 0.07} rx={0.6} fill="#0d1014" />
+          <rect key={f} x={bodyX + bodyW * 0.605} y={H * f} width={bodyW * 0.045} height={H * 0.065} rx={0.5} fill={defUrl(uid, "vent")} />
         ))}
-        <circle cx={bodyX + bodyW * 0.785} cy={H * 0.32} r={Math.max(1, H * 0.05)} fill={LED_COLOURS.green} />
+        <circle cx={bodyX + bodyW * 0.783} cy={H * 0.31} r={Math.max(1.4, H * 0.065)} fill={defUrl(uid, "glow-green")} />
+        <circle cx={bodyX + bodyW * 0.783} cy={H * 0.31} r={Math.max(0.8, H * 0.033)} fill={LED_COLOURS.green} />
       </g>
     );
   }
@@ -541,25 +560,40 @@ function BlankFace(props: { look: string; bodyX: number; bodyW: number; unitH: n
 }
 
 /** Chassis indicators from the datasheet, at the faceplate's right end. */
-function ChassisLeds(props: { device: RackDevice; bodyX: number; bodyW: number; unitH: number; inset: number; still: boolean }) {
-  const { device, bodyX, bodyW, unitH, inset, still } = props;
+function ChassisLeds(props: {
+  device: RackDevice;
+  bodyX: number;
+  bodyW: number;
+  unitH: number;
+  inset: number;
+  still: boolean;
+  uid: string;
+}) {
+  const { device, bodyX, bodyW, unitH, inset, still, uid } = props;
   if (!device.leds?.length) return null;
   const H = device.u * unitH;
-  const x = bodyX + bodyW - unitH * 0.22;
+  const x = bodyX + bodyW - unitH * 0.2;
   const n = device.leds.length;
   return (
     <g>
-      {device.leds.map((led, i) => (
-        <circle
-          key={i}
-          cx={x}
-          cy={inset * 2 + ((H - inset * 4) / (n + 1)) * (i + 1)}
-          r={Math.max(1, unitH * 0.05)}
-          fill={LED_COLOURS[led]}
-          className={led !== "off" && !still ? "rk-led rk-led-on" : "rk-led"}
-          style={led !== "off" && !still ? { animationDuration: `${2.1 + i * 0.6}s` } : undefined}
-        />
-      ))}
+      {device.leds.map((led, i) => {
+        const cy = inset * 2 + ((H - inset * 4) / (n + 1)) * (i + 1);
+        const lit = led !== "off";
+        return (
+          <g key={i}>
+            {lit && <circle cx={x} cy={cy} r={Math.max(2, unitH * 0.13)} fill={defUrl(uid, `glow-${led}`)} />}
+            <circle cx={x} cy={cy} r={Math.max(1.1, unitH * 0.052)} fill="#000" opacity={0.5} />
+            <circle
+              cx={x}
+              cy={cy}
+              r={Math.max(0.85, unitH * 0.042)}
+              fill={LED_COLOURS[led]}
+              className={lit && !still ? "rk-led rk-led-on" : undefined}
+              style={lit && !still ? { animationDuration: `${2.1 + i * 0.6}s` } : undefined}
+            />
+          </g>
+        );
+      })}
     </g>
   );
 }
