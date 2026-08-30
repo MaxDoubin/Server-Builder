@@ -1,15 +1,15 @@
 /**
- * A PowerEdge R660 coming apart, driven by one 0..1 value.
+ * A PowerEdge R760 coming apart, driven by one 0..1 value.
  *
  * The geometry is Dell's own service model, which is the whole reason this
- * is possible: it arrives as 22 named assemblies rather than one welded
+ * is possible: it arrives as 34 named assemblies rather than one welded
  * lump, so the parts to move already exist and already carry the names a
  * technician uses. Ubiquiti's models, by comparison, are a single body mesh
  * with no interior at all, and nothing in this file would work on one.
  *
  * The scene is trimmed before it gets here. Dell ship it as a Unity export
- * carrying a camera, five point lights, an event system, a font atlas and
- * an "Extra content" tree of alternate parts for procedures the guide can
+ * carrying a camera, several point lights, an event system, a font atlas
+ * and an Extra Content tree of alternate parts for procedures the guide can
  * branch into, and all of it renders, the duplicates inside the real parts.
  * What is served is the one subtree that is the machine.
  *
@@ -27,7 +27,7 @@ import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { CHASSIS_MATCH, TEARDOWN_PARTS, waveProgress, type TeardownPart } from "./teardownParts";
 
-export const MODEL_URL = "/models/vendor/dell/poweredge-r660.glb";
+export const MODEL_URL = "/models/vendor/dell/poweredge-r760.glb";
 
 /** A part we found in the scene, with where it started and where it goes. */
 interface Tracked {
@@ -40,14 +40,16 @@ interface Tracked {
 /**
  * Where the assemblies live.
  *
- * Dell's export nests the machine three deep inside the Unity scene it was
- * authored in. Walking to it by name rather than by index means a rebuild
- * that adds a wrapper does not silently produce an empty page.
+ * Dell's export nests the machine several levels deep inside the Unity
+ * scene it was authored in, and the wrapper is not even named consistently
+ * between platforms: the R660 calls it PE_R660_Clone and the R760 calls it
+ * Main Assembly. Walking to it by name means a rebuild that renames or adds
+ * a wrapper fails loudly here rather than silently producing an empty page.
  */
 function findAssemblyRoot(scene: THREE.Object3D): THREE.Object3D {
   let found: THREE.Object3D | null = null;
   scene.traverse((o) => {
-    if (!found && /^PE_R660_Clone$/i.test(o.name)) found = o;
+    if (!found && /^Main Assembly$/i.test(o.name)) found = o;
   });
   return found ?? scene;
 }

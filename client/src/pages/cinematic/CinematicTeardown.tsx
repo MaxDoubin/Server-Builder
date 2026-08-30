@@ -6,7 +6,7 @@ import { TEARDOWN_PARTS } from "@/components/teardown/teardownParts";
 
 /*
   The viewer pulls in three.js, so it is loaded only when this page is, and
-  the page is already a lazy route. Nothing about the 7MB model or the
+  the page is already a lazy route. Nothing about the 4MB model or the
   engine behind it reaches a reader who never comes here.
 */
 const TeardownViewer = lazy(() =>
@@ -14,7 +14,7 @@ const TeardownViewer = lazy(() =>
 );
 
 /**
- * A real PowerEdge R660, taken apart.
+ * A real PowerEdge R760, taken apart.
  *
  * Every other exploded server on this site is a drawing of one: a chassis
  * somebody modelled by hand, with the parts they thought to include. This
@@ -24,9 +24,9 @@ const TeardownViewer = lazy(() =>
  */
 export function CinematicTeardown() {
   useSEO({
-    title: "PowerEdge R660 teardown | Max Doubin",
+    title: "PowerEdge R760 teardown | Max Doubin",
     description:
-      "A Dell PowerEdge R660 taken apart in the browser, one assembly at a time, using Dell's own service geometry: bezel, cover, air shroud, fans, drives, memory, heatsinks, risers, power supplies and system board.",
+      "A Dell PowerEdge R760 taken apart in the browser, thirty four assemblies at a time, using Dell's own service geometry: bezel, cover, shrouds, drives, fans, GPUs, four expansion risers, memory, heatsinks, power supplies and system board.",
     canonical: "https://maxdoubin.com/teardown",
   });
 
@@ -80,11 +80,14 @@ export function CinematicTeardown() {
               A PowerEdge, opened.
             </h1>
             <p className="mt-6 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              This is a Dell PowerEdge R660 coming apart in the order a technician would take it
+              This is a Dell PowerEdge R760 coming apart in the order a technician would take it
               apart, and the geometry is Dell's own. Their repair guides are built on a service
-              model of the machine as twenty two named assemblies, so these are the real parts in
-              their real positions, not a chassis drawn from a photograph. Drag the slider, or
-              press play, and pick any part to read what it does.
+              model of the machine as thirty four named assemblies, so these are the real parts
+              in their real positions, not a chassis drawn from a photograph. A 2U rather than a
+              1U on purpose: the GPUs, the four expansion risers, the RAID controller and the
+              rear drive cage are the parts that do not fit in a 1U at all, and they are the
+              ones worth watching come out. Drag the slider, or press play, and pick any part to
+              read what it does.
             </p>
           </header>
 
@@ -94,7 +97,7 @@ export function CinematicTeardown() {
                 <Suspense
                   fallback={
                     <div className="flex h-full items-center justify-center font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                      Loading seven megabytes of Dell...
+                      Loading four megabytes of Dell...
                     </div>
                   }
                 >
@@ -197,10 +200,13 @@ export function CinematicTeardown() {
               Dell publish WebXR repair guides for a handful of PowerEdge platforms, and behind
               each one is a glTF scene of the machine. It is not offered as a download and nothing
               links to it: the guide list is a POST only endpoint, the viewer is a lazily loaded
-              iframe, and the scene name sits inside a hashed JavaScript bundle. What ships here is
-              that scene with the Unity furniture removed, a camera, five lights and an alternate
-              parts tree that renders inside the real components, which took it from 13,392 nodes
-              to 1,401 and from 16.5MB to 7.1MB without touching a single part of the machine.
+              iframe, and the scene name sits inside a hashed JavaScript bundle. What ships here
+              is that scene with the Unity furniture removed, a camera, several lights and an
+              alternate parts tree of 37 duplicate assemblies that render inside the real
+              components. That took 55.9MB to 31.8MB, still over what a static host will serve
+              as one file, and then the useful discovery: 94 percent of what was left was 77
+              textures against 1.9MB of actual geometry. Resized to 1024 and encoded webp, the
+              whole machine is 4.2MB, smaller than the 1U it replaced.
             </p>
             <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The 3D model is Dell's work and their copyright, used here to show their hardware.

@@ -33,7 +33,6 @@ import {
   leadCurve,
   powerCurve,
 } from "./cableShape";
-import { plugBoot } from "./parts";
 import {
   OPTIC_BASE,
   PDU_INDEX,
@@ -183,7 +182,7 @@ function MountedDevice({
 }
 
 /**
- * Every patch lead, and every plug on the end of one.
+ * Every patch lead, lit the way Etherlighting actually lights.
  *
  * Ubiquiti publish no model for any of their 27 cable products, which sounds
  * like a gap and is not one. A patch lead is not an object you place, it is
@@ -191,124 +190,133 @@ function MountedDevice({
  * plugged into what, so a downloaded cable at a fixed length in a fixed pose
  * would have to be deformed along a curve computed here anyway.
  *
- * What their photography does settle is what the lead looks like, and the
- * first attempt had it wrong in the most basic way. A bank of Etherlighting
- * leads is not colour coded: every jacket is the same plain white, slim, and
- * the colour lives entirely in the plug, which is a clear moulding lit from
- * the port behind it. Across a bank the hue sweeps from red at one end
- * through green to blue at the other, and that sweep is the entire visual
- * signature. Coloured jackets, the way an ordinary patch panel is coded,
- * produce something that looks like every other rack in the world.
+ * What took three attempts was the light. First the jackets were colour
+ * coded like an ordinary patch panel, which is not what Etherlighting is at
+ * all: the jacket is plain white and the colour lives in the plug. Then the
+ * plug was a moulded boot with a tinted body, which is a cornered block
+ * sitting where a light should be, and it read as a coloured object rather
+ * than as something emitting.
  *
- * So: one white jacket colour, a slim radius, and the work goes into the
- * plugs. Each is a translucent body with a lit collar behind it, both
- * instanced over the whole rack and tinted per instance. The collar is an
- * unlit material on purpose, because a lit plug is emitting rather than
- * reflecting and shading it would make it look like painted plastic.
+ * Light is not an object. So there is no plug body here at all. There is a
+ * small unlit core at the port, a soft halo around it that is additively
+ * blended so it brightens whatever is behind it the way a real glow does,
+ * and the jacket itself carries the colour a short way up its own length
+ * before fading to white, because that is what a translucent jacket lit
+ * from one end looks like. The fade is per vertex, which also means every
+ * lead in the rack is one draw call.
  */
 function Leads() {
-  const { tubes, plugs } = useMemo(() => {
-    const byColour = new Map<string, THREE.BufferGeometry[]>();
-    const ends: Array<{ at: THREE.Vector3; hue: string; lit: boolean }> = [];
+  const { tubeGeometry, glows } = useMemo(() => {
+    const tubes: THREE.BufferGeometry[] = [];
+    const glowList: Array<{ at: THREE.Vector3; hue: THREE.Color }> = [];
     const litCount = WIRED_PATCHES.filter((p) => !p.fibre).length;
     let litIndex = 0;
+    const white = new THREE.Color(ETHERLIGHT_JACKET);
+
     WIRED_PATCHES.forEach((p, i) => {
       const a = anchor(p.from[0], p.from[1]);
       const b = anchor(p.to[0], p.to[1]);
       if (!a || !b) return;
       const reach = Math.min(1, Math.abs(a.y - b.y) / (WIRED_RACK_UNITS * U));
-      const curve = leadCurve(a, b, i, reach);
       const fibre = !!p.fibre;
-      const jacket = fibre ? p.jacket : "etherlight";
       const radius = fibre ? CABLE_RADIUS.etherlighting : CABLE_RADIUS.etherlighting * 1.15;
-      const list = byColour.get(jacket) ?? [];
-      list.push(new THREE.TubeGeometry(curve, 44, radius, 8, false));
-      byColour.set(jacket, list);
+      const segments = 48;
+      const radial = 8;
+      const geom = new THREE.TubeGeometry(leadCurve(a, b, i, reach), segments, radius, radial, false);
+
+      const end = fibre
+        ? new THREE.Color(JACKET_HEX[p.jacket] ?? "#8d949f")
+        : new THREE.Color(etherlightHue(litIndex, litCount));
+      const base = fibre ? end : white;
       if (!fibre) {
-        // The sweep runs across the whole rack rather than restarting per
-        // switch, so the gradient reads as one continuous thing the way it
-        // does in the photograph.
-        const hue = etherlightHue(litIndex, litCount);
+        glowList.push({ at: a, hue: end }, { at: b, hue: end });
         litIndex += 1;
-        ends.push({ at: a, hue, lit: true }, { at: b, hue, lit: true });
       }
+
+      /*
+        TubeGeometry lays its vertices out ring by ring along the curve, so
+        the ring a vertex belongs to gives its distance along the lead for
+        free. The colour runs from the port hue at each end to the jacket
+        white in the middle, over about a fifth of the length, which is
+        roughly how far the light actually carries.
+      */
+      const count = geom.attributes.position.count;
+      const colours = new Float32Array(count * 3);
+      const c = new THREE.Color();
+      for (let v = 0; v < count; v += 1) {
+        const ring = Math.floor(v / (radial + 1));
+        const t = ring / segments;
+        const nearEnd = Math.min(t, 1 - t) / 0.2;
+        c.copy(base).lerp(end, 1 - Math.min(1, nearEnd));
+        colours[v * 3] = c.r;
+        colours[v * 3 + 1] = c.g;
+        colours[v * 3 + 2] = c.b;
+      }
+      geom.setAttribute("color", new THREE.BufferAttribute(colours, 3));
+      tubes.push(geom);
     });
-    return {
-      tubes: [...byColour.entries()].map(([colour, list]) => ({
-        colour,
-        geometry: mergeGeometries(list, false),
-      })),
-      plugs: ends,
-    };
+
+    return { tubeGeometry: mergeGeometries(tubes, false), glows: glowList };
   }, []);
 
-  const bodyRef = useRef<THREE.InstancedMesh>(null);
-  const glowRef = useRef<THREE.InstancedMesh>(null);
+  const coreRef = useRef<THREE.InstancedMesh>(null);
+  const haloRef = useRef<THREE.InstancedMesh>(null);
 
   useEffect(() => {
     const m = new THREE.Matrix4();
-    const c = new THREE.Color();
     const q = new THREE.Quaternion();
-    // A nano thin plug is about 9.5mm across the body and 19mm deep with its
-    // strain relief, which is noticeably smaller than a moulded Cat6A boot.
-    const bodyScale = new THREE.Vector3(0.0095, 0.0095, 0.0095);
-    plugs.forEach((plug, i) => {
-      m.compose(plug.at, q, bodyScale);
-      bodyRef.current?.setMatrixAt(i, m);
-      // The lit collar sits just behind the plug body, where the moulding
-      // meets the jacket, which is where the light actually shows.
-      m.compose(
-        new THREE.Vector3(plug.at.x, plug.at.y, plug.at.z + 0.0132),
-        q,
-        new THREE.Vector3(0.0068, 0.0068, 0.0068),
-      );
-      glowRef.current?.setMatrixAt(i, m);
-      glowRef.current?.setColorAt(i, c.set(plug.hue));
+    glows.forEach((g, i) => {
+      // The core sits just proud of the panel, where the plug face would be.
+      m.compose(g.at, q, new THREE.Vector3(0.0034, 0.0034, 0.0026));
+      coreRef.current?.setMatrixAt(i, m);
+      coreRef.current?.setColorAt(i, g.hue);
+      m.compose(g.at, q, new THREE.Vector3(0.0092, 0.0092, 0.0060));
+      haloRef.current?.setMatrixAt(i, m);
+      haloRef.current?.setColorAt(i, g.hue);
     });
-    if (bodyRef.current) bodyRef.current.instanceMatrix.needsUpdate = true;
-    if (glowRef.current) {
-      glowRef.current.instanceMatrix.needsUpdate = true;
-      if (glowRef.current.instanceColor) glowRef.current.instanceColor.needsUpdate = true;
+    for (const ref of [coreRef, haloRef]) {
+      const mesh = ref.current;
+      if (!mesh) continue;
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     }
-  }, [plugs]);
+  }, [glows]);
 
-  const bootGeometry = useMemo(() => plugBoot(), []);
-  const glowGeometry = useMemo(() => new THREE.SphereGeometry(1, 12, 8), []);
+  const glowGeometry = useMemo(() => new THREE.SphereGeometry(1, 14, 10), []);
 
   return (
     <>
-      {tubes.map(({ colour, geometry }) =>
-        geometry ? (
-          <mesh key={colour} geometry={geometry}>
-            <meshStandardMaterial
-              color={colour === "etherlight" ? ETHERLIGHT_JACKET : JACKET_HEX[colour] ?? "#8d949f"}
-              roughness={colour === "etherlight" ? 0.34 : 0.5}
-              metalness={0.02}
-            />
-          </mesh>
-        ) : null,
-      )}
-      {plugs.length > 0 ? (
+      {tubeGeometry ? (
+        <mesh geometry={tubeGeometry}>
+          <meshStandardMaterial vertexColors roughness={0.34} metalness={0.02} />
+        </mesh>
+      ) : null}
+      {glows.length > 0 ? (
         <>
           <instancedMesh
-            ref={bodyRef}
-            args={[bootGeometry, undefined, plugs.length]}
-            frustumCulled={false}
-          >
-            <meshStandardMaterial
-              color="#f2f5f9"
-              roughness={0.22}
-              metalness={0.0}
-              transparent
-              opacity={0.92}
-            />
-          </instancedMesh>
-          <instancedMesh
-            ref={glowRef}
-            args={[glowGeometry, undefined, plugs.length]}
+            ref={coreRef}
+            args={[glowGeometry, undefined, glows.length]}
             frustumCulled={false}
           >
             <meshBasicMaterial toneMapped={false} />
+          </instancedMesh>
+          {/*
+            Additive, so the halo adds light to the panel behind it instead
+            of painting a coloured ball on top of it. Depth write off for the
+            same reason: a glow does not occlude anything.
+          */}
+          <instancedMesh
+            ref={haloRef}
+            args={[glowGeometry, undefined, glows.length]}
+            frustumCulled={false}
+          >
+            <meshBasicMaterial
+              toneMapped={false}
+              transparent
+              opacity={0.30}
+              blending={THREE.AdditiveBlending}
+              depthWrite={false}
+            />
           </instancedMesh>
         </>
       ) : null}

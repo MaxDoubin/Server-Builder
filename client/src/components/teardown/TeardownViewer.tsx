@@ -20,9 +20,10 @@ import { TeardownModel } from "./TeardownScene";
 
 function Rig() {
   /*
-    The model is a 1U server: 443mm across, 750mm deep, 43mm tall. Framing
-    it on the face alone puts the camera inside the chassis, so the start
-    position clears the footprint diagonal instead.
+    The model is a 2U server: 482mm across the ears, 889mm deep with its
+    rear drive cage, 90mm tall. Framing it on the face alone puts the camera
+    inside the chassis, so the start position clears the footprint diagonal
+    instead.
   */
   return (
     <OrbitControls
@@ -53,7 +54,7 @@ export function TeardownViewer({
   return (
     <Canvas
       dpr={[1, 1.75]}
-      camera={{ fov: 32, position: [0.85, 0.52, 1.15], near: 0.01, far: 40 }}
+      camera={{ fov: 30, position: [0.98, 0.58, 1.32], near: 0.01, far: 40 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onPointerMissed={() => onSelect(null)}
     >
@@ -68,13 +69,13 @@ export function TeardownViewer({
             not need and a dependency it should not have. */}
         <StudioEnvironment />
         {/*
-          Dell model space puts the chassis floor at y=0 and the front at
-          +Z, with the machine running 0 to 830mm deep, so it is shifted
+          Dell model space puts the chassis floor near y=0 and the front at
+          +Z, with the machine running -27 to 862mm deep, so it is shifted
           back onto the origin here rather than in the file. Leaving the
           file untouched means it still matches what Dell serve, byte for
           byte, and can be diffed against it.
         */}
-        <group ref={groupRef} position={[0, -0.02, -0.42]}>
+        <group ref={groupRef} position={[0, -0.045, -0.417]}>
           <TeardownModel progressRef={progressRef} selected={selected} onSelect={onSelect} />
         </group>
       </Suspense>
