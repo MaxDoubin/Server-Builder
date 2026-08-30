@@ -359,12 +359,15 @@ class CiscoEnterpriseRack(EnterpriseRack):
         self.build_ucs_c240(top - 25 * U)
         self.build_ucs_c220(at(27), 'UCS_C220_A')
         self.build_ucs_c220(at(28), 'UCS_C220_B')
-        self.build_blank(at(29), 2, 'BLANK_LOWER')
+        self.build_blank(at(29, 2), 2, 'BLANK_LOWER')
+
+        print('BUILD blanks', flush=True)
+        self.build_blank(at(31, 5), 5, 'BLANK_BASE')
 
         print('BUILD power', flush=True)
-        self.build_pdu(top - 31 * U)
-        self.build_ups(top - 33 * U)
-        self.build_blank(at(37), 5, 'BLANK_BASE')
+        self.build_pdu(top - 36 * U)
+        self.build_ups(top - 38 * U)
+        
 
         print('BUILD patch cables', flush=True)
         self.build_patch_cables(patch_a, sw48, patch_z=at(0), switch_z=at(1))

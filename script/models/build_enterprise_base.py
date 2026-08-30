@@ -148,11 +148,33 @@ class EnterpriseRack(UniFiHeroRack):
             self.front_cylinder(group, 'silver_plain', (float(x), self.front_y - 0.0136, z), 0.0040, 0.0038, 24)
             self.torus_front(group, 'silver_plain', (float(x), self.front_y - 0.0160, z - 0.009), 0.0100, 0.0016, 36, 8)
 
-    def build_blank(self, z: float, u: int, group: str, vented: bool = True) -> None:
-        self.panel_shell(group, z, u, 0.024, face=self.inset_material)
+    def build_blank(self, z: float, u: int, group: str, vented: bool = False) -> None:
+        """A blanking panel over unused rack units.
+
+        Solid by default, because blocking air is the entire job: a gap in
+        the front of a rack lets hot exhaust turn back through it into the
+        intake above, and the machine reads its own waste heat as room air.
+        A vented panel is a different product for a different problem, so
+        it has to be asked for.
+
+        Steel panels are pressed with stiffening ribs, without which a 4U
+        sheet this thin would oil can every time somebody leaned on it.
+
+        Painted to match the cabinet rather than the equipment, because a
+        blanking panel is a rack accessory and is sold in the rack's own
+        colour. Wearing the vendor's panel grey instead put a five unit
+        pale slab down the middle of a black rack, which is the one thing
+        a panel meant to disappear must not do.
+        """
+        self.panel_shell(group, z, u, 0.024, face=self.frame_material)
         if vented:
             self.perforations(group, 0, z, 0.360, u * U * 0.54, 44, max(2, u * 3),
                               y=self.front_y - 0.0060, radius=0.0011)
+            return
+        for i in range(u):
+            rz = z + (i - (u - 1) / 2) * U
+            self.rounded_prism(group, 'steel_plain', (0, self.front_y - 0.0044, rz),
+                               (0.384, 0.0022, U * 0.30), radius=0.0016, bevel=0.0006, steps=5)
 
     def build_frame(self) -> None:
         """A full height 42U four post rack, not a studio frame on casters.

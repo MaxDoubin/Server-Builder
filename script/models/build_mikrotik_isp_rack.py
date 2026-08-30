@@ -270,9 +270,13 @@ class MikroTikIspRack(EnterpriseRack):
         self.build_odf(top - 11 * U)
         self.build_cable_manager(at(13), 'CABLE_MANAGER_LOW')
 
+        print('BUILD blanks', flush=True)
+        self.build_blank(at(14, 4), 4, 'BLANK_LOW')
+        self.build_blank(at(18, 3), 3, 'BLANK_BASE')
+
         print('BUILD power', flush=True)
-        self.build_pdu(top - 14 * U)
-        self.build_ups(top - 15 * U)
+        self.build_pdu(top - 21 * U)
+        self.build_ups(top - 22 * U)
 
         print('BUILD patch cables', flush=True)
         self.build_patch_cables(patch_a, crs354, patch_z=at(0), switch_z=at(1))

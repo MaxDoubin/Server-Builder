@@ -181,6 +181,66 @@ class DellComputeRack(EnterpriseRack):
                           self.front_y - 0.0072)
         self.control_panel(group, 0.196, z, U * 1.05)
 
+    def build_r960(self, z_top: float) -> None:
+        """4U four socket server: thirty two 2.5 inch drives in two rows.
+
+        The R960 is the shape a four socket box has to be. Four processors
+        and sixty four DIMM slots do not fit under a 2U lid, so the chassis
+        grows upward, and the extra height buys a second row of drives
+        rather than a taller single one: a 2.5 inch carrier is 15mm wide
+        and 100mm long however tall the opening is.
+        """
+        g = 'R960'
+        h = 4 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 4, 0.869, face='dell_graphite')
+        row_h = h * 0.36
+        for row in range(2):
+            rz = z + (row_h * 0.58 if row == 0 else -row_h * 0.58)
+            for i in range(16):
+                self.upright_drive(g, -0.1740 + i * 0.02230, rz, 0.0206, row_h, filled=(row * 16 + i < 26))
+        self.control_panel(g, 0.196, z, h * 0.52)
+        # The service tag pulls out of the left ear on every PowerEdge.
+        self.rounded_prism(g, 'dell_bezel', (-0.207, self.front_y - 0.0030, z - h * 0.34),
+                           (0.0130, 0.0064, 0.0180), radius=0.0008, bevel=0.0003, steps=5)
+
+    def build_xe9680(self, z_top: float) -> None:
+        """6U accelerator node: a wall of fans, eight bays, and not much else.
+
+        This is the densest thing in the rack and the plainest to look at,
+        and both facts have the same cause. Eight OAM accelerators and two
+        processors is roughly ten kilowatts under one lid, so the entire
+        front elevation above the drive row is intake: five fan modules
+        across, each a rotor behind a punched guard. There is nowhere for a
+        front panel to go, which is why the only markings on a 114 kilogram
+        server are a control cluster the size of a phone.
+        """
+        g = 'XE9680'
+        h = 6 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 6, 1.009, face='dell_graphite')
+
+        # The intake wall: five fan modules, each behind its own guard.
+        for i in range(5):
+            fx = -0.1640 + i * 0.0820
+            fz = z + h * 0.14
+            self.rounded_prism(g, 'dell_bezel', (fx, self.front_y - 0.0022, fz),
+                               (0.0780, 0.0070, h * 0.50), radius=0.0018, bevel=0.0006, steps=6)
+            for k in range(2):
+                self.fan(g, fx, fz + (h * 0.115 if k == 0 else -h * 0.115), 0.0330,
+                         y=self.front_y - 0.0062, blades=9)
+            self.lens(g, fx + 0.0330, fz - h * 0.215, 'green_led', 0.0013, self.front_y - 0.0066)
+
+        # Eight 2.5 inch NVMe bays along the bottom, then the control cluster.
+        for i in range(8):
+            self.upright_drive(g, -0.1620 + i * 0.0232, z - h * 0.30, 0.0210, h * 0.24, filled=(i < 6))
+        self.rounded_prism(g, 'dell_bezel', (0.140, self.front_y - 0.0026, z - h * 0.30),
+                           (0.0560, 0.0074, h * 0.24), radius=0.0014, bevel=0.0005, steps=6)
+        self.power_button(g, 0.140, z - h * 0.255, radius=0.0100)
+        self.lens(g, 0.126, z - h * 0.335, 'dell_blue', 0.0024)
+        self.lens(g, 0.154, z - h * 0.335, 'amber_led', 0.0020)
+        self.screen(g, 'compute', 0.196, z - h * 0.30, 0.038, h * 0.14)
+
     def build_powervault(self, z_top: float) -> None:
         """A storage shelf: the same upright drives, no compute behind them."""
         g = 'POWERVAULT_ME5'
@@ -242,14 +302,24 @@ class DellComputeRack(EnterpriseRack):
         self.build_r660(at(14), 'R660_A', filled=10)
         self.build_r660(at(15), 'R660_B', filled=10)
         self.build_r660(at(16), 'R660_C', filled=6)
+        self.build_r960(top - 17 * U)
+        self.build_xe9680(top - 21 * U)
 
         print('BUILD storage', flush=True)
-        self.build_powervault(top - 17 * U)
-        self.build_cable_manager(at(19), 'CABLE_MANAGER_LOW')
+        self.build_powervault(top - 27 * U)
+        self.build_cable_manager(at(29), 'CABLE_MANAGER_LOW')
+
+        # Blank the gap between the last device and the power. Open rack
+        # units are not neutral: hot exhaust turns straight back through
+        # them into the intakes above, and every vendor's thermal guide
+        # says to close them. Real panels come in 1U, 2U and 4U.
+        print('BUILD blanks', flush=True)
+        self.build_blank(at(30, 4), 4, 'BLANK_LOW')
+        self.build_blank(at(34, 2), 2, 'BLANK_BASE')
 
         print('BUILD power', flush=True)
-        self.build_pdu(top - 20 * U)
-        self.build_ups(top - 22 * U)
+        self.build_pdu(top - 36 * U)
+        self.build_ups(top - 38 * U)
 
         print('BUILD to_scene', flush=True)
         return self.to_scene()

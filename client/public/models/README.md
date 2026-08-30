@@ -6,12 +6,12 @@ meshes.
 
 | File | Page | Size | Triangles | Nodes |
 | --- | --- | --- | --- | --- |
-| `unifi-hero-rack.glb` | `/racks/unifi-12u` | 647 KB | 117,068 | 162 |
-| `cisco-enterprise-42u.glb` | `/racks/cisco-enterprise-42u` | 961 KB | 226,066 | 249 |
-| `juniper-core-42u.glb` | `/racks/juniper-core-42u` | 846 KB | 200,740 | 230 |
-| `mikrotik-isp-24u.glb` | `/racks/mikrotik-isp-24u` | 641 KB | 145,942 | 179 |
-| `dell-compute-42u.glb` | `/racks/dell-compute-42u` | 429 KB | 78,394 | 173 |
-| `storage-42u.glb` | `/racks/storage-dense-42u` | 317 KB | 52,920 | 122 |
+| `unifi-hero-rack.glb` | `/racks/unifi-12u` | 646 KB | 117,068 | 162 |
+| `cisco-enterprise-42u.glb` | `/racks/cisco-enterprise-42u` | 900 KB | 206,880 | 255 |
+| `juniper-core-42u.glb` | `/racks/juniper-core-42u` | 847 KB | 198,134 | 253 |
+| `mikrotik-isp-24u.glb` | `/racks/mikrotik-isp-24u` | 655 KB | 147,338 | 193 |
+| `dell-compute-42u.glb` | `/racks/dell-compute-42u` | 535 KB | 100,618 | 219 |
+| `storage-42u.glb` | `/racks/storage-dense-42u` | 333 KB | 55,120 | 143 |
 
 ## Where they came from
 

@@ -234,9 +234,14 @@ class StorageRack(EnterpriseRack):
         self.build_tape_library(top - 20 * U)
         self.build_cable_manager(at(24), 'CABLE_MANAGER_LOW')
 
+        print('BUILD blanks', flush=True)
+        self.build_blank(at(25, 4), 4, 'BLANK_LOW')
+        self.build_blank(at(29, 4), 4, 'BLANK_BASE')
+        self.build_blank(at(33, 3), 3, 'BLANK_FOOT')
+
         print('BUILD power', flush=True)
-        self.build_pdu(top - 25 * U)
-        self.build_ups(top - 27 * U)
+        self.build_pdu(top - 36 * U)
+        self.build_ups(top - 38 * U)
 
         print('BUILD to_scene', flush=True)
         return self.to_scene()

@@ -304,14 +304,20 @@ class JuniperCoreRack(EnterpriseRack):
         self.build_srx4600(at(20))
         self.build_srx1500(at(21))
         self.build_console_server(at(22))
-        self.build_blank(at(23), 2, 'BLANK_MID')
+        self.build_blank(at(23, 2), 2, 'BLANK_MID')
 
-        # Nothing below the UPS. Eleven units of open rack is where the
-        # cold air comes in, and it is what the bottom of a real rack looks
-        # like once the kit that pays for it has been installed.
+        # Close the gap between the last router and the power. Eleven
+        # units of open rack is not where the cold air comes in, it is
+        # where the hot air goes back round: exhaust turns through an open
+        # unit and straight into the intake above it.
+        print('BUILD blanks', flush=True)
+        self.build_blank(at(25, 4), 4, 'BLANK_LOW')
+        self.build_blank(at(29, 4), 4, 'BLANK_BASE')
+        self.build_blank(at(33, 3), 3, 'BLANK_FOOT')
+
         print('BUILD power', flush=True)
-        self.build_pdu(top - 25 * U)
-        self.build_ups(top - 27 * U)
+        self.build_pdu(top - 36 * U)
+        self.build_ups(top - 38 * U)
 
         print('BUILD patch cables', flush=True)
         self.build_patch_cables(patch_a, ex4400, patch_z=at(0), switch_z=at(1))
