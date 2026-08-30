@@ -193,6 +193,12 @@ const CinematicCamps = lazyWithRetry(() =>
 const CinematicColophon = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicColophon").then((m) => ({ default: m.CinematicColophon })),
 );
+const CinematicTeardown = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicTeardown").then((m) => ({ default: m.CinematicTeardown })),
+);
+const CinematicWiredRack = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicWiredRack").then((m) => ({ default: m.CinematicWiredRack })),
+);
 const CinematicFaq = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicFaq").then((m) => ({ default: m.CinematicFaq })),
 );
@@ -670,6 +676,11 @@ function AnimatedRoutes() {
               <CinematicNclGuide />
             </Suspense>
           </Route>
+          <Route path="/racks/wired">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicWiredRack />
+            </Suspense>
+          </Route>
           <Route path="/racks/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicRackDetail />
@@ -738,6 +749,11 @@ function AnimatedRoutes() {
           <Route path="/colophon">
             <Suspense fallback={<RouteLoading />}>
               <CinematicColophon />
+            </Suspense>
+          </Route>
+          <Route path="/teardown">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicTeardown />
             </Suspense>
           </Route>
           <Route path="/faq">

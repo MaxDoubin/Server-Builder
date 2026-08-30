@@ -22,24 +22,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import type { RackDefinition, RackPatch } from "@/lib/rackTypes";
 import { chassisLayout, type ChassisLayout } from "./chassisLayout";
 import { plugBoot } from "./parts";
-
-/**
- * Jacket radius. Cat6A patch cord is about 6mm over the jacket; the UniFi
- * Etherlighting lead is a slim 2.5mm TPE. Drawn at its true 1.25mm radius
- * against a white chassis it disappeared into a scratch, so it renders at
- * the low end of what a booted patch lead actually measures instead.
- */
-const RADIUS = { plain: 0.0029, etherlighting: 0.0019 };
-
-const JACKET_HEX: Record<string, string> = {
-  blue: "#2f6fd0",
-  grey: "#8d949f",
-  yellow: "#e3c02a",
-  red: "#c8383d",
-  green: "#3f9f57",
-  // Slightly off white, so a white lead still reads against a white panel.
-  white: "#e6eaef",
-};
+import { CABLE_RADIUS as RADIUS, JACKET_HEX, jitter, leadCurve } from "./cableShape";
 
 const LED_HEX: Record<string, string> = {
   green: "#4ef08a",
@@ -48,9 +31,6 @@ const LED_HEX: Record<string, string> = {
   red: "#ff5f5f",
   off: "#9aa3b0",
 };
-
-/** Deterministic 0..1 from an integer, so a rack looks the same every load. */
-const jitter = (n: number): number => ((n * 2654435761) % 1000) / 1000;
 
 interface Ends {
   a: THREE.Vector3;
@@ -63,57 +43,11 @@ interface Ends {
   outB?: THREE.Vector3;
 }
 
-/**
- * The path one lead takes.
- *
- * The first pass let every lead find its own way from A to B, and the
- * result was a bowl of spaghetti across the front of the rack. That is not
- * what a patched rack looks like, and it is not what a cable does either.
- *
- * A dressed bundle is four moves, and every lead in it makes the same
- * four: out of the jack along the plug's axis, a turn down into a service
- * loop, a run along the bottom of that loop to get under the far port, and
- * back up into it. Because every lead turns at the same standoff from the
- * panel and drops to the same belly, the vertical runs come out parallel
- * and the bundle reads as combed rather than as tangled. The variation is
- * only in how far out each one sits, and that is not arbitrary either: a
- * long lead has to cross the ones under it, so it is layered further out.
- *
- * The dip below both ports is a real service loop, not a sag. It is the
- * slack an installer leaves so a switch can be pulled forward on its rails
- * without unplugging forty cables.
- */
-function leadCurve(a: THREE.Vector3, b: THREE.Vector3, n: number, reach: number): THREE.CatmullRomCurve3 {
-  const j = jitter(n + 1);
-  // Standoff from the panel. Near constant, so the bundle is one surface,
-  // with the long leads layered out over the short ones they cross.
-  const out = 0.019 + reach * 0.016 + j * 0.0018;
-  // Bottom of the service loop, just below whichever port is lower. A
-  // dressed loop clears its own switch and stops; the first attempt hung
-  // it eight centimetres out and two rack units down, which is a bundle
-  // nobody would leave and a shape that covered the hardware behind it.
-  const belly = Math.min(a.y, b.y) - 0.011 - reach * 0.013 - j * 0.002;
-  const mid = (a.x + b.x) / 2;
-
-  return new THREE.CatmullRomCurve3(
-    [
-      new THREE.Vector3(a.x, a.y, a.z),
-      new THREE.Vector3(a.x, a.y, a.z + 0.019),
-      new THREE.Vector3(a.x, a.y - 0.008, a.z + out * 0.75),
-      new THREE.Vector3(a.x, (a.y + belly) / 2, a.z + out),
-      new THREE.Vector3(a.x, belly, a.z + out),
-      new THREE.Vector3(mid, belly - 0.0015, a.z + out),
-      new THREE.Vector3(b.x, belly, b.z + out),
-      new THREE.Vector3(b.x, (b.y + belly) / 2, b.z + out),
-      new THREE.Vector3(b.x, b.y - 0.008, b.z + out * 0.75),
-      new THREE.Vector3(b.x, b.y, b.z + 0.019),
-      new THREE.Vector3(b.x, b.y, b.z),
-    ],
-    false,
-    "catmullrom",
-    0.25,
-  );
-}
+/*
+  The lead shape and the jacket palette live in cableShape.ts, because a
+  rack built from vendor geometry needs exactly the same cabling and the
+  physics does not care who modelled the switch it plugs into.
+*/
 
 export function RackCables3D({
   rack,

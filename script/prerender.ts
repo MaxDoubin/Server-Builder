@@ -893,6 +893,20 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/coding-camps`,
     },
     {
+      dir: "racks/wired",
+      title: "The wired UniFi rack | Max Doubin",
+      description:
+        "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fibre uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
+      canonical: `${SITE_URL}/racks/wired`,
+    },
+    {
+      dir: "teardown",
+      title: "PowerEdge R660 teardown | Max Doubin",
+      description:
+        "A Dell PowerEdge R660 taken apart in the browser, one assembly at a time, using Dell's own service geometry: bezel, cover, air shroud, fans, drives, memory, heatsinks, risers, power supplies and system board.",
+      canonical: `${SITE_URL}/teardown`,
+    },
+    {
       dir: "colophon",
       title: "Colophon | Max Doubin",
       description:
@@ -1449,6 +1463,81 @@ ${JSON.stringify({
   ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/cyber-club", "Cyber Club"], ["/links", "Links"]])}
 </main>`;
 
+/*
+  Both of these pages are mostly a WebGL canvas, which a crawler cannot see
+  and a reader with WebGL disabled cannot either. The prose below is the
+  page's actual argument rather than a summary of it, so what is indexed is
+  worth indexing.
+*/
+const wiredRackContent = `
+  <h2>The wired rack</h2>
+  <p>Fourteen units of UniFi, patched the way somebody would actually patch it.
+  The hardware is Ubiquiti's own geometry, the same models their store loads
+  into its 3D viewer, so the panels are the panels and the ports are where the
+  ports are. The build is mine: two PoE switches coming down to surge panels,
+  fibre uplinks to the aggregation switch, storage taking copper straight to
+  the nearest switch, and every power lead running down the side of the frame
+  into the distribution unit.</p>
+  <h3>What is in it</h3>
+  <ul>
+    <li>Dream Machine SE, the gateway, at the top of the rack.</li>
+    <li>Pro Aggregation, which every other switch uplinks to on fibre.</li>
+    <li>Two 24 port surge protection panels, where the building's cabling lands.</li>
+    <li>Switch Pro Max 48 PoE and Switch Pro 24 PoE, the access layer.</li>
+    <li>Enterprise Gateway, Network Video Recorder Pro and Network Attached Storage Pro.</li>
+    <li>Power Distribution Pro at the bottom, which every power lead runs to.</li>
+  </ul>
+  <h3>Why it looks combed instead of tangled</h3>
+  <p>The first version of this cabling let every lead find its own way from A
+  to B, and the result was a bowl of spaghetti across the front of the rack. A
+  dressed bundle is four moves and every lead makes the same four: out of the
+  jack along the plug's axis, a turn down into a service loop, a run along the
+  bottom of that loop to get under the far port, and back up into it. Because
+  every lead turns at the same standoff and drops to the same belly, the
+  vertical runs come out parallel. The only variation is how far out each one
+  stands, and a long lead has to cross the ones underneath it, so it is
+  layered further out.</p>
+  <p>Power leads do none of that. They are thicker, they will not bend as
+  tightly, and nobody dresses a C13 across the face of their switches, so they
+  drop out of the inlet, run to whichever side of the frame is nearer, and
+  travel vertically down to the outlet they land in.</p>
+  <p>The 3D models are Ubiquiti's work and their copyright, used here to show
+  their hardware. Ten of the eleven devices are theirs; the distribution unit
+  is not, because Ubiquiti publish no model for it, so it is built by hand
+  from their own dimensioned elevation.</p>
+`;
+
+const teardownContent = `
+  <h2>A PowerEdge, opened</h2>
+  <p>This is a Dell PowerEdge R660 coming apart in the order a technician
+  would take it apart, and the geometry is Dell's own. Their repair guides are
+  built on a service model of the machine as twenty two named assemblies, so
+  these are the real parts in their real positions, not a chassis drawn from a
+  photograph.</p>
+  <h3>The order of removal</h3>
+  <ol>
+    <li>Front bezel. Unlocks and pulls straight off. Nothing can be reached until it is gone.</li>
+    <li>System cover, and the drive backplane cover behind it.</li>
+    <li>Air shroud, which directs every cubic foot the fans move over the processors.</li>
+    <li>Drive carriers, which are hot swap and come out with the machine running.</li>
+    <li>Cooling fans and power supplies, also hot swap.</li>
+    <li>Heatsinks, memory, and the two expansion risers.</li>
+    <li>BOSS-N1 module, drive backplane, internal USB card, intrusion switch and control panels.</li>
+    <li>System board, last, because everything else is bolted to it or plugged into it.</li>
+  </ol>
+  <h3>Where the geometry came from</h3>
+  <p>Dell publish WebXR repair guides for a handful of PowerEdge platforms,
+  and behind each one is a glTF scene of the machine. It is not offered as a
+  download and nothing links to it: the guide list is a POST only endpoint,
+  the viewer is a lazily loaded iframe, and the scene name sits inside a
+  hashed JavaScript bundle. What ships here is that scene with the Unity
+  furniture removed, a camera, five lights and an alternate parts tree that
+  renders inside the real components, which took it from 13,392 nodes to 1,401
+  and from 16.5MB to 7.1MB without touching a single part of the machine.</p>
+  <p>The 3D model is Dell's work and their copyright, used here to show their
+  hardware. The teardown order, the travel directions and the notes are mine.</p>
+`;
+
   /*
     Keyed by the same `dir` the STANDALONE list uses, so adding a page without
     a body here is caught by check-prerender-depth rather than shipping empty.
@@ -1471,6 +1560,8 @@ ${JSON.stringify({
     certifications: certificationsContent,
     ncl: nclHubContent,
     flashcards: flashcardsContent,
+    "racks/wired": wiredRackContent,
+    teardown: teardownContent,
   };
 
   for (const page of STANDALONE) {
@@ -2349,6 +2440,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/archive`, lastmod: today, changefreq: "weekly", priority: "0.8" },
     { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/tools`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/racks/wired`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
