@@ -70,3 +70,12 @@
 # that covers the same ground keeps those arrivals useful and hands the link
 # equity somewhere sensible, which a bare 404 throws away.
 /blog/running-a-cyber-club  /cyber-club  301
+
+# Retired pages.
+#
+# The changelog was a list of site edits, which is a thing the person who
+# runs the site cares about and nobody arriving from a search does. Google
+# had picked it up as a sitelink under the name search, so it was spending
+# one of six slots on a maintenance log. Removed, and 301'd to the roadmap,
+# which is the page that still answers "what is happening with this site".
+/changelog  /roadmap  301

@@ -172,6 +172,12 @@ jobs:
       - name: Structured data
         run: node scripts-ci/check-structured-data.mjs
 
+      # A rack page draws the same hardware three ways. Two are generated
+      # from the device list; the third is a GLB built by a generator with
+      # its own copy of the layout, and that copy has drifted twice.
+      - name: Rack models match their device lists
+        run: node scripts-ci/check-rack-models.mjs
+
       # Last because it reads both the source trees and the built HTML.
       - name: Em dashes
         run: node scripts-ci/check-em-dashes.mjs

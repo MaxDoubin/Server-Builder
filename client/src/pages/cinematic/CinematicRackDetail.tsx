@@ -10,13 +10,44 @@
  * should be a URL that opens on the 9300, not a URL plus instructions.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { publishedWatts, rackBySlug, unitsUsed } from "@/lib/racks";
 import { RackElevation } from "@/components/racks/RackElevation";
+
+/*
+  three.js is a large dependency and the elevation is the primary drawing,
+  so the 3D view arrives on its own chunk and only when asked for.
+*/
+const Rack3DView = lazy(() => import("@/components/racks/Rack3DView"));
+/*
+  The hero model is a separate chunk again, and a separate view. It is one
+  authored GLB shown exactly as authored rather than the procedural
+  renderer, and only the UniFi rack has one, so the tab only appears there.
+*/
+const HeroRackModel = lazy(() => import("@/components/racks/HeroRackModel"));
+
+type RackView = "elevation" | "3d" | "model";
+
+const VIEW_LABELS: Record<RackView, string> = {
+  elevation: "Elevation",
+  "3d": "3D",
+  model: "Hero model",
+};
+
+/* Light, because both 3D views are a white studio. A dark placeholder
+   flashed black for the second the three.js chunk took to arrive. */
+function ModelLoading() {
+  return (
+    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3] font-techno text-[10px] uppercase tracking-[0.3em] text-[#5c6472]">
+      Loading model
+    </div>
+  );
+}
 import { DeviceDetailPanel } from "@/components/racks/DeviceDetailPanel";
+import { ALL_HERO_PARTS, heroModelFor } from "@/lib/racks/heroModels";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -28,6 +59,24 @@ export function CinematicRackDetail() {
     someone "the 9300 in the Catalyst rack" should open on that device
     rather than on the rack with instructions to go find it.
   */
+  /*
+    Which drawing is showing lives in the query string alongside the
+    selected device, so "look at this rack in 3D" is a link rather than a
+    link plus instructions.
+  */
+  const [view, setViewState] = useState<RackView>(() => {
+    if (typeof window === "undefined") return "elevation";
+    const q = new URLSearchParams(window.location.search).get("view");
+    return q === "3d" || q === "model" ? q : "elevation";
+  });
+  const setView = useCallback((v: RackView) => {
+    setViewState(v);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (v === "elevation") url.searchParams.delete("view");
+    else url.searchParams.set("view", v);
+    window.history.replaceState(null, "", url);
+  }, []);
   const [selectedId, setSelectedId] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("device");
@@ -83,7 +132,30 @@ export function CinematicRackDetail() {
     );
   }
 
-  const selected = rack.devices.find((d) => d.id === selectedId) ?? null;
+  /*
+    Which vendors in this rack decline to publish a draw. Naming them
+    beats a fixed list: the note used to say "Cisco, Juniper and Dell" on
+    every page including the MikroTik one, where none of the three appear.
+  */
+  const silentVendors = Array.from(
+    new Set(
+      rack.devices
+        .filter((d) => d.watts === null && d.vendor !== "Generic" && d.family !== "patch" && d.family !== "blank")
+        .map((d) => d.vendor),
+    ),
+  );
+
+  const heroModel = heroModelFor(rack.slug);
+  const views: RackView[] = heroModel ? ["elevation", "3d", "model"] : ["elevation", "3d"];
+  /*
+    The model's parts carry their own device records, because the model
+    shows hardware the elevation does not: a recorder, an RPS, a transfer
+    stage. Look there first when the model view is the one selecting.
+  */
+  const selected =
+    rack.devices.find((d) => d.id === selectedId) ??
+    ALL_HERO_PARTS.get(selectedId ?? "")?.device ??
+    null;
   const power = publishedWatts(rack);
 
   return (
@@ -106,13 +178,42 @@ export function CinematicRackDetail() {
             </p>
             <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
               Click any device in the elevation, or Tab to it and press Enter,
-              to pull it out and read its details.
+              to pull it out and read its details. Switch to the 3D model to
+              walk around the same rack: every device is built from the same
+              datasheet figures, down to the port pitch and the chassis depth.
             </p>
           </header>
 
           <div className="mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <div className="lg:sticky lg:top-24">
-              <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
+              <div className="mb-3 flex gap-2" role="group" aria-label="View">
+                {views.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setView(v)}
+                    aria-pressed={view === v}
+                    className={`rounded-full border px-3 py-1.5 font-techno text-[10px] uppercase tracking-[0.25em] transition-colors ${
+                      view === v
+                        ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-bone))]"
+                        : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
+                    }`}
+                  >
+                    {VIEW_LABELS[v]}
+                  </button>
+                ))}
+              </div>
+              {view === "elevation" ? (
+                <RackElevation rack={rack} selectedId={selectedId} onSelect={(id) => select(id)} />
+              ) : view === "model" && heroModel ? (
+                <Suspense fallback={<ModelLoading />}>
+                  <HeroRackModel model={heroModel} selectedId={selectedId} onSelect={(id) => select(id)} />
+                </Suspense>
+              ) : (
+                <Suspense fallback={<ModelLoading />}>
+                  <Rack3DView rack={rack} />
+                </Suspense>
+              )}
             </div>
 
             <aside aria-live="polite">
@@ -142,6 +243,43 @@ export function CinematicRackDetail() {
                       </div>
                     ))}
                   </dl>
+
+                  {/*
+                    Why that row is empty, said out loud.
+
+                    Five of the six racks here report no consumption figure
+                    at all, and without this the page reads as though the
+                    data is missing. It is not: the vendors publish a power
+                    supply rating and a PoE budget, which are both capacity
+                    and neither of them draw. A 715W supply is not a 715W
+                    switch. Leaving the row blank is the honest answer and
+                    explaining it is what makes it legible as an answer.
+                  */}
+                  {power.unpublished > 0 && (
+                    <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                      {power.total > 0
+                        ? `${power.unpublished} device${power.unpublished === 1 ? "" : "s"} here publish${power.unpublished === 1 ? "es" : ""} no consumption figure.`
+                        : "Nothing here publishes a consumption figure."}{" "}
+                      {silentVendors.length > 0 ? (
+                        <>
+                          That is the vendors' doing, not an omission on this page.{" "}
+                          {silentVendors.join(", ")} publish what a device's power supply
+                          is rated for, which is capacity rather than draw: a 715W supply
+                          is not a 715W device. Quoting one as the other would overstate a
+                          rack's load several times over, so it reads as not published,
+                          which is true.
+                        </>
+                      ) : (
+                        <>
+                          Those are the power distribution and battery units, and there is
+                          nothing to publish: a PDU passes through whatever is plugged into
+                          it and a UPS draws whatever it is carrying, so neither has a
+                          consumption figure of its own. The number above is the equipment
+                          they feed.
+                        </>
+                      )}
+                    </p>
+                  )}
 
                   <h2 className="mt-10 font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                     Top to bottom

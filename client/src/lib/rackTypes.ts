@@ -70,7 +70,41 @@ export interface RackDevice {
    * `occupied` is illustrative in the same way port activity is: a plausible
    * fit-out, stated as such, never a measurement.
    */
-  bays?: { count: number; occupied: number; label: string };
+  bays?: {
+    count: number;
+    occupied: number;
+    label: string;
+    /**
+     * Rows the carriers sit in. Defaults to two on anything taller than
+     * 1U, which is right for a grid of flat carriers and wrong for a
+     * carrier stood on its edge: a 2U opening is tall enough to take a
+     * 2.5 inch drive upright, and twenty four of them go across the face
+     * in one row. Drawn as a grid instead, the rack whose whole point is
+     * that its sleds stand on end shows them lying down.
+     */
+    rows?: number;
+    /**
+     * The bays are behind this many top load drawers and none of them is
+     * visible from the front. A high density shelf holds eighty four
+     * drives you cannot see, because the drawer comes out upwards on
+     * rails and the disks are reached from above. Drawing eighty four
+     * carriers on its face is the one thing that shelf does not look
+     * like.
+     */
+    drawers?: number;
+  };
+  /**
+   * Number of front fan modules, for a face that is mostly intake.
+   *
+   * Some hardware cannot spare its front elevation for anything else. An
+   * eight accelerator node is roughly ten kilowatts under one lid, and
+   * that has to be fed air through the front, so everything above the
+   * drive row is fan. Drawn without this a 6U box with eight bays comes
+   * out as eight enormous drive carriers, which is a storage shelf and
+   * not the thing at all: the bays go in one row along the bottom and the
+   * intake wall takes the rest.
+   */
+  intake?: number;
   /**
    * How a passive filler panel presents: vent slots, a solid plate, the
    * D-rings of a cable manager, or a shelf. Only read for family "blank".
@@ -109,6 +143,16 @@ export interface RackDevice {
   display?: "unifi" | "ups" | "server";
   /** A modular uplink bay, drawn as a seam with its own module face. */
   moduleBay?: boolean;
+  /**
+   * This device is a card chassis, so each run of like connectors is a
+   * separate card and gets its own horizontal band across the face.
+   *
+   * Without it a 6U chassis is drawn as one 6U faceplate with its ports
+   * in a thin strip across the middle and four blank rack units around
+   * them, which is not what a chassis looks like from any angle. A
+   * chassis is cards, and the cards are the reason it is six units tall.
+   */
+  cards?: boolean;
   /** Optional short caption rendered beside the device. */
   label?: string;
   /** Link to this specific model's spec page, where one exists. */

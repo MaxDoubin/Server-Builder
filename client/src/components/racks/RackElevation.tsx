@@ -16,6 +16,7 @@ import { useId, useMemo } from "react";
 import type { RackDefinition } from "@/lib/rackTypes";
 import { DeviceFaceplate } from "./DeviceFaceplate";
 import { RackDefs, defUrl } from "./RackDefs";
+import { unitHeightFor } from "./portLayout";
 import { PatchCables } from "./PatchCables";
 
 /** Shared styles for every rack SVG on the page. */
@@ -57,13 +58,14 @@ export function RackElevation({ rack, selectedId, onSelect, mini = false }: Prop
   // Per-instance id prefix. A gallery holds seven of these at once and
   // duplicate def ids across SVGs in one document collide.
   const uid = useId().replace(/:/g, "");
-  const unitH = mini ? 20 : 56;
   const pad = mini ? 8 : 16;
   const railW = mini ? 10 : 26;
   const innerW = W - pad * 2;
+  const faceW = innerW - railW * 2;
+  // Derived, not chosen: a rack unit is 44.45mm against a 482.6mm panel.
+  const unitH = unitHeightFor(faceW);
   const H = rack.height * unitH + pad * 2;
   const interactive = Boolean(onSelect);
-  const faceW = innerW - railW * 2;
 
   const offsets = useMemo(() => {
     let at = 0;
@@ -91,7 +93,7 @@ export function RackElevation({ rack, selectedId, onSelect, mini = false }: Prop
     }
     if (!mini) {
       units.push(
-        <text key={`u${u}`} x={pad + railW / 2} y={pad + u * unitH + unitH * 0.62} textAnchor="middle" className="rk-unit" fontSize={9}>
+        <text key={`u${u}`} x={pad + railW / 2} y={pad + u * unitH + unitH * 0.62} textAnchor="middle" className="rk-unit" fontSize={Math.max(6, unitH * 0.16)}>
           {rack.height - u}
         </text>,
       );

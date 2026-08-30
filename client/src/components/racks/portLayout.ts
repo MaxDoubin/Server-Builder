@@ -13,6 +13,19 @@
 
 import type { RackDevice, RackPort } from "@/lib/rackTypes";
 
+/**
+ * A 19 inch panel is 482.6mm wide and one rack unit is 44.45mm tall, so a
+ * 1U face is 10.86 times as wide as it is high. Everything derives its unit
+ * height from this rather than picking one: the detail panel was drawing
+ * 760 by 88, a ratio of 8.6, which made every device 26 percent too tall
+ * and was the reason the faceplates read as chunky no matter how the parts
+ * on them were shaded.
+ */
+export const RU_ASPECT = 482.6 / 44.45;
+
+/** Unit height that makes a face of this width correctly proportioned. */
+export const unitHeightFor = (faceWidth: number) => faceWidth / RU_ASPECT;
+
 /** Connector footprint in units of the port cell scale. */
 export function portShape(kind: RackPort["kind"]): { w: number; h: number } {
   switch (kind) {
@@ -27,9 +40,9 @@ export function portShape(kind: RackPort["kind"]): { w: number; h: number } {
     case "usb":
       return { w: 0.72, h: 0.52 };
     case "console":
-      return { w: 1.0, h: 0.95 };
+      return { w: 0.86, h: 1.0 };
     default:
-      return { w: 1.0, h: 0.95 };
+      return { w: 0.86, h: 1.0 };
   }
 }
 
@@ -71,6 +84,8 @@ export function faceGeometry(device: RackDevice, width: number, unitH: number, d
 export interface PortCell {
   /** Index into device.ports. */
   index: number;
+  /** Which card band this cell belongs to, for chassis faces. */
+  card?: number;
   port: RackPort;
   x: number;
   y: number;
@@ -112,6 +127,56 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
   const denom = totalW + runGaps + groupGaps + plan.length * 0.3;
 
   const maxRows = Math.max(...plan.map((x) => x.rows));
+
+  /*
+    A card chassis is not one tall faceplate.
+
+    Drawn as one, a 6U chassis puts its ports in a thin strip across the
+    middle with four blank rack units around them, which is not what a
+    chassis looks like from any angle and is the reason it is six units
+    tall in the first place. So when `cards` is set, each run of like
+    connectors becomes its own horizontal band: a card, laid out across
+    the full width of the face, stacked with the others.
+  */
+  if (device.cards && plan.length > 1) {
+    const cells: PortCell[] = [];
+    const bandCount = plan.length;
+    const usable = H - inset * 2;
+    const bandH = usable / bandCount;
+    plan.forEach((run, band) => {
+      const cols = run.cols;
+      const runGroupGaps = group ? Math.max(0, Math.ceil(cols / group) - 1) * 0.45 : 0;
+      const denomRun = cols * run.shape.w + runGroupGaps + 0.6;
+      // Cards are the full width of the face, and a card's own two rows
+      // have to fit inside its band rather than inside the whole chassis.
+      const scaleRun = Math.min(fieldW / denomRun, (bandH * 0.62) / run.rows / 0.95);
+      const gapXr = scaleRun * 0.03;
+      const gapYr = scaleRun * 0.03;
+      const pw = run.shape.w * scaleRun - gapXr;
+      const ph = run.shape.h * scaleRun - gapYr;
+      const blockH = run.rows * ph + (run.rows - 1) * gapYr;
+      const bandMid = inset + bandH * (band + 0.5);
+      const top = bandMid - blockH / 2;
+      run.items.forEach((entry, k) => {
+        const col = run.rows === 2 ? Math.floor(k / 2) : k;
+        const row = run.rows === 2 ? k % 2 : 0;
+        const gx = group ? Math.floor(col / group) * scaleRun * 0.45 : 0;
+        cells.push({
+          index: entry.i,
+          card: band,
+          port: entry.p,
+          x: fieldX + col * (pw + gapXr) + gx,
+          y: top + row * (ph + gapYr),
+          w: pw,
+          h: ph,
+          row,
+          col,
+        });
+      });
+    });
+    return cells;
+  }
+
   /*
     Vertical allowance. Real switch faces give the jacks most of the unit's
     height: on the USW-Pro-48-POE the two rows plus their silkscreen occupy
@@ -119,12 +184,17 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
     term bound before the width term did and every port came out a fifth
     too small with the right of the panel left empty.
   */
-  const vSpace = (H - inset * 2) * (detail ? 0.66 : 0.74);
+  /*
+    The panel numbers both rows, odd above and even below, so the jacks get
+    the middle of the unit and the two silkscreen bands get the rest. At the
+    previous 0.82 the lower numbers fell off the bottom edge.
+  */
+  const vSpace = (H - inset * 2) * (detail ? 0.62 : 0.68);
   const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
   // Jacks on a dense panel very nearly touch; the visible separation comes
   // from the group gaps, not from space between neighbours.
-  const gapX = scale * 0.1;
-  const gapY = scale * 0.1;
+  const gapX = scale * 0.03;
+  const gapY = scale * 0.03;
   const midY = H / 2 + (detail ? unitH * 0.03 : 0);
 
   const cells: PortCell[] = [];

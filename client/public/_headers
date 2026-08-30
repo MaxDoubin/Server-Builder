@@ -113,6 +113,15 @@
 /images/*
   Cache-Control: public, max-age=604800
 
+# The hero rack model. 646 KB, requested only when someone opens the model
+# view, and the filename is not hashed, so this follows /images/*: a week is
+# long enough that a second visit does not pay for it twice, and short enough
+# that a regenerated model is not stuck in caches. Regenerating it is a
+# deliberate manual step, so a week of staleness is a known cost rather than
+# a surprise.
+/models/*
+  Cache-Control: public, max-age=604800
+
 # The service worker must never be served stale, or a bad worker keeps itself
 # alive. Browsers already bypass the HTTP cache for the worker script after 24
 # hours, but say it explicitly.

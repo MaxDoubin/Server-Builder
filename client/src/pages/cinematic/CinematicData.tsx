@@ -15,35 +15,51 @@
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { staticEquipmentCatalog } from "@/lib/static-equipment";
+import { RACKS } from "@/lib/racks";
 import { BTU_PER_WATT } from "@/lib/capacity";
 
 const SITE_URL = "https://maxdoubin.com";
 
 export function CinematicData() {
   const count = staticEquipmentCatalog.length;
+  const rackDevices = RACKS.reduce((n, r) => n + r.devices.length, 0);
+  const rackSourced = RACKS.reduce((n, r) => n + r.devices.filter((d) => d.url).length, 0);
+  const creator = { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" };
 
   useSEO({
-    title: "Open rack hardware dataset | Max Doubin",
-    description: `An openly licensed table of ${count} rack-mount devices with power draw, heat output, rack units, port count and indicative cost, as JSON and CSV under CC BY 4.0.`,
+    title: "Open rack hardware datasets | Max Doubin",
+    description: `Two CC BY 4.0 datasets as JSON and CSV: ${count} rack-mount devices with power draw, heat output, rack units and port count, and ${rackDevices} devices across ${RACKS.length} rack elevations with the vendor figures and datasheet pages behind them.`,
     canonical: `${SITE_URL}/data`,
     schema: {
       "@context": "https://schema.org",
-      "@type": "Dataset",
-      name: "Rack hardware power and thermal catalog",
-      description: `Modelling figures for ${count} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost.`,
+      "@type": "DataCatalog",
+      name: "Max Doubin open rack data",
+      description: `Two openly licensed datasets: modelling figures for ${count} rack-mount devices, and ${rackDevices} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
       url: `${SITE_URL}/data`,
       license: "https://creativecommons.org/licenses/by/4.0/",
-      creator: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
-      distribution: [
+      creator: creator,
+      dataset: [
         {
-          "@type": "DataDownload",
-          encodingFormat: "application/json",
-          contentUrl: `${SITE_URL}/data/equipment-catalog.json`,
+          "@type": "Dataset",
+          name: "Rack hardware power and thermal catalog",
+          description: `Modelling figures for ${count} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
+          license: "https://creativecommons.org/licenses/by/4.0/",
+          creator,
+          distribution: [
+            { "@type": "DataDownload", encodingFormat: "application/json", contentUrl: `${SITE_URL}/data/equipment-catalog.json` },
+            { "@type": "DataDownload", encodingFormat: "text/csv", contentUrl: `${SITE_URL}/data/equipment-catalog.csv` },
+          ],
         },
         {
-          "@type": "DataDownload",
-          encodingFormat: "text/csv",
-          contentUrl: `${SITE_URL}/data/equipment-catalog.csv`,
+          "@type": "Dataset",
+          name: "Rack library elevations",
+          description: `${rackDevices} devices across ${RACKS.length} rack elevations with vendor, model, rack units, position and published draw. Vendor published figures, cited per device, with a null draw wherever the vendor publishes a supply rating rather than a consumption figure.`,
+          license: "https://creativecommons.org/licenses/by/4.0/",
+          creator,
+          distribution: [
+            { "@type": "DataDownload", encodingFormat: "application/json", contentUrl: `${SITE_URL}/data/rack-library.json` },
+            { "@type": "DataDownload", encodingFormat: "text/csv", contentUrl: `${SITE_URL}/data/rack-library.csv` },
+          ],
         },
       ],
     },
@@ -59,13 +75,17 @@ export function CinematicData() {
               · Open data
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
-              Rack hardware dataset
+              Rack hardware datasets
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              Two of them, and they are honest about different things. First,{" "}
               {count} rack-mount devices with power draw, heat output, rack
-              units, port count and indicative cost. It is the table the
-              datacenter simulator on this site runs on, published because a
-              clean openly licensed version of it is genuinely hard to find.
+              units, port count and indicative cost: the table the datacenter
+              simulator on this site runs on, published because a clean openly
+              licensed version of it is genuinely hard to find. Second, the{" "}
+              {rackDevices} devices in this site&rsquo;s {RACKS.length} rack
+              elevations, where the figures are the vendors&rsquo; own and each
+              one carries the page it came from.
             </p>
           </header>
 
@@ -138,6 +158,60 @@ export function CinematicData() {
             . Use it anywhere, credit Max Doubin and link back. The same
             disclaimer above is embedded in both files.
           </p>
+
+          <section className="mt-14 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.35)] p-6">
+            <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">
+              And the rack library, which is a different kind of data
+            </h2>
+            <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              {rackDevices} devices across {RACKS.length} rack elevations, and
+              the distinction from the table above is the whole point of
+              publishing them separately. Those are modelling figures for a
+              simulator. These are vendor published figures: {rackSourced} of
+              the {rackDevices} carry the datasheet page their numbers came
+              from, and a device whose vendor publishes no consumption figure
+              says so rather than carrying one somebody estimated.
+            </p>
+            <ul className="mt-4 space-y-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <li>
+                <strong className="text-[hsl(var(--brand-bone))]">watts</strong>{" "}
+                is null wherever the vendor publishes a supply rating or a PoE
+                budget rather than the device&rsquo;s own draw, which is most
+                of the enterprise hardware here. A 715W supply is not a 715W
+                switch, and quoting one as the other would overstate a
+                rack&rsquo;s load several times over.
+              </li>
+              <li>
+                <strong className="text-[hsl(var(--brand-bone))]">position</strong>{" "}
+                and <strong className="text-[hsl(var(--brand-bone))]">u</strong>{" "}
+                are the real elevation: every rack&rsquo;s devices add up to
+                its frame, and CI fails the build if they stop doing so.
+              </li>
+              <li>
+                Link state and drive bay occupancy on the pages are
+                illustrative, described as such there, and are not in this
+                file.
+              </li>
+            </ul>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href="/data/rack-library.json"
+                download
+                data-testid="download-racks-json"
+                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+              >
+                rack-library.json
+              </a>
+              <a
+                href="/data/rack-library.csv"
+                download
+                data-testid="download-racks-csv"
+                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+              >
+                rack-library.csv
+              </a>
+            </div>
+          </section>
 
           <section className="mt-12">
             <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">

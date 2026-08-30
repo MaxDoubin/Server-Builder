@@ -162,8 +162,8 @@ export const ubiquitiRack: RackDefinition = {
       // the same fabrication this file exists to avoid, so it stays empty.
       id: "gap-above-patch-a",
       u: 1,
-      vendor: "",
-      model: "",
+      vendor: "Generic",
+      model: "1U vented blanking panel",
       role: "Empty U for airflow above the patch field",
       family: "blank",
       finish: "silver",
@@ -254,8 +254,8 @@ export const ubiquitiRack: RackDefinition = {
     {
       id: "gap-above-power",
       u: 1,
-      vendor: "",
-      model: "",
+      vendor: "Generic",
+      model: "1U vented blanking panel",
       role: "Empty U separating the switching from the power gear",
       family: "blank",
       finish: "silver",

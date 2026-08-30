@@ -10,19 +10,29 @@
 import type { RackDefinition, RackDevice } from "@/lib/rackTypes";
 import { ubiquitiRack } from "./ubiquiti";
 import { ciscoRack } from "./cisco";
+import { ciscoEnterpriseRack } from "./ciscoEnterprise";
 import { mikrotikRack } from "./mikrotik";
+import { mikrotikIspRack } from "./mikrotikIsp";
 import { homelabRack } from "./homelab";
 import { juniperRack } from "./juniper";
+import { juniperCoreRack } from "./juniperCore";
 import { serverRack } from "./server";
+import { dellComputeRack } from "./dellCompute";
 import { storageRack } from "./storage";
+import { storageDenseRack } from "./storageDense";
 
 export const RACKS: RackDefinition[] = [
   ubiquitiRack,
   ciscoRack,
+  ciscoEnterpriseRack,
   juniperRack,
+  juniperCoreRack,
   mikrotikRack,
+  mikrotikIspRack,
   serverRack,
+  dellComputeRack,
   storageRack,
+  storageDenseRack,
   homelabRack,
 ];
 

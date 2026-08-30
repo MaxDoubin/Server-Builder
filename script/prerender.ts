@@ -16,6 +16,7 @@ import path from "path";
 import { Marked } from "marked";
 import { uniqueHeadingId } from "../client/src/lib/headingSlug";
 import { RACKS, KIND_LABELS, portSummary, publishedWatts, unitsUsed } from "../client/src/lib/racks";
+import { staticEquipmentCatalog } from "../client/src/lib/static-equipment";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -39,7 +40,6 @@ const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
 const { TIMELINE_GROUPS } = await import("../client/src/lib/timelineConfig.ts");
 const { ALL_CERTS } = await import("../client/src/lib/certConfig.ts");
 const { ROADMAP, ROADMAP_UPDATED, roadmapCounts } = await import("../client/src/lib/roadmap.ts");
-const { CHANGELOG } = await import("../client/src/lib/changelog.ts");
 const { DECKS } = await import("../client/src/lib/flashcardDecks.ts");
 const { LINK_GROUPS } = await import("../client/src/lib/linksConfig.ts");
 const { STACK, DECISIONS } = await import("../client/src/lib/colophonConfig.ts");
@@ -123,7 +123,7 @@ function injectBeforeHead(html: string, injection: string): string {
  * readers never see it and it cannot drift visually from the real footer.
  */
 const SITE_NAV = `
-<nav aria-label="Site">
+<nav aria-label="Site" data-nosnippet>
   <a href="${SITE_URL}/">Home</a>
   <a href="${SITE_URL}/blog">Field Notes</a>
   <a href="${SITE_URL}/topics">Topics</a>
@@ -148,7 +148,6 @@ const SITE_NAV = `
   <a href="${SITE_URL}/links">Links</a>
   <a href="${SITE_URL}/subscribe">Subscribe</a>
   <a href="${SITE_URL}/study-timer">Study timer</a>
-  <a href="${SITE_URL}/changelog">Changelog</a>
   <a href="${SITE_URL}/colophon">Colophon</a>
   <a href="${SITE_URL}/contact">Contact</a>
 </nav>`;
@@ -936,13 +935,6 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/ask`,
     },
     {
-      dir: "changelog",
-      title: "Changelog | Max Doubin",
-      description:
-        "A plain-language history of what has changed on maxdoubin.com: speed work, accessibility fixes, new writing and new tools, dated and grouped by month.",
-      canonical: `${SITE_URL}/changelog`,
-    },
-    {
       dir: "ncl",
       title: "National Cyber League Study Guide | Max Doubin",
       description:
@@ -1312,23 +1304,10 @@ ${JSON.stringify({
       .join("")}</ul>
   </section>`,
   ).join("\n  ")}
-  ${backLinks([["/changelog", "Changelog"], ["/colophon", "Colophon"], ["/now", "Now"]])}
+  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"], ["/now", "Now"]])}
 </main>`;
   })();
 
-  const changelogContent = `
-<main>
-  <h1>Changelog</h1>
-  <p>What changed on this site and when, newest first.</p>
-  ${CHANGELOG.map(
-    (release) => `<section>
-    <h2>${esc(release.title)}</h2>
-    <p>${esc(release.date)}</p>
-    <ul>${li(release.entries.map(esc))}</ul>
-  </section>`,
-  ).join("\n  ")}
-  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"]])}
-</main>`;
 
   const flashcardsContent = `
 <main>
@@ -1380,7 +1359,7 @@ ${JSON.stringify({
     ${d.body.map((para) => `<p>${esc(para)}</p>`).join("\n    ")}`,
     ).join("\n    ")}
   </section>
-  ${backLinks([["/roadmap", "Roadmap"], ["/changelog", "Changelog"], ["/uses", "Uses"]])}
+  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"], ["/uses", "Uses"]])}
 </main>`;
 
   const subscribeContent = `
@@ -1489,7 +1468,6 @@ ${JSON.stringify({
     subscribe: subscribeContent,
     "study-timer": studyTimerContent,
     ask: askContent,
-    changelog: changelogContent,
     certifications: certificationsContent,
     ncl: nclHubContent,
     flashcards: flashcardsContent,
@@ -1946,21 +1924,86 @@ ${TAG_PAGES.map(
 </main>`,
   })
 
-  // ── open dataset ──
+  /*
+    Open datasets. Two of them now, and the counts come from the same arrays
+    the build publishes rather than being typed in: the old copy said 28
+    devices in three places and would have gone quietly wrong the first time
+    one was added.
+
+    The DataCatalog is prerendered rather than left to hydration because a
+    dataset that only exists after JS runs is a dataset a crawler has to work
+    to find, and being findable is the entire reason for publishing these.
+  */
+  const catalogCount = staticEquipmentCatalog.length;
+  const rackDeviceCount = RACKS.reduce((n, r) => n + r.devices.length, 0);
+  const rackSourcedCount = RACKS.reduce((n, r) => n + r.devices.filter((d) => d.url).length, 0);
+  const dataCreator = { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" };
+  const download = (file: string, format: string) => ({
+    "@type": "DataDownload",
+    encodingFormat: format,
+    contentUrl: `${SITE_URL}/data/${file}`,
+  });
+
   await writePage("data", base, {
-    title: "Open rack hardware dataset | Max Doubin",
+    title: "Open rack hardware datasets | Max Doubin",
     description:
-      "An openly licensed table of 28 rack-mount devices with power draw, heat output, rack units, port count and indicative cost, as JSON and CSV under CC BY 4.0.",
+      `Two CC BY 4.0 datasets as JSON and CSV: ${catalogCount} rack-mount devices with power draw, heat output, rack units and port count, ` +
+      `and ${rackDeviceCount} devices across ${RACKS.length} rack elevations with the vendor figures and datasheet pages behind them.`,
     canonical: `${SITE_URL}/data`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "DataCatalog",
+  name: "Max Doubin open rack data",
+  description: `Two openly licensed datasets: modelling figures for ${catalogCount} rack-mount devices, and ${rackDeviceCount} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
+  url: `${SITE_URL}/data`,
+  license: "https://creativecommons.org/licenses/by/4.0/",
+  creator: dataCreator,
+  dataset: [
+    {
+      "@type": "Dataset",
+      name: "Rack hardware power and thermal catalog",
+      description: `Modelling figures for ${catalogCount} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
+      license: "https://creativecommons.org/licenses/by/4.0/",
+      creator: dataCreator,
+      distribution: [
+        download("equipment-catalog.json", "application/json"),
+        download("equipment-catalog.csv", "text/csv"),
+      ],
+    },
+    {
+      "@type": "Dataset",
+      name: "Rack library elevations",
+      description: `${rackDeviceCount} devices across ${RACKS.length} rack elevations with vendor, model, rack units, position and published draw. Vendor published figures, cited per device, with a null draw wherever the vendor publishes a supply rating rather than a consumption figure.`,
+      license: "https://creativecommons.org/licenses/by/4.0/",
+      creator: dataCreator,
+      distribution: [
+        download("rack-library.json", "application/json"),
+        download("rack-library.csv", "text/csv"),
+      ],
+    },
+  ],
+})}
+</script>`,
     rootContent: `
 <main>
-  <h1>Rack hardware dataset</h1>
-  <p>28 rack-mount devices with power draw, heat output, rack units, port count and indicative cost, licensed CC BY 4.0.</p>
+  <h1>Rack hardware datasets</h1>
+  <p>Two openly licensed datasets, CC BY 4.0, and they are honest about different things.</p>
+  <h2>Rack hardware power and thermal catalog</h2>
+  <p>${catalogCount} rack-mount devices with power draw, heat output, rack units, port count and indicative cost. It is the table the datacenter simulator on this site runs on.</p>
   <p>These are modelling figures, not vendor specifications and not measurements. powerDraw is representative for the class of hardware named. heatOutput is derived as watts multiplied by 3.412142. price is order of magnitude. Do not cite them as manufacturer data.</p>
   <ul>
     <li><a href="${SITE_URL}/data/equipment-catalog.json">equipment-catalog.json</a></li>
     <li><a href="${SITE_URL}/data/equipment-catalog.csv">equipment-catalog.csv</a></li>
   </ul>
+  <h2>Rack library elevations</h2>
+  <p>${rackDeviceCount} devices across ${RACKS.length} rack elevations, with vendor, model, rack units, position in the frame and published draw. ${rackSourcedCount} of them carry the datasheet page their figures came from.</p>
+  <p>These are the vendors' own published figures rather than modelling ones. watts is null wherever a vendor publishes a power supply rating or a PoE budget instead of the device's own consumption, which is most of the enterprise hardware here: a 715W supply is not a 715W switch. Port link state and drive bay occupancy on the rack pages are illustrative and are not in the file.</p>
+  <ul>
+    <li><a href="${SITE_URL}/data/rack-library.json">rack-library.json</a></li>
+    <li><a href="${SITE_URL}/data/rack-library.csv">rack-library.csv</a></li>
+  </ul>
+  ${backLinks([["/racks", "Rack library"], ["/tools/rack-budget", "Rack budget tool"], ["/game", "Build simulator"]])}
 </main>`,
   });
 
@@ -2319,8 +2362,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },
     { loc: `${SITE_URL}/colophon`, lastmod: today, changefreq: "monthly", priority: "0.5" },
     { loc: `${SITE_URL}/subscribe`, lastmod: today, changefreq: "monthly", priority: "0.5" },
-    { loc: `${SITE_URL}/changelog`, lastmod: today, changefreq: "weekly", priority: "0.4" },
-    { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
+      { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/study-timer`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/roadmap`, lastmod: today, changefreq: "weekly", priority: "0.4" },
   ];

@@ -1,0 +1,95 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  html,body{margin:0;background:#f2f3f5;overflow:hidden}
+</style></head><body>
+<script type="importmap">
+{"imports":{"three":"/node_modules/three/build/three.module.js",
+            "three/addons/":"/node_modules/three/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const q = new URLSearchParams(location.search);
+const file = q.get('f');
+const view = q.get('view') || 'face';       // face | angle | detail
+const zoom = parseFloat(q.get('zoom') || '1');
+const panX = parseFloat(q.get('x') || '0'); // -1..1 across the face
+
+const W = 1600, H = 900;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(1);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f2f3f5');
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// The same studio the rack pages use, so what I see here is what ships.
+for (const [hex, power, at] of [
+  ['#ffffff', 2.4, [1.8, 2.4, 2.4]],
+  ['#e8eeff', 0.75, [-2.2, 1.4, 1.6]],
+  ['#ffffff', 1.3, [-0.6, 2.0, -2.4]],
+]) {
+  const l = new THREE.DirectionalLight(hex, power);
+  l.position.set(...at);
+  scene.add(l);
+}
+scene.add(new THREE.AmbientLight('#ffffff', 0.3));
+
+const camera = new THREE.PerspectiveCamera(28, W / H, 0.001, 40);
+
+// Vendor supplied models are Draco compressed; ours are not. Wiring
+// the decoder in unconditionally costs nothing and loads both.
+const draco = new DRACOLoader().setDecoderPath('/node_modules/three/examples/jsm/libs/draco/');
+new GLTFLoader().setDRACOLoader(draco).load(file, (gltf) => {
+  const root = gltf.scene;
+  /*
+    Two conventions, and it takes measuring the world bounds through the
+    node tree to tell them apart rather than reading the accessors, which
+    is what made this confusing. Our generators emit Z-up geometry with no
+    root transform, so the whole scene has to be laid back a quarter turn
+    about X. Ubiquiti's exports look Z-up in their accessors but carry that
+    same quarter turn on the root node already, so they arrive correctly
+    Y-up and in metres, and laying them back again puts the camera on the
+    lid.
+
+    What they do not agree on is which horizontal axis the panel runs
+    along. Ours is X. Theirs is Z, so a Ubiquiti model loaded square on
+    frames the side of the box, 288mm by 44mm of blank sheet metal, which
+    reads as a rendering failure and is not one. A quarter turn about
+    whichever axis is up fixes it.
+  */
+  const yaw = (parseFloat(q.get('yaw') || '0') * Math.PI) / 180;
+  const up = q.get('up') || 'z';
+  root.rotation[up === 'z' ? 'z' : 'y'] = yaw;
+  const stage = new THREE.Group();
+  if (up === 'z') stage.rotation.x = -Math.PI / 2;
+  stage.add(root);
+  stage.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(stage);
+  const size = box.getSize(new THREE.Vector3());
+  stage.position.sub(box.getCenter(new THREE.Vector3()));
+  scene.add(stage);
+
+  const fov = (camera.fov * Math.PI) / 180;
+  // Frame the wider of the two face axes, then apply the requested zoom.
+  const span = Math.max(size.y, (size.x * H) / W);
+  const dist = (span / 2 / Math.tan(fov / 2)) * 1.12 / zoom;
+
+  if (view === 'angle') {
+    const a = (34 * Math.PI) / 180;
+    camera.position.set(Math.sin(a) * dist, size.y * 0.25, Math.cos(a) * dist);
+  } else {
+    camera.position.set((panX * size.x) / 2, 0, dist);
+  }
+  camera.lookAt((panX * size.x) / 2, 0, 0);
+  camera.updateProjectionMatrix();
+
+  renderer.render(scene, camera);
+  document.title = 'ready';
+});
+</script></body></html>

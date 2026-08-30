@@ -13,6 +13,7 @@ import type { RackDefinition, RackDevice } from "@/lib/rackTypes";
 import { KIND_LABELS, portSummary } from "@/lib/racks";
 import { DeviceFaceplate } from "./DeviceFaceplate";
 import { RackDefs } from "./RackDefs";
+import { unitHeightFor } from "./portLayout";
 
 const FAMILY_LABELS: Record<RackDevice["family"], string> = {
   router: "Router",
@@ -91,14 +92,14 @@ export function DeviceDetailPanel({
 
       {/* The device, pulled out of the rack at detail scale. */}
       <div className="mt-6 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_12%_5%)] p-3">
-        <svg viewBox={`0 0 760 ${device.u * 88}`} width="100%" role="img" aria-label={`${device.model} front panel, enlarged`} style={{ display: "block" }}>
+        <svg viewBox={`0 0 760 ${device.u * unitHeightFor(760)}`} width="100%" role="img" aria-label={`${device.model} front panel, enlarged`} style={{ display: "block" }}>
           <RackDefs uid={uid} />
           <style>{`.rk-brand{font-family:"Space Grotesk",system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
 .rk-portnum{font-family:ui-monospace,monospace}
 @keyframes rk-blink{0%,100%{opacity:1}50%{opacity:.3}}
 .rk-led-on{animation:rk-blink 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.rk-led-on{animation:none}}`}</style>
-          <DeviceFaceplate device={device} width={760} unitH={88} detail uid={uid} />
+          <DeviceFaceplate device={device} width={760} unitH={unitHeightFor(760)} detail uid={uid} />
         </svg>
       </div>
 

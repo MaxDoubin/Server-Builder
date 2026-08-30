@@ -105,7 +105,6 @@ export const ROADMAP: RoadmapGroup[] = [
       { id: 39, title: "Time remaining while scrolling", status: "done" },
       { id: 40, title: "Print stylesheet for posts", status: "done" },
       { id: 41, title: "Full chronological archive page", status: "done" },
-      { id: 42, title: "Monthly site changelog", status: "done" },
     ],
   },
   {

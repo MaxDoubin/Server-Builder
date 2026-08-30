@@ -222,6 +222,7 @@ function PortField(props: ContentProps) {
   const throat = device.portTint ? defUrl(uid, "throat-teal") : defUrl(uid, "throat");
   const cells = layoutPorts(device, width, unitH, detail);
   const copper = cells.filter((c) => c.port.kind === "rj45");
+  const { bodyX, bodyW } = faceGeometry(device, width, unitH, detail);
 
   /*
     The silkscreen. A real switch prints the odd port number above each
@@ -231,13 +232,81 @@ function PortField(props: ContentProps) {
     and leaving it off was the single biggest thing still missing.
   */
   const topRow = copper.filter((c) => c.row === 0);
-  const numSize = topRow.length ? Math.max(2.2, topRow[0].w * 0.34) : 0;
-  const showNumbers = numSize >= 2.9 && !isPatch;
+  const numSize = topRow.length ? Math.max(2.0, topRow[0].w * 0.24) : 0;
+  const showNumbers = numSize >= 2.2 && !isPatch;
   const poe = /PoE/i.test(device.model) || /PoE/i.test(device.role);
   const groupSize = device.groupsOf ?? 0;
 
   return (
     <g>
+      {/*
+        A card chassis gets a bezel per card rather than one recess round
+        the lot: the cards are separate parts with their own faceplate,
+        their own ejector at each end, and a seam between them, and that
+        seam is the thing that says this box comes apart.
+      */}
+      {device.cards &&
+        Array.from(new Set(cells.map((c) => c.card ?? 0))).map((band) => {
+          const own = cells.filter((c) => (c.card ?? 0) === band);
+          if (!own.length) return null;
+          const y0 = Math.min(...own.map((c) => c.y));
+          const y1 = Math.max(...own.map((c) => c.y + c.h));
+          const pad = (y1 - y0) * 0.42;
+          const top = y0 - pad;
+          const height = y1 - y0 + pad * 2;
+          const lever = Math.max(2, unitH * 0.055);
+          return (
+            <g key={`card${band}`}>
+              <rect
+                x={bodyX + unitH * 0.06}
+                y={top}
+                width={bodyW - unitH * 0.12}
+                height={height}
+                rx={Math.max(1, unitH * 0.03)}
+                fill="#000"
+                opacity={0.2}
+              />
+              <rect
+                x={bodyX + unitH * 0.06}
+                y={top}
+                width={bodyW - unitH * 0.12}
+                height={Math.max(1, unitH * 0.02)}
+                fill="#fff"
+                opacity={0.12}
+              />
+              {/* An ejector lever at each end, which is how a card comes out. */}
+              {[bodyX + unitH * 0.14, bodyX + bodyW - unitH * 0.14 - lever].map((lx) => (
+                <rect
+                  key={lx}
+                  x={lx}
+                  y={top + height * 0.18}
+                  width={lever}
+                  height={height * 0.64}
+                  rx={lever * 0.35}
+                  fill="#9aa2ab"
+                  opacity={0.75}
+                />
+              ))}
+            </g>
+          );
+        })}
+
+      {/* The recess the connector bank is set into. */}
+      {!device.cards && cells.length > 0 &&
+        (() => {
+          const x0 = Math.min(...cells.map((c) => c.x));
+          const x1 = Math.max(...cells.map((c) => c.x + c.w));
+          const y0 = Math.min(...cells.map((c) => c.y));
+          const y1 = Math.max(...cells.map((c) => c.y + c.h));
+          const b = (y1 - y0) * 0.045;
+          return (
+            <>
+              <rect x={x0 - b} y={y0 - b} width={x1 - x0 + b * 2} height={y1 - y0 + b * 2} rx={b} fill="#0b0d10" opacity={0.55} />
+              <rect x={x0 - b} y={y0 - b} width={x1 - x0 + b * 2} height={b * 0.5} fill="#000" opacity={0.5} />
+            </>
+          );
+        })()}
+
       {showNumbers &&
         topRow.map((c) => (
           <text
@@ -254,13 +323,30 @@ function PortField(props: ContentProps) {
           </text>
         ))}
       {showNumbers &&
+        copper
+          .filter((c) => c.row === 1)
+          .map((c) => (
+            <text
+              key={`e${c.index}`}
+              x={c.x + c.w * (poe ? 0.36 : 0.5)}
+              y={c.y + c.h + numSize * 0.95}
+              textAnchor="middle"
+              fill={m.sub}
+              fontSize={numSize}
+              className="rk-portnum"
+              opacity={0.95}
+            >
+              {c.col * 2 + 2}
+            </text>
+          ))}
+      {showNumbers &&
         poe &&
         topRow.map((c) => (
           // The lightning bolt beside a PoE port number, drawn rather than
           // set as a glyph so it stays legible at three SVG units tall.
           <path
             key={`b${c.index}`}
-            d={`M ${c.x + c.w * 0.72} ${c.y - c.h * 0.42}
+            d={`M ${c.x + c.w * 0.66} ${c.y - c.h * 0.16 - numSize * 0.78}
                 l ${-numSize * 0.26} ${numSize * 0.52}
                 h ${numSize * 0.2}
                 l ${-numSize * 0.16} ${numSize * 0.42}
@@ -374,69 +460,70 @@ function Port(props: {
       {copper ? (
         <>
           {/*
-            An RJ45 jack as the product photography shows it: a thin bright
-            shield around a dark opening, eight gold contacts standing out
-            clearly at the back, and two large indicator windows filling the
-            jack's own top corners. The earlier version had a bright silver
-            body with a faint gold line, which read as a solid block rather
-            than as a hole with hardware inside it.
+            Proportions taken off Ubiquiti's product photo at matched scale.
+            The jack is a thin bright shield with a dark rim, an opening that
+            fills most of the face, copper across its lower half, and two
+            small indicator windows riding the top edge. The earlier version
+            had a thick bright frame and large rounded lamps, which made a
+            packed bank read as a row of buttons.
           */}
-          <rect x={x} y={y} width={w} height={h} rx={rr} fill={defUrl(uid, "shell")} />
-          <rect x={x} y={y} width={w} height={h * 0.09} rx={rr} fill="#fff" opacity={0.5} />
-          <rect x={x} y={y + h * 0.91} width={w} height={h * 0.09} fill="#000" opacity={0.35} />
+          <rect x={x} y={y} width={w} height={h} rx={rr * 0.35} fill="#20242a" />
+          <rect x={x} y={y} width={w} height={h * 0.06} fill="#9aa2aa" opacity={0.85} />
+          <rect x={x} y={y + h * 0.94} width={w} height={h * 0.06} fill="#000" opacity={0.5} />
+          <rect x={x} y={y} width={Math.max(0.2, w * 0.025)} height={h} fill="#000" opacity={0.45} />
+          <rect x={x + w - Math.max(0.2, w * 0.025)} y={y} width={Math.max(0.2, w * 0.025)} height={h} fill="#000" opacity={0.45} />
 
-          {/* The opening, with the clip channel notched out of its top. */}
-          <rect x={x + w * 0.08} y={y + h * 0.3} width={w * 0.84} height={h * 0.62} rx={rr * 0.6} fill={throat} />
-          <rect x={x + w * 0.4} y={y + h * 0.2} width={w * 0.2} height={h * 0.16} rx={0.25} fill={throat} />
+          {/* The opening, with the clip channel notched from its top edge. */}
+          <rect x={x + w * 0.09} y={y + h * 0.24} width={w * 0.82} height={h * 0.68} rx={rr * 0.3} fill={throat} />
+          <rect x={x + w * 0.38} y={y + h * 0.17} width={w * 0.24} height={h * 0.13} fill={throat} />
 
-          {/* Eight contacts. Drawn individually because a solid band reads
-              as a painted stripe and separate pins read as hardware. */}
+          {/* Copper across the lower half: the eight contacts plus the
+              plated shoulder behind them read as one mass at this size. */}
           {!isPatch && (
             <>
-              <rect x={x + w * 0.13} y={y + h * 0.38} width={w * 0.74} height={h * 0.36} fill={defUrl(uid, "pins")} opacity={0.92} />
+              <rect x={x + w * 0.15} y={y + h * 0.42} width={w * 0.7} height={h * 0.4} fill={defUrl(uid, "pins")} opacity={0.94} />
               {Array.from({ length: 7 }, (_, k) => (
                 <rect
                   key={k}
-                  x={x + w * (0.22 + k * 0.093)}
-                  y={y + h * 0.38}
-                  width={Math.max(0.25, w * 0.028)}
-                  height={h * 0.36}
+                  x={x + w * (0.235 + k * 0.0875)}
+                  y={y + h * 0.42}
+                  width={Math.max(0.22, w * 0.022)}
+                  height={h * 0.4}
                   fill="#4a3a12"
-                  opacity={0.55}
+                  opacity={0.5}
                 />
               ))}
-              <rect x={x + w * 0.13} y={y + h * 0.38} width={w * 0.74} height={h * 0.07} fill="#fff3c4" opacity={0.5} />
+              <rect x={x + w * 0.15} y={y + h * 0.42} width={w * 0.7} height={h * 0.06} fill="#fff3c4" opacity={0.45} />
+              <rect x={x + w * 0.11} y={y + h * 0.86} width={w * 0.78} height={h * 0.06} fill="#000" opacity={0.55} />
             </>
           )}
 
-          {/* Indicator windows in the jack's top corners, which on the real
-              part are large and are most of what you see across a room. */}
+          {/* Indicator windows sitting on the jack's top edge. */}
           {!isPatch && port.led && (
             <>
-              {lit && <circle cx={x + w * 0.22} cy={y + h * 0.22} r={w * 0.42} fill={defUrl(uid, `glow-${port.led}`)} />}
+              {lit && <circle cx={x + w * 0.5} cy={y + h * 0.14} r={w * 0.5} fill={defUrl(uid, `glow-${port.led}`)} />}
               <rect
-                x={x + w * 0.06}
-                y={y + h * 0.08}
-                width={w * 0.3}
-                height={h * 0.2}
-                rx={rr * 0.5}
+                x={x + w * 0.1}
+                y={y + h * 0.1}
+                width={w * 0.24}
+                height={h * 0.13}
+                rx={rr * 0.3}
                 fill={lit ? LED_COLOURS.amber : LED_COLOURS.off}
                 className={lit && !still ? "rk-led rk-led-on" : undefined}
                 style={lit && !still ? { animationDelay: `${(index % 7) * 0.31}s`, animationDuration: `${1.3 + (index % 5) * 0.22}s` } : undefined}
               />
               <rect
-                x={x + w * 0.64}
-                y={y + h * 0.08}
-                width={w * 0.3}
-                height={h * 0.2}
-                rx={rr * 0.5}
+                x={x + w * 0.66}
+                y={y + h * 0.1}
+                width={w * 0.24}
+                height={h * 0.13}
+                rx={rr * 0.3}
                 fill={lit ? colour : LED_COLOURS.off}
                 opacity={lit ? 0.95 : 1}
               />
             </>
           )}
-          {/* A keystone has no indicators, so its jack frame closes flat. */}
-          {isPatch && <rect x={x + w * 0.08} y={y + h * 0.12} width={w * 0.84} height={h * 0.14} rx={rr * 0.5} fill="#000" opacity={0.4} />}
+          {isPatch && <rect x={x + w * 0.11} y={y + h * 0.12} width={w * 0.78} height={h * 0.12} rx={rr * 0.3} fill="#000" opacity={0.45} />}
         </>
       ) : (
         <>
@@ -464,8 +551,8 @@ function Port(props: {
           )}
         </>
       )}
-      {lit && typeof port.activity === "number" && (
-        <rect x={x} y={y + h + 0.8} width={Math.max(0.8, w * port.activity)} height={Math.max(0.6, h * 0.06)} rx={0.3} fill={colour} opacity={0.55} />
+      {lit && typeof port.activity === "number" && !copper && (
+        <rect x={x} y={y + h + 0.8} width={Math.max(0.8, w * port.activity)} height={Math.max(0.5, h * 0.05)} rx={0.3} fill={colour} opacity={0.4} />
       )}
     </g>
   );
@@ -476,11 +563,17 @@ function BayFace(props: ContentProps) {
   const { device, fieldX, fieldW, unitH, still, uid } = props;
   const bays = device.bays!;
   const H = device.u * unitH;
-  const rows = device.u >= 2 ? 2 : 1;
+  /*
+    A face that is mostly intake gets its bays in one row along the
+    bottom, because that is where the only opening not given to a fan is.
+  */
+  const rows = bays.rows ?? (device.intake ? 1 : device.u >= 2 ? 2 : 1);
   const cols = Math.ceil(bays.count / rows);
   const cellW = fieldW / cols;
-  const cellH = (H * 0.74) / rows;
-  const top = H * 0.13;
+  const cellH = device.intake ? H * 0.26 : (H * 0.74) / rows;
+  const top = device.intake ? H * 0.62 : H * 0.13;
+
+  if (bays.drawers) return <DrawerFace {...props} />;
 
   const sleds: JSX.Element[] = [];
   for (let i = 0; i < bays.count; i++) {
@@ -491,6 +584,12 @@ function BayFace(props: ContentProps) {
     const w = cellW * 0.9;
     const h = cellH * 0.88;
     const on = i < bays.occupied;
+    /*
+      An indicator is a 3mm lens whatever the carrier is. Sized off cell
+      height alone it grew with the sled, and a 7U sled on end came out
+      wearing two headlamps, so the carrier's width has the final say.
+    */
+    const ledR = Math.max(1.2, Math.min(h * 0.13, w * 0.15));
     sleds.push(
       <g key={i}>
         <title>{`Bay ${i + 1}: ${on ? bays.label : "empty"}`}</title>
@@ -507,13 +606,13 @@ function BayFace(props: ContentProps) {
             {[0.3, 0.44, 0.58, 0.72].map((f) => (
               <rect key={f} x={x + w * f} y={y + h * 0.18} width={w * 0.045} height={h * 0.64} rx={0.4} fill={defUrl(uid, "vent")} />
             ))}
-            <circle cx={x + w * 0.89} cy={y + h * 0.27} r={Math.max(1.2, h * 0.13)} fill={defUrl(uid, "glow-green")} />
-            <circle cx={x + w * 0.89} cy={y + h * 0.27} r={Math.max(0.7, h * 0.07)} fill={LED_COLOURS.green} />
-            <circle cx={x + w * 0.89} cy={y + h * 0.66} r={Math.max(1.2, h * 0.13)} fill={defUrl(uid, "glow-amber")} />
+            <circle cx={x + w * 0.89} cy={y + h * 0.27} r={ledR} fill={defUrl(uid, "glow-green")} />
+            <circle cx={x + w * 0.89} cy={y + h * 0.27} r={ledR * 0.54} fill={LED_COLOURS.green} />
+            <circle cx={x + w * 0.89} cy={y + h * 0.66} r={ledR} fill={defUrl(uid, "glow-amber")} />
             <circle
               cx={x + w * 0.89}
               cy={y + h * 0.66}
-              r={Math.max(0.7, h * 0.07)}
+              r={ledR * 0.54}
               fill={LED_COLOURS.amber}
               className={still ? undefined : "rk-led rk-led-on"}
               style={still ? undefined : { animationDelay: `${(i % 6) * 0.24}s`, animationDuration: `${0.8 + (i % 4) * 0.35}s` }}
@@ -524,7 +623,118 @@ function BayFace(props: ContentProps) {
       </g>,
     );
   }
-  return <g>{sleds}</g>;
+  return (
+    <g>
+      {device.intake ? <IntakeWall {...props} count={device.intake} /> : null}
+      {sleds}
+    </g>
+  );
+}
+
+/**
+ * The front of a high density shelf: drawer faces, and nothing else.
+ *
+ * Eighty four drives live behind two of these and not one is visible,
+ * because the drawer comes out upwards on rails and the disks are reached
+ * from above. Each face is a recessed pull running most of the width, a
+ * latch at either end, and a status strip; the drives are represented by
+ * that strip and by the count in the panel, which is the only honest way
+ * to draw something you cannot see.
+ */
+function DrawerFace(props: ContentProps) {
+  const { device, fieldX, fieldW, unitH, uid } = props;
+  const bays = device.bays!;
+  const n = bays.drawers ?? 1;
+  const H = device.u * unitH;
+  const band = (H * 0.86) / n;
+  const lit = Math.round((bays.occupied / Math.max(1, bays.count)) * 12);
+  return (
+    <g>
+      {Array.from({ length: n }, (_, i) => {
+        const y = H * 0.07 + i * band;
+        const h = band * 0.88;
+        return (
+          <g key={i}>
+            <title>{`Top load drawer ${i + 1} of ${n}: ${bays.label}`}</title>
+            <rect x={fieldX} y={y} width={fieldW} height={h} rx={1.8} fill="#000" opacity={0.45} />
+            <rect x={fieldX + 0.7} y={y + 0.7} width={fieldW - 1.4} height={h - 1.4} rx={1.6} fill={defUrl(uid, "sled")} />
+            <rect x={fieldX + 0.7} y={y + 0.7} width={fieldW - 1.4} height={Math.max(0.6, h * 0.08)} rx={1.6} fill="#fff" opacity={0.13} />
+            {/* The recessed pull, and its latch at each end. */}
+            <rect x={fieldX + fieldW * 0.17} y={y + h * 0.36} width={fieldW * 0.66} height={h * 0.3} rx={1.2} fill="#000" opacity={0.52} />
+            <rect x={fieldX + fieldW * 0.19} y={y + h * 0.42} width={fieldW * 0.62} height={h * 0.16} rx={0.9} fill="#6e757d" opacity={0.85} />
+            {[0.045, 0.925].map((f) => (
+              <rect key={f} x={fieldX + fieldW * f} y={y + h * 0.3} width={fieldW * 0.03} height={h * 0.4} rx={0.7} fill="#4a5058" />
+            ))}
+            {/* Drive activity for the whole drawer, because that is all
+                the front of one of these actually tells you. */}
+            {Array.from({ length: 12 }, (_, k) => (
+              <circle
+                key={k}
+                cx={fieldX + fieldW * (0.24 + k * 0.046)}
+                cy={y + h * 0.19}
+                r={Math.max(0.7, h * 0.055)}
+                fill={k < lit ? LED_COLOURS.green : "#1b1f24"}
+                opacity={k < lit ? 0.95 : 1}
+              />
+            ))}
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/**
+ * A wall of front fan modules, each a rotor behind a punched guard.
+ *
+ * Drawn as the concentric rings and radial blades you actually see through
+ * a guard, because a fan drawn as a grey circle is a hole and a hole is
+ * the one thing this is not.
+ */
+function IntakeWall(props: ContentProps & { count: number }) {
+  const { device, fieldX, fieldW, unitH, uid, count } = props;
+  const H = device.u * unitH;
+  const cellW = fieldW / count;
+  const top = H * 0.08;
+  const wallH = H * 0.5;
+  return (
+    <g>
+      {Array.from({ length: count }, (_, i) => {
+        const x = fieldX + i * cellW + cellW * 0.04;
+        const w = cellW * 0.92;
+        const r = Math.min(w * 0.44, wallH * 0.21);
+        return (
+          <g key={i}>
+            <title>{`Front fan module ${i + 1} of ${count}`}</title>
+            <rect x={x} y={top} width={w} height={wallH} rx={1.6} fill="#000" opacity={0.42} />
+            <rect x={x + 0.6} y={top + 0.6} width={w - 1.2} height={wallH - 1.2} rx={1.4} fill={defUrl(uid, "sled")} />
+            {[0.27, 0.73].map((f) => (
+              <g key={f}>
+                <circle cx={x + w / 2} cy={top + wallH * f} r={r} fill="#0a0c0f" opacity={0.86} />
+                <circle cx={x + w / 2} cy={top + wallH * f} r={r * 0.62} fill="none" stroke="#59606a" strokeWidth={Math.max(0.4, r * 0.07)} opacity={0.75} />
+                <circle cx={x + w / 2} cy={top + wallH * f} r={r * 0.28} fill="#3b4149" />
+                {[0, 60, 120, 180, 240, 300].map((deg) => {
+                  const a = (deg * Math.PI) / 180;
+                  return (
+                    <line
+                      key={deg}
+                      x1={x + w / 2 + Math.cos(a) * r * 0.3}
+                      y1={top + wallH * f + Math.sin(a) * r * 0.3}
+                      x2={x + w / 2 + Math.cos(a) * r * 0.9}
+                      y2={top + wallH * f + Math.sin(a) * r * 0.9}
+                      stroke="#4d545d"
+                      strokeWidth={Math.max(0.4, r * 0.1)}
+                      opacity={0.8}
+                    />
+                  );
+                })}
+              </g>
+            ))}
+          </g>
+        );
+      })}
+    </g>
+  );
 }
 
 /** A field of vent slots, for a face that is mostly airflow. */
@@ -604,7 +814,28 @@ function BlankFace(props: ContentProps) {
       </g>
     );
   }
-  return null;
+  /*
+    Solid. Not an empty rectangle: a steel panel this thin is pressed with
+    a stiffening rib per rack unit, without which a 4U sheet would oil can
+    every time somebody leaned on it, and those ribs are the only thing
+    that tells you a blanked run is four panels rather than one hole.
+  */
+  return (
+    <g>
+      {Array.from({ length: device.u }, (_, i) => {
+        const mid = (i + 0.5) * unitH;
+        return (
+          <g key={i}>
+            <rect x={bodyX + bodyW * 0.06} y={mid - unitH * 0.15} width={bodyW * 0.88} height={unitH * 0.3} rx={Math.max(0.6, unitH * 0.06)} fill="#000" opacity={0.34} />
+            <rect x={bodyX + bodyW * 0.06} y={mid - unitH * 0.15} width={bodyW * 0.88} height={Math.max(0.5, unitH * 0.05)} rx={0.5} fill={m.pale ? "#c3c9cf" : "#6a7178"} opacity={0.5} />
+            {i > 0 && (
+              <rect x={bodyX} y={i * unitH - Math.max(0.4, unitH * 0.02)} width={bodyW} height={Math.max(0.5, unitH * 0.035)} fill="#000" opacity={0.5} />
+            )}
+          </g>
+        );
+      })}
+    </g>
+  );
 }
 
 /** Chassis indicators from the datasheet, at the faceplate's right end. */
