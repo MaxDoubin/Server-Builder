@@ -300,6 +300,27 @@ export function RackHardware({
       }
 
       /*
+        Front intake. A device that declares an intake wall has its air
+        pulled through the front, not round the sides, and that wall is
+        most of its face: bays get one row along the bottom and the rest
+        is fan. Drawn here rather than in the chassis because a guard is
+        already an instanced part and these are ten more of it.
+      */
+      if (device.intake) {
+        const cols = device.intake;
+        const wallW = CHASSIS_WIDTH * 0.86;
+        const wallTop = y0 + h * 0.42;
+        const cell = wallW / cols;
+        const d = Math.min(cell * 0.82, h * 0.24);
+        for (let ix = 0; ix < cols; ix += 1) {
+          const gx = -wallW / 2 + (ix + 0.5) * cell;
+          for (const dy of [h * 0.11, -h * 0.13]) {
+            guards.push(place(gx, wallTop - h * 0.24 + dy, faceZ + 0.0008, d, d, d));
+          }
+        }
+      }
+
+      /*
         The rear. Orbiting round the back of a rack used to show six blank
         boxes; anything with a fan in it has a guard on that face, and a
         server has two.
