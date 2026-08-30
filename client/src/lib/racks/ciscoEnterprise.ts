@@ -53,11 +53,13 @@ const ACCENT = {
   power: "#9234ea",
 } as const;
 
-const blank = (id: string, u: number, role: string, look: RackDevice["look"] = "vented"): RackDevice => ({
+const blank = (id: string, u: number, role: string, look: RackDevice["look"] = "solid"): RackDevice => ({
   id,
   u,
   vendor: "Generic",
-  model: u === 1 ? "Vented blanking panel" : `${u}U vented blanking panel`,
+  // Solid and vented are different products for different problems, and
+  // the name has to say which one this is.
+  model: look === "vented" ? `${u}U vented blanking panel` : `${u}U blanking panel`,
   role,
   family: "blank",
   look,
@@ -260,18 +262,11 @@ export const ciscoEnterpriseRack: RackDefinition = {
       accent: ACCENT.edge,
       url: "https://www.cisco.com/c/en/us/products/collateral/security/firepower-2100-series/datasheet-c78-742473.html",
     },
-    blank("BLANK_MID", 1, "Closes the gap so cooling air goes through equipment instead of around it."),
-    {
-      id: "BLANK_MID",
-      u: 1,
-      vendor: "Generic",
-      model: "1U blanking panel",
-      role: "One unit between the firewall and the blade chassis, closing the gap so the chassis breathes room air rather than the exhaust of the box above it.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
+    blank(
+      "BLANK_MID",
+      1,
+      "One unit between the firewall and the blade chassis. An open rack unit is not neutral: hot exhaust from behind the rack turns straight through the gap into the intake above it, so the chassis breathes its own waste heat.",
+    ),
     {
       id: "UCS_5108",
       u: 6,
@@ -324,29 +319,16 @@ export const ciscoEnterpriseRack: RackDefinition = {
       accent: ACCENT.compute,
       url: "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-c220-m7-rack-server/index.html",
     },
-    blank("BLANK_LOWER", 2, "Reserved space for the next compute node, covered until it arrives."),
-    {
-      id: "BLANK_LOWER",
-      u: 2,
-      vendor: "Generic",
-      model: "2U blanking panel",
-      role: "Two units under the rack servers. The compute block above breathes hard, and every open unit beside it is a short circuit back to its own intake.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
-    {
-      id: "BLANK_BASE",
-      u: 5,
-      vendor: "Generic",
-      model: "5U blanking panel",
-      role: "An open rack unit is not neutral. Hot exhaust from behind the rack turns straight through the gap and into the intake of whatever sits above it, so the machine breathes its own waste heat. Solid is the point: a vented panel is a different product for a different problem.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
+    blank(
+      "BLANK_LOWER",
+      2,
+      "Two units under the rack servers, reserved for the next compute node and covered until it arrives. Covered rather than open: the block above this breathes hard, and every open unit beside it is a short circuit back to its own intake.",
+    ),
+    blank(
+      "BLANK_BASE",
+      5,
+      "Five units closing the gap above the power. Panels are sold in one, two, three and four rack units, so a run this long is made of several rather than one custom sheet.",
+    ),
     {
       id: "CISCO_PDU",
       u: 2,
@@ -373,7 +355,6 @@ export const ciscoEnterpriseRack: RackDefinition = {
       watts: null,
       accent: ACCENT.power,
     },
-    blank("BLANK_BASE", 5, "Five rack units at the bottom left open. Air enters here, and a rack filled to the floor starves itself.", "vented"),
   ],
 
   /*

@@ -20,6 +20,15 @@
  * The fit derives the rack's origin from the model rather than assuming it,
  * because a 12U studio frame on casters and a 42U cabinet bolted to the
  * floor do not start their first unit in the same place.
+ *
+ * The device lists come from the published rack dataset rather than from a
+ * regex over the source, and that is not a stylistic preference. Reading
+ * the source found only devices written as object literals, so panels
+ * produced by a rack's own local helper were invisible: this check called
+ * four of them missing from the device list when they were there all
+ * along, the fix added duplicates beside them, and every rack in it then
+ * carried more units than its frame is tall without anything noticing.
+ * The dataset is the array the site actually renders.
  */
 import { readFileSync, readdirSync } from "fs";
 import path from "path";
@@ -76,20 +85,22 @@ function urlForFile(file) {
   return null;
 }
 
+/** Every rack the site renders, as the build published it. */
+const DATASET = JSON.parse(readFileSync(path.resolve("dist/public/data/rack-library.json"), "utf8"));
+
 /** Devices in rack order, top to bottom, with the units each occupies. */
-function devicesOf(module) {
-  const src = readFileSync(path.join(RACKS, `${module}.ts`), "utf8");
-  const height = Number(src.match(/height:\s*(\d+)/)?.[1] ?? 0);
-  const out = [];
-  let fromTop = 0;
-  for (const block of src.split(/\n(?=      id: ")/).slice(1)) {
-    const id = block.match(/^      id: "([^"]+)"/)?.[1];
-    const u = Number(block.match(/\n      u: (\d+),/)?.[1] ?? NaN);
-    if (!id || Number.isNaN(u)) continue;
-    out.push({ id, u, centre: fromTop + u / 2 });
-    fromTop += u;
-  }
-  return { height, devices: out, used: fromTop };
+function devicesOf(slug) {
+  const rows = DATASET.devices.filter((d) => d.rack === slug);
+  return {
+    height: rows[0]?.rackUnits ?? 0,
+    devices: rows.map((d) => ({ id: d.id, u: d.u, centre: d.position + d.u / 2 })),
+    used: rows.reduce((n, d) => n + d.u, 0),
+  };
+}
+
+/** The slug a rack module declares, which is how the dataset names it. */
+function slugOf(module) {
+  return readFileSync(path.join(RACKS, `${module}.ts`), "utf8").match(/slug:\s*"([^"]+)"/)?.[1] ?? null;
 }
 
 /**
@@ -142,11 +153,11 @@ for (const { file, module, groups, scenery } of heroModels()) {
   }
   const glb = path.join(MODELS, path.basename(url));
   const { height, devices, used } = module
-    ? devicesOf(module)
+    ? devicesOf(slugOf(module))
     : { height: 0, devices: groups.map((id) => ({ id, u: 0, centre: 0 })), used: 0 };
 
-  if (module && used !== height) {
-    fail(`${module}: devices total ${used}U in a ${height}U frame, so ${height - used}U is undeclared`);
+  if (module && used < height) {
+    fail(`${module}: devices total ${used}U in a ${height}U frame, leaving ${height - used}U of open rack undeclared`);
   }
 
   const bounds = groupExtents(glb);
@@ -194,6 +205,25 @@ for (const { file, module, groups, scenery } of heroModels()) {
           ` (a whole unit of drift is two devices swapped)`,
       );
     }
+  }
+}
+
+/*
+  Two invariants that hold for every rack, model or not. A rack whose
+  contents add up to more than its frame is a drawing of something that
+  cannot be built, and two devices sharing an id means one of them can
+  never be selected, deep linked, or told apart in the dataset.
+*/
+for (const slug of new Set(DATASET.devices.map((d) => d.rack))) {
+  const rows = DATASET.devices.filter((d) => d.rack === slug);
+  const used = rows.reduce((n, d) => n + d.u, 0);
+  if (used > rows[0].rackUnits) {
+    fail(`${slug}: ${used}U of hardware in a ${rows[0].rackUnits}U frame, which is ${used - rows[0].rackUnits}U past the floor`);
+  }
+  const seen = new Set();
+  for (const d of rows) {
+    if (seen.has(d.id)) fail(`${slug}: two devices share the id "${d.id}", so only the first can ever be selected`);
+    seen.add(d.id);
   }
 }
 

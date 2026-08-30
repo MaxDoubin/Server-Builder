@@ -50,14 +50,16 @@ const ACCENT = {
   power: "#9234ea",
 } as const;
 
-const blank = (id: string, u: number, role: string): RackDevice => ({
+const blank = (id: string, u: number, role: string, look: RackDevice["look"] = "solid"): RackDevice => ({
   id,
   u,
   vendor: "Generic",
-  model: u === 1 ? "Vented blanking panel" : `${u}U vented blanking panel`,
+  // Solid and vented are different products for different problems, and
+  // the name has to say which one this is.
+  model: look === "vented" ? `${u}U vented blanking panel` : `${u}U blanking panel`,
   role,
   family: "blank",
-  look: "vented",
+  look,
   watts: null,
   accent: ACCENT.passive,
 });
@@ -297,51 +299,26 @@ export const juniperCoreRack: RackDefinition = {
       watts: null,
       accent: ACCENT.passive,
     },
-    blank("BLANK_MID", 2, "Reserved space for the next line card chassis, covered until it arrives."),
-    {
-      id: "BLANK_MID",
-      u: 2,
-      vendor: "Generic",
-      model: "2U blanking panel",
-      role: "Two units under the console server, where the edge routers end and the empty space begins. The first panel of a run is the one that matters: it is the seam between kit and gap, and the gap is where the air gets round.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
-    {
-      id: "BLANK_LOW",
-      u: 4,
-      vendor: "Generic",
-      model: "4U blanking panel",
-      role: "An open rack unit is not neutral. Hot exhaust from behind the rack turns straight through the gap and into the intake of whatever sits above it, so the machine breathes its own waste heat. Solid is the point: a vented panel is a different product for a different problem.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
-    {
-      id: "BLANK_BASE",
-      u: 4,
-      vendor: "Generic",
-      model: "4U blanking panel",
-      role: "Panels are sold in one, two, three and four rack units, so an odd gap is closed by combining them rather than by leaving the remainder open.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
-    {
-      id: "BLANK_FOOT",
-      u: 3,
-      vendor: "Generic",
-      model: "3U blanking panel",
-      role: "Below it is the power, and the power is at the bottom because a UPS with its battery tray is the heaviest thing in the rack. Weight goes low or the rack goes over when it is rolled.",
-      family: "blank",
-      look: "solid",
-      watts: null,
-      accent: ACCENT.passive,
-    },
+    blank(
+      "BLANK_MID",
+      2,
+      "Two units under the console server, reserved for the next line card chassis and covered until it arrives. The first panel of a run is the one that matters: it is the seam between kit and gap, and the gap is where the air gets round.",
+    ),
+    blank(
+      "BLANK_LOW",
+      4,
+      "An open rack unit is not neutral. Hot exhaust from behind the rack turns straight through the gap and into the intake of whatever sits above it, so the machine breathes its own waste heat. Solid is the point: a vented panel is a different product for a different problem.",
+    ),
+    blank(
+      "BLANK_BASE",
+      4,
+      "Panels are sold in one, two, three and four rack units, so an odd gap is closed by combining them rather than by leaving the remainder open.",
+    ),
+    blank(
+      "BLANK_FOOT",
+      3,
+      "Below it is the power, and the power is at the bottom because a UPS with its battery tray is the heaviest thing in the rack. Weight goes low or the rack goes over when it is rolled.",
+    ),
     {
       id: "JUNIPER_PDU",
       u: 2,

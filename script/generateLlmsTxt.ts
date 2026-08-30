@@ -37,8 +37,13 @@ const MACHINE_READABLE: { path: string; note: string }[] = [
   { path: "/sitemap.xml", note: "every indexable URL" },
   { path: "/feed.xml", note: "RSS, the 50 most recent posts" },
   { path: "/search-index.json", note: "inverted index over every post body, the same one the site's own search uses" },
-  { path: "/data/equipment-catalog.json", note: "the rack hardware dataset, CC BY 4.0" },
-  { path: "/data/equipment-catalog.csv", note: "the same dataset as CSV" },
+  { path: "/data/equipment-catalog.json", note: "the simulator's hardware catalog, CC BY 4.0" },
+  { path: "/data/equipment-catalog.csv", note: "the same catalog as CSV" },
+  {
+    path: "/data/rack-library.json",
+    note: "every device in every rack elevation, with its vendor published figures and the page each came from, CC BY 4.0",
+  },
+  { path: "/data/rack-library.csv", note: "the same rack data as CSV" },
   { path: "/data/cyber-club-kit.md", note: "the club plan in full, CC BY 4.0" },
 ];
 

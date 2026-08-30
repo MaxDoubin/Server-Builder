@@ -15,12 +15,15 @@
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { staticEquipmentCatalog } from "@/lib/static-equipment";
+import { RACKS } from "@/lib/racks";
 import { BTU_PER_WATT } from "@/lib/capacity";
 
 const SITE_URL = "https://maxdoubin.com";
 
 export function CinematicData() {
   const count = staticEquipmentCatalog.length;
+  const rackDevices = RACKS.reduce((n, r) => n + r.devices.length, 0);
+  const rackSourced = RACKS.reduce((n, r) => n + r.devices.filter((d) => d.url).length, 0);
 
   useSEO({
     title: "Open rack hardware dataset | Max Doubin",
@@ -44,6 +47,16 @@ export function CinematicData() {
           "@type": "DataDownload",
           encodingFormat: "text/csv",
           contentUrl: `${SITE_URL}/data/equipment-catalog.csv`,
+        },
+        {
+          "@type": "DataDownload",
+          encodingFormat: "application/json",
+          contentUrl: `${SITE_URL}/data/rack-library.json`,
+        },
+        {
+          "@type": "DataDownload",
+          encodingFormat: "text/csv",
+          contentUrl: `${SITE_URL}/data/rack-library.csv`,
         },
       ],
     },
@@ -138,6 +151,60 @@ export function CinematicData() {
             . Use it anywhere, credit Max Doubin and link back. The same
             disclaimer above is embedded in both files.
           </p>
+
+          <section className="mt-14 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.35)] p-6">
+            <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">
+              And the rack library, which is a different kind of data
+            </h2>
+            <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              {rackDevices} devices across {RACKS.length} rack elevations, and
+              the distinction from the table above is the whole point of
+              publishing them separately. Those are modelling figures for a
+              simulator. These are vendor published figures: {rackSourced} of
+              the {rackDevices} carry the datasheet page their numbers came
+              from, and a device whose vendor publishes no consumption figure
+              says so rather than carrying one somebody estimated.
+            </p>
+            <ul className="mt-4 space-y-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <li>
+                <strong className="text-[hsl(var(--brand-bone))]">watts</strong>{" "}
+                is null wherever the vendor publishes a supply rating or a PoE
+                budget rather than the device&rsquo;s own draw, which is most
+                of the enterprise hardware here. A 715W supply is not a 715W
+                switch, and quoting one as the other would overstate a
+                rack&rsquo;s load several times over.
+              </li>
+              <li>
+                <strong className="text-[hsl(var(--brand-bone))]">position</strong>{" "}
+                and <strong className="text-[hsl(var(--brand-bone))]">u</strong>{" "}
+                are the real elevation: every rack&rsquo;s devices add up to
+                its frame, and CI fails the build if they stop doing so.
+              </li>
+              <li>
+                Link state and drive bay occupancy on the pages are
+                illustrative, described as such there, and are not in this
+                file.
+              </li>
+            </ul>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href="/data/rack-library.json"
+                download
+                data-testid="download-racks-json"
+                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+              >
+                rack-library.json
+              </a>
+              <a
+                href="/data/rack-library.csv"
+                download
+                data-testid="download-racks-csv"
+                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+              >
+                rack-library.csv
+              </a>
+            </div>
+          </section>
 
           <section className="mt-12">
             <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">

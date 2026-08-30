@@ -220,10 +220,10 @@ export const juniperRack: RackDefinition = {
     },
     {
       id: "blank-2",
-      u: 2,
+      u: 1,
       vendor: "Generic",
-      model: "2U solid blanking panel",
-      role: "The bottom of the rack, closed off below the UPS.",
+      model: "1U blanking panel",
+      role: "The bottom of the rack, closed off below the UPS. One unit, not two: everything above it already accounts for eleven of the frame's twelve, and a rack whose contents add up to more than it is tall is a drawing of a rack that cannot be built.",
       family: "blank",
       look: "solid",
       watts: null,
