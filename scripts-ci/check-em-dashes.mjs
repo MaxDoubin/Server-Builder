@@ -24,12 +24,35 @@ const EM_DASH = "—";
 const SOURCE_DIRS = ["client/src", "script", "server", "shared"];
 const BUILT_HTML_DIR = "dist/public";
 
-/** Anything whose bytes are not text we should be reading. */
+/**
+ * Anything whose bytes are not text we should be reading.
+ *
+ * This list is a cheap first pass and it is not the guarantee. It cannot
+ * be: it is a list of the binary formats that happened to be in the tree
+ * when it was written, so the next format added to the repository is
+ * always missing from it. Vendor 3D models arriving under script/ is what
+ * demonstrated that, six compressed mesh buffers whose bytes happened to
+ * decode to an em dash, reported as prose defects at column 161 of a
+ * Draco stream. The NUL sniff below is the actual guarantee.
+ */
 const SKIP_EXTENSIONS = new Set([
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".ico", ".svg",
   ".woff", ".woff2", ".ttf", ".otf", ".eot",
   ".mp4", ".webm", ".mp3", ".wav", ".pdf", ".zip", ".gz",
+  ".glb", ".gltf", ".bin", ".wasm", ".ktx2", ".basis", ".drc",
 ]);
+
+/**
+ * Is this file binary?
+ *
+ * A NUL byte anywhere near the start is what git and grep both use to
+ * decide, and it is right for the same reason here: no text file this
+ * project ships contains one, and every binary format worth skipping
+ * contains several in its header.
+ */
+function looksBinary(buffer) {
+  return buffer.subarray(0, 8192).includes(0);
+}
 
 const SKIP_DIRS = new Set(["node_modules", ".git"]);
 
@@ -70,7 +93,9 @@ const hits = [];
 for (const file of targets) {
   let text;
   try {
-    text = readFileSync(file, "utf8");
+    const bytes = readFileSync(file);
+    if (looksBinary(bytes)) continue;
+    text = bytes.toString("utf8");
   } catch {
     continue;
   }
