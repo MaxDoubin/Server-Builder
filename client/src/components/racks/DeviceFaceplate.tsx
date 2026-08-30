@@ -37,9 +37,15 @@ interface Props {
   still?: boolean;
   /** Per-SVG id prefix, so eight racks on one page do not collide. */
   uid: string;
+  /**
+   * Hide the mounting ears. A product shot is of the bare unit, and the
+   * ears with their screws only exist once it is racked, so drawing them
+   * on the isolated device was a plain factual error.
+   */
+  bare?: boolean;
 }
 
-export function DeviceFaceplate({ device, width, unitH, detail = false, still = false, uid }: Props) {
+export function DeviceFaceplate({ device, width, unitH, detail = false, still = false, uid, bare = false }: Props) {
   const { H, ear, bodyX, bodyW, inset, showText, dispW, brandW, textX, fieldX, fieldW } = faceGeometry(
     device,
     width,
@@ -48,6 +54,8 @@ export function DeviceFaceplate({ device, width, unitH, detail = false, still = 
   );
   const accent = device.accent ?? "#8a93a6";
   const finish = device.finish ?? "dark";
+  const faceX = bare ? 1 : bodyX;
+  const faceW2 = bare ? width - 2 : bodyW;
   const m = MATERIALS[finish];
   const r = Math.max(1.5, unitH * 0.05);
 
@@ -56,14 +64,14 @@ export function DeviceFaceplate({ device, width, unitH, detail = false, still = 
       {/* Shadow the chassis casts down onto the rail below it. */}
       <rect x={bodyX} y={H - inset} width={bodyW} height={Math.max(1.5, unitH * 0.1)} fill={defUrl(uid, "castshadow")} />
 
-      <RackEars uid={uid} width={width} ear={ear} H={H} inset={inset} u={device.u} unitH={unitH} />
+      {!bare && <RackEars uid={uid} width={width} ear={ear} H={H} inset={inset} u={device.u} unitH={unitH} />}
 
       {/* Chassis: shaded metal, then the brushed grain, then the bevels. */}
-      <rect x={bodyX} y={inset} width={bodyW} height={H - inset * 2} rx={r} fill={defUrl(uid, `face-${finish}`)} />
+      <rect x={faceX} y={inset} width={faceW2} height={H - inset * 2} rx={r} fill={defUrl(uid, `face-${finish}`)} />
       <rect
-        x={bodyX}
+        x={faceX}
         y={inset}
-        width={bodyW}
+        width={faceW2}
         height={H - inset * 2}
         rx={r}
         fill={defUrl(uid, m.pale ? "grain-l" : "grain-d")}
@@ -231,8 +239,8 @@ function PortField(props: ContentProps) {
     and leaving it off was the single biggest thing still missing.
   */
   const topRow = copper.filter((c) => c.row === 0);
-  const numSize = topRow.length ? Math.max(2.0, topRow[0].w * 0.24) : 0;
-  const showNumbers = numSize >= 2.2 && !isPatch;
+  const numSize = topRow.length ? Math.max(1.9, topRow[0].w * 0.21) : 0;
+  const showNumbers = numSize >= 2.0 && !isPatch;
   const poe = /PoE/i.test(device.model) || /PoE/i.test(device.role);
   const groupSize = device.groupsOf ?? 0;
 
@@ -259,7 +267,7 @@ function PortField(props: ContentProps) {
           <text
             key={`n${c.index}`}
             x={c.x + c.w * (poe ? 0.36 : 0.5)}
-            y={c.y - c.h * 0.16}
+            y={c.y - c.h * 0.1}
             textAnchor="middle"
             fill={m.sub}
             fontSize={numSize}
@@ -276,7 +284,7 @@ function PortField(props: ContentProps) {
             <text
               key={`e${c.index}`}
               x={c.x + c.w * (poe ? 0.36 : 0.5)}
-              y={c.y + c.h + numSize * 0.95}
+              y={c.y + c.h + numSize * 0.88}
               textAnchor="middle"
               fill={m.sub}
               fontSize={numSize}
@@ -293,7 +301,7 @@ function PortField(props: ContentProps) {
           // set as a glyph so it stays legible at three SVG units tall.
           <path
             key={`b${c.index}`}
-            d={`M ${c.x + c.w * 0.66} ${c.y - c.h * 0.16 - numSize * 0.78}
+            d={`M ${c.x + c.w * 0.66} ${c.y - c.h * 0.1 - numSize * 0.78}
                 l ${-numSize * 0.26} ${numSize * 0.52}
                 h ${numSize * 0.2}
                 l ${-numSize * 0.16} ${numSize * 0.42}
@@ -315,7 +323,7 @@ function PortField(props: ContentProps) {
               <rect
                 key={`r${c.index}`}
                 x={c.x}
-                y={c.y - c.h * 0.58}
+                y={c.y - c.h * 0.1 - numSize * 1.5}
                 width={Math.max(1, endX - c.x)}
                 height={Math.max(0.35, numSize * 0.13)}
                 fill={m.sub}

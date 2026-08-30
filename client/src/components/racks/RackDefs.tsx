@@ -250,6 +250,28 @@ export function RackDefs({ uid }: { uid: string }) {
         </linearGradient>
       ))}
 
+      {/*
+        The top of a chassis, seen from slightly above. A lid catches far
+        more light than the front face and falls off toward its back edge,
+        which is most of what makes a box read as a box.
+      */}
+      {Object.entries(MATERIALS).map(([name, mm]) => (
+        // A lid is not a white highlight: on the product shot it reads a
+        // shade lighter than the front panel at its leading edge and rolls
+        // very slightly darker toward the back.
+        <linearGradient key={`lid-${name}`} id={defId(uid, `lid-${name}`)} x1="0" y1="1" x2="0.05" y2="0">
+          <stop offset="0%" stopColor={mm.pale ? "#d3d7da" : "#33383e"} />
+          <stop offset="45%" stopColor={mm.base} />
+          <stop offset="100%" stopColor={mm.lo} />
+        </linearGradient>
+      ))}
+      {/* Contact shadow beneath a device standing on a surface. */}
+      <radialGradient id={defId(uid, "groundshadow")} cx="0.5" cy="0.5">
+        <stop offset="0%" stopColor="#000" stopOpacity="0.7" />
+        <stop offset="60%" stopColor="#000" stopOpacity="0.28" />
+        <stop offset="100%" stopColor="#000" stopOpacity="0" />
+      </radialGradient>
+
       {/* Vent slot: a slit with light on its lower lip. */}
       <linearGradient id={defId(uid, "vent")} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stopColor="#000" />

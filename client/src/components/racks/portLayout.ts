@@ -137,7 +137,7 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
     the middle of the unit and the two silkscreen bands get the rest. At the
     previous 0.82 the lower numbers fell off the bottom edge.
   */
-  const vSpace = (H - inset * 2) * (detail ? 0.62 : 0.68);
+  const vSpace = (H - inset * 2) * (detail ? 0.80 : 0.74);
   const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
   // Jacks on a dense panel very nearly touch; the visible separation comes
   // from the group gaps, not from space between neighbours.
