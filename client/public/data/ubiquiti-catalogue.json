@@ -1,0 +1,4751 @@
+{
+ "vendor": "Ubiquiti",
+ "source": "https://store.ui.com/us/en",
+ "retrieved": "2026-08-30",
+ "credit": "3D models by Ubiquiti Inc., from the UniFi store product pages.",
+ "note": "Every Ubiquiti product model that could be found, with where each one mounts. Rack devices were identified by measurement: a Y axis that is a near multiple of 44.45mm and a horizontal axis at 442.4mm. Everything else is placed from the store's own category, which knows better than any bounding box whether a thing goes on a ceiling or a desk, with a size check to catch the parts.",
+ "count": 252,
+ "totalBytes": 113253328,
+ "devices": [
+  {
+   "slug": "ai-key",
+   "name": "AI Key",
+   "sku": "AI-Key",
+   "short": "Edge AI appliance that enhances any UniFi Protect deployment with proactive, AI-driven threat detection and alerting, capable of analyzing up to 1,800 smart detection events per hour.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1342,
+    0.0337,
+    0.1312
+   ],
+   "triangles": 27329,
+   "bytes": 140228,
+   "model": "/models/vendor/ubiquiti/ai-key.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ai-key.webp",
+   "store": "https://store.ui.com/us/en/products/ai-key"
+  },
+  {
+   "slug": "cloud-key-enterprise",
+   "name": "CloudKey Enterprise",
+   "sku": "CK-Enterprise",
+   "short": "A UniFi Console designed for managing massive-scale UniFi Networks.",
+   "group": "Other",
+   "mount": "rack",
+   "sizeM": [
+    0.4814,
+    0.0453,
+    0.8148
+   ],
+   "triangles": 124592,
+   "bytes": 775876,
+   "model": "/models/vendor/ubiquiti/cloud-key-enterprise.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/cloud-key-enterprise.webp",
+   "store": "https://store.ui.com/us/en/products/cloud-key-enterprise",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4814,
+   "depthM": 0.8148
+  },
+  {
+   "slug": "e7",
+   "name": "Access Point E7",
+   "sku": "E7",
+   "short": "Enterprise-grade indoor access point with 10-stream WiFi 7 performance, a 10 GbE uplink, and a redundant GbE port for high availability.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0438,
+    0.2499,
+    0.2499
+   ],
+   "triangles": 164343,
+   "bytes": 587860,
+   "model": "/models/vendor/ubiquiti/e7.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/e7.webp",
+   "store": "https://store.ui.com/us/en/products/e7"
+  },
+  {
+   "slug": "e7-audience-indoor",
+   "name": "Access Point E7 Audience Indoor",
+   "sku": "E7-Audience-Indoor",
+   "short": "Enterprise-grade access point designed for high-density environments with 12-stream WiFi 7 performance, expanded 6 GHz indoor spectrum capability, a 10 GbE uplink, and a redundant GbE port for high availability.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0421,
+    0.2394,
+    0.4741
+   ],
+   "triangles": 38209,
+   "bytes": 678520,
+   "model": "/models/vendor/ubiquiti/e7-audience-indoor.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/e7-audience-indoor.webp",
+   "store": "https://store.ui.com/us/en/products/e7-audience-indoor"
+  },
+  {
+   "slug": "e7-audience-us",
+   "name": "Access Point E7 Audience",
+   "sku": "E7-Audience",
+   "short": "Enterprise-grade, indoor/outdoor access point designed for high-density environments with 12-stream 5 GHz and 6 GHz WiFi 7 performance, a 10 GbE uplink, and a redundant GbE port for high availability.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0421,
+    0.2655,
+    0.4741
+   ],
+   "triangles": 54818,
+   "bytes": 936336,
+   "model": "/models/vendor/ubiquiti/e7-audience-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/e7-audience-us.webp",
+   "store": "https://store.ui.com/us/en/products/e7-audience-us"
+  },
+  {
+   "slug": "e7-campus-indoor",
+   "name": "Access Point E7 Campus Indoor",
+   "sku": "E7-Campus-Indoor",
+   "short": "Enterprise-grade access point with 10-stream WiFi 7 performance, expanded 6 GHz indoor spectrum capability, a 10 GbE uplink, and a redundant GbE port for high availability.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0825,
+    0.2501,
+    0.2499
+   ],
+   "triangles": 74441,
+   "bytes": 264176,
+   "model": "/models/vendor/ubiquiti/e7-campus-indoor.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/e7-campus-indoor.webp",
+   "store": "https://store.ui.com/us/en/products/e7-campus-indoor"
+  },
+  {
+   "slug": "e7-campus-us",
+   "name": "Access Point E7 Campus",
+   "sku": "E7-Campus",
+   "short": "Enterprise-grade indoor/outdoor access point with 10-stream tri-band WiFi 7 performance, PRISM\u2122 active RF filtering technology, integrated directional antennas, a 10 GbE uplink, and a redundant GbE port for high availability.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0825,
+    0.2501,
+    0.2499
+   ],
+   "triangles": 74441,
+   "bytes": 264176,
+   "model": "/models/vendor/ubiquiti/e7-campus-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/e7-campus-us.webp",
+   "store": "https://store.ui.com/us/en/products/e7-campus-us"
+  },
+  {
+   "slug": "eah-8",
+   "name": "Enterprise Access Hub",
+   "sku": "EAH-8",
+   "short": "Enterprise-grade access hub with entry and exit control up to eight doors and battery backup support.",
+   "group": "Door access",
+   "mount": "desk",
+   "sizeM": [
+    0.6144,
+    0.3546,
+    0.3989
+   ],
+   "triangles": 120592,
+   "bytes": 604032,
+   "model": "/models/vendor/ubiquiti/eah-8.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/eah-8.webp",
+   "store": "https://store.ui.com/us/en/products/eah-8"
+  },
+  {
+   "slug": "eav-bridge",
+   "name": "Enterprise Audio/Video Bridge",
+   "sku": "EAV-Bridge",
+   "short": "PoE+ powered AV-over-IP transceiver that bridges 4K60 HDMI and professional XLR audio as either a source or destination.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.1391,
+    0.0404,
+    0.1086
+   ],
+   "triangles": 53158,
+   "bytes": 370896,
+   "model": "/models/vendor/ubiquiti/eav-bridge.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/eav-bridge.webp",
+   "store": "https://store.ui.com/us/en/products/eav-bridge"
+  },
+  {
+   "slug": "eav-fiber",
+   "name": "Switch Enterprise Audio/Video Fiber",
+   "sku": "EAV-Fiber",
+   "short": "Enterprise Audio/Video switch with (20) 10G SFP+ and (2) 100G QSFP28 uplinks. Supports PTP timing, SMPTE ST 2110, SDVoE, and AES67 audio, with a high-precision OCXO clock and optional GPS grandmaster input (SMA) for deterministic media syncing.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.5088,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 105807,
+   "bytes": 516268,
+   "model": "/models/vendor/ubiquiti/eav-fiber.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/eav-fiber.webp",
+   "store": "https://store.ui.com/us/en/products/eav-fiber",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.5088
+  },
+  {
+   "slug": "eav-xg-24-poe",
+   "name": "Switch Enterprise Audio/Video XG 24 PoE",
+   "sku": "EAV-XG-24-PoE (2150W)",
+   "short": "Enterprise Audio/Video switch with (24) 10G PoE+++ ports and (4) 100G QSFP28 uplinks. Supports PTP timing, SMPTE ST 2110, SDVoE, and AES67 audio, with a high-precision OCXO clock and optional GPS grandmaster input (SMA) for deterministic media syncing.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.5093,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 104441,
+   "bytes": 722548,
+   "model": "/models/vendor/ubiquiti/eav-xg-24-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/eav-xg-24-poe.webp",
+   "store": "https://store.ui.com/us/en/products/eav-xg-24-poe",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.5093
+  },
+  {
+   "slug": "ecs-24-poe",
+   "name": "Switch Enterprise Campus 24 PoE",
+   "sku": "ECS-24-PoE (1050W)",
+   "short": "Enterprise-grade 24-port, Layer 3 Etherlighting\u2122 PoE+++ switch with high-capacity 10 GbE RJ45 and 25G SFP28 connections for high availability system design.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.5096,
+    0.0437,
+    0.4426
+   ],
+   "triangles": 84129,
+   "bytes": 593640,
+   "model": "/models/vendor/ubiquiti/ecs-24-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ecs-24-poe.webp",
+   "store": "https://store.ui.com/us/en/products/ecs-24-poe",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4426,
+   "depthM": 0.5096
+  },
+  {
+   "slug": "ecs-48-poe",
+   "name": "Switch Enterprise Campus 48 PoE",
+   "sku": "ECS-48-PoE (2150W)",
+   "short": "Enterprise-grade 48-port, Layer 3 Etherlighting\u2122 PoE+++ switch with high-capacity 10 GbE RJ45 and 25G SFP28 connections for high availability system design.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.5092,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 87727,
+   "bytes": 717052,
+   "model": "/models/vendor/ubiquiti/ecs-48-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ecs-48-poe.webp",
+   "store": "https://store.ui.com/us/en/products/ecs-48-poe",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.5092
+  },
+  {
+   "slug": "ecs-aggregation",
+   "name": "Switch Enterprise Campus Aggregation",
+   "sku": "ECS-Aggregation",
+   "short": "1.8 Tbps high-density 100G/25G Layer 3 Etherlighting\u2122 aggregation switch with MC-LAG support for high availability system design.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.5086,
+    0.0439,
+    0.4424
+   ],
+   "triangles": 157434,
+   "bytes": 912044,
+   "model": "/models/vendor/ubiquiti/ecs-aggregation.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ecs-aggregation.webp",
+   "store": "https://store.ui.com/us/en/products/ecs-aggregation",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.5086
+  },
+  {
+   "slug": "ef-core",
+   "name": "Enterprise Firewall Core",
+   "sku": "EF-Core",
+   "short": "Enterprise-class 100 Gbps Cloud Gateway delivering 79 Gbps IDS/IPS, 22,500+ client capacity, and 5,000+ concurrent IPsec tunnels.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.429,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 116149,
+   "bytes": 714084,
+   "model": "/models/vendor/ubiquiti/ef-core.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ef-core.webp",
+   "store": "https://store.ui.com/us/en/products/ef-core",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.429
+  },
+  {
+   "slug": "efg",
+   "name": "Enterprise Firewall",
+   "sku": "EFG",
+   "short": "25G Cloud Gateway with 500+ UniFi device / 5,000+ client support, 12.5 Gbps IPS routing, and complete high availability.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.3535,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 114235,
+   "bytes": 589000,
+   "model": "/models/vendor/ubiquiti/efg.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/efg.webp",
+   "store": "https://store.ui.com/us/en/products/efg",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.3535
+  },
+  {
+   "slug": "enas",
+   "name": "Enterprise NAS",
+   "sku": "ENAS",
+   "short": "3U rack-mount NAS with sixteen 3.5\"/2.5\" SATA bays, dual 25 Gbps SFP28 and 10 GbE RJ45 ports, hot-swappable M.2 NVMe support, front magnetic I/O, Mini-SAS HD expansion, and redundant CRPS power for scalable, high-performance storage deployments.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.5471,
+    0.1324,
+    0.4817
+   ],
+   "triangles": 139951,
+   "bytes": 780544,
+   "model": "/models/vendor/ubiquiti/enas.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/enas.webp",
+   "store": "https://store.ui.com/us/en/products/enas",
+   "u": 3,
+   "yaw": -90,
+   "widthM": 0.4817,
+   "depthM": 0.5471
+  },
+  {
+   "slug": "envr",
+   "name": "Enterprise NVR",
+   "sku": "ENVR",
+   "short": "3U NVR with (16) 2.5/3.5\u201d drive bays, supporting up to (70) 4K cameras or (210) Full HD cameras.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.5457,
+    0.1324,
+    0.4814
+   ],
+   "triangles": 115934,
+   "bytes": 640276,
+   "model": "/models/vendor/ubiquiti/envr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/envr.webp",
+   "store": "https://store.ui.com/us/en/products/envr",
+   "u": 3,
+   "yaw": -90,
+   "widthM": 0.4814,
+   "depthM": 0.5457
+  },
+  {
+   "slug": "envr-core",
+   "name": "Enterprise NVR Core",
+   "sku": "ENVR-Core",
+   "short": "3U UniFi Protect NVR with 16-bay support for 2.5\"/3.5\" HDDs/SSDs, up to (300) 4K or (500) Full HD cameras, hot-swappable power supplies and optional 16-bay storage expansion units.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.6163,
+    0.1324,
+    0.4814
+   ],
+   "triangles": 116987,
+   "bytes": 731152,
+   "model": "/models/vendor/ubiquiti/envr-core.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/envr-core.webp",
+   "store": "https://store.ui.com/us/en/products/envr-core",
+   "u": 3,
+   "yaw": -90,
+   "widthM": 0.4814,
+   "depthM": 0.6163
+  },
+  {
+   "slug": "ethernet-surge-protector",
+   "name": "Ethernet Surge Protection Outdoor (10kA)",
+   "sku": "ETH-SP-G2",
+   "short": "ESD protection for outdoor high-speed networks.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.061,
+    0.091,
+    0.0325
+   ],
+   "triangles": 59378,
+   "bytes": 212180,
+   "model": "/models/vendor/ubiquiti/ethernet-surge-protector.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ethernet-surge-protector.webp",
+   "store": "https://store.ui.com/us/en/products/ethernet-surge-protector"
+  },
+  {
+   "slug": "toolless-mini-rack",
+   "name": "Toolless Mini Rack",
+   "sku": "U-Rack-6U-TL",
+   "short": "Compact, stackable, and toolless 6U open-frame rack designed for UniFi rack-mount devices.*",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.5157,
+    0.4831,
+    0.5213
+   ],
+   "triangles": 140394,
+   "bytes": 639756,
+   "model": "/models/vendor/ubiquiti/toolless-mini-rack.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/toolless-mini-rack.webp",
+   "store": "https://store.ui.com/us/en/products/toolless-mini-rack"
+  },
+  {
+   "slug": "u-airwire",
+   "name": "AirWire",
+   "sku": "U-AirWire",
+   "short": "High-performance WiFi 7 client adapter with STR MLO, enabling simultaneous full-duplex links for ultra-low latency, extended range, and true multi-gigabit real-world speeds.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.123,
+    0.1366,
+    0.117
+   ],
+   "triangles": 149685,
+   "bytes": 613328,
+   "model": "/models/vendor/ubiquiti/u-airwire.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u-airwire.webp",
+   "store": "https://store.ui.com/us/en/products/u-airwire"
+  },
+  {
+   "slug": "u-lte-backup-pro",
+   "name": "UniFi LTE Backup Pro",
+   "sku": "U-LTE-Backup Pro",
+   "short": "Seamless internet failover for UniFi gateways. Bring your own AT&T nano-SIM for LTE data.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.0715,
+    0.2495,
+    0.0661
+   ],
+   "triangles": 18161,
+   "bytes": 206076,
+   "model": "/models/vendor/ubiquiti/u-lte-backup-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u-lte-backup-pro.webp",
+   "store": "https://store.ui.com/us/en/products/u-lte-backup-pro"
+  },
+  {
+   "slug": "u5g-max",
+   "name": "UniFi 5G Max",
+   "sku": "U5G-Max",
+   "short": "A high-performance 5G (3.4 Gbps) modem for any UniFi deployment. Instantly adopt through any UniFi PoE port, it delivers automatic setup, dual SIM/eSIM, and seamless failover. Certified with AT&T, T-Mobile, and Verizon.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.034,
+    0.18,
+    0.109
+   ],
+   "triangles": 77058,
+   "bytes": 357380,
+   "model": "/models/vendor/ubiquiti/u5g-max.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u5g-max.webp",
+   "store": "https://store.ui.com/us/en/products/u5g-max"
+  },
+  {
+   "slug": "u5g-max-outdoor",
+   "name": "UniFi 5G Max Outdoor",
+   "sku": "U5G-Max-Outdoor",
+   "short": "A full-performance 5G (3.4 Gbps) modem for UniFi consoles and Cloud Gateways, designed for outdoor use with directional antennas, remote SIM, and dual SIM for seamless failover.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.0669,
+    0.2488,
+    0.165
+   ],
+   "triangles": 54311,
+   "bytes": 313788,
+   "model": "/models/vendor/ubiquiti/u5g-max-outdoor.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u5g-max-outdoor.webp",
+   "store": "https://store.ui.com/us/en/products/u5g-max-outdoor"
+  },
+  {
+   "slug": "u5g-us",
+   "name": "UniFi 5G Backup",
+   "sku": "U5G",
+   "short": "Compact PoE-powered 5G RedCap antenna delivering automatic internet backup.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.0202,
+    0.2,
+    0.038
+   ],
+   "triangles": 19455,
+   "bytes": 128640,
+   "model": "/models/vendor/ubiquiti/u5g-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u5g-us.webp",
+   "store": "https://store.ui.com/us/en/products/u5g-us"
+  },
+  {
+   "slug": "u6-enterprise",
+   "name": "Access Point U6 Enterprise",
+   "sku": "U6-Enterprise",
+   "short": "Ceiling-mounted WiFi 6E AP with 10 spatial streams and 6 GHz support to provide seamless, multi-band coverage within high client density environments.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0481,
+    0.2198,
+    0.2198
+   ],
+   "triangles": 57968,
+   "bytes": 228352,
+   "model": "/models/vendor/ubiquiti/u6-enterprise.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-enterprise.webp",
+   "store": "https://store.ui.com/us/en/products/u6-enterprise"
+  },
+  {
+   "slug": "u6-enterprise-iw",
+   "name": "Access Point U6 Enterprise In-Wall",
+   "sku": "U6-Enterprise-IW",
+   "short": "Wall-mounted WiFi 6E AP with 10 spatial streams, 6 GHz support, and a built-in 4-port switch. Designed for high-density office networks.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.1567,
+    0.1597,
+    0.0338
+   ],
+   "triangles": 28412,
+   "bytes": 200656,
+   "model": "/models/vendor/ubiquiti/u6-enterprise-iw.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-enterprise-iw.webp",
+   "store": "https://store.ui.com/us/en/products/u6-enterprise-iw"
+  },
+  {
+   "slug": "u6-iw",
+   "name": "Access Point U6 In-Wall",
+   "sku": "U6-IW",
+   "short": "Wall-mounted WiFi 6 AP with 6 spatial streams and a built-in 4\u2011port switch ideal for single-room coverage in hospitality environments.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0312,
+    0.1397,
+    0.096
+   ],
+   "triangles": 44067,
+   "bytes": 226644,
+   "model": "/models/vendor/ubiquiti/u6-iw.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-iw.webp",
+   "store": "https://store.ui.com/us/en/products/u6-iw"
+  },
+  {
+   "slug": "u6-mesh",
+   "name": "Access Point U6 Mesh",
+   "sku": "U6-Mesh",
+   "short": "Sleek, indoor/outdoor WiFi 6 AP with 6 spatial streams designed for mesh applications.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0485,
+    0.1596,
+    0.0485
+   ],
+   "triangles": 26132,
+   "bytes": 160680,
+   "model": "/models/vendor/ubiquiti/u6-mesh.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-mesh.webp",
+   "store": "https://store.ui.com/us/en/products/u6-mesh"
+  },
+  {
+   "slug": "u6-mesh-pro",
+   "name": "Access Point U6 Mesh Pro",
+   "sku": "U6-Mesh-Pro",
+   "short": "Indoor/outdoor WiFi 6 AP with 4 spatial streams, an integrated super antenna, and a gigabit passthrough port.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0602,
+    0.3434,
+    0.1828
+   ],
+   "triangles": 77918,
+   "bytes": 276840,
+   "model": "/models/vendor/ubiquiti/u6-mesh-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-mesh-pro.webp",
+   "store": "https://store.ui.com/us/en/products/u6-mesh-pro"
+  },
+  {
+   "slug": "u6-plus",
+   "name": "Access Point U6 Plus",
+   "sku": "U6+",
+   "short": "Compact, ceiling-mounted WiFi 6 AP with 4 spatial streams that improves upon the U6 Lite with higher performance and dual-band WiFi 6 support. Ideal for small and medium-sized businesses.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0326,
+    0.16,
+    0.16
+   ],
+   "triangles": 35340,
+   "bytes": 216636,
+   "model": "/models/vendor/ubiquiti/u6-plus.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-plus.webp",
+   "store": "https://store.ui.com/us/en/products/u6-plus"
+  },
+  {
+   "slug": "u6-pro",
+   "name": "Access Point U6 Pro",
+   "sku": "U6-Pro",
+   "short": "Ceiling-mounted WiFi 6 AP with 6 spatial streams designed for large offices.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0346,
+    0.1967,
+    0.1967
+   ],
+   "triangles": 29482,
+   "bytes": 207036,
+   "model": "/models/vendor/ubiquiti/u6-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u6-pro.webp",
+   "store": "https://store.ui.com/us/en/products/u6-pro"
+  },
+  {
+   "slug": "u7-iw",
+   "name": "Access Point U7 In-Wall",
+   "sku": "U7-IW",
+   "short": "Wall-mounted WiFi\u200e 7 AP with 4 spatial streams and an integrated 2.5 GbE PoE switch designed for hospitality environments.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0302,
+    0.1371,
+    0.0987
+   ],
+   "triangles": 40533,
+   "bytes": 194248,
+   "model": "/models/vendor/ubiquiti/u7-iw.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-iw.webp",
+   "store": "https://store.ui.com/us/en/products/u7-iw"
+  },
+  {
+   "slug": "u7-lite",
+   "name": "Access Point U7 Lite",
+   "sku": "U7-Lite",
+   "short": "Compact, ceiling-mounted WiFi 7 AP with 4 spatial streams and 2.5 GbE uplink.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0329,
+    0.1714,
+    0.1714
+   ],
+   "triangles": 42681,
+   "bytes": 311528,
+   "model": "/models/vendor/ubiquiti/u7-lite.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-lite.webp",
+   "store": "https://store.ui.com/us/en/products/u7-lite"
+  },
+  {
+   "slug": "u7-lr",
+   "name": "Access Point U7 Long-Range",
+   "sku": "U7-LR",
+   "short": "Compact, ceiling-mount WiFi 7 AP  with 5 spatial streams and extended signal range.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.043,
+    0.1757,
+    0.1756
+   ],
+   "triangles": 78560,
+   "bytes": 267140,
+   "model": "/models/vendor/ubiquiti/u7-lr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-lr.webp",
+   "store": "https://store.ui.com/us/en/products/u7-lr"
+  },
+  {
+   "slug": "u7-mesh",
+   "name": "Access Point U7 Mesh",
+   "sku": "U7-Mesh",
+   "short": "Compact indoor/outdoor WiFi 7 AP with integrated long-range antenna system.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0485,
+    0.1591,
+    0.0485
+   ],
+   "triangles": 8441,
+   "bytes": 47892,
+   "model": "/models/vendor/ubiquiti/u7-mesh.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-mesh.webp",
+   "store": "https://store.ui.com/us/en/products/u7-mesh"
+  },
+  {
+   "slug": "u7-outdoor",
+   "name": "Access Point U7 Outdoor",
+   "sku": "U7-Outdoor",
+   "short": "All-weather WiFi 7 AP with 4 spatial streams, an integrated directional super antenna, and versatile mounting options.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0553,
+    0.3532,
+    0.17
+   ],
+   "triangles": 97478,
+   "bytes": 330324,
+   "model": "/models/vendor/ubiquiti/u7-outdoor.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-outdoor.webp",
+   "store": "https://store.ui.com/us/en/products/u7-outdoor"
+  },
+  {
+   "slug": "u7-pro",
+   "name": "Access Point U7 Pro",
+   "sku": "U7-Pro",
+   "short": "Ceiling-mounted WiFi 7 AP with 6 spatial streams and 6 GHz support for interference-free WiFi in demanding, large-scale environments.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.046,
+    0.206,
+    0.206
+   ],
+   "triangles": 327094,
+   "bytes": 784520,
+   "model": "/models/vendor/ubiquiti/u7-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro"
+  },
+  {
+   "slug": "u7-pro-max",
+   "name": "Access Point U7 Pro Max",
+   "sku": "U7-Pro-Max",
+   "short": "Ceiling-mounted WiFi 7 AP with 8 spatial streams, 6 GHz support, and a dedicated spectral scanning engine for interference-free WiFi in demanding, large-scale environments.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0462,
+    0.206,
+    0.206
+   ],
+   "triangles": 52776,
+   "bytes": 242072,
+   "model": "/models/vendor/ubiquiti/u7-pro-max.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro-max.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro-max"
+  },
+  {
+   "slug": "u7-pro-outdoor-us",
+   "name": "Access Point U7 Pro Outdoor",
+   "sku": "U7-Pro-Outdoor",
+   "short": "All-weather IP67 WiFi 7 AP with 6 spatial streams, extended-range AFC 6 GHz support, integrated directional super antenna, and articulation mounting bracket.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0665,
+    0.4178,
+    0.17
+   ],
+   "triangles": 103458,
+   "bytes": 372612,
+   "model": "/models/vendor/ubiquiti/u7-pro-outdoor-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro-outdoor-us.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro-outdoor-us"
+  },
+  {
+   "slug": "u7-pro-wall",
+   "name": "Access Point U7 Pro Wall",
+   "sku": "U7-Pro-Wall",
+   "short": "Wall-mounted WiFi 7 AP with 6 spatial streams and 6 GHz support tailored for home builders with seamless installation options.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0365,
+    0.15,
+    0.103
+   ],
+   "triangles": 132067,
+   "bytes": 376112,
+   "model": "/models/vendor/ubiquiti/u7-pro-wall.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro-wall.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro-wall"
+  },
+  {
+   "slug": "u7-pro-xg",
+   "name": "Access Point U7 Pro XG",
+   "sku": "U7-Pro-XG",
+   "short": "Ceiling-mounted 6-stream WiFi 7 AP with 10/5/2.5/1 GbE support.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0325,
+    0.206,
+    0.206
+   ],
+   "triangles": 133790,
+   "bytes": 641364,
+   "model": "/models/vendor/ubiquiti/u7-pro-xg.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro-xg.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro-xg"
+  },
+  {
+   "slug": "u7-pro-xg-wall",
+   "name": "Access Point U7 Pro XG Wall",
+   "sku": "U7-Pro-XG-Wall",
+   "short": "Wall-mounted 6 GHz-ready WiFi 7 AP with 1/2.5/5/10 GbE support.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0335,
+    0.155,
+    0.1079
+   ],
+   "triangles": 53905,
+   "bytes": 273788,
+   "model": "/models/vendor/ubiquiti/u7-pro-xg-wall.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro-xg-wall.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro-xg-wall"
+  },
+  {
+   "slug": "u7-pro-xgs",
+   "name": "Access Point U7 Pro XGS",
+   "sku": "U7-Pro-XGS",
+   "short": "Ceiling-mounted 8-stream WiFi 7 AP with dedicated spectral scanning radio and 10/5/2.5/1 GbE support.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0325,
+    0.215,
+    0.215
+   ],
+   "triangles": 112801,
+   "bytes": 522452,
+   "model": "/models/vendor/ubiquiti/u7-pro-xgs.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/u7-pro-xgs.webp",
+   "store": "https://store.ui.com/us/en/products/u7-pro-xgs"
+  },
+  {
+   "slug": "ua-button",
+   "name": "Access Button",
+   "sku": "UA-Button",
+   "short": "Push-to-exit button designed for UniFi Access Hubs.",
+   "group": "Door access",
+   "mount": "accessory",
+   "sizeM": [
+    0.088,
+    0.137,
+    0.0381
+   ],
+   "triangles": 43616,
+   "bytes": 208080,
+   "model": "/models/vendor/ubiquiti/ua-button.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-button.webp",
+   "store": "https://store.ui.com/us/en/products/ua-button"
+  },
+  {
+   "slug": "ua-g2",
+   "name": "Access G2 Reader",
+   "sku": "UA-G2",
+   "short": "Compact second-generation access reader.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.04,
+    0.093,
+    0.0365
+   ],
+   "triangles": 7174,
+   "bytes": 122656,
+   "model": "/models/vendor/ubiquiti/ua-g2.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g2.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g2"
+  },
+  {
+   "slug": "ua-g2-pro",
+   "name": "Access G2 Reader Pro",
+   "sku": "UA-G2-Pro",
+   "short": "Second generation, indoor/outdoor NFC reader and intercom.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0405,
+    0.16,
+    0.0404
+   ],
+   "triangles": 27034,
+   "bytes": 227016,
+   "model": "/models/vendor/ubiquiti/ua-g2-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g2-pro.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g2-pro"
+  },
+  {
+   "slug": "ua-g3",
+   "name": "Access G3 Reader",
+   "sku": "UA-G3",
+   "short": "Compact third-generation access reader with Touch Pass support.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0365,
+    0.093,
+    0.04
+   ],
+   "triangles": 29571,
+   "bytes": 205208,
+   "model": "/models/vendor/ubiquiti/ua-g3.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g3.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g3"
+  },
+  {
+   "slug": "ua-g3-fingerprint",
+   "name": "Access G3 Reader Fingerprint",
+   "sku": "UA-G3-Fingerprint",
+   "short": "Third-generation, indoor/outdoor NFC card reader with fingerprint, keypad and Touch Pass support.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0569,
+    0.1262,
+    0.045
+   ],
+   "triangles": 26805,
+   "bytes": 243664,
+   "model": "/models/vendor/ubiquiti/ua-g3-fingerprint.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g3-fingerprint.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g3-fingerprint"
+  },
+  {
+   "slug": "ua-g3-flex",
+   "name": "Access G3 Reader Flex",
+   "sku": "UA-G3-Flex",
+   "short": "Third-generation NFC card reader with a keypad and Touch Pass support.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0363,
+    0.088,
+    0.088
+   ],
+   "triangles": 30406,
+   "bytes": 598412,
+   "model": "/models/vendor/ubiquiti/ua-g3-flex.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g3-flex.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g3-flex"
+  },
+  {
+   "slug": "ua-g3-intercom",
+   "name": "Access G3 Intercom",
+   "sku": "UA-G3-Intercom",
+   "short": "Indoor/outdoor intercom terminal for managing residential and commercial building entry requests with Touch Pass support.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0309,
+    0.3248,
+    0.1137
+   ],
+   "triangles": 300527,
+   "bytes": 651504,
+   "model": "/models/vendor/ubiquiti/ua-g3-intercom.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g3-intercom.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g3-intercom"
+  },
+  {
+   "slug": "ua-g3-pro",
+   "name": "Access G3 Reader Pro",
+   "sku": "UA-G3-Pro",
+   "short": "Third-generation, indoor/outdoor NFC reader and intercom with Touch Pass support.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0405,
+    0.16,
+    0.0404
+   ],
+   "triangles": 27034,
+   "bytes": 227384,
+   "model": "/models/vendor/ubiquiti/ua-g3-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-g3-pro.webp",
+   "store": "https://store.ui.com/us/en/products/ua-g3-pro"
+  },
+  {
+   "slug": "ua-hub-door",
+   "name": "Access Door Hub",
+   "sku": "UA-Hub-Door",
+   "short": "A single-door mechanism that provides complete entry and exit control via connected Access Readers.",
+   "group": "Door access",
+   "mount": "desk",
+   "sizeM": [
+    0.126,
+    0.175,
+    0.0329
+   ],
+   "triangles": 55672,
+   "bytes": 276580,
+   "model": "/models/vendor/ubiquiti/ua-hub-door.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-hub-door.webp",
+   "store": "https://store.ui.com/us/en/products/ua-hub-door"
+  },
+  {
+   "slug": "ua-hub-door-mini",
+   "name": "Access Door Hub Mini",
+   "sku": "UA-Hub-Door-Mini",
+   "short": "Compact Access Control Hub for a single door.",
+   "group": "Door access",
+   "mount": "desk",
+   "sizeM": [
+    0.0367,
+    0.113,
+    0.066
+   ],
+   "triangles": 51845,
+   "bytes": 337572,
+   "model": "/models/vendor/ubiquiti/ua-hub-door-mini.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-hub-door-mini.webp",
+   "store": "https://store.ui.com/us/en/products/ua-hub-door-mini"
+  },
+  {
+   "slug": "ua-hub-gate",
+   "name": "Access Gate Hub",
+   "sku": "UA-Hub-Gate",
+   "short": "An advanced Gate Hub enabling seamless gate access control via connected Access readers or Intercom.",
+   "group": "Door access",
+   "mount": "desk",
+   "sizeM": [
+    0.0339,
+    0.175,
+    0.1261
+   ],
+   "triangles": 89451,
+   "bytes": 541508,
+   "model": "/models/vendor/ubiquiti/ua-hub-gate.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-hub-gate.webp",
+   "store": "https://store.ui.com/us/en/products/ua-hub-gate"
+  },
+  {
+   "slug": "ua-intercom",
+   "name": "Access Intercom",
+   "sku": "UA-Intercom",
+   "short": "Indoor/outdoor intercom terminal for managing residential and commercial building entry requests.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0309,
+    0.3248,
+    0.1137
+   ],
+   "triangles": 300527,
+   "bytes": 654292,
+   "model": "/models/vendor/ubiquiti/ua-intercom.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-intercom.webp",
+   "store": "https://store.ui.com/us/en/products/ua-intercom"
+  },
+  {
+   "slug": "ua-intercom-viewer",
+   "name": "Access Intercom Viewer",
+   "sku": "UA-Intercom-Viewer",
+   "short": "Display that works with Intercom and Reader Pro for visitor screening and remote access control.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0318,
+    0.135,
+    0.072
+   ],
+   "triangles": 34024,
+   "bytes": 195048,
+   "model": "/models/vendor/ubiquiti/ua-intercom-viewer.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-intercom-viewer.webp",
+   "store": "https://store.ui.com/us/en/products/ua-intercom-viewer"
+  },
+  {
+   "slug": "ua-retrofit-hub-2",
+   "name": "Access Retrofit Hub",
+   "sku": "UA-Retrofit-Hub-2",
+   "short": "DC-powered hub that supports Wiegand and OSDP readers and provides entry and exit control for up to two doors.",
+   "group": "Door access",
+   "mount": "desk",
+   "sizeM": [
+    0.1184,
+    0.1494,
+    0.0427
+   ],
+   "triangles": 41822,
+   "bytes": 267764,
+   "model": "/models/vendor/ubiquiti/ua-retrofit-hub-2.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-retrofit-hub-2.webp",
+   "store": "https://store.ui.com/us/en/products/ua-retrofit-hub-2"
+  },
+  {
+   "slug": "ua-retrofit-reader",
+   "name": "Access Retrofit Reader",
+   "sku": "UA-Retrofit-Reader",
+   "short": "Indoor/outdoor OSDP reader with NFC Card and Touch Pass support, compatible with the UniFi Retrofit Hub using existing cabling.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0239,
+    0.117,
+    0.045
+   ],
+   "triangles": 29576,
+   "bytes": 181248,
+   "model": "/models/vendor/ubiquiti/ua-retrofit-reader.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-retrofit-reader.webp",
+   "store": "https://store.ui.com/us/en/products/ua-retrofit-reader"
+  },
+  {
+   "slug": "ua-retrofit-reader-fingerprint",
+   "name": "Access Retrofit Reader Fingerprint",
+   "sku": "UA-Retrofit-Reader-Fingerprint",
+   "short": "Indoor/outdoor OSDP reader with fingerprint, keypad and Touch Pass support, compatible with the UniFi Retrofit Hub using existing cabling.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.05,
+    0.1262,
+    0.045
+   ],
+   "triangles": 41026,
+   "bytes": 276252,
+   "model": "/models/vendor/ubiquiti/ua-retrofit-reader-fingerprint.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-retrofit-reader-fingerprint.webp",
+   "store": "https://store.ui.com/us/en/products/ua-retrofit-reader-fingerprint"
+  },
+  {
+   "slug": "ua-ultra",
+   "name": "Access Ultra",
+   "sku": "UA-Ultra",
+   "short": "An access reader with a built-in hub for complete, single-door entry control from one device.",
+   "group": "Door access",
+   "mount": "desk",
+   "sizeM": [
+    0.0375,
+    0.126,
+    0.045
+   ],
+   "triangles": 19735,
+   "bytes": 149484,
+   "model": "/models/vendor/ubiquiti/ua-ultra.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ua-ultra.webp",
+   "store": "https://store.ui.com/us/en/products/ua-ultra"
+  },
+  {
+   "slug": "uacc-ai-ms-2-am",
+   "name": "AI Multi Sensor 2 Camera Arm Mount",
+   "sku": "UACC-AI-MS-2-AM",
+   "short": "Versatile mounting kit for wall and corner installation of the AI Multi Sensor 2 camera.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.1848,
+    0.0471,
+    0.2186
+   ],
+   "triangles": 30407,
+   "bytes": 162956,
+   "model": "/models/vendor/ubiquiti/uacc-ai-ms-2-am.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ai-ms-2-am.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ai-ms-2-am"
+  },
+  {
+   "slug": "uacc-ai-ms-2-pm",
+   "name": "AI Multi Sensor 2 Camera Pendant Mount",
+   "sku": "UACC-AI-MS-2-PM",
+   "short": "Pendant-style mount with a G3/4\" thread for suspending the AI Multi Sensor 2 camera.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.132,
+    0.0347,
+    0.218
+   ],
+   "triangles": 36189,
+   "bytes": 112512,
+   "model": "/models/vendor/ubiquiti/uacc-ai-ms-2-pm.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ai-ms-2-pm.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ai-ms-2-pm"
+  },
+  {
+   "slug": "uacc-ai-ms-2-ws",
+   "name": "AI Multi Sensor 2 Camera Weather Shield",
+   "sku": "UACC-AI-MS-2-WS",
+   "short": "AI Multi Sensor 2 camera accessory for optimal image quality and protection from the elements when installed outdoors on a wall or pole.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.1288,
+    0.0615,
+    0.2275
+   ],
+   "triangles": 11234,
+   "bytes": 61296,
+   "model": "/models/vendor/ubiquiti/uacc-ai-ms-2-ws.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ai-ms-2-ws.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ai-ms-2-ws"
+  },
+  {
+   "slug": "uacc-ai-ms-4-am",
+   "name": "AI Multi Sensor 4 Camera Arm Mount",
+   "sku": "UACC-AI-MS-4-AM",
+   "short": "Versatile mounting kit enabling flat or angled installation of the AI Multi Sensor 4 camera via arm, pole, or corner mounts - ideal for various deployment environments.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.3049,
+    0.1504,
+    0.253
+   ],
+   "triangles": 69512,
+   "bytes": 344860,
+   "model": "/models/vendor/ubiquiti/uacc-ai-ms-4-am.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ai-ms-4-am.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ai-ms-4-am"
+  },
+  {
+   "slug": "uacc-ai-ms-4-pm",
+   "name": "AI Multi Sensor 4 Camera Pendant Mount",
+   "sku": "UACC-AI-MS-4-PM",
+   "short": "Pendant-style mount with 1.5\" NPS threaded connector for suspending the AI Multi Sensor 4 camera from ceilings or overhead structures.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.3349,
+    0.3902,
+    0.3349
+   ],
+   "triangles": 250427,
+   "bytes": 725304,
+   "model": "/models/vendor/ubiquiti/uacc-ai-ms-4-pm.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ai-ms-4-pm.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ai-ms-4-pm"
+  },
+  {
+   "slug": "uacc-ai-ptz-precision-cm",
+   "name": "AI PTZ Precision Corner Mount",
+   "sku": "UACC-AI-PTZ-Precision-CM",
+   "short": "Corner mount accessory for installing the AI PTZ Precision camera.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.1833,
+    0.143,
+    0.1066
+   ],
+   "triangles": 20980,
+   "bytes": 115052,
+   "model": "/models/vendor/ubiquiti/uacc-ai-ptz-precision-cm.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ai-ptz-precision-cm.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ai-ptz-precision-cm"
+  },
+  {
+   "slug": "uacc-chime-poe",
+   "name": "PoE Smart Chime",
+   "sku": "UACC-Chime-PoE",
+   "short": "PoE plug-and-play notification device, designed to pair with a UniFi doorbell or door access hub.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0542,
+    0.062,
+    0.062
+   ],
+   "triangles": 25473,
+   "bytes": 454448,
+   "model": "/models/vendor/ubiquiti/uacc-chime-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-chime-poe.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-chime-poe"
+  },
+  {
+   "slug": "uacc-ese-16",
+   "name": "Enterprise Storage Expansion",
+   "sku": "UACC-ESE-16",
+   "short": "Expansion unit for ENAS & ENVR-Core with (16) 2.5/3.5\" drive bays, providing seamless HDD storage expansion.",
+   "group": "Panels and blanks",
+   "mount": "rack",
+   "sizeM": [
+    0.546,
+    0.1324,
+    0.4814
+   ],
+   "triangles": 102897,
+   "bytes": 529780,
+   "model": "/models/vendor/ubiquiti/uacc-ese-16.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ese-16.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ese-16",
+   "u": 3,
+   "yaw": -90,
+   "widthM": 0.4814,
+   "depthM": 0.546
+  },
+  {
+   "slug": "uacc-eth-sp-panel-24",
+   "name": "Ethernet Surge Protection (24-Port)",
+   "sku": "UACC-ETH-SP-Panel-24",
+   "short": "Rack-mount indoor panel supports up to 10 GbE, PoE+++, and 20kA surge discharge per port.",
+   "group": "Power",
+   "mount": "rack",
+   "sizeM": [
+    0.134,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 36168,
+   "bytes": 228292,
+   "model": "/models/vendor/ubiquiti/uacc-eth-sp-panel-24.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-eth-sp-panel-24.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-eth-sp-panel-24",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.134
+  },
+  {
+   "slug": "uacc-flex-utility-pro",
+   "name": "Flex Utility Pro",
+   "sku": "UACC-Flex-Utility-Pro",
+   "short": "A universal outdoor weatherproof enclosure. Protect your networking gear in any environment with this versatile, durable enclosure, designed for both wall and pole mounting.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.093,
+    0.22,
+    0.3501
+   ],
+   "triangles": 64670,
+   "bytes": 210344,
+   "model": "/models/vendor/ubiquiti/uacc-flex-utility-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-flex-utility-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-flex-utility-pro"
+  },
+  {
+   "slug": "uacc-g6-180-enhancer",
+   "name": "G6 180 Enhancer",
+   "sku": "UACC-G6-180-Enhancer",
+   "short": "Long-range IR LED, floodlight, and buzzer accessory for the G6 180 camera.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0831,
+    0.1312,
+    0.1687
+   ],
+   "triangles": 84903,
+   "bytes": 427704,
+   "model": "/models/vendor/ubiquiti/uacc-g6-180-enhancer.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-g6-180-enhancer.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-g6-180-enhancer"
+  },
+  {
+   "slug": "uacc-gnss-antenna",
+   "name": "GNSS Antenna",
+   "sku": "UACC-GNSS-Antenna",
+   "short": "Compact active IP67-rated GNSS antenna with an integrated low-noise LNA.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.0597,
+    0.1041,
+    0.0798
+   ],
+   "triangles": 42224,
+   "bytes": 138676,
+   "model": "/models/vendor/ubiquiti/uacc-gnss-antenna.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-gnss-antenna.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-gnss-antenna"
+  },
+  {
+   "slug": "uacc-in-ceiling-speaker",
+   "name": "In-Ceiling Speaker",
+   "sku": "UACC-In-Ceiling-Speaker",
+   "short": "6.5\" in-ceiling speakers with immersive sound. These unobtrusive speakers deliver audio across a wide area, ensuring consistent sound quality.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.1018,
+    0.238,
+    0.238
+   ],
+   "triangles": 120473,
+   "bytes": 820636,
+   "model": "/models/vendor/ubiquiti/uacc-in-ceiling-speaker.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-in-ceiling-speaker.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-in-ceiling-speaker"
+  },
+  {
+   "slug": "uacc-in-wall-speaker",
+   "name": "In-Wall Speaker",
+   "sku": "UACC-In-Wall-Speaker",
+   "short": "6.5\" in-wall speakers that bring rich, room-filling sound to any space, seamlessly blending for an uncompromised listening experience.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.0888,
+    0.315,
+    0.228
+   ],
+   "triangles": 100573,
+   "bytes": 716420,
+   "model": "/models/vendor/ubiquiti/uacc-in-wall-speaker.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-in-wall-speaker.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-in-wall-speaker"
+  },
+  {
+   "slug": "uacc-rack-12u-wall-450-g",
+   "name": "12U Rack Cabinet, 450 mm, Glass Door",
+   "sku": "UACC-Rack-12U-Wall-450-G",
+   "short": "Fully assembled wall-mount rack with built-in fans and removable panels, engineered for easy equipment access and space-efficient small-scale deployments.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.4536,
+    0.6405,
+    0.5553
+   ],
+   "triangles": 198809,
+   "bytes": 939720,
+   "model": "/models/vendor/ubiquiti/uacc-rack-12u-wall-450-g.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-rack-12u-wall-450-g.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-rack-12u-wall-450-g"
+  },
+  {
+   "slug": "uacc-rack-12u-wall-450-p",
+   "name": "12U Rack Cabinet, 450 mm, Perforated Door",
+   "sku": "UACC-Rack-12U-Wall-450-P",
+   "short": "Fully assembled wall-mount rack with built-in fans and removable panels, engineered for easy equipment access and space-efficient small-scale deployments.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.555,
+    0.6413,
+    0.454
+   ],
+   "triangles": 274217,
+   "bytes": 851060,
+   "model": "/models/vendor/ubiquiti/uacc-rack-12u-wall-450-p.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-rack-12u-wall-450-p.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-rack-12u-wall-450-p"
+  },
+  {
+   "slug": "uacc-rack-12u-wall-600-g",
+   "name": "12U Rack Cabinet, 600 mm, Glass Door",
+   "sku": "UACC-Rack-12U-Wall-600-G",
+   "short": "Fully assembled wall-mount rack with built-in fans and removable panels, engineered for easy equipment access and space-efficient small-scale deployments.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.5987,
+    0.6454,
+    0.6077
+   ],
+   "triangles": 92149,
+   "bytes": 629548,
+   "model": "/models/vendor/ubiquiti/uacc-rack-12u-wall-600-g.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-rack-12u-wall-600-g.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-rack-12u-wall-600-g"
+  },
+  {
+   "slug": "uacc-rack-12u-wall-600-p",
+   "name": "12U Rack Cabinet, 600 mm, Perforated Door",
+   "sku": "UACC-Rack-12U-Wall-600-P",
+   "short": "Fully assembled wall-mount rack with built-in fans and removable panels, engineered for easy equipment access and space-efficient small-scale deployments.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.5987,
+    0.6454,
+    0.6077
+   ],
+   "triangles": 91526,
+   "bytes": 782360,
+   "model": "/models/vendor/ubiquiti/uacc-rack-12u-wall-600-p.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-rack-12u-wall-600-p.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-rack-12u-wall-600-p"
+  },
+  {
+   "slug": "uacc-retrofit-psu-12v",
+   "name": "Retrofit PSU 12V",
+   "sku": "UACC-Retrofit-PSU-12V",
+   "short": "12V power supply with optional SLA backup battery support, compatible with the UniFi Retrofit Hub.",
+   "group": "Door access",
+   "mount": "accessory",
+   "sizeM": [
+    0.035,
+    0.1248,
+    0.1
+   ],
+   "triangles": 28780,
+   "bytes": 142936,
+   "model": "/models/vendor/ubiquiti/uacc-retrofit-psu-12v.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-retrofit-psu-12v.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-retrofit-psu-12v"
+  },
+  {
+   "slug": "uacc-sfp-wizard",
+   "name": "SFP Wizard",
+   "sku": "UACC-SFP-Wizard",
+   "short": "Instantly reprogram, test, and unlock universal compatibility for every optical module \u2014 with full diagnostics and OTA updates built in.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.0205,
+    0.0908,
+    0.0527
+   ],
+   "triangles": 88505,
+   "bytes": 678224,
+   "model": "/models/vendor/ubiquiti/uacc-sfp-wizard.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-sfp-wizard.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-sfp-wizard"
+  },
+  {
+   "slug": "uacc-ups-2u-battery",
+   "name": "UPS 2U Battery",
+   "sku": "UACC-UPS-2U-Battery",
+   "short": "Replacement hot-swappable battery for UPS 2U.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.169,
+    0.067,
+    0.222
+   ],
+   "triangles": 33652,
+   "bytes": 181948,
+   "model": "/models/vendor/ubiquiti/uacc-ups-2u-battery.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ups-2u-battery.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ups-2u-battery"
+  },
+  {
+   "slug": "uacc-ups-tower-battery",
+   "name": "UPS Tower Battery",
+   "sku": "UACC-UPS-Tower-Battery",
+   "short": "Replacement hot-swappable battery for UPS Tower.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.2012,
+    0.1041,
+    0.1139
+   ],
+   "triangles": 74306,
+   "bytes": 273552,
+   "model": "/models/vendor/ubiquiti/uacc-ups-tower-battery.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uacc-ups-tower-battery.webp",
+   "store": "https://store.ui.com/us/en/products/uacc-ups-tower-battery"
+  },
+  {
+   "slug": "uap-ac-mesh",
+   "name": "Access Point AC Mesh",
+   "sku": "UAP-AC-M",
+   "short": "Compact, indoor/outdoor WiFi 5 AP with 4 spatial streams and optional external antenna support for directional coverage.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0343,
+    0.3214,
+    0.2144
+   ],
+   "triangles": 58212,
+   "bytes": 306436,
+   "model": "/models/vendor/ubiquiti/uap-ac-mesh.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uap-ac-mesh.webp",
+   "store": "https://store.ui.com/us/en/products/uap-ac-mesh"
+  },
+  {
+   "slug": "uap-ac-pro",
+   "name": "Access Point AC Pro",
+   "sku": "UAP-AC-PRO",
+   "short": "Ceiling-mounted WiFi 5 AP with 6 spatial streams designed for large offices.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0346,
+    0.1967,
+    0.1967
+   ],
+   "triangles": 52174,
+   "bytes": 265264,
+   "model": "/models/vendor/ubiquiti/uap-ac-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uap-ac-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uap-ac-pro"
+  },
+  {
+   "slug": "ubb",
+   "name": "Building-to-Building Bridge",
+   "sku": "UBB",
+   "short": "60 GHz wireless point-to-point bridge with a 5 GHz backup radio.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0435,
+    0.1422,
+    0.1422
+   ],
+   "triangles": 110072,
+   "bytes": 378044,
+   "model": "/models/vendor/ubiquiti/ubb.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ubb.webp",
+   "store": "https://store.ui.com/us/en/products/ubb"
+  },
+  {
+   "slug": "ubb-xg",
+   "name": "Building-to-Building Bridge XG",
+   "sku": "UBB-XG",
+   "short": "60 GHz wireless point-to-point bridge with a 10G SFP+ uplink for maximum performance and a 5 GHz backup radio.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0587,
+    0.1918,
+    0.1918
+   ],
+   "triangles": 63808,
+   "bytes": 355424,
+   "model": "/models/vendor/ubiquiti/ubb-xg.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ubb-xg.webp",
+   "store": "https://store.ui.com/us/en/products/ubb-xg"
+  },
+  {
+   "slug": "uc-cast-lite",
+   "name": "Display Cast Lite",
+   "sku": "UC-Cast-Lite",
+   "short": "Digital signage player designed for media playback on HDMI displays.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.031,
+    0.09,
+    0.052
+   ],
+   "triangles": 50404,
+   "bytes": 251244,
+   "model": "/models/vendor/ubiquiti/uc-cast-lite.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uc-cast-lite.webp",
+   "store": "https://store.ui.com/us/en/products/uc-cast-lite"
+  },
+  {
+   "slug": "uc-cast-pro",
+   "name": "Display Cast Pro",
+   "sku": "UC-Cast-Pro",
+   "short": "Managed digital signage player for HDMI displays with media content playback, web mode, and USB-C peripheral support.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.031,
+    0.123,
+    0.052
+   ],
+   "triangles": 9526,
+   "bytes": 85560,
+   "model": "/models/vendor/ubiquiti/uc-cast-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uc-cast-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uc-cast-pro"
+  },
+  {
+   "slug": "uc-ev-station-lite",
+   "name": "EV Station Lite",
+   "sku": "UC-EV-Station-Lite",
+   "short": "Weatherproof, 11 kW Level 2 electric vehicle charging station with flexible access control designed for scalable deployment.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.2947,
+    0.6447,
+    0.34
+   ],
+   "triangles": 288603,
+   "bytes": 746616,
+   "model": "/models/vendor/ubiquiti/uc-ev-station-lite.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uc-ev-station-lite.webp",
+   "store": "https://store.ui.com/us/en/products/uc-ev-station-lite"
+  },
+  {
+   "slug": "uc-ev-station-pro",
+   "name": "EV Station Pro",
+   "sku": "UC-EV-Station-Pro",
+   "short": "Weatherproof, 11 kW Level 2 electric vehicle charging station with an ultra-bright 10.1\" touch display, flexible access control, and payment terminal accessory support.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.1704,
+    0.5791,
+    0.4366
+   ],
+   "triangles": 242271,
+   "bytes": 805152,
+   "model": "/models/vendor/ubiquiti/uc-ev-station-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uc-ev-station-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uc-ev-station-pro"
+  },
+  {
+   "slug": "ucg-fiber",
+   "name": "Cloud Gateway Fiber",
+   "sku": "UCG-Fiber (30W)",
+   "short": "Desktop 10G Cloud Gateway with integrated 4-port 2.5 GbE switch, selectable NVR storage, and full UniFi application support.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.1278,
+    0.03,
+    0.2128
+   ],
+   "triangles": 91649,
+   "bytes": 4276968,
+   "model": "/models/vendor/ubiquiti/ucg-fiber.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ucg-fiber.webp",
+   "store": "https://store.ui.com/us/en/products/ucg-fiber"
+  },
+  {
+   "slug": "ucg-industrial",
+   "name": "Cloud Gateway Industrial",
+   "sku": "UCG-Industrial (270W)",
+   "short": "Ruggedized, fanless 10 GbE UniFi Cloud Gateway delivering 350W of total system power for high-density PoE deployments, with advanced routing capabilities and microSD storage for full UniFi application support.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.0441,
+    0.2302,
+    0.3077
+   ],
+   "triangles": 146627,
+   "bytes": 655312,
+   "model": "/models/vendor/ubiquiti/ucg-industrial.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ucg-industrial.webp",
+   "store": "https://store.ui.com/us/en/products/ucg-industrial"
+  },
+  {
+   "slug": "ucg-max",
+   "name": "Cloud Gateway Max",
+   "sku": "UCG-Max",
+   "short": "Compact 2.5G Cloud Gateway with 30+ UniFi device / 300+ client support, 2.3 Gbps IPS routing, and selectable NVR storage.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.1276,
+    0.03,
+    0.1418
+   ],
+   "triangles": 82664,
+   "bytes": 321412,
+   "model": "/models/vendor/ubiquiti/ucg-max.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ucg-max.webp",
+   "store": "https://store.ui.com/us/en/products/ucg-max"
+  },
+  {
+   "slug": "ucg-max-ns",
+   "name": "Cloud Gateway Max NS",
+   "sku": "UCG-Max-NS",
+   "short": "Compact 2.5G Cloud Gateway with 30+ UniFi device / 300+ client support, 2.3 Gbps IPS routing, and selectable NVR storage.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.1276,
+    0.03,
+    0.1418
+   ],
+   "triangles": 82664,
+   "bytes": 321412,
+   "model": "/models/vendor/ubiquiti/ucg-max-ns.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ucg-max-ns.webp",
+   "store": "https://store.ui.com/us/en/products/ucg-max-ns"
+  },
+  {
+   "slug": "ucg-ultra",
+   "name": "Cloud Gateway Ultra",
+   "sku": "UCG-Ultra",
+   "short": "Compact Cloud Gateway with 30+ UniFi device / 300+ client support, 1 Gbps IPS routing, and multi-WAN load balancing.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.1276,
+    0.03,
+    0.1418
+   ],
+   "triangles": 59942,
+   "bytes": 306124,
+   "model": "/models/vendor/ubiquiti/ucg-ultra.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ucg-ultra.webp",
+   "store": "https://store.ui.com/us/en/products/ucg-ultra"
+  },
+  {
+   "slug": "uci",
+   "name": "UniFi Cable Internet",
+   "sku": "UCI",
+   "short": "Multi-gigabit, rack-mountable cable modem with integrated connection monitoring.",
+   "group": "Panels and blanks",
+   "mount": "rack",
+   "sizeM": [
+    0.0932,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 27226,
+   "bytes": 228408,
+   "model": "/models/vendor/ubiquiti/uci.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uci.webp",
+   "store": "https://store.ui.com/us/en/products/uci",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.0932
+  },
+  {
+   "slug": "uck-g2-ssd",
+   "name": "CloudKey+ SSD",
+   "sku": "UCK-G2-SSD",
+   "short": "Compact UniFi Console that connects directly to the Site Manager at https://unifi.ui.com/ for powerful, multi-application site management.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1312,
+    0.0271,
+    0.1347
+   ],
+   "triangles": 50745,
+   "bytes": 201292,
+   "model": "/models/vendor/ubiquiti/uck-g2-ssd.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uck-g2-ssd.webp",
+   "store": "https://store.ui.com/us/en/products/uck-g2-ssd"
+  },
+  {
+   "slug": "udb",
+   "name": "UniFi Device Bridge",
+   "sku": "UDB",
+   "short": "Plug-and-play, wireless bridging PoE adapter with integrated UniFi WiFi Auto-Link.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0343,
+    0.135,
+    0.055
+   ],
+   "triangles": 17530,
+   "bytes": 909228,
+   "model": "/models/vendor/ubiquiti/udb.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udb.webp",
+   "store": "https://store.ui.com/us/en/products/udb"
+  },
+  {
+   "slug": "udb-iot",
+   "name": "Device Bridge IoT",
+   "sku": "UDB-IoT",
+   "short": "Ultra-compact wireless bridge for IoT devices with integrated UniFi WiFi Auto-Link, versatile mounting options, and powered by USB Type-C or 4-pin DC socket.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0255,
+    0.0889,
+    0.0445
+   ],
+   "triangles": 43390,
+   "bytes": 262160,
+   "model": "/models/vendor/ubiquiti/udb-iot.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udb-iot.webp",
+   "store": "https://store.ui.com/us/en/products/udb-iot"
+  },
+  {
+   "slug": "udb-pro",
+   "name": "Device Bridge Pro",
+   "sku": "UDB-Pro",
+   "short": "5 GHz wireless bridge with PoE output that connects at 5+ km distances or seamlessly uplinks to UniFi WiFi.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0642,
+    0.1895,
+    0.1895
+   ],
+   "triangles": 49673,
+   "bytes": 271364,
+   "model": "/models/vendor/ubiquiti/udb-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udb-pro.webp",
+   "store": "https://store.ui.com/us/en/products/udb-pro"
+  },
+  {
+   "slug": "udb-pro-sector",
+   "name": "Device Bridge Pro Sector",
+   "sku": "UDB-Pro-Sector",
+   "short": "5 GHz point-to-multipoint access point that wirelessly bridges 50+ Device Bridge Pro clients at 5+ km distances.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0714,
+    0.361,
+    0.1296
+   ],
+   "triangles": 47469,
+   "bytes": 222864,
+   "model": "/models/vendor/ubiquiti/udb-pro-sector.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udb-pro-sector.webp",
+   "store": "https://store.ui.com/us/en/products/udb-pro-sector"
+  },
+  {
+   "slug": "udb-switch",
+   "name": "Device Bridge Switch",
+   "sku": "UDB-Switch (35W)",
+   "short": "Compact PoE+ switch* with (1) 10 GbE port, (7) 2.5 GbE ports, and 6 GHz-ready WiFi 7 bridging integration for seamless, high-capacity wireless uplink to UniFi WiFi.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.113,
+    0.0325,
+    0.2129
+   ],
+   "triangles": 109348,
+   "bytes": 480516,
+   "model": "/models/vendor/ubiquiti/udb-switch.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udb-switch.webp",
+   "store": "https://store.ui.com/us/en/products/udb-switch"
+  },
+  {
+   "slug": "udm-beast",
+   "name": "Dream Machine Beast",
+   "sku": "UDM-Beast",
+   "short": "Hyperscale-class Cloud Gateway delivering 25 Gbps IPS/IDS, 7,500+ client capacity, and the full UniFi application platform in one system.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.3274,
+    0.0439,
+    0.4424
+   ],
+   "triangles": 87261,
+   "bytes": 544260,
+   "model": "/models/vendor/ubiquiti/udm-beast.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udm-beast.webp",
+   "store": "https://store.ui.com/us/en/products/udm-beast",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.3274
+  },
+  {
+   "slug": "udm-pro",
+   "name": "Dream Machine Pro",
+   "sku": "UDM-Pro",
+   "short": "10G Cloud Gateway with 100+ UniFi device / 1,000+ client support and 3.5 Gbps IPS routing.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.2877,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 133242,
+   "bytes": 461168,
+   "model": "/models/vendor/ubiquiti/udm-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udm-pro.webp",
+   "store": "https://store.ui.com/us/en/products/udm-pro",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.2877
+  },
+  {
+   "slug": "udm-pro-max",
+   "name": "Dream Machine Pro Max",
+   "sku": "UDM-Pro-Max",
+   "short": "10G Cloud Gateway with 200+ UniFi device / 2,000+ client support, 5 Gbps IPS routing, and redundant NVR storage.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.2878,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 225831,
+   "bytes": 627376,
+   "model": "/models/vendor/ubiquiti/udm-pro-max.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udm-pro-max.webp",
+   "store": "https://store.ui.com/us/en/products/udm-pro-max",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.2878
+  },
+  {
+   "slug": "udm-se",
+   "name": "Dream Machine Special Edition",
+   "sku": "UDM-SE (180W)",
+   "short": "10G Cloud Gateway with 100+ UniFi device / 1,000+ client support, 3.5 Gbps IPS routing, and built-in PoE switching.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.2878,
+    0.0437,
+    0.4437
+   ],
+   "triangles": 228670,
+   "bytes": 578412,
+   "model": "/models/vendor/ubiquiti/udm-se.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udm-se.webp",
+   "store": "https://store.ui.com/us/en/products/udm-se",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4437,
+   "depthM": 0.2878
+  },
+  {
+   "slug": "udr-5g-max",
+   "name": "Dream Router 5G Max",
+   "sku": "UDR-5G-Max (15W)",
+   "short": "Desktop Cloud Gateway with full-performance 5G up to 3.4 Gbps, WiFi 7, 10G SFP+, 4-port 2.5 GbE switch with (1)  PoE port, and SD card storage.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.11,
+    0.25,
+    0.1101
+   ],
+   "triangles": 179142,
+   "bytes": 655712,
+   "model": "/models/vendor/ubiquiti/udr-5g-max.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udr-5g-max.webp",
+   "store": "https://store.ui.com/us/en/products/udr-5g-max"
+  },
+  {
+   "slug": "udr7",
+   "name": "Dream Router 7",
+   "sku": "UDR7 (15W)",
+   "short": "Desktop 10G Cloud Gateway with integrated WiFi 7, PoE switch, microSD storage, and full UniFi application support.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.11,
+    0.1842,
+    0.11
+   ],
+   "triangles": 100366,
+   "bytes": 477744,
+   "model": "/models/vendor/ubiquiti/udr7.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/udr7.webp",
+   "store": "https://store.ui.com/us/en/products/udr7"
+  },
+  {
+   "slug": "ufp-viewport",
+   "name": "Protect Viewport",
+   "sku": "UP-Viewport",
+   "short": "Easy-to-use hub for viewing Protect camera feeds on an HDMI display.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.033,
+    0.1554,
+    0.048
+   ],
+   "triangles": 51496,
+   "bytes": 254320,
+   "model": "/models/vendor/ubiquiti/ufp-viewport.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ufp-viewport.webp",
+   "store": "https://store.ui.com/us/en/products/ufp-viewport"
+  },
+  {
+   "slug": "uk-ultra",
+   "name": "Swiss Army Knife",
+   "sku": "UK-Ultra",
+   "short": "Incredibly compact, indoor/outdoor AP with versatile mounting options and long-range external antenna support.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0336,
+    0.1365,
+    0.084
+   ],
+   "triangles": 154993,
+   "bytes": 371956,
+   "model": "/models/vendor/ubiquiti/uk-ultra.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uk-ultra.webp",
+   "store": "https://store.ui.com/us/en/products/uk-ultra"
+  },
+  {
+   "slug": "umr-industrial-us",
+   "name": "Mobile Router Industrial",
+   "sku": "UMR-Industrial",
+   "short": "Compact, ruggedized, and carrier unlocked LTE Cat 4 mobile WiFi router designed for indoor/outdoor IoT applications.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.032,
+    0.2159,
+    0.0945
+   ],
+   "triangles": 47599,
+   "bytes": 283628,
+   "model": "/models/vendor/ubiquiti/umr-industrial-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/umr-industrial-us.webp",
+   "store": "https://store.ui.com/us/en/products/umr-industrial-us"
+  },
+  {
+   "slug": "umr-ultra-us",
+   "name": "Mobile Router Ultra",
+   "sku": "UMR-Ultra",
+   "short": "Ultra-compact managed LTE mobile router for IoT applications with integrated LTE, wired WAN, WiFi, automatic failover, and DC power input support.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.026,
+    0.1935,
+    0.0819
+   ],
+   "triangles": 218126,
+   "bytes": 557040,
+   "model": "/models/vendor/ubiquiti/umr-ultra-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/umr-ultra-us.webp",
+   "store": "https://store.ui.com/us/en/products/umr-ultra-us"
+  },
+  {
+   "slug": "umr-us",
+   "name": "UniFi Mobile Router",
+   "sku": "UMR",
+   "short": "Managed mobile WiFi router that brings plug-and-play connectivity to any environment. Use the pre-installed AT&T nano-SIM with three data plan options for LTE data, or bring your own AT&T nano-SIM.",
+   "group": "Internet",
+   "mount": "desk",
+   "sizeM": [
+    0.0293,
+    0.2107,
+    0.14
+   ],
+   "triangles": 194952,
+   "bytes": 640896,
+   "model": "/models/vendor/ubiquiti/umr-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/umr-us.webp",
+   "store": "https://store.ui.com/us/en/products/umr-us"
+  },
+  {
+   "slug": "unas-2",
+   "name": "UNAS 2",
+   "sku": "UNAS-2",
+   "short": "UniFi Network Attached Storage with (2) 3.5\" HDD bays, 2.5 GbE networking, USB-C connectivity, and an included PoE++ adapter, all in a compact footprint.",
+   "group": "Storage and NVR",
+   "mount": "desk",
+   "sizeM": [
+    0.135,
+    0.2233,
+    0.129
+   ],
+   "triangles": 61632,
+   "bytes": 394788,
+   "model": "/models/vendor/ubiquiti/unas-2.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unas-2.webp",
+   "store": "https://store.ui.com/us/en/products/unas-2"
+  },
+  {
+   "slug": "unas-4",
+   "name": "UNAS 4",
+   "sku": "UNAS-4",
+   "short": "UniFi Network Attached Storage with (4) 2.5/3.5\" HDD bays, (2) M.2 NVMe SSD cache slots, 2.5 GbE networking, USB-C connectivity, and an included PoE+++ adapter, all in a compact footprint.",
+   "group": "Storage and NVR",
+   "mount": "desk",
+   "sizeM": [
+    0.2461,
+    0.2246,
+    0.129
+   ],
+   "triangles": 189395,
+   "bytes": 711948,
+   "model": "/models/vendor/ubiquiti/unas-4.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unas-4.webp",
+   "store": "https://store.ui.com/us/en/products/unas-4"
+  },
+  {
+   "slug": "unas-pro",
+   "name": "UNAS Pro",
+   "sku": "UNAS-Pro",
+   "short": "2U rack-mount NAS with (7) 2.5/3.5\" drive bays and 10 Gbps performance designed for large-scale file storage and sharing.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.328,
+    0.0876,
+    0.4425
+   ],
+   "triangles": 68204,
+   "bytes": 493288,
+   "model": "/models/vendor/ubiquiti/unas-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unas-pro.webp",
+   "store": "https://store.ui.com/us/en/products/unas-pro",
+   "u": 2,
+   "yaw": -90,
+   "widthM": 0.4425,
+   "depthM": 0.328
+  },
+  {
+   "slug": "unas-pro-4",
+   "name": "UNAS Pro 4",
+   "sku": "UNAS-Pro-4",
+   "short": "1U rack-mount NAS with (4) 2.5/3.5\" HDD bays and (2) M.2 NVMe SSD cache slots, delivering faster access, lower latency, and high-availability 10 Gbps networking for large-scale file storage and sharing.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.4025,
+    0.0437,
+    0.4425
+   ],
+   "triangles": 55490,
+   "bytes": 384288,
+   "model": "/models/vendor/ubiquiti/unas-pro-4.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unas-pro-4.webp",
+   "store": "https://store.ui.com/us/en/products/unas-pro-4",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4425,
+   "depthM": 0.4025
+  },
+  {
+   "slug": "unas-pro-8",
+   "name": "UNAS Pro 8",
+   "sku": "UNAS-Pro-8",
+   "short": "2U rack-mount NAS with (8) 2.5/3.5\" HDD bays and (2) M.2 NVMe SSD cache slots, delivering faster access, lower latency, and high-availability 10 Gbps networking for large-scale file storage and sharing.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.509,
+    0.0874,
+    0.4425
+   ],
+   "triangles": 80163,
+   "bytes": 536432,
+   "model": "/models/vendor/ubiquiti/unas-pro-8.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unas-pro-8.webp",
+   "store": "https://store.ui.com/us/en/products/unas-pro-8",
+   "u": 2,
+   "yaw": -90,
+   "widthM": 0.4425,
+   "depthM": 0.509
+  },
+  {
+   "slug": "unvr",
+   "name": "Network Video Recorder",
+   "sku": "UNVR",
+   "short": "A video recorder with (4) 2.5/3.5\" HDD bays that can support up to 30 days of storage for (18) 4K cameras or (60) Full HD cameras.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.3273,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 74245,
+   "bytes": 420388,
+   "model": "/models/vendor/ubiquiti/unvr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unvr.webp",
+   "store": "https://store.ui.com/us/en/products/unvr",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.3273
+  },
+  {
+   "slug": "unvr-g2",
+   "name": "Network Video Recorder G2",
+   "sku": "UNVR-G2",
+   "short": "1U UniFi Protect NVR with built-in AI event analytics, HDMI output, four 2.5\u201d/3.5\u201d HDD bays, and support for up to (30) 4K or (60) Full HD cameras.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.3271,
+    0.0438,
+    0.4425
+   ],
+   "triangles": 100324,
+   "bytes": 481328,
+   "model": "/models/vendor/ubiquiti/unvr-g2.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unvr-g2.webp",
+   "store": "https://store.ui.com/us/en/products/unvr-g2",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4425,
+   "depthM": 0.3271
+  },
+  {
+   "slug": "unvr-g2-pro",
+   "name": "Network Video Recorder G2 Pro",
+   "sku": "UNVR-G2-Pro",
+   "short": "2U UniFi Protect NVR with built-in AI event analytics, HDMI output, eight 2.5\u201d/3.5\u201d HDD bays, and support for up to (50) 4K or (100) Full HD cameras.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0874,
+    0.3272
+   ],
+   "triangles": 55767,
+   "bytes": 319512,
+   "model": "/models/vendor/ubiquiti/unvr-g2-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unvr-g2-pro.webp",
+   "store": "https://store.ui.com/us/en/products/unvr-g2-pro",
+   "u": 2,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.3272
+  },
+  {
+   "slug": "unvr-instant",
+   "name": "Network Video Recorder Instant",
+   "sku": "UNVR-Instant",
+   "short": "Compact UniFi Protect NVR with 3.5\" HDD support, featuring an integrated 6-port PoE switch, integrated HDMI View Port, and a capacity for (6) 4K camera or (15) Full HD cameras.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2252,
+    0.0547,
+    0.22
+   ],
+   "triangles": 165543,
+   "bytes": 1043228,
+   "model": "/models/vendor/ubiquiti/unvr-instant.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unvr-instant.webp",
+   "store": "https://store.ui.com/us/en/products/unvr-instant"
+  },
+  {
+   "slug": "unvr-instant-kit",
+   "name": "Network Video Recorder Instant Kit",
+   "sku": "UNVR-Instant-Kit",
+   "short": "Compact UniFi Protect NVR Kit, includes (1) UniFi Protect NVR Instant with (4) G5 Turret Ultra cameras and (1) 1TB HDD, delivering an all-in-one solution for fast and effortless setup.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2213,
+    0.1457,
+    0.5777
+   ],
+   "triangles": 322444,
+   "bytes": 1228608,
+   "model": "/models/vendor/ubiquiti/unvr-instant-kit.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unvr-instant-kit.webp",
+   "store": "https://store.ui.com/us/en/products/unvr-instant-kit"
+  },
+  {
+   "slug": "unvr-pro",
+   "name": "Network Video Recorder Pro",
+   "sku": "UNVR-Pro",
+   "short": "A 2U-sized video recorder with (7) 2.5/3.5\" HDD bays that can provide up to 60 days of storage for (24) 4K cameras or (70) Full HD cameras.",
+   "group": "Storage and NVR",
+   "mount": "rack",
+   "sizeM": [
+    0.3276,
+    0.0876,
+    0.4424
+   ],
+   "triangles": 72438,
+   "bytes": 439868,
+   "model": "/models/vendor/ubiquiti/unvr-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/unvr-pro.webp",
+   "store": "https://store.ui.com/us/en/products/unvr-pro",
+   "u": 2,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.3276
+  },
+  {
+   "slug": "up-ai-horn-speaker",
+   "name": "AI Horn Speaker",
+   "sku": "UP-AI-Horn-Speaker",
+   "short": "All-weather PoE 120 dB horn speaker with advanced AI alert functionality and versatile wall and pole mounting options.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2675,
+    0.1893,
+    0.2469
+   ],
+   "triangles": 379203,
+   "bytes": 916788,
+   "model": "/models/vendor/ubiquiti/up-ai-horn-speaker.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-ai-horn-speaker.webp",
+   "store": "https://store.ui.com/us/en/products/up-ai-horn-speaker"
+  },
+  {
+   "slug": "up-ai-port",
+   "name": "AI Port",
+   "sku": "UP-AI-Port",
+   "short": "AI appliance that enhances any UniFi or third-party camera with AI detection, classification, and recognition capabilities.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0384,
+    0.15,
+    0.064
+   ],
+   "triangles": 112915,
+   "bytes": 302224,
+   "model": "/models/vendor/ubiquiti/up-ai-port.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-ai-port.webp",
+   "store": "https://store.ui.com/us/en/products/up-ai-port"
+  },
+  {
+   "slug": "up-ai-speaker",
+   "name": "AI Speaker",
+   "sku": "UP-AI-Speaker",
+   "short": "Indoor 100 dB PoE speaker with AI alerts and flexible surface or flush mounting.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0843,
+    0.2691,
+    0.1931
+   ],
+   "triangles": 130204,
+   "bytes": 401960,
+   "model": "/models/vendor/ubiquiti/up-ai-speaker.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-ai-speaker.webp",
+   "store": "https://store.ui.com/us/en/products/up-ai-speaker"
+  },
+  {
+   "slug": "up-airquality",
+   "name": "Vape Detection & Air Quality Sensor",
+   "sku": "UP-AirQuality",
+   "short": "PoE-powered sensor delivering real-time vape detection, air quality monitoring, and instant alerts for schools, workplaces, hospitality, and commercial environments.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.093,
+    0.0405,
+    0.093
+   ],
+   "triangles": 103935,
+   "bytes": 390616,
+   "model": "/models/vendor/ubiquiti/up-airquality.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-airquality.webp",
+   "store": "https://store.ui.com/us/en/products/up-airquality"
+  },
+  {
+   "slug": "up-alarmhub-kit",
+   "name": "Protect Alarm Hub Kit",
+   "sku": "UP-AlarmHub-Kit",
+   "short": "32 input zone alarm control hub for hardwire intrusion sensors powered using PoE++ input and optional battery backup.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.3995,
+    0.3566,
+    0.6142
+   ],
+   "triangles": 141738,
+   "bytes": 843168,
+   "model": "/models/vendor/ubiquiti/up-alarmhub-kit.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-alarmhub-kit.webp",
+   "store": "https://store.ui.com/us/en/products/up-alarmhub-kit"
+  },
+  {
+   "slug": "up-chime-us",
+   "name": "WiFi Smart Chime",
+   "sku": "UP-Chime",
+   "short": "Plug-in chime designed to pair with a UniFi doorbell.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0706,
+    0.062,
+    0.062
+   ],
+   "triangles": 18218,
+   "bytes": 406552,
+   "model": "/models/vendor/ubiquiti/up-chime-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-chime-us.webp",
+   "store": "https://store.ui.com/us/en/products/up-chime-us"
+  },
+  {
+   "slug": "up-floodlight",
+   "name": "Protect Floodlight",
+   "sku": "UP-FloodLight",
+   "short": "Bright, motion-triggered light.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0493,
+    0.1351,
+    0.0649
+   ],
+   "triangles": 213111,
+   "bytes": 560964,
+   "model": "/models/vendor/ubiquiti/up-floodlight.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-floodlight.webp",
+   "store": "https://store.ui.com/us/en/products/up-floodlight"
+  },
+  {
+   "slug": "up-sense",
+   "name": "Protect All-In-One Sensor",
+   "sku": "UP-Sense",
+   "short": "A battery-powered smart sensor capable of detecting motion, lighting, and environmental changes.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0263,
+    0.0838,
+    0.024
+   ],
+   "triangles": 23036,
+   "bytes": 118056,
+   "model": "/models/vendor/ubiquiti/up-sense.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-sense.webp",
+   "store": "https://store.ui.com/us/en/products/up-sense"
+  },
+  {
+   "slug": "up-siren-poe",
+   "name": "Siren PoE",
+   "sku": "UP-Siren-PoE",
+   "short": "All-weather siren delivering 110 dB alarm and emergency LED lighting powered using PoE input.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1399,
+    0.14,
+    0.0364
+   ],
+   "triangles": 23446,
+   "bytes": 336832,
+   "model": "/models/vendor/ubiquiti/up-siren-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/up-siren-poe.webp",
+   "store": "https://store.ui.com/us/en/products/up-siren-poe"
+  },
+  {
+   "slug": "upl-amp",
+   "name": "UniFi PowerAmp",
+   "sku": "UPL-Amp",
+   "short": "Premium speaker amplifier designed for high-fidelity multi-zone audio streaming and immersive spatial sound experiences.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.2369,
+    0.064,
+    0.217
+   ],
+   "triangles": 119513,
+   "bytes": 530664,
+   "model": "/models/vendor/ubiquiti/upl-amp.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/upl-amp.webp",
+   "store": "https://store.ui.com/us/en/products/upl-amp"
+  },
+  {
+   "slug": "upl-port",
+   "name": "UniFi PoE Audio Port",
+   "sku": "UPL-Port",
+   "short": "A digital audio streamer with an ultra-compact, versatile design and an intuitive control system, supporting multiple music streaming services and scalable multi-zone installations.",
+   "group": "IoT",
+   "mount": "desk",
+   "sizeM": [
+    0.108,
+    0.0406,
+    0.108
+   ],
+   "triangles": 181691,
+   "bytes": 547284,
+   "model": "/models/vendor/ubiquiti/upl-port.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/upl-port.webp",
+   "store": "https://store.ui.com/us/en/products/upl-port"
+  },
+  {
+   "slug": "ups-2u-pro-us",
+   "name": "UPS 2U Pro",
+   "sku": "UPS-2U-Pro",
+   "short": "UniFi-managed 1.92kVA rackmount UPS with pure sine wave output, 8 individually controllable outlets with per-port power monitoring and remote power cycling, a field-replaceable 720Wh battery, and up to 22 minutes of runtime at half load 960W.",
+   "group": "Power",
+   "mount": "desk",
+   "sizeM": [
+    0.7607,
+    0.0951,
+    0.5979
+   ],
+   "triangles": 106247,
+   "bytes": 544004,
+   "model": "/models/vendor/ubiquiti/ups-2u-pro-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ups-2u-pro-us.webp",
+   "store": "https://store.ui.com/us/en/products/ups-2u-pro-us"
+  },
+  {
+   "slug": "ups-2u-us",
+   "name": "UPS 2U",
+   "sku": "UPS-2U",
+   "short": "UniFi managed 1.44kVA rackmount uninterruptible power supply with 4 backup and 4 surge outlets, a field replaceable battery, 216Wh, half load (500W) runtime of 8 minutes. Supports Graceful Shutdown for UNVR and UNAS, NUT compatibility for 3-party devices.",
+   "group": "Power",
+   "mount": "desk",
+   "sizeM": [
+    0.3878,
+    0.0875,
+    0.5475
+   ],
+   "triangles": 122789,
+   "bytes": 447284,
+   "model": "/models/vendor/ubiquiti/ups-2u-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ups-2u-us.webp",
+   "store": "https://store.ui.com/us/en/products/ups-2u-us"
+  },
+  {
+   "slug": "ups-tower-us",
+   "name": "UPS Tower",
+   "sku": "UPS-Tower",
+   "short": "UniFi managed 1kVA uninterruptible power supply with 5 backup outlets 5 surge outlets and hot swappable battery, 108Wh, half load (300W) runtime of 7 minutes. Supports Graceful Shutdown for UNVR and UNAS, NUT compatibility for third-party devices.",
+   "group": "Power",
+   "mount": "desk",
+   "sizeM": [
+    0.2501,
+    0.2809,
+    0.3274
+   ],
+   "triangles": 160229,
+   "bytes": 630084,
+   "model": "/models/vendor/ubiquiti/ups-tower-us.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ups-tower-us.webp",
+   "store": "https://store.ui.com/us/en/products/ups-tower-us"
+  },
+  {
+   "slug": "usl-entry",
+   "name": "Entry Sensor",
+   "sku": "USL-Entry",
+   "short": "SuperLink sensor with up to 6-year battery life for monitoring door and window open/closed status.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0246,
+    0.0755,
+    0.0451
+   ],
+   "triangles": 56724,
+   "bytes": 199900,
+   "model": "/models/vendor/ubiquiti/usl-entry.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-entry.webp",
+   "store": "https://store.ui.com/us/en/products/usl-entry"
+  },
+  {
+   "slug": "usl-entry-r",
+   "name": "Recessed Entry Sensor",
+   "sku": "USL-Entry-R",
+   "short": "SuperLink sensor for monitoring door open/closed status, supporting recessed installation with up to 3 years of battery life.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0982,
+    0.041,
+    0.022
+   ],
+   "triangles": 102161,
+   "bytes": 261068,
+   "model": "/models/vendor/ubiquiti/usl-entry-r.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-entry-r.webp",
+   "store": "https://store.ui.com/us/en/products/usl-entry-r"
+  },
+  {
+   "slug": "usl-environmental",
+   "name": "Environmental Sensor",
+   "sku": "USL-Environmental",
+   "short": "Battery-powered SuperLink sensor that detects water leaks, temperature, humidity, and ambient light.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0235,
+    0.0493,
+    0.053
+   ],
+   "triangles": 67604,
+   "bytes": 219212,
+   "model": "/models/vendor/ubiquiti/usl-environmental.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-environmental.webp",
+   "store": "https://store.ui.com/us/en/products/usl-environmental"
+  },
+  {
+   "slug": "usl-fob",
+   "name": "Remote Control KeyFob",
+   "sku": "USL-FOB",
+   "short": "SuperLink key fob for instant programmable actions across your UniFi deployment, with up to 10 years of battery life.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0351,
+    0.067,
+    0.0185
+   ],
+   "triangles": 10532,
+   "bytes": 389020,
+   "model": "/models/vendor/ubiquiti/usl-fob.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-fob.webp",
+   "store": "https://store.ui.com/us/en/products/usl-fob"
+  },
+  {
+   "slug": "usl-g2-gateway-ha",
+   "name": "SuperLink Gateway HA",
+   "sku": "USL-G2-Gateway-HA",
+   "short": "A SuperLink gateway and Thread border router designed for long-range SuperLink sensors and Thread devices, with LTE connectivity and built-in battery for power backup.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.026,
+    0.206,
+    0.085
+   ],
+   "triangles": 63144,
+   "bytes": 330820,
+   "model": "/models/vendor/ubiquiti/usl-g2-gateway-ha.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-g2-gateway-ha.webp",
+   "store": "https://store.ui.com/us/en/products/usl-g2-gateway-ha"
+  },
+  {
+   "slug": "usl-gateway",
+   "name": "SuperLink Gateway",
+   "sku": "USL-Gateway",
+   "short": "Proprietary super long-range, low-latency wireless gateway for UniFi Protect Sensors.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0819,
+    0.1593,
+    0.026
+   ],
+   "triangles": 202038,
+   "bytes": 475588,
+   "model": "/models/vendor/ubiquiti/usl-gateway.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-gateway.webp",
+   "store": "https://store.ui.com/us/en/products/usl-gateway"
+  },
+  {
+   "slug": "usl-glassbreak",
+   "name": "Glass Break Sensor",
+   "sku": "USL-GlassBreak",
+   "short": "Battery-powered SuperLink sensor featuring advanced glass break detection and motion sensing.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0253,
+    0.1345,
+    0.0225
+   ],
+   "triangles": 23097,
+   "bytes": 93428,
+   "model": "/models/vendor/ubiquiti/usl-glassbreak.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-glassbreak.webp",
+   "store": "https://store.ui.com/us/en/products/usl-glassbreak"
+  },
+  {
+   "slug": "usl-motion",
+   "name": "Motion Sensor",
+   "sku": "USL-Motion",
+   "short": "SuperLink motion sensor designed for versatile installation, delivering up to 6 years of battery life.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0251,
+    0.0935,
+    0.0225
+   ],
+   "triangles": 77286,
+   "bytes": 242960,
+   "model": "/models/vendor/ubiquiti/usl-motion.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-motion.webp",
+   "store": "https://store.ui.com/us/en/products/usl-motion"
+  },
+  {
+   "slug": "usl-relay",
+   "name": "Protect Relay",
+   "sku": "USL-Relay",
+   "short": "Compact SuperLink relay designed with I/O interfaces for seamless integration with third-party sensors and signaling devices.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.028,
+    0.0476,
+    0.05
+   ],
+   "triangles": 48895,
+   "bytes": 256244,
+   "model": "/models/vendor/ubiquiti/usl-relay.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-relay.webp",
+   "store": "https://store.ui.com/us/en/products/usl-relay"
+  },
+  {
+   "slug": "usl-siren",
+   "name": "Siren",
+   "sku": "USL-Siren",
+   "short": "All-weather SuperLink siren delivering 110 dB alarm and emergency LED lighting powered using battery or DC input.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1399,
+    0.14,
+    0.0364
+   ],
+   "triangles": 25106,
+   "bytes": 611464,
+   "model": "/models/vendor/ubiquiti/usl-siren.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-siren.webp",
+   "store": "https://store.ui.com/us/en/products/usl-siren"
+  },
+  {
+   "slug": "usl-smoke",
+   "name": "Smoke and CO Alarm",
+   "sku": "USL-Smoke",
+   "short": "Battery-powered smoke and CO alarm with SuperLink wireless connectivity, delivering up to 10 years of battery life.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1271,
+    0.0485,
+    0.1271
+   ],
+   "triangles": 76516,
+   "bytes": 522304,
+   "model": "/models/vendor/ubiquiti/usl-smoke.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usl-smoke.webp",
+   "store": "https://store.ui.com/us/en/products/usl-smoke"
+  },
+  {
+   "slug": "usp-rps",
+   "name": "Redundant Power",
+   "sku": "USP-RPS",
+   "short": "950W redundant power supply for rack-mounted UniFi devices.",
+   "group": "Power",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.3277
+   ],
+   "triangles": 78352,
+   "bytes": 363000,
+   "model": "/models/vendor/ubiquiti/usp-rps.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usp-rps.webp",
+   "store": "https://store.ui.com/us/en/products/usp-rps",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.3277
+  },
+  {
+   "slug": "usw-48",
+   "name": "Switch 48",
+   "sku": "USW-48",
+   "short": "A 48-port, Layer 2 switch with a silent, fanless cooling system.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.2871,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 53167,
+   "bytes": 316736,
+   "model": "/models/vendor/ubiquiti/usw-48.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-48.webp",
+   "store": "https://store.ui.com/us/en/products/usw-48",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.2871
+  },
+  {
+   "slug": "usw-aggregation",
+   "name": "Switch Aggregation",
+   "sku": "USW-Aggregation",
+   "short": "An 8-port, Layer 2 switch made for 10G SFP+ connections.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.1233,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 134615,
+   "bytes": 423976,
+   "model": "/models/vendor/ubiquiti/usw-aggregation.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-aggregation.webp",
+   "store": "https://store.ui.com/us/en/products/usw-aggregation",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.1233
+  },
+  {
+   "slug": "usw-enterprise-8-poe",
+   "name": "Switch Enterprise 8 PoE (Vintage)",
+   "sku": "USW-Enterprise-8-PoE (120W)",
+   "short": "An 8-port, Layer 3 switch with 2.5 GbE PoE+ output.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.2021,
+    0.044,
+    0.248
+   ],
+   "triangles": 121283,
+   "bytes": 542072,
+   "model": "/models/vendor/ubiquiti/usw-enterprise-8-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-enterprise-8-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-enterprise-8-poe"
+  },
+  {
+   "slug": "usw-flex",
+   "name": "Switch Flex",
+   "sku": "USW-Flex (46W)",
+   "short": "Flexible 5-port, Layer 2 PoE switch for indoor and outdoor use, that can be powered with PoE++.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.1225,
+    0.0281,
+    0.1071
+   ],
+   "triangles": 28642,
+   "bytes": 197700,
+   "model": "/models/vendor/ubiquiti/usw-flex.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flex.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flex"
+  },
+  {
+   "slug": "usw-flex-2-5g-5",
+   "name": "Switch Flex Mini 2.5G",
+   "sku": "USW-Flex-2.5G-5",
+   "short": "Compact, 5-port 2.5G switch that can be powered with PoE or a USB-C adapter.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.09,
+    0.0213,
+    0.1171
+   ],
+   "triangles": 56985,
+   "bytes": 266384,
+   "model": "/models/vendor/ubiquiti/usw-flex-2-5g-5.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flex-2-5g-5.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flex-2-5g-5"
+  },
+  {
+   "slug": "usw-flex-2-5g-8",
+   "name": "Switch Flex 2.5G",
+   "sku": "USW-Flex-2.5G-8",
+   "short": "Flexible, 8-port 2.5 GbE switch with a 10 GbE RJ45/SFP+ combination uplink port that can be powered with a USB-C or PoE+  adapter.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.0761,
+    0.0325,
+    0.2129
+   ],
+   "triangles": 90963,
+   "bytes": 442544,
+   "model": "/models/vendor/ubiquiti/usw-flex-2-5g-8.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flex-2-5g-8.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flex-2-5g-8"
+  },
+  {
+   "slug": "usw-flex-2-5g-8-poe",
+   "name": "Switch Flex 2.5G PoE",
+   "sku": "USW-Flex-2.5G-8-PoE (196W)",
+   "short": "Flexible, 8-port 2.5 GbE PoE++ switch with a 10 GbE RJ45/SFP+ combination uplink port that can be powered with PoE+++ or an AC power adapter.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.0995,
+    0.0325,
+    0.2129
+   ],
+   "triangles": 106990,
+   "bytes": 496488,
+   "model": "/models/vendor/ubiquiti/usw-flex-2-5g-8-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flex-2-5g-8-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flex-2-5g-8-poe"
+  },
+  {
+   "slug": "usw-flex-mini",
+   "name": "Switch Flex Mini",
+   "sku": "USW-Flex-Mini",
+   "short": "A compact, 5-port, Layer 2 switch that can be powered with PoE or a 5V USB-C adapter.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.1072,
+    0.0212,
+    0.0702
+   ],
+   "triangles": 117320,
+   "bytes": 512840,
+   "model": "/models/vendor/ubiquiti/usw-flex-mini.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flex-mini.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flex-mini"
+  },
+  {
+   "slug": "usw-flex-xg",
+   "name": "Switch Flex XG",
+   "sku": "USW-Flex-XG",
+   "short": "A compact, 5-port, Layer 2 switch that supports 10 GbE speeds and can be powered with PoE or a 5V USB-C adapter.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.185,
+    0.0322,
+    0.135
+   ],
+   "triangles": 49496,
+   "bytes": 323232,
+   "model": "/models/vendor/ubiquiti/usw-flex-xg.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flex-xg.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flex-xg"
+  },
+  {
+   "slug": "usw-flexutility",
+   "name": "Switch Flex Utility",
+   "sku": "USW-Flex-Utility",
+   "short": "The Switch Flex Utility is an outdoor weatherproof enclosure designed for use with the Switch Flex.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.0493,
+    0.25,
+    0.22
+   ],
+   "triangles": 45777,
+   "bytes": 169964,
+   "model": "/models/vendor/ubiquiti/usw-flexutility.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-flexutility.webp",
+   "store": "https://store.ui.com/us/en/products/usw-flexutility"
+  },
+  {
+   "slug": "usw-lite-16-poe",
+   "name": "Switch Lite 16 PoE",
+   "sku": "USW-Lite-16-PoE (45W)",
+   "short": "A wall-mountable, 16-port, Layer 2 PoE switch with a fanless cooling system.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.1917,
+    0.0452,
+    0.185
+   ],
+   "triangles": 33375,
+   "bytes": 209668,
+   "model": "/models/vendor/ubiquiti/usw-lite-16-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-lite-16-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-lite-16-poe"
+  },
+  {
+   "slug": "usw-lite-8-poe",
+   "name": "Switch Lite 8 PoE",
+   "sku": "USW-Lite-8-PoE (52W)",
+   "short": "An 8-port, Layer 2 PoE switch supporting silent fanless cooling.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.0996,
+    0.0327,
+    0.1637
+   ],
+   "triangles": 49166,
+   "bytes": 277752,
+   "model": "/models/vendor/ubiquiti/usw-lite-8-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-lite-8-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-lite-8-poe"
+  },
+  {
+   "slug": "usw-mission-critical",
+   "name": "UPS PoE Switch Mission Critical",
+   "sku": "USW-Mission-Critical (120W)",
+   "short": "A switch with an integrated 368Wh lithium-ion battery capable of providing uninterruptible PoE to 8 devices.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.4828
+   ],
+   "triangles": 58155,
+   "bytes": 343540,
+   "model": "/models/vendor/ubiquiti/usw-mission-critical.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-mission-critical.webp",
+   "store": "https://store.ui.com/us/en/products/usw-mission-critical",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.4828
+  },
+  {
+   "slug": "usw-pro-24",
+   "name": "Switch Pro 24",
+   "sku": "USW-Pro-24",
+   "short": "A 24-port, Layer 3 switch supporting 10G SFP+ connections with fanless cooling.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.2875,
+    0.0528,
+    0.4424
+   ],
+   "triangles": 63787,
+   "bytes": 469508,
+   "model": "/models/vendor/ubiquiti/usw-pro-24.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-24.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-24",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.2875
+  },
+  {
+   "slug": "usw-pro-24-poe",
+   "name": "Switch Pro 24 PoE",
+   "sku": "USW-Pro-24-POE (400W)",
+   "short": "A 24-port, Layer 3 switch capable of high-power PoE++ output.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.2875,
+    0.0528,
+    0.4424
+   ],
+   "triangles": 63789,
+   "bytes": 455636,
+   "model": "/models/vendor/ubiquiti/usw-pro-24-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-24-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-24-poe",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.2875
+  },
+  {
+   "slug": "usw-pro-48",
+   "name": "Switch Pro 48",
+   "sku": "USW-Pro-48",
+   "short": "A 48-port, Layer 3 switch supporting 10G SFP+ connections with fanless cooling.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4017,
+    0.0528,
+    0.4425
+   ],
+   "triangles": 65518,
+   "bytes": 465480,
+   "model": "/models/vendor/ubiquiti/usw-pro-48.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-48.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-48",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4425,
+   "depthM": 0.4017
+  },
+  {
+   "slug": "usw-pro-48-poe",
+   "name": "Switch Pro 48 PoE",
+   "sku": "USW-Pro-48-POE (600W)",
+   "short": "A 48-port, Layer 3 switch capable of high-power PoE++ output.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4017,
+    0.0528,
+    0.4425
+   ],
+   "triangles": 65518,
+   "bytes": 481008,
+   "model": "/models/vendor/ubiquiti/usw-pro-48-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-48-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-48-poe",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4425,
+   "depthM": 0.4017
+  },
+  {
+   "slug": "usw-pro-aggregation",
+   "name": "Switch Hi-Capacity Aggregation",
+   "sku": "USW-Pro-Aggregation",
+   "short": "A 32-port, Layer 3 switch made for high-capacity 10G SFP+ and 25G SFP28 connections.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.3272,
+    0.0439,
+    0.4424
+   ],
+   "triangles": 68545,
+   "bytes": 444584,
+   "model": "/models/vendor/ubiquiti/usw-pro-aggregation.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-aggregation.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-aggregation",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.3272
+  },
+  {
+   "slug": "usw-pro-hd-24",
+   "name": "Switch Pro HD 24",
+   "sku": "USW-Pro-HD-24",
+   "short": "Professional-grade, Layer 3 Etherlighting\u2122 switch with (2) 10 GbE, (22) 2.5 GbE, and (4) 10G SFP+ ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0556,
+    0.2879
+   ],
+   "triangles": 65568,
+   "bytes": 415484,
+   "model": "/models/vendor/ubiquiti/usw-pro-hd-24.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-hd-24.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-hd-24",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.2879
+  },
+  {
+   "slug": "usw-pro-hd-24-poe",
+   "name": "Switch Pro HD 24 PoE",
+   "sku": "USW-Pro-HD-24-PoE (600W)",
+   "short": "Professional-grade, Layer 3 Etherlighting\u2122 switch with (2) 10 GbE PoE++, (22) 2.5 GbE PoE++, and (4) 10G SFP+ ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.4018
+   ],
+   "triangles": 72528,
+   "bytes": 448892,
+   "model": "/models/vendor/ubiquiti/usw-pro-hd-24-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-hd-24-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-hd-24-poe",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.4018
+  },
+  {
+   "slug": "usw-pro-max-16-poe",
+   "name": "Switch Pro Max 16 PoE",
+   "sku": "USW-Pro-Max-16-PoE (180W)",
+   "short": "A 16-port, Layer 3 Etherlighting\u2122 switch with 2.5 GbE, PoE++ output, and versatile mounting options.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.3251,
+    0.0437,
+    0.1601
+   ],
+   "triangles": 89481,
+   "bytes": 548476,
+   "model": "/models/vendor/ubiquiti/usw-pro-max-16-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-max-16-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-max-16-poe"
+  },
+  {
+   "slug": "usw-pro-max-24",
+   "name": "Switch Pro Max 24",
+   "sku": "USW-Pro-Max-24",
+   "short": "A 24-port, Layer 3 Etherlighting\u2122 switch with 2.5 GbE.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.3276
+   ],
+   "triangles": 69467,
+   "bytes": 437016,
+   "model": "/models/vendor/ubiquiti/usw-pro-max-24.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-max-24.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-max-24",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.3276
+  },
+  {
+   "slug": "usw-pro-max-24-poe",
+   "name": "Switch Pro Max 24 PoE",
+   "sku": "USW-Pro-Max-24-PoE (400W)",
+   "short": "A 24-port, Layer 3 Etherlighting\u2122 switch capable of high-power PoE++ output.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.3276
+   ],
+   "triangles": 69467,
+   "bytes": 438808,
+   "model": "/models/vendor/ubiquiti/usw-pro-max-24-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-max-24-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-max-24-poe",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.3276
+  },
+  {
+   "slug": "usw-pro-max-48",
+   "name": "Switch Pro Max 48",
+   "sku": "USW-Pro-Max-48",
+   "short": "A 48-port, Layer 3 Etherlighting\u2122 switch with 2.5 GbE.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.3274,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 89454,
+   "bytes": 526396,
+   "model": "/models/vendor/ubiquiti/usw-pro-max-48.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-max-48.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-max-48",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.3274
+  },
+  {
+   "slug": "usw-pro-max-48-poe",
+   "name": "Switch Pro Max 48 PoE",
+   "sku": "USW-Pro-Max-48-PoE (720W)",
+   "short": "A 48-port, Layer 3 Etherlighting\u2122 switch with 2.5 GbE and PoE++ output.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4018,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 95545,
+   "bytes": 557336,
+   "model": "/models/vendor/ubiquiti/usw-pro-max-48-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-max-48-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-max-48-poe",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.4018
+  },
+  {
+   "slug": "usw-pro-xg-10-poe",
+   "name": "Switch Pro XG 10 PoE",
+   "sku": "USW-Pro-XG-10-PoE (400W)",
+   "short": "1U, professional-grade 10-port, Layer 3 Etherlighting\u2122 PoE+++ switch with (10) 10 GbE and (2) 10G SFP+ ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.288
+   ],
+   "triangles": 82229,
+   "bytes": 579372,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-10-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-10-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-10-poe",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.288
+  },
+  {
+   "slug": "usw-pro-xg-24",
+   "name": "Switch Pro XG 24",
+   "sku": "USW-Pro-XG-24",
+   "short": "Professional-grade, 24-port Layer 3 Etherlighting\u2122 switch with (16) 10 GbE, (8) 2.5 GbE, and (2) 25G SFP28 ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.4824
+   ],
+   "triangles": 84409,
+   "bytes": 511052,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-24.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-24.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-24",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.4824
+  },
+  {
+   "slug": "usw-pro-xg-24-poe",
+   "name": "Switch Pro XG 24 PoE",
+   "sku": "USW-Pro-XG-24-PoE (720W)",
+   "short": "Professional-grade, 24-port Layer 3 Etherlighting\u2122 PoE+++ switch with (16) 10 GbE, (8) 2.5 GbE, and (2) 25G SFP28 ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.4824
+   ],
+   "triangles": 76002,
+   "bytes": 499788,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-24-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-24-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-24-poe",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.4824
+  },
+  {
+   "slug": "usw-pro-xg-48",
+   "name": "Switch Pro XG 48",
+   "sku": "USW-Pro-XG-48",
+   "short": "Professional-grade, 48-port Layer 3 Etherlighting\u2122 switch with (32) 10 GbE, (16) 2.5 GbE, and (4) 25G SFP28 ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.4823
+   ],
+   "triangles": 87805,
+   "bytes": 523480,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-48.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-48.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-48",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.4823
+  },
+  {
+   "slug": "usw-pro-xg-48-poe",
+   "name": "Switch Pro XG 48 PoE",
+   "sku": "USW-Pro-XG-48-PoE (1080W)",
+   "short": "Professional-grade, 48-port Layer 3 Etherlighting\u2122 PoE+++ switch with (32) 10 GbE, (16) 2.5 GbE PoE, and (4) 25G SFP28 ports.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.4823
+   ],
+   "triangles": 88092,
+   "bytes": 527908,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-48-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-48-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-48-poe",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.4823
+  },
+  {
+   "slug": "usw-pro-xg-8-poe",
+   "name": "Switch Pro XG 8 PoE",
+   "sku": "USW-Pro-XG-8-PoE (155W)",
+   "short": "Compact desktop/wall-mountable, professional-grade 8-port, Layer 3 Etherlighting\u2122 PoE++ switch with (8) 10 GbE and (2) 10G SFP+ ports.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.174,
+    0.0451,
+    0.2105
+   ],
+   "triangles": 86842,
+   "bytes": 353192,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-8-poe.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-8-poe.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-8-poe"
+  },
+  {
+   "slug": "usw-pro-xg-aggregation",
+   "name": "Switch Pro XG Aggregation",
+   "sku": "USW-Pro-XG-Aggregation",
+   "short": "Professional-grade 32-port, Layer 3 Etherlighting\u2122 switch for high-capacity 25G SFP28 connections.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.4822,
+    0.0437,
+    0.4427
+   ],
+   "triangles": 71365,
+   "bytes": 448004,
+   "model": "/models/vendor/ubiquiti/usw-pro-xg-aggregation.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-pro-xg-aggregation.webp",
+   "store": "https://store.ui.com/us/en/products/usw-pro-xg-aggregation",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4427,
+   "depthM": 0.4822
+  },
+  {
+   "slug": "usw-ultra",
+   "name": "Switch Ultra",
+   "sku": "USW-Ultra (42W)",
+   "short": "A compact, Layer 2, 8-port GbE PoE switch with versatile mounting options.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.2029,
+    0.0325,
+    0.076
+   ],
+   "triangles": 15868,
+   "bytes": 110940,
+   "model": "/models/vendor/ubiquiti/usw-ultra.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-ultra.webp",
+   "store": "https://store.ui.com/us/en/products/usw-ultra"
+  },
+  {
+   "slug": "usw-ultra-210w",
+   "name": "Switch Ultra 210W",
+   "sku": "USW-Ultra-210W (202W)",
+   "short": "A compact, Layer 2, 8-port GbE PoE switch with versatile mounting options.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.076,
+    0.0325,
+    0.2028
+   ],
+   "triangles": 10153,
+   "bytes": 99288,
+   "model": "/models/vendor/ubiquiti/usw-ultra-210w.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-ultra-210w.webp",
+   "store": "https://store.ui.com/us/en/products/usw-ultra-210w"
+  },
+  {
+   "slug": "usw-ultra-60w",
+   "name": "Switch Ultra 60W",
+   "sku": "USW-Ultra-60W (52W)",
+   "short": "A compact, Layer 2, 8-port GbE PoE switch with versatile mounting options.",
+   "group": "Switching",
+   "mount": "desk",
+   "sizeM": [
+    0.2029,
+    0.0325,
+    0.076
+   ],
+   "triangles": 15868,
+   "bytes": 110876,
+   "model": "/models/vendor/ubiquiti/usw-ultra-60w.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-ultra-60w.webp",
+   "store": "https://store.ui.com/us/en/products/usw-ultra-60w"
+  },
+  {
+   "slug": "usw-wan",
+   "name": "UniFi WAN Switch",
+   "sku": "USW-WAN",
+   "short": "10G SFP+ WAN Switch linking two Shadow Mode High Availability UniFi Gateways to a single ISP.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.1225,
+    0.0437,
+    0.4424
+   ],
+   "triangles": 97698,
+   "bytes": 496164,
+   "model": "/models/vendor/ubiquiti/usw-wan.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-wan.webp",
+   "store": "https://store.ui.com/us/en/products/usw-wan",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4424,
+   "depthM": 0.1225
+  },
+  {
+   "slug": "usw-wan-rj45",
+   "name": "UniFi WAN Switch RJ45",
+   "sku": "USW-WAN-RJ45",
+   "short": "10 GbE WAN Switch linking two Shadow Mode High Availability UniFi Gateways to a single ISP.",
+   "group": "Switching",
+   "mount": "rack",
+   "sizeM": [
+    0.1223,
+    0.0439,
+    0.4428
+   ],
+   "triangles": 143599,
+   "bytes": 501704,
+   "model": "/models/vendor/ubiquiti/usw-wan-rj45.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/usw-wan-rj45.webp",
+   "store": "https://store.ui.com/us/en/products/usw-wan-rj45",
+   "u": 1,
+   "yaw": -90,
+   "widthM": 0.4428,
+   "depthM": 0.1223
+  },
+  {
+   "slug": "ut-ata",
+   "name": "Analog Telephone Adapter",
+   "sku": "UT-ATA",
+   "short": "Easy-to-deploy adapter for managing analog telephones and fax machines with UniFi Talk.",
+   "group": "VoIP",
+   "mount": "desk",
+   "sizeM": [
+    0.0705,
+    0.1107,
+    0.1315
+   ],
+   "triangles": 36997,
+   "bytes": 291484,
+   "model": "/models/vendor/ubiquiti/ut-ata.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ut-ata.webp",
+   "store": "https://store.ui.com/us/en/products/ut-ata"
+  },
+  {
+   "slug": "ut-g3-handset",
+   "name": "G3 Wireless Handset",
+   "sku": "UT-G3-Handset",
+   "short": "Wireless handset which supports clear, high-quality audio for G3 Touch Phones.",
+   "group": "VoIP",
+   "mount": "desk",
+   "sizeM": [
+    0.055,
+    0.1861,
+    0.0538
+   ],
+   "triangles": 45725,
+   "bytes": 193068,
+   "model": "/models/vendor/ubiquiti/ut-g3-handset.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ut-g3-handset.webp",
+   "store": "https://store.ui.com/us/en/products/ut-g3-handset"
+  },
+  {
+   "slug": "utp-g3-touch-enterprise",
+   "name": "Phone G3 Touch Enterprise",
+   "sku": "UTP-G3-Touch-Enterprise",
+   "short": "Next-generation premium desktop smartphone for UniFi Talk, featuring a 7\" touch display and seamless integration with UniFi applications.",
+   "group": "VoIP",
+   "mount": "desk",
+   "sizeM": [
+    0.2796,
+    0.1853,
+    0.1461
+   ],
+   "triangles": 145619,
+   "bytes": 682524,
+   "model": "/models/vendor/ubiquiti/utp-g3-touch-enterprise.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/utp-g3-touch-enterprise.webp",
+   "store": "https://store.ui.com/us/en/products/utp-g3-touch-enterprise"
+  },
+  {
+   "slug": "utp-g3-touch-pro",
+   "name": "Phone G3 Touch Pro",
+   "sku": "UTP-G3-Touch-Pro",
+   "short": "Next-generation desktop smartphone for UniFi Talk, featuring a 5\" touch display and seamless integration with UniFi applications.",
+   "group": "VoIP",
+   "mount": "desk",
+   "sizeM": [
+    0.1463,
+    0.1853,
+    0.1887
+   ],
+   "triangles": 115140,
+   "bytes": 506984,
+   "model": "/models/vendor/ubiquiti/utp-g3-touch-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/utp-g3-touch-pro.webp",
+   "store": "https://store.ui.com/us/en/products/utp-g3-touch-pro"
+  },
+  {
+   "slug": "utp-g3-touch-wall",
+   "name": "Phone G3 Touch Wall",
+   "sku": "UTP-G3-Touch-Wall",
+   "short": "Next-generation wall-mountable smartphone for UniFi Talk, featuring a 7\" touch display and seamless integration with UniFi applications.",
+   "group": "VoIP",
+   "mount": "desk",
+   "sizeM": [
+    0.0756,
+    0.2958,
+    0.2544
+   ],
+   "triangles": 152376,
+   "bytes": 615512,
+   "model": "/models/vendor/ubiquiti/utp-g3-touch-wall.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/utp-g3-touch-wall.webp",
+   "store": "https://store.ui.com/us/en/products/utp-g3-touch-wall"
+  },
+  {
+   "slug": "utr",
+   "name": "UniFi Travel Router",
+   "sku": "UTR",
+   "short": "An ultra-slim travel router that instantly extends your UniFi Network wherever you are, bringing secure, familiar connectivity to remote locations.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.0125,
+    0.096,
+    0.065
+   ],
+   "triangles": 93502,
+   "bytes": 374124,
+   "model": "/models/vendor/ubiquiti/utr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/utr.webp",
+   "store": "https://store.ui.com/us/en/products/utr"
+  },
+  {
+   "slug": "utr-lr",
+   "name": "UniFi Travel Router Long-Range",
+   "sku": "UTR-LR",
+   "short": "An ultra-slim travel router with an integrated foldable super antenna for extended range - instantly expanding your UniFi Network wherever you are, and delivering secure, familiar connectivity even in challenging environments.",
+   "group": "WiFi",
+   "mount": "wall",
+   "sizeM": [
+    0.1003,
+    0.104,
+    0.065
+   ],
+   "triangles": 116408,
+   "bytes": 475944,
+   "model": "/models/vendor/ubiquiti/utr-lr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/utr-lr.webp",
+   "store": "https://store.ui.com/us/en/products/utr-lr"
+  },
+  {
+   "slug": "uvc-ai-dome",
+   "name": "Camera AI Dome",
+   "sku": "UVC-AI-Dome",
+   "short": "All-weather, vandal-proof 4K PoE dome camera with enhanced AI capabilities and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.118,
+    0.0956,
+    0.118
+   ],
+   "triangles": 223954,
+   "bytes": 690848,
+   "model": "/models/vendor/ubiquiti/uvc-ai-dome.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-dome.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-dome"
+  },
+  {
+   "slug": "uvc-ai-dslr",
+   "name": "Camera AI DSLR",
+   "sku": "UVC-AI-DSLR",
+   "short": "Indoor/outdoor 4K PoE camera with exceptional image quality and impressive low-light performance.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.233,
+    0.081,
+    0.0811
+   ],
+   "triangles": 141912,
+   "bytes": 436536,
+   "model": "/models/vendor/ubiquiti/uvc-ai-dslr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-dslr.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-dslr"
+  },
+  {
+   "slug": "uvc-ai-dslr--v1",
+   "name": "uvc-ai-dslr--v1",
+   "sku": null,
+   "short": null,
+   "group": "Other",
+   "mount": "desk",
+   "sizeM": [
+    0.2377,
+    0.081,
+    0.0811
+   ],
+   "triangles": 144368,
+   "bytes": 517368,
+   "model": "/models/vendor/ubiquiti/uvc-ai-dslr--v1.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-dslr--v1.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-dslr--v1"
+  },
+  {
+   "slug": "uvc-ai-lpr",
+   "name": "Camera AI LPR",
+   "sku": "UVC-AI-LPR",
+   "short": "Specialized 4K camera with 3x optical zoom and long-range IR night vision optimized for recognizing license plates on vehicles moving up to 90 km/h.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.3029,
+    0.1538,
+    0.13
+   ],
+   "triangles": 159247,
+   "bytes": 500760,
+   "model": "/models/vendor/ubiquiti/uvc-ai-lpr.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-lpr.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-lpr"
+  },
+  {
+   "slug": "uvc-ai-ms-2",
+   "name": "Camera AI Multi Sensor 2",
+   "sku": "UVC-AI-MS-2",
+   "short": "All-weather PoE+ 16MP multi-sensor camera featuring a Multi-TOPS AI engine, 2.33\u00d7 optical zoom, 20 m IR coverage, and two independently adjustable lenses for wide-area and close-up monitoring.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2179,
+    0.093,
+    0.132
+   ],
+   "triangles": 158664,
+   "bytes": 576896,
+   "model": "/models/vendor/ubiquiti/uvc-ai-ms-2.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-ms-2.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-ms-2"
+  },
+  {
+   "slug": "uvc-ai-ms-4",
+   "name": "Camera AI Multi Sensor 4",
+   "sku": "UVC-AI-MS-4",
+   "short": "All-weather PoE++ 32MP multi-sensor camera featuring a Multi-TOPS AI engine, 2.33\u00d7 optical zoom, 360\u00b0 IR coverage, and four independently adjustable lenses for seamless wide-area and close-up monitoring.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.255,
+    0.106,
+    0.255
+   ],
+   "triangles": 199467,
+   "bytes": 1106124,
+   "model": "/models/vendor/ubiquiti/uvc-ai-ms-4.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-ms-4.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-ms-4"
+  },
+  {
+   "slug": "uvc-ai-pro",
+   "name": "Camera AI Pro",
+   "sku": "UVC-AI-Pro",
+   "short": "Indoor/outdoor 4K PoE camera with 3x optical zoom, long-range IR night vision, and enhanced AI detection capabilities.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1748,
+    0.086,
+    0.0861
+   ],
+   "triangles": 134561,
+   "bytes": 722804,
+   "model": "/models/vendor/ubiquiti/uvc-ai-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-pro"
+  },
+  {
+   "slug": "uvc-ai-ptz",
+   "name": "Camera AI PTZ Industrial",
+   "sku": "UVC-AI-PTZ",
+   "short": "Industrial-grade 4K PoE++ PTZ camera with enhanced AI capabilities, 22x optical zoom, and long-range adaptive IR LED night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2244,
+    0.3421,
+    0.2081
+   ],
+   "triangles": 113975,
+   "bytes": 525476,
+   "model": "/models/vendor/ubiquiti/uvc-ai-ptz.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-ptz.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-ptz"
+  },
+  {
+   "slug": "uvc-ai-ptz-precision",
+   "name": "Camera AI PTZ Precision",
+   "sku": "UVC-AI-PTZ-Precision",
+   "short": "Industrial-grade 4K PTZ camera with enhanced AI capabilities, 31\u00d7 optical zoom, adaptive IR LED night vision, and LiDAR technology for faster autofocus.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2411,
+    0.3752,
+    0.2999
+   ],
+   "triangles": 77477,
+   "bytes": 1441284,
+   "model": "/models/vendor/ubiquiti/uvc-ai-ptz-precision.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-ptz-precision.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-ptz-precision"
+  },
+  {
+   "slug": "uvc-ai-theta",
+   "name": "Camera AI Theta",
+   "sku": "UVC-AI-Theta",
+   "short": "A complete AI Theta system that discreetly secures any space while maintaining a warm and inviting atmosphere.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0447,
+    0.14,
+    0.1298
+   ],
+   "triangles": 197247,
+   "bytes": 760112,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta"
+  },
+  {
+   "slug": "uvc-ai-theta-hub",
+   "name": "AI Theta Hub",
+   "sku": "UVC-AI-Theta-Hub",
+   "short": "Remote processing hub for any AI Theta deployment, compatible with any AI Theta Lens and AI Theta Audio.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0371,
+    0.14,
+    0.07
+   ],
+   "triangles": 124546,
+   "bytes": 386468,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-hub.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-hub.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-hub"
+  },
+  {
+   "slug": "uvc-ai-theta-lens",
+   "name": "AI Theta Lens",
+   "sku": "UVC-AI-Theta-Lens",
+   "short": "Wide-angle lens that connects to an AI Theta Hub.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0228,
+    0.0234,
+    0.0435
+   ],
+   "triangles": 18573,
+   "bytes": 120380,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-lens.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-lens.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-lens"
+  },
+  {
+   "slug": "uvc-ai-theta-lens-360",
+   "name": "AI Theta 360 Lens",
+   "sku": "UVC-AI-Theta-Lens-360",
+   "short": "Ultra-wide 360\u00b0 view lens that connects to an AI Theta Hub.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0228,
+    0.0234,
+    0.0447
+   ],
+   "triangles": 19757,
+   "bytes": 122140,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-lens-360.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-lens-360.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-lens-360"
+  },
+  {
+   "slug": "uvc-ai-theta-lens-ld",
+   "name": "AI Theta Long-Distance Lens",
+   "sku": "UVC-AI-Theta-Lens-LD",
+   "short": "Long-distance lens that connects to an AI Theta Hub.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0228,
+    0.0234,
+    0.0435
+   ],
+   "triangles": 18573,
+   "bytes": 119840,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-lens-ld.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-lens-ld.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-lens-ld"
+  },
+  {
+   "slug": "uvc-ai-theta-pro",
+   "name": "Camera AI Theta Pro",
+   "sku": "UVC-AI-Theta-Pro",
+   "short": "A complete ceiling 360\u00b0 AI Theta system designed to discreetly provide a panoramic view of large, busy spaces.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0627,
+    0.14,
+    0.1207
+   ],
+   "triangles": 167138,
+   "bytes": 612468,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-pro"
+  },
+  {
+   "slug": "uvc-ai-theta-prolens110",
+   "name": "AI Theta Pro Wide-Angle Lens",
+   "sku": "UVC-AI-Theta-ProLens110",
+   "short": "Wide-angle lens with enhanced low-light performance and dynamic range that connects to an AI Theta Hub.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0369,
+    0.0379,
+    0.0613
+   ],
+   "triangles": 22419,
+   "bytes": 135672,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-prolens110.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-prolens110.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-prolens110"
+  },
+  {
+   "slug": "uvc-ai-theta-prolens360",
+   "name": "AI Theta Pro 360 Lens",
+   "sku": "UVC-AI-Theta-ProLens360",
+   "short": "Ultra-wide 360\u00b0 view lens with enhanced low-light performance and dynamic range that connects to an AI Theta Hub.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0369,
+    0.0379,
+    0.0628
+   ],
+   "triangles": 21651,
+   "bytes": 134848,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-prolens360.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-prolens360.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-prolens360"
+  },
+  {
+   "slug": "uvc-ai-theta-prolens50",
+   "name": "AI Theta Pro Long-Distance Lens",
+   "sku": "UVC-AI-Theta-ProLens50",
+   "short": "Long-distance lens with enhanced low-light performance and dynamic range that connects to an AI Theta Hub.",
+   "group": "Cameras and security",
+   "mount": "accessory",
+   "sizeM": [
+    0.0369,
+    0.0379,
+    0.0598
+   ],
+   "triangles": 21741,
+   "bytes": 141248,
+   "model": "/models/vendor/ubiquiti/uvc-ai-theta-prolens50.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-theta-prolens50.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-theta-prolens50"
+  },
+  {
+   "slug": "uvc-ai-turret",
+   "name": "Camera AI Turret",
+   "sku": "UVC-AI-Turret",
+   "short": "All-weather, vandal-proof 4K PoE+ turret camera with enhanced AI capabilities and IR and visible LEDs for night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.118,
+    0.1214,
+    0.118
+   ],
+   "triangles": 117958,
+   "bytes": 494104,
+   "model": "/models/vendor/ubiquiti/uvc-ai-turret.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-ai-turret.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-ai-turret"
+  },
+  {
+   "slug": "uvc-doorbell-lite",
+   "name": "Doorbell Lite",
+   "sku": "UVC-Doorbell-Lite",
+   "short": "Compact PoE video doorbell with two-way audio and versatile mounting options.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0303,
+    0.1376,
+    0.04
+   ],
+   "triangles": 184449,
+   "bytes": 505344,
+   "model": "/models/vendor/ubiquiti/uvc-doorbell-lite.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-doorbell-lite.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-doorbell-lite"
+  },
+  {
+   "slug": "uvc-g4-doorbell-pro",
+   "name": "G4 Doorbell Pro",
+   "sku": "UVC-G4 Doorbell Pro",
+   "short": "Premium UniFi doorbell with an enhanced package detection camera and integrated display.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0292,
+    0.1606,
+    0.0517
+   ],
+   "triangles": 26896,
+   "bytes": 251092,
+   "model": "/models/vendor/ubiquiti/uvc-g4-doorbell-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g4-doorbell-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g4-doorbell-pro"
+  },
+  {
+   "slug": "uvc-g4-doorbell-pro-poe-kit",
+   "name": "G4 Doorbell Pro PoE Kit",
+   "sku": "UVC-G4 Doorbell Pro PoE Kit",
+   "short": "Premium UniFi doorbell with integrated PoE and included PoE chime for plug-and-play installation.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0354,
+    0.1606,
+    0.0517
+   ],
+   "triangles": 24563,
+   "bytes": 248896,
+   "model": "/models/vendor/ubiquiti/uvc-g4-doorbell-pro-poe-kit.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g4-doorbell-pro-poe-kit.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g4-doorbell-pro-poe-kit"
+  },
+  {
+   "slug": "uvc-g4-ins",
+   "name": "Camera G4 Instant",
+   "sku": "UVC-G4-INS",
+   "short": "Compact, wide-angle, WiFi-connected camera with two-way audio.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0471,
+    0.0815,
+    0.0501
+   ],
+   "triangles": 70688,
+   "bytes": 227912,
+   "model": "/models/vendor/ubiquiti/uvc-g4-ins.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g4-ins.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g4-ins"
+  },
+  {
+   "slug": "uvc-g5-bullet",
+   "name": "Camera G5 Bullet",
+   "sku": "UVC-G5-Bullet",
+   "short": "Next-gen indoor/outdoor 2K HD PoE Camera.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1487,
+    0.0752,
+    0.0752
+   ],
+   "triangles": 27025,
+   "bytes": 151396,
+   "model": "/models/vendor/ubiquiti/uvc-g5-bullet.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-bullet.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-bullet"
+  },
+  {
+   "slug": "uvc-g5-dome",
+   "name": "Camera G5 Dome",
+   "sku": "UVC-G5-Dome",
+   "short": "Next-gen 2K HD PoE ceiling camera with enhanced dynamic range and low-light performance.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1163,
+    0.0778,
+    0.1091
+   ],
+   "triangles": 178358,
+   "bytes": 593368,
+   "model": "/models/vendor/ubiquiti/uvc-g5-dome.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-dome.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-dome"
+  },
+  {
+   "slug": "uvc-g5-dome-ultra",
+   "name": "Camera G5 Dome Ultra",
+   "sku": "UVC-G5-Dome-Ultra",
+   "short": "Ultra-compact and tamper-resistant 2K HD PoE camera with night vision designed for low-profile indoor security.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0655,
+    0.0772,
+    0.0646
+   ],
+   "triangles": 61185,
+   "bytes": 291804,
+   "model": "/models/vendor/ubiquiti/uvc-g5-dome-ultra.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-dome-ultra.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-dome-ultra"
+  },
+  {
+   "slug": "uvc-g5-flex",
+   "name": "Camera G5 Flex",
+   "sku": "UVC-G5-Flex",
+   "short": "Compact, easy-to-deploy 2K HD PoE camera that can be staged indoors or outside.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0485,
+    0.1078,
+    0.0485
+   ],
+   "triangles": 94361,
+   "bytes": 419948,
+   "model": "/models/vendor/ubiquiti/uvc-g5-flex.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-flex.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-flex"
+  },
+  {
+   "slug": "uvc-g5-pro",
+   "name": "Camera G5 Pro",
+   "sku": "UVC-G5-Pro",
+   "short": "Next-gen indoor/outdoor 4K PoE camera with exceptional image performance, long-range IR night vision, and 3x optical zoom.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1543,
+    0.0858,
+    0.0859
+   ],
+   "triangles": 75573,
+   "bytes": 385388,
+   "model": "/models/vendor/ubiquiti/uvc-g5-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-pro"
+  },
+  {
+   "slug": "uvc-g5-ptz",
+   "name": "Camera G5 PTZ",
+   "sku": "UVC-G5-PTZ",
+   "short": "Compact, all-weather camera with ultra-low latency pan-tilt-zoom control and versatile mounting options.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.094,
+    0.1795,
+    0.09
+   ],
+   "triangles": 25196,
+   "bytes": 609728,
+   "model": "/models/vendor/ubiquiti/uvc-g5-ptz.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-ptz.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-ptz"
+  },
+  {
+   "slug": "uvc-g5-turret-ultra",
+   "name": "Camera G5 Turret Ultra",
+   "sku": "UVC-G5-Turret-Ultra",
+   "short": "Ultra-compact, tamper-resistant, and weatherproof 2K HD PoE camera with long-range night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0914,
+    0.0881,
+    0.0914
+   ],
+   "triangles": 83303,
+   "bytes": 313416,
+   "model": "/models/vendor/ubiquiti/uvc-g5-turret-ultra.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g5-turret-ultra.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g5-turret-ultra"
+  },
+  {
+   "slug": "uvc-g6-180",
+   "name": "Camera G6 180",
+   "sku": "UVC-G6-180",
+   "short": "Indoor/outdoor dual sensor 16MP 20 FPS PoE+ camera, with a Multi-TOPS AI Engine and panoramic 180\u00b0 coverage.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0928,
+    0.064,
+    0.136
+   ],
+   "triangles": 185529,
+   "bytes": 1036624,
+   "model": "/models/vendor/ubiquiti/uvc-g6-180.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-180.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-180"
+  },
+  {
+   "slug": "uvc-g6-bullet",
+   "name": "Camera G6 Bullet",
+   "sku": "UVC-G6-Bullet",
+   "short": "All-weather 4K PoE camera with a 1/1.8\" 8MP image sensor,  Multi-TOPS AI Engine, and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1524,
+    0.0816,
+    0.0816
+   ],
+   "triangles": 32208,
+   "bytes": 178468,
+   "model": "/models/vendor/ubiquiti/uvc-g6-bullet.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-bullet.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-bullet"
+  },
+  {
+   "slug": "uvc-g6-dome",
+   "name": "Camera G6 Dome",
+   "sku": "UVC-G6-Dome",
+   "short": "All-weather, vandal-proof 4K PoE camera with a 1/1.8\" 8MP image sensor, Multi-TOPS AI Engine, and long-range IR night vision ideal for discreet installations in high-traffic areas.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1447,
+    0.1051,
+    0.1447
+   ],
+   "triangles": 144712,
+   "bytes": 560148,
+   "model": "/models/vendor/ubiquiti/uvc-g6-dome.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-dome.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-dome"
+  },
+  {
+   "slug": "uvc-g6-edge-bullet",
+   "name": "Camera G6 Edge Bullet",
+   "sku": "UVC-G6-Edge-Bullet",
+   "short": "All-weather, 4K PoE+ camera that supports standalone operation (no NVR required), integrated AI-powered search, 2.36x optical zoom, and a large 1/1.2\" CMOS sensor for exceptional low-light clarity and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2142,
+    0.1078,
+    0.1159
+   ],
+   "triangles": 336433,
+   "bytes": 911124,
+   "model": "/models/vendor/ubiquiti/uvc-g6-edge-bullet.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-edge-bullet.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-edge-bullet"
+  },
+  {
+   "slug": "uvc-g6-edge-dome",
+   "name": "Camera G6 Edge Dome",
+   "sku": "UVC-G6-Edge-Dome",
+   "short": "All-weather, vandal-proof 4K PoE+ camera that supports standalone operation (no NVR required), integrated AI-powered search, 2.36x optical zoom, and a large 1/1.2\" CMOS sensor for exceptional low-light clarity and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1638,
+    0.1174,
+    0.1638
+   ],
+   "triangles": 79492,
+   "bytes": 418860,
+   "model": "/models/vendor/ubiquiti/uvc-g6-edge-dome.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-edge-dome.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-edge-dome"
+  },
+  {
+   "slug": "uvc-g6-edge-turret",
+   "name": "Camera G6 Edge Turret",
+   "sku": "UVC-G6-Edge-Turret",
+   "short": "All-weather, tamper-resistant 4K PoE+ camera that supports standalone operation (no NVR required), integrated AI-powered search, 2.36x optical zoom, and a large 1/1.2\" CMOS sensor for exceptional low-light clarity and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1165,
+    0.1341,
+    0.1268
+   ],
+   "triangles": 275763,
+   "bytes": 635480,
+   "model": "/models/vendor/ubiquiti/uvc-g6-edge-turret.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-edge-turret.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-edge-turret"
+  },
+  {
+   "slug": "uvc-g6-entry",
+   "name": "Reader G6 Entry",
+   "sku": "UVC-G6-Entry",
+   "short": "An intelligent door entry system with native UniFi Protect and UniFi Access integration, including enhanced two-way audio.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0363,
+    0.176,
+    0.045
+   ],
+   "triangles": 727297,
+   "bytes": 1289900,
+   "model": "/models/vendor/ubiquiti/uvc-g6-entry.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-entry.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-entry"
+  },
+  {
+   "slug": "uvc-g6-ins",
+   "name": "Camera G6 Instant",
+   "sku": "UVC-G6-INS",
+   "short": "Plug-and-play, 4K WiFi-connected camera with a 1/1.8\" 8MP image sensor, Multi-TOPS AI Engine, and two-way audio.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.0571,
+    0.0817,
+    0.0501
+   ],
+   "triangles": 54763,
+   "bytes": 178448,
+   "model": "/models/vendor/ubiquiti/uvc-g6-ins.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-ins.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-ins"
+  },
+  {
+   "slug": "uvc-g6-mini-dome",
+   "name": "Camera G6 Mini Dome",
+   "sku": "UVC-G6-Mini-Dome",
+   "short": "Incredibly compact 4K PoE camera with a 1/1.8\" 8MP image sensor, Multi-TOPS AI Engine, two-way audio, and IR night vision designed for discrete monitoring of high-traffic indoor areas.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1009,
+    0.0562,
+    0.1008
+   ],
+   "triangles": 90453,
+   "bytes": 424672,
+   "model": "/models/vendor/ubiquiti/uvc-g6-mini-dome.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-mini-dome.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-mini-dome"
+  },
+  {
+   "slug": "uvc-g6-pro-360",
+   "name": "Camera G6 Pro 360",
+   "sku": "UVC-G6-Pro-360",
+   "short": "All-weather, vandal-resistant 12MP PoE camera with panoramic 360\u00b0 coverage, digital pan-tilt-zoom functionality, and smart IR functionality.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.147,
+    0.0655,
+    0.147
+   ],
+   "triangles": 125876,
+   "bytes": 391336,
+   "model": "/models/vendor/ubiquiti/uvc-g6-pro-360.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-pro-360.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-pro-360"
+  },
+  {
+   "slug": "uvc-g6-pro-bullet",
+   "name": "Camera G6 Pro Bullet",
+   "sku": "UVC-G6-Pro-Bullet",
+   "short": "All-weather 4K PoE+ camera with a Multi-TOPS AI engine, 2.36x optical zoom, and a large 1/1.2\" CMOS sensor for exceptional low-light clarity and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.2101,
+    0.086,
+    0.0861
+   ],
+   "triangles": 220655,
+   "bytes": 596216,
+   "model": "/models/vendor/ubiquiti/uvc-g6-pro-bullet.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-pro-bullet.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-pro-bullet"
+  },
+  {
+   "slug": "uvc-g6-pro-dome",
+   "name": "Camera G6 Pro Dome",
+   "sku": "UVC-G6-Pro-Dome",
+   "short": "All-weather vandal-proof 4K PoE+ camera with a Multi-TOPS AI engine, 2.36x optical zoom, and a large 1/1.2\" CMOS sensor for exceptional low-light clarity and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1638,
+    0.1213,
+    0.1638
+   ],
+   "triangles": 91634,
+   "bytes": 471740,
+   "model": "/models/vendor/ubiquiti/uvc-g6-pro-dome.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-pro-dome.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-pro-dome"
+  },
+  {
+   "slug": "uvc-g6-pro-entry",
+   "name": "Reader G6 Pro Entry",
+   "sku": "UVC-G6-Pro-Entry",
+   "short": "An intelligent door entry system with native UniFi Protect and UniFi Access integration with a 12MP camera, two-way audio, and a 3\" touch display.",
+   "group": "Door access",
+   "mount": "wall",
+   "sizeM": [
+    0.0393,
+    0.2198,
+    0.0492
+   ],
+   "triangles": 543040,
+   "bytes": 1096924,
+   "model": "/models/vendor/ubiquiti/uvc-g6-pro-entry.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-pro-entry.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-pro-entry"
+  },
+  {
+   "slug": "uvc-g6-pro-turret",
+   "name": "Camera G6 Pro Turret",
+   "sku": "UVC-G6-Pro-Turret",
+   "short": "All-weather tamper-resistant 4K PoE+ camera with a Multi-TOPS AI engine, 2.36x optical zoom, and a large 1/1.2\" CMOS sensor for exceptional low-light clarity and long-range IR night vision.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1287,
+    0.1345,
+    0.1165
+   ],
+   "triangles": 111517,
+   "bytes": 452476,
+   "model": "/models/vendor/ubiquiti/uvc-g6-pro-turret.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-pro-turret.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-pro-turret"
+  },
+  {
+   "slug": "uvc-g6-ptz",
+   "name": "Camera G6 PTZ",
+   "sku": "UVC-G6-PTZ",
+   "short": "All-weather, 4K dual-lens camera with 10x hybrid zoom, 1/1.8\" 8MP image sensor, Multi-TOPS AI Engine, and ultra-low latency pan-tilt-zoom control for motion tracking.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1109,
+    0.2301,
+    0.1072
+   ],
+   "triangles": 133086,
+   "bytes": 551556,
+   "model": "/models/vendor/ubiquiti/uvc-g6-ptz.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-ptz.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-ptz"
+  },
+  {
+   "slug": "uvc-g6-turret",
+   "name": "Camera G6 Turret",
+   "sku": "UVC-G6-Turret",
+   "short": "All-weather, tamper-resistant 4K PoE camera with a 1/1.8\" 8MP image sensor, Multi-TOPS AI Engine, and 3-axis manual adjustment for flexible installation.",
+   "group": "Cameras and security",
+   "mount": "wall",
+   "sizeM": [
+    0.1,
+    0.0979,
+    0.1
+   ],
+   "triangles": 63915,
+   "bytes": 275376,
+   "model": "/models/vendor/ubiquiti/uvc-g6-turret.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-turret.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-turret"
+  },
+  {
+   "slug": "uvc-g6-turret--v1",
+   "name": "uvc-g6-turret--v1",
+   "sku": null,
+   "short": null,
+   "group": "Other",
+   "mount": "desk",
+   "sizeM": [
+    0.1,
+    0.0979,
+    0.1
+   ],
+   "triangles": 63915,
+   "bytes": 275404,
+   "model": "/models/vendor/ubiquiti/uvc-g6-turret--v1.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uvc-g6-turret--v1.webp",
+   "store": "https://store.ui.com/us/en/products/uvc-g6-turret--v1"
+  },
+  {
+   "slug": "uwb-xg",
+   "name": "WiFi BaseStation XG",
+   "sku": "UWB-XG",
+   "short": "Tri-radio WiFi 5 AP with 12 spatial streams and a selectable beamforming antenna, designed for high-density applications at large venues.",
+   "group": "WiFi",
+   "mount": "ceiling",
+   "sizeM": [
+    0.0422,
+    0.2655,
+    0.4741
+   ],
+   "triangles": 60966,
+   "bytes": 397728,
+   "model": "/models/vendor/ubiquiti/uwb-xg.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uwb-xg.webp",
+   "store": "https://store.ui.com/us/en/products/uwb-xg"
+  },
+  {
+   "slug": "ux7",
+   "name": "UniFi Express 7",
+   "sku": "UX7",
+   "short": "Mesh-scalable, super-compact 10G Cloud Gateway with integrated WiFi 7.",
+   "group": "Gateways",
+   "mount": "desk",
+   "sizeM": [
+    0.117,
+    0.0425,
+    0.117
+   ],
+   "triangles": 11071,
+   "bytes": 91036,
+   "model": "/models/vendor/ubiquiti/ux7.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/ux7.webp",
+   "store": "https://store.ui.com/us/en/products/ux7"
+  },
+  {
+   "slug": "uxg-enterprise",
+   "name": "Gateway Enterprise",
+   "sku": "UXG-Enterprise",
+   "short": "25G independent gateway with multi-WAN load balancing, 12.5 Gbps IPS routing, and redundant hot-swap PSUs.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0446,
+    0.3536
+   ],
+   "triangles": 132320,
+   "bytes": 721976,
+   "model": "/models/vendor/ubiquiti/uxg-enterprise.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uxg-enterprise.webp",
+   "store": "https://store.ui.com/us/en/products/uxg-enterprise",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.3536
+  },
+  {
+   "slug": "uxg-fiber",
+   "name": "Gateway Fiber",
+   "sku": "UXG-Fiber (30W)",
+   "short": "Desktop 10G independent gateway with integrated 4-port 2.5 GbE switch.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.2128,
+    0.03,
+    0.1278
+   ],
+   "triangles": 47336,
+   "bytes": 263568,
+   "model": "/models/vendor/ubiquiti/uxg-fiber.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uxg-fiber.webp",
+   "store": "https://store.ui.com/us/en/products/uxg-fiber"
+  },
+  {
+   "slug": "uxg-lite",
+   "name": "Gateway Lite",
+   "sku": "UXG-Lite",
+   "short": "Compact independent gateway with a full suite of advanced routing and security features.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.098,
+    0.03,
+    0.098
+   ],
+   "triangles": 9506,
+   "bytes": 74172,
+   "model": "/models/vendor/ubiquiti/uxg-lite.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uxg-lite.webp",
+   "store": "https://store.ui.com/us/en/products/uxg-lite"
+  },
+  {
+   "slug": "uxg-max",
+   "name": "Gateway Max",
+   "sku": "UXG-Max",
+   "short": "Compact, multi-WAN independent gateway with full 2.5G support for high-performance networking at small-to-medium sites.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.1418,
+    0.03,
+    0.1276
+   ],
+   "triangles": 12367,
+   "bytes": 88316,
+   "model": "/models/vendor/ubiquiti/uxg-max.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uxg-max.webp",
+   "store": "https://store.ui.com/us/en/products/uxg-max"
+  },
+  {
+   "slug": "uxg-pro",
+   "name": "Gateway Pro",
+   "sku": "UXG-Pro",
+   "short": "10G multi-WAN independent gateway with UniFi Power Backup support designed to protect large-scale networks.",
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.2878
+   ],
+   "triangles": 80180,
+   "bytes": 348492,
+   "model": "/models/vendor/ubiquiti/uxg-pro.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uxg-pro.webp",
+   "store": "https://store.ui.com/us/en/products/uxg-pro",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.2878
+  },
+  {
+   "slug": "uxg-pro--v1",
+   "name": "uxg-pro--v1",
+   "sku": null,
+   "short": null,
+   "group": "Gateways",
+   "mount": "rack",
+   "sizeM": [
+    0.4424,
+    0.0437,
+    0.2878
+   ],
+   "triangles": 86312,
+   "bytes": 364712,
+   "model": "/models/vendor/ubiquiti/uxg-pro--v1.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/uxg-pro--v1.webp",
+   "store": "https://store.ui.com/us/en/products/uxg-pro--v1",
+   "u": 1,
+   "yaw": 0,
+   "widthM": 0.4424,
+   "depthM": 0.2878
+  },
+  {
+   "slug": "wm-w",
+   "name": "WiFiMan Wizard",
+   "sku": "WM-W",
+   "short": "A portable spectrum analyzer designed for the WiFiMan iOS and Android mobile app.",
+   "group": "Accessories",
+   "mount": "accessory",
+   "sizeM": [
+    0.013,
+    0.1105,
+    0.0839
+   ],
+   "triangles": 31947,
+   "bytes": 221452,
+   "model": "/models/vendor/ubiquiti/wm-w.glb",
+   "thumb": "/models/vendor/ubiquiti/thumbs/wm-w.webp",
+   "store": "https://store.ui.com/us/en/products/wm-w"
+  }
+ ]
+}
