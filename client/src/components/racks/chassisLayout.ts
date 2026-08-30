@@ -65,6 +65,13 @@ export interface PortSlot {
   y: number;
   w: number;
   h: number;
+  /**
+   * 0 for the top row of a stacked block, 1 for the bottom. The two rows of
+   * a dense panel are mirrored: the top row's jacks take the plug latch
+   * downward and the bottom row's take it up, which is why the two rows of
+   * a 48 port switch are not the same picture twice.
+   */
+  row: number;
 }
 
 export interface ChassisLayout {
@@ -80,6 +87,20 @@ export interface ChassisLayout {
 
 /** Connectors that are drawn as a cage rather than a copper jack. */
 const CAGE_KINDS = new Set(["sfp", "sfp-plus", "sfp28", "qsfp"]);
+
+/**
+ * Connector sizes are absolute, because connectors are absolute.
+ *
+ * An 8P8C jack is 11.7mm wide whatever it is bolted to, and its panel
+ * bezel takes that to about 13mm. Sizing jacks to fill the available width
+ * gave a four port gateway four jacks the size of light switches while the
+ * 48 port switch next to it had normal ones, which is the giveaway that a
+ * render was laid out rather than measured.
+ */
+const JACK_W = 0.0132;
+const JACK_H = 0.0152;
+/** An SFP cage is 13.9mm across the mouth. */
+const CAGE_W = 0.0139;
 
 /**
  * Lay a device's front panel out in 3D.
@@ -120,11 +141,11 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
   const pitch = weight ? avail / weight : 0;
   // A jack never grows past what the unit height allows, whatever the width
   // left over: a 4 port switch has 4 normal jacks, not 4 enormous ones.
-  const cw = Math.min(pitch, h * 0.52);
-  const jw = Math.min(cw * 0.88, h * 0.42);
-  const jh = Math.min(h * 0.4, jw * 1.15);
+  const cw = Math.min(pitch, JACK_W / 0.88);
+  const jw = Math.min(cw * 0.88, h * 0.42, JACK_W);
+  const jh = Math.min(h * 0.4, jw * 1.15, JACK_H);
   const copperSpan = cols * cw;
-  const cagePitch = Math.min(pitch * CAGE_RATIO, h * 0.72);
+  const cagePitch = Math.min(pitch * CAGE_RATIO, CAGE_W / 0.88);
   /*
     Centre the whole block. On a dense 48 port face the jacks fill the panel
     and this changes nothing, but a 24 port switch does not need the full
@@ -132,7 +153,18 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
     empty against the right hand rail, which no vendor ships.
   */
   const gap = cols && cageCols ? cw * 0.5 : 0;
-  const blockW = copperSpan + gap + cageCols * cagePitch;
+  /*
+    Real dense panels break their jacks into groups, a wider gap every six,
+    eight or twelve, so a technician can count to port 37 at arm's length
+    without reading a single label. `groupsOf` carries that from the
+    datasheet and the elevation already honours it; the 3D face has to as
+    well or the two drawings disagree about where port 13 is.
+  */
+  const group = device.groupsOf ?? 0;
+  const groupGap = group ? cw * 0.34 : 0;
+  const groupsBefore = (col: number) => (group ? Math.floor(col / group) * groupGap : 0);
+  const copperSpread = copperSpan + (group ? Math.max(0, Math.ceil(cols / group) - 1) * groupGap : 0);
+  const blockW = copperSpread + gap + cageCols * cagePitch;
   const startX = -blockW / 2;
 
   const copper: PortSlot[] = copperSrc.map(({ port, index }, i) => {
@@ -141,14 +173,15 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
     return {
       port,
       index,
-      x: startX + col * cw + cw / 2,
+      x: startX + col * cw + cw / 2 + groupsBefore(col),
       y: rows === 2 ? (row === 0 ? jh * 0.56 : -jh * 0.56) : 0,
       w: jw,
       h: jh,
+      row,
     };
   });
 
-  const cageStart = startX + copperSpan + gap;
+  const cageStart = startX + copperSpread + gap;
   const cages: PortSlot[] = cageSrc.map(({ port, index }, i) => {
     const col = cageRows === 2 ? Math.floor(i / 2) : i;
     const row = cageRows === 2 ? i % 2 : 0;
@@ -159,6 +192,7 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
       y: cageRows === 2 ? (row === 0 ? jh * 0.56 : -jh * 0.56) : 0,
       w: cagePitch * 0.88,
       h: (cageRows === 2 ? jh : jh * 1.1) * 0.82,
+      row,
     };
   });
 

@@ -1,0 +1,197 @@
+/**
+ * Every connector, screw and outlet in the rack, in one pass.
+ *
+ * The parts themselves live in parts.ts. This is the thing that decides
+ * where they go: it walks the whole rack once, works out a matrix for each
+ * instance, and hands one InstancedMesh per part to the scene. A rack with
+ * ten switches has upwards of five hundred fully modelled jacks in it, and
+ * as separate meshes that would be five hundred draw calls for a picture
+ * that never moves. Instanced, it is about a dozen.
+ *
+ * Doing it at rack level rather than per device is what makes that
+ * possible, which is why this is not simply part of BrandedChassis.
+ */
+
+import { useMemo } from "react";
+import * as THREE from "three";
+import type { RackDefinition } from "@/lib/rackTypes";
+import { chassisLayout, deviceDepth } from "./chassisLayout";
+import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
+import { blankRim, fanGuard, jackCavity, jackContacts, jackRim, outlet, rackScrew, sfpCage } from "./parts";
+
+/** Build an InstancedMesh from a list of matrices, or nothing if empty. */
+function instance(
+  geometry: THREE.BufferGeometry,
+  material: THREE.Material,
+  matrices: THREE.Matrix4[],
+): THREE.InstancedMesh | null {
+  if (!matrices.length) return null;
+  const mesh = new THREE.InstancedMesh(geometry, material, matrices.length);
+  matrices.forEach((m, i) => mesh.setMatrixAt(i, m));
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.frustumCulled = false;
+  return mesh;
+}
+
+const place = (x: number, y: number, z: number, w: number, h: number, d: number): THREE.Matrix4 =>
+  new THREE.Matrix4().compose(
+    new THREE.Vector3(x, y, z),
+    new THREE.Quaternion(),
+    new THREE.Vector3(w, h, d),
+  );
+
+const MATS = {
+  rim: new THREE.MeshStandardMaterial({ color: "#1a1e24", metalness: 0.35, roughness: 0.55, envMapIntensity: 0.55 }),
+  gold: new THREE.MeshStandardMaterial({ color: "#e0b45a", metalness: 0.95, roughness: 0.24 }),
+  cage: new THREE.MeshStandardMaterial({ color: "#8d949c", metalness: 0.9, roughness: 0.3 }),
+  screw: new THREE.MeshStandardMaterial({ color: "#b6bcc4", metalness: 0.9, roughness: 0.3 }),
+  guard: new THREE.MeshStandardMaterial({ color: "#3a3f46", metalness: 0.7, roughness: 0.45 }),
+  outletFace: new THREE.MeshStandardMaterial({ color: "#e9ebee", metalness: 0.05, roughness: 0.55 }),
+};
+
+/** One cavity material per throat colour, so Cisco's teal survives instancing. */
+const cavityMaterials = new Map<string, THREE.MeshStandardMaterial>();
+function cavityMaterial(tint: string): THREE.MeshStandardMaterial {
+  let m = cavityMaterials.get(tint);
+  if (!m) {
+    m = new THREE.MeshStandardMaterial({ color: tint, metalness: 0.15, roughness: 0.9 });
+    cavityMaterials.set(tint, m);
+  }
+  return m;
+}
+
+export function RackHardware({
+  rack,
+  yOf,
+  faceZ,
+}: {
+  rack: RackDefinition;
+  yOf: Map<string, number>;
+  faceZ: number;
+}) {
+  const meshes = useMemo(() => {
+    const rimUp: THREE.Matrix4[] = [];
+    const rimDown: THREE.Matrix4[] = [];
+    const contactsUp: THREE.Matrix4[] = [];
+    const contactsDown: THREE.Matrix4[] = [];
+    const blanks: THREE.Matrix4[] = [];
+    const cages: THREE.Matrix4[] = [];
+    const screws: THREE.Matrix4[] = [];
+    const guards: THREE.Matrix4[] = [];
+    const outlets: THREE.Matrix4[] = [];
+    const cavities = new Map<string, THREE.Matrix4[]>();
+
+    const addCavity = (tint: string, m: THREE.Matrix4) => {
+      const bucket = cavities.get(tint);
+      if (bucket) bucket.push(m);
+      else cavities.set(tint, [m]);
+    };
+
+    for (const device of rack.devices) {
+      const y0 = yOf.get(device.id);
+      if (y0 === undefined) continue;
+      const h = device.u * U;
+      const tint = device.portTint ?? "#080a0d";
+
+      /*
+        Rack screws. Every device is bolted through its ears, two per rack
+        unit per side on a cage nut rail, and they are the one detail that
+        is on absolutely every box in the rack.
+      */
+      for (let u = 0; u < device.u; u += 1) {
+        for (const sx of [-1, 1]) {
+          const yc = y0 - h / 2 + (u + 0.5) * U;
+          for (const dy of [-U * 0.28, U * 0.28]) {
+            screws.push(place(sx * (RACK_INNER_WIDTH / 2 + 0.012), yc + dy, faceZ + 0.0005, 0.008, 0.008, 0.008));
+          }
+        }
+      }
+
+      // PDU faces are outlets, not ports, and the layout skips power inlets.
+      if (device.family === "pdu") {
+        const sockets = (device.ports ?? []).filter((p) => p.kind === "power");
+        const rows = sockets.length > 8 ? 2 : 1;
+        const cols = Math.ceil(sockets.length / Math.max(1, rows));
+        const size = Math.min((RACK_INNER_WIDTH * 0.84) / Math.max(1, cols), (h * 0.86) / rows);
+        const startX = -(cols * size) / 2 + size / 2;
+        sockets.forEach((_, i) => {
+          const col = rows === 2 ? Math.floor(i / 2) : i;
+          const row = rows === 2 ? i % 2 : 0;
+          outlets.push(
+            place(
+              startX + col * size,
+              y0 + (rows === 2 ? (row === 0 ? size * 0.5 : -size * 0.5) : 0),
+              faceZ + 0.0008,
+              size * 0.86,
+              size * 0.86,
+              size * 0.86,
+            ),
+          );
+        });
+      }
+
+      const layout = chassisLayout(device);
+      if (layout) {
+        for (const slot of layout.copper) {
+          const m = place(slot.x, y0 + slot.y, faceZ + 0.0008, slot.w, slot.h, slot.w);
+          if (slot.port.kind === "blank") {
+            blanks.push(m);
+            addCavity(tint, place(slot.x, y0 + slot.y, faceZ + 0.0008, slot.w, slot.h, slot.w));
+            continue;
+          }
+          // Top row takes the plug latch downward, bottom row upward.
+          const tabUp = slot.row !== 0;
+          (tabUp ? rimUp : rimDown).push(m);
+          (tabUp ? contactsUp : contactsDown).push(m);
+          addCavity(tint, m);
+        }
+        for (const slot of layout.cages) {
+          const m = place(slot.x, y0 + slot.y, faceZ + 0.0008, slot.w, slot.h, slot.w * 0.8);
+          cages.push(m);
+          addCavity(tint, m);
+        }
+      }
+
+      /*
+        The rear. Orbiting round the back of a rack used to show six blank
+        boxes; anything with a fan in it has a guard on that face, and a
+        server has two.
+      */
+      const rearZ = faceZ - deviceDepth(device);
+      if (device.family === "server" || device.family === "storage" || device.family === "ups") {
+        const n = device.u >= 2 ? 2 : 1;
+        const d = Math.min(h * 0.7, 0.09);
+        for (let i = 0; i < n; i += 1) {
+          const gx = n === 1 ? RACK_INNER_WIDTH * 0.28 : RACK_INNER_WIDTH * (i === 0 ? 0.18 : 0.36);
+          const gm = place(gx, y0, rearZ - 0.001, d, d, d);
+          gm.multiply(new THREE.Matrix4().makeRotationY(Math.PI));
+          guards.push(gm);
+        }
+      }
+    }
+
+    const out: THREE.Object3D[] = [];
+    const push = (m: THREE.InstancedMesh | null) => {
+      if (m) out.push(m);
+    };
+    push(instance(jackRim(true), MATS.rim, rimUp));
+    push(instance(jackRim(false), MATS.rim, rimDown));
+    push(instance(jackContacts(true), MATS.gold, contactsUp));
+    push(instance(jackContacts(false), MATS.gold, contactsDown));
+    push(instance(blankRim(), MATS.rim, blanks));
+    push(instance(sfpCage(), MATS.cage, cages));
+    push(instance(rackScrew(), MATS.screw, screws));
+    push(instance(fanGuard(), MATS.guard, guards));
+    push(instance(outlet(), MATS.outletFace, outlets));
+    cavities.forEach((list, tint) => push(instance(jackCavity(), cavityMaterial(tint), list)));
+    return out;
+  }, [rack, yOf, faceZ]);
+
+  return (
+    <group>
+      {meshes.map((m, i) => (
+        <primitive key={i} object={m} />
+      ))}
+    </group>
+  );
+}

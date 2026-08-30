@@ -16,6 +16,13 @@
  * Materials are memoised per finish rather than per device, because a rack
  * holds up to ten devices and three.js materials are expensive to rebuild
  * every frame.
+ *
+ * The connectors themselves are not drawn here. They are modelled parts
+ * with shielded rims, latch slots and gold contacts, and there are hundreds
+ * of them in a rack, so RackHardware instances the lot in one pass. What
+ * stays here is the chassis: body, ears, screen, recess, vents, bays, and
+ * the indicators, which have to blink and so cannot be instanced with the
+ * static parts.
  */
 
 import { useMemo, useRef } from "react";
@@ -24,6 +31,7 @@ import { useFrame } from "@react-three/fiber";
 import type { RackDevice } from "@/lib/rackTypes";
 import { MATERIALS } from "./RackDefs";
 import { chassisLayout, deviceDepth } from "./chassisLayout";
+import { chassisShell } from "./parts";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 
 const LED_HEX: Record<string, string> = {
@@ -73,8 +81,6 @@ function chassisMaterial(finish: string): THREE.MeshStandardMaterial {
 }
 
 const throatMaterial = new THREE.MeshStandardMaterial({ color: "#05070a", metalness: 0.2, roughness: 0.95 });
-const tealThroatMaterial = new THREE.MeshStandardMaterial({ color: "#0d4a44", metalness: 0.3, roughness: 0.8 });
-const copperMaterial = new THREE.MeshStandardMaterial({ color: "#d9a94f", metalness: 0.9, roughness: 0.28 });
 const shellMaterial = new THREE.MeshStandardMaterial({ color: "#20252c", metalness: 0.5, roughness: 0.6 });
 const screenMaterial = new THREE.MeshStandardMaterial({
   color: "#0a1015",
@@ -115,7 +121,6 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
   const depth = deviceDepth(device);
   const finish = device.finish ?? "dark";
   const body = chassisMaterial(finish);
-  const throat = device.portTint ? tealThroatMaterial : throatMaterial;
   const blinkRef = useRef<THREE.Group>(null);
 
   const layout = useMemo(() => chassisLayout(device), [device]);
@@ -139,10 +144,13 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
   return (
     <group>
       {/* Chassis body, in the vendor's own finish, as deep as the real
-          hardware rather than as deep as the rack. */}
-      <mesh position={[0, 0, faceZ - depth / 2]} material={body}>
-        <boxGeometry args={[RACK_INNER_WIDTH, h - 0.0012, depth]} />
-      </mesh>
+          hardware rather than as deep as the rack, with the chamfered edges
+          every folded steel case has. */}
+      <mesh
+        position={[0, 0, faceZ]}
+        material={body}
+        geometry={chassisShell(RACK_INNER_WIDTH, h - 0.0012, depth)}
+      />
       {/* Mounting ears, always steel regardless of the chassis finish. */}
       {[-1, 1].map((s) => (
         <mesh key={s} position={[s * (RACK_INNER_WIDTH / 2 + 0.012), 0, faceZ - 0.004]} material={earMaterial}>
@@ -180,26 +188,6 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           <mesh position={[layout.field.x, layout.field.y, faceZ - 0.0016]} material={recessMaterial}>
             <boxGeometry args={[layout.field.w, layout.field.h, 0.003]} />
           </mesh>
-          {layout.copper.map((it, i) => (
-            <group key={`c${i}`} position={[it.x, it.y, faceZ]}>
-              <mesh position={[0, 0, -0.004]} material={throat}>
-                <boxGeometry args={[it.w, it.h, 0.01]} />
-              </mesh>
-              {it.port.kind !== "blank" && (
-                <mesh position={[0, -it.h * 0.12, -0.002]} material={copperMaterial}>
-                  <boxGeometry args={[it.w * 0.66, it.h * 0.3, 0.002]} />
-                </mesh>
-              )}
-            </group>
-          ))}
-          {layout.cages.map((it, i) => (
-            <group key={`g${i}`} position={[it.x, it.y, faceZ]}>
-              <mesh position={[0, 0, -0.004]} material={throat}>
-                <boxGeometry args={[it.w, it.h, 0.01]} />
-              </mesh>
-            </group>
-          ))}
-
           {/* Emissive indicators, one per lit port, blinked by the frame
               loop above. Separated into their own group so the loop walks
               only the lights and not the whole chassis. */}

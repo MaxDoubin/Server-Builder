@@ -32,6 +32,7 @@ import { BrandedChassis } from "./BrandedChassis";
 import { faceZ as faceZOf, rackDepth } from "./chassisLayout";
 import { FRAME_FOOT, FRAME_GROUND, OpenRackFrame } from "./OpenRackFrame";
 import { RackCables3D } from "./RackCables3D";
+import { RackHardware } from "./RackHardware";
 import { StudioEnvironment } from "./StudioEnvironment";
 
 /**
@@ -197,6 +198,7 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
                 <BrandedChassis device={rack.devices[s.index]} faceZ={face} seed={s.index + 1} />
               </group>
             ))}
+            <RackHardware rack={rack} yOf={yOf} faceZ={face} />
             <RackCables3D rack={rack} yOf={yOf} faceZ={face} budget={tier === "low" ? 32 : 128} />
           </group>
         </Suspense>
