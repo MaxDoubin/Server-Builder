@@ -277,3 +277,65 @@ export function chassisShell(w: number, h: number, d: number): THREE.BufferGeome
     return geom;
   });
 }
+
+/**
+ * An SFP module seated in its cage.
+ *
+ * Empty cages everywhere is what an unbuilt rack looks like. A populated
+ * uplink has a module in it, and the module is unmistakable: a body that
+ * stands proud of the panel by most of its own length, the bail latch
+ * folded down along its underside, and the duplex bore at the front where
+ * the fibre goes. Any switch in this library with a lit optic gets one.
+ */
+export function sfpModule(): THREE.BufferGeometry {
+  return cached("sfpmod", () => {
+    const parts: THREE.BufferGeometry[] = [];
+    const body = new THREE.BoxGeometry(0.86, 0.62, 1.5);
+    body.translate(0, 0, 0.5);
+    parts.push(body);
+    // The bail, hinged at the front and folded back under the body.
+    const bail = new THREE.BoxGeometry(0.72, 0.07, 0.06);
+    bail.translate(0, -0.36, 1.12);
+    parts.push(bail);
+    for (const sx of [-1, 1]) {
+      const arm = new THREE.BoxGeometry(0.06, 0.07, 0.7);
+      arm.translate(sx * 0.36, -0.34, 0.82);
+      parts.push(arm);
+    }
+    return mergeGeometries(parts, false) ?? parts[0];
+  });
+}
+
+/** The duplex bore in the module's face, so it is a socket and not a block. */
+export function sfpBore(): THREE.BufferGeometry {
+  return cached("sfpbore", () => {
+    const parts: THREE.BufferGeometry[] = [];
+    for (const sx of [-1, 1]) {
+      const hole = new THREE.BoxGeometry(0.3, 0.34, 0.18);
+      hole.translate(sx * 0.2, 0.02, 1.18);
+      parts.push(hole);
+    }
+    return mergeGeometries(parts, false) ?? parts[0];
+  });
+}
+
+/**
+ * One D-ring off a horizontal cable manager.
+ *
+ * The manager was nine slabs standing off the panel, which is a comb, not
+ * a manager. The real part is a row of open rings on short posts: bundles
+ * drop into them from above and are retained without being clamped, and
+ * the open side is what lets you add a lead later without unthreading the
+ * whole rack.
+ */
+export function cableRing(): THREE.BufferGeometry {
+  return cached("dring", () => {
+    const ring = new THREE.TorusGeometry(0.42, 0.06, 6, 20, Math.PI * 1.45);
+    ring.rotateZ(Math.PI * 0.28);
+    ring.translate(0, 0, -0.5);
+    const post = new THREE.CylinderGeometry(0.1, 0.1, 0.5, 8);
+    post.rotateX(Math.PI / 2);
+    post.translate(0, 0, -0.25);
+    return mergeGeometries([ring, post], false) ?? ring;
+  });
+}

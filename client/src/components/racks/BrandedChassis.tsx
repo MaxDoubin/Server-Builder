@@ -240,17 +240,6 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
       {/* Passive panels. A vented plate, a solid plate and a finger duct are
           three visibly different objects, and drawing all three as a blank
           rectangle threw away a third of the rack. */}
-      {look === "fingers" &&
-        Array.from({ length: 9 }, (_, i) => (
-          <mesh
-            key={`f${i}`}
-            position={[-CHASSIS_WIDTH * 0.42 + (i * CHASSIS_WIDTH * 0.84) / 8, 0, faceZ + 0.018]}
-            material={body}
-          >
-            <boxGeometry args={[0.012, h * 0.86, 0.04]} />
-          </mesh>
-        ))}
-
       {/* Drive sleds, for the storage and compute faces. */}
       {bays && (
         <group>

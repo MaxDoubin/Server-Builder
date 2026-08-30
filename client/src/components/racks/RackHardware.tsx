@@ -18,7 +18,19 @@ import { useFrame } from "@react-three/fiber";
 import type { LedState, RackDefinition } from "@/lib/rackTypes";
 import { CHASSIS_WIDTH, chassisLayout, deviceDepth } from "./chassisLayout";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
-import { blankRim, fanGuard, jackCavity, jackContacts, jackRim, outlet, rackScrew, sfpCage } from "./parts";
+import {
+  blankRim,
+  cableRing,
+  fanGuard,
+  jackCavity,
+  jackContacts,
+  jackRim,
+  outlet,
+  rackScrew,
+  sfpBore,
+  sfpCage,
+  sfpModule,
+} from "./parts";
 
 /** Build an InstancedMesh from a list of matrices, or nothing if empty. */
 function instance(
@@ -55,6 +67,9 @@ const MATS = {
   cage: new THREE.MeshStandardMaterial({ color: "#8d949c", metalness: 0.9, roughness: 0.3 }),
   screw: new THREE.MeshStandardMaterial({ color: "#b6bcc4", metalness: 0.9, roughness: 0.3 }),
   guard: new THREE.MeshStandardMaterial({ color: "#3a3f46", metalness: 0.7, roughness: 0.45 }),
+  module: new THREE.MeshStandardMaterial({ color: "#6f7780", metalness: 0.82, roughness: 0.34 }),
+  bore: new THREE.MeshStandardMaterial({ color: "#05070a", metalness: 0.1, roughness: 0.95 }),
+  ring: new THREE.MeshStandardMaterial({ color: "#9aa2ab", metalness: 0.85, roughness: 0.32 }),
   outletFace: new THREE.MeshStandardMaterial({ color: "#e9ebee", metalness: 0.05, roughness: 0.55 }),
 };
 
@@ -141,6 +156,9 @@ export function RackHardware({
     const screws: THREE.Matrix4[] = [];
     const guards: THREE.Matrix4[] = [];
     const outlets: THREE.Matrix4[] = [];
+    const modules: THREE.Matrix4[] = [];
+    const bores: THREE.Matrix4[] = [];
+    const rings: THREE.Matrix4[] = [];
     const cavities = new Map<string, THREE.Matrix4[]>();
     const leds: Array<{ m: THREE.Matrix4; colour: string; seed: number }> = [];
     let ledSeed = 0;
@@ -194,6 +212,19 @@ export function RackHardware({
         });
       }
 
+      // A horizontal cable manager is a row of open D-rings on posts, not a
+      // comb of slabs: bundles drop in from above and are retained without
+      // being clamped, and the open side is what lets a lead be added later
+      // without unthreading the whole rack.
+      if (device.family === "blank" && device.look === "fingers") {
+        const count = 12;
+        const step = (CHASSIS_WIDTH * 0.88) / (count - 1);
+        for (let i = 0; i < count; i += 1) {
+          const size = Math.min(h * 0.78, step * 0.92);
+          rings.push(place(-CHASSIS_WIDTH * 0.44 + i * step, y0, faceZ + 0.03, size, size, size));
+        }
+      }
+
       const layout = chassisLayout(device);
       if (layout) {
         for (const slot of layout.copper) {
@@ -239,6 +270,12 @@ export function RackHardware({
           addCavity(tint, m);
           const led = slot.port.led;
           if (led && led !== "off") {
+            // A lit optic has a module in it. An empty cage where a link is
+            // up is a contradiction, and a rack of empty cages reads as one
+            // that was never finished.
+            const mm = place(slot.x, y0 + slot.y, faceZ, slot.w, slot.h, slot.w * 0.62);
+            modules.push(mm);
+            bores.push(mm);
             ledSeed += 1;
             leds.push({
               m: place(
@@ -287,6 +324,9 @@ export function RackHardware({
     push(instance(rackScrew(), MATS.screw, screws));
     push(instance(fanGuard(), MATS.guard, guards));
     push(instance(outlet(), MATS.outletFace, outlets));
+    push(instance(sfpModule(), MATS.module, modules));
+    push(instance(sfpBore(), MATS.bore, bores));
+    push(instance(cableRing(), MATS.ring, rings));
     cavities.forEach((list, tint) => push(instance(jackCavity(), cavityMaterial(tint), list)));
     return { out, leds };
   }, [rack, yOf, faceZ]);
