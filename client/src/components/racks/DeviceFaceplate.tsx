@@ -23,29 +23,7 @@
 
 import type { RackDevice, RackPort } from "@/lib/rackTypes";
 import { LED_COLOURS, MATERIALS, defUrl } from "./RackDefs";
-
-/** Connector footprint in units of the port cell scale. */
-function portShape(kind: RackPort["kind"]): { w: number; h: number } {
-  switch (kind) {
-    case "sfp":
-    case "sfp-plus":
-    case "sfp28":
-      return { w: 1.55, h: 0.78 };
-    case "qsfp":
-      return { w: 1.85, h: 0.86 };
-    case "power":
-      return { w: 1.15, h: 1.0 };
-    case "usb":
-      return { w: 0.72, h: 0.52 };
-    case "console":
-      return { w: 1.0, h: 0.95 };
-    default:
-      return { w: 1.0, h: 0.95 };
-  }
-}
-
-/** Connector families that stack two-high on a dense panel. */
-const STACKS = new Set(["rj45", "console", "sfp", "sfp-plus", "sfp28", "blank", "power"]);
+import { faceGeometry, layoutPorts } from "./portLayout";
 
 interface Props {
   device: RackDevice;
@@ -62,23 +40,16 @@ interface Props {
 }
 
 export function DeviceFaceplate({ device, width, unitH, detail = false, still = false, uid }: Props) {
-  const H = device.u * unitH;
-  const ear = Math.max(9, width * 0.026);
-  const bodyX = ear;
-  const bodyW = width - ear * 2;
-  const inset = Math.max(1, unitH * 0.05);
+  const { H, ear, bodyX, bodyW, inset, showText, dispW, textX, fieldX, fieldW } = faceGeometry(
+    device,
+    width,
+    unitH,
+    detail,
+  );
   const accent = device.accent ?? "#8a93a6";
   const finish = device.finish ?? "dark";
   const m = MATERIALS[finish];
-  const showText = unitH >= 30;
   const r = Math.max(1.5, unitH * 0.05);
-
-  const dispW = device.display ? Math.min(H * 0.58, bodyW * 0.068) : 0;
-  const dispPad = device.display ? unitH * 0.13 : 0;
-  const brandW = showText ? bodyW * (detail ? 0.095 : 0.125) : bodyW * 0.03;
-  const textX = bodyX + dispW + dispPad + unitH * 0.15;
-  const fieldX = bodyX + dispW + dispPad + brandW;
-  const fieldW = bodyW - (fieldX - bodyX) - unitH * 0.13;
 
   return (
     <g>
@@ -129,6 +100,7 @@ export function DeviceFaceplate({ device, width, unitH, detail = false, still = 
 
       <FaceContent
         device={device}
+        width={width}
         fieldX={fieldX}
         fieldW={fieldW}
         bodyX={bodyX}
@@ -202,6 +174,8 @@ function Display(props: { uid: string; kind: string; x: number; y: number; s: nu
 
 interface ContentProps {
   device: RackDevice;
+  /** Full faceplate width, needed by the shared port layout. */
+  width: number;
   fieldX: number;
   fieldW: number;
   bodyX: number;
@@ -225,78 +199,47 @@ function FaceContent(props: ContentProps) {
 
 /** Two rows, odd on top, grouped in blocks, one run per connector family. */
 function PortField(props: ContentProps) {
-  const { device, fieldX, fieldW, unitH, inset, detail, still, m, uid } = props;
-  const ports = device.ports ?? [];
-  const H = device.u * unitH;
+  const { device, unitH, detail, still, m, uid, width } = props;
   const isPatch = device.family === "patch";
   const throat = device.portTint ? defUrl(uid, "throat-teal") : defUrl(uid, "throat");
+  const cells = layoutPorts(device, width, unitH, detail);
 
-  const runs: Array<{ kind: RackPort["kind"]; items: Array<{ p: RackPort; i: number }> }> = [];
-  ports.forEach((p, i) => {
-    const last = runs[runs.length - 1];
-    if (last && last.kind === p.kind) last.items.push({ p, i });
-    else runs.push({ kind: p.kind, items: [{ p, i }] });
-  });
-
-  const group = device.groupsOf ?? 0;
-  const plan = runs.map((run) => {
-    const stack = !device.singleRow && STACKS.has(run.kind) && run.items.length >= 4;
-    const rows = stack ? 2 : 1;
-    return { ...run, rows, cols: Math.ceil(run.items.length / rows), shape: portShape(run.kind) };
-  });
-
-  const totalW = plan.reduce((s, x) => s + x.cols * x.shape.w, 0);
-  const runGaps = (plan.length - 1) * 0.9;
-  const groupGaps = group ? plan.reduce((s, x) => s + Math.max(0, Math.ceil(x.cols / group) - 1) * 0.45, 0) : 0;
-  const denom = totalW + runGaps + groupGaps + plan.length * 0.3;
-
-  const maxRows = Math.max(...plan.map((x) => x.rows));
-  const vSpace = (H - inset * 2) * (detail ? 0.5 : 0.58);
-  const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
-  const gapX = scale * 0.13;
-  const gapY = scale * 0.16;
-  const midY = H / 2 + (detail ? unitH * 0.03 : 0);
-
-  const nodes: JSX.Element[] = [];
-  let x = fieldX;
-
-  for (const run of plan) {
-    const pw = run.shape.w * scale - gapX;
-    const ph = run.shape.h * scale - gapY;
-    const blockH = run.rows * ph + (run.rows - 1) * gapY;
-    const top = midY - blockH / 2;
-
-    run.items.forEach((entry, k) => {
-      const col = run.rows === 2 ? Math.floor(k / 2) : k;
-      const row = run.rows === 2 ? k % 2 : 0;
-      const gx = group ? Math.floor(col / group) * scale * 0.45 : 0;
-      const px = x + col * (pw + gapX) + gx;
-      const py = top + row * (ph + gapY);
-      nodes.push(
-        <Port key={entry.i} uid={uid} port={entry.p} x={px} y={py} w={pw} h={ph} throat={throat} isPatch={isPatch} still={still} index={entry.i} />,
-      );
-      if (detail && run.kind === "rj45" && ph > 9) {
-        nodes.push(
-          <text
-            key={`n${entry.i}`}
-            x={px + pw / 2}
-            y={row === 0 ? top - 1.5 : top + blockH + ph * 0.4}
-            textAnchor="middle"
-            fill={m.sub}
-            fontSize={Math.max(3.2, ph * 0.28)}
-            className="rk-portnum"
-            opacity={0.85}
-          >
-            {k + 1}
-          </text>,
-        );
-      }
-    });
-
-    x += run.cols * (pw + gapX) + (group ? Math.max(0, Math.ceil(run.cols / group) - 1) * scale * 0.45 : 0) + scale * 0.9;
-  }
-
-  return <g>{nodes}</g>;
+  return (
+    <g>
+      {cells.map((c) => (
+        <Port
+          key={c.index}
+          uid={uid}
+          port={c.port}
+          x={c.x}
+          y={c.y}
+          w={c.w}
+          h={c.h}
+          throat={throat}
+          isPatch={isPatch}
+          still={still}
+          index={c.index}
+        />
+      ))}
+      {detail &&
+        cells
+          .filter((c) => c.port.kind === "rj45" && c.h > 9)
+          .map((c) => (
+            <text
+              key={`n${c.index}`}
+              x={c.x + c.w / 2}
+              y={c.row === 0 ? c.y - 1.5 : c.y + c.h * 1.42}
+              textAnchor="middle"
+              fill={m.sub}
+              fontSize={Math.max(3.2, c.h * 0.28)}
+              className="rk-portnum"
+              opacity={0.85}
+            >
+              {c.col * (c.row === 0 ? 2 : 2) + c.row + 1}
+            </text>
+          ))}
+    </g>
+  );
 }
 
 /** A single connector: shell, bevel, recessed throat, contacts, indicators. */

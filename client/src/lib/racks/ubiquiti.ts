@@ -318,6 +318,41 @@ export const ubiquitiRack: RackDefinition = {
   // All 200 at the time of writing. help.ui.com returns 403 to an automated
   // request, so nothing here points at it; techspecs.ui.com and store.ui.com
   // both serve their specs server-side and answer a plain curl.
+  /*
+    Etherlighting patch leads (UACC-Cable-Patch-EL).
+
+    These are the reason a UniFi rack looks the way it does in photographs.
+    Cat6A, a 2.5mm white TPE jacket, and two translucent booted RJ45
+    connectors that pipe the switch's own port LED out through the boot, so
+    every patched jack carries a point of colour. The colour is configurable
+    per port and is normally set to mean something: here green is the
+    default access VLAN, blue is the voice VLAN, and amber marks the
+    cameras, which is a real convention and the reason anyone pays extra for
+    a lighting cable rather than a plain one.
+
+    Ports are indexed into each device's own `ports` array.
+  */
+  patches: [
+    // Floor 1 field into the 48 port PoE switch, straight through.
+    ...Array.from({ length: 24 }, (_, i) => ({
+      from: { device: "patch-a", port: i },
+      to: { device: "usw-pro-48-poe", port: i },
+      colour: (i >= 18 ? "amber" : i >= 13 ? "blue" : "green") as LedState,
+      style: "etherlighting" as const,
+    })),
+    // Floor 2 field into the 24 port switch.
+    ...Array.from({ length: 16 }, (_, i) => ({
+      from: { device: "patch-b", port: i },
+      to: { device: "usw-pro-24-poe", port: i },
+      colour: (i >= 12 ? "amber" : i >= 9 ? "blue" : "green") as LedState,
+      style: "etherlighting" as const,
+    })),
+    // The gateway's copper LAN uplink into the aggregation switch is a
+    // short lead, and short leads are the ones that sit on top of a bundle.
+    { from: { device: "udm-se", port: 0 }, to: { device: "usw-pro-48-poe", port: 26 }, colour: "blue" as LedState, style: "etherlighting" as const },
+    { from: { device: "udm-se", port: 1 }, to: { device: "usw-pro-24-poe", port: 18 }, colour: "green" as LedState, style: "etherlighting" as const },
+  ],
+
   sources: [
     {
       label: "Ubiquiti tech specs: Dream Machine Special Edition (UDM-SE)",

@@ -115,6 +115,38 @@ export interface RackDevice {
   url?: string;
 }
 
+/**
+ * One patch lead, from a port on one device to a port on another.
+ *
+ * Ports are referenced by their index in the device's own `ports` array,
+ * which is the same order the faceplate draws them left to right.
+ */
+export interface RackPatch {
+  from: { device: string; port: number };
+  to: { device: string; port: number };
+  /**
+   * Boot colour, for an Etherlighting lead. UniFi's leads pipe the switch's
+   * port LED out through a translucent boot, and the colour is configurable
+   * per port to mean link state, VLAN or negotiated speed. Defaults to the
+   * source port's own indicator.
+   */
+  colour?: LedState;
+  /**
+   * How the lead is built. "etherlighting" is the UniFi part with the
+   * translucent light-piping boot; "plain" is an ordinary moulded patch
+   * lead with an opaque boot, which is what every other vendor's rack is
+   * cabled with. Defaults to plain, because Etherlighting is a UniFi-only
+   * product and drawing a Catalyst closet with glowing boots would be a
+   * nice picture of hardware that does not exist.
+   */
+  style?: "etherlighting" | "plain";
+  /**
+   * Jacket colour for a plain lead. Real closets colour-code by purpose,
+   * which is the whole reason patch leads come in six colours.
+   */
+  jacket?: "blue" | "grey" | "yellow" | "red" | "green" | "white";
+}
+
 /** Where a figure came from. Every rack carries its own citations. */
 export interface RackSource {
   label: string;
@@ -133,6 +165,8 @@ export interface RackDefinition {
   height: number;
   /** Top to bottom. The renderer lays them out in array order. */
   devices: RackDevice[];
+  /** Patch leads between ports, drawn over the elevation. */
+  patches?: RackPatch[];
   /** The datasheets every number above was read off. */
   sources: RackSource[];
 }
