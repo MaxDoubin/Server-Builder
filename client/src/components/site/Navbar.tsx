@@ -32,6 +32,7 @@ export function Navbar() {
     <>
       <a
         href="#main-content"
+        data-nosnippet
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
         data-testid="link-skip-to-content"
       >
@@ -43,7 +44,7 @@ export function Navbar() {
         aria-label="Main navigation"
         data-testid="navbar"
       >
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
+        <div data-nosnippet className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
           <Link href="/" className="text-lg font-bold tracking-tight text-primary transition-colors hover:text-primary/80" data-testid="link-home">
             Max Doubin
           </Link>

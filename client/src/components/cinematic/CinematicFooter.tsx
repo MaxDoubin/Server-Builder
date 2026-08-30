@@ -40,7 +40,10 @@ export function CinematicFooter() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px hairline" />
       <DrawLine color="hsl(72 100% 50%)" className="relative z-10" delay={0.3} />
 
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-12 md:px-10">
+      <div
+        data-nosnippet
+        className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-12 md:px-10"
+      >
         <div className="md:col-span-5">
           <ScrollReveal variants={fadeLeft} delay={0.1}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">

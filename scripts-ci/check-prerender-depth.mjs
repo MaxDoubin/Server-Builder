@@ -5,7 +5,7 @@
  * does not run JavaScript reads the page. Nineteen routes were missed:
  * /resume, /projects, /contact, /certifications, /cyber-club, /timeline,
  * /now, /uses, /archive, /paths, /links, /colophon, /ask, /subscribe,
- * /changelog, /roadmap, /flashcards, /coding-camps, /study-timer, plus the
+ * /roadmap, /flashcards, /coding-camps, /study-timer, plus the
  * /ncl hub. Each shipped 297 characters: the site nav, and nothing else.
  * React filled them in on the client, which does not help a crawler, a
  * preview card, or an assistant answering a question about the site. The

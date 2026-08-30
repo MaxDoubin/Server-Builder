@@ -208,7 +208,25 @@ export function CinematicNav() {
             : "transparent",
         }}
       >
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-6 md:px-10">
+        {/*
+          Google generates its own snippet when it decides the meta
+          description does not answer the query, and it takes that snippet
+          from the first text in the rendered DOM. On this site that text
+          was the skip link and the whole primary nav, so a search for the
+          site's own name returned six sitelinks all captioned "Skip to
+          content. Max Doubin ... Index", which describes nothing and reads
+          as a broken page.
+
+          data-nosnippet is the documented fix: text inside it is still
+          crawled, indexed and followed, it is simply not eligible to be
+          quoted in a result. Google honours the attribute on div, span and
+          section only, which is why it sits on the inner containers rather
+          than on <header> and <footer> themselves.
+        */}
+        <div
+          data-nosnippet
+          className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-6 md:px-10"
+        >
           <motion.div variants={logoVariants} initial="hidden" animate="visible">
             <Magnetic strength={0.2} radius={100}>
               <Link

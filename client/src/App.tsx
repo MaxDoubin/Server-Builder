@@ -208,9 +208,6 @@ const CinematicStudyTimer = lazyWithRetry(() =>
 const CinematicAsk = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicAsk").then((m) => ({ default: m.CinematicAsk })),
 );
-const CinematicChangelog = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicChangelog").then((m) => ({ default: m.CinematicChangelog })),
-);
 
 /** Browser utilities. One chunk each, so /tools costs nothing until used. */
 const SubnetCalculator = lazyWithRetry(() =>
@@ -766,11 +763,6 @@ function AnimatedRoutes() {
           <Route path="/ask">
             <Suspense fallback={<RouteLoading />}>
               <CinematicAsk />
-            </Suspense>
-          </Route>
-          <Route path="/changelog">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicChangelog />
             </Suspense>
           </Route>
           {/*

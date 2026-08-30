@@ -49,6 +49,7 @@ export function CinematicLayout({
         <a
           href="#main-content"
           data-testid="link-skip-to-content"
+          data-nosnippet
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:border focus:border-[hsl(var(--brand-signal))] focus:bg-[hsl(var(--brand-obsidian))] focus:px-4 focus:py-2 focus:font-mono-tight focus:text-xs focus:uppercase focus:tracking-[0.28em] focus:text-[hsl(var(--brand-signal))] focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-[hsl(var(--brand-signal))]"
         >
           Skip to content

@@ -39,7 +39,6 @@ const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
 const { TIMELINE_GROUPS } = await import("../client/src/lib/timelineConfig.ts");
 const { ALL_CERTS } = await import("../client/src/lib/certConfig.ts");
 const { ROADMAP, ROADMAP_UPDATED, roadmapCounts } = await import("../client/src/lib/roadmap.ts");
-const { CHANGELOG } = await import("../client/src/lib/changelog.ts");
 const { DECKS } = await import("../client/src/lib/flashcardDecks.ts");
 const { LINK_GROUPS } = await import("../client/src/lib/linksConfig.ts");
 const { STACK, DECISIONS } = await import("../client/src/lib/colophonConfig.ts");
@@ -123,7 +122,7 @@ function injectBeforeHead(html: string, injection: string): string {
  * readers never see it and it cannot drift visually from the real footer.
  */
 const SITE_NAV = `
-<nav aria-label="Site">
+<nav aria-label="Site" data-nosnippet>
   <a href="${SITE_URL}/">Home</a>
   <a href="${SITE_URL}/blog">Field Notes</a>
   <a href="${SITE_URL}/topics">Topics</a>
@@ -148,7 +147,6 @@ const SITE_NAV = `
   <a href="${SITE_URL}/links">Links</a>
   <a href="${SITE_URL}/subscribe">Subscribe</a>
   <a href="${SITE_URL}/study-timer">Study timer</a>
-  <a href="${SITE_URL}/changelog">Changelog</a>
   <a href="${SITE_URL}/colophon">Colophon</a>
   <a href="${SITE_URL}/contact">Contact</a>
 </nav>`;
@@ -936,13 +934,6 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/ask`,
     },
     {
-      dir: "changelog",
-      title: "Changelog | Max Doubin",
-      description:
-        "A plain-language history of what has changed on maxdoubin.com: speed work, accessibility fixes, new writing and new tools, dated and grouped by month.",
-      canonical: `${SITE_URL}/changelog`,
-    },
-    {
       dir: "ncl",
       title: "National Cyber League Study Guide | Max Doubin",
       description:
@@ -1312,23 +1303,10 @@ ${JSON.stringify({
       .join("")}</ul>
   </section>`,
   ).join("\n  ")}
-  ${backLinks([["/changelog", "Changelog"], ["/colophon", "Colophon"], ["/now", "Now"]])}
+  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"], ["/now", "Now"]])}
 </main>`;
   })();
 
-  const changelogContent = `
-<main>
-  <h1>Changelog</h1>
-  <p>What changed on this site and when, newest first.</p>
-  ${CHANGELOG.map(
-    (release) => `<section>
-    <h2>${esc(release.title)}</h2>
-    <p>${esc(release.date)}</p>
-    <ul>${li(release.entries.map(esc))}</ul>
-  </section>`,
-  ).join("\n  ")}
-  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"]])}
-</main>`;
 
   const flashcardsContent = `
 <main>
@@ -1380,7 +1358,7 @@ ${JSON.stringify({
     ${d.body.map((para) => `<p>${esc(para)}</p>`).join("\n    ")}`,
     ).join("\n    ")}
   </section>
-  ${backLinks([["/roadmap", "Roadmap"], ["/changelog", "Changelog"], ["/uses", "Uses"]])}
+  ${backLinks([["/roadmap", "Roadmap"], ["/colophon", "Colophon"], ["/uses", "Uses"]])}
 </main>`;
 
   const subscribeContent = `
@@ -1489,7 +1467,6 @@ ${JSON.stringify({
     subscribe: subscribeContent,
     "study-timer": studyTimerContent,
     ask: askContent,
-    changelog: changelogContent,
     certifications: certificationsContent,
     ncl: nclHubContent,
     flashcards: flashcardsContent,
@@ -2319,8 +2296,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },
     { loc: `${SITE_URL}/colophon`, lastmod: today, changefreq: "monthly", priority: "0.5" },
     { loc: `${SITE_URL}/subscribe`, lastmod: today, changefreq: "monthly", priority: "0.5" },
-    { loc: `${SITE_URL}/changelog`, lastmod: today, changefreq: "weekly", priority: "0.4" },
-    { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
+      { loc: `${SITE_URL}/ask`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/study-timer`, lastmod: today, changefreq: "monthly", priority: "0.4" },
     { loc: `${SITE_URL}/roadmap`, lastmod: today, changefreq: "weekly", priority: "0.4" },
   ];
