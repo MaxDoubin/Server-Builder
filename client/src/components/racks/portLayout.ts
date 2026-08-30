@@ -13,6 +13,19 @@
 
 import type { RackDevice, RackPort } from "@/lib/rackTypes";
 
+/**
+ * A 19 inch panel is 482.6mm wide and one rack unit is 44.45mm tall, so a
+ * 1U face is 10.86 times as wide as it is high. Everything derives its unit
+ * height from this rather than picking one: the detail panel was drawing
+ * 760 by 88, a ratio of 8.6, which made every device 26 percent too tall
+ * and was the reason the faceplates read as chunky no matter how the parts
+ * on them were shaded.
+ */
+export const RU_ASPECT = 482.6 / 44.45;
+
+/** Unit height that makes a face of this width correctly proportioned. */
+export const unitHeightFor = (faceWidth: number) => faceWidth / RU_ASPECT;
+
 /** Connector footprint in units of the port cell scale. */
 export function portShape(kind: RackPort["kind"]): { w: number; h: number } {
   switch (kind) {
@@ -27,9 +40,9 @@ export function portShape(kind: RackPort["kind"]): { w: number; h: number } {
     case "usb":
       return { w: 0.72, h: 0.52 };
     case "console":
-      return { w: 1.0, h: 0.95 };
+      return { w: 0.86, h: 1.0 };
     default:
-      return { w: 1.0, h: 0.95 };
+      return { w: 0.86, h: 1.0 };
   }
 }
 
@@ -119,12 +132,17 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
     term bound before the width term did and every port came out a fifth
     too small with the right of the panel left empty.
   */
-  const vSpace = (H - inset * 2) * (detail ? 0.66 : 0.74);
+  /*
+    The panel numbers both rows, odd above and even below, so the jacks get
+    the middle of the unit and the two silkscreen bands get the rest. At the
+    previous 0.82 the lower numbers fell off the bottom edge.
+  */
+  const vSpace = (H - inset * 2) * (detail ? 0.62 : 0.68);
   const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
   // Jacks on a dense panel very nearly touch; the visible separation comes
   // from the group gaps, not from space between neighbours.
-  const gapX = scale * 0.1;
-  const gapY = scale * 0.1;
+  const gapX = scale * 0.03;
+  const gapY = scale * 0.03;
   const midY = H / 2 + (detail ? unitH * 0.03 : 0);
 
   const cells: PortCell[] = [];

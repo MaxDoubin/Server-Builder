@@ -231,13 +231,29 @@ function PortField(props: ContentProps) {
     and leaving it off was the single biggest thing still missing.
   */
   const topRow = copper.filter((c) => c.row === 0);
-  const numSize = topRow.length ? Math.max(2.2, topRow[0].w * 0.34) : 0;
-  const showNumbers = numSize >= 2.9 && !isPatch;
+  const numSize = topRow.length ? Math.max(2.0, topRow[0].w * 0.24) : 0;
+  const showNumbers = numSize >= 2.2 && !isPatch;
   const poe = /PoE/i.test(device.model) || /PoE/i.test(device.role);
   const groupSize = device.groupsOf ?? 0;
 
   return (
     <g>
+      {/* The recess the connector bank is set into. */}
+      {cells.length > 0 &&
+        (() => {
+          const x0 = Math.min(...cells.map((c) => c.x));
+          const x1 = Math.max(...cells.map((c) => c.x + c.w));
+          const y0 = Math.min(...cells.map((c) => c.y));
+          const y1 = Math.max(...cells.map((c) => c.y + c.h));
+          const b = (y1 - y0) * 0.045;
+          return (
+            <>
+              <rect x={x0 - b} y={y0 - b} width={x1 - x0 + b * 2} height={y1 - y0 + b * 2} rx={b} fill="#0b0d10" opacity={0.55} />
+              <rect x={x0 - b} y={y0 - b} width={x1 - x0 + b * 2} height={b * 0.5} fill="#000" opacity={0.5} />
+            </>
+          );
+        })()}
+
       {showNumbers &&
         topRow.map((c) => (
           <text
@@ -254,13 +270,30 @@ function PortField(props: ContentProps) {
           </text>
         ))}
       {showNumbers &&
+        copper
+          .filter((c) => c.row === 1)
+          .map((c) => (
+            <text
+              key={`e${c.index}`}
+              x={c.x + c.w * (poe ? 0.36 : 0.5)}
+              y={c.y + c.h + numSize * 0.95}
+              textAnchor="middle"
+              fill={m.sub}
+              fontSize={numSize}
+              className="rk-portnum"
+              opacity={0.95}
+            >
+              {c.col * 2 + 2}
+            </text>
+          ))}
+      {showNumbers &&
         poe &&
         topRow.map((c) => (
           // The lightning bolt beside a PoE port number, drawn rather than
           // set as a glyph so it stays legible at three SVG units tall.
           <path
             key={`b${c.index}`}
-            d={`M ${c.x + c.w * 0.72} ${c.y - c.h * 0.42}
+            d={`M ${c.x + c.w * 0.66} ${c.y - c.h * 0.16 - numSize * 0.78}
                 l ${-numSize * 0.26} ${numSize * 0.52}
                 h ${numSize * 0.2}
                 l ${-numSize * 0.16} ${numSize * 0.42}
@@ -374,69 +407,70 @@ function Port(props: {
       {copper ? (
         <>
           {/*
-            An RJ45 jack as the product photography shows it: a thin bright
-            shield around a dark opening, eight gold contacts standing out
-            clearly at the back, and two large indicator windows filling the
-            jack's own top corners. The earlier version had a bright silver
-            body with a faint gold line, which read as a solid block rather
-            than as a hole with hardware inside it.
+            Proportions taken off Ubiquiti's product photo at matched scale.
+            The jack is a thin bright shield with a dark rim, an opening that
+            fills most of the face, copper across its lower half, and two
+            small indicator windows riding the top edge. The earlier version
+            had a thick bright frame and large rounded lamps, which made a
+            packed bank read as a row of buttons.
           */}
-          <rect x={x} y={y} width={w} height={h} rx={rr} fill={defUrl(uid, "shell")} />
-          <rect x={x} y={y} width={w} height={h * 0.09} rx={rr} fill="#fff" opacity={0.5} />
-          <rect x={x} y={y + h * 0.91} width={w} height={h * 0.09} fill="#000" opacity={0.35} />
+          <rect x={x} y={y} width={w} height={h} rx={rr * 0.35} fill="#20242a" />
+          <rect x={x} y={y} width={w} height={h * 0.06} fill="#9aa2aa" opacity={0.85} />
+          <rect x={x} y={y + h * 0.94} width={w} height={h * 0.06} fill="#000" opacity={0.5} />
+          <rect x={x} y={y} width={Math.max(0.2, w * 0.025)} height={h} fill="#000" opacity={0.45} />
+          <rect x={x + w - Math.max(0.2, w * 0.025)} y={y} width={Math.max(0.2, w * 0.025)} height={h} fill="#000" opacity={0.45} />
 
-          {/* The opening, with the clip channel notched out of its top. */}
-          <rect x={x + w * 0.08} y={y + h * 0.3} width={w * 0.84} height={h * 0.62} rx={rr * 0.6} fill={throat} />
-          <rect x={x + w * 0.4} y={y + h * 0.2} width={w * 0.2} height={h * 0.16} rx={0.25} fill={throat} />
+          {/* The opening, with the clip channel notched from its top edge. */}
+          <rect x={x + w * 0.09} y={y + h * 0.24} width={w * 0.82} height={h * 0.68} rx={rr * 0.3} fill={throat} />
+          <rect x={x + w * 0.38} y={y + h * 0.17} width={w * 0.24} height={h * 0.13} fill={throat} />
 
-          {/* Eight contacts. Drawn individually because a solid band reads
-              as a painted stripe and separate pins read as hardware. */}
+          {/* Copper across the lower half: the eight contacts plus the
+              plated shoulder behind them read as one mass at this size. */}
           {!isPatch && (
             <>
-              <rect x={x + w * 0.13} y={y + h * 0.38} width={w * 0.74} height={h * 0.36} fill={defUrl(uid, "pins")} opacity={0.92} />
+              <rect x={x + w * 0.15} y={y + h * 0.42} width={w * 0.7} height={h * 0.4} fill={defUrl(uid, "pins")} opacity={0.94} />
               {Array.from({ length: 7 }, (_, k) => (
                 <rect
                   key={k}
-                  x={x + w * (0.22 + k * 0.093)}
-                  y={y + h * 0.38}
-                  width={Math.max(0.25, w * 0.028)}
-                  height={h * 0.36}
+                  x={x + w * (0.235 + k * 0.0875)}
+                  y={y + h * 0.42}
+                  width={Math.max(0.22, w * 0.022)}
+                  height={h * 0.4}
                   fill="#4a3a12"
-                  opacity={0.55}
+                  opacity={0.5}
                 />
               ))}
-              <rect x={x + w * 0.13} y={y + h * 0.38} width={w * 0.74} height={h * 0.07} fill="#fff3c4" opacity={0.5} />
+              <rect x={x + w * 0.15} y={y + h * 0.42} width={w * 0.7} height={h * 0.06} fill="#fff3c4" opacity={0.45} />
+              <rect x={x + w * 0.11} y={y + h * 0.86} width={w * 0.78} height={h * 0.06} fill="#000" opacity={0.55} />
             </>
           )}
 
-          {/* Indicator windows in the jack's top corners, which on the real
-              part are large and are most of what you see across a room. */}
+          {/* Indicator windows sitting on the jack's top edge. */}
           {!isPatch && port.led && (
             <>
-              {lit && <circle cx={x + w * 0.22} cy={y + h * 0.22} r={w * 0.42} fill={defUrl(uid, `glow-${port.led}`)} />}
+              {lit && <circle cx={x + w * 0.5} cy={y + h * 0.14} r={w * 0.5} fill={defUrl(uid, `glow-${port.led}`)} />}
               <rect
-                x={x + w * 0.06}
-                y={y + h * 0.08}
-                width={w * 0.3}
-                height={h * 0.2}
-                rx={rr * 0.5}
+                x={x + w * 0.1}
+                y={y + h * 0.1}
+                width={w * 0.24}
+                height={h * 0.13}
+                rx={rr * 0.3}
                 fill={lit ? LED_COLOURS.amber : LED_COLOURS.off}
                 className={lit && !still ? "rk-led rk-led-on" : undefined}
                 style={lit && !still ? { animationDelay: `${(index % 7) * 0.31}s`, animationDuration: `${1.3 + (index % 5) * 0.22}s` } : undefined}
               />
               <rect
-                x={x + w * 0.64}
-                y={y + h * 0.08}
-                width={w * 0.3}
-                height={h * 0.2}
-                rx={rr * 0.5}
+                x={x + w * 0.66}
+                y={y + h * 0.1}
+                width={w * 0.24}
+                height={h * 0.13}
+                rx={rr * 0.3}
                 fill={lit ? colour : LED_COLOURS.off}
                 opacity={lit ? 0.95 : 1}
               />
             </>
           )}
-          {/* A keystone has no indicators, so its jack frame closes flat. */}
-          {isPatch && <rect x={x + w * 0.08} y={y + h * 0.12} width={w * 0.84} height={h * 0.14} rx={rr * 0.5} fill="#000" opacity={0.4} />}
+          {isPatch && <rect x={x + w * 0.11} y={y + h * 0.12} width={w * 0.78} height={h * 0.12} rx={rr * 0.3} fill="#000" opacity={0.45} />}
         </>
       ) : (
         <>
@@ -464,8 +498,8 @@ function Port(props: {
           )}
         </>
       )}
-      {lit && typeof port.activity === "number" && (
-        <rect x={x} y={y + h + 0.8} width={Math.max(0.8, w * port.activity)} height={Math.max(0.6, h * 0.06)} rx={0.3} fill={colour} opacity={0.55} />
+      {lit && typeof port.activity === "number" && !copper && (
+        <rect x={x} y={y + h + 0.8} width={Math.max(0.8, w * port.activity)} height={Math.max(0.5, h * 0.05)} rx={0.3} fill={colour} opacity={0.4} />
       )}
     </g>
   );

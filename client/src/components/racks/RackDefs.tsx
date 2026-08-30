@@ -143,9 +143,9 @@ export function RackDefs({ uid }: { uid: string }) {
 
       {/* Gold contact pins at the back of an RJ45. */}
       <linearGradient id={defId(uid, "pins")} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ffe9a8" />
-        <stop offset="50%" stopColor="#d8b45a" />
-        <stop offset="100%" stopColor="#8a6f2e" />
+        <stop offset="0%" stopColor="#e8c98d" />
+        <stop offset="45%" stopColor="#b98b48" />
+        <stop offset="100%" stopColor="#6d4d20" />
       </linearGradient>
 
       {/*
