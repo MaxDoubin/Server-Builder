@@ -5,6 +5,13 @@
  * screenshot, so the gallery can never drift from the detail pages. The
  * honesty rules the data files follow are stated once, up top, because they
  * are the point: this is reference material, not decoration.
+ *
+ * Two of the racks here are a different kind of thing and lead the page for
+ * that reason: they are real 3D, built out of geometry the vendors
+ * themselves published rather than out of a drawing of it. The counts on
+ * their cards are read from the same data the pages render, so a device
+ * added to the wired rack or a part added to the teardown shows up here
+ * without anybody remembering to update a number.
  */
 
 import { Link } from "wouter";
@@ -12,10 +19,152 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { RACKS, connectorCount, publishedWatts, unitsUsed } from "@/lib/racks";
 import { RackElevation } from "@/components/racks/RackElevation";
+import { WIRED_DEVICES, WIRED_PATCHES, WIRED_RACK_UNITS } from "@/lib/unifiWiredRack";
+import { TEARDOWN_PARTS } from "@/components/teardown/teardownParts";
 
 const SITE_URL = "https://maxdoubin.com";
 
+/**
+ * The hue a port glows, stepped across a bank.
+ *
+ * The same sweep the wired rack renders in 3D, restated here rather than
+ * imported, because the module it lives in pulls in three.js and this page
+ * has no business loading an engine to draw eleven dots.
+ */
+const portHue = (i: number, n: number) => `hsl(${Math.round(4 + (i / (n - 1)) * 236)}, 92%, 62%)`;
+
+/**
+ * A patched rack at card scale, drawn rather than photographed.
+ *
+ * Same rule as the elevations below: the thumbnail is the data, so it
+ * cannot drift from the page it links to. The device bars come from the
+ * real build, at their real heights and positions in the frame.
+ */
+function WiredMini() {
+  const u = 8.4;
+  const top = 10;
+  /* Two device faces two units apart, patched port for port, which is the
+     one bundle on the real page worth showing at this size. */
+  const rowA = top + 4 * u + u / 2;
+  const rowB = top + 6 * u + u / 2;
+  const belly = rowB + 11;
+  const n = 11;
+
+  return (
+    <svg viewBox="0 0 220 150" className="h-full w-full" role="img" aria-label="A patched UniFi rack">
+      <rect
+        x="34"
+        y="6"
+        width="152"
+        height={WIRED_RACK_UNITS * u + 8}
+        rx="3"
+        className="fill-[hsl(220_10%_9%)] stroke-[hsl(var(--brand-iron))]"
+        strokeWidth="1"
+      />
+      {WIRED_DEVICES.map((d, i) => (
+        <rect
+          key={`${d.slug}-${i}`}
+          x="42"
+          y={top + (WIRED_RACK_UNITS - d.at - d.u) * u}
+          width="136"
+          height={d.u * u - 1.6}
+          rx="1.2"
+          className="fill-[hsl(220_8%_16%)] stroke-[hsl(var(--brand-iron))]"
+          strokeWidth="0.6"
+        />
+      ))}
+      {Array.from({ length: n }, (_, i) => {
+        const ax = 48 + i * 11.4;
+        const bx = ax + 5;
+        const hue = portHue(i, n);
+        return (
+          <g key={i}>
+            <path
+              d={`M ${ax} ${rowA} C ${ax} ${belly}, ${bx} ${belly}, ${bx} ${rowB}`}
+              fill="none"
+              stroke={hue}
+              strokeWidth="1.1"
+              strokeLinecap="round"
+              opacity="0.55"
+            />
+            <circle cx={ax} cy={rowA} r="2.3" fill={hue} />
+            <circle cx={bx} cy={rowB} r="2.3" fill={hue} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/**
+ * A chassis coming apart, at card scale.
+ *
+ * Eight plates for the teardown's eight waves, each one lifted further
+ * than the last, which is the shape the animation actually makes.
+ */
+function TeardownMini() {
+  return (
+    <svg viewBox="0 0 220 150" className="h-full w-full" role="img" aria-label="A server coming apart">
+      {Array.from({ length: 8 }, (_, i) => {
+        const lift = i * 12.5;
+        const inset = i * 3.5;
+        return (
+          <g key={i} opacity={0.5 + i * 0.062}>
+            <path
+              d={`M ${34 + inset} ${118 - lift} L ${110} ${100 - lift} L ${186 - inset} ${118 - lift} L ${110} ${136 - lift} Z`}
+              className="fill-[hsl(220_8%_15%)] stroke-[hsl(var(--brand-iron))]"
+              strokeWidth="0.8"
+            />
+            {i === 4 ? (
+              <path
+                d={`M ${76} ${112 - lift} L ${110} ${104 - lift} L ${144} ${112 - lift} L ${110} ${120 - lift} Z`}
+                className="fill-[hsl(var(--brand-signal)/0.35)] stroke-[hsl(var(--brand-signal)/0.7)]"
+                strokeWidth="0.8"
+              />
+            ) : null}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export function CinematicRacks() {
+  /*
+    Counts read from the same modules the pages render, so a device added to
+    the wired rack or a part added to the teardown updates this card by
+    itself. Both modules are plain data with no imports of their own, so
+    naming them here costs the page nothing.
+  */
+  const fibre = WIRED_PATCHES.filter((p) => p.fibre).length;
+  const FEATURED = [
+    {
+      slug: "wired",
+      href: "/racks/wired",
+      kicker: "Ubiquiti geometry",
+      title: "The wired UniFi rack",
+      blurb:
+        "Sixteen units of UniFi, patched the way somebody would actually patch it, out of the same models Ubiquiti's store loads into its own 3D viewer. Every port that carries a lead lights it.",
+      stats: [
+        `${WIRED_DEVICES.length} devices`,
+        `${WIRED_PATCHES.length - fibre} copper`,
+        `${fibre} fibre`,
+        `${WIRED_RACK_UNITS}U frame`,
+      ],
+      art: <WiredMini />,
+    },
+    {
+      slug: "teardown",
+      href: "/teardown",
+      kicker: "Dell service geometry",
+      title: "A PowerEdge, opened",
+      blurb:
+        "An R760 coming apart in the order a technician would take it apart, out of the model behind Dell's own repair guides. Scrub the slider, or pick a part to isolate it.",
+      stats: [`${TEARDOWN_PARTS.length} assemblies`, "8 waves", "2U", "4.2MB"],
+      art: <TeardownMini />,
+    },
+  ];
+
   useSEO({
     title: "Rack Library | Max Doubin",
     description:
@@ -50,7 +199,60 @@ export function CinematicRacks() {
             </p>
           </header>
 
-          <div className="mt-16 grid gap-6 md:grid-cols-2">
+          <section className="mt-14">
+            <div className="flex items-baseline gap-4">
+              <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                · In 3D · Vendor geometry
+              </div>
+              <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
+            </div>
+            <p className="mt-4 max-w-3xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              These two are not drawings of hardware. They are the hardware, from geometry
+              Ubiquiti and Dell publish themselves, which means the panels are the panels and the
+              parts are the parts. Both run in the browser and both take a while to load, so they
+              sit apart from the elevations rather than in the grid with them.
+            </p>
+
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              {FEATURED.map((f) => (
+                <Link
+                  key={f.href}
+                  href={f.href}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_10%_6%)] transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:border-[hsl(var(--brand-signal))]"
+                  data-testid={`link-featured-${f.slug}`}
+                >
+                  <div className="aspect-[22/15] border-b border-[hsl(var(--brand-iron)/0.7)] bg-[hsl(220_12%_4%)] p-3 transition-transform duration-300 motion-safe:group-hover:scale-[1.015]">
+                    {f.art}
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                      {f.kicker}
+                    </div>
+                    <h3 className="mt-2 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">
+                      {f.title}
+                    </h3>
+                    <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                      {f.blurb}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))]">
+                      {f.stats.map((stat) => (
+                        <span key={stat}>{stat}</span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <div className="mt-16 flex items-baseline gap-4">
+            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              · Elevations · Drawn from datasheets
+            </div>
+            <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
+          </div>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
             {RACKS.map((rack) => {
               const power = publishedWatts(rack);
               return (

@@ -893,6 +893,27 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/coding-camps`,
     },
     {
+      dir: "racks/build",
+      title: "Rack builder | Max Doubin",
+      description:
+        "Build a rack from fifty one real UniFi devices in 3D. Pick hardware, stack it, see what it weighs in rack units and megabytes, and share the build as a link.",
+      canonical: `${SITE_URL}/racks/build`,
+    },
+    {
+      dir: "racks/wired",
+      title: "The wired UniFi rack | Max Doubin",
+      description:
+        "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fibre uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
+      canonical: `${SITE_URL}/racks/wired`,
+    },
+    {
+      dir: "teardown",
+      title: "PowerEdge R760 teardown | Max Doubin",
+      description:
+        "A Dell PowerEdge R760 taken apart in the browser, thirty four assemblies at a time, using Dell's own service geometry: bezel, cover, shrouds, drives, fans, GPUs, four expansion risers, memory, heatsinks, power supplies and system board.",
+      canonical: `${SITE_URL}/teardown`,
+    },
+    {
       dir: "colophon",
       title: "Colophon | Max Doubin",
       description:
@@ -1449,6 +1470,117 @@ ${JSON.stringify({
   ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/cyber-club", "Cyber Club"], ["/links", "Links"]])}
 </main>`;
 
+/*
+  Both of these pages are mostly a WebGL canvas, which a crawler cannot see
+  and a reader with WebGL disabled cannot either. The prose below is the
+  page's actual argument rather than a summary of it, so what is indexed is
+  worth indexing.
+*/
+const wiredRackContent = `
+  <h2>The wired rack</h2>
+  <p>Fourteen units of UniFi, patched the way somebody would actually patch it.
+  The hardware is Ubiquiti's own geometry, the same models their store loads
+  into its 3D viewer, so the panels are the panels and the ports are where the
+  ports are. The build is mine: two PoE switches coming down to surge panels,
+  fibre uplinks to the aggregation switch, storage taking copper straight to
+  the nearest switch, and every power lead running down the side of the frame
+  into the distribution unit.</p>
+  <h3>What is in it</h3>
+  <ul>
+    <li>Dream Machine SE, the gateway, at the top of the rack.</li>
+    <li>Pro Aggregation, which every other switch uplinks to on fibre.</li>
+    <li>Two 24 port surge protection panels, where the building's cabling lands.</li>
+    <li>Switch Pro Max 48 PoE and Switch Pro 24 PoE, the access layer.</li>
+    <li>Enterprise Gateway, Network Video Recorder Pro and Network Attached Storage Pro.</li>
+    <li>Power Distribution Pro at the bottom, which every power lead runs to.</li>
+  </ul>
+  <h3>Why it looks combed instead of tangled</h3>
+  <p>The first version of this cabling let every lead find its own way from A
+  to B, and the result was a bowl of spaghetti across the front of the rack. A
+  dressed bundle is four moves and every lead makes the same four: out of the
+  jack along the plug's axis, a turn down into a service loop, a run along the
+  bottom of that loop to get under the far port, and back up into it. Because
+  every lead turns at the same standoff and drops to the same belly, the
+  vertical runs come out parallel. The only variation is how far out each one
+  stands, and a long lead has to cross the ones underneath it, so it is
+  layered further out.</p>
+  <p>Power leads do none of that. They are thicker, they will not bend as
+  tightly, and nobody dresses a C13 across the face of their switches, so they
+  drop out of the inlet, run to whichever side of the frame is nearer, and
+  travel vertically down to the outlet they land in.</p>
+  <p>The 3D models are Ubiquiti's work and their copyright, used here to show
+  their hardware. Ten of the eleven devices are theirs; the distribution unit
+  is not, because Ubiquiti publish no model for it, so it is built by hand
+  from their own dimensioned elevation.</p>
+`;
+
+const rackBuilderContent = `
+  <h2>Build a rack</h2>
+  <p>Fifty one rack mountable UniFi devices, in Ubiquiti's own geometry, and
+  an empty frame. Pick something and it lands in the highest free slot that
+  fits it. A 2U will not go into a 1U gap, because a 2U does not go into a 1U
+  gap. What you build is saved in your browser and can be shared as a link.</p>
+  <h3>A rack is a list of occupied units, not a list of devices</h3>
+  <p>That distinction is most of the code behind the page. Treat a rack as a
+  list and a 2U dropped between two 1U devices either overlaps one of them or
+  silently pushes it down, and both are wrong, because real hardware does
+  neither. It either fits in the gap or it does not go in. So every placement
+  asks whether a specific run of units is free, and refuses when it is not,
+  which is why the frame buttons grey out when something in the build would
+  hang below a shorter frame.</p>
+  <h3>What a build weighs</h3>
+  <p>The weight is on screen because this page cannot hide it. A drawn
+  elevation costs a reader nothing whatever it contains, and this one costs
+  them a download per distinct device. Bytes are counted once per file,
+  because the browser caches it, and triangles once per placement, because
+  two of the same switch are two of the same switch as far as the GPU is
+  concerned. Reporting one figure for both would be wrong in one direction or
+  the other.</p>
+  <h3>Why nothing is patched</h3>
+  <p>A vendor model is a closed box that does not know where its own jacks
+  are. The wired rack manages leads only because its build is fixed and every
+  port position was measured off a render by hand, which cannot be done for a
+  rack assembled while somebody watches.</p>
+  <p>The 3D models are Ubiquiti's work and their copyright, used here to show
+  their hardware.</p>
+`;
+
+const teardownContent = `
+  <h2>A PowerEdge, opened</h2>
+  <p>This is a Dell PowerEdge R760 coming apart in the order a technician
+  would take it apart, and the geometry is Dell's own. Their repair guides are
+  built on a service model of the machine as thirty four named assemblies, so
+  these are the real parts in their real positions, not a chassis drawn from a
+  photograph. A 2U rather than a 1U on purpose: the GPUs, the four expansion
+  risers, the RAID controller and the rear drive cage are the parts that do
+  not fit in a 1U at all, and they are the ones worth watching come out.</p>
+  <h3>The order of removal</h3>
+  <ol>
+    <li>Front bezel. Unlocks and pulls straight off. Nothing can be reached until it is gone.</li>
+    <li>System cover, and the backplane cover behind it.</li>
+    <li>Air shroud and rear drive shroud, which direct every cubic foot the fans move over the processors, then the drive carriers.</li>
+    <li>Cooling fans, power supplies and the rear drive cage. The first two are hot swap.</li>
+    <li>Both GPUs, all four expansion risers, and the PERC controller the front drives hang off.</li>
+    <li>Processors and heatsinks, thirty two memory slots, the BOSS-N1 boot carrier, LOM, OCP and rear I/O.</li>
+    <li>Drive backplane, internal USB, intrusion switch, control panels, side wall brackets, system battery and TPM.</li>
+    <li>System board, last, because everything else is bolted to it or plugged into it.</li>
+  </ol>
+  <h3>Where the geometry came from</h3>
+  <p>Dell publish WebXR repair guides for a handful of PowerEdge platforms,
+  and behind each one is a glTF scene of the machine. It is not offered as a
+  download and nothing links to it: the guide list is a POST only endpoint,
+  the viewer is a lazily loaded iframe, and the scene name sits inside a
+  hashed JavaScript bundle. What ships here is that scene with the Unity
+  furniture removed, a camera, several lights and an alternate parts tree of
+  37 duplicate assemblies that render inside the real components. That took
+  55.9MB to 31.8MB, still over what a static host will serve as one file, and
+  then the useful discovery: 94 percent of what was left was 77 textures
+  against 1.9MB of actual geometry. Resized to 1024 and encoded webp, the
+  whole machine is 4.2MB, smaller than the 1U it replaced.</p>
+  <p>The 3D model is Dell's work and their copyright, used here to show their
+  hardware. The teardown order, the travel directions and the notes are mine.</p>
+`;
+
   /*
     Keyed by the same `dir` the STANDALONE list uses, so adding a page without
     a body here is caught by check-prerender-depth rather than shipping empty.
@@ -1471,6 +1603,9 @@ ${JSON.stringify({
     certifications: certificationsContent,
     ncl: nclHubContent,
     flashcards: flashcardsContent,
+    "racks/wired": wiredRackContent,
+    "racks/build": rackBuilderContent,
+    teardown: teardownContent,
   };
 
   for (const page of STANDALONE) {
@@ -2349,6 +2484,9 @@ async function writeSitemap(
     { loc: `${SITE_URL}/archive`, lastmod: today, changefreq: "weekly", priority: "0.8" },
     { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/tools`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/racks/wired`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/racks/build`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
