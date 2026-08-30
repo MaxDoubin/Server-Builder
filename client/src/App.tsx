@@ -199,6 +199,11 @@ const CinematicTeardown = lazyWithRetry(() =>
 const CinematicWiredRack = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicWiredRack").then((m) => ({ default: m.CinematicWiredRack })),
 );
+const CinematicRackBuilder = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicRackBuilder").then((m) => ({
+    default: m.CinematicRackBuilder,
+  })),
+);
 const CinematicFaq = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicFaq").then((m) => ({ default: m.CinematicFaq })),
 );
@@ -679,6 +684,11 @@ function AnimatedRoutes() {
           <Route path="/racks/wired">
             <Suspense fallback={<RouteLoading />}>
               <CinematicWiredRack />
+            </Suspense>
+          </Route>
+          <Route path="/racks/build">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicRackBuilder />
             </Suspense>
           </Route>
           <Route path="/racks/:slug">

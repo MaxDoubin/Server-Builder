@@ -55,6 +55,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   // chunk, so there is nothing to fetch.
   "/blog": { load: () => import("@/pages/cinematic/CinematicBlog") },
   "/racks/wired": { load: () => import("@/pages/cinematic/CinematicWiredRack") },
+  "/racks/build": { load: () => import("@/pages/cinematic/CinematicRackBuilder") },
   "/teardown": { load: () => import("@/pages/cinematic/CinematicTeardown") },
   "/data": { load: () => import("@/pages/cinematic/CinematicData") },
   "/study": { load: () => import("@/pages/cinematic/CinematicStudy") },

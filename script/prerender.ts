@@ -893,6 +893,13 @@ ${JSON.stringify({
       canonical: `${SITE_URL}/coding-camps`,
     },
     {
+      dir: "racks/build",
+      title: "Rack builder | Max Doubin",
+      description:
+        "Build a rack from fifty one real UniFi devices in 3D. Pick hardware, stack it, see what it weighs in rack units and megabytes, and share the build as a link.",
+      canonical: `${SITE_URL}/racks/build`,
+    },
+    {
       dir: "racks/wired",
       title: "The wired UniFi rack | Max Doubin",
       description:
@@ -1507,6 +1514,37 @@ const wiredRackContent = `
   from their own dimensioned elevation.</p>
 `;
 
+const rackBuilderContent = `
+  <h2>Build a rack</h2>
+  <p>Fifty one rack mountable UniFi devices, in Ubiquiti's own geometry, and
+  an empty frame. Pick something and it lands in the highest free slot that
+  fits it. A 2U will not go into a 1U gap, because a 2U does not go into a 1U
+  gap. What you build is saved in your browser and can be shared as a link.</p>
+  <h3>A rack is a list of occupied units, not a list of devices</h3>
+  <p>That distinction is most of the code behind the page. Treat a rack as a
+  list and a 2U dropped between two 1U devices either overlaps one of them or
+  silently pushes it down, and both are wrong, because real hardware does
+  neither. It either fits in the gap or it does not go in. So every placement
+  asks whether a specific run of units is free, and refuses when it is not,
+  which is why the frame buttons grey out when something in the build would
+  hang below a shorter frame.</p>
+  <h3>What a build weighs</h3>
+  <p>The weight is on screen because this page cannot hide it. A drawn
+  elevation costs a reader nothing whatever it contains, and this one costs
+  them a download per distinct device. Bytes are counted once per file,
+  because the browser caches it, and triangles once per placement, because
+  two of the same switch are two of the same switch as far as the GPU is
+  concerned. Reporting one figure for both would be wrong in one direction or
+  the other.</p>
+  <h3>Why nothing is patched</h3>
+  <p>A vendor model is a closed box that does not know where its own jacks
+  are. The wired rack manages leads only because its build is fixed and every
+  port position was measured off a render by hand, which cannot be done for a
+  rack assembled while somebody watches.</p>
+  <p>The 3D models are Ubiquiti's work and their copyright, used here to show
+  their hardware.</p>
+`;
+
 const teardownContent = `
   <h2>A PowerEdge, opened</h2>
   <p>This is a Dell PowerEdge R760 coming apart in the order a technician
@@ -1566,6 +1604,7 @@ const teardownContent = `
     ncl: nclHubContent,
     flashcards: flashcardsContent,
     "racks/wired": wiredRackContent,
+    "racks/build": rackBuilderContent,
     teardown: teardownContent,
   };
 
@@ -2446,6 +2485,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/paths`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/tools`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/racks/wired`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/racks/build`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
