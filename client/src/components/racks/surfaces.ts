@@ -45,7 +45,12 @@ export function surfaceGrain(): THREE.Texture | null {
     for (let x = 0; x < size; x += 1) {
       const fine = Math.sin(x * 2.399 + y * 0.13) * 0.5 + Math.sin(x * 7.13) * 0.5;
       const broad = Math.sin(x * 0.11 + y * 0.09) * Math.cos(y * 0.07 - x * 0.05);
-      const v = 168 + fine * 12 + broad * 26;
+      /*
+        A narrow band around one roughness value. The first pass swung it
+        from 130 to 206 over a 73mm tile, which on black powder coat came
+        out looking like woven carbon fibre rather than like paint.
+      */
+      const v = 182 + fine * 5 + broad * 9;
       const i = (y * size + x) * 4;
       img.data[i] = v;
       img.data[i + 1] = v;
@@ -58,7 +63,7 @@ export function surfaceGrain(): THREE.Texture | null {
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(6, 2);
+  tex.repeat.set(26, 3);
   tex.anisotropy = 4;
   grainTex = tex;
   return tex;

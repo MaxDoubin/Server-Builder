@@ -129,6 +129,33 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   ctx.fillRect(0, 0, TEX_W, Math.max(1, mm(0.5)));
   ctx.fillRect(0, TEX_H - Math.max(1, mm(0.5)), TEX_W, Math.max(1, mm(0.5)));
 
+  /*
+    Vent slots, drawn rather than modelled.
+    
+    They were geometry sitting a couple of millimetres behind the face,
+    which the silkscreen plane then covered completely, because a blanking
+    panel has no port block for the plane to punch a hole in. Drawn here
+    they are visible, they cost nothing, and each one can carry the bright
+    lip along its top edge that a punched slot actually has.
+  */
+  if (device.family === "blank" && (device.look ?? "solid") === "vented") {
+    const slots = 46;
+    const slotW = mm(2.4);
+    const slotH = TEX_H * 0.56;
+    const y0 = (TEX_H - slotH) / 2;
+    const step = (TEX_W * 0.9) / (slots - 1);
+    const x0 = TEX_W * 0.05;
+    for (let i = 0; i < slots; i += 1) {
+      const x = x0 + i * step - slotW / 2;
+      ctx.fillStyle = pale ? "rgba(16,20,26,0.88)" : "rgba(0,0,0,0.92)";
+      ctx.fillRect(x, y0, slotW, slotH);
+      // The lip: light catches the near edge of a punched slot along its
+      // top, and that single bright line is what gives it depth.
+      ctx.fillStyle = pale ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.16)";
+      ctx.fillRect(x, y0 - Math.max(1, mm(0.35)), slotW, Math.max(1, mm(0.35)));
+    }
+  }
+
   const layout = chassisLayout(device);
 
   /*

@@ -34,6 +34,7 @@ import { CHASSIS_WIDTH, chassisLayout, deviceDepth } from "./chassisLayout";
 import { chassisShell } from "./parts";
 import { faceplateTexture } from "./faceplateTexture";
 import { surfaceGrain } from "./surfaces";
+import { screenTexture } from "./screenTexture";
 import { RACK_INNER_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 
 const LED_HEX: Record<string, string> = {
@@ -85,13 +86,27 @@ function chassisMaterial(finish: string): THREE.MeshStandardMaterial {
 
 const throatMaterial = new THREE.MeshStandardMaterial({ color: "#05070a", metalness: 0.2, roughness: 0.95 });
 const shellMaterial = new THREE.MeshStandardMaterial({ color: "#20252c", metalness: 0.5, roughness: 0.6 });
-const screenMaterial = new THREE.MeshStandardMaterial({
-  color: "#0a1015",
-  metalness: 0.1,
-  roughness: 0.22,
-  emissive: new THREE.Color("#0d2a33"),
-  emissiveIntensity: 0.7,
-});
+/** One backlit screen material per display kind. */
+const screenMaterials = new Map<string, THREE.MeshStandardMaterial>();
+function screenMaterial(kind: "unifi" | "ups" | "server"): THREE.MeshStandardMaterial {
+  let m = screenMaterials.get(kind);
+  if (!m) {
+    const tex = screenTexture(kind);
+    m = new THREE.MeshStandardMaterial({
+      color: "#0a1015",
+      map: tex ?? undefined,
+      // Emissive, because a screen is a light source. Lit only by the room
+      // it would read as a dark sticker whatever is drawn on it.
+      emissive: new THREE.Color("#ffffff"),
+      emissiveMap: tex ?? undefined,
+      emissiveIntensity: 1.15,
+      metalness: 0.05,
+      roughness: 0.2,
+    });
+    screenMaterials.set(kind, m);
+  }
+  return m;
+}
 const earMaterial = new THREE.MeshStandardMaterial({ color: "#2b3036", metalness: 0.7, roughness: 0.5 });
 /**
  * The port band.
@@ -219,8 +234,8 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
           <mesh position={[0, 0, -0.001]} material={shellMaterial}>
             <boxGeometry args={[h * 0.5, h * 0.5, 0.004]} />
           </mesh>
-          <mesh position={[0, 0, 0.0016]} material={screenMaterial}>
-            <boxGeometry args={[h * 0.42, h * 0.42, 0.001]} />
+          <mesh position={[0, 0, 0.0016]} material={screenMaterial(device.display ?? "unifi")}>
+            <planeGeometry args={[h * 0.42, h * 0.42]} />
           </mesh>
         </group>
       )}
@@ -255,16 +270,6 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
       {/* Passive panels. A vented plate, a solid plate and a finger duct are
           three visibly different objects, and drawing all three as a blank
           rectangle threw away a third of the rack. */}
-      {look === "vented" &&
-        Array.from({ length: 22 }, (_, i) => (
-          <mesh
-            key={`v${i}`}
-            position={[-CHASSIS_WIDTH * 0.44 + (i * CHASSIS_WIDTH * 0.88) / 21, 0, faceZ - 0.002]}
-            material={throatMaterial}
-          >
-            <boxGeometry args={[0.006, h * 0.52, 0.006]} />
-          </mesh>
-        ))}
       {look === "fingers" &&
         Array.from({ length: 9 }, (_, i) => (
           <mesh

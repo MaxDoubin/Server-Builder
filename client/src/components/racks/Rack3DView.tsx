@@ -92,8 +92,8 @@ function useSweepTexture(footprint: number) {
     // The lit sweep: bright under the subject, falling away at the edges.
     const sweep = ctx.createRadialGradient(c, c, size * 0.04, c, c, size * 0.5);
     sweep.addColorStop(0, "#ffffff");
-    sweep.addColorStop(0.5, "#f6f7f9");
-    sweep.addColorStop(1, "#dcdfe4");
+    sweep.addColorStop(0.45, "#f4f5f8");
+    sweep.addColorStop(1, "#cdd2d9");
     ctx.fillStyle = sweep;
     ctx.fillRect(0, 0, size, size);
 
@@ -171,11 +171,17 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
           white backdrop. This is the entire reason the reference renders
           read as photographs.
         */}
-        <directionalLight position={[1.8, 2.4, 2.4]} intensity={2.5} color="#ffffff" />
-        <directionalLight position={[-2.2, 1.4, 1.6]} intensity={1.15} color="#eef2ff" />
-        <directionalLight position={[-0.6, 2.0, -2.4]} intensity={1.4} color="#ffffff" />
-        <hemisphereLight args={["#ffffff", "#c6cbd4", 1.1]} />
-        <ambientLight intensity={0.55} />
+        <directionalLight position={[1.8, 2.4, 2.4]} intensity={2.9} color="#ffffff" />
+        <directionalLight position={[-2.2, 1.4, 1.6]} intensity={0.7} color="#e8eeff" />
+        <directionalLight position={[-0.6, 2.0, -2.4]} intensity={1.5} color="#ffffff" />
+        <hemisphereLight args={["#ffffff", "#a8afbb", 0.7]} />
+        {/*
+          Ambient was carrying too much of the exposure. Product photography
+          is a hard key and a controlled fill, and lifting the shadows with
+          a flat ambient term is exactly what makes a render look like a
+          render: every surface the same brightness whichever way it faces.
+        */}
+        <ambientLight intensity={0.22} />
 
         <Suspense fallback={null}>
           <group position={[0, -mid, 0]}>
