@@ -17,6 +17,10 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 
 const [outDir, ...slugs] = process.argv.slice(2);
+// Which subdirectory under glb/ and which up axis. Vendor exports are Y up
+// and live under ub/; our own generators emit Z up and live under own/.
+const DIR = process.env.THUMBDIR || "ub";
+const UP = process.env.THUMBUP || "y";
 mkdirSync(outDir, { recursive: true });
 
 const b = await chromium.launch({
@@ -27,8 +31,8 @@ const p = await b.newPage({ viewport: { width: 640, height: 360 }, deviceScaleFa
 
 for (const slug of slugs) {
   const url =
-    `http://127.0.0.1:4310/view.html?f=${encodeURIComponent(`ub/${slug}.glb`)}` +
-    `&view=angle&zoom=0.94&x=0&up=y&yaw=0`;
+    `http://127.0.0.1:4310/view.html?f=${encodeURIComponent(`${DIR}/${slug}.glb`)}` +
+    `&view=angle&zoom=0.94&x=0&up=${UP}&yaw=0`;
   try {
     await p.goto(url, { waitUntil: "load", timeout: 45000 });
     await p.waitForFunction(() => document.title === "ready", { timeout: 40000 });
