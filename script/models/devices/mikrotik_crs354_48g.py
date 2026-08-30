@@ -104,6 +104,10 @@ class CRS354_48G(Device):
             # A MikroTik RJ45 is a black moulding deep in the pocket with a
             # dull nickel shield and gold contacts well back from the mouth.
             "mt354_jack_shell": pbr("CRS354 Jack Shell", [26, 26, 27, 255], 0.10, 0.72),
+            # The cavity behind the mouth, which has to be darker than the
+            # moulding around it or the whole opening reads as a grey tile.
+            "mt354_jack_throat": pbr("CRS354 Jack Throat", [11, 11, 12, 255], 0.06, 0.92),
+            "mt354_jack_tongue": pbr("CRS354 Jack Tongue", [44, 44, 46, 255], 0.08, 0.78),
             "mt354_jack_shield": pbr("CRS354 Jack Shield", [96, 98, 99, 255], 0.68, 0.36),
             "mt354_jack_gold": pbr("CRS354 Jack Contacts", [198, 158, 74, 255], 0.86, 0.24),
             "mt354_cage": pbr("CRS354 Cage", [58, 59, 60, 255], 0.52, 0.44),
@@ -112,10 +116,13 @@ class CRS354_48G(Device):
             "mt354_wordmark": pbr("CRS354 Wordmark", [24, 24, 25, 255], 0.05, 0.66),
             "mt354_button": pbr("CRS354 Reset", [70, 71, 72, 255], 0.42, 0.42),
             "mt354_pipe": pbr("CRS354 Light Pipe", [150, 151, 149, 255], 0.24, 0.34),
-            "mt354_led_green": pbr("CRS354 Green", [64, 226, 118, 255], 0.0, 0.16,
-                                   emissive=[0.10, 0.62, 0.24]),
-            "mt354_led_amber": pbr("CRS354 Amber", [244, 186, 62, 255], 0.0, 0.18,
-                                   emissive=[0.58, 0.36, 0.04]),
+            # Lenses, not lamps. These are moulded plastic that happens to
+            # be green and amber; a link light is the exception on a panel,
+            # not the rule, so the glow stays low.
+            "mt354_led_green": pbr("CRS354 Green", [78, 196, 116, 255], 0.0, 0.22,
+                                   emissive=[0.05, 0.26, 0.11]),
+            "mt354_led_amber": pbr("CRS354 Amber", [214, 172, 74, 255], 0.0, 0.24,
+                                   emissive=[0.24, 0.16, 0.02]),
         })
 
     # ------------------------------------------------------------- measured
@@ -275,12 +282,12 @@ class CRS354_48G(Device):
         #      that runs in to the lamp it names.
         f_tiny = sized(1.4)
         bx, bz = px(self.RESET_X), py(self.RESET_Z)
-        run = 5.0 / 1000 * ppm
+        run = 3.8 / 1000 * ppm
         rise = 1.7 / 1000 * ppm
         for label, side, dz in (("PWR 1", -1, -rise), ("FAULT", -1, rise),
                                 ("RESET", 1, -rise), ("PWR 2", 1, rise)):
             b = d.textbbox((0, 0), label, font=f_tiny)
-            edge = bx + side * (run + 1.6 / 1000 * ppm)
+            edge = bx + side * (run + 1.1 / 1000 * ppm)
             centred(label, edge + side * (b[2] - b[0]) / 2, bz + dz, f_tiny)
             d.line([(edge, bz + dz), (edge - side * run * 0.55, bz + dz)], fill=ink, width=2)
 
@@ -306,7 +313,9 @@ class CRS354_48G(Device):
         top, bottom = self.BLOCK_Z
         cz = z + (top + bottom) / 2 * self.height
         hz = (top - bottom) * self.height
-        rack.box(g, "mt354_lip", (cx, y - 0.0008, cz), (w + 0.0016, 0.0008, hz + 0.0016))
+        # A hairline, not a border. At 0.8mm it covered the port numbers
+        # printed a millimetre clear of the housing, and CONSOLE with them.
+        rack.box(g, "mt354_lip", (cx, y - 0.0008, cz), (w + 0.0007, 0.0008, hz + 0.0006))
         rack.box(g, "mt354_pocket", (cx, y - 0.0004, cz), (w, 0.0009, hz))
         return cx, w
 
@@ -335,24 +344,27 @@ class CRS354_48G(Device):
         # front of it and then stepped back behind the rim. Putting the
         # throat level with the panel let the white panel win the depth
         # test and 48 jacks came out as empty outlines.
-        rack.box(g, "mt354_jack_shell", (x, y - 0.0006, z), (w - rim * 2, 0.0020, h - rim * 2))
-        rack.box(g, "mt354_jack_shell", (x, y + 0.0048, z), (w * 0.84, 0.0090, h * 0.84))
-        # The latch notch in the top edge of the opening, the tell that says
-        # 8P8C rather than a plain rectangle.
+        rack.box(g, "mt354_jack_throat", (x, y - 0.0008, z), (w - rim * 2, 0.0024, h - rim * 2))
+        rack.box(g, "mt354_jack_throat", (x, y + 0.0048, z), (w * 0.84, 0.0090, h * 0.84))
         # The plug goes in latch down on the top row and latch up on the
         # bottom, so the notch faces the middle of the panel on both. Draw
         # it the other way round and every jack looks upside down.
         notch = -0.30 if top_row else 0.30
         rack.box(g, "mt354_jack_shield", (x, y - 0.0021, z + h * notch), (w * 0.28, 0.0012, h * 0.20))
-        # Contacts, back from the mouth so they catch light rather than glare.
+        # The tongue the contacts are laid on, and the contacts. Both have
+        # to stand proud of the cavity floor and stay behind the rim: level
+        # with the cavity they vanish, level with the rim they look printed
+        # on. Three tenths of a millimetre of relief is all it takes.
+        tongue_z = z - h * notch * 0.42
+        rack.box(g, "mt354_jack_tongue", (x, y - 0.0020, tongue_z), (w * 0.66, 0.0006, h * 0.34))
         for i in range(8):
-            cx = x - w * 0.30 + i * (w * 0.60 / 7)
-            rack.box(g, "mt354_jack_gold", (cx, y - 0.0002, z - h * notch * 0.50),
-                     (w * 0.040, 0.0012, h * 0.26))
+            cx = x - w * 0.28 + i * (w * 0.56 / 7)
+            rack.box(g, "mt354_jack_gold", (cx, y - 0.0022, tongue_z),
+                     (w * 0.038, 0.0005, h * 0.28))
         # Corner lamps, green one side and amber the other.
         lamp_z = z + h * (0.36 if top_row else -0.36)
         for dx, mat in ((-w * 0.30, "mt354_led_green"), (w * 0.30, "mt354_led_amber")):
-            rack.box(g, mat, (x + dx, y - 0.0021, lamp_z), (w * 0.22, 0.0010, h * 0.14))
+            rack.box(g, mat, (x + dx, y - 0.0021, lamp_z), (w * 0.19, 0.0010, h * 0.12))
 
     def cage(self, rack, g: str, x: float, z: float, w: float, h: float, top_row: bool) -> None:
         """An SFP+ or QSFP+ opening, drawn as this panel presents it.
