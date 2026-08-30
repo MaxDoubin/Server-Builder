@@ -17,6 +17,7 @@ import { homelabRack } from "./homelab";
 import { juniperRack } from "./juniper";
 import { juniperCoreRack } from "./juniperCore";
 import { serverRack } from "./server";
+import { dellComputeRack } from "./dellCompute";
 import { storageRack } from "./storage";
 
 export const RACKS: RackDefinition[] = [
@@ -28,6 +29,7 @@ export const RACKS: RackDefinition[] = [
   mikrotikRack,
   mikrotikIspRack,
   serverRack,
+  dellComputeRack,
   storageRack,
   homelabRack,
 ];
