@@ -19,9 +19,7 @@ import { OrbitControls } from "@react-three/drei";
 import { StudioEnvironment } from "./StudioEnvironment";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
-import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { configureGltf } from "./gltfLoaders";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { U } from "@/components/cinematic/rack3d/rackConfig";
 import { FRAME_FOOT, OpenRackFrame } from "./OpenRackFrame";
@@ -113,12 +111,7 @@ function MountedDevice({
   const url = device.own
     ? `/models/own/${device.slug}.glb`
     : `/models/vendor/ubiquiti/${device.slug}.glb`;
-  const gltf = useLoader(GLTFLoader, url, (loader) => {
-    const l = loader as GLTFLoader;
-    l.setDRACOLoader(new DRACOLoader().setDecoderPath("/draco/"));
-    l.setKTX2Loader(new KTX2Loader().setTranscoderPath("/basis/").detectSupport(gl));
-    l.setMeshoptDecoder(MeshoptDecoder);
-  });
+  const gltf = useLoader(GLTFLoader, url, (loader) => configureGltf(loader as GLTFLoader, gl));
 
   /*
     Clone per mount. Two surge panels are the same file, and without a clone
