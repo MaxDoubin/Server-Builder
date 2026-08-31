@@ -22,9 +22,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
-import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { configureGltf } from "../racks/gltfLoaders";
 import { CHASSIS_MATCH, TEARDOWN_PARTS, waveProgress, type TeardownPart } from "./teardownParts";
 
 export const MODEL_URL = "/models/vendor/dell/poweredge-r760.glb";
@@ -67,12 +65,7 @@ export function TeardownModel({
   selected?: string | null;
 }) {
   const { gl } = useThree();
-  const gltf = useLoader(GLTFLoader, MODEL_URL, (loader) => {
-    const l = loader as GLTFLoader;
-    l.setDRACOLoader(new DRACOLoader().setDecoderPath("/draco/"));
-    l.setKTX2Loader(new KTX2Loader().setTranscoderPath("/basis/").detectSupport(gl));
-    l.setMeshoptDecoder(MeshoptDecoder);
-  });
+  const gltf = useLoader(GLTFLoader, MODEL_URL, (loader) => configureGltf(loader as GLTFLoader, gl));
 
   const scene = useMemo(() => gltf.scene.clone(true), [gltf]);
 

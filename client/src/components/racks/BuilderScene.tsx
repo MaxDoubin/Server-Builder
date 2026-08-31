@@ -21,9 +21,7 @@ import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
-import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import { configureGltf } from "./gltfLoaders";
 import { U } from "@/components/cinematic/rack3d/rackConfig";
 import { FRAME_FOOT, OpenRackFrame } from "./OpenRackFrame";
 import { StudioEnvironment } from "./StudioEnvironment";
@@ -47,12 +45,7 @@ const DEPTH = 0.62;
 
 function useVendorModel(url: string) {
   const { gl } = useThree();
-  return useLoader(GLTFLoader, url, (loader) => {
-    const l = loader as GLTFLoader;
-    l.setDRACOLoader(new DRACOLoader().setDecoderPath("/draco/"));
-    l.setKTX2Loader(new KTX2Loader().setTranscoderPath("/basis/").detectSupport(gl));
-    l.setMeshoptDecoder(MeshoptDecoder);
-  });
+  return useLoader(GLTFLoader, url, (loader) => configureGltf(loader as GLTFLoader, gl));
 }
 
 function MountedDevice({
