@@ -71,11 +71,6 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/projects": { load: () => import("@/pages/cinematic/CinematicProjects") },
   "/contact": { load: () => import("@/pages/cinematic/CinematicContact") },
   "/game": { load: () => import("@/pages/cinematic/CinematicGame"), heavy: true },
-  "/legacy": { load: () => import("@/pages/Home") },
-  "/legacy/blog": { load: () => import("@/pages/Blog") },
-  "/legacy/projects": { load: () => import("@/pages/Projects") },
-  "/legacy/contact": { load: () => import("@/pages/Contact") },
-  "/legacy/game": { load: () => import("@/pages/GamePage"), heavy: true },
   "/archive": { load: () => import("@/pages/cinematic/CinematicArchive") },
   "/ask": { load: () => import("@/pages/cinematic/CinematicAsk") },
   "/certifications": { load: () => import("@/pages/cinematic/CinematicCerts") },
@@ -126,9 +121,8 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
 
 /**
  * Matched when the path starts with this. Longest prefix wins, so
- * "/legacy/blog/x" resolves to the legacy post page rather than the
- * cinematic one. Every key ends in a slash so "/blogroll" cannot match
- * "/blog/".
+ * "/study/a/b" resolves to the exam domain rather than the exam. Every key
+ * ends in a slash so "/blogroll" cannot match "/blog/".
  */
 const PREFIX_ROUTES: Record<string, RouteChunk> = {
   "/blog/": { load: () => import("@/pages/cinematic/CinematicBlogPost") },
@@ -143,7 +137,6 @@ const PREFIX_ROUTES: Record<string, RouteChunk> = {
   "/topics/": { load: () => import("@/pages/cinematic/CinematicTag") },
   "/ncl/": { load: () => import("@/pages/cinematic/CinematicNclGuide") },
   "/racks/": { load: () => import("@/pages/cinematic/CinematicRackDetail") },
-  "/legacy/blog/": { load: () => import("@/pages/BlogPost") },
 };
 
 /**
