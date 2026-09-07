@@ -137,6 +137,29 @@
 /models/*
   Cache-Control: public, max-age=604800
 
+# The Draco and Basis decoders: 1.2MB between them, and unhashed, so they
+# follow /models/* rather than /assets/*.
+#
+#   draco/draco_decoder.wasm     192 KB
+#   draco/draco_decoder.js       512 KB
+#   basis/basis_transcoder.wasm  500 KB
+#   basis/basis_transcoder.js     62 KB
+#
+# They were inheriting the HTML default, max-age=0, must-revalidate, and the
+# edge was not holding them either: draco_decoder.wasm came back
+# cf-cache-status: DYNAMIC. That mattered less while the CSP was refusing to
+# compile the wasm at all, since nothing downstream of it ran. It matters now.
+#
+# These are third party builds pinned by the dependency that ships them, so
+# the bytes only change on an upgrade, and a week is the same bounded
+# staleness the models take for the same reason: the path does not change
+# when the content does.
+/draco/*
+  Cache-Control: public, max-age=604800
+
+/basis/*
+  Cache-Control: public, max-age=604800
+
 # The service worker must never be served stale, or a bad worker keeps itself
 # alive. Browsers already bypass the HTTP cache for the worker script after 24
 # hours, but say it explicitly.
