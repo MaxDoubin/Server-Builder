@@ -9,6 +9,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { CopyButton } from "@/components/ui/copy-button";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
@@ -512,11 +513,14 @@ export function JwtDecoder() {
                   value={
                     decoded.signature === ""
                       ? "empty"
-                      : `${decoded.signature.length} chars, unchecked`
+                      : `${decoded.signature.length} ${pluralise(decoded.signature.length, "char")}, unchecked`
                   }
                   testId="text-signature"
                 />
-                <ToolResult label="Token length" value={`${decoded.token.length} chars`} />
+                <ToolResult
+                  label="Token length"
+                  value={`${decoded.token.length} ${pluralise(decoded.token.length, "char")}`}
+                />
               </ToolPanel>
 
               <ToolPanel title="Findings">

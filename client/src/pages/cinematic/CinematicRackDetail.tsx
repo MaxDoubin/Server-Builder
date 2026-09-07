@@ -11,6 +11,7 @@
  */
 
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
@@ -236,8 +237,11 @@ export function CinematicRackDetail() {
                   </h2>
                   <dl className="mt-4">
                     {[
-                      ["Frame", `${rack.height} rack units`],
-                      ["Mounted", `${unitsUsed(rack)}U across ${rack.devices.length} devices`],
+                      ["Frame", `${rack.height} rack ${pluralise(rack.height, "unit")}`],
+                      [
+                        "Mounted",
+                        `${unitsUsed(rack)}U across ${rack.devices.length} ${pluralise(rack.devices.length, "device")}`,
+                      ],
                       [
                         "Published draw",
                         power.total > 0

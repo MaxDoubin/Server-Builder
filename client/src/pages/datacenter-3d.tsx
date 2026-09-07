@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { useGame } from "@/lib/game-context";
 import { DatacenterScene, type LightingMode, type SceneCapture } from "@/components/3d/DatacenterScene";
 import { GameHUD } from "@/components/3d/GameHUD";
@@ -290,7 +291,7 @@ export function DataCenter3D({
     applyRackCount(sharedLayoutVisibleCount);
     toast({
       title: "Shared layout loaded",
-      description: `${sharedLayoutVisibleCount.toLocaleString()} racks restored from the link.`,
+      description: `${sharedLayoutVisibleCount.toLocaleString()} ${pluralise(sharedLayoutVisibleCount, "rack")} restored from the link.`,
     });
   }, [applyRackCount, sharedLayoutVisibleCount, toast]);
 
@@ -525,7 +526,7 @@ export function DataCenter3D({
       unlockAchievement("photo-mode");
       toast({
         title: "Photo saved",
-        description: `A PNG of ${capacity.rackCount.toLocaleString()} racks is in your downloads.`,
+        description: `A PNG of ${capacity.rackCount.toLocaleString()} ${pluralise(capacity.rackCount, "rack")} is in your downloads.`,
       });
     } finally {
       setPhotoMode(false);
