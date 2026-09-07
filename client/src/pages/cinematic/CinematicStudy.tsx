@@ -2,7 +2,7 @@
  * Certification study index at /study.
  *
  * Exam-objective searches are high intent and usually answered by pages
- * with no material behind them. This archive has 247 posts and 20 tools, so
+ * with no material behind them. This archive has 249 posts and 20 tools, so
  * the version worth publishing is the one that names a domain and then
  * points at the writing that genuinely covers it.
  */

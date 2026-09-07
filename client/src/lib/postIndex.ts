@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 247 of them. Regenerate with script/generatePostIndex.ts.
+ * 249 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,24 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "dollar-sign-string-replace",
+    title: "A Dollar Sign Ate a Third of Five Articles",
+    date: "2026-09-07",
+    tags: ["engineering","tools","operations"],
+    excerpt: "Five posts shipped with the page shell spliced into the middle of the article and <main> left open, because String.replace reads $& in its replacement as the whole match. The trigger was a grep anchor in a shell snippet, and HTML escaping is what completed the sequence. Eleven checks passed the broken pages.",
+    coverImage: "/images/blog/dollar-sign-string-replace.jpg",
+    wordCount: 1170,
+  },
+  {
+    slug: "one-tab-no-way-out",
+    title: "One Tab, and There Was No Way Out",
+    date: "2026-09-07",
+    tags: ["engineering","tools","operations"],
+    excerpt: "The search palette trapped focus correctly and handled Escape on its text input. Both were deliberate, and together they meant one press of Tab left a keyboard user with no way to close it. Forty more tabs did not help. A WCAG 2.1.2 failure that no static checker can see.",
+    coverImage: "/images/blog/one-tab-no-way-out.jpg",
+    wordCount: 1068,
+  },
   {
     slug: "one-blue-two-jobs",
     title: "One Blue Cannot Be Both a Button and a Link",
@@ -2462,10 +2480,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 920;
+export const CITATION_COUNT = 932;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1079;
+export const CHECKED_URL_COUNT = 1091;
