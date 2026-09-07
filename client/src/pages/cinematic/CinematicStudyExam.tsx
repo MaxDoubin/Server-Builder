@@ -99,6 +99,18 @@ export function CinematicStudyExam() {
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               {exam.intro}
             </p>
+
+            <Link
+              href={`/study/${exam.slug}/sheet`}
+              data-testid="link-revision-sheet"
+              className="mt-8 inline-flex min-h-[44px] items-center gap-3 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+            >
+              <span
+                aria-hidden
+                className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
+              />
+              All {exam.domains.length} domains on one printable page
+            </Link>
           </header>
 
           <section className="mt-14">

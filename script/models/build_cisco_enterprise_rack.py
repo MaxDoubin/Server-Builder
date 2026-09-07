@@ -130,6 +130,72 @@ class CiscoEnterpriseRack(EnterpriseRack):
                                        (0.0142, 0.0060, 0.0082), radius=0.0006, bevel=0.0002, steps=5)
                     self.lens(g, x + 0.0064, z + dz + 0.0046, 'green_led', 0.0007, self.front_y - 0.0150)
 
+    def build_ucs6536(self, z: float, group: str) -> None:
+        """A fabric interconnect: 36 QSFP28, and the L1/L2 pair that clusters it.
+
+        A UCS 5108 has a passive midplane and no embedded switch. Cisco's
+        own datasheet puts it plainly: the chassis "has no need for
+        independent management". Its two I/O bays take fabric extenders,
+        which is to say the chassis is only ever half of a thing, and the
+        other half is a pair of these, where UCS Manager runs and where
+        every blade's uplink terminates.
+
+        The exception is worth knowing, because it is the reason "a 5108
+        cannot run alone" is too strong: those same I/O bays will take a
+        6324 instead, which is a fabric interconnect small enough to live
+        in the chassis, and that configuration needs nothing outside it.
+        This rack has neither, which is the actual fault, and drawing the
+        pair is the ordinary way to fix it rather than the only way.
+
+        The two sockets beside the status block are what the pair is for. L1
+        to L1 and L2 to L2, patched directly between the two units and to
+        nothing else, is the cluster link the pair elects a primary over.
+        They are also the clearest way to tell a fabric interconnect from
+        the spine switch six units up, which has the same 36 cages in the
+        same two rows and no notion of a partner at all.
+
+        Ports are numbered up each column, so the pair at the far left is 1
+        and 2 and the pair at the far right is 35 and 36. That puts the four
+        unified ports, 33 to 36, in the last two columns, under the painted
+        band, which is the only thing on the face that says those four can be
+        Fibre Channel and the other 32 cannot.
+        """
+        g = group
+        self.panel_shell(g, z, 1, 0.495, face='ucs_grey')
+        self.status_cluster(g, -0.209, z, U)
+
+        # L1, L2, then out of band management. The first two are the cluster
+        # heartbeat and are always patched to the other unit, so they carry
+        # the same short blue cable at both ends.
+        for i, x in enumerate((-0.190, -0.172, -0.154)):
+            self.rj45_socket(g, x, z, plugged=True, led=True,
+                             plug_color='blue_cable' if i < 2 else 'clear_plug')
+
+        for col in range(18):
+            x = -0.128 + col * 0.0182
+            for row, dz in enumerate((0.0095, -0.0095)):
+                self.rounded_prism(g, 'nickel', (x, self.front_y - 0.009, z + dz),
+                                   (0.0166, 0.0032, 0.0122), radius=0.0010, bevel=0.0004, steps=5)
+                self.rounded_prism(g, 'black_plastic', (x, self.front_y - 0.0118, z + dz),
+                                   (0.0134, 0.0032, 0.0088), radius=0.0006, bevel=0.0002, steps=5)
+                # Ports 1 to 4 to the blade chassis I/O modules, 5 to 7 to
+                # the three rack servers, 31 and 32 north to the spine. Server
+                # ports take the low numbers and uplinks the high ones, which
+                # is the convention rather than a requirement. The rest of the
+                # face is spare, which is what a real one looks like.
+                if col < 3 or (col == 3 and row == 0) or col == 15:
+                    self.rounded_prism(g, 'steel_plain', (x, self.front_y - 0.0150, z + dz),
+                                       (0.0128, 0.0060, 0.0082), radius=0.0006, bevel=0.0002, steps=5)
+                    self.lens(g, x + 0.0058, z + dz + 0.0046, 'green_led', 0.0007, self.front_y - 0.0150)
+
+        # A painted band between the two rows, spanning the last two columns.
+        # The unified ports are physically the same cage as the other thirty
+        # two and a real one tells them apart with a marking rather than a
+        # different connector, so this is a stripe on the panel and not a
+        # coloured throat: colouring the hole would read as a fitted optic.
+        self.box(g, 'unified_throat', (-0.128 + 16.5 * 0.0182, self.front_y - 0.0062, z),
+                 (0.0182 * 2 + 0.0030, 0.0010, 0.0016))
+
     def build_c9404r(self, z_top: float) -> None:
         """The 6RU modular chassis: horizontal line cards over a power bay.
 
@@ -294,6 +360,171 @@ class CiscoEnterpriseRack(EnterpriseRack):
 
 
 
+    def build_c9800_40(self, z: float) -> None:
+        """The wireless control plane the campus rack was missing.
+
+        Catalyst access switches with no controller is a rack that hands out
+        no SSIDs. The 9800-40 terminates up to 2,000 access points, and it is
+        1RU: the 9800-80 is the 2RU one, which is the wrong guess to make.
+
+        SP and RP are the pair that matter and the reason they are drawn with
+        an amber surround. SP is service, RP is the redundancy port to a
+        second controller, and ringing both is how nobody patches a client
+        VLAN into the box's own failover path.
+        """
+        g = 'C9800_40'
+        self.panel_shell(g, z, 1, 0.470, face='cisco_grey')
+        self.status_cluster(g, -0.209, z, U)
+        # Console, mini USB, and two USB 3.0 type A.
+        self.rj45_socket(g, -0.166, z, plugged=False, led=False)
+        for i in range(3):
+            self.rounded_prism(g, 'black_plastic', (-0.140 + i * 0.0150, self.front_y - 0.0038, z),
+                               (0.0104, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        # SP and RP, ringed in amber so they are not mistaken for data ports.
+        for i in range(2):
+            x = -0.078 + i * 0.0210
+            self.rounded_prism(g, 'port_bezel_amber', (x, self.front_y - 0.0034, z),
+                               (0.0200, 0.0036, 0.0166), radius=0.0012, bevel=0.0004, steps=5)
+            self.rj45_socket(g, x, z, plugged=(i == 0), led=True)
+        # TE0 to TE3, a two by two block, then the intake grille that takes
+        # up most of the right of the panel. The 9800-40 really is this
+        # sparse: it is a controller, and almost nothing plugs into it.
+        for i in range(4):
+            self.sfp_cage(g, 0.010 + (i % 2) * 0.0215, z + (0.0094 if i < 2 else -0.0094),
+                          transceiver=(i < 2), blue=(i == 0))
+        self.perforations(g, 0.136, z, 0.148, 0.026, 24, 5)
+
+    def build_firewall_3120(self, z: float) -> None:
+        """The current generation firewall beside the previous one.
+
+        A 2140 and a 3120 in one rack is not redundancy, it is a migration:
+        two generations of the same job running side by side while policy
+        moves across. That is the ordinary reason a rack holds both, and it
+        is worth drawing, because a rack showing only current hardware is a
+        rack nobody has actually run.
+        """
+        g = 'SECURE_FW_3120'
+        self.panel_shell(g, z, 1, 0.470, face='cisco_grey')
+        self.status_cluster(g, -0.209, z, U)
+        # Management, USB, and the console Cisco trims in pale blue.
+        self.rj45_socket(g, -0.170, z, plugged=True, led=True)
+        self.rounded_prism(g, 'black_plastic', (-0.148, self.front_y - 0.0038, z),
+                           (0.0104, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        self.rounded_prism(g, 'port_bezel_blue', (-0.126, self.front_y - 0.0034, z),
+                           (0.0198, 0.0036, 0.0164), radius=0.0012, bevel=0.0004, steps=5)
+        self.rj45_socket(g, -0.126, z, plugged=False, led=False)
+        for i in range(8):
+            self.rj45_socket(g, -0.094 + i * 0.0168, z, plugged=(i < 5), led=True)
+        for i in range(8):
+            self.sfp_cage(g, 0.052 + i * 0.0196, z, transceiver=(i < 3), blue=(i == 0))
+        # The network module bay at the right, shipped blanked.
+        self.rounded_prism(g, 'cisco_grey_dark', (0.186, self.front_y - 0.0018, z),
+                           (0.070, 0.0086, U * 0.84), radius=0.0014, bevel=0.0005, steps=6)
+        self.perforations(g, 0.186, z, 0.052, 0.022, 9, 4, y=self.front_y - 0.0062)
+
+    def build_c8300(self, z: float) -> None:
+        """A router doing the least glamorous job in the rack.
+
+        With a 16 port async module in the NIM bay this is the console
+        server: the thing you reach when the network you would normally
+        manage a switch over is the thing that is broken. Every rack has one
+        or wishes it did, and it is almost never the box anybody photographs.
+
+        Both module bays are drawn blanked, which is how they ship and how
+        most of them stay.
+        """
+        g = 'C8300_CONSOLE'
+        self.panel_shell(g, z, 1, 0.320, face='cisco_grey')
+        self.status_cluster(g, -0.209, z, U)
+        # USB-C console and a USB 3.0 type A.
+        self.rounded_prism(g, 'black_plastic', (-0.170, self.front_y - 0.0038, z),
+                           (0.0090, 0.0038, 0.0042), radius=0.0018, bevel=0.0004, steps=6)
+        self.rounded_prism(g, 'black_plastic', (-0.152, self.front_y - 0.0038, z),
+                           (0.0104, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        self.rounded_prism(g, 'port_bezel_blue', (-0.128, self.front_y - 0.0034, z),
+                           (0.0198, 0.0036, 0.0164), radius=0.0012, bevel=0.0004, steps=5)
+        self.rj45_socket(g, -0.128, z, plugged=True, led=True)
+        # Four 1G copper in a two by two block, ringed amber, then two 10G.
+        for i in range(4):
+            x = -0.094 + (i % 2) * 0.0206
+            dz = 0.0094 if i < 2 else -0.0094
+            self.rounded_prism(g, 'port_bezel_amber', (x, self.front_y - 0.0034, z + dz),
+                               (0.0196, 0.0036, 0.0122), radius=0.0010, bevel=0.0004, steps=5)
+            self.rj45_socket(g, x, z + dz, plugged=(i < 2), led=True)
+        for i in range(2):
+            dz = 0.0094 if i == 0 else -0.0094
+            self.rounded_prism(g, 'port_bezel_amber', (-0.036, self.front_y - 0.0034, z + dz),
+                               (0.0210, 0.0036, 0.0122), radius=0.0010, bevel=0.0004, steps=5)
+            self.sfp_cage(g, -0.036, z + dz, transceiver=(i == 0), blue=(i == 0))
+        # The NIM bay and the SM bay, blanked, each on captive thumbscrews.
+        for bx, bw in ((0.030, 0.104), (0.150, 0.128)):
+            self.rounded_prism(g, 'cisco_grey_dark', (bx, self.front_y - 0.0018, z),
+                               (bw, 0.0086, U * 0.84), radius=0.0014, bevel=0.0005, steps=6)
+            self.perforations(g, bx, z, bw - 0.030, 0.020, int(bw * 130), 3, y=self.front_y - 0.0062)
+            for sx in (bx - bw / 2 + 0.008, bx + bw / 2 - 0.008):
+                self.front_cylinder(g, 'port_bezel_blue', (sx, self.front_y - 0.0064, z), 0.0030, 0.0028, 20)
+
+    def build_ucs_c225(self, z: float) -> None:
+        """1RU AMD compute, and the only server here you cannot see into.
+
+        The C220 next to it wears its ten drive carriers on the outside. This
+        one puts the same ten bays behind a hinged perforated bezel, which is
+        the visible difference between the two and the reason both are worth
+        drawing: a rack photograph is mostly bezels, and which vendor hides
+        its drives is a thing you learn by looking.
+        """
+        g = 'UCS_C225'
+        self.panel_shell(g, z, 1, 0.760, face='ucs_grey')
+        # Two hinged mesh panels with the badge plate between them.
+        for side in (-1, 1):
+            cx = side * 0.098
+            self.rounded_prism(g, 'mesh_bezel', (cx, self.front_y - 0.0026, z),
+                               (0.150, 0.0072, U * 0.78), radius=0.0016, bevel=0.0006, steps=6)
+            self.perforations(g, cx, z, 0.136, 0.026, 24, 5, y=self.front_y - 0.0068)
+            # The hinge is at the outer edge and the pull at the inner one.
+            self.rounded_prism(g, 'ucs_bezel', (cx - side * 0.072, self.front_y - 0.0064, z),
+                               (0.0042, 0.0044, U * 0.62), radius=0.0008, bevel=0.0003, steps=4)
+        self.rounded_prism(g, 'ucs_bezel', (0, self.front_y - 0.0030, z), (0.020, 0.0074, U * 0.78),
+                           radius=0.0010, bevel=0.0004, steps=6)
+        self.lens(g, 0, z + U * 0.22, 'blue_led', 0.0014, self.front_y - 0.0070)
+        # Left ear: power, health, unit ID and the KVM connector.
+        self.power_button(g, -0.196, z + U * 0.16, radius=0.008)
+        for i, mat in enumerate(('green_led', 'amber_led', 'blue_led')):
+            self.lens(g, -0.206 + i * 0.0072, z - U * 0.16, mat, 0.0012, self.front_y - 0.0048)
+        self.rounded_prism(g, 'black_plastic', (0.196, self.front_y - 0.0050, z),
+                           (0.0180, 0.0040, 0.0090), radius=0.0009, bevel=0.0003, steps=5)
+
+    def build_ucs_c245(self, z_top: float) -> None:
+        """2RU AMD compute: twenty four bays in one row, not three.
+
+        A 2U front holds twenty four small form factor carriers standing on
+        edge, side by side, and that is a different picture from the C240's
+        grid above it. Both are 24 bays and they do not look alike, which is
+        the whole reason to draw the real layout rather than a tidy grid.
+        """
+        g = 'UCS_C245'
+        h = 2 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 2, 0.780, face='ucs_grey')
+        for col in range(24):
+            bx = -0.166 + col * 0.01450
+            self.rounded_prism(g, 'drive_face', (bx, self.front_y - 0.0028, z),
+                               (0.0126, 0.0072, h * 0.74), radius=0.0007, bevel=0.0003, steps=4)
+            self.rounded_prism(g, 'drive_handle', (bx - 0.0044, self.front_y - 0.0068, z),
+                               (0.0028, 0.0040, h * 0.62), radius=0.0006, bevel=0.0002, steps=4)
+            self.lens(g, bx + 0.0034, z + h * 0.30, 'green_led', 0.0009, self.front_y - 0.0072)
+            self.lens(g, bx + 0.0034, z - h * 0.30, 'amber_led', 0.0008, self.front_y - 0.0072)
+        # Left ear: power, health, unit ID, KVM. Right ear: the badge plate.
+        self.rounded_prism(g, 'ucs_bezel', (-0.200, self.front_y - 0.0026, z), (0.036, 0.0074, h * 0.84),
+                           radius=0.0014, bevel=0.0005, steps=6)
+        self.power_button(g, -0.200, z + h * 0.26, radius=0.009)
+        for i, mat in enumerate(('green_led', 'amber_led', 'blue_led')):
+            self.lens(g, -0.210 + i * 0.0084, z, mat, 0.0013, self.front_y - 0.0068)
+        self.rounded_prism(g, 'black_plastic', (-0.200, self.front_y - 0.0060, z - h * 0.26),
+                           (0.0200, 0.0040, 0.0096), radius=0.0009, bevel=0.0003, steps=5)
+        self.rounded_prism(g, 'ucs_bezel', (0.200, self.front_y - 0.0026, z), (0.036, 0.0074, h * 0.84),
+                           radius=0.0014, bevel=0.0005, steps=6)
+
     def build_pdu(self, z_top: float) -> None:
         g = 'CISCO_PDU'
         h = 2 * U
@@ -353,17 +584,21 @@ class CiscoEnterpriseRack(EnterpriseRack):
         self.build_asr1001x(at(14))
         self.build_isr4451(top - 15 * U)
         self.build_firepower(at(17))
-        self.build_blank(at(18), 1, 'BLANK_MID')
+        self.build_firewall_3120(at(18))
 
         print('BUILD compute', flush=True)
         self.build_ucs5108(top - 19 * U)
         self.build_ucs_c240(top - 25 * U)
         self.build_ucs_c220(at(27), 'UCS_C220_A')
         self.build_ucs_c220(at(28), 'UCS_C220_B')
-        self.build_blank(at(29, 2), 2, 'BLANK_LOWER')
+        self.build_ucs6536(at(29), 'UCS_6536_A')
+        self.build_ucs6536(at(30), 'UCS_6536_B')
 
-        print('BUILD blanks', flush=True)
-        self.build_blank(at(31, 5), 5, 'BLANK_BASE')
+        print('BUILD services', flush=True)
+        self.build_ucs_c225(at(31))
+        self.build_ucs_c245(top - 32 * U)
+        self.build_c9800_40(at(34))
+        self.build_c8300(at(35))
 
         print('BUILD power', flush=True)
         self.build_pdu(top - 36 * U)

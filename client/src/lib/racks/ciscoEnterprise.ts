@@ -43,6 +43,27 @@ function passive(kind: RackPort["kind"], count: number, label: (n: number) => st
   return Array.from({ length: count }, (_, i): RackPort => ({ kind, label: label(i + 1) }));
 }
 
+/**
+ * The nine ports a fabric interconnect in this rack actually uses.
+ *
+ * Server ports take the low numbers and uplinks the high ones, which is
+ * convention rather than a rule: four to the blade chassis I/O modules,
+ * three to the rack servers under it, and two north to the spine. Ports 33
+ * to 36 are the unified ones, and they are dark because nothing in this
+ * rack speaks Fibre Channel; on a 6536 those four are the only ports that
+ * could.
+ */
+function fabricPorts(): RackPort[] {
+  const linked = new Set([1, 2, 3, 4, 5, 6, 7, 31, 32]);
+  return Array.from({ length: 36 }, (_, i): RackPort => {
+    const n = i + 1;
+    const label = n > 32 ? `Eth1/${n} unified` : `Eth1/${n}`;
+    return linked.has(n)
+      ? { kind: "qsfp", label, led: "blue", activity: activityFor(n) }
+      : { kind: "qsfp", label, led: "off" };
+  });
+}
+
 const ACCENT = {
   access: "#ffa114",
   core: "#ccff00",
@@ -262,17 +283,28 @@ export const ciscoEnterpriseRack: RackDefinition = {
       accent: ACCENT.edge,
       url: "https://www.cisco.com/c/en/us/products/collateral/security/firepower-2100-series/datasheet-c78-742473.html",
     },
-    blank(
-      "BLANK_MID",
-      1,
-      "One unit between the firewall and the blade chassis. An open rack unit is not neutral: hot exhaust from behind the rack turns straight through the gap into the intake above it, so the chassis breathes its own waste heat.",
-    ),
+    {
+      id: "SECURE_FW_3120",
+      u: 1,
+      vendor: "Cisco",
+      model: "Secure Firewall 3120",
+      role: "The current generation of the box above it. A 2140 and a 3120 in one rack is usually not redundancy, it is a migration: two generations of the same job running side by side while policy moves across, which is what most firewall replacements actually look like from the front.",
+      family: "firewall",
+      finish: "light",
+      ports: [
+        ...run("rj45", 8, (n) => `Ethernet1/${n}`, 5),
+        ...run("sfp-plus", 8, (n) => `Ethernet1/${8 + n}`, 3, "blue"),
+      ],
+      watts: null,
+      accent: ACCENT.edge,
+      url: "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html",
+    },
     {
       id: "UCS_5108",
       u: 6,
       vendor: "Cisco",
       model: "UCS 5108 blade server chassis",
-      role: "Six rack units carrying eight half-width blade servers over four hot-swappable supplies, all reachable from the front. A blade chassis is the densest compute in the rack and the least like anything else in it: no network ports on the front at all, just servers and power.",
+      role: "Six rack units carrying eight half-width blade servers over four hot-swappable supplies, all reachable from the front. A blade chassis is the densest compute in the rack and the least like anything else in it: no network ports on the front at all, just servers and power. The ports are round the back, on two fabric extenders, and they go to the pair of fabric interconnects three units down rather than to any switch in this rack.",
       family: "server",
       finish: "dark",
       bays: { count: 8, occupied: 8, label: "half-width blade bays" },
@@ -319,16 +351,91 @@ export const ciscoEnterpriseRack: RackDefinition = {
       accent: ACCENT.compute,
       url: "https://www.cisco.com/c/en/us/products/servers-unified-computing/ucs-c220-m7-rack-server/index.html",
     },
-    blank(
-      "BLANK_LOWER",
-      2,
-      "Two units under the rack servers, reserved for the next compute node and covered until it arrives. Covered rather than open: the block above this breathes hard, and every open unit beside it is a short circuit back to its own intake.",
-    ),
-    blank(
-      "BLANK_BASE",
-      5,
-      "Five units closing the gap above the power. Panels are sold in one, two, three and four rack units, so a run this long is made of several rather than one custom sheet.",
-    ),
+    {
+      id: "UCS_6536_A",
+      u: 1,
+      vendor: "Cisco",
+      model: "UCS 6536 Fabric Interconnect",
+      role: "The half of the blade chassis that is not in the blade chassis. A UCS 5108 has a passive midplane and no embedded switch, and Cisco's datasheet says it has no need for independent management, so its I/O bays take fabric extenders and every blade's uplink terminates out here where UCS Manager runs. Those bays will also take a 6324, a fabric interconnect small enough to sit inside the chassis, which is the one configuration that needs nothing outside it. 36 QSFP28 in one rack unit, of which ports 33 to 36 are unified and can be Fibre Channel instead.",
+      family: "switch",
+      finish: "dark",
+      ports: fabricPorts(),
+      watts: null,
+      accent: ACCENT.compute,
+      url: "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs6536-fabric-interconnect-ds.html",
+    },
+    {
+      id: "UCS_6536_B",
+      u: 1,
+      vendor: "Cisco",
+      model: "UCS 6536 Fabric Interconnect",
+      role: "The second of the pair, and identical to the first in every respect including the faceplate. The two are joined by their L1 and L2 ports, directly and to nothing else, and that link is how they elect which one is primary. Deploying one is possible and means the domain has a single point of failure that takes every blade with it.",
+      family: "switch",
+      finish: "dark",
+      ports: fabricPorts(),
+      watts: null,
+      accent: ACCENT.compute,
+      url: "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs6536-fabric-interconnect-ds.html",
+    },
+    {
+      id: "UCS_C225",
+      u: 1,
+      vendor: "Cisco",
+      model: "UCS C225 M8 rack server",
+      role: "Single socket AMD compute beside the Intel C220s, and the only server in the rack you cannot see into: the same ten small form factor bays, behind a hinged perforated bezel rather than on show. Which vendors hide their drives is most of what separates two rack photographs.",
+      family: "server",
+      finish: "dark",
+      bays: { count: 10, occupied: 6, label: "2.5 inch bays" },
+      watts: null,
+      accent: ACCENT.compute,
+      url: "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c225-m8-rack-server-ds.html",
+    },
+    {
+      id: "UCS_C245",
+      u: 2,
+      vendor: "Cisco",
+      model: "UCS C245 M8 rack server",
+      role: "Dual socket AMD in two rack units, with twenty four bays in a single row of carriers standing on edge. The C240 four units up also holds twenty four and looks nothing like it, which is what a real 2U front does rather than a tidy grid.",
+      family: "server",
+      finish: "dark",
+      bays: { count: 24, occupied: 20, label: "2.5 inch bays" },
+      watts: null,
+      accent: ACCENT.compute,
+      url: "https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-c-series-rack-servers/ucs-c245-m8-rack-server-ds.html",
+    },
+    {
+      id: "C9800_40",
+      u: 1,
+      vendor: "Cisco",
+      model: "Catalyst 9800-40 Wireless Controller",
+      role: "The wireless control plane, which a rack full of Catalyst access switches otherwise does not have. It terminates up to 2,000 access points, and it is one rack unit: the 9800-80 is the 2RU one, and assuming a controller must be 2U is a common way to lose a unit on paper.",
+      family: "switch",
+      finish: "light",
+      ports: [
+        ...run("rj45", 2, (n) => (n === 1 ? "SP service" : "RP redundancy"), 1),
+        ...run("sfp-plus", 4, (n) => `TenGigabitEthernet0/0/${n - 1}`, 2, "blue"),
+      ],
+      watts: null,
+      accent: ACCENT.access,
+      url: "https://www.cisco.com/c/en/us/td/docs/wireless/controller/9800/9800-40/installation-guide/b-wlc-ig-9800-40/overview.html",
+    },
+    {
+      id: "C8300_CONSOLE",
+      u: 1,
+      vendor: "Cisco",
+      model: "Catalyst 8300-1N1S-4T2X with a 16 port async module",
+      role: "The console server, and the least glamorous box in the rack. With a 16 port async module in the NIM bay it reaches the serial port of every switch, firewall and PDU here, which is what you need on the day the network you would normally manage them over is the thing that has broken.",
+      family: "router",
+      finish: "light",
+      ports: [
+        ...run("rj45", 4, (n) => `GigabitEthernet0/0/${n - 1}`, 2),
+        ...run("sfp-plus", 2, (n) => `TenGigabitEthernet0/0/${3 + n}`, 1, "blue"),
+        ...passive("console", 16, (n) => `line 0/1/${n - 1}`),
+      ],
+      watts: null,
+      accent: ACCENT.passive,
+      url: "https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html",
+    },
     {
       id: "CISCO_PDU",
       u: 2,

@@ -53,7 +53,7 @@ All research and image verification is complete. Here are the results.
 
 ### 3 & 4. Cisco UCS 6536 Fabric Interconnect × 2, **1 RU each (2 RU total)**
 - **RU source:** Cisco UCS 6536 data sheet, *"1RU"*, 1.72 × 17.3 × 24.7 in. Same sheet states it provides connectivity for the *"UCSB-5108 blade server chassis."*, https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs6536-fabric-interconnect-ds.html
-- **Why it belongs:** The rack has a UCS 5108 blade chassis with no fabric interconnects. A 5108 cannot run without a pair of FIs, this is the single most conspicuous omission in the rack.
+- **Why it belongs:** The rack has a UCS 5108 blade chassis with no fabric interconnects. The chassis has a passive midplane and no embedded switch, so it needs either a pair of external FIs or a 6324 fitted in its own I/O bays, and it has neither. This is the single most conspicuous omission in the rack. *(Corrected: the first version of this line said a 5108 cannot run without a pair of FIs, which overlooks the 6324 in-chassis option.)*
 - **Front panel (port side):** 36 QSFP28 cages in two staggered rows, numbered 1–36. Ports 1–32 are 40/100 GbE; ports 33–36 are unified and break out to sixteen 8/16/32 G Fibre Channel. All 36 support 4×10/25 G breakout (144 connections max). Left end: Cisco logo, model label, L1 and L2 cluster RJ-45s, a 10/100/1000 management RJ-45, an RS-232 console, one USB port, and system/beacon LEDs. Dark charcoal 1U chassis, ventilation slot along the top edge.
 - **Image (verified):** `https://www.cisco.com/c/dam/en/us/products/collateral/servers-unified-computing/ucs6536-fabric-interconnect-ds.docx/_jcr_content/renditions/ucs6536-fabric-interconnect-ds_1.png` (200, image/png, 237,044 B), front/port side
 

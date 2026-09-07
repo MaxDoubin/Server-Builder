@@ -8,6 +8,7 @@ import {
 } from "@/lib/blogPosts";
 import { useMemo, useEffect, useState } from "react";
 import { marked } from "marked";
+import { scrollableTables } from "@/lib/markdownTables";
 import { ArrowLeft } from "lucide-react";
 import { useSEO } from "@/lib/useSEO";
 import { formatPostDate } from "@/lib/formatDate";
@@ -16,6 +17,7 @@ marked.setOptions({
   gfm: true,
   breaks: true,
 });
+marked.use(scrollableTables);
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -187,8 +189,22 @@ export function BlogPost() {
             ))}
           </div>
         ) : (
+          /*
+            [overflow-wrap:anywhere] for the same reason the cinematic prose
+            needs it, because this stylesheet is Tailwind Typography and does
+            not inherit that fix. The reference URLs at the foot of a post are
+            unbreakable words: one measured 1003px here.
+
+            It showed differently, and worse. The cinematic layout has an
+            ancestor that clips, so the URL was merely cut off. This layout
+            does not, so the overflow reached the viewport, and a mobile
+            browser answers that by widening the layout viewport to fit the
+            content: window.innerWidth went from 375 to 1059 and the whole
+            article rendered zoomed out to a third of its size. A page can be
+            too wide without ever scrolling sideways.
+          */
           <div
-            className="prose prose-neutral dark:prose-invert mt-10 max-w-none prose-headings:font-bold prose-a:text-primary prose-code:rounded prose-code:bg-accent/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-pre:bg-accent/30 prose-pre:border prose-pre:border-border/50"
+            className="prose prose-neutral dark:prose-invert mt-10 max-w-none [overflow-wrap:anywhere] prose-headings:font-bold prose-a:text-primary prose-code:rounded prose-code:bg-accent/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-pre:bg-accent/30 prose-pre:border prose-pre:border-border/50"
             dangerouslySetInnerHTML={{ __html: htmlContent }}
             data-testid="blog-post-content"
           />

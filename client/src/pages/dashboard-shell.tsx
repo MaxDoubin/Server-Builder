@@ -24,8 +24,8 @@ export function DashboardShell({
       </div>
       <main id="main-content" className="px-6 pb-10 pt-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-white">{title}</h1>
-          <p className="text-sm text-white/60">{subtitle}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
         {children}
       </main>

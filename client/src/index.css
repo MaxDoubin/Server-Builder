@@ -12,6 +12,16 @@
   --brand-graphite: 220 10% 9%;
   --brand-carbon: 220 8% 14%;
   --brand-iron: 220 6% 22%;
+  /*
+    A surface that reads as recessed against the page. Four cinematic pages
+    already asked for it in seven places and it was never defined, so
+    `hsl(var(--brand-void))` was an invalid colour and those backgrounds
+    silently did not paint: the stat grids on /racks/wired and /racks/build
+    showed their divider wash through transparent cells, and the rack
+    builder's name field had no field. CSS drops an invalid declaration
+    without a word, which is why it survived review.
+  */
+  --brand-void: 220 14% 2%;
   --brand-ash: 220 5% 56%;
   --brand-bone: 40 16% 92%;
   --brand-bone-dim: 40 10% 72%;
@@ -23,6 +33,14 @@
 }
 
 .cinematic {
+  --console-accent: 187 92% 69%;
+  /*
+    Parity with --primary below, so the `.dark .text-primary` rule at the end
+    of this file is a no-op in here. Without it a shadcn primitive rendered on
+    a cinematic page in the dark theme would pick up the blue meant for the
+    legacy site instead of the signal green everything else in here uses.
+  */
+  --primary-text: var(--brand-signal);
   --background: var(--brand-obsidian);
   --foreground: var(--brand-bone);
   --border: var(--brand-iron);
@@ -40,6 +58,74 @@
   background-color: hsl(var(--brand-obsidian));
   color: hsl(var(--brand-bone));
   font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+}
+
+/*
+  The cinematic surface in the light theme.
+ 
+  Everything in here paints from the --brand-* tokens rather than the shadcn
+  semantic ones: components say text-[hsl(var(--brand-bone))] directly, in
+  hundreds of places. That is what made this tractable. Redefining the
+  thirteen brand tokens under one selector re-themes every cinematic page at
+  once, without touching a single component.
+ 
+  The palette is not the dark one inverted. Lightness had to be chosen per
+  token against the pairings that actually render, and the accent could not
+  simply be lifted: --brand-signal is 72 100% 50%, a lime that measures about
+  1.5:1 on white and is unreadable as text there.
+ 
+  What makes the accent tractable here is the thing that made it impossible
+  in the dark theme. --brand-signal does two jobs, the fill under a button
+  label and the colour of a link on the page, and in the dark theme those
+  wanted opposite directions, which is why --primary-text exists. On a light
+  ground both jobs want the same thing: dark. So one value serves both, and
+  moving it darker improves both at once. It lands at 21% lightness, which
+  reads as a deep olive rather than a lime, and that is the cost of the
+  contrast rather than a change of mind about the brand.
+ 
+  Every pairing was computed before it was written, and check-contrast gates
+  the ones a reader would point at. Lowest of the sixteen is 4.85:1.
+*/
+.light .cinematic:not(.cinematic-pin-dark) {
+  --brand-obsidian: 40 20% 97%;   /* page ground */
+  --brand-void: 220 12% 92%;      /* recessed: darker than the ground now */
+  --brand-graphite: 0 0% 100%;    /* card, raised above the ground */
+  --brand-carbon: 220 10% 94%;    /* muted surface */
+  --brand-iron: 220 10% 80%;      /* border */
+  --brand-ash: 220 8% 42%;        /* muted text */
+  --brand-bone: 220 16% 13%;      /* primary text */
+  --brand-bone-dim: 220 10% 34%;  /* secondary text */
+  --brand-signal: 72 100% 21%;    /* accent, fill and text both */
+  --brand-signal-soft: 72 90% 22%;
+  --brand-amber: 36 100% 28%;
+  --brand-cyan: 187 100% 24%;
+  --brand-danger: 358 70% 40%;
+}
+
+/*
+  High contrast, both themes.
+ 
+  The class was already being applied to the root element on every page; the
+  cinematic tokens simply never answered it, so switching it on changed
+  nothing here. Measured that way before this existed: body text on /blog
+  stayed at rgb(191,186,176) with the class on and off.
+ 
+  This does not invent a third palette. It pushes the text tokens to the ends
+  of their range and lifts the borders, which is what the setting is for:
+  somebody who turns it on wants separation, not a different design.
+*/
+.high-contrast .cinematic {
+  --brand-bone: 40 20% 100%;
+  --brand-bone-dim: 40 14% 88%;
+  --brand-ash: 220 8% 74%;
+  --brand-iron: 220 10% 42%;
+}
+
+.light.high-contrast .cinematic:not(.cinematic-pin-dark) {
+  --brand-bone: 0 0% 0%;
+  --brand-bone-dim: 220 14% 18%;
+  --brand-ash: 220 12% 28%;
+  --brand-iron: 220 12% 58%;
 }
 
 /* Film-grain overlay for cinematic surfaces */
@@ -335,6 +421,30 @@
   font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
   font-size: 1.05rem;
   line-height: 1.75;
+
+  /*
+    A word with nowhere to break may break anyway.
+
+    The reference list at the foot of a post is bare URLs, and a URL is one
+    word as far as line breaking is concerned. On a 375px screen the long
+    ones did not wrap: a single Cisco documentation link measured 1052px of
+    line box inside a 303px list item, ran past the right edge, and was
+    clipped rather than scrollable, so the end of it could not be read or
+    reached. Twelve of the fourteen most-affected posts did it. Some URLs
+    survived only because they happened to contain a hyphen.
+
+    `anywhere` rather than `break-word` for the reason the contact cards
+    needed it: both break the overflowing word, but only `anywhere` also
+    lowers the box's min-content size, so the column cannot be dragged wide
+    by a word it is meant to be breaking. Neither touches a word that fits,
+    so ordinary sentences are unaffected.
+
+    Code blocks are not affected either. `pre` keeps the user agent's
+    `white-space: pre`, which offers no soft wrap opportunities at all, so
+    overflow-wrap has nothing to act on there and a long command still
+    scrolls inside its own box.
+  */
+  overflow-wrap: anywhere;
 }
 
 .cinematic .cinematic-prose > * + * {
@@ -449,8 +559,31 @@
   border: 1px solid hsl(var(--brand-iron));
 }
 
+/*
+  A table's own scroller, from the markdownTables extension.
+
+  The table keeps `width: 100%` so it fills the column when it fits, and
+  `min-width: max-content` so it stops shrinking rather than crushing a
+  column to one character per line when it does not. The wrapper takes the
+  overflow, which is the only way the far column is reachable on a phone:
+  the article column is inside an overflow-hidden ancestor, so a table that
+  simply overhangs is clipped and there is nothing to scroll.
+*/
+.cinematic .cinematic-prose .post-table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  /* A focusable region needs a visible focus ring, and the default one is
+     clipped by the scroller's own overflow, so inset it. */
+  outline-offset: -2px;
+}
+
+.cinematic .cinematic-prose .post-table-scroll:focus-visible {
+  outline: 2px solid hsl(var(--brand-signal));
+}
+
 .cinematic .cinematic-prose table {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
   font-size: 0.95em;
 }
@@ -588,6 +721,15 @@ html.lenis-smooth {
 
 /* LIGHT MODE */
 :root {
+  /*
+    The simulator header's brand line. It was cyan-300 at 70%, which is 1.24:1
+    on the light page ground: the words were there and could not be read. The
+    accent is worth keeping, so it is a token with a value per surface rather
+    than one colour used on three different backgrounds. 4.91:1 here, and
+    12.5:1 on the dark bar, where the .dark and .cinematic blocks override it.
+  */
+  --console-accent: 193 82% 31%;
+
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
   --opaque-button-border-intensity: -8;
@@ -681,6 +823,22 @@ html.lenis-smooth {
 }
 
 .dark {
+  --console-accent: 187 92% 69%;
+
+  /*
+    The brand blue has to do two jobs on a near-black page and cannot do both
+    with one value. As a button fill it carries --primary-foreground, which is
+    near-white, so it has to be dark: white clears 4.5:1 only at lightness 52
+    or below. As link text it sits on the page itself, so it has to be light:
+    it clears 4.5:1 on the background only at 58 or above. At the shipped 55 it
+    was 4.11:1 under the button label and 4.29:1 as the navbar brand, so every
+    primary button and every primary link on the site was just under AA in the
+    default theme. A search over hue 200 to 230, saturation 50 to 100 and
+    lightness 35 to 75 returns no value that satisfies both, so the two jobs
+    get two tokens: 4.86:1 on the button, 5.46:1 as text.
+  */
+  --primary-text: 217 91% 62%;
+
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
   --opaque-button-border-intensity: 9;
@@ -703,7 +861,7 @@ html.lenis-smooth {
   --popover: 210 5% 14%;
   --popover-foreground: 210 5% 92%;
   --popover-border: 210 5% 18%;
-  --primary: 217 91% 55%;
+  --primary: 217 91% 50%;
   --primary-foreground: 210 5% 98%;
   --secondary: 210 8% 18%;
   --secondary-foreground: 210 5% 92%;
@@ -807,9 +965,27 @@ html.lenis-smooth {
     @apply border-border;
   }
 
+  /*
+    The text-size preference has to move the rem basis, and that is html.
+    Applied to body it scaled almost nothing: Tailwind writes every size in
+    rem, so at --font-scale 1.4 an unclassed paragraph went from 16px to
+    22.4px while text-sm stayed at 14px and text-3xl stayed at 30px. The
+    preference made the page inconsistent rather than larger.
+
+    A percentage rather than a pixel value, so a reader who has raised their
+    browser's default font size keeps it and this multiplies theirs. The
+    16px it used to hardcode on body overrode that default for every piece
+    of text with no size class of its own.
+
+    At the default scale of 1 this resolves to exactly the browser default,
+    so nothing moves for anyone who has not asked for it.
+  */
+  html {
+    font-size: calc(100% * var(--font-scale));
+  }
+
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-size: calc(16px * var(--font-scale));
   }
 
   /* Keyboard-only focus ring. Cinematic pages get signal-green, */
@@ -1196,6 +1372,20 @@ html.lenis-smooth {
 }
 
 /*
+  The sheet spells out each link's address for print. On screen the link
+  text is enough and the address is noise, so it is hidden the way any
+  visually hidden text is, and the print block above puts it back.
+*/
+.sheet-url {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/*
   Printing a post.
 
   Teachers and students print things. Without this, printing a post gives
@@ -1205,25 +1395,52 @@ html.lenis-smooth {
   a paper copy is still usable, and no orphaned headings.
 */
 @media print {
+  /*
+    Scoped to .cinematic to begin with, which left the legacy pages out. In
+    the dark theme /legacy/blog printed 154 elements still painting a dark
+    background and 225 still writing light grey text, and Chrome does not
+    print background colours unless the reader turns them on, so the usual
+    result was not a black page: it was hsl(210 5% 72%) text on white paper.
+
+    The reset is on everything now. Nothing on this site depends on a printed
+    background to be legible, so dropping all of them and forcing black text
+    is right for both layouts.
+  */
   :root,
-  .cinematic {
+  body {
+    /*
+      body as well as :root. The dark colour is painted on body, and the
+      `body *` reset below covers body's descendants, not body itself, so
+      the printed page kept a rgb(20, 20, 21) background. Chrome does not
+      print backgrounds by default, which hid this, but a reader who ticks
+      "Background graphics" to get their code blocks shaded got a solid
+      near-black sheet instead.
+    */
     background: #fff !important;
     color: #000 !important;
   }
 
   /* Chrome, the ambient layers, and anything interactive. */
   .cinematic-grain::before,
-  .cinematic nav,
-  .cinematic footer,
-  .cinematic canvas,
-  [data-testid="link-skip-to-content"],
+  nav,
+  footer,
+  canvas,
   [data-print-hide] {
     display: none !important;
   }
 
-  .cinematic *,
-  .cinematic *::before,
-  .cinematic *::after {
+  /*
+    Copy buttons, wherever they are. They are portalled into their code block
+    at runtime rather than written into the markup, so they take a selector
+    rather than an attribute. A post printed nine of them down the margin.
+  */
+  [data-testid^="button-copy-"] {
+    display: none !important;
+  }
+
+  body *,
+  body *::before,
+  body *::after {
     background: transparent !important;
     color: #000 !important;
     box-shadow: none !important;
@@ -1233,8 +1450,88 @@ html.lenis-smooth {
     transition: none !important;
   }
 
-  .cinematic main {
+  main {
     padding: 0 !important;
+  }
+
+  /*
+    The hero gap at the top of a page.
+
+    Four pages open with pt-[22vh], which is the space the headline needs to
+    breathe under a fixed nav on a screen. On paper the nav is gone and the
+    viewport is a sheet, so that same rule was leaving the first 28 percent
+    of page one blank: measured at 281px of a 1056px Letter page, three times
+    on the index pages and once on the revision sheet, which is a page whose
+    entire purpose is to be printed.
+
+    Named by the utility rather than by a class added to each page, because
+    the utility is the thing that is wrong here and any page that reaches for
+    it later has the same problem.
+  */
+  .pt-\[22vh\] {
+    padding-top: 0 !important;
+  }
+
+  /*
+    The revision sheet's URLs.
+
+    The rule further up appends an href only inside article prose, which is
+    right for an article: a paragraph does not want every link spelled out.
+    A sheet is different. It exists to be carried away from the screen, and
+    a reading list on paper whose entries cannot be typed into anything is
+    not a reading list.
+
+    So the sheet writes the address itself, in a span it hides on screen and
+    shows here, rather than through a generated ::after. Generated content is
+    not selectable and does not always survive a copy, and someone reading
+    this on a screen may well want to copy a line out of it.
+  */
+  .sheet-url {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+
+  /* A box to tick. Only worth anything on paper. */
+  .study-sheet .sheet-item {
+    list-style: none;
+    padding-left: 1.4em;
+    position: relative;
+    break-inside: avoid;
+  }
+  .study-sheet .sheet-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.25em;
+    width: 0.75em;
+    height: 0.75em;
+    border: 1px solid #000 !important;
+  }
+
+  .study-sheet section {
+    break-inside: avoid;
+  }
+
+  /*
+    A hero that lays text over a photo cannot survive the reset above: it
+    strips the scrim that separates the two, and forces the text black. The
+    post hero is the one place on the site that does this, and its printed
+    title measured 2.02:1 to 3.57:1 against the bare photo where it needs
+    4.5:1. Taking the positioning off both the container and the overlay
+    drops the title back into normal flow, on white, where it reads 21:1.
+  */
+  [data-print-unstack] {
+    position: static !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding-bottom: 0 !important;
   }
 
   .cinematic-prose a::after {
@@ -1284,4 +1581,24 @@ html.lenis-smooth {
   ::view-transition-new(root) {
     animation: none;
   }
+}
+
+/*
+  Route text-primary to the text value in the dark theme.
+
+  Tailwind derives .text-primary and .bg-primary from one colour key, so a
+  component asking for the brand blue as text and one asking for it as a fill
+  get the same value. On a near-black page those two want opposite lightnesses
+  and no single value satisfies both (see the note beside --primary-text), so
+  the split happens here rather than at forty-one call sites. Written after
+  the utilities so it wins on order as well as specificity, and it covers the
+  state variants, which is what we want: a link that hovers to the brand blue
+  should hover to the readable one.
+*/
+.dark .text-primary,
+.dark .hover\:text-primary:hover,
+.dark .group:hover .group-hover\:text-primary,
+.dark .focus\:text-primary:focus,
+.dark .focus-visible\:text-primary:focus-visible {
+  color: hsl(var(--primary-text));
 }

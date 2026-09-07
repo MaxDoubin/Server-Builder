@@ -178,7 +178,7 @@ export function GamePage() {
     return (
       <GameProvider>
         <BuildProvider>
-          <div className="fixed inset-0 z-50 bg-black">
+          <div data-print-hide className="fixed inset-0 z-50 bg-black">
             <button
               onClick={() => setIsFullscreen(false)}
               className="fixed top-4 right-4 z-[60] rounded-lg bg-black/60 p-2 text-white/70 backdrop-blur-sm transition-colors hover:bg-black/80 hover:text-white"

@@ -33,7 +33,7 @@ function Line({
     >
       <div>
         <div className={`text-[11px] ${emphasis ? "font-semibold" : ""}`}>{label}</div>
-        {detail && <div className="text-[9px] text-white/40">{detail}</div>}
+        {detail && <div className="text-[9px] text-white/50">{detail}</div>}
       </div>
       <div className={`font-mono text-xs ${emphasis ? "text-cyan-200" : "text-white/80"}`}>
         {value}
@@ -74,7 +74,7 @@ export function CostSummary({ estimate }: { estimate: BuildCostEstimate }) {
         </p>
       )}
 
-      <p className="text-[10px] leading-relaxed text-white/40">
+      <p className="text-[10px] leading-relaxed text-white/50">
         Rough order of magnitude for the simulation, not a quote. Energy is costed at{" "}
         {ELECTRICITY_USD_PER_KWH.toFixed(2)} per kWh across 8,760 hours. Excludes shell, generators,
         UPS and chiller plant, staff, and maintenance contracts, all of which are larger than the

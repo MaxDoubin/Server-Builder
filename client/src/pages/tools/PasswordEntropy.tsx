@@ -13,6 +13,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { FAST_HASH_GUESSES_PER_SECOND, SLOW_HASH_GUESSES_PER_SECOND } from "@/lib/toolLimits";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
@@ -134,10 +135,10 @@ function humanTime(log10Seconds: number): string {
   if (log10Seconds < 12) {
     const seconds = Math.pow(10, log10Seconds);
     if (seconds < 1) return "instantly";
-    if (seconds < 90) return `${Math.round(seconds)} seconds`;
-    if (seconds < 5400) return `${Math.round(seconds / 60)} minutes`;
-    if (seconds < 172_800) return `${Math.round(seconds / 3600)} hours`;
-    if (seconds < SECONDS_PER_YEAR) return `${Math.round(seconds / 86_400)} days`;
+    if (seconds < 90) return `${Math.round(seconds)} ${pluralise(Math.round(seconds), "second")}`;
+    if (seconds < 5400) return `${Math.round(seconds / 60)} ${pluralise(Math.round(seconds / 60), "minute")}`;
+    if (seconds < 172_800) return `${Math.round(seconds / 3600)} ${pluralise(Math.round(seconds / 3600), "hour")}`;
+    if (seconds < SECONDS_PER_YEAR) return `${Math.round(seconds / 86_400)} ${pluralise(Math.round(seconds / 86_400), "day")}`;
     return `${Math.round(seconds / SECONDS_PER_YEAR).toLocaleString("en-US")} years`;
   }
   return `${scientific(log10Seconds - LOG10_YEAR)} years`;
@@ -357,7 +358,7 @@ export function PasswordEntropy() {
   const summary =
     analysis.length === 0
       ? "Type a candidate password to see its numbers."
-      : `${analysis.length} characters, pool of ${analysis.pool}, ${analysis.searchBits.toFixed(1)} bits of search space. ${strength.label}.`;
+      : `${analysis.length} ${pluralise(analysis.length, "character")}, pool of ${analysis.pool}, ${analysis.searchBits.toFixed(1)} bits of search space. ${strength.label}.`;
 
   return (
     <ToolShell slug="password-entropy">
@@ -457,9 +458,17 @@ export function PasswordEntropy() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <ToolPanel title="Numbers">
-            <ToolResult label="Length" value={`${analysis.length} characters`} testId="text-length" />
+            <ToolResult
+              label="Length"
+              value={`${analysis.length} ${pluralise(analysis.length, "character")}`}
+              testId="text-length"
+            />
             <ToolResult label="Distinct characters" value={`${analysis.distinct}`} />
-            <ToolResult label="Pool size" value={`${analysis.pool} symbols`} testId="text-pool" />
+            <ToolResult
+              label="Pool size"
+              value={`${analysis.pool} ${pluralise(analysis.pool, "symbol")}`}
+              testId="text-pool"
+            />
             <ToolResult
               label="Search space bits"
               value={`${analysis.searchBits.toFixed(2)} bits`}

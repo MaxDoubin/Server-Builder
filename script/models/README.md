@@ -13,9 +13,26 @@ python3 build_cisco_enterprise_rack.py
 ```
 
 Each writes an uncompressed GLB one directory up: 12.9 MB for the UniFi
-rack, 18.2 MB for the Cisco one. Neither of those ships. Compress with
+rack, 19.0 MB for the Cisco one. Neither of those ships. Compress with
 the command in `client/public/models/README.md`, which takes them to
-about 650 KB and 960 KB.
+about 650 KB and 1.2 MB.
+
+## The build is reproducible, and check it that way
+
+Running a generator over an unchanged source produces an uncompressed GLB
+that compresses to a byte identical artifact: regenerating the Cisco rack
+and running the command in `client/public/models/README.md` over it
+reproduced the committed `cisco-enterprise-42u.glb` to the same SHA-256.
+So a diff against the shipped file is a real signal, and a change you did
+not intend will show up as one.
+
+One trap, because it cost an hour. `scripts-ci/check-rack-models.mjs`
+reads node extents out of quantised meshopt accessor bounds, so it only
+means anything against a **compressed** model. Point it at the raw
+generator output and it reports a rack unit of 25 to 27mm and half the
+devices metres out of place, all of which is an artifact of reading
+unquantised bounds through a quantised decoder and none of which is a
+problem with the model. Compress first, then check.
 
 ## What is in here
 

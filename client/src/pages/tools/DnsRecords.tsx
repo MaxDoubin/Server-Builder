@@ -6,6 +6,7 @@
  * host if someone copies it into a live zone by accident.
  */
 
+import { useMemo, useState } from "react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { ToolPanel, ToolShell } from "./ToolShell";
 
@@ -220,15 +221,64 @@ function CommandLine({ command }: { command: string }) {
   );
 }
 
+/**
+ * Match against everything a reader might have in mind, not just the type.
+ *
+ * Somebody arriving here rarely knows they want a CAA record. They know they
+ * want "the one that says which CA may issue", or they have a zone file in
+ * front of them with a token they do not recognise. So the purpose text, the
+ * example zone line and the gotcha are all searched, and every term has to
+ * match somewhere, which makes two words narrow rather than widen.
+ */
+function matches(record: RecordType, query: string): boolean {
+  const haystack =
+    `${record.type} ${record.name} ${record.purpose} ${record.zone} ${record.dig} ${record.gotcha ?? ""}`.toLowerCase();
+  return query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((term) => haystack.includes(term));
+}
+
 export function DnsRecords() {
+  /*
+    The other three reference tables here, ports, HTTP status codes and
+    Wireshark filters, all filter as you type, and this one did not. It is the
+    longest of the four.
+  */
+  const [query, setQuery] = useState("");
+  const shown = useMemo(
+    () => (query.trim() === "" ? RECORDS : RECORDS.filter((r) => matches(r, query.trim()))),
+    [query],
+  );
+
   return (
     <ToolShell
       slug="dns-records"
     >
       <div className="space-y-6">
-        <ToolPanel title="Jump to a record type">
-          <ul className="flex flex-wrap gap-2">
-            {RECORDS.map((record) => (
+        <ToolPanel title="Find a record type">
+          <label htmlFor="dns-search" className="sr-only">
+            Search record types, purposes and zone file examples
+          </label>
+          <input
+            id="dns-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="caa, mail, permitted to issue, reverse lookup..."
+            data-testid="input-dns-search"
+            className="w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
+          />
+          <p
+            role="status"
+            data-testid="text-dns-count"
+            className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+          >
+            {shown.length} of {RECORDS.length} record types
+          </p>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {shown.map((record) => (
               <li key={record.anchor}>
                 <a
                   href={`#${record.anchor}`}
@@ -269,7 +319,22 @@ export function DnsRecords() {
           </div>
         </ToolPanel>
 
-        {RECORDS.map((record) => (
+        {shown.length === 0 ? (
+          <div
+            data-testid="text-no-dns"
+            className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-8 text-center backdrop-blur-sm"
+          >
+            <p className="font-display text-xl text-[hsl(var(--brand-bone))]">
+              No record type matches that.
+            </p>
+            <p className="mt-2 font-mono-tight text-sm text-[hsl(var(--brand-bone-dim))]">
+              Try what the record does rather than what it is called: "mail", "which CA may
+              issue", "reverse lookup".
+            </p>
+          </div>
+        ) : null}
+
+        {shown.map((record) => (
           <section
             key={record.anchor}
             id={record.anchor}

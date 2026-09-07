@@ -11,12 +11,12 @@ export function KpiCard({
   icon?: ReactNode;
 }) {
   return (
-    <Card className="p-4 bg-black/40 border border-white/10">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/50">
+    <Card className="p-4 bg-card/60 border border-border">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
         {icon}
         {label}
       </div>
-      <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+      <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
     </Card>
   );
 }
@@ -29,8 +29,8 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <Card className="p-4 bg-black/40 border border-white/10">
-      <div className="mb-3 text-xs uppercase tracking-widest text-white/50">
+    <Card className="p-4 bg-card/60 border border-border">
+      <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
         {title}
       </div>
       {children}

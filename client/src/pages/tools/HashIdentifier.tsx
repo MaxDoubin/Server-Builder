@@ -10,6 +10,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { ToolShell, ToolPanel } from "./ToolShell";
 import { CopyButton } from "@/components/ui/copy-button";
 
@@ -338,10 +339,31 @@ export function HashIdentifier() {
   const result = useMemo(() => classify(value), [value]);
   const trimmed = value.trim();
 
+  /*
+    Always in the DOM, so a screen reader is watching it before the answer
+    changes. The one status this page had rendered only on the "no confident
+    match" branch, which means it arrived at the same moment as its text and
+    did not exist at all for the branch that finds something.
+  */
+  const summary = !trimmed
+    ? "Paste a hash to identify it."
+    : result.candidates.length === 0
+      ? `No confident match for ${trimmed.length} ${pluralise(trimmed.length, "character")}.`
+      : `${result.candidates.length} ${pluralise(result.candidates.length, "candidate")}: ` +
+        `${result.candidates.map((c) => c.name).join(", ")}.`;
+
   return (
     <ToolShell
       slug="hash-identifier"
     >
+      <p
+        role="status"
+        aria-live="polite"
+        data-testid="text-summary"
+        className="sr-only"
+      >
+        {summary}
+      </p>
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <ToolPanel title="Hash">
           <label
@@ -417,10 +439,7 @@ export function HashIdentifier() {
               ) : null}
 
               {result.candidates.length === 0 ? (
-                <p
-                  role="status"
-                  className="font-mono-tight text-sm text-[hsl(var(--brand-amber))]"
-                >
+                <p className="font-mono-tight text-sm text-[hsl(var(--brand-amber))]">
                   No confident match.
                 </p>
               ) : (

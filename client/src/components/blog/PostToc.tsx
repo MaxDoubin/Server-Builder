@@ -216,6 +216,7 @@ export function PostToc({ headings, activeId, variant, className = "" }: Props) 
     return (
       <details
         className={`rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.4)] px-4 py-3 ${className}`}
+        data-print-hide
         data-testid="post-toc-collapsible"
       >
         <summary className="cursor-pointer list-none font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))] marker:content-none">

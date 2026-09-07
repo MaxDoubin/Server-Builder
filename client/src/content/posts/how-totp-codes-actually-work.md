@@ -174,6 +174,6 @@ before choosing anything else.
 - [RFC 4226: HOTP, An HMAC-Based One-Time Password Algorithm](https://www.rfc-editor.org/rfc/rfc4226.html)
 - [RFC 2104: HMAC, Keyed-Hashing for Message Authentication](https://www.rfc-editor.org/rfc/rfc2104.html)
 - [RFC 4648: The Base16, Base32, and Base64 Data Encodings](https://www.rfc-editor.org/rfc/rfc4648.html)
-- [NIST SP 800-63B: Digital Identity Guidelines, Authentication](https://pages.nist.gov/800-63-3/sp800-63b.html)
+- [NIST SP 800-63B revision 4: Digital Identity Guidelines, Authentication](https://pages.nist.gov/800-63-4/sp800-63b.html)
 - [W3C Web Authentication Level 3](https://www.w3.org/TR/webauthn-3/)
 - [oathtool(1)](https://man.archlinux.org/man/oathtool.1)

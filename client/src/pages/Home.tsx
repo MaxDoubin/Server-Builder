@@ -97,7 +97,7 @@ function SectionHeader({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 mb-8" data-reveal>
       <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-      <h2 className="text-xs font-bold uppercase tracking-widest text-primary/80">{label}</h2>
+      <h2 className="text-xs font-bold uppercase tracking-widest text-primary">{label}</h2>
       <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
     </div>
   );
@@ -142,7 +142,7 @@ export function Home() {
             backgroundSize: "64px 64px",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-transparent dark:from-background" />
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 sm:py-28">
           <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
@@ -151,7 +151,7 @@ export function Home() {
                 <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-2xl bg-gradient-to-br from-primary/20 via-blue-600/20 to-indigo-600/20 ring-1 ring-primary/20 flex items-center justify-center shadow-2xl shadow-primary/10">
                   <span className="text-5xl sm:text-6xl font-black text-primary/80 select-none">MD</span>
                 </div>
-                <div className="absolute -bottom-2 -right-2 flex items-center gap-1.5 rounded-full border border-green-500/30 bg-background/90 px-3 py-1 text-xs font-medium text-green-400 shadow-lg backdrop-blur-sm">
+                <div className="absolute -bottom-2 -right-2 flex items-center gap-1.5 rounded-full border border-green-500/30 bg-[#020812]/90 px-3 py-1 text-xs font-medium text-green-400 shadow-lg backdrop-blur-sm">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-400" />
@@ -162,7 +162,7 @@ export function Home() {
             </div>
 
             <div className="flex-1 text-center lg:text-left">
-              <p className="text-xs font-semibold uppercase tracking-widest text-primary/60 mb-2">Profile</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-2">Profile</p>
               <h1
                 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl"
                 data-testid="text-hero-name"
@@ -182,15 +182,15 @@ export function Home() {
                 />
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/40 lg:justify-start">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/60 lg:justify-start">
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5" /> Las Vegas, Nevada
                 </span>
-                <span className="hidden sm:inline text-white/20">·</span>
+                <span aria-hidden="true" className="hidden sm:inline text-white/40">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Shield className="h-3.5 w-3.5 text-blue-400/70" /> Top 1% NCL
                 </span>
-                <span className="hidden sm:inline text-white/20">·</span>
+                <span aria-hidden="true" className="hidden sm:inline text-white/40">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Award className="h-3.5 w-3.5 text-amber-400/70" /> CompTIA Tech+
                 </span>
@@ -224,12 +224,12 @@ export function Home() {
                 </Link>
               </div>
 
-              <div className="mt-6 flex items-center justify-center gap-5 lg:justify-start">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 lg:justify-start">
                 <a
                   href={siteConfig.social.instagram.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-xs text-white/60 transition-colors hover:text-white"
                   data-testid="link-instagram-hero"
                 >
                   <Instagram className="h-3.5 w-3.5" /> {siteConfig.social.instagram.handle}
@@ -238,14 +238,14 @@ export function Home() {
                   href={siteConfig.social.github.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-xs text-white/60 transition-colors hover:text-white"
                   data-testid="link-github-hero"
                 >
                   <Github className="h-3.5 w-3.5" /> {siteConfig.social.github.handle}
                 </a>
                 <a
                   href={`mailto:${siteConfig.email}`}
-                  className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-xs text-white/60 transition-colors hover:text-white"
                   data-testid="link-email-hero"
                 >
                   <Mail className="h-3.5 w-3.5" /> {siteConfig.email}
@@ -269,14 +269,14 @@ export function Home() {
               { end: 42, prefix: "", suffix: "U", label: "Rack Cabinet", icon: Award },
             ].map((stat) => (
               <div key={stat.label} className="group text-center" data-reveal>
-                <stat.icon className="mx-auto mb-2 h-4 w-4 text-primary/40 transition-colors group-hover:text-primary" />
+                <stat.icon className="mx-auto mb-2 h-4 w-4 text-primary/70 transition-colors group-hover:text-primary" />
                 <div
                   className="text-3xl font-black text-foreground sm:text-4xl transition-colors group-hover:text-primary"
                   data-testid={`stat-${stat.label.toLowerCase().replace(/[\s,]/g, "-")}`}
                 >
                   <AnimatedCounter end={stat.end} prefix={stat.prefix} suffix={stat.suffix} />
                 </div>
-                <div className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                <div className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {stat.label}
                 </div>
               </div>
@@ -302,10 +302,10 @@ export function Home() {
             </div>
             <div className="space-y-3" data-reveal>
               <div className="rounded-xl border border-border/30 bg-card/40 p-5 space-y-3">
-                <p className="text-xs font-bold uppercase tracking-widest text-primary/60">Quick Info</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary">Quick Info</p>
                 <ul className="space-y-2.5 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/50" />
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/70" />
                     Las Vegas, Nevada
                   </li>
                   <li className="flex items-start gap-2">
@@ -325,7 +325,7 @@ export function Home() {
                     #1 Percussionist in Nevada (2024)
                   </li>
                   <li className="flex items-start gap-2">
-                    <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/50" />
+                    <Mail className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-primary/70" />
                     <a href={`mailto:${siteConfig.email}`} className="hover:text-foreground transition-colors break-all">
                       {siteConfig.email}
                     </a>
@@ -445,11 +445,11 @@ export function Home() {
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
                 <h3 className="text-sm font-semibold text-foreground leading-snug">{role.title}</h3>
-                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary/60">{role.org}</p>
+                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">{role.org}</p>
                 <ul className="mt-3 space-y-2">
                   {role.details.map((detail, j) => (
                     <li key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
-                      <ChevronRight className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary/40" />
+                      <ChevronRight className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary/70" />
                       {detail}
                     </li>
                   ))}
@@ -469,13 +469,13 @@ export function Home() {
                 data-reveal
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-3">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">
                   {section.category}
                 </h3>
                 <ul className="space-y-2">
                   {section.items.map((item, j) => (
                     <li key={j} className="flex items-start gap-2 text-xs text-muted-foreground">
-                      <ChevronRight className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary/40" />
+                      <ChevronRight className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary/70" />
                       {item}
                     </li>
                   ))}
@@ -490,7 +490,7 @@ export function Home() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {siteConfig.skillCategories.map((category, i) => (
               <div key={category.name} data-reveal style={{ transitionDelay: `${i * 60}ms` }}>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
                   {category.name}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -514,7 +514,7 @@ export function Home() {
             <div className="flex items-center justify-between mb-8" data-reveal>
               <div className="flex items-center gap-3 flex-1">
                 <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent max-w-[80px]" />
-                <h2 className="text-xs font-bold uppercase tracking-widest text-primary/80">Latest Posts</h2>
+                <h2 className="text-xs font-bold uppercase tracking-widest text-primary">Latest Posts</h2>
               </div>
               <Link
                 href="/blog"
@@ -541,7 +541,7 @@ export function Home() {
                     />
                   </div>
                   <div className="p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-primary/60 mb-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-1.5">
                       {formatPostDate(post.date)}
                     </p>
                     <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">

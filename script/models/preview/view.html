@@ -1,5 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
   html,body{margin:0;background:#f2f3f5;overflow:hidden}
+  body.alpha,html.alpha{background:transparent}
 </style></head><body>
 <script type="importmap">
 {"imports":{"three":"/node_modules/three/build/three.module.js",
@@ -18,15 +19,46 @@ const file = q.get('f');
 const view = q.get('view') || 'face';       // face | angle | detail
 const zoom = parseFloat(q.get('zoom') || '1');
 const panX = parseFloat(q.get('x') || '0'); // -1..1 across the face
+/*
+  Transparent ground, for catalogue thumbnails.
+
+  The studio ground is a near white, which is right for judging a model
+  against the pages it ships on and wrong for a product shot, because most
+  of Ubiquiti's hardware is itself white: thirty eight of their models came
+  out as a white object on a white field and trimmed to an empty card. Any
+  fixed colour just moves the problem to whichever products match it, so
+  with alpha=1 the background is dropped entirely and the card underneath
+  shows through, which works on a light card and a dark one alike.
+*/
+const alpha = q.get('alpha') === '1';
 
 const W = 1600, H = 900;
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+/*
+  preserveDrawingBuffer, when the background is being cut out.
+
+  With it off the browser is free to throw the frame away the moment it has
+  composited it, and a screenshot of a transparent canvas then comes back
+  empty rather than coming back wrong, which is the sort of failure that
+  costs an hour. It also makes the canvas readable from script, which is the
+  only way to check a render without trusting the screenshot.
+*/
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha,
+  preserveDrawingBuffer: alpha,
+});
 renderer.setSize(W, H);
 renderer.setPixelRatio(1);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#f2f3f5');
+if (alpha) {
+  renderer.setClearColor(0x000000, 0);
+  document.documentElement.classList.add('alpha');
+  document.body.classList.add('alpha');
+} else {
+  scene.background = new THREE.Color('#f2f3f5');
+}
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 

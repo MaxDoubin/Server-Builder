@@ -122,6 +122,44 @@ jobs:
       - name: Reveal thresholds
         run: node scripts-ci/check-inview-clamp.mjs
 
+      # CSS drops an invalid declaration silently, so a custom property that
+      # was never defined just means the thing it was meant to paint is not
+      # painted, with nothing anywhere to say so. --brand-void shipped that
+      # way in seven places. Source-only, so it runs before the build.
+      - name: Custom properties exist
+        run: node scripts-ci/check-css-tokens.mjs
+
+      # The rack builder refuses to stack two devices in one unit, and says so
+      # on the page. Its decoder did not: ?b= is readable and editable by
+      # design, and a hand-edited link could hang a 3U off the bottom of a 12U
+      # frame or put two devices in one unit, both of which then drew. Runs
+      # the real decoder over generated links rather than reading the source,
+      # because the property is about what it returns rather than what it
+      # looks like. Source-only, so it runs before the build.
+      - name: Shared rack builds obey the placement rule
+        run: npx tsx scripts-ci/check-rack-decode.ts
+
+      # Storage does not fail by returning null. Where a browser blocks site
+      # data, touching window.localStorage throws, so an unguarded read in a
+      # provider that wraps the whole app does not lose a preference: it
+      # throws through React and leaves a blank page, prerendered content
+      # included. That is what ThemeProvider did. Five files already wrapped
+      # every access and four said why in a comment; eleven accesses in four
+      # others did not. Source-only, so it runs before the build.
+      - name: Storage access is wrapped
+        run: node scripts-ci/check-storage-guards.mjs
+
+      # The cinematic pages have two palettes now, both built by redefining
+      # thirteen brand tokens, and that only reaches colours that ask for a
+      # token. A literal written into a class is invisible to it and stays as
+      # dark as it was while the text on it goes dark: the rack cards on
+      # /racks did exactly that, putting 115 of 174 text elements under the
+      # floor with a heading at 1.16:1. check-contrast could not see it,
+      # because it reads tokens and these were not tokens. SVG fills and the
+      # 3D materials are exempt, since a rack chassis is dark in a light room.
+      - name: Cinematic surfaces use tokens
+        run: node scripts-ci/check-themed-colours.mjs
+
       # vite build, then the prerenderer over 200+ posts, then the server
       # bundle. The heap bump is for the prerender pass, which holds the whole
       # post index and the rendered HTML for a batch at once.
@@ -177,6 +215,69 @@ jobs:
       # its own copy of the layout, and that copy has drifted twice.
       - name: Rack models match their device lists
         run: node scripts-ci/check-rack-models.mjs
+
+      - name: Catalogue counts in page prose
+        run: node scripts-ci/check-catalogue-counts.mjs
+
+      # The same failure as above with a different number. A count typed into
+      # prose has nothing linking it to the thing it counts, so it is right on
+      # the day and drifts with every article published: the archive reached
+      # 246 posts while the colophon said 236 twice, the roadmap said 236 and
+      # the ask page said 236. Source-only, but it sits here beside its twin.
+      - name: Archive size in page prose
+        run: node scripts-ci/check-stated-counts.mjs
+
+      # A table wider than a phone is either in its own scroller or it is
+      # clipped, and clipped means the right-hand columns are unreachable with
+      # nothing on screen to say so. Thirteen posts shipped that way. Reads the
+      # built HTML and the built CSS, so it cannot be satisfied by a rule the
+      # bundler drops.
+      - name: Wide content stays reachable
+        run: node scripts-ci/check-wide-content.mjs
+
+      # Headings are how a screen reader user moves around a page, so a page
+      # with no h1 has no title in that outline and an h1 straight to an h3
+      # implies a section that is not there. Three pages shipped with no h1:
+      # their React source has one, but the prerenderer writes hand-authored
+      # prose for the WebGL pages and those blocks started a level too deep.
+      # Reads the built HTML, because the source was already right.
+      - name: Heading outlines
+        run: node scripts-ci/check-heading-order.mjs
+
+      # Three gates that were written, committed, and never wired to
+      # anything. They pass, and between them they were already describing
+      # two real bugs nobody was being told about: the prerender $ splice
+      # and an http:// citation. A gate that does not run is worse than no
+      # gate, because the file in the tree says the check exists.
+      #
+      # All three read the built HTML only, reach nothing off the machine,
+      # and finish in seconds. check-sources.mjs stays out on purpose: it
+      # makes 920 serial requests to ninety third parties, and its own
+      # header explains why that must never gate a build.
+      - name: Canonical URLs
+        run: node scripts-ci/check-canonical.mjs
+
+      - name: HTML structure
+        run: node scripts-ci/check-html-validity.mjs
+
+      - name: Link safety
+        run: node scripts-ci/check-link-safety.mjs
+
+      # script-src names one sha256 rather than carrying 'unsafe-inline', so
+      # the boot veil is the only inline script that may run. Edit a character
+      # of it and the hash stops matching: the veil silently stops working and
+      # nothing else would notice. This recomputes it from the build.
+      - name: CSP script hash
+        run: node scripts-ci/check-csp-hash.mjs
+
+      # A fixed element is viewport chrome, and print has no viewport: the
+      # browser drops it on page one of the printout and leaves it there.
+      # Printing a post used to come out with the site header across the top,
+      # a reading-time pill, a progress bar and the toast container. Source
+      # only, because several of them render on a condition a crawler never
+      # meets: an open drawer, an open command palette, the preloader.
+      - name: Print chrome
+        run: node scripts-ci/check-print-chrome.mjs
 
       # Last because it reads both the source trees and the built HTML.
       - name: Em dashes

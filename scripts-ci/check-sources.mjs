@@ -22,8 +22,16 @@
  * https://en.wikipedia.org/wiki/Ceph_(software) then looks dead when the
  * rendered page links it correctly.
  *
- * 403 is reported separately from 404. GitHub and Cisco refuse automated
- * requests outright, so a 403 says something about the client, not the link.
+ * 403 and 429 are reported separately from 404. GitHub and Cisco refuse an
+ * automated request outright, and docs.zeek.org throttles one, so both say
+ * something about the client rather than about the link.
+ *
+ * HEAD is only ever an optimisation. A server is free to answer it however it
+ * likes, and several do so wrongly: nvlpubs.nist.gov answers HEAD on a PDF
+ * that is plainly there with a 404, and answers GET on the same URL with a
+ * 200. Two live citations were reported dead that way. So a HEAD is believed
+ * only when it says 200, and anything else is confirmed with a GET before it
+ * counts.
  */
 import { readdirSync, readFileSync, statSync } from "fs";
 import path from "path";
@@ -76,8 +84,10 @@ async function status(url) {
         headers: { "User-Agent": UA },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
-      // A HEAD refusal says nothing about the link, so fall through to GET.
-      if (method === "HEAD" && [403, 405, 501].includes(res.status)) continue;
+      // Only a 200 from a HEAD is worth believing. Everything else is a
+      // statement about how the server treats HEAD, which is not the
+      // question, so confirm it with the GET the reader would make.
+      if (method === "HEAD" && res.status !== 200) continue;
       return res.status;
     } catch {
       if (method === "GET") return 0;
@@ -91,16 +101,29 @@ console.log(`Checking ${urls.length} distinct sources, serially. This takes a wh
 
 const dead = [];
 const blocked = [];
+const flaky = [];
 let done = 0;
+
+// Worth another go rather than a verdict. A 5xx is the server having a bad
+// minute, and 429 and 408 are it asking for less; none of them is a statement
+// about whether the page is there.
+const TRANSIENT = new Set([0, 408, 429, 500, 502, 503, 504]);
 
 for (const url of urls) {
   let code = await status(url);
-  if (code !== 200) {
-    // Anything that fails gets a second look before it is called dead.
-    await sleep(RETRY_PAUSE_MS);
+  // Back off properly rather than retrying straight into the same throttle.
+  // linux-kvm.org was reported dead on a 503 that answers 200 three times in
+  // a row a moment later.
+  for (let attempt = 1; attempt <= 3 && code !== 200 && TRANSIENT.has(code); attempt += 1) {
+    await sleep(RETRY_PAUSE_MS * attempt);
     code = await status(url);
   }
-  if (code === 403) blocked.push(url);
+
+  if (code === 401 || code === 403 || code === 429) blocked.push({ url, code });
+  // A host that never answers at all is worth retrying, but a host that has
+  // still not answered after four tries is the most definite rot there is:
+  // usually a domain that lapsed. That one stays in the dead list.
+  else if (code !== 200 && code !== 0 && TRANSIENT.has(code)) flaky.push({ url, code });
   else if (code !== 200) dead.push({ url, code, pages: [...sources.get(url)] });
 
   done += 1;
@@ -108,17 +131,28 @@ for (const url of urls) {
   await sleep(PAUSE_MS);
 }
 
-console.log(`\n${urls.length - dead.length - blocked.length} of ${urls.length} sources resolved.`);
+const resolved = urls.length - dead.length - blocked.length - flaky.length;
+console.log(`\n${resolved} of ${urls.length} sources resolved.`);
 
 if (blocked.length) {
   console.log(
-    `\n${blocked.length} refused an automated request (403). That is the client, not the link:`,
+    `\n${blocked.length} refused or throttled an automated request. That is the` +
+      ` client, not the link:`,
   );
-  for (const u of blocked) console.log(`  ${u}`);
+  for (const b of blocked) console.log(`  ${b.code}  ${b.url}`);
+}
+
+if (flaky.length) {
+  console.log(
+    `\n${flaky.length} were still failing after four tries with a rising backoff.` +
+      ` A 5xx or a timeout is the server, not the citation, so check these by` +
+      ` hand before touching an article:`,
+  );
+  for (const f of flaky) console.log(`  ${f.code || "no response"}  ${f.url}`);
 }
 
 if (dead.length) {
-  console.log(`\n${dead.length} did not resolve, twice:`);
+  console.log(`\n${dead.length} answered definitively that the page is not there:`);
   for (const d of dead) {
     console.log(`  ${d.code || "no response"}  ${d.url}`);
     for (const p of d.pages.slice(0, 3)) console.log(`      cited by ${p}`);

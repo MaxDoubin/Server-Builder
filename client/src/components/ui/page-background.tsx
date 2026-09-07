@@ -43,7 +43,7 @@ export function PageBackground() {
   const preset = useMemo(() => resolvePreset(location), [location]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div data-print-hide className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <HeroAnimation className="absolute inset-0" variant={preset.variant} />
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
     </div>

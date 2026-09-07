@@ -250,6 +250,206 @@ class JuniperCoreRack(EnterpriseRack):
         self.rj45_socket(g, 0.140, z, plugged=True, led=True)
         self.perforations(g, 0.196, z, 0.048, 0.022, 8, 4)
 
+    def build_mx480(self, z_top: float) -> None:
+        """8U of card cage, and the chassis the rack should have been built round.
+
+        The MX240 five units up has two line card slots. This has six, and
+        that is the whole reason both are here: the difference between the
+        two ends of one product line is a thing you can see from across a
+        room and cannot read off a spec sheet.
+
+        Eight rack units is Juniper's own figure. The site guidelines give
+        the chassis as 14.0 inches and call that "approximately 8 U", which
+        is worth quoting rather than dividing, because 14 inches is 8.0 U to
+        two figures and the temptation is to round it to seven.
+
+        The craft interface is the strip across the top: the red critical
+        and yellow warning alarms, the cutoff button beside them, and the
+        per-slot lamps. It is the part of the chassis anybody standing in
+        front of a broken one is actually looking at.
+        """
+        g = 'MX480'
+        h = 8 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 8, 0.560, face='nexus_black')
+
+        # The air intake runs the full height of the right hand side, which
+        # is what stops this reading as a very tall switch.
+        self.rounded_prism(g, 'nexus_black_dark', (0.180, self.front_y - 0.0022, z),
+                           (0.070, 0.0072, h * 0.94), radius=0.0016, bevel=0.0006, steps=6)
+        self.perforations(g, 0.180, z, 0.058, h * 0.88, 9, 40, y=self.front_y - 0.0064)
+
+        # Craft interface across the top: alarms, cutoff, and the slot lamps.
+        cz = z + h * 0.43
+        self.rounded_prism(g, 'nexus_black_dark', (-0.030, self.front_y - 0.0022, cz),
+                           (0.336, 0.0072, h * 0.070), radius=0.0012, bevel=0.0005, steps=6)
+        self.lens(g, -0.176, cz, 'red_led', 0.0030, self.front_y - 0.0058)
+        self.lens(g, -0.156, cz, 'amber_led', 0.0028, self.front_y - 0.0058)
+        self.rounded_prism(g, 'drive_handle', (-0.130, self.front_y - 0.0058, cz),
+                           (0.0130, 0.0038, 0.0074), radius=0.0010, bevel=0.0004, steps=5)
+        for k in range(10):
+            self.lens(g, -0.098 + k * 0.0140, cz, 'green_led' if k % 3 else 'amber_led', 0.0012,
+                      self.front_y - 0.0054)
+        self.juniper_badge(g, 0.098, cz)
+
+        # Six line card slots, then two switch fabric and routing engine
+        # slots at the bottom, which is where an MX480 puts them.
+        slot_h = h * 0.082
+        for i in range(6):
+            sz = z + h * 0.325 - i * (slot_h + h * 0.017)
+            self.rounded_prism(g, 'nexus_black_dark', (-0.030, self.front_y - 0.0022, sz),
+                               (0.336, 0.0072, slot_h), radius=0.0012, bevel=0.0005, steps=6)
+            self.card_lever(g, -0.192, sz, slot_h * 0.80)
+            self.card_lever(g, 0.130, sz, slot_h * 0.80)
+            if i < 4:
+                for k in range(8):
+                    self.sfp_cage(g, -0.158 + k * 0.0262, sz, transceiver=(k % 2 == 0), blue=(k == 0))
+                self.perforations(g, 0.084, sz, 0.052, slot_h * 0.5, 9, 3, y=self.front_y - 0.0066)
+            else:
+                # Two slots left empty, drawn as the blanking cards they
+                # ship with rather than as a hole in the cage.
+                self.perforations(g, -0.030, sz, 0.280, slot_h * 0.5, 40, 3, y=self.front_y - 0.0066)
+
+        for i in range(2):
+            rz = z - h * 0.300 - i * h * 0.098
+            self.rounded_prism(g, 'nexus_black_dark', (-0.030, self.front_y - 0.0022, rz),
+                               (0.336, 0.0072, h * 0.084), radius=0.0012, bevel=0.0005, steps=6)
+            self.card_lever(g, -0.192, rz, h * 0.066)
+            self.screen(g, 'chassis', -0.150, rz, 0.038, h * 0.046)
+            for k in range(2):
+                self.rj45_socket(g, -0.100 + k * 0.0176, rz, plugged=(k == 0 and i == 0), led=True)
+            self.rounded_prism(g, 'black_plastic', (-0.056, self.front_y - 0.0038, rz),
+                               (0.0100, 0.0038, 0.0050), radius=0.0008, bevel=0.0003, steps=5)
+            self.lens(g, -0.034, rz, 'green_led' if i == 0 else 'amber_led', 0.0018, self.front_y - 0.0054)
+            self.card_lever(g, 0.130, rz, h * 0.066)
+
+        # Power along the very bottom.
+        for px in (-0.160, -0.078, 0.004, 0.086):
+            pz = z - h * 0.446
+            self.rounded_prism(g, 'nexus_black_dark', (px, self.front_y - 0.0022, pz),
+                               (0.076, 0.0072, h * 0.070), radius=0.0012, bevel=0.0005, steps=6)
+            self.lens(g, px - 0.026, pz, 'green_led', 0.0015)
+            self.nema_outlet(g, px + 0.014, pz, 0.017, 0.015, plugged=True)
+
+    def build_mx304(self, z_top: float) -> None:
+        """2U and entirely front serviced, which is the point of it.
+
+        Two rack units, not one. The MX204 three units up is the 1U box and
+        the temptation is to assume its successor stayed that size; Juniper
+        call this "a compact 2 U router" and the extra unit is what pays for
+        two routing engines you can pull from the front.
+
+        So the top half is those two engines side by side, each with its own
+        console, management port and offline button, and the bottom half is
+        the line modules. Nothing here is reached from the back.
+        """
+        g = 'MX304'
+        h = 2 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 2, 0.520, face='nexus_black')
+
+        # Two routing engines across the top.
+        for i in range(2):
+            rx = -0.106 + i * 0.212
+            rz = z + h * 0.245
+            self.rounded_prism(g, 'nexus_black_dark', (rx, self.front_y - 0.0022, rz),
+                               (0.204, 0.0072, h * 0.40), radius=0.0014, bevel=0.0005, steps=6)
+            for k, mat in enumerate(('green_led', 'amber_led', 'juniper_accent')):
+                self.lens(g, rx - 0.088 + k * 0.0090, rz, mat, 0.0014, self.front_y - 0.0054)
+            self.rj45_socket(g, rx - 0.040, rz, plugged=(i == 0), led=True)
+            self.rj45_socket(g, rx - 0.016, rz, plugged=(i == 0), led=True)
+            self.rounded_prism(g, 'black_plastic', (rx + 0.008, self.front_y - 0.0038, rz),
+                               (0.0100, 0.0038, 0.0050), radius=0.0008, bevel=0.0003, steps=5)
+            for k in range(3):
+                self.lens(g, rx + 0.030 + k * 0.0080, rz, 'green_led', 0.0012, self.front_y - 0.0054)
+            # Juniper's captive handles on these modules are pale blue.
+            for sx in (rx - 0.096, rx + 0.096):
+                self.front_cylinder(g, 'port_bezel_blue', (sx, self.front_y - 0.0062, rz), 0.0032, 0.0030, 20)
+
+        # Two line modules below, four cages each: QSFP56-DD at 400G, which
+        # is a taller cage than a QSFP28 and drawn as one.
+        for i in range(2):
+            mx = -0.106 + i * 0.212
+            mz = z - h * 0.235
+            self.rounded_prism(g, 'nexus_black_dark', (mx, self.front_y - 0.0022, mz),
+                               (0.204, 0.0072, h * 0.38), radius=0.0014, bevel=0.0005, steps=6)
+            for k in range(4):
+                px = mx - 0.066 + k * 0.0440
+                self.rounded_prism(g, 'nickel', (px, self.front_y - 0.009, mz),
+                                   (0.0330, 0.0032, 0.0150), radius=0.0012, bevel=0.0004, steps=5)
+                self.rounded_prism(g, 'black_plastic', (px, self.front_y - 0.0118, mz),
+                                   (0.0280, 0.0032, 0.0112), radius=0.0008, bevel=0.0003, steps=5)
+                if k < 2:
+                    self.rounded_prism(g, 'steel_plain', (px, self.front_y - 0.0152, mz),
+                                       (0.0268, 0.0060, 0.0104), radius=0.0007, bevel=0.0003, steps=5)
+                    self.lens(g, px + 0.0124, mz + 0.0058, 'green_led', 0.0009, self.front_y - 0.0152)
+            for sx in (mx - 0.096, mx + 0.096):
+                self.front_cylinder(g, 'port_bezel_blue', (sx, self.front_y - 0.0062, mz), 0.0032, 0.0030, 20)
+        self.juniper_badge(g, 0.202, z)
+
+    def build_qfx10002_60c(self, z_top: float) -> None:
+        """Sixty 100G cages in two rack units, which is a wall of ports.
+
+        Juniper state the port count and the 2U height and do not publish
+        the row arrangement, so the three rows of twenty here are worked out
+        from the panel rather than quoted: a QSFP28 cage is about 18.4mm
+        wide, a 19 inch panel gives roughly 430mm of usable face, and that
+        caps a row at twenty three. Two rows of thirty, which is what the
+        port count first suggests, would need 550mm and does not fit. Three
+        rows is the sparsest arrangement that does.
+        """
+        g = 'QFX10002_60C'
+        h = 2 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 2, 0.560, face='nexus_black')
+        for row in range(3):
+            rz = z + h * 0.27 - row * h * 0.27
+            for col in range(20):
+                x = -0.194 + col * 0.0172
+                self.rounded_prism(g, 'nickel', (x, self.front_y - 0.009, rz),
+                                   (0.0158, 0.0032, 0.0088), radius=0.0009, bevel=0.0003, steps=5)
+                self.rounded_prism(g, 'black_plastic', (x, self.front_y - 0.0116, rz),
+                                   (0.0128, 0.0032, 0.0064), radius=0.0006, bevel=0.0002, steps=5)
+                if (col + row) % 3 == 0:
+                    self.rounded_prism(g, 'steel_plain', (x, self.front_y - 0.0146, rz),
+                                       (0.0122, 0.0058, 0.0060), radius=0.0006, bevel=0.0002, steps=5)
+                    self.lens(g, x + 0.0056, rz + 0.0034, 'green_led', 0.0007, self.front_y - 0.0146)
+        # Console, management and the status block at the right hand end.
+        self.rj45_socket(g, 0.172, z + h * 0.27, plugged=True, led=True)
+        self.rj45_socket(g, 0.172, z, plugged=False, led=True)
+        self.rounded_prism(g, 'black_plastic', (0.172, self.front_y - 0.0038, z - h * 0.27),
+                           (0.0100, 0.0038, 0.0050), radius=0.0008, bevel=0.0003, steps=5)
+        self.juniper_badge(g, 0.202, z)
+
+    def build_ptx10001_36mr(self, z: float) -> None:
+        """A transport router, and the densest 1U in the rack.
+
+        Thirty six cages in one rack unit: twenty four of them QSFP56-DD at
+        400G and twelve QSFP28 at 100G. The two are drawn at different
+        heights because they are physically different cages, and telling
+        them apart on a faceplate is the difference between a port that will
+        take the optic in your hand and one that will not.
+        """
+        g = 'PTX10001_36MR'
+        self.panel_shell(g, z, 1, 0.520, face='nexus_black')
+        for col in range(18):
+            x = -0.196 + col * 0.0186
+            dd = col < 12
+            for dz in (0.0096, -0.0096):
+                ch = 0.0128 if dd else 0.0104
+                self.rounded_prism(g, 'nickel', (x, self.front_y - 0.009, z + dz),
+                                   (0.0168, 0.0032, ch), radius=0.0010, bevel=0.0004, steps=5)
+                self.rounded_prism(g, 'black_plastic', (x, self.front_y - 0.0118, z + dz),
+                                   (0.0136, 0.0032, ch * 0.72), radius=0.0006, bevel=0.0002, steps=5)
+                if col % 3 == 0:
+                    self.rounded_prism(g, 'steel_plain', (x, self.front_y - 0.0150, z + dz),
+                                       (0.0130, 0.0060, ch * 0.68), radius=0.0006, bevel=0.0002, steps=5)
+                    self.lens(g, x + 0.0060, z + dz + ch * 0.34, 'green_led', 0.0007, self.front_y - 0.0150)
+        self.rj45_socket(g, 0.150, z, plugged=True, led=True)
+        self.rounded_prism(g, 'black_plastic', (0.174, self.front_y - 0.0038, z),
+                           (0.0100, 0.0038, 0.0050), radius=0.0008, bevel=0.0003, steps=5)
+        self.juniper_badge(g, 0.204, z)
+
     def build_pdu(self, z_top: float) -> None:
         g = 'JUNIPER_PDU'
         h = 2 * U
@@ -305,16 +505,15 @@ class JuniperCoreRack(EnterpriseRack):
         self.build_srx4600(at(20))
         self.build_srx1500(at(21))
         self.build_console_server(at(22))
-        self.build_blank(at(23, 2), 2, 'BLANK_MID')
+        self.build_qfx10002_60c(top - 23 * U)
 
-        # Close the gap between the last router and the power. Eleven
-        # units of open rack is not where the cold air comes in, it is
-        # where the hot air goes back round: exhaust turns through an open
-        # unit and straight into the intake above it.
-        print('BUILD blanks', flush=True)
-        self.build_blank(at(25, 4), 4, 'BLANK_LOW')
-        self.build_blank(at(29, 4), 4, 'BLANK_BASE')
-        self.build_blank(at(33, 3), 3, 'BLANK_FOOT')
+        # The bottom thirteen units used to be blanking panel. They are the
+        # transport tier now, heaviest at the floor: an eight unit MX480
+        # sitting on the PDU, with the 400G boxes stacked above it.
+        print('BUILD transport', flush=True)
+        self.build_mx304(top - 25 * U)
+        self.build_ptx10001_36mr(at(27))
+        self.build_mx480(top - 28 * U)
 
         print('BUILD power', flush=True)
         self.build_pdu(top - 36 * U)

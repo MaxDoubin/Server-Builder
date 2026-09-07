@@ -139,6 +139,61 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
     they are visible, they cost nothing, and each one can carry the bright
     lip along its top edge that a punched slot actually has.
   */
+  /*
+    A blanked run is separate panels, and in 3D it was not reading as any.
+
+    The elevation drawing has always shown the joints: a blanking panel is
+    a pressed steel plate one or two units tall, and a twelve unit blanked
+    section is a stack of them, each screwed to the rails on its own. The
+    texture skipped all of that and drew one flat sheet with a seam at the
+    very top and bottom, so in the model an eleven unit blank came out as a
+    single featureless slab taller than a person, which is the one thing in
+    the whole rack that looked like furniture rather than hardware.
+
+    So the joints get drawn here too: a shadowed gap on every unit boundary,
+    the stiffening rib each panel is pressed with, and the two cage nut
+    screws that hold it. None of it is decoration. A sheet this thin without
+    a rib would flex the moment somebody leaned on the rack, and the screws
+    are the reason you can tell, at a glance, how many panels you are
+    looking at.
+  */
+  if (device.family === "blank" && (device.look ?? "solid") !== "fingers") {
+    const unitH = TEX_H / device.u;
+    const screwR = Math.max(1.5, mm(2.4));
+    for (let i = 0; i < device.u; i += 1) {
+      const top = i * unitH;
+      const mid = top + unitH / 2;
+
+      /* The pressed rib across the middle of each panel. */
+      const ribH = Math.max(2, unitH * 0.28);
+      ctx.fillStyle = pale ? "rgba(0,0,0,0.14)" : "rgba(0,0,0,0.3)";
+      ctx.fillRect(TEX_W * 0.05, mid - ribH / 2, TEX_W * 0.9, ribH);
+      ctx.fillStyle = pale ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.09)";
+      ctx.fillRect(TEX_W * 0.05, mid - ribH / 2, TEX_W * 0.9, Math.max(1, ribH * 0.14));
+
+      /* The joint to the panel above: a dark gap with a lit lower lip. */
+      if (i > 0) {
+        const g = Math.max(1.5, mm(1.1));
+        ctx.fillStyle = "rgba(0,0,0,0.62)";
+        ctx.fillRect(0, top - g / 2, TEX_W, g);
+        ctx.fillStyle = pale ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.1)";
+        ctx.fillRect(0, top + g / 2, TEX_W, Math.max(1, g * 0.45));
+      }
+
+      /* Two cage nut screws per panel, nine millimetres in from each end. */
+      for (const cx of [mm(9), TEX_W - mm(9)]) {
+        ctx.beginPath();
+        ctx.arc(cx, mid, screwR, 0, Math.PI * 2);
+        ctx.fillStyle = pale ? "rgba(30,36,44,0.5)" : "rgba(0,0,0,0.55)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, mid - screwR * 0.25, screwR * 0.72, 0, Math.PI * 2);
+        ctx.fillStyle = pale ? "rgba(255,255,255,0.42)" : "rgba(255,255,255,0.13)";
+        ctx.fill();
+      }
+    }
+  }
+
   if (device.family === "blank" && (device.look ?? "solid") === "vented") {
     /*
       A drilled grid, not a row of slots. Vented panels and equipment lids

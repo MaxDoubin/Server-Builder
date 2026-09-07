@@ -26,6 +26,8 @@
 import type { LedState, RackDefinition, RackPort } from "@/lib/rackTypes";
 
 /** Illustrative traffic on a lit port, 0 to 1, deterministic per port. */
+const pad2 = (n: number): string => String(n).padStart(2, "0");
+
 const activityFor = (n: number): number =>
   Math.round((((n * 31) % 47) / 46) * 100) / 100;
 
@@ -62,6 +64,18 @@ export const mikrotikCrsRack: RackDefinition = {
 
   devices: [
     {
+      id: "PATCH_PANEL",
+      u: 1,
+      vendor: "Generic",
+      model: "24-port keystone patch panel",
+      role: "Where the copper lands before it reaches a switch. The stack below is nearly all fibre, so the one panel here is the whole copper footprint of the rack, which is itself the point of a MikroTik stack built this way.",
+      family: "patch",
+      ports: run("rj45", 24, (n) => `A${pad2(n)}`, 15),
+      finish: "dark",
+      watts: null,
+      accent: ACCENT.copper,
+    },
+    {
       id: "CRS354_48G",
       u: 1,
       vendor: "MikroTik",
@@ -80,21 +94,32 @@ export const mikrotikCrsRack: RackDefinition = {
       url: "https://mikrotik.com/product/crs354_48g_4splus2qplus_rm",
     },
     {
-      id: "CRS326_24S_2Q",
+      id: "CRS326_24G_2S",
       u: 1,
       vendor: "MikroTik",
-      model: "CRS326-24S+2Q+RM",
-      role: "The mirror image: twenty four SFP+ cages in two rows and not one copper port on the face, with two QSFP+ for the uplink. An aggregation switch that assumes everything arriving is already fibre or DAC.",
+      model: "CRS326-24G-2S+RM",
+      role: "The cheap one, and the one most of these racks are actually built on: twenty four gigabit copper ports and two SFP+ uplinks, in a chassis narrow enough that MikroTik publish no photograph of it with rack ears fitted.",
       family: "switch",
       finish: "black",
-      accent: ACCENT.optics,
-      groupsOf: 6,
+      accent: ACCENT.copper,
+      groupsOf: 8,
       ports: [
-        ...run("sfp-plus", 24, (n) => `sfp-sfpplus${n}`, 13, "blue"),
-        ...run("qsfp", 2, (n) => `qsfpplus${n}`, 2, "blue"),
+        ...run("rj45", 24, (n) => `ether${n}`, 15),
+        ...run("sfp-plus", 2, (n) => `sfp-sfpplus${n}`, 2, "blue"),
       ],
-      watts: 60,
-      url: "https://mikrotik.com/product/crs326_24s_2q_rm",
+      watts: 27,
+      url: "https://mikrotik.com/product/CRS326-24G-2SplusRM",
+    },
+    {
+      id: "CABLE_MANAGER",
+      u: 1,
+      vendor: "Generic",
+      model: "Horizontal cable manager",
+      role: "Fingers and a cover between the copper switches and the fibre ones. Fibre has a real minimum bend radius and a manager is how you respect it, which matters more here than in a copper rack because a kinked patch lead fails quietly rather than not at all.",
+      family: "blank",
+      finish: "dark",
+      watts: null,
+      accent: ACCENT.optics,
     },
     {
       id: "CRS317_16S",
@@ -112,6 +137,23 @@ export const mikrotikCrsRack: RackDefinition = {
       ],
       watts: 44,
       url: "https://mikrotik.com/product/crs317_1g_16s_rm",
+    },
+    {
+      id: "CRS326_24S_2Q",
+      u: 1,
+      vendor: "MikroTik",
+      model: "CRS326-24S+2Q+RM",
+      role: "The mirror image: twenty four SFP+ cages in two rows and not one copper port on the face, with two QSFP+ for the uplink. An aggregation switch that assumes everything arriving is already fibre or DAC.",
+      family: "switch",
+      finish: "black",
+      accent: ACCENT.optics,
+      groupsOf: 6,
+      ports: [
+        ...run("sfp-plus", 24, (n) => `sfp-sfpplus${n}`, 13, "blue"),
+        ...run("qsfp", 2, (n) => `qsfpplus${n}`, 2, "blue"),
+      ],
+      watts: 60,
+      url: "https://mikrotik.com/product/crs326_24s_2q_rm",
     },
     {
       id: "CRS312_4C_8XG",
@@ -132,21 +174,15 @@ export const mikrotikCrsRack: RackDefinition = {
       url: "https://mikrotik.com/product/crs312_4c_8xg_rm",
     },
     {
-      id: "CRS326_24G_2S",
+      id: "BLANK_CRS",
       u: 1,
-      vendor: "MikroTik",
-      model: "CRS326-24G-2S+RM",
-      role: "The cheap one, and the one most of these racks are actually built on: twenty four gigabit copper ports and two SFP+ uplinks, in a chassis narrow enough that MikroTik publish no photograph of it with rack ears fitted.",
-      family: "switch",
-      finish: "black",
-      accent: ACCENT.copper,
-      groupsOf: 8,
-      ports: [
-        ...run("rj45", 24, (n) => `ether${n}`, 15),
-        ...run("sfp-plus", 2, (n) => `sfp-sfpplus${n}`, 2, "blue"),
-      ],
-      watts: 27,
-      url: "https://mikrotik.com/product/CRS326-24G-2SplusRM",
+      vendor: "Generic",
+      model: "1U blanking panel",
+      role: "One unit between the switches and the power, covered rather than open so the air through the cabinet stays front to back.",
+      family: "blank",
+      finish: "dark",
+      watts: null,
+      accent: ACCENT.power,
     },
     {
       id: "USP_PDU_PRO",
@@ -174,15 +210,15 @@ export const mikrotikCrsRack: RackDefinition = {
       url: "https://store.ui.com/us/en/products/usp-pdu-pro",
     },
     {
-      id: "BLANK_CRS",
-      u: 5,
+      id: "CRS_UPS",
+      u: 2,
       vendor: "Generic",
-      model: "Blanking panels",
-      role: "Five units blanked below the distribution unit, which is where the next switch goes.",
-      family: "blank",
-      look: "solid",
+      model: "Rack UPS, 1500VA",
+      role: "The thing this rack did not have. A metered PDU tells you what the stack draws and does nothing at all when the draw stops: without a UPS behind it, every switch here goes down on a flicker and comes back up in whatever order it feels like.",
+      family: "ups",
       finish: "dark",
       watts: null,
+      accent: ACCENT.power,
     },
   ],
 

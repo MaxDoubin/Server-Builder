@@ -29,16 +29,24 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
+import os
 import sys
+
+import numpy as np
 from pathlib import Path
 
 sys.path.insert(0, "script/models")
 sys.path.insert(0, "script/models/devices")
 
-from _device import Device  # noqa: E402
+from _device import U, Device  # noqa: E402
 from build_enterprise_base import EnterpriseRack, export_glb  # noqa: E402
 
-OUT_DIR = Path("client/public/models")
+# Where the uncompressed builds land. Defaults to the shipped models
+# directory because that is where they are compressed in place, but honours
+# RACK_OUT like every other generator here: running this without thinking
+# overwrites four shipped, compressed artifacts with multi megabyte raw ones,
+# and the only sign is the page suddenly pulling 6MB.
+OUT_DIR = Path(os.environ.get("RACK_OUT", "client/public/models"))
 CATALOGUE = Path("client/public/data/own-catalogue.json")
 
 # Which rack definition each model is built from, and what the frame looks
@@ -110,6 +118,17 @@ def rack_devices(slug: str) -> list[dict]:
     return sorted(rows, key=lambda d: d["position"])
 
 
+def base_slug(device_id: str) -> str:
+    """The product behind an id like `QFX5120_48Y_B`, which is the same
+    product as `QFX5120_48Y_A`.
+
+    Only a single trailing letter is stripped, and only after an underscore,
+    so `UCS_C220_A` resolves and `CRS326_24S` is left alone.
+    """
+    head, sep, tail = device_id.rpartition("_")
+    return head if sep and len(tail) == 1 and tail.isalpha() else device_id
+
+
 class ModelledRack(EnterpriseRack):
     """A frame with hand modelled devices mounted in it."""
 
@@ -119,29 +138,136 @@ class ModelledRack(EnterpriseRack):
         self.rail_material = frame
         super().__init__()
 
+    # ----------------------------------------------------------- furniture
+
+    # Frame furniture is not a product and does not get a device module. The
+    # device library models one real product per file, from photographs of
+    # that product, down to its own connectors. A 24 position keystone panel
+    # is not that: it is punched steel with holes in it, sold by everybody,
+    # and there is no photograph of "the" one to draw. The rack definitions
+    # already say so by giving all of it vendor "Generic".
+    #
+    # That distinction turned out to be why four racks in this library were
+    # half blanking panel. This composer could draw products and nothing
+    # else, so a rack assembled here could not have a patch panel, a cable
+    # manager or a PDU, even though every procedurally generated rack has all
+    # three. The gap did not read as missing furniture, it read as empty
+    # rack, and got covered with a panel. Three of the four had a UPS and no
+    # PDU at all, which is a rack nobody can plug in.
+
+    def build_keystone_panel(self, z: float, group: str, patched: int = 24) -> None:
+        """A 24 position keystone panel: a steel blank and whatever is in it.
+
+        Drawn with unpopulated positions as open holes rather than as dark
+        jacks, because an empty keystone and an unplugged one are different
+        states and a patch panel is mostly the difference between them.
+        """
+        self.panel_shell(group, z, 1, 0.060, face=self.inset_material)
+        for i, x in enumerate(np.linspace(-0.185, 0.185, 24)):
+            if i < patched:
+                self.rj45_socket(group, float(x), z, plugged=True, led=False,
+                                 plug_color='blue_cable' if i >= patched - 4 else 'clear_plug')
+            else:
+                self.rounded_prism(group, 'black_matte', (float(x), self.front_y - 0.0044, z),
+                                   (0.0150, 0.0030, 0.0128), radius=0.0010, bevel=0.0004, steps=5)
+
+    def build_rack_pdu(self, z: float, u: int, group: str, outlets: int = 8) -> None:
+        """A switched, metered strip. Shallow, because it is nearly all air."""
+        self.panel_shell(group, z, u, 0.110, face=self.inset_material)
+        rows = 2 if u > 1 else 1
+        per = max(1, outlets // rows)
+        span = 0.330
+        for row in range(rows):
+            dz = 0.0 if rows == 1 else (U * 0.44 if row == 0 else -U * 0.44)
+            for i in range(per):
+                x = -span / 2 + (i + 0.5) * span / per
+                self.nema_outlet(group, x, z + dz, 0.030, 0.026, plugged=(i < per // 2))
+        self.screen(group, 'pdu', 0.196, z, 0.030, 0.024)
+
+    def build_rack_ups(self, z: float, u: int, group: str) -> None:
+        """A line interactive UPS: a status panel, some lamps, and a lot of vent.
+
+        Deep and heavy, which is why it is always at the bottom, and drawn
+        deeper than anything else here because the depth is the batteries.
+        """
+        self.panel_shell(group, z, u, 0.440, face=self.inset_material)
+        self.screen(group, 'ups', -0.156, z, 0.056, 0.042)
+        for i in range(3):
+            self.lens(group, -0.096 + i * 0.014, z, 'green_led', 0.0020)
+        self.perforations(group, 0.070, z, 0.220, u * U * 0.42, 30, max(4, u * 3))
+        self.rounded_prism(group, 'drive_handle', (0.204, self.front_y - 0.0064, z),
+                           (0.022, 0.0044, u * U * 0.34), radius=0.0012, bevel=0.0005, steps=5)
+
+    def build_console_panel(self, z: float, group: str, ports: int = 16) -> None:
+        """Out of band access: one serial port per device, on its own network.
+
+        The panel nobody thinks about until the day it is the only thing
+        working, which is why a rack that has one is a rack somebody has
+        actually had a bad night in.
+        """
+        self.panel_shell(group, z, 1, 0.240, face=self.inset_material)
+        for i in range(ports):
+            self.rj45_socket(group, -0.196 + i * 0.0168, z, plugged=(i < ports - 4), led=True)
+        self.rj45_socket(group, 0.148, z, plugged=True, led=True)
+        self.perforations(group, 0.196, z, 0.040, 0.024, 7, 4)
+
     def compose(self, devices: list[dict], index: dict[str, tuple[str, type[Device]]]) -> None:
         self.build_frame()
         at = 0
         for spec in devices:
             u = int(spec["u"])
-            if spec.get("family") == "blank":
-                # Blanking panels have no device module and should not: they
-                # are sheet steel, and the frame already knows how to press
-                # one. Drawing them matters because an undrawn unit is a hole
-                # in the model that the elevation says is covered.
-                self.build_blank(self.u_centre(at, u), u, spec["id"])
+            entry = index.get(spec["id"]) or index.get(base_slug(spec["id"]))
+            if entry is None and spec.get("vendor") == "Generic":
+                # Frame furniture. A Generic vendor is the definitions' own
+                # way of saying "this is not a product", and the device
+                # library only ever holds products, so nothing here will
+                # arrive with a module and nothing here should.
+                self.build_furniture(spec, self.u_centre(at, u), u)
                 at += u
                 continue
-            entry = index.get(spec["id"])
             if entry is None:
-                # A device in the definition with no model behind it would
-                # otherwise be a silent hole. Better to know which.
+                # A real product with no module behind it would otherwise be
+                # a silent hole. Better to know which.
                 print(f"    no model for {spec['id']}, leaving {u}U empty")
                 at += u
                 continue
             _, cls = entry
-            cls().build(self, self.u_centre(at, u))
+            dev = cls()
+            # A rack can hold two of the same product, and usually should:
+            # leaves come in pairs and an SRX cluster is two nodes. The
+            # definition tells them apart with a suffix, and the node group
+            # has to carry that suffix rather than the product's own slug, or
+            # the two draw on top of each other under one name and only one
+            # of them can ever be clicked.
+            dev.slug = spec["id"]
+            dev.build(self, self.u_centre(at, u))
             at += u
+
+    def build_furniture(self, spec: dict, z: float, u: int) -> None:
+        """Draw one piece of generic frame furniture from its dataset row."""
+        model = (spec.get("model") or "").lower()
+        family = spec.get("family")
+        if family == "patch":
+            self.build_keystone_panel(z, spec["id"], patched=int(spec.get("ports") or 24))
+        elif family == "pdu":
+            self.build_rack_pdu(z, u, spec["id"], outlets=int(spec.get("ports") or 8))
+        elif family == "server" and "console" in model:
+            self.build_console_panel(z, spec["id"], ports=max(1, int(spec.get("ports") or 16) - 1))
+        elif family == "ups":
+            self.build_rack_ups(z, u, spec["id"])
+        elif "cable manager" in model:
+            self.build_cable_manager(z, spec["id"])
+        elif family == "blank":
+            self.build_blank(z, u, spec["id"], vented="vented" in model)
+        else:
+            # Falling back to a blanking panel for anything unrecognised is
+            # how a UPS got drawn as a sheet of steel: the rack looked full,
+            # the name check passed because the node group was there, and
+            # nothing said the picture was wrong. An unknown family is drawn
+            # as a panel because a hole is worse, but it says so.
+            print(f"    no furniture builder for {spec['id']} (family {family!r}),"
+                  f" drawing {u}U of blanking panel")
+            self.build_blank(z, u, spec["id"])
 
 
 def build(slug: str, index: dict[str, tuple[str, type[Device]]]) -> None:

@@ -9,6 +9,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { CopyButton } from "@/components/ui/copy-button";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 
@@ -238,6 +239,14 @@ function numericClaim(claims: Record<string, unknown> | null, key: string): numb
 
 function review(header: Part, payload: Part, signature: string, nowMs: number): Finding[] {
   const findings: Finding[] = [];
+
+  if (header.error) {
+    findings.push({
+      tone: "danger",
+      text: `${header.error} The algorithm cannot be read from it, so nothing below is a statement about how this token is signed.`,
+    });
+  }
+
   const alg = typeof header.claims?.alg === "string" ? header.claims.alg : null;
 
   if (alg !== null && alg.toLowerCase() === "none") {
@@ -257,6 +266,24 @@ function review(header: Part, payload: Part, signature: string, nowMs: number): 
       tone: "warn",
       text: "HMAC signing means the verifier holds the same secret the issuer used, so anyone who can verify can also mint. It is also the half of the algorithm confusion attack: a verifier that reads alg from the token can be handed an HS256 token signed with the RSA public key it published.",
     });
+  }
+
+  /*
+    Everything below reads the payload's claims, and there are none when the
+    payload did not decode.
+
+    Ungated, the exp branch read a missing claims object as "no exp claim"
+    and told the reader that a token which never parsed "never expires on its
+    own". Paste any three words separated by dots and the panel returned a
+    security conclusion about them. The aud check further down was already
+    guarded against exactly this; exp was not, so it spoke for both.
+  */
+  if (!payload.claims) {
+    findings.push({
+      tone: "danger",
+      text: `${payload.error ?? "The payload did not decode."} There are no claims to read, so nothing is concluded about expiry, audience or timing.`,
+    });
+    return findings;
   }
 
   const exp = numericClaim(payload.claims, "exp");
@@ -284,7 +311,7 @@ function review(header: Part, payload: Part, signature: string, nowMs: number): 
     });
   }
 
-  if (payload.claims && !("aud" in payload.claims)) {
+  if (!("aud" in payload.claims)) {
     findings.push({
       tone: "warn",
       text: "No aud claim. Nothing in the token says which service it was meant for, so any service sharing the issuer will accept it.",
@@ -486,11 +513,14 @@ export function JwtDecoder() {
                   value={
                     decoded.signature === ""
                       ? "empty"
-                      : `${decoded.signature.length} chars, unchecked`
+                      : `${decoded.signature.length} ${pluralise(decoded.signature.length, "char")}, unchecked`
                   }
                   testId="text-signature"
                 />
-                <ToolResult label="Token length" value={`${decoded.token.length} chars`} />
+                <ToolResult
+                  label="Token length"
+                  value={`${decoded.token.length} ${pluralise(decoded.token.length, "char")}`}
+                />
               </ToolPanel>
 
               <ToolPanel title="Findings">

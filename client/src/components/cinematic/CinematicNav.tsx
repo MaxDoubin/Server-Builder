@@ -8,6 +8,7 @@ import {
 } from "framer-motion";
 import { Magnetic, GlitchText } from "@/lib/framer-animations";
 import { prefetchHandlers } from "@/lib/prefetchOnHover";
+import { DisplayMenu } from "@/components/ui/display-menu";
 
 /**
  * Everything the browser will hand a Tab to. Same selector the shortcuts
@@ -23,6 +24,7 @@ const NAV_LINKS = [
   { label: "Field Notes", href: "/blog" },
   { label: "Tools", href: "/tools" },
   { label: "Racks", href: "/racks" },
+  { label: "Gear", href: "/gear" },
   { label: "Build", href: "/game" },
   { label: "Contact", href: "/contact" },
 ];
@@ -83,7 +85,31 @@ const mobileItemVariants = {
   }),
 };
 
-export function CinematicNav() {
+/**
+ * @param overHero
+ *   This nav is sitting on a full bleed image rather than on the page.
+ *
+ *   The bar is transparent until you scroll, which is the intent, and on a
+ *   page with a cover that puts --brand-ash links straight onto a
+ *   photograph. Measured by masking the glyphs and reading the plate behind
+ *   them: 1.20:1 in dark and 1.41:1 in light, on fifteen of sixteen heroes.
+ *
+ *   A darker scrim cannot fix it. Ash is a mid grey at about 0.25 relative
+ *   luminance, so 4.5:1 needs a plate below 0.017, which is a solid black
+ *   bar and the opposite of the design. The text has to move instead, so on
+ *   a hero the inactive links take --brand-bone and the bar takes a gradient
+ *   of its own that fades out by its own height.
+ *
+ *   The plate holds almost to the bottom of the bar rather than fading from
+ *   the middle. The wordmark's box is 30px tall against the links' 16, so it
+ *   reached into the faded part and measured 2.16:1 while the links beside
+ *   it measured 9.19:1. Same bar, same colour, different height.
+ *
+ *   Scoped rather than global because it is a real change in appearance and
+ *   only two pages need it: a post and /projects. Everywhere else the nav
+ *   sits on the page's own ground and already measures clean.
+ */
+export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
   const [location] = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -193,6 +219,15 @@ export function CinematicNav() {
     <>
       <motion.header
         ref={headerRef}
+        /*
+          Site chrome, not content. Printing a post used to put the wordmark,
+          the theme toggle, the search badge and the "Get in touch" button
+          across the top of page one. The print rule that was meant to stop
+          that named `nav`, which is the link list *inside* this header, so
+          the header itself kept printing. Twenty pages use <header> for their
+          own page title, so the rule cannot simply be widened to `header`.
+        */
+        data-print-hide
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
@@ -206,6 +241,10 @@ export function CinematicNav() {
           backgroundColor: scrolled || open
             ? "hsl(var(--brand-obsidian) / 0.72)"
             : "transparent",
+          backgroundImage:
+            !scrolled && !open && overHero
+              ? "linear-gradient(180deg, hsl(var(--brand-obsidian) / 0.95) 0%, hsl(var(--brand-obsidian) / 0.93) 84%, hsl(var(--brand-obsidian) / 0.55) 95%, transparent 100%)"
+              : "none",
         }}
       >
         {/*
@@ -285,7 +324,9 @@ export function CinematicNav() {
                       className={`relative px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.22em] transition-colors ${
                         active
                           ? "text-[hsl(var(--brand-bone))]"
-                          : "text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
+                          : overHero && !scrolled
+                            ? "text-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
+                            : "text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
                       }`}
                     >
                       <motion.span
@@ -316,6 +357,57 @@ export function CinematicNav() {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/*
+              Theme, text size and high contrast, on every page rather than on
+              the five legacy routes.
+
+              All three were reachable only from the old navbar, so about 360
+              pages had no way to any of them. Text size was the sharpest
+              miss: it moves the rem basis on the root element, so it always
+              worked here, and the control that sets it was simply somewhere
+              else. Theme and high contrast now work here too, since
+              .cinematic answers both.
+
+              Not hidden on small screens, unlike the search affordance beside
+              it. A reader who needs larger text is most likely to need it on
+              a phone.
+            */}
+            <DisplayMenu testId="button-display-menu-cinematic" />
+            {/*
+              The palette is keyboard first and nobody discovers a keyboard
+              shortcut nobody told them about. This is the telling: it opens
+              the same dialog, and it shows the key so the next time is
+              faster. Hidden below sm, where the shortcut is meaningless and
+              the room is not there.
+            */}
+            <button
+              type="button"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("command-palette:open"))
+              }
+              data-testid="button-nav-search"
+              aria-label="Search this site"
+              className="hidden h-9 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[11px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] sm:inline-flex"
+            >
+              {/*
+                The word goes below 2xl, the shortcut stays.
+
+                Nine nav links, a search affordance and a call to action
+                already overflowed this row at 1280, and adding the display
+                control moved that to 1440, which is most laptops. Dropping
+                one word buys more room back than the control costs, so the
+                row now holds at 1280 as well, better than before either
+                change. aria-label on the button already names it, so nothing
+                is lost to a screen reader.
+              */}
+              <span aria-hidden className="hidden 2xl:inline">Search</span>
+              <kbd
+                aria-hidden
+                className="rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-techno text-[9px] tracking-[0.12em]"
+              >
+                ⌘K
+              </kbd>
+            </button>
             <motion.div variants={ctaVariants} initial="hidden" animate="visible">
               <Magnetic strength={0.15} radius={120}>
                 <motion.div
@@ -403,6 +495,7 @@ export function CinematicNav() {
                 toggle are the keyboard routes out. */}
             <motion.div
               aria-hidden
+              data-print-hide
               className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -414,6 +507,7 @@ export function CinematicNav() {
               ref={drawerRef}
               id="cinematic-mobile-nav"
               data-testid="mobile-nav-drawer"
+              data-print-hide
               className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md md:hidden"
               initial={{ opacity: 0, y: -20, clipPath: "inset(0 0 100% 0)" }}
               animate={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" }}

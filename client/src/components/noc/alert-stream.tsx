@@ -95,6 +95,7 @@ export function AlertStream() {
                       className="flex-shrink-0"
                       onClick={() => acknowledgeAlert(alert.id)}
                       data-testid={`button-ack-${alert.id}`}
+                      aria-label={`Acknowledge the ${alert.severity} alert from ${alert.source}`}
                     >
                       <Check className="w-4 h-4" />
                     </Button>

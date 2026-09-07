@@ -182,7 +182,7 @@ export function LayoutManager({
             onChange={(event) => setName(event.target.value)}
             maxLength={MAX_LAYOUT_NAME_LENGTH}
             placeholder="Layout name"
-            className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/50 px-2 py-1.5 text-[11px] text-white placeholder:text-white/30 focus:border-cyan-400/60 focus:outline-none"
+            className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/50 px-2 py-1.5 text-[11px] text-white placeholder:text-white/50 focus:border-cyan-400/60 focus:outline-none"
           />
           <Button
             size="sm"
@@ -194,7 +194,7 @@ export function LayoutManager({
             Save
           </Button>
         </div>
-        <p className="text-[10px] text-white/40">
+        <p className="text-[10px] text-white/50">
           {racks.length.toLocaleString()} racks in this build. Room for {MAX_NAMED_LAYOUTS} named
           layouts.
         </p>
@@ -216,7 +216,7 @@ export function LayoutManager({
       <section className="space-y-1.5">
         <div className="text-[10px] uppercase tracking-widest text-white/50">Saved layouts</div>
         {layouts.length === 0 ? (
-          <p className="text-[10px] text-white/40">Nothing saved yet.</p>
+          <p className="text-[10px] text-white/50">Nothing saved yet.</p>
         ) : (
           <ul className="space-y-1.5">
             {layouts.map((layout) => (
@@ -253,11 +253,11 @@ export function LayoutManager({
                       <span className="truncate text-[11px] font-medium text-white/90">
                         {layout.name}
                       </span>
-                      <span className="shrink-0 font-mono text-[9px] text-white/40">
+                      <span className="shrink-0 font-mono text-[9px] text-white/50">
                         {layout.rackCount.toLocaleString()} racks
                       </span>
                     </div>
-                    <div className="text-[9px] text-white/35">
+                    <div className="text-[9px] text-white/50">
                       {timestamp(layout.savedAt)} · {layout.equipmentCount.toLocaleString()} items
                     </div>
 
@@ -365,7 +365,7 @@ export function LayoutManager({
 
       <section className="space-y-2 border-t border-white/10 pt-2.5">
         <div className="text-[10px] uppercase tracking-widest text-white/50">Share by link</div>
-        <p className="text-[10px] leading-relaxed text-white/40">
+        <p className="text-[10px] leading-relaxed text-white/50">
           The link carries the generator seed, the rack count and a list of the racks you changed,
           not a copy of the floor. Opening it rebuilds the same layout.
         </p>
@@ -396,14 +396,14 @@ export function LayoutManager({
                   <span>Copy share link</span>
                 </CopyButton>
               </span>
-              <span className="font-mono text-[9px] text-white/40">
+              <span className="font-mono text-[9px] text-white/50">
                 {share.length} of {MAX_HASH_LENGTH} chars
               </span>
             </div>
             <p className="break-all rounded-md border border-white/10 bg-black/40 px-2 py-1 font-mono text-[9px] text-white/50">
               {share.url}
             </p>
-            <p className="text-[10px] text-white/40">
+            <p className="text-[10px] text-white/50">
               {share.deltaCount === 0
                 ? "Nothing differs from the generated floor, so the link is just the recipe."
                 : `${share.deltaCount.toLocaleString()} rack${

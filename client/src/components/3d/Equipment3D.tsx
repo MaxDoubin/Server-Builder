@@ -214,7 +214,7 @@ function EquipmentFace({
 
       {!isServer && !isSwitch && !isStorage && !isNetwork && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[8px] font-mono text-white/30 truncate px-1">
+          <span className="text-[8px] font-mono text-white/50 truncate px-1">
             {equipment.model}
           </span>
         </div>
@@ -268,7 +268,7 @@ export function EmptySlot({
       }}
       data-testid={`empty-slot-${uPosition}`}
     >
-      <span className="text-[8px] font-mono text-white/20">{uPosition}U</span>
+      <span className="text-[8px] font-mono text-white/50">{uPosition}U</span>
     </div>
   );
 }

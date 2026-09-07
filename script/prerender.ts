@@ -14,6 +14,7 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { Marked } from "marked";
+import { scrollableTables } from "../client/src/lib/markdownTables";
 import { uniqueHeadingId } from "../client/src/lib/headingSlug";
 import { RACKS, KIND_LABELS, portSummary, publishedWatts, unitsUsed } from "../client/src/lib/racks";
 import { staticEquipmentCatalog } from "../client/src/lib/static-equipment";
@@ -61,15 +62,59 @@ const DIST = path.resolve("dist/public");
 const BATCH = 10; // blog posts per parallel batch
 
 const marked = new Marked({ gfm: true, breaks: true });
+marked.use(scrollableTables);
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function esc(str: string): string {
+/*
+  Escapes, and tolerates a missing value.
+
+  Three entries in the vendor catalogue arrived with a null description and
+  a null SKU, and because this took a plain string it did not produce a page
+  with a gap in it, it took the whole prerender down at the last step with a
+  stack trace pointing at the escaper rather than at the data. A field that
+  is not there should render as nothing.
+*/
+function esc(str: string | null | undefined): string {
+  if (str == null) return "";
   return str
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+/*
+  Make a value safe to interpolate into a String.replace replacement.
+
+  The second argument of String.replace is not a plain string. A dollar in it
+  begins a pattern: $& is the whole match, $1 a capture group, $` and $' the
+  text either side. So a value carrying one of those does not land in the
+  output, something else does.
+
+  Five posts shipped this way. One contains the shell line
+
+      grep -q "^install ok installed$"
+
+  and esc() above turns that closing quote into &quot;, which puts a literal
+  $& in front of it. injectRootContent then spliced the entire page shell,
+  the match for its own regex, into the middle of the article, and left
+  <pre>, <code>, <article> and <main> open for the rest of the document. A
+  third of the page sat inside a stylesheet. Eleven other gates passed it:
+  the page had a title, a description, a canonical, valid JSON-LD and
+  resolving links.
+
+  Note the direction of the trap: esc() makes a value MORE dangerous here,
+  not less, because it introduces the ampersands. Any $ before a character
+  that escapes to an entity is enough, and a regex anchor at the end of a
+  quoted string is the common way to write one.
+
+  $$ is the escape for a literal dollar, so doubling every one is the whole
+  fix. Applied to values, not to the replacement as a whole, because several
+  callers below use $1 and $3 backreferences on purpose.
+*/
+function literal(value: string): string {
+  return value.replace(/\$/g, "$$$$");
 }
 
 /** Replace a meta tag's attribute value in raw HTML using a regex. */
@@ -89,22 +134,22 @@ function replaceMeta(
     `(<${escaped}[^>]*\\s${attrName}=")([^"]*)(")`,
     "i",
   );
-  return html.replace(re, `$1${esc(value)}$3`);
+  return html.replace(re, `$1${literal(esc(value))}$3`);
 }
 
 function replaceTitle(html: string, title: string): string {
-  return html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`);
+  return html.replace(/<title>[^<]*<\/title>/, () => `<title>${esc(title)}</title>`);
 }
 
 function replaceCanonical(html: string, url: string): string {
   return html.replace(
     /(<link rel="canonical" href=")[^"]*(")/,
-    `$1${url}$2`,
+    `$1${literal(url)}$2`,
   );
 }
 
 function injectBeforeHead(html: string, injection: string): string {
-  return html.replace("</head>", `${injection}\n</head>`);
+  return html.replace("</head>", () => `${injection}\n</head>`);
 }
 
 /**
@@ -203,9 +248,17 @@ body{background:hsl(220 12% 4%);margin:0}
 function injectRootContent(html: string, content: string): string {
   // Replace the spinner placeholder with pre-rendered content.
   // React's createRoot overwrites this on mount, styles and all.
+  // A function, not a string: its return value is used literally, so neither
+  // the article nor the two constants can be read as a $ pattern.
   return html.replace(
     /<div id="root">[\s\S]*?<\/div>\s*<style>/,
-    `<div id="root">${PRERENDER_CSS}<div id="prerender">${content}${SITE_NAV}</div></div>\n    <style>`,
+    () =>
+      // One </div>, not two. The regex stops at the spinner's <style>, so the
+      // </div> that closes #root in index.html is still there after the match
+      // and closes it. Emitting a second one left every page with three
+      // closes against two opens. Browsers drop the orphan, so it never
+      // looked wrong, and all 377 pages served invalid markup.
+      `<div id="root">${PRERENDER_CSS}<div id="prerender">${content}${SITE_NAV}</div>\n    <style>`,
   );
 }
 
@@ -222,6 +275,16 @@ interface PageMeta {
   rootContent?: string;
   /** Keep a page out of the index. For interactive pages with little prose. */
   noindex?: boolean;
+  /**
+   * Whether this page plays the entrance animation.
+   *
+   * Marks the document so the inline script in index.html knows to veil the
+   * prerendered content until the preloader takes over. Only true for pages
+   * that actually render one, which means CinematicLayout without
+   * skipPreloader: the five dashboards use the game header instead, and the
+   * 404 page opts out, and on those a veil would never be lifted.
+   */
+  boot?: boolean;
 }
 
 function buildPageHtml(base: string, meta: PageMeta): string {
@@ -236,7 +299,12 @@ function buildPageHtml(base: string, meta: PageMeta): string {
     schema,
     rootContent,
     noindex = false,
+    boot = true,
   } = meta;
+
+  if (boot) {
+    html = html.replace(/<html([^>]*)>/, '<html$1 data-boot="1">');
+  }
 
   html = replaceTitle(html, title);
   html = replaceCanonical(html, canonical);
@@ -244,23 +312,23 @@ function buildPageHtml(base: string, meta: PageMeta): string {
   // <meta name="description">
   html = html.replace(
     /(<meta name="description" content=")[^"]*(")/,
-    `$1${esc(description)}$2`,
+    `$1${literal(esc(description))}$2`,
   );
 
   // Open Graph
-  html = html.replace(/(<meta property="og:title" content=")[^"]*(")/,   `$1${esc(title)}$2`);
-  html = html.replace(/(<meta property="og:description" content=")[^"]*(")/,`$1${esc(description)}$2`);
-  html = html.replace(/(<meta property="og:url" content=")[^"]*(")/,     `$1${canonical}$2`);
-  html = html.replace(/(<meta property="og:type" content=")[^"]*(")/,    `$1${ogType}$2`);
-  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${ogImage}$2`);
-  html = html.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1${esc(ogImageAlt)}$2`);
+  html = html.replace(/(<meta property="og:title" content=")[^"]*(")/,   `$1${literal(esc(title))}$2`);
+  html = html.replace(/(<meta property="og:description" content=")[^"]*(")/,`$1${literal(esc(description))}$2`);
+  html = html.replace(/(<meta property="og:url" content=")[^"]*(")/,     `$1${literal(canonical)}$2`);
+  html = html.replace(/(<meta property="og:type" content=")[^"]*(")/,    `$1${literal(ogType)}$2`);
+  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${literal(ogImage)}$2`);
+  html = html.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1${literal(esc(ogImageAlt))}$2`);
 
   // Twitter
-  html = html.replace(/(<meta name="twitter:title" content=")[^"]*(")/,      `$1${esc(title)}$2`);
-  html = html.replace(/(<meta name="twitter:description" content=")[^"]*(")/,`$1${esc(description)}$2`);
-  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${ogImage}$2`);
-  html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${esc(ogImageAlt)}$2`);
-  html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${canonical}$2`);
+  html = html.replace(/(<meta name="twitter:title" content=")[^"]*(")/,      `$1${literal(esc(title))}$2`);
+  html = html.replace(/(<meta name="twitter:description" content=")[^"]*(")/,`$1${literal(esc(description))}$2`);
+  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${literal(ogImage)}$2`);
+  html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${literal(esc(ogImageAlt))}$2`);
+  html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${literal(canonical)}$2`);
 
   if (noindex) {
     html = html.replace(
@@ -481,6 +549,10 @@ async function writeNotFoundPage(base: string): Promise<void> {
     // does not exist just leaves a dead reference in the HTML.
     canonical: `${SITE_URL}/404`,
     noindex: true,
+    // CinematicNotFound passes skipPreloader, so nothing here would ever
+    // lift a veil, and somebody who has just hit a dead link should see the
+    // explanation immediately rather than an entrance animation.
+    boot: false,
     rootContent: `
 <main>
   <h1>Page not found</h1>
@@ -528,6 +600,14 @@ async function prerenderPost(
   const cardPath = `/images/og/${post.slug}.jpg`;
   const hasCard = existsSync(path.join(DIST, cardPath.slice(1)));
   const ogImage = `${SITE_URL}${hasCard ? cardPath : post.coverImage}`;
+  /*
+    Absolute for the structured data, which schema.org requires and which
+    Google reads off whatever origin it crawls. The <img> further down uses
+    post.coverImage as it is, root relative, because an absolute src pins the
+    element to the production hostname: on a preview deployment that is a
+    cross origin request and img-src 'self' refuses it, so every post
+    reviewed on a preview showed no cover at all.
+  */
   const coverImage = `${SITE_URL}${post.coverImage}`;
 
   /*
@@ -657,7 +737,7 @@ ${JSON.stringify({
   const rootContent = `
 <main>
   <a href="${SITE_URL}/blog">← Back to Blog</a>
-  <img src="${coverImage}" alt="${esc(post.title)}" width="800" height="320" />
+  <img src="${post.coverImage}" alt="${esc(post.title)}" width="800" height="320" />
   <article>
     <time datetime="${post.date}">${dateStr}</time>${updatedStr} · ${readMins} min read
     <h1>${esc(post.title)}</h1>
@@ -896,7 +976,7 @@ ${JSON.stringify({
       dir: "racks/build",
       title: "Rack builder | Max Doubin",
       description:
-        "Build a rack from fifty one real UniFi devices in 3D. Pick hardware, stack it, see what it weighs in rack units and megabytes, and share the build as a link.",
+        "Build a rack from 75 real rack mountable devices across six vendors in 3D. Pick hardware, stack it, see what it weighs in rack units and megabytes, and share the build as a link.",
       canonical: `${SITE_URL}/racks/build`,
     },
     {
@@ -1005,6 +1085,80 @@ ${[...NCL_GUIDE_DATA]
         "A spaced-repetition flashcard trainer for networking, ports, security, Linux, and cryptography, with an SM-2 scheduler that plans each card's next review.",
       canonical: `${SITE_URL}/flashcards`,
       noindex: true,
+    },
+    /*
+      The five simulator dashboards.
+
+      They were not prerendered at all. _redirects rewrote each of them to /
+      with a 200, so the document a crawler received at /noc was the home
+      page: its title, its h1, and a canonical pointing at the home page.
+      Google calls serving the home page in place of a page that does not
+      exist a soft 404, and Search Console started reporting exactly that.
+
+      Worse than the wasted crawl was the pairing. Those URLs carried
+      X-Robots-Tag: noindex and a rel=canonical to https://maxdoubin.com,
+      and a noindex alongside a canonical pointing somewhere else is the one
+      combination Google warns against, because the noindex can be taken to
+      apply to the canonical target. The target was the home page.
+
+      So each one gets its own document, its own title, a canonical to
+      itself, and noindex on the page rather than only in a header. Still
+      out of the index, and no longer claiming to be the home page.
+    */
+    {
+      dir: "noc",
+      title: "NOC Overview | Max Doubin",
+      description:
+        "The simulator's network operations dashboard: alert volume, uptime stability, and response cadence over the modelled datacenter floor.",
+      canonical: `${SITE_URL}/noc`,
+      noindex: true,
+      // Game header, not CinematicLayout, so no preloader ever mounts here
+      // and a veil would have nothing to lift it.
+      boot: false,
+    },
+    {
+      dir: "network",
+      title: "Network Operations | Max Doubin",
+      description:
+        "The simulator's network dashboard: topology overview, throughput trends, and link health across the modelled datacenter.",
+      canonical: `${SITE_URL}/network`,
+      noindex: true,
+      // Game header, not CinematicLayout, so no preloader ever mounts here
+      // and a veil would have nothing to lift it.
+      boot: false,
+    },
+    {
+      dir: "floor",
+      title: "Floor Operations | Max Doubin",
+      description:
+        "The simulator's floor dashboard: thermal zones, airflow balance, and how racks are distributed across the modelled datacenter floor.",
+      canonical: `${SITE_URL}/floor`,
+      noindex: true,
+      // Game header, not CinematicLayout, so no preloader ever mounts here
+      // and a veil would have nothing to lift it.
+      boot: false,
+    },
+    {
+      dir: "incidents",
+      title: "Incident Command | Max Doubin",
+      description:
+        "The simulator's incident dashboard: severity distribution, response speed, and tracking of open incidents on the modelled floor.",
+      canonical: `${SITE_URL}/incidents`,
+      noindex: true,
+      // Game header, not CinematicLayout, so no preloader ever mounts here
+      // and a veil would have nothing to lift it.
+      boot: false,
+    },
+    {
+      dir: "build",
+      title: "Build Command Center | Max Doubin",
+      description:
+        "The simulator's build dashboard: layout changes, the power impact of each one, and the health of the build workflow.",
+      canonical: `${SITE_URL}/build`,
+      noindex: true,
+      // Game header, not CinematicLayout, so no preloader ever mounts here
+      // and a veil would have nothing to lift it.
+      boot: false,
     },
   ];
 
@@ -1476,8 +1630,108 @@ ${JSON.stringify({
   page's actual argument rather than a summary of it, so what is indexed is
   worth indexing.
 */
+/*
+  Prose for the five simulator dashboards.
+
+  Hand written rather than rendered, for the same reason the WebGL pages
+  above are: these are charts and counters, so a React render would give a
+  crawler a page of axis labels. Each says what the dashboard is, what it
+  reads, and that the numbers are modelled rather than measured, which is
+  the one thing a reader arriving cold most needs to be told.
+
+  Every block opens at h1. Three pages once shipped starting at h2 because
+  their hand-authored prose did, and check-heading-order exists because of
+  it.
+*/
+const nocDashContent = `
+  <h1>NOC Overview</h1>
+  <p>The network operations view of the datacenter simulator. It watches the
+  modelled floor the way a real NOC watches a real one: what is alarming right
+  now, how many of those are critical, whether the site is holding its uptime
+  target, and how quickly alerts are being answered.</p>
+  <h2>What it shows</h2>
+  <ul>
+    <li>Alert volume over time, so a burst is visible as a burst rather than
+    as a number that happens to be high.</li>
+    <li>An uptime trend, which is the figure a service level agreement is
+    written against.</li>
+    <li>Active alerts, criticals, uptime and average response, as counters.</li>
+  </ul>
+  <p>Every figure is generated by the simulation on this site. Nothing here is
+  telemetry from real hardware, and none of it describes a real outage.</p>
+`;
+
+const networkDashContent = `
+  <h1>Network Operations</h1>
+  <p>The fabric view of the datacenter simulator: what is connected to what,
+  how much is moving across it, and whether any of it is close to a limit.</p>
+  <h2>What it shows</h2>
+  <ul>
+    <li>Throughput in gigabits per second, as a trend rather than a snapshot,
+    because a link at eighty percent all day and a link that spikes to eighty
+    percent once are different problems.</li>
+    <li>A latency heatline, which makes a slow path visible next to a busy
+    one.</li>
+    <li>Node and link counts, overall utilisation, and the number of edge
+    servers.</li>
+  </ul>
+  <p>The topology and the traffic are both modelled. They are shaped to behave
+  plausibly, not copied from a real network.</p>
+`;
+
+const floorDashContent = `
+  <h1>Floor Operations</h1>
+  <p>The physical view of the datacenter simulator. A floor is a thermal
+  problem before it is a compute problem, and this is the page that says so:
+  where the heat is, whether the air is going where it should, and how the
+  racks are spread across the zones.</p>
+  <h2>What it shows</h2>
+  <ul>
+    <li>Temperature distribution across the floor, so a hot aisle reads as a
+    shape rather than as an average.</li>
+    <li>Zone utilisation, which is what decides where the next rack can go.</li>
+    <li>Total racks, average temperature, airflow balance and active zones.</li>
+  </ul>
+  <p>The thermal figures come from the simulation. They are modelled to be
+  reasonable for the hardware drawn on the floor, not measured from it.</p>
+`;
+
+const incidentsDashContent = `
+  <h1>Incident Command</h1>
+  <p>The incident view of the datacenter simulator: what is open, how bad it
+  is, and how long it is taking to close. An alert is a signal and an incident
+  is work, and the two want different pages.</p>
+  <h2>What it shows</h2>
+  <ul>
+    <li>Severity breakdown, because ten low incidents and one critical are not
+    eleven of anything.</li>
+    <li>A response time trend, against which a bad week is visible.</li>
+    <li>Open incidents, criticals, runbooks available, and median time to
+    repair.</li>
+  </ul>
+  <p>Every incident here is generated by the simulation. None of them
+  happened, and none of the response times are anybody's real numbers.</p>
+`;
+
+const buildDashContent = `
+  <h1>Build Command Center</h1>
+  <p>The change view of the datacenter simulator. Racks get added, moved and
+  filled, and each of those costs power and can leave the layout worse than it
+  found it. This page tracks the changes rather than the steady state.</p>
+  <h2>What it shows</h2>
+  <ul>
+    <li>A build activity timeline, so a burst of changes is visible against a
+    quiet period.</li>
+    <li>Power impact by hour, which is the constraint a build hits first.</li>
+    <li>Active racks, build actions, total power impact and a layout health
+    figure.</li>
+  </ul>
+  <p>The rack count and the power figures are the simulation's own. They
+  describe the modelled floor on this site and nothing outside it.</p>
+`;
+
 const wiredRackContent = `
-  <h2>The wired rack</h2>
+  <h1>The wired rack</h1>
   <p>Fourteen units of UniFi, patched the way somebody would actually patch it.
   The hardware is Ubiquiti's own geometry, the same models their store loads
   into its 3D viewer, so the panels are the panels and the ports are where the
@@ -1485,7 +1739,7 @@ const wiredRackContent = `
   fibre uplinks to the aggregation switch, storage taking copper straight to
   the nearest switch, and every power lead running down the side of the frame
   into the distribution unit.</p>
-  <h3>What is in it</h3>
+  <h2>What is in it</h2>
   <ul>
     <li>Dream Machine SE, the gateway, at the top of the rack.</li>
     <li>Pro Aggregation, which every other switch uplinks to on fibre.</li>
@@ -1494,7 +1748,7 @@ const wiredRackContent = `
     <li>Enterprise Gateway, Network Video Recorder Pro and Network Attached Storage Pro.</li>
     <li>Power Distribution Pro at the bottom, which every power lead runs to.</li>
   </ul>
-  <h3>Why it looks combed instead of tangled</h3>
+  <h2>Why it looks combed instead of tangled</h2>
   <p>The first version of this cabling let every lead find its own way from A
   to B, and the result was a bowl of spaghetti across the front of the rack. A
   dressed bundle is four moves and every lead makes the same four: out of the
@@ -1515,12 +1769,12 @@ const wiredRackContent = `
 `;
 
 const rackBuilderContent = `
-  <h2>Build a rack</h2>
-  <p>Fifty one rack mountable UniFi devices, in Ubiquiti's own geometry, and
-  an empty frame. Pick something and it lands in the highest free slot that
+  <h1>Build a rack</h1>
+  <p>Seventy five rack mountable devices from six vendors, fifty of them in
+  Ubiquiti's own published geometry, and an empty frame. Pick something and it lands in the highest free slot that
   fits it. A 2U will not go into a 1U gap, because a 2U does not go into a 1U
   gap. What you build is saved in your browser and can be shared as a link.</p>
-  <h3>A rack is a list of occupied units, not a list of devices</h3>
+  <h2>A rack is a list of occupied units, not a list of devices</h2>
   <p>That distinction is most of the code behind the page. Treat a rack as a
   list and a 2U dropped between two 1U devices either overlaps one of them or
   silently pushes it down, and both are wrong, because real hardware does
@@ -1528,7 +1782,7 @@ const rackBuilderContent = `
   asks whether a specific run of units is free, and refuses when it is not,
   which is why the frame buttons grey out when something in the build would
   hang below a shorter frame.</p>
-  <h3>What a build weighs</h3>
+  <h2>What a build weighs</h2>
   <p>The weight is on screen because this page cannot hide it. A drawn
   elevation costs a reader nothing whatever it contains, and this one costs
   them a download per distinct device. Bytes are counted once per file,
@@ -1536,7 +1790,7 @@ const rackBuilderContent = `
   two of the same switch are two of the same switch as far as the GPU is
   concerned. Reporting one figure for both would be wrong in one direction or
   the other.</p>
-  <h3>Why nothing is patched</h3>
+  <h2>Why nothing is patched</h2>
   <p>A vendor model is a closed box that does not know where its own jacks
   are. The wired rack manages leads only because its build is fixed and every
   port position was measured off a render by hand, which cannot be done for a
@@ -1546,7 +1800,7 @@ const rackBuilderContent = `
 `;
 
 const teardownContent = `
-  <h2>A PowerEdge, opened</h2>
+  <h1>A PowerEdge, opened</h1>
   <p>This is a Dell PowerEdge R760 coming apart in the order a technician
   would take it apart, and the geometry is Dell's own. Their repair guides are
   built on a service model of the machine as thirty four named assemblies, so
@@ -1554,7 +1808,7 @@ const teardownContent = `
   photograph. A 2U rather than a 1U on purpose: the GPUs, the four expansion
   risers, the RAID controller and the rear drive cage are the parts that do
   not fit in a 1U at all, and they are the ones worth watching come out.</p>
-  <h3>The order of removal</h3>
+  <h2>The order of removal</h2>
   <ol>
     <li>Front bezel. Unlocks and pulls straight off. Nothing can be reached until it is gone.</li>
     <li>System cover, and the backplane cover behind it.</li>
@@ -1565,7 +1819,7 @@ const teardownContent = `
     <li>Drive backplane, internal USB, intrusion switch, control panels, side wall brackets, system battery and TPM.</li>
     <li>System board, last, because everything else is bolted to it or plugged into it.</li>
   </ol>
-  <h3>Where the geometry came from</h3>
+  <h2>Where the geometry came from</h2>
   <p>Dell publish WebXR repair guides for a handful of PowerEdge platforms,
   and behind each one is a glTF scene of the machine. It is not offered as a
   download and nothing links to it: the guide list is a POST only endpoint,
@@ -1603,6 +1857,11 @@ const teardownContent = `
     certifications: certificationsContent,
     ncl: nclHubContent,
     flashcards: flashcardsContent,
+    noc: nocDashContent,
+    network: networkDashContent,
+    floor: floorDashContent,
+    incidents: incidentsDashContent,
+    build: buildDashContent,
     "racks/wired": wiredRackContent,
     "racks/build": rackBuilderContent,
     teardown: teardownContent,
@@ -2242,6 +2501,61 @@ ${JSON.stringify({
 </main>`,
     });
 
+    /*
+      The revision sheet. Everything the exam's domain pages hold, on one
+      page, because a sheet is a thing to carry away from a screen. The
+      prerendered version is the same content flat, which is also what a
+      crawler wants: one URL that answers "what is on this exam" without
+      following five links.
+    */
+    const sheetDomains = exam.domains.map(
+      (domain: { slug: string; name: string; weight: number | null; summary: string; keywords: string[] }) => ({
+        domain,
+        matched: posts.filter((post) => {
+          const title = post.title.toLowerCase();
+          const tags = post.tags.map((t) => t.toLowerCase());
+          return domain.keywords.some(
+            (k) => title.includes(k.toLowerCase()) || tags.includes(k.toLowerCase()),
+          );
+        }),
+      }),
+    );
+    const sheetPostCount = new Set(
+      sheetDomains.flatMap((d) => d.matched.map((p: { slug: string }) => p.slug)),
+    ).size;
+
+    await writePage(`study/${exam.slug}/sheet`, base, {
+      title: pageTitle(`${exam.name} ${exam.code} revision sheet`),
+      description: `Every ${exam.name} ${exam.code} domain on one printable page, with its published weighting and the ${sheetPostCount} articles and free tools on this site that cover it.`,
+      canonical: `${SITE_URL}/study/${exam.slug}/sheet`,
+      rootContent: `
+<main>
+  <nav><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/study">Study</a> / <a href="${SITE_URL}/study/${exam.slug}">${esc(exam.code)}</a></nav>
+  <h1>${esc(exam.name)} ${esc(exam.code)} revision sheet</h1>
+  <p>Every domain on one page, made to print. Weightings are ${esc(exam.vendor)}'s published figures, and objectives change between exam versions, so check them against <a href="${exam.officialUrl}">the official objectives</a> before you rely on them.</p>
+  ${sheetDomains
+    .map(
+      ({ domain, matched }) => `<section>
+    <h2>${esc(domain.name)}${domain.weight === null ? "" : ` (${domain.weight}% of the exam)`}</h2>
+    <p>${esc(domain.summary)}</p>
+    ${
+      matched.length === 0
+        ? "<p>Nothing in the archive covers this one yet.</p>"
+        : `<h3>Read</h3>
+    <ul>${matched
+      .map(
+        (post: { slug: string; title: string }) =>
+          `<li><a href="${SITE_URL}/blog/${post.slug}">${esc(post.title)}</a></li>`,
+      )
+      .join("\n      ")}</ul>`
+    }
+  </section>`,
+    )
+    .join("\n  ")}
+  <nav><a href="${SITE_URL}/study/${exam.slug}">${esc(exam.code)} domains</a> · <a href="${SITE_URL}/study">All exams</a></nav>
+</main>`,
+    });
+
     for (const domain of exam.domains) {
       const matched = posts.filter((post) => {
         const title = post.title.toLowerCase();
@@ -2435,6 +2749,78 @@ ${JSON.stringify({
     });
   }
 
+  /*
+    The hardware catalogue. Two hundred and fifty two vendor models with
+    their measured dimensions, and until this page existed the only ones a
+    crawler could see were the ones that mount in a rack. The list is
+    read from the same JSON the page fetches, so the prerendered text cannot
+    drift from what a reader gets.
+  */
+  const catalogueRaw = await readFile(path.join(DIST, "data", "ubiquiti-catalogue.json"), "utf8");
+  const catalogue = JSON.parse(catalogueRaw) as {
+    credit: string;
+    devices: {
+      slug: string;
+      name: string;
+      sku: string;
+      short: string;
+      group: string;
+      mount: string;
+      sizeM: [number, number, number];
+      triangles: number;
+      store: string;
+    }[];
+  };
+  const byGroup = new Map<string, typeof catalogue.devices>();
+  for (const d of catalogue.devices) {
+    const bucket = byGroup.get(d.group);
+    if (bucket) bucket.push(d);
+    else byGroup.set(d.group, [d]);
+  }
+  const gearContent = `
+<main>
+  <h1>Hardware catalogue</h1>
+  <p>Every UniFi model this site can draw, ${catalogue.devices.length} of them, with the dimensions read out of each model's own bounding box rather than copied off a datasheet. ${catalogue.devices.filter((d) => d.mount === "rack").length} mount in a nineteen inch frame; the rest go on a wall, a ceiling or a desk.</p>
+  ${[...byGroup.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(
+      ([group, items]) => `<section>
+  <h2>${esc(group)}</h2>
+  <dl>${items
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((d) => {
+      const [x, y, z] = d.sizeM;
+      const size = `${Math.round(x * 1000)} by ${Math.round(z * 1000)} by ${Math.round(y * 1000)} mm`;
+      return `<dt>${esc(d.name)} (${esc(d.sku)})</dt><dd>${esc(d.short)} Mounts ${esc(d.mount)}. ${size}, ${d.triangles.toLocaleString()} triangles.</dd>`;
+    })
+    .join("\n    ")}</dl>
+</section>`,
+    )
+    .join("\n  ")}
+  <p>${esc(catalogue.credit)}</p>
+  ${backLinks([["/racks", "Rack library"], ["/racks/build", "Rack builder"], ["/data", "Open hardware dataset"]])}
+</main>`;
+
+  await writePage("gear", base, {
+    title: "Hardware Catalogue | Max Doubin",
+    description:
+      "Every UniFi model on this site, measured: switches, access points, cameras, gateways and door hardware, with real dimensions and triangle counts taken from the geometry itself.",
+    canonical: `${SITE_URL}/gear`,
+    rootContent: gearContent,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Hardware catalogue",
+  description: "Vendor hardware models with measured dimensions.",
+  url: `${SITE_URL}/gear`,
+  numberOfItems: catalogue.devices.length,
+}, null, 2)}
+</script>`,
+  });
+
+
   // ── sitemap ──
   // Generated here rather than hand-maintained. The checked-in sitemap had
   // gone stale, listing 105 URLs with a lastmod months behind the newest
@@ -2444,9 +2830,12 @@ ${JSON.stringify({
 
   // Home page last: everything above uses `base` as its template, so giving
   // it a body any earlier would put the home page's content on all of them.
+  //
+  // data-boot is set by hand because this is the one page that does not go
+  // through buildPageHtml, and it is the page the entrance was designed for.
   await writeFile(
     path.join(DIST, "index.html"),
-    injectRootContent(base, homeContent),
+    injectRootContent(base, homeContent).replace(/<html([^>]*)>/, '<html$1 data-boot="1">'),
     "utf-8",
   );
   console.log("index.html: home page body written");
@@ -2509,6 +2898,8 @@ async function writeSitemap(
   for (const rack of RACKS) {
     urls.push({ loc: `${SITE_URL}/racks/${rack.slug}`, lastmod: today, changefreq: "monthly", priority: "0.7" });
   }
+  urls.push({ loc: `${SITE_URL}/gear`, lastmod: today, changefreq: "monthly", priority: "0.6" });
+
 
   // Tools and the competition guides. /flashcards is deliberately absent:
   // it is noindex, and a sitemap should never advertise a page that tells
@@ -2524,6 +2915,15 @@ async function writeSitemap(
   for (const exam of EXAMS) {
     urls.push({
       loc: `${SITE_URL}/study/${exam.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+    // The revision sheet is the whole exam on one page, so it answers "what
+    // is on this exam" in one fetch. Same priority as the exam page it
+    // summarises.
+    urls.push({
+      loc: `${SITE_URL}/study/${exam.slug}/sheet`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

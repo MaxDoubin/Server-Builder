@@ -89,7 +89,7 @@ function Meter({
       </div>
       <div className={`text-[10px] ${STATE_LABEL[state]}`}>
         {STATE_TEXT[state]}
-        <span className="text-white/40"> · {detail}</span>
+        <span className="text-white/50"> · {detail}</span>
       </div>
     </div>
   );

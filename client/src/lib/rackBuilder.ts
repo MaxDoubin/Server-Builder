@@ -52,6 +52,8 @@ export interface Catalogue {
   source: string;
   retrieved: string;
   credit: string;
+  /** How the catalogue was assembled and what it does and does not include. */
+  note?: string;
   count: number;
   devices: CatalogueDevice[];
 }
@@ -179,23 +181,53 @@ export function encodeBuild(frame: number, placements: Placement[]): string {
   return `${frame}:${parts.join(",")}`;
 }
 
+/**
+ * Read a build back out of a link, holding it to the same rules as the buttons.
+ *
+ * A decoded build has to satisfy the invariant at the top of this file, not
+ * just parse. Nothing stops somebody editing `?b=` by hand, and the string
+ * carries no heights, so checking that `at` is inside the frame is not
+ * enough. Two links that used to load:
+ *
+ *   12:enas@5,cloud-key-enterprise@5    a 3U and a 1U in the same unit
+ *   12:enas@10                          a 3U needing 10, 11 and 12 of a 12U
+ *
+ * Both drew, because the scene draws what it is given, and the elevation
+ * beside it counted units it had already counted. So this asks the same slot
+ * question `add` and `nudge` ask, against occupancy accumulated as it goes,
+ * which covers the overhang too: `fits` measures from `at` to `at + height`.
+ *
+ * Anything that fails is dropped and the rest of the build still loads, which
+ * is how an unknown slug is already treated: a build missing one device is
+ * worth more than an error page, and the catalogue does change between the
+ * writing of a link and the following of it. Where two placements contend for
+ * a unit the earlier one keeps it. That is arbitrary, but a real link is
+ * written by `encodeBuild` in top-down order, so it only ever decides between
+ * two devices that were never in a legal build together.
+ */
 export function decodeBuild(
   text: string,
-  known: Set<string>,
+  byslug: Map<string, CatalogueDevice>,
 ): { frame: FrameSize; placements: Placement[] } | null {
   const [head, rest] = text.split(":");
   const frame = Number(head);
   if (!FRAME_SIZES.includes(frame as FrameSize)) return null;
 
   const placements: Placement[] = [];
+  const used = new Array<boolean>(frame).fill(false);
   let id = 1;
   for (const part of (rest ?? "").split(",")) {
     if (!part) continue;
     const [slug, atText] = part.split("@");
     const at = Number(atText);
-    // Drop anything unrecognised rather than failing the whole link: a build
-    // missing one device is still worth loading, and the catalogue does change.
-    if (!known.has(slug) || !Number.isInteger(at) || at < 0 || at >= frame) continue;
+    const d = byslug.get(slug);
+    // Number.isInteger before fits, and not only to reject "1.5": fits reads
+    // NaN as neither below zero nor past the end, and its loop over an empty
+    // range finds nothing occupied, so a NaN position would sail through it.
+    if (!d || !Number.isInteger(at)) continue;
+    const height = unitsOf(d);
+    if (!fits(used, at, height)) continue;
+    for (let i = at; i < at + height; i += 1) used[i] = true;
     placements.push({ id: id++, slug, at });
   }
   return { frame: frame as FrameSize, placements };

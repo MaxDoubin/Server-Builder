@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useSmoothScroll } from "@/lib/motion/SmoothScrollProvider";
 
 interface PreloaderProps {
@@ -310,6 +310,24 @@ function Rack3D({ progress, reduceMotion }: { progress: number; reduceMotion: bo
 }
 
 export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
+  /*
+    Take the veil off in the same frame this first paints.
+
+    index.html hides the prerendered body behind an opaque ground from the
+    first byte, because this component is React and does not exist for the
+    first second and a half, which is how a reader ended up seeing the page,
+    then a loading screen over it, then the page again.
+
+    A layout effect rather than an effect: this runs after the DOM is in
+    place and before the browser paints, so the frame that removes the veil
+    is the frame that draws the animation. In an ordinary effect the browser
+    can paint in between, and the gap is a flash of the page underneath,
+    which is the thing being fixed.
+  */
+  useLayoutEffect(() => {
+    document.documentElement.classList.remove("booting");
+  }, []);
+
   const [progress, setProgress] = useState(0);
   const [hiding, setHiding] = useState(false);
   const [gone, setGone] = useState(false);
@@ -410,6 +428,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
     <div
       aria-hidden="true"
       data-testid="preloader"
+      data-print-hide
       className={`fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[hsl(var(--brand-obsidian))] transition-opacity duration-[640ms] ease-[cubic-bezier(.2,.8,.2,1)] ${
         hiding ? "pointer-events-none opacity-0" : "opacity-100"
       }`}

@@ -61,6 +61,7 @@ const ACCENT = {
   core: "#ccff00",
   edge: "#ffa114",
   passive: "#8a93a6",
+  power: "#9234ea",
 } as const;
 
 export const mikrotikRack: RackDefinition = {
@@ -176,6 +177,32 @@ export const mikrotikRack: RackDefinition = {
       look: "vented",
       watts: null,
       accent: ACCENT.passive,
+    },
+    {
+      id: "pdu",
+      u: 1,
+      vendor: "Generic",
+      model: "Switched rack PDU, 8x C13",
+      role: "Eight IEC C13 outlets on a switched, metered strip. A stack this size runs off one feed, and metering is how you find out what it draws rather than what its supplies are rated for.",
+      family: "pdu",
+      finish: "black",
+      ports: run("power", 8, (n) => `C13-${n}`, 4),
+      watts: null,
+      accent: ACCENT.power,
+    },
+    {
+      id: "ups",
+      u: 2,
+      vendor: "APC",
+      model: "Smart-UPS SMT1500RM2U",
+      role: "Line-interactive UPS, 1500VA at 120V. Sized for ride-through and a clean shutdown rather than for running the stack through a long outage, which is a generator's job. The bottom of the rack because it is the heaviest thing in it.",
+      family: "ups",
+      finish: "dark",
+      display: "ups",
+      leds: ["green", "off", "off"],
+      watts: null,
+      accent: ACCENT.power,
+      url: "https://www.apc.com/us/en/product/SMT1500RM2U/",
     },
   ],
 

@@ -148,7 +148,7 @@ export function CinematicAsk() {
                   className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                 >
                   Name{" "}
-                  <span className="text-[hsl(var(--brand-ash)/0.7)]">
+                  <span className="text-[hsl(var(--brand-ash))]">
                     (optional)
                   </span>
                 </label>
@@ -367,7 +367,7 @@ export function CinematicAsk() {
               >
                 The archive
               </Link>{" "}
-              holds 236 posts, and there is a new one most days.
+              holds 250 posts, and there is a new one most days.
             </p>
           </section>
         </div>

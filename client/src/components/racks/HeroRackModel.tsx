@@ -30,6 +30,15 @@ import { heroPartIndex, type HeroModel } from "@/lib/racks/heroModels";
 import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 import { StudioEnvironment } from "./StudioEnvironment";
 
+/**
+ * Framing bounds, the same ones the procedural renderer uses, for the same
+ * reason: an adaptive canvas is only an improvement while it stays within
+ * shapes a page can actually lay out.
+ */
+const MARGIN = 1.06;
+const MIN_ASPECT = 0.78;
+const MAX_ASPECT = 1.4;
+
 /** The group a mesh belongs to: the first path segment of its node name. */
 function groupOf(object: THREE.Object3D, model: HeroModel): string | null {
   const parts = heroPartIndex(model);
@@ -51,11 +60,13 @@ function Model({
   selected,
   onPick,
   onHover,
+  onAspect,
 }: {
   model: HeroModel;
   selected: string | null;
   onPick: (group: string | null) => void;
   onHover: (group: string | null) => void;
+  onAspect: (aspect: number) => void;
 }) {
   const { camera, controls } = useThree();
   const gltf = useLoader(GLTFLoader, model.url, (loader) => {
@@ -130,10 +141,27 @@ function Model({
     scene.position.sub(centre);
     scene.updateMatrixWorld(true);
 
+    /*
+      Fit the box to the canvas, and the canvas to the box.
+
+      A rack is portrait and the canvas was a fixed 4:3, so filling the
+      height left the width two thirds empty, and the taller the rack the
+      worse it got. Letting the frame take the model's own proportions costs
+      nothing and is the difference between a photograph and a snapshot of a
+      photograph. The bounds are clamped either side so a short rack does
+      not end up in a letterbox and a tall one does not push the spec table
+      it sits beside off a laptop screen.
+    */
     const fov = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180;
-    const span = Math.max(size.y, size.x * 0.85);
-    const dist = (span / 2 / Math.tan(fov / 2)) * 1.22 + size.z * 0.5;
-    const az = (32 * Math.PI) / 180;
+    const az = (22 * Math.PI) / 180;
+    const across = size.x * Math.cos(az) + size.z * Math.sin(az);
+    const towards = size.x * Math.sin(az) + size.z * Math.cos(az);
+    const aspect = Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, (across / size.y) * 1.5));
+    onAspect(aspect);
+
+    const tanV = Math.tan(fov / 2);
+    const dist =
+      Math.max(size.y / 2 / tanV, across / 2 / (tanV * aspect)) * MARGIN + towards / 2;
     camera.position.set(Math.sin(az) * dist, size.y * 0.16, Math.cos(az) * dist);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
@@ -142,7 +170,7 @@ function Model({
       orbit.target.set(0, 0, 0);
       orbit.update?.();
     }
-  }, [scene, camera, controls]);
+  }, [scene, camera, controls, onAspect]);
 
   const pick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
@@ -181,13 +209,15 @@ export function HeroRackModel({
 }) {
   const { dpr, tier } = useDeviceTier();
   const [hovered, setHovered] = useState<string | null>(null);
+  /* Set once the model has loaded and measured itself. */
+  const [aspect, setAspect] = useState(4 / 3);
 
   const hoveredName = hovered ? heroPartIndex(model).get(hovered)?.device.model : null;
 
   return (
     <div
-      className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3]"
-      style={{ cursor: hovered ? "pointer" : "default" }}
+      className="relative w-full overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3]"
+      style={{ cursor: hovered ? "pointer" : "default", aspectRatio: aspect }}
     >
       <Canvas
         dpr={dpr}
@@ -210,6 +240,7 @@ export function HeroRackModel({
             selected={selectedId ?? null}
             onPick={(g) => onSelect?.(g)}
             onHover={setHovered}
+            onAspect={setAspect}
           />
         </Suspense>
 

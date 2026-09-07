@@ -39,29 +39,86 @@
 # so the rule sat here doing nothing while appearing to solve the problem.
 # Verified against production after deploying it: www still answered 200.
 #
-# The real fix is outside the repository, in the Cloudflare dashboard: either
-# a Redirect Rule on the zone sending www to the apex, or dropping www as a
-# custom domain on the Pages project. Until then the canonical tag on every
-# page points at the apex, which is what actually keeps Google consolidating
-# the two hosts, and it is doing that job today.
+# The real fix is outside the repository, in the Cloudflare dashboard. Until
+# somebody applies it, the canonical tag on every page points at the apex,
+# which is what actually keeps Google consolidating the two hosts, and it is
+# doing that job today. Verified: https://www.maxdoubin.com/contact serves
+# <link rel="canonical" href="https://maxdoubin.com/contact">.
+#
+# The steps, so this does not have to be worked out again:
+#
+#   1. DNS: www must be a PROXIED record, or Cloudflare never sees the
+#      request and cannot redirect it. An A record for www to 192.0.2.0, or
+#      AAAA to 100::, both reserved placeholders for originless setups. The
+#      orange cloud is the part that matters; the address is never reached.
+#
+#   2. Rules > Redirect Rules > Create rule, on the maxdoubin.com zone:
+#        If:   hostname equals www.maxdoubin.com
+#        Then: dynamic redirect
+#              target   concat("https://maxdoubin.com", http.request.uri.path)
+#              status   301
+#              preserve query string: on
+#
+#      Hostname only. Matching on the full URI would also catch the apex and
+#      loop it into itself.
+#
+#   3. Check with curl, not a browser, because a browser follows and hides it:
+#        curl -sSI https://www.maxdoubin.com/contact | head -3
+#      Expect 301 and location: https://maxdoubin.com/contact. Then confirm
+#      the apex still answers 200 rather than redirecting to itself.
+#
+# The alternative, if www is not wanted at all, is to remove www as a custom
+# domain on the Pages project. That makes www stop resolving rather than
+# redirect, which loses any link equity pointing at it, so the redirect is
+# the better of the two.
 
-# The simulator's internal dashboards. Canvas-driven, nothing meaningful to
-# prerender, and noindex in _headers so crawl budget goes to the writing.
-# /game itself IS prerendered now: it is one of the most distinctive things
-# here and deserves a real shot at ranking.
-/noc             /             200
-/network         /             200
-/floor           /             200
-/incidents       /             200
-/build           /             200
+# The simulator's internal dashboards used to be rewritten here, on the
+# reasoning that they are canvas-driven with nothing meaningful to prerender
+# and are noindex in _headers anyway. Both halves were true and the conclusion
+# was still wrong.
+#
+# A 200 rewrite to / does not serve an empty page, it serves the home page.
+# A crawler asking for /noc got the home page's title, the home page's h1 and
+# a rel=canonical pointing at the home page. Google calls serving the home
+# page in place of a page of its own a soft 404, and Search Console duly
+# reported soft 404s on this site. The noindex did not prevent that; it made
+# it sharper, because a noindex on a URL whose canonical points at a different
+# URL is the one pairing Google warns can transfer the noindex to the
+# canonical target, and the target was the home page.
+#
+# They are prerendered now, each with its own title, its own canonical and
+# noindex on the page. A rule here would be dead weight: Pages serves the
+# prerendered file and never reaches it.
+#
+# /game was already prerendered: it is one of the most distinctive things here
+# and deserves a real shot at ranking.
 
-# The pre-redesign site, kept reachable for old inbound links.
-/legacy          /             200
-/legacy/game     /             200
-/legacy/blog     /             200
-/legacy/blog/*   /             200
-/legacy/projects /             200
-/legacy/contact  /             200
+# The pre-redesign site, redirected to the pages that replaced it.
+#
+# These were 200 rewrites to /, which meant an old inbound link did not reach
+# the old page or the new one: it got the home page's document, at the old
+# URL, with the home page's canonical. Google reported that as a soft 404,
+# and the noindex in _headers made it worse rather than better, because a
+# noindex on a URL whose canonical points elsewhere is the pairing that can
+# carry the noindex over to the canonical target, which was the home page.
+#
+# A 301 to the current equivalent is better on every axis. Somebody following
+# a years-old link lands on the article they were promised instead of the
+# front page, the link's authority transfers to the page that now holds that
+# content, and the duplicate URL stops existing rather than being papered
+# over with a noindex.
+#
+# The post mapping is one to one and total: the legacy blog rendered the same
+# post data as /blog, and all 247 slugs in postIndex.ts have a prerendered
+# /blog/<slug>. Checked, not assumed.
+#
+# Ordered specific to general, because Pages takes the first match.
+/legacy/blog/*   /blog/:splat  301
+/legacy/blog     /blog         301
+/legacy/projects /projects     301
+/legacy/contact  /contact      301
+/legacy/game     /game         301
+/legacy          /             301
 
 # Retired writing.
 #

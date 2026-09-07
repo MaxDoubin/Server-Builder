@@ -51,9 +51,17 @@ export function CinematicFooter() {
             </div>
           </ScrollReveal>
           <ScrollReveal variants={fadeUp} delay={0.2}>
-            <h3 className="mt-4 max-w-md font-display text-3xl font-medium leading-[1.05] tracking-tight text-[hsl(var(--brand-bone))] md:text-4xl">
+            {/*
+              h2, not h3. The footer is a top level region of every page, and
+              this is its heading, so a level two is what it is. As an h3 it
+              was the only heading between the page h1 and nothing on pages
+              whose body has no h2 of its own, which made the outline of the
+              simulator page read h1 then h3 with a level missing. Nothing
+              about how it looks changed.
+            */}
+            <h2 className="mt-4 max-w-md font-display text-3xl font-medium leading-[1.05] tracking-tight text-[hsl(var(--brand-bone))] md:text-4xl">
               Cybersecurity, enterprise networking, systems infrastructure, percussion, and community leadership.
-            </h3>
+            </h2>
           </ScrollReveal>
           <ScrollReveal variants={fadeUp} delay={0.35}>
             <Magnetic strength={0.15} radius={120}>

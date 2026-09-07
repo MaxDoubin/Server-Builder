@@ -101,7 +101,7 @@ export function CinematicTools() {
             </p>
           </header>
 
-          <div className="mt-10 max-w-xl">
+          <div data-print-hide className="mt-10 max-w-xl">
             <label
               htmlFor="tools-search"
               className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"

@@ -40,6 +40,9 @@ const HERO = path.join(RACKS, "heroModels");
 /** One rack unit, in meters. The generators and the renderers share it. */
 const U = 0.04445;
 
+/** How far a device may sit from its slot before it counts as misplaced. */
+const DRIFT_U = 0.45;
+
 const problems = [];
 const fail = (m) => problems.push(m);
 
@@ -142,6 +145,84 @@ function groupExtents(glb) {
   return bounds;
 }
 
+/**
+ * Fit z = intercept + slope * u over a rack's devices, robustly.
+ *
+ * Not least squares. Least squares has a breakdown point of zero: every
+ * point pulls the line by its residual, so a device that has genuinely
+ * moved drags the whole fit toward itself and every innocent device
+ * inherits a share of its error. That is the exact failure mode this check
+ * exists to be immune to, because the fault it looks for is one or two
+ * devices out of place among twenty that are fine.
+ *
+ * Theil-Sen instead: the slope is the median of the pairwise slopes, the
+ * intercept the median of the residuals against it. Both tolerate up to
+ * about a third of the points being wrong. selfTest below holds this
+ * function to that property on the case that matters, so it cannot quietly
+ * be simplified back to a mean.
+ */
+function fitLadder(pts) {
+  const median = (xs) => {
+    const a = [...xs].sort((x, y) => x - y);
+    const m = a.length >> 1;
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  };
+  const slopes = [];
+  for (let i = 0; i < pts.length; i += 1) {
+    for (let j = i + 1; j < pts.length; j += 1) {
+      const du = pts[j].u - pts[i].u;
+      if (Math.abs(du) > 1e-9) slopes.push((pts[j].z - pts[i].z) / du);
+    }
+  }
+  const slope = median(slopes);
+  return { slope, intercept: median(pts.map((p) => p.z - slope * p.u)) };
+}
+
+/** Which devices the fit puts more than the tolerance away from their slot. */
+function drifters(pts) {
+  const { slope, intercept } = fitLadder(pts);
+  return pts.filter((p) => Math.abs((p.z - (intercept + slope * p.u)) / U) > DRIFT_U).map((p) => p.id);
+}
+
+/**
+ * The fit must name the devices that moved, and only those.
+ *
+ * A perfect 21 rung ladder with two rungs exchanged: a real, ordinary
+ * fault, two devices swapped between the generator and the device list.
+ * Theil-Sen reports the two. A least squares fit over the same points
+ * reports sixteen of the twenty one, with the two culprits buried among
+ * fourteen devices that never moved, and it also mismeasures the rack unit
+ * badly enough to raise a second, entirely fictional failure.
+ *
+ * That is not a small difference in output quality. A gate that names
+ * fourteen innocent devices sends whoever reads it into a generator that
+ * was correct, so it is worth a few milliseconds a run to hold the fit to
+ * the property that makes the message trustworthy.
+ */
+function selfTest() {
+  const rungs = Array.from({ length: 21 }, (_, i) => ({ id: `R${i}`, u: i + 0.5, z: 2 - U * (i + 0.5) }));
+  const swapped = rungs.map((r) => ({ ...r }));
+  [swapped[5].z, swapped[16].z] = [swapped[16].z, swapped[5].z];
+
+  const flagged = drifters(swapped);
+  if (flagged.length !== 2 || !flagged.includes("R5") || !flagged.includes("R16")) {
+    fail(
+      `the position fit is not robust: two swapped rungs out of 21 should flag exactly those two,` +
+        ` but it flagged ${flagged.length} (${flagged.join(", ") || "none"}).` +
+        ` A fit that spreads one fault across the innocent devices makes this check's output misleading.`,
+    );
+  }
+  const { slope } = fitLadder(swapped);
+  if (Math.abs(-slope - U) > U * 0.001) {
+    fail(
+      `the position fit is not robust: two swapped rungs moved the measured rack unit to` +
+        ` ${(-slope * 1000).toFixed(2)}mm, which would raise a second failure about a rack that is dimensionally fine.`,
+    );
+  }
+}
+
+selfTest();
+
 let fitted = 0;
 let named = 0;
 
@@ -185,13 +266,7 @@ for (const { file, module, groups, scenery } of heroModels()) {
   if (!module || pts.length < 3) continue;
   fitted += 1;
 
-  const n = pts.length;
-  const mu = pts.reduce((s, p) => s + p.u, 0) / n;
-  const mz = pts.reduce((s, p) => s + p.z, 0) / n;
-  const cov = pts.reduce((s, p) => s + (p.u - mu) * (p.z - mz), 0);
-  const varU = pts.reduce((s, p) => s + (p.u - mu) ** 2, 0);
-  const slope = cov / varU;
-  const intercept = mz - slope * mu;
+  const { slope, intercept } = fitLadder(pts);
 
   if (Math.abs(-slope - U) > U * 0.03) {
     fail(`${path.basename(url)}: a rack unit measures ${(-slope * 1000).toFixed(2)}mm in the model, not ${(U * 1000).toFixed(2)}mm`);
@@ -199,7 +274,7 @@ for (const { file, module, groups, scenery } of heroModels()) {
 
   for (const p of pts) {
     const drift = (p.z - (intercept + slope * p.u)) / U;
-    if (Math.abs(drift) > 0.45) {
+    if (Math.abs(drift) > DRIFT_U) {
       fail(
         `${path.basename(url)}: "${p.id}" sits ${drift.toFixed(2)}U from where the device list puts it` +
           ` (a whole unit of drift is two devices swapped)`,
@@ -209,10 +284,21 @@ for (const { file, module, groups, scenery } of heroModels()) {
 }
 
 /*
-  Two invariants that hold for every rack, model or not. A rack whose
-  contents add up to more than its frame is a drawing of something that
-  cannot be built, and two devices sharing an id means one of them can
-  never be selected, deep linked, or told apart in the dataset.
+  Three invariants that hold for every rack, model or not.
+
+  A rack whose contents add up to more than its frame is a drawing of
+  something that cannot be built. One that adds up to less has units the
+  elevation draws as nothing and the definition never mentions, which is a
+  different bug and was caught late: mikrotik-9u declared six units in a
+  nine unit frame, so its bottom three were open rack that no device, no
+  blanking panel and no error accounted for, and it turned out the rack had
+  simply never been given a PDU or a UPS. The equivalent check already
+  existed for racks with an authored 3D model and that is exactly why this
+  one slipped: it is the small racks, drawn only as elevations, that nobody
+  counts by hand.
+
+  And two devices sharing an id means one of them can never be selected,
+  deep linked, or told apart in the dataset.
 */
 for (const slug of new Set(DATASET.devices.map((d) => d.rack))) {
   const rows = DATASET.devices.filter((d) => d.rack === slug);
@@ -220,10 +306,35 @@ for (const slug of new Set(DATASET.devices.map((d) => d.rack))) {
   if (used > rows[0].rackUnits) {
     fail(`${slug}: ${used}U of hardware in a ${rows[0].rackUnits}U frame, which is ${used - rows[0].rackUnits}U past the floor`);
   }
+  if (used < rows[0].rackUnits) {
+    fail(
+      `${slug}: ${used}U declared in a ${rows[0].rackUnits}U frame, leaving ${rows[0].rackUnits - used}U` +
+        ` the elevation draws as open rack and nothing accounts for. Fit something, or cover it with a panel.`,
+    );
+  }
   const seen = new Set();
   for (const d of rows) {
     if (seen.has(d.id)) fail(`${slug}: two devices share the id "${d.id}", so only the first can ever be selected`);
     seen.add(d.id);
+  }
+
+  /*
+    A rack with a UPS and no PDU is a rack nobody could plug in.
+
+    Not a style rule. A rack UPS has a handful of outlets on its back, four
+    or eight, and every rack here has more powered devices than that, so a
+    frame holding one and no strip is a drawing of something that does not
+    work. Five racks were in exactly that state, and the reason is worth
+    knowing: a PDU is the least interesting thing in a rack, so it is the
+    thing that gets left out of a device list and never missed.
+  */
+  const families = new Set(rows.map((d) => d.family));
+  const powered = rows.filter((d) => !["blank", "patch", "pdu", "ups"].includes(d.family));
+  if (families.has("ups") && !families.has("pdu") && powered.length > 2) {
+    fail(
+      `${slug}: ${powered.length} powered devices and a UPS, but no PDU.` +
+        ` A rack UPS has a handful of outlets on its back, so this is a rack nobody could plug in.`,
+    );
   }
 }
 

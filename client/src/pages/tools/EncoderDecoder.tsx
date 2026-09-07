@@ -9,6 +9,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { ToolShell, ToolPanel } from "./ToolShell";
 import { CopyButton } from "@/components/ui/copy-button";
 
@@ -110,7 +111,7 @@ function decodeHex(input: string): Uint8Array {
   const bad = cleaned.split("").find((c) => !/[0-9a-fA-F]/.test(c));
   if (bad !== undefined) throw new Error(`"${bad}" is not a hex digit. Hex uses 0 to 9 and a to f.`);
   if (cleaned.length % 2 !== 0) {
-    throw new Error(`Hex needs two digits per byte, and this has ${cleaned.length} digits. One digit is missing or one is extra.`);
+    throw new Error(`Hex needs two digits per byte, and this has ${cleaned.length} ${pluralise(cleaned.length, "digit")}. One digit is missing or one is extra.`);
   }
   const out = new Uint8Array(cleaned.length / 2);
   for (let i = 0; i < out.length; i += 1) out[i] = parseInt(cleaned.slice(i * 2, i * 2 + 2), 16);

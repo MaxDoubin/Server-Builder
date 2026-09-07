@@ -15,7 +15,15 @@ const tierLabels = {
   tier4: "Tier IV",
 };
 
-export function GameHeader() {
+export function GameHeader({
+  /*
+    The console pins itself to the dark palette, so a theme control rendered
+    inside it would change every other surface on the page and leave the one
+    around it alone. Hidden there, kept on the dashboards, where this header
+    sits on a theme-aware page and the control does what it says.
+  */
+  showThemeToggle = true,
+}: { showThemeToggle?: boolean } = {}) {
   const { gameState, alerts } = useGame();
   const unacknowledgedCount = alerts.filter((a) => !a.acknowledged).length;
 
@@ -59,7 +67,7 @@ export function GameHeader() {
             <span className="font-display text-lg font-bold tracking-wider">
               HYPERSCALE
             </span>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--console-accent))]">
               Max Doubin
             </span>
           </div>
@@ -121,7 +129,7 @@ export function GameHeader() {
               </span>
             )}
           </Button>
-          <ThemeToggle />
+          {showThemeToggle && <ThemeToggle />}
         </div>
       </div>
     </header>

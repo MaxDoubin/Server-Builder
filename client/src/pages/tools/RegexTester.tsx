@@ -371,6 +371,30 @@ export function RegexTester() {
 
   const matchCount = result?.data.matches.length ?? 0;
 
+  /*
+    One line saying what the current state is, for a live region.
+
+    Every other tool on the site has one and this was the only one without,
+    so typing a pattern here changed a number on screen and announced
+    nothing. The syntax error and the timeout below already carry
+    role="alert", but those only exist when something has gone wrong: an
+    ordinary run, which is the common case, was silent.
+
+    Hidden visually, unlike the summary line on the other tools, because
+    here the count is already the largest thing in the panel. A second copy
+    of it on screen would be clutter; what was missing is only the
+    announcement.
+  */
+  const summary = syntaxError
+    ? `Pattern is not valid: ${syntaxError}`
+    : timedOut
+      ? `Aborted: no result within ${TIME_BUDGET_MS} ms.`
+      : `${matchCount}${result?.data.truncated ? " or more" : ""} ${
+          matchCount === 1 && !result?.data.truncated ? "match" : "matches"
+        }${flags.includes("g") ? "" : ", first only because g is off"}${
+          elapsed !== null ? `, in ${elapsed.toFixed(1)} ms` : ""
+        }.`;
+
   return (
     <ToolShell
       slug="regex-tester"
@@ -502,6 +526,14 @@ export function RegexTester() {
 
         <div className="space-y-6">
           <ToolPanel title="Matches">
+            <p
+              role="status"
+              aria-live="polite"
+              data-testid="text-summary"
+              className="sr-only"
+            >
+              {summary}
+            </p>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
               <span
                 data-testid="text-match-count"

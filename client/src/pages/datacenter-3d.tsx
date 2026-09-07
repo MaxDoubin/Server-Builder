@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { useGame } from "@/lib/game-context";
 import { DatacenterScene, type LightingMode, type SceneCapture } from "@/components/3d/DatacenterScene";
 import { GameHUD } from "@/components/3d/GameHUD";
@@ -16,7 +17,6 @@ import { WelcomeScreen } from "@/components/ui/welcome-screen";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { DebugOverlay } from "@/components/ui/debug-overlay";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { GameHeader } from "@/components/layout/game-header";
 import { useToast } from "@/hooks/use-toast";
 import { deriveCapacity, facilityPue, formatWatts } from "@/lib/capacity";
@@ -291,7 +291,7 @@ export function DataCenter3D({
     applyRackCount(sharedLayoutVisibleCount);
     toast({
       title: "Shared layout loaded",
-      description: `${sharedLayoutVisibleCount.toLocaleString()} racks restored from the link.`,
+      description: `${sharedLayoutVisibleCount.toLocaleString()} ${pluralise(sharedLayoutVisibleCount, "rack")} restored from the link.`,
     });
   }, [applyRackCount, sharedLayoutVisibleCount, toast]);
 
@@ -335,14 +335,24 @@ export function DataCenter3D({
       setIsUnlocked(true);
       return;
     }
-    const savedUnlock = localStorage.getItem("hyperscale_unlocked");
-    if (savedUnlock === "true") setIsUnlocked(true);
+    // Blocked site data throws here rather than returning null, and this is
+    // an effect, so the throw would take the whole console down to a blank
+    // page instead of costing one remembered unlock.
+    try {
+      if (localStorage.getItem("hyperscale_unlocked") === "true") setIsUnlocked(true);
+    } catch {
+      /* Locked again next visit. */
+    }
   }, [isStaticMode]);
 
   const handleUnlock = () => {
     if (isStaticMode) return;
     setIsUnlocked(true);
-    localStorage.setItem("hyperscale_unlocked", "true");
+    try {
+      localStorage.setItem("hyperscale_unlocked", "true");
+    } catch {
+      /* Unlocked for this visit only. */
+    }
   };
 
   const handleSelectRack = (rack: Rack | null) => {
@@ -516,7 +526,7 @@ export function DataCenter3D({
       unlockAchievement("photo-mode");
       toast({
         title: "Photo saved",
-        description: `A PNG of ${capacity.rackCount.toLocaleString()} racks is in your downloads.`,
+        description: `A PNG of ${capacity.rackCount.toLocaleString()} ${pluralise(capacity.rackCount, "rack")} is in your downloads.`,
       });
     } finally {
       setPhotoMode(false);
@@ -579,7 +589,24 @@ export function DataCenter3D({
   return (
     <div
       ref={sceneRef}
-      className="relative w-full h-full min-h-[520px] overflow-hidden bg-transparent"
+      /*
+        `dark` is deliberate rather than inherited. Every piece of chrome in
+        this console is a hardcoded dark surface, from the control dock's
+        bg-black/85 down, because it floats over a black 3D canvas and there
+        is no light version of it. The one exception was GameHeader, which
+        asks for bg-card and text-muted-foreground: in the light theme that
+        gave a pale bar with dark grey text sitting on top of the scene, at
+        1.1:1. Pinning the token set here means the shadcn components inside
+        resolve to the same dark palette everything else already assumes.
+
+        text-foreground has to be restated here rather than left to inherit.
+        `color` inherits as a resolved colour, not as the var reference that
+        produced it, so the page above this one having set text-foreground
+        from the light palette hands down a near-black that redefining the
+        token underneath cannot undo. Setting it again inside the `dark`
+        scope resolves it against the dark palette.
+      */
+      className="dark relative h-full min-h-[520px] w-full overflow-hidden bg-transparent text-foreground"
       data-tour="scene"
     >
       {showInstantShell && (
@@ -619,7 +646,7 @@ export function DataCenter3D({
       {chromeVisible && (
         <>
           <div className="absolute top-0 left-0 right-0 z-40">
-            <GameHeader />
+            <GameHeader showThemeToggle={false} />
           </div>
           <div
             data-ui="true"
@@ -649,7 +676,6 @@ export function DataCenter3D({
                     Live orchestration for power, thermals, and topology. Created by Max Doubin.
                   </div>
                 </div>
-                <ThemeToggle />
               </div>
 
               <div className="mt-4 space-y-3">

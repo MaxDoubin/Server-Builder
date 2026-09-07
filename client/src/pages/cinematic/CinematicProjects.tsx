@@ -80,7 +80,7 @@ export function CinematicProjects() {
   );
 
   return (
-    <CinematicLayout>
+    <CinematicLayout overHero>
       <div
         ref={rootRef}
         className="relative min-h-screen px-6 pb-32 pt-[22vh] md:px-10"
@@ -145,6 +145,7 @@ export function CinematicProjects() {
           <ScrollReveal variants={fadeUp} delay={0.3}>
             <div
               data-testid="project-filters"
+              data-print-hide
               className="flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
             >
               <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">

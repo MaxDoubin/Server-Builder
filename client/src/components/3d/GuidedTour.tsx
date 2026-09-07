@@ -245,7 +245,14 @@ export function GuidedTour({
           </button>
         </div>
         <div aria-live="polite">
-          <h3 className="mt-1 text-sm font-semibold text-white">{step.title}</h3>
+          {/*
+            h2. This panel floats over the page rather than sitting in its
+            content, so its level was picked to look right rather than to say
+            anything, and h3 under a page whose only other heading is the h1
+            left a gap in the outline. It is a top level overlay, so it is a
+            level two.
+          */}
+          <h2 className="mt-1 text-sm font-semibold text-white">{step.title}</h2>
           <p className="mt-1 text-[11px] leading-relaxed text-white/60">{step.body}</p>
         </div>
         <div className="mt-2.5 flex items-center justify-between gap-2">

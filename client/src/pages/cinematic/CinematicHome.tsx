@@ -120,7 +120,13 @@ export function CinematicHome() {
     },
   });
   return (
-    <CinematicLayout>
+    /*
+      The hero here is a rack in a dark room, drawn full bleed, with the
+      page's own type composited over it. There is no light version of that
+      short of a different hero, so the theme control applies from the next
+      page on rather than turning this one grey on grey.
+    */
+    <CinematicLayout pinDark>
       <div ref={shellRef}>
         <SystemsAct />
         <Suspense fallback={<ActFallback minHeight="120vh" />}>

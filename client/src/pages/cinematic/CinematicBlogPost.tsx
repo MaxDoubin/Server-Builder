@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRoute, Link } from "wouter";
 import { marked } from "marked";
+import { scrollableTables } from "@/lib/markdownTables";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import {
   getAllPosts,
@@ -23,6 +24,7 @@ import { useScrollReveal } from "@/lib/motion/useScrollScene";
 import { formatPostDate } from "@/lib/formatDate";
 
 marked.setOptions({ gfm: true, breaks: true });
+marked.use(scrollableTables);
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -35,7 +37,7 @@ export function CinematicBlogPost() {
    * The body arrives separately from the metadata.
    *
    * Every article used to be inlined in one module, so opening a single
-   * post downloaded all 236. Now each body is its own chunk. It is usually
+   * post downloaded all 247. Now each body is its own chunk. It is usually
    * already cached (a reader who navigated here from the listing, or came
    * back to a post they read), which is why the initial state checks first
    * instead of always starting empty and flashing a skeleton.
@@ -64,7 +66,7 @@ export function CinematicBlogPost() {
    * Onward links.
    *
    * A post used to end with a single "all field notes" link, so every one
-   * of 236 pages was a dead end: nothing to read next, and nothing linking
+   * of 247 pages was a dead end: nothing to read next, and nothing linking
    * posts to each other for a crawler to follow. Neighbours come from the
    * date ordering; what to read next is scored in `relatedPosts`, which
    * explains at length why shared tags alone were not enough.
@@ -146,6 +148,9 @@ export function CinematicBlogPost() {
       post?.excerpt ??
       "Max Doubin is a 10th grade cybersecurity student at South Career Technical Academy in Las Vegas, Nevada.",
     canonical: post ? `${SITE_URL}/blog/${post.slug}` : SITE_URL,
+    // Same as the rack page: a slug matching no post renders "Post not
+    // found", and that should not be indexable.
+    noindex: !post,
     ogType: post ? "article" : "profile",
     ogImage: post ? `${SITE_URL}${post.coverImage}` : `${SITE_URL}/images/og-image.jpg`,
     ogImageAlt: post ? post.title : "Max Doubin, cybersecurity student",
@@ -303,15 +308,17 @@ export function CinematicBlogPost() {
   }
 
   return (
-    <CinematicLayout>
+    <CinematicLayout overHero>
       <div
         ref={progressRef}
+        data-print-hide
         className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-[hsl(var(--brand-signal))]"
         style={{ transform: "scaleX(0)", boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
       />
 
       {minutesLeft !== null && (
         <div
+          data-print-hide
           data-testid="reading-time-left"
           className="pointer-events-none fixed bottom-4 right-4 z-[60] rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.85)] px-3 py-1.5 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] backdrop-blur-md"
         >
@@ -324,11 +331,28 @@ export function CinematicBlogPost() {
         data-testid={`article-${post.slug}`}
         className="relative pb-32"
       >
-        {/* Full-bleed cover */}
-        <div className="relative h-[70vh] w-full overflow-hidden">
+        {/*
+          Full-bleed cover.
+
+          On screen this is a photo with the title laid over it and a scrim
+          in between. On paper the scrim is gone: the print reset drops every
+          background, and it forces the title to black. Black on an unscrimmed
+          photo measured 2.02:1 to 3.57:1 across a sample of posts, against
+          the 4.5:1 a title needs, and the cover filled a whole sheet on its
+          own on the way.
+
+          So print un-stacks the hero instead: data-print-unstack takes the
+          positioning off the container and the text overlay so the title
+          flows onto white paper, and the photo and its scrims drop out.
+        */}
+        <div
+          data-print-unstack
+          className="relative h-[70vh] w-full overflow-hidden"
+        >
           <img
             src={post.coverImage}
             alt={post.title}
+            data-print-hide
             className="absolute inset-0 h-full w-full object-cover"
             width="1600"
             height="900"
@@ -336,14 +360,47 @@ export function CinematicBlogPost() {
           />
           <div
             aria-hidden
+            data-print-hide
             className="absolute inset-0"
             style={{
+              /*
+                The scrim has to cover the band the title actually occupies.
+
+                It used to reach 0.2 at 40% and not recover until 85%, and the
+                title sits from 49% (three lines) or 60% (two) down to 82%. So
+                a headline was laid over roughly a third of a stop of cover:
+                0.33 opacity at its top edge. On a dark photograph that was
+                fine and on a bright one it was not.
+
+                Measured across 62 posts by masking the glyphs, screenshotting
+                the hero with the title and without, and reading the plate at
+                exactly the pixels the letters cover: 16 of them were under
+                the 3:1 floor that large text has to clear, the worst at
+                1.99:1. Not a rounding error, an unreadable headline.
+
+                The stops below lift the middle of the gradient, which is
+                where the words are, and keep the band above them light so
+                the photograph still reads as a photograph. The ramp starts
+                at 26% rather than lower because a phone is the constraint:
+                at 375px the headline wraps to more lines and pushes the
+                breadcrumb above it further up the hero, where it measured
+                3.58:1 against a gradient tuned on a desktop.
+
+                The navigation has the same problem over this image and it
+                is not solved here, because it cannot be. Its inactive links
+                are --brand-ash, a mid grey, and no amount of scrim reaches
+                4.5:1 against a mid grey: the plate would have to be darker
+                than 0.017 relative luminance, which is a solid black bar.
+                CinematicNav takes an overHero prop and changes the text
+                instead.
+              */
               background:
-                "linear-gradient(180deg, hsl(var(--brand-obsidian) / 0.55) 0%, hsl(var(--brand-obsidian) / 0.2) 40%, hsl(var(--brand-obsidian) / 0.85) 85%, hsl(var(--brand-obsidian)) 100%)",
+                "linear-gradient(180deg, hsl(var(--brand-obsidian) / 0.55) 0%, hsl(var(--brand-obsidian) / 0.32) 26%, hsl(var(--brand-obsidian) / 0.78) 40%, hsl(var(--brand-obsidian) / 0.90) 56%, hsl(var(--brand-obsidian) / 0.94) 78%, hsl(var(--brand-obsidian)) 100%)",
             }}
           />
           <div
             aria-hidden
+            data-print-hide
             className="absolute inset-0"
             style={{
               backgroundImage:
@@ -355,7 +412,19 @@ export function CinematicBlogPost() {
           />
 
           {post.coverCredit && (
-            <p className="absolute bottom-2 right-3 z-10 max-w-[70vw] truncate font-mono-tight text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:text-[10px]">
+            /*
+              Wraps rather than truncates, because the licence is the end of
+              the string and truncation always ate it. "Photo nevil zaveri
+              (thank you for 20+M views:) · CC BY 2.0" needed 408px in a
+              263px box at 375px wide, so a phone showed the photographer and
+              no licence at all, on a CC BY image. Seventeen of the 145
+              credited posts were long enough to lose it.
+
+              Three lines is the ceiling: the title block above reserves 64px
+              of bottom padding, and three lines of this size come to about
+              36px, so the credit cannot grow into the headline.
+            */
+            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-3 max-w-[80vw] text-right font-mono-tight text-[9px] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[10px]">
               Photo{" "}
               <a
                 href={post.coverCredit.sourceUrl}
@@ -377,16 +446,30 @@ export function CinematicBlogPost() {
             </p>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 px-6 pb-16 md:px-10">
+          <div data-print-unstack className="absolute inset-x-0 bottom-0 px-6 pb-16 md:px-10">
             <div ref={heroRef} className="mx-auto max-w-[860px]">
               <Link
                 href="/blog"
                 data-testid="link-back-to-blog"
-                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                /*
+                  --brand-bone rather than --brand-ash, for the reason the
+                  nav links moved. This sits on the cover photo, and a mid
+                  grey cannot reach 4.5:1 against one at any scrim short of
+                  opaque. Measured at 1.60:1 in dark and 2.16:1 in light
+                  before this.
+                */
+                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-bone))]"
               >
                 ← Field notes
               </Link>
-              <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              {/*
+                The date, read time and revision line, on --brand-bone for
+                the same reason as the breadcrumb above it: this row sits on
+                the photograph, and --brand-ash measured 1.60:1 there. It
+                loses a little of its quietness against the headline, which
+                is the price of it being readable at all.
+              */}
+              <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone))]">
                 <span
                   className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
                   style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
@@ -417,7 +500,7 @@ export function CinematicBlogPost() {
                 Tags point at their topic hub where one exists.
 
                 Every pill used to link to /blog, the unfiltered index, so the
-                26 hubs had no inbound link from the 236 posts that belong to
+                26 hubs had no inbound link from the posts that belong to
                 them: the most obvious way in, clicking the subject you are
                 already reading about, went to a list of everything instead.
                 Tags with too few posts to earn a hub keep going to the index,

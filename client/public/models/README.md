@@ -1,17 +1,40 @@
 # Rack models
 
-Six procedurally generated racks, one per vendor, used by the hero model
-view on each rack page. Original geometry, not redistributed commercial
-meshes.
+Ten racks, used by the hero model view on each rack page. Original
+geometry, not redistributed commercial meshes.
+
+Six are procedural, one generator per vendor, where every device is drawn
+by that generator from published dimensions.
 
 | File | Page | Size | Triangles | Nodes |
 | --- | --- | --- | --- | --- |
+| `cisco-enterprise-42u.glb` | `/racks/cisco-enterprise-42u` | 1,112 KB | 253,282 | 343 |
+| `juniper-core-42u.glb` | `/racks/juniper-core-42u` | 1,022 KB | 239,852 | 292 |
+| `mikrotik-isp-24u.glb` | `/racks/mikrotik-isp-24u` | 939 KB | 216,560 | 277 |
+| `dell-compute-42u.glb` | `/racks/dell-compute-42u` | 739 KB | 153,388 | 264 |
 | `unifi-hero-rack.glb` | `/racks/unifi-12u` | 646 KB | 117,068 | 162 |
-| `cisco-enterprise-42u.glb` | `/racks/cisco-enterprise-42u` | 900 KB | 206,880 | 255 |
-| `juniper-core-42u.glb` | `/racks/juniper-core-42u` | 847 KB | 198,134 | 253 |
-| `mikrotik-isp-24u.glb` | `/racks/mikrotik-isp-24u` | 655 KB | 147,338 | 193 |
-| `dell-compute-42u.glb` | `/racks/dell-compute-42u` | 535 KB | 100,618 | 219 |
-| `storage-42u.glb` | `/racks/storage-dense-42u` | 333 KB | 55,120 | 143 |
+| `storage-42u.glb` | `/racks/storage-dense-42u` | 436 KB | 78,900 | 173 |
+
+Four are assembled by `script/models/build_modelled_racks.py` out of the
+device library in `script/models/devices/`, where each product is a module
+of its own drawn from photographs of that product. Those read as noticeably
+sharper than the procedural racks, because a generator shared across twenty
+devices cannot know that a Catalyst's uplink bay has a hinged seam and a
+MikroTik's port numbers are silkscreened in their own typeface.
+
+| File | Page | Size | Triangles | Nodes |
+| --- | --- | --- | --- | --- |
+| `juniper-mx-24u.glb` | `/racks/juniper-mx-24u` | 920 KB | 192,326 | 280 |
+| `dell-row-24u.glb` | `/racks/dell-row-24u` | 755 KB | 109,272 | 259 |
+| `cisco-edge-16u.glb` | `/racks/cisco-edge-16u` | 736 KB | 136,110 | 225 |
+| `mikrotik-crs-12u.glb` | `/racks/mikrotik-crs-12u` | 496 KB | 64,580 | 173 |
+
+The composer draws products from that library and, separately, the frame
+furniture that is not a product: patch panels, cable managers, blanking
+panels and PDUs, all of which the rack definitions mark `vendor: "Generic"`.
+It could only draw products for a while, and the effect was not a missing
+patch panel, it was four racks that were between a third and a half
+blanking panel with no PDU in three of them.
 
 ## Where they came from
 

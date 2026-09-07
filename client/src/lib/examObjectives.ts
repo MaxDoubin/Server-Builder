@@ -577,3 +577,24 @@ export function getDomain(examSlug: string, domainSlug: string) {
 export const EXAM_DOMAIN_PATHS = EXAMS.flatMap((e) =>
   e.domains.map((d) => ({ exam: e.slug, domain: d.slug })),
 );
+
+/**
+ * Posts whose title or tags match any of a domain's keywords.
+ *
+ * Here rather than in the page that first needed it, because the revision
+ * sheet lists the same posts for the same domains and two implementations
+ * of "what this domain covers" would eventually disagree. The keywords are
+ * written in the archive's own vocabulary for exactly this comparison, so
+ * the matching belongs next to them.
+ */
+export function postsForDomain<T extends { title: string; tags: string[] }>(
+  domain: ExamDomain,
+  posts: T[],
+): T[] {
+  const needles = domain.keywords.map((k) => k.toLowerCase());
+  return posts.filter((p) => {
+    const title = p.title.toLowerCase();
+    const tags = p.tags.map((t) => t.toLowerCase());
+    return needles.some((n) => title.includes(n) || tags.includes(n));
+  });
+}

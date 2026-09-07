@@ -47,33 +47,41 @@
   # Content-Security-Policy. Directive by directive:
   #
   #   default-src 'self'        fallback for anything not named below.
-  #   script-src  'unsafe-inline'
-  #                             REQUIRED, and it is a known, accepted cost, not
-  #                             an oversight. script/prerender.ts writes a
-  #                             <script type="application/ld+json"> block into
-  #                             every one of the ~240 static pages, and
-  #                             client/index.html carries three more. CSP
-  #                             treats those as inline scripts even though
-  #                             ld+json is data the parser never executes.
-  #                             Removing 'unsafe-inline' means either a nonce
-  #                             (needs a per-request server; this deploys as
-  #                             static files) or a sha256 hash per block (240
-  #                             hashes, regenerated on every content edit, in a
-  #                             header with a 2000 character ceiling). Neither
-  #                             fits. Note that 'unsafe-inline' here permits
-  #                             inline <script> only; there is no 'unsafe-eval',
-  #                             so eval and new Function stay blocked, and no
-  #                             external script host is allowed, so an injected
-  #                             <script src> still fails.
-  #                             One known Function-from-string site exists, in
-  #                             lodash inside recharts (dashboard-widgets
-  #                             chunk): root = freeGlobal || freeSelf ||
-  #                             Function("return this")(). freeSelf is always
-  #                             truthy in a browser, so the third branch never
-  #                             evaluates and no violation is raised. If the
-  #                             ops dashboards ever report an eval violation,
-  #                             that line is where to look. Do not add
-  #                             'unsafe-eval' for it.
+  #   script-src  'self'
+  #                             No 'unsafe-inline'. It used to be here, on the
+  #                             reasoning that a hash approach would need one
+  #                             hash per page regenerated on every content
+  #                             edit. Measured, that is not the shape of the
+  #                             problem: across all 382 built pages there is
+  #                             exactly ONE executable inline script, the boot
+  #                             veil from client/index.html, byte identical
+  #                             everywhere, so one hash covers the site.
+  #                             The other 730 inline blocks are
+  #                             type="application/ld+json", which the HTML
+  #                             parser treats as a data block and never
+  #                             prepares as a script, so script-src does not
+  #                             gate them. Verified by serving the built site
+  #                             under this exact policy: the boot script runs,
+  #                             React mounts, every ld+json block still parses,
+  #                             and no script-src violation is raised.
+  #                             scripts-ci/check-csp-hash.mjs recomputes the
+  #                             hash from the build and fails if it drifts from
+  #                             the one below, or if a second executable inline
+  #                             script ever appears.
+  #   script-src  'wasm-unsafe-eval'
+  #                             REQUIRED, and its absence was breaking the 3D
+  #                             pages in production. /racks/wired loads
+  #                             /draco/draco_decoder.wasm to decode the
+  #                             compressed geometry, and compiling a
+  #                             WebAssembly module needs an explicit grant.
+  #                             Under the previous policy that page raised 13
+  #                             WebAssembly compile errors and the models did
+  #                             not decode.
+  #                             This is NOT 'unsafe-eval'. It permits
+  #                             WebAssembly compilation only; eval and
+  #                             new Function stay blocked, which is what the
+  #                             note further down about lodash inside recharts
+  #                             is asking for.
   #   style-src                 Tailwind ships a stylesheet, but framer-motion
   #                             and GSAP animate by writing element.style on
   #                             every frame, which counts as inline style. The
@@ -82,9 +90,16 @@
   #                             data: covers any inlined face.
   #   img-src                   own images plus data: (inlined SVG/PNG) and
   #                             blob: (canvas readback, export.ts downloads).
-  #   connect-src 'self'        /api/* is answered in-page by lib/local-api,
-  #                             and nothing else calls out. Any exfiltration
-  #                             attempt to a third party origin is refused.
+  #   connect-src               /api/* is answered in-page by lib/local-api,
+  #                             and nothing else calls out to a network origin:
+  #                             'self' only, so any exfiltration attempt to a
+  #                             third party is still refused. blob: is for the
+  #                             Draco worker, which fetches its own module
+  #                             through a blob URL it created; without it that
+  #                             page raised 26 refused-to-connect errors. A
+  #                             blob URL can only be read by the origin that
+  #                             created it, so this does not open a path off
+  #                             the site.
   #   worker-src                the service worker at /sw.js, plus blob: for
   #                             libraries that construct a worker from source.
   #   object-src 'none'         no Flash/Java/embed surface at all.
@@ -94,7 +109,7 @@
   #                             relative asset URL at an attacker origin.
   #   form-action 'self'        an injected form cannot post credentials away.
   #   upgrade-insecure-requests belt and braces alongside HSTS.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-SwHGuGI0bYRIZC3y4iRrSw2WaPZ2TY6F5J54jws8Hs0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +135,29 @@
 # deliberate manual step, so a week of staleness is a known cost rather than
 # a surprise.
 /models/*
+  Cache-Control: public, max-age=604800
+
+# The Draco and Basis decoders: 1.2MB between them, and unhashed, so they
+# follow /models/* rather than /assets/*.
+#
+#   draco/draco_decoder.wasm     192 KB
+#   draco/draco_decoder.js       512 KB
+#   basis/basis_transcoder.wasm  500 KB
+#   basis/basis_transcoder.js     62 KB
+#
+# They were inheriting the HTML default, max-age=0, must-revalidate, and the
+# edge was not holding them either: draco_decoder.wasm came back
+# cf-cache-status: DYNAMIC. That mattered less while the CSP was refusing to
+# compile the wasm at all, since nothing downstream of it ran. It matters now.
+#
+# These are third party builds pinned by the dependency that ships them, so
+# the bytes only change on an upgrade, and a week is the same bounded
+# staleness the models take for the same reason: the path does not change
+# when the content does.
+/draco/*
+  Cache-Control: public, max-age=604800
+
+/basis/*
   Cache-Control: public, max-age=604800
 
 # The service worker must never be served stale, or a bad worker keeps itself
@@ -157,20 +195,22 @@
 /tools/*
   Cache-Control: public, max-age=0, must-revalidate
 
-/legacy
-  Cache-Control: public, max-age=0, must-revalidate
-
-/legacy/*
-  Cache-Control: public, max-age=0, must-revalidate
-
 # ---------------------------------------------------------------------------
 # Crawler directives.
 #
 # X-Robots-Tag is the only way to say noindex for a route with no prerendered
-# document of its own: these are served as the app shell, which carries the
-# home page's meta tags, so without this a crawler reads /noc as a duplicate
-# of the home page. robots.txt Disallow would be weaker, since a disallowed
-# URL with inbound links can still be listed by URL alone.
+# document of its own: those are served as the app shell, which carries the
+# home page's meta tags, so without this a crawler reads the URL as a
+# duplicate of the home page. robots.txt Disallow would be weaker, since a
+# disallowed URL with inbound links can still be listed by URL alone.
+#
+# The five simulator dashboards no longer rest on that argument. They are
+# prerendered with their own canonical and their own meta noindex, and the
+# header below stays as a second signal that does not depend on a crawler
+# reading the document. What it must never again be is the only signal:
+# paired with the shell's canonical to the home page, a noindex on a
+# different URL is the combination Google warns can transfer the noindex to
+# the canonical target. Search Console reported those URLs as soft 404s.
 #
 # None of the /* rules above set X-Robots-Tag, so nothing is joined here.
 # ---------------------------------------------------------------------------
@@ -192,11 +232,8 @@
 /build
   X-Robots-Tag: noindex, follow
 
-# The pre-redesign site. Nothing on the current site links to it, and its
-# pages duplicate /blog, /projects and /contact. Kept reachable for old
-# inbound links, kept out of the index so it cannot compete with the real one.
-/legacy
-  X-Robots-Tag: noindex, follow
-
-/legacy/*
-  X-Robots-Tag: noindex, follow
+# The pre-redesign site used to be noindexed here. It is not served any more:
+# _redirects 301s every /legacy URL to the page that replaced it, so there is
+# no document at those addresses to keep out of the index, and a noindex on a
+# redirect is at best noise and at worst a signal about the target. Removed
+# rather than left as decoration.

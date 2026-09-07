@@ -26,7 +26,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { RackDefinition } from "@/lib/rackTypes";
-import { U } from "@/components/cinematic/rack3d/rackConfig";
+import { RACK_TOTAL_WIDTH, U } from "@/components/cinematic/rack3d/rackConfig";
 import { useDeviceTier } from "@/lib/motion/useDeviceTier";
 import { BrandedChassis } from "./BrandedChassis";
 import { faceZ as faceZOf, rackDepth } from "./chassisLayout";
@@ -123,6 +123,22 @@ function useSweepTexture(footprint: number) {
   }, [footprint]);
 }
 
+/**
+ * How much room to leave around the frame, and how far the canvas is allowed
+ * to change shape to suit it.
+ *
+ * A rack shot with no air around it reads as cropped even when nothing is
+ * cut off, so six percent is the margin. The aspect bounds are the two ways
+ * an adaptive canvas can go wrong: too wide and a 9U rack sits in a letterbox
+ * with its own shadow for company, too tall and a 42U rack becomes a column
+ * that pushes its spec table off the screen on a laptop.
+ */
+const MARGIN = 1.06;
+const MIN_ASPECT = 0.78;
+const MAX_ASPECT = 1.4;
+
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+
 export function Rack3DView({ rack }: { rack: RackDefinition }) {
   const { dpr, tier } = useDeviceTier();
   const spots = useMemo(() => placements(rack), [rack]);
@@ -138,23 +154,62 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
   const sweep = useSweepTexture(Math.max(0.54, depth) / sweepR);
 
   /*
-    Frame the whole rack rather than guessing a distance. A 9U homelab and
-    a 14U compute rack are half a meter apart in height, and one camera
-    position cannot suit both: the fixed distance we started with cropped
-    the tall racks and left the short ones swimming. Pull back far enough
-    that the frame plus its casters fits the vertical field, then stand off
-    to the left the way a product shot is composed.
+    Frame the whole rack rather than guessing a distance.
+
+    The first version of this fitted the rack to the vertical field and left
+    it at that, in a fixed 4:3 box. That works for a 9U and fails badly for a
+    42U, and the reason is not the camera, it is the box: a 42U frame is two
+    metres tall and just over half a metre wide, so once its height fills a
+    landscape canvas its width covers about a third of it. Three quarters of
+    the picture is empty floor, and the devices, which are the entire point,
+    end up too small to read.
+
+    So the box follows the rack. The frame's own proportions, as seen from
+    the camera's angle, set the aspect of the canvas, clamped either side so
+    a short rack does not become a letterbox and a tall one does not become
+    a column too long to sit beside its own spec table. Then the distance
+    fits whichever axis is actually the tighter one, which is the vertical
+    for a tall rack and the horizontal for a short wide one.
   */
   const camera = useMemo(() => {
     const fov = 34;
+    /*
+      Round far enough to read as a solid object, not so far that the side
+      competes with the front. A rack is about half a metre wide and most of
+      a metre deep, so at the thirty four degrees this started on the side
+      projects exactly as wide as the face does, and the ports, which are
+      the reason anybody is looking, end up on the narrower half of the
+      picture. Twenty two degrees puts the face about two to one ahead and
+      still shows enough depth to place the devices in the frame.
+    */
+    const az = (22 * Math.PI) / 180;
     const span = height - FRAME_GROUND;
-    const dist = (span / 2 / Math.tan((fov * Math.PI) / 360)) * 1.28 + depth * 0.5;
-    const az = (34 * Math.PI) / 180;
-    return { fov, position: [Math.sin(az) * dist, mid * 0.26, Math.cos(az) * dist] as [number, number, number] };
+
+    /* What the frame measures across, turned to the camera's angle. */
+    const across = RACK_TOTAL_WIDTH * Math.cos(az) + depth * Math.sin(az);
+    /* And how far it reaches towards the camera, so the near corner clears. */
+    const towards = RACK_TOTAL_WIDTH * Math.sin(az) + depth * Math.cos(az);
+
+    const aspect = clamp((across / span) * 1.5, MIN_ASPECT, MAX_ASPECT);
+
+    const tanV = Math.tan((fov * Math.PI) / 360);
+    const tanH = tanV * aspect;
+    /* Fit both axes, take whichever needs the greater standoff. */
+    const dist =
+      Math.max(span / 2 / tanV, across / 2 / tanH) * MARGIN + towards / 2;
+
+    return {
+      fov,
+      aspect,
+      position: [Math.sin(az) * dist, mid * 0.26, Math.cos(az) * dist] as [number, number, number],
+    };
   }, [height, depth, mid]);
 
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3]">
+    <div
+      className="relative w-full overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3]"
+      style={{ aspectRatio: camera.aspect }}
+    >
       <Canvas
         dpr={dpr}
         shadows={false}

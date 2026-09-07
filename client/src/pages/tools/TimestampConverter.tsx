@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { CopyButton } from "@/components/ui/copy-button";
 import { ToolPanel, ToolShell } from "./ToolShell";
 
@@ -458,7 +459,10 @@ export function TimestampConverter() {
             ) : (
               <p id="epoch-hint" className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-ash))]">
                 {unit === "auto" && detected.ok
-                  ? `Read as ${UNIT_LABEL[detected.unit]}, from ${epochDraft.trim().replace(/^[+-]/, "").split(".")[0].length} digits.`
+                  ? (() => {
+                      const digits = epochDraft.trim().replace(/^[+-]/, "").split(".")[0].length;
+                      return `Read as ${UNIT_LABEL[detected.unit]}, from ${digits} ${pluralise(digits, "digit")}.`;
+                    })()
                   : "Spaces, commas and underscores are ignored, so a value pasted out of a log or a spreadsheet works."}
               </p>
             )}

@@ -3,7 +3,7 @@
  *
  * Metadata for every post is always available and cheap. Bodies are one
  * markdown file each under content/posts and load on demand through
- * loadPostContent, because inlining all 236 of them meant a reader who
+ * loadPostContent, because inlining all 247 of them meant a reader who
  * opened one article downloaded 1.1MB of the other 235.
  *
  * To add or edit a post, edit blogPosts.source.ts and run

@@ -93,6 +93,13 @@ PAGE_EYEBROWS = {
     "racks": "RACK LIBRARY",
     "ask": "ASK",
     "subscribe": "SUBSCRIBE",
+    # The simulator's five dashboards. Noindex, so these cards are never for
+    # a search result; they are for the link somebody pastes into a chat.
+    "noc": "NOC",
+    "network": "NETWORK OPS",
+    "floor": "FLOOR OPS",
+    "incidents": "INCIDENT COMMAND",
+    "build": "BUILD CENTER",
 }
 
 # Pages that keep the generic site image on purpose. The home page's card IS

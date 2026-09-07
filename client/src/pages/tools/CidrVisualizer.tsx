@@ -9,6 +9,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { ToolPanel, ToolResult, ToolShell } from "./ToolShell";
 import { MAX_LEVELS, MAX_LISTED } from "@/lib/toolLimits";
 
@@ -150,10 +151,37 @@ export function CidrVisualizer() {
 
   const messageId = "cidr-input-message";
 
+  /*
+    A spoken version of the diagram, for a live region.
+
+    The diagram and the block list are the whole answer here and both are
+    visual, so changing the prefix or the split redrew everything and
+    announced nothing. This says what the split produced, or why it could
+    not, and it is the only route to the answer if you are not looking at
+    the rectangles.
+  */
+  const summary =
+    parsed.kind !== "ok"
+      ? parsed.message
+      : `${ipToString(baseAddr)}/${basePrefix} split into /${split}: ` +
+        `${totalBlocks.toLocaleString()} ${pluralise(totalBlocks, "block")} of ` +
+        `${blockSize.toLocaleString()} ${pluralise(blockSize, "address")}` +
+        (totalBlocks > MAX_LISTED
+          ? `. The first ${MAX_LISTED} are listed.`
+          : `.`);
+
   return (
     <ToolShell
       slug="cidr-visualizer"
     >
+      <p
+        role="status"
+        aria-live="polite"
+        data-testid="text-summary"
+        className="sr-only"
+      >
+        {summary}
+      </p>
       <div className="space-y-6">
         <ToolPanel title="Block">
           <div className="grid gap-5 md:grid-cols-2">

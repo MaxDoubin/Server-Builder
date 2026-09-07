@@ -35,6 +35,7 @@ const DYNAMIC_COVERED_BY = {
   "/racks/:slug": "racks",
   "/study/:exam": "study",
   "/study/:exam/:domain": "study",
+  "/study/:exam/sheet": "study",
 };
 
 const ruleLines = redirects

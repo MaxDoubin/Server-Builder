@@ -222,6 +222,196 @@ class MikroTikIspRack(EnterpriseRack):
         self.rounded_prism(g, 'mt_shelf', (0.196, self.front_y - 0.0064, z), (0.024, 0.0044, h * 0.52),
                            radius=0.0012, bevel=0.0005, steps=5)
 
+    def mt_status(self, group: str, x: float, z: float, lit: int = 3) -> None:
+        """USER, FAULT, PWR2, PWR1: the four lamps MikroTik stack at the right.
+
+        Two of them are power, one per supply, and that is the tell for a
+        box with redundant PSUs rather than one. It is a small thing to draw
+        and it is the difference between a router you can lose a feed on and
+        one you cannot.
+        """
+        for i in range(4):
+            mat = ('green_led', 'black_matte', 'green_led', 'green_led')[i]
+            if i >= lit and mat == 'green_led':
+                mat = 'black_matte'
+            self.lens(group, x, z + 0.0126 - i * 0.0084, mat, 0.0013, self.front_y - 0.0048)
+
+    def build_ccr2116(self, z: float) -> None:
+        """Sixteen ARM cores and twelve copper ports, in MikroTik's white case.
+
+        The rack above this is black boxes and this one is white, which is
+        not a stylistic choice: MikroTik ship both and which case a product
+        comes in is a fact about the product. Getting that wrong makes a
+        rack of their hardware look like one product line when it is four.
+        """
+        g = 'CCR2116_12G'
+        self.panel_shell(g, z, 1, 0.200, face='mt_white')
+        for i in range(4):
+            self.sfp_cage(g, -0.204 + (i % 2) * 0.0200, z + (0.0092 if i < 2 else -0.0092),
+                          transceiver=(i < 2), blue=(i == 0))
+        for i in range(12):
+            self.rj45_socket(g, -0.150 + i * 0.0176, z - 0.0022, plugged=(i < 8), led=True)
+        self.led_strip(g, -0.150, 0.044, z + 0.0150, 12, 8)
+        self.rj45_socket(g, 0.084, z - 0.0022, plugged=False, led=False)
+        self.rounded_prism(g, 'mt_black_dark', (0.108, self.front_y - 0.0038, z - 0.0022),
+                           (0.0102, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        self.rounded_prism(g, 'mt_black_dark', (0.128, self.front_y - 0.0038, z - 0.0022),
+                           (0.0064, 0.0038, 0.0038), radius=0.0006, bevel=0.0002, steps=4)
+        self.mt_status(g, 0.196, z)
+
+    def build_ccr2004_16g(self, z: float) -> None:
+        """Sixteen copper in two rows, and two supplies behind them."""
+        g = 'CCR2004_16G'
+        self.panel_shell(g, z, 1, 0.210, face='mt_white')
+        for i in range(2):
+            self.sfp_cage(g, -0.204, z + (0.0092 if i == 0 else -0.0092), transceiver=True, blue=(i == 0))
+        for block in range(2):
+            for i in range(8):
+                x = -0.168 + block * 0.152 + i * 0.0176
+                for dz in (0.0092, -0.0092):
+                    self.rj45_socket(g, x, z + dz, plugged=(block == 0 or i < 4), led=True)
+        self.rj45_socket(g, 0.130, z + 0.0092, plugged=False, led=False)
+        self.rounded_prism(g, 'mt_black_dark', (0.130, self.front_y - 0.0038, z - 0.0092),
+                           (0.0102, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        self.mt_status(g, 0.196, z)
+
+    def build_crs317(self, z: float) -> None:
+        """Sixteen SFP+ in four groups of four, and no copper worth the name.
+
+        The one gigabit port on it is for booting and management, not for
+        traffic. A switch whose only copper is the way in is a different
+        animal from one with a copper front, and grouping the cages in fours
+        the way MikroTik do is what makes that readable at a glance.
+        """
+        g = 'CRS317_16S'
+        self.panel_shell(g, z, 1, 0.224, face='mt_white')
+        for grp in range(4):
+            for i in range(2):
+                for row, dz in enumerate((0.0092, -0.0092)):
+                    n = grp * 4 + i * 2 + row
+                    x = -0.202 + grp * 0.0840 + i * 0.0200
+                    self.sfp_cage(g, x, z + dz, transceiver=(n % 3 != 2), blue=(n % 4 == 0))
+            self.perforations(g, -0.202 + grp * 0.0840 + 0.0500, z, 0.016, 0.024, 3, 5)
+        self.rj45_socket(g, 0.130, z + 0.0092, plugged=True, led=True)
+        self.rj45_socket(g, 0.130, z - 0.0092, plugged=False, led=False)
+        self.mt_status(g, 0.196, z)
+
+    def build_crs326_24s(self, z: float) -> None:
+        """Twenty four SFP+ and two QSFP+, which is the densest fibre here."""
+        g = 'CRS326_24S'
+        self.panel_shell(g, z, 1, 0.200, face='mt_white')
+        for i in range(12):
+            x = -0.206 + i * 0.0186 + (i // 4) * 0.0040
+            for row, dz in enumerate((0.0092, -0.0092)):
+                n = i * 2 + row
+                self.sfp_cage(g, x, z + dz, transceiver=(n % 3 != 2), blue=(n % 6 == 0))
+        for i in range(2):
+            self.rounded_prism(g, 'nickel', (0.076, self.front_y - 0.009, z + (0.0094 if i == 0 else -0.0094)),
+                               (0.0280, 0.0032, 0.0122), radius=0.0011, bevel=0.0004, steps=5)
+            self.rounded_prism(g, 'black_plastic', (0.076, self.front_y - 0.0118, z + (0.0094 if i == 0 else -0.0094)),
+                               (0.0230, 0.0032, 0.0090), radius=0.0007, bevel=0.0002, steps=5)
+        self.rj45_socket(g, 0.116, z + 0.0092, plugged=True, led=True)
+        self.rj45_socket(g, 0.116, z - 0.0092, plugged=False, led=False)
+        self.rounded_prism(g, 'mt_black_dark', (0.144, self.front_y - 0.0038, z + 0.0092),
+                           (0.0102, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        self.rounded_prism(g, 'mt_black_dark', (0.144, self.front_y - 0.0038, z - 0.0092),
+                           (0.0066, 0.0038, 0.0040), radius=0.0006, bevel=0.0002, steps=4)
+        self.mt_status(g, 0.196, z)
+
+    def build_crs312(self, z: float) -> None:
+        """The only 10G copper in the rack, which is why it is here.
+
+        Everything else at this speed is fibre, and a 10GBASE-T handoff is
+        the one thing none of them can do. It is a black case rather than
+        the white the four boxes above it come in, and MikroTik do not say
+        why either.
+        """
+        g = 'CRS312_8XG'
+        self.panel_shell(g, z, 1, 0.183)
+        for i in range(8):
+            self.rj45_socket(g, -0.196 + i * 0.0220, z - 0.0022, plugged=(i < 5), led=True)
+        self.led_strip(g, -0.196, -0.042, z + 0.0150, 8, 5)
+        for i in range(4):
+            self.sfp_cage(g, 0.006 + (i % 2) * 0.0200, z + (0.0092 if i < 2 else -0.0092),
+                          transceiver=(i < 2), blue=(i == 0))
+        self.rj45_socket(g, 0.076, z + 0.0092, plugged=True, led=True)
+        self.rj45_socket(g, 0.076, z - 0.0092, plugged=False, led=False)
+        self.rounded_prism(g, 'mt_black_dark', (0.104, self.front_y - 0.0038, z),
+                           (0.0102, 0.0038, 0.0052), radius=0.0008, bevel=0.0003, steps=5)
+        self.perforations(g, 0.150, z, 0.056, 0.024, 9, 4)
+        self.mt_status(g, 0.196, z)
+
+    def build_crs328_poe(self, z: float) -> None:
+        """Twenty four ports that carry power, and one supply feeding them.
+
+        Five hundred watts in the box and about four hundred and fifty of it
+        available to the ports, in three groups with their own budget. That
+        is the number that decides how many access points a switch like this
+        can actually run, and it is not the port count.
+        """
+        g = 'CRS328_24P'
+        self.panel_shell(g, z, 1, 0.300, face='mt_white')
+        for block in range(3):
+            for i in range(4):
+                x = -0.208 + block * 0.0800 + i * 0.0180
+                for dz in (0.0092, -0.0092):
+                    self.rj45_socket(g, x, z + dz, plugged=(block < 2), led=True)
+        for i in range(4):
+            self.sfp_cage(g, 0.058 + (i % 2) * 0.0200, z + (0.0092 if i < 2 else -0.0092),
+                          transceiver=(i < 2), blue=(i == 0))
+        self.rounded_prism(g, 'port_bezel_amber', (0.118, self.front_y - 0.0034, z),
+                           (0.0198, 0.0036, 0.0164), radius=0.0012, bevel=0.0004, steps=5)
+        self.rj45_socket(g, 0.118, z, plugged=False, led=False)
+        self.rounded_prism(g, 'mt_black_dark', (0.146, self.front_y - 0.0038, z),
+                           (0.0066, 0.0038, 0.0040), radius=0.0006, bevel=0.0002, steps=4)
+        self.mt_status(g, 0.196, z)
+
+    def build_rb4011(self, z: float) -> None:
+        """One rack unit of space, and thirty millimetres of router in it.
+
+        This is the odd one and it is drawn odd on purpose. Every other box
+        in this rack is a 44mm chassis that fills its unit. The RB4011 is a
+        30mm desktop router with a pair of ears in the box, and MikroTik say
+        exactly that: the ears fasten it in a standard 1U rack space. So it
+        takes a unit and leaves about seven millimetres of daylight above
+        and below it, which you can see in a real rack and which no rack
+        elevation ever shows.
+
+        Drawing it flush would be the tidy lie. The gap is the fact.
+        """
+        g = 'RB4011_IGS'
+        body_h = 0.030
+        # Ears at the full unit height, because that is what bolts to the rail.
+        for x in (-0.236, 0.236):
+            self.rounded_prism(g, 'mt_black', (x, self.front_y + 0.0008, z),
+                               (0.030, 0.0100, U * 0.99), radius=0.0018, bevel=0.0007, steps=6)
+            for zz in (z - U * 0.32, z + U * 0.32):
+                self.screw(g, x, zz)
+            # The bracket arm reaching in to a chassis shorter than the unit.
+            self.rounded_prism(g, 'mt_black', (x * 0.86, self.front_y + 0.0010, z),
+                               (0.038, 0.0060, body_h * 0.92), radius=0.0010, bevel=0.0004, steps=5)
+
+        depth = 0.120
+        self.uv_box(g, 'steel_textured', (0, self.front_y + 0.010 + depth / 2, z),
+                    (0.400, depth, body_h * 0.88))
+        self.rounded_prism(g, 'mt_black', (0, self.front_y, z), (0.404, 0.0110, body_h),
+                           radius=0.0022, bevel=0.0009, steps=7)
+        # Finned heatsink ridges over the top cover, which is how it cools.
+        for i in range(9):
+            self.box(g, 'mt_black_dark', (-0.120 + i * 0.030, self.front_y + 0.060, z + body_h * 0.48),
+                     (0.0040, 0.100, 0.0018))
+
+        self.rounded_prism(g, 'mt_black_dark', (-0.186, self.front_y - 0.0040, z),
+                           (0.0062, 0.0040, 0.0062), radius=0.0012, bevel=0.0004, steps=5)
+        self.lens(g, -0.170, z + 0.0056, 'green_led', 0.0012, self.front_y - 0.0048)
+        self.lens(g, -0.170, z - 0.0056, 'blue_led', 0.0012, self.front_y - 0.0048)
+        self.sfp_cage(g, -0.146, z, transceiver=True, blue=True)
+        for block in range(2):
+            for i in range(5):
+                self.rj45_socket(g, -0.108 + block * 0.148 + i * 0.0176, z,
+                                 plugged=(block == 0 and i < 3), led=True)
+        return None
+
     def build_pdu(self, z_top: float) -> None:
         g = 'MIKROTIK_PDU'
         h = 1 * U
@@ -271,9 +461,14 @@ class MikroTikIspRack(EnterpriseRack):
         self.build_odf(top - 11 * U)
         self.build_cable_manager(at(13), 'CABLE_MANAGER_LOW')
 
-        print('BUILD blanks', flush=True)
-        self.build_blank(at(14, 4), 4, 'BLANK_LOW')
-        self.build_blank(at(18, 3), 3, 'BLANK_BASE')
+        print('BUILD routers and switches', flush=True)
+        self.build_ccr2116(at(14))
+        self.build_ccr2004_16g(at(15))
+        self.build_crs326_24s(at(16))
+        self.build_crs317(at(17))
+        self.build_crs312(at(18))
+        self.build_crs328_poe(at(19))
+        self.build_rb4011(at(20))
 
         print('BUILD power', flush=True)
         self.build_pdu(top - 21 * U)

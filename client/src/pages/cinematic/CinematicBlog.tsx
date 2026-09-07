@@ -244,7 +244,10 @@ export function CinematicBlog() {
             the first card.
           */}
           <ScrollReveal variants={fadeUp} delay={0.15} className="relative z-40">
-            <div className="mt-12 flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div
+              data-print-hide
+              className="mt-12 flex flex-col gap-3 lg:flex-row lg:items-center"
+            >
               <BlogSearch
                 posts={allPosts}
                 onResults={handleResults}
@@ -288,6 +291,7 @@ export function CinematicBlog() {
           <ScrollReveal variants={fadeUp} delay={0.2}>
             <div
               data-testid="blog-tags"
+              data-print-hide
               className="mt-10 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
             >
               <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
@@ -359,6 +363,7 @@ export function CinematicBlog() {
           {/* Difficulty filter. The labels are derived, see lib/postDifficulty.ts */}
           <div
             data-testid="blog-difficulty-filter"
+            data-print-hide
             className="mt-4 flex flex-wrap items-center gap-2 border-b border-[hsl(var(--brand-iron))] pb-4"
           >
             <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
@@ -505,8 +510,14 @@ export function CinematicBlog() {
 
           {remaining > 0 && (
             <div className="mt-12 flex flex-col items-center gap-3">
+              {/*
+                The button only, not the container: the "Showing 24 of 247"
+                line below it is the one thing that makes a printed page of
+                the archive honest about being a partial list.
+              */}
               <button
                 type="button"
+                data-print-hide
                 data-testid="button-load-more-posts"
                 onClick={() => setVisible((v) => v + PAGE)}
                 className="group inline-flex items-center gap-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.6)] px-8 py-3 font-mono-tight text-[11px] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone-dim))] backdrop-blur-md transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"

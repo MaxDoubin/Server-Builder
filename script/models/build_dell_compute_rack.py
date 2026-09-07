@@ -59,6 +59,7 @@ class DellComputeRack(EnterpriseRack):
             # this pair decides the rack's colour more than the chassis does.
             'drive_face': pbr('Carrier', [62, 66, 70, 255], 0.30, 0.50),
             'drive_handle': pbr('Carrier Release', [150, 155, 158, 255], 0.58, 0.40),
+            'dell_latch': pbr('Carrier Latch', [178, 100, 42, 255], 0.16, 0.62),
         })
 
     # --------------------------------------------------------------- parts
@@ -255,6 +256,116 @@ class DellComputeRack(EnterpriseRack):
         for k, mat in enumerate(('green_led', 'dell_blue', 'amber_led')):
             self.lens(g, 0.196, z + h * 0.22 - k * 0.010, mat, 0.0020)
 
+    def build_n3248te(self, z: float) -> None:
+        """The management switch, which the rack had no equivalent of.
+
+        Two S5248F leaves at the top carry data and nothing carried
+        management: eight servers and an MX7000 all present an iDRAC or an
+        OME port and they have to land somewhere. Forty eight gigabit copper
+        is what that somewhere looks like, and it is a different shape from
+        the all fibre leaves because management is still copper almost
+        everywhere.
+        """
+        g = 'N3248TE_ON'
+        self.panel_shell(g, z, 1, 0.400)
+        self.status_cluster(g, -0.212, z, U)
+        for block in range(4):
+            for i in range(6):
+                x = -0.184 + block * 0.0700 + i * 0.0110
+                for dz in (0.0094, -0.0094):
+                    self.rj45_socket(g, x, z + dz, plugged=(block < 2 or i < 3), led=True)
+        for i in range(4):
+            self.sfp_cage(g, 0.104 + (i % 2) * 0.0200, z + (0.0094 if i < 2 else -0.0094),
+                          transceiver=(i < 2), blue=(i == 0))
+        for i in range(2):
+            self.rounded_prism(g, 'nickel', (0.152, self.front_y - 0.009, z + (0.0094 if i == 0 else -0.0094)),
+                               (0.0250, 0.0032, 0.0122), radius=0.0011, bevel=0.0004, steps=5)
+            self.rounded_prism(g, 'black_plastic', (0.152, self.front_y - 0.0118, z + (0.0094 if i == 0 else -0.0094)),
+                               (0.0205, 0.0032, 0.0090), radius=0.0007, bevel=0.0002, steps=5)
+        self.rj45_socket(g, 0.184, z + 0.0094, plugged=True, led=True)
+        self.rj45_socket(g, 0.184, z - 0.0094, plugged=False, led=False)
+        self.rounded_prism(g, 'black_plastic', (0.208, self.front_y - 0.0038, z),
+                           (0.0100, 0.0038, 0.0050), radius=0.0008, bevel=0.0003, steps=5)
+
+    def build_r6615(self, z: float) -> None:
+        """A 1U AMD node, wearing the bezel the Intel ones next to it are not.
+
+        The R6615 and the R660 three units up are both 1U ten bay servers
+        and their bare fronts are near enough identical, which is true and
+        also useless to look at. Dell ship a plain snap on bezel for this
+        chassis and plenty of racks run some machines with one and some
+        without, usually because somebody pulled a drive and never put the
+        cover back. So this one is drawn bezelled: the mix is the honest
+        picture and it is the one that shows you the bezel exists.
+        """
+        g = 'R6615'
+        self.panel_shell(g, z, 1, 0.780, face='dell_graphite')
+        self.rounded_prism(g, 'dell_bezel', (-0.014, self.front_y - 0.0030, z),
+                           (0.372, 0.0078, U * 0.80), radius=0.0018, bevel=0.0007, steps=6)
+        # The bezel is perforated across its whole face, because the air
+        # still has to get through it.
+        self.perforations(g, -0.014, z, 0.344, 0.024, 58, 5, y=self.front_y - 0.0072)
+        self.rounded_prism(g, 'drive_handle', (-0.192, self.front_y - 0.0074, z),
+                           (0.0060, 0.0044, U * 0.52), radius=0.0010, bevel=0.0004, steps=4)
+        self.lens(g, 0.150, z, 'dell_blue', 0.0022, self.front_y - 0.0076)
+        self.control_panel(g, 0.196, z, U * 1.05)
+
+    def build_r7615(self, z_top: float) -> None:
+        """2U AMD, behind the LCD bezel Dell photograph it in.
+
+        The status panel on the bezel is the point of paying for it: a
+        service tag, a health state and a fault code readable from the cold
+        aisle without opening anything or logging into anything. Everything
+        behind it is twenty four two and a half inch carriers, which you
+        cannot see and do not need to.
+        """
+        g = 'R7615'
+        h = 2 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 2, 0.790, face='dell_graphite')
+        self.rounded_prism(g, 'dell_bezel', (-0.014, self.front_y - 0.0030, z),
+                           (0.372, 0.0078, h * 0.84), radius=0.0020, bevel=0.0008, steps=6)
+        # Dell's bezel vent is a hexagon field. Two offset grids read as one
+        # at this size and cost a third of the geometry of drawing hexagons.
+        self.perforations(g, -0.070, z + h * 0.10, 0.226, h * 0.44, 34, 7, y=self.front_y - 0.0072)
+        self.perforations(g, -0.070, z - h * 0.16, 0.226, h * 0.22, 34, 4, y=self.front_y - 0.0072)
+        # The LCD sits right of centre, with the wordmark plate beside it.
+        self.screen(g, 'chassis', 0.096, z, 0.060, h * 0.30)
+        self.rounded_prism(g, 'dell_graphite_dark', (0.060, self.front_y - 0.0074, z - h * 0.28),
+                           (0.070, 0.0034, 0.0060), radius=0.0008, bevel=0.0003, steps=4)
+        self.rounded_prism(g, 'drive_handle', (-0.192, self.front_y - 0.0074, z),
+                           (0.0060, 0.0044, h * 0.56), radius=0.0010, bevel=0.0004, steps=4)
+        self.control_panel(g, 0.196, z, h * 0.60)
+
+    def build_r7625(self, z_top: float) -> None:
+        """Twelve three and a half inch carriers, in three rows of four.
+
+        This is the other thing a 2U front can be. The R760 two units up
+        holds twenty four small carriers standing on edge; the same two rack
+        units hold twelve large ones lying flat, and the choice between them
+        is capacity against spindle count rather than a styling difference.
+        Drawing both is the only way that reads.
+
+        The latch is orange because Dell's is, and on a face of twelve dark
+        carriers the latches are the only thing you see from a distance.
+        """
+        g = 'R7625'
+        h = 2 * U
+        z = z_top - h / 2
+        self.panel_shell(g, z, 2, 0.800, face='dell_graphite')
+        for row in range(3):
+            for col in range(4):
+                cx = -0.144 + col * 0.0960
+                cz = z + h * 0.27 - row * h * 0.27
+                self.rounded_prism(g, 'drive_face', (cx, self.front_y - 0.0028, cz),
+                                   (0.0900, 0.0072, h * 0.235), radius=0.0010, bevel=0.0004, steps=5)
+                self.rounded_prism(g, 'dell_latch', (cx - 0.0398, self.front_y - 0.0068, cz),
+                                   (0.0058, 0.0042, h * 0.150), radius=0.0008, bevel=0.0003, steps=4)
+                self.lens(g, cx + 0.0374, cz + h * 0.070, 'green_led', 0.0011, self.front_y - 0.0072)
+                self.lens(g, cx + 0.0374, cz - h * 0.070, 'amber_led', 0.0010, self.front_y - 0.0072)
+                self.perforations(g, cx, cz, 0.060, h * 0.12, 11, 3, y=self.front_y - 0.0070)
+        self.control_panel(g, 0.196, z, h * 0.60)
+
     def build_pdu(self, z_top: float) -> None:
         g = 'DELL_PDU'
         h = 2 * U
@@ -314,9 +425,11 @@ class DellComputeRack(EnterpriseRack):
         # units are not neutral: hot exhaust turns straight back through
         # them into the intakes above, and every vendor's thermal guide
         # says to close them. Real panels come in 1U, 2U and 4U.
-        print('BUILD blanks', flush=True)
-        self.build_blank(at(30, 4), 4, 'BLANK_LOW')
-        self.build_blank(at(34, 2), 2, 'BLANK_BASE')
+        print('BUILD management and AMD nodes', flush=True)
+        self.build_n3248te(at(30))
+        self.build_r6615(at(31))
+        self.build_r7615(top - 32 * U)
+        self.build_r7625(top - 34 * U)
 
         print('BUILD power', flush=True)
         self.build_pdu(top - 36 * U)

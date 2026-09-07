@@ -35,7 +35,15 @@ export function Onboarding({ steps = defaultSteps, storageKey = "hyperscale-onbo
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const hasCompleted = localStorage.getItem(storageKey) === "true";
+    // Wrapped because a browser set to block site data throws on the access
+    // rather than returning null, and this runs in an effect, so the throw
+    // reaches the root and unmounts the page under the tour.
+    let hasCompleted = false;
+    try {
+      hasCompleted = localStorage.getItem(storageKey) === "true";
+    } catch {
+      /* Treat it as unseen. The worst case is showing it once per visit. */
+    }
     if (!hasCompleted) {
       setIsOpen(true);
     }
@@ -50,15 +58,18 @@ export function Onboarding({ steps = defaultSteps, storageKey = "hyperscale-onbo
 
   const handleClose = () => {
     setIsOpen(false);
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+    try {
       localStorage.setItem(storageKey, "true");
+    } catch {
+      /* Then it opens again next visit, which is better than not closing. */
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 max-w-sm">
+    <div data-print-hide className="fixed bottom-6 left-6 z-50 max-w-sm">
       <Card className="p-4 space-y-3 bg-background/90 backdrop-blur-md border border-cyan-500/20 shadow-[0_0_25px_rgba(34,211,238,0.2)]">
         <div className="flex items-start justify-between gap-2">
           <div>

@@ -85,7 +85,7 @@ export function AchievementsPanel({
                     >
                       {achievement.title}
                     </span>
-                    <span className="shrink-0 text-[9px] uppercase tracking-widest text-white/35">
+                    <span className="shrink-0 text-[9px] uppercase tracking-widest text-white/50">
                       {isUnlocked ? "Unlocked" : "Locked"}
                     </span>
                   </div>
@@ -93,7 +93,7 @@ export function AchievementsPanel({
                     {isUnlocked ? achievement.description : achievement.requirement}
                   </p>
                   {progress && (
-                    <p className="mt-0.5 font-mono text-[9px] text-white/40">{progress}</p>
+                    <p className="mt-0.5 font-mono text-[9px] text-white/50">{progress}</p>
                   )}
                 </div>
               </div>

@@ -127,6 +127,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
                   removeEquipmentMutation.mutate(eqData.installed.id);
                 }}
                 data-testid={`remove-equipment-${eqData.installed.id}`}
+                aria-label={`Remove ${eqData.equipment.name} from unit ${u}`}
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
@@ -184,7 +185,13 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
               <p className="text-sm text-muted-foreground">Model {rack.type.replace(/_/g, " ")}</p>
             </div>
           </div>
-          <Button size="icon" variant="ghost" onClick={onClose} data-testid="button-close-panel">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onClose}
+            data-testid="button-close-panel"
+            aria-label={`Close the details for rack ${rack.name}`}
+          >
             <X className="w-5 h-5" />
           </Button>
         </div>

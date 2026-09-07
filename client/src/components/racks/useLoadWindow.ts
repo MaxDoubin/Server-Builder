@@ -4,12 +4,19 @@
  * The wired rack asks for ten glTF files, and their textures are embedded,
  * so what the browser is really handed is ten downloads and around thirty
  * six image decodes kicked off in the same tick. On a desktop that is fine.
- * On a phone it is not: iOS Safari decodes these through an img element
- * rather than createImageBitmap, and past a certain number of simultaneous
- * decodes some of them simply never fire load or error. Not slow, not
- * failed: nothing. The request sits there forever, the device waiting on it
- * stays behind its placeholder, and the progress readout stops partway and
+ * On a phone it is not: past some number of simultaneous decodes, some of
+ * them never complete. Not slow, not failed: nothing. No rejected promise,
+ * no error event, no console output. The device waiting on that texture
+ * stays behind its placeholder and the progress readout stops partway and
  * never moves again.
+ *
+ * On the mechanism, only as much as is actually known. An earlier version of
+ * this comment said iOS decodes through an img element rather than
+ * createImageBitmap, and that is only true below Safari 17: GLTFLoader picks
+ * TextureLoader for Safari under 17 and Firefox under 98, and
+ * ImageBitmapLoader for everything else. Both paths fail the same way from
+ * here, which is a callback that never arrives, so the limit below is the
+ * right fix on either branch and nothing depends on knowing which.
  *
  * That was the eighty three percent. It was never a decoder or a transcoder
  * problem, which is worth writing down because an earlier fix went after the

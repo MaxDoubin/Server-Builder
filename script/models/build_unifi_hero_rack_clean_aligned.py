@@ -353,6 +353,7 @@ class UniFiHeroRack(Builder):
             'black_cable': pbr('Power Cable Rubber', [15, 16, 17, 255], 0.0, 0.79),
             'green_led': pbr('Green LED', [45, 255, 128, 255], 0.0, 0.14, emissive=[0.18, 1.0, 0.42]),
             'amber_led': pbr('Amber LED', [255, 180, 62, 255], 0.0, 0.14, emissive=[1.0, 0.45, 0.08]),
+            'red_led': pbr('Red LED', [255, 82, 70, 255], 0.0, 0.14, emissive=[1.0, 0.12, 0.06]),
             'blue_led': pbr('Blue LED', [74, 178, 255, 255], 0.0, 0.12, emissive=[0.12, 0.55, 1.0]),
             'white_led': pbr('White LED', [235, 248, 255, 255], 0.0, 0.10, emissive=[0.8, 0.95, 1.0]),
             'dark_label': pbr('Printed Gray', [58, 62, 64, 255], 0.08, 0.52),

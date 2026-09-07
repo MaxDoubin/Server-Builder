@@ -152,20 +152,51 @@ function storageKey(deckId: string): string {
   return `${STORAGE_PREFIX}${deckId}`;
 }
 
+const GRADES: Grade[] = ["again", "hard", "good", "easy"];
+
 /**
- * Read a deck's saved schedules.
+ * Whether a stored value is a schedule this module can actually compute on.
+ *
+ * Casting the parsed object to DeckState was not enough. The scheduler does
+ * arithmetic on every field, and JavaScript will not stop it: a schedule
+ * whose numbers are strings grades to intervalDays NaN and due NaN, and a
+ * card whose due date is NaN never compares as due again, so it leaves the
+ * rotation permanently. The label under the buttons reads "NaN yr" while
+ * that happens, and gradeCard writes the result straight back, so one bad
+ * entry keeps getting worse instead of being cleaned up.
+ *
+ * A dropped entry becomes a new card, which is the right way to lose this:
+ * the reader repeats one card sooner than they needed to.
+ */
+function isSchedule(value: unknown): value is CardSchedule {
+  if (!value || typeof value !== "object") return false;
+  const s = value as Record<string, unknown>;
+  for (const field of ["ease", "intervalDays", "repetitions", "due", "reviews"]) {
+    if (typeof s[field] !== "number" || !Number.isFinite(s[field])) return false;
+  }
+  return s.lastGrade === undefined || GRADES.includes(s.lastGrade as Grade);
+}
+
+/**
+ * Read a deck's saved schedules, keeping only the ones that are usable.
  *
  * localStorage throws in private-browsing modes and when storage is
  * disabled, and JSON.parse throws on anything corrupt, so both are caught
- * and treated as "no saved state" rather than crashing the trainer.
+ * and treated as "no saved state" rather than crashing the trainer. Entries
+ * that parse but are not schedules are dropped one at a time, so one bad
+ * card does not cost the reader the rest of the deck's progress.
  */
 export function loadDeckState(deckId: string): DeckState {
   try {
     const raw = localStorage.getItem(storageKey(deckId));
     if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") return parsed as DeckState;
-    return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+    const state: DeckState = {};
+    for (const [id, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (isSchedule(value)) state[id] = value;
+    }
+    return state;
   } catch {
     return {};
   }

@@ -43,42 +43,19 @@ const DIST = path.resolve("dist/public");
  * fails the build, and a page that has been fixed but is still listed also
  * fails the build so the list cannot outlive the bug.
  *
- * Every entry below is one root cause: injectRootContent in
- * script/prerender.ts passes rendered article HTML as the replacement
- * argument of String.replace, so a "$&" in the article splices the page
- * shell into the middle of it. See scripts-ci/check-prerender-splice.mjs for
- * the full explanation and the one-line fix. Owner: script/prerender.ts.
+ * Empty, and it should stay that way.
+ *
+ * It held five posts against one root cause: injectRootContent in
+ * script/prerender.ts passed rendered article HTML as the replacement
+ * argument of String.replace, where a "$&" means the whole match rather than
+ * two characters. The trigger was ordinary prose, a shell line ending
+ * "installed$" whose closing quote esc() turned into &quot;, and the result
+ * was the page shell spliced into the middle of the article with <pre>,
+ * <code>, <article> and <main> left open for the rest of the document.
+ * prerender.ts now builds that replacement with a function, and escapes
+ * every other interpolated value, so a dollar in an article is a dollar.
  */
-const KNOWN = {
-  "blog/constrained-decoding-structured-output.html": ["duplicate-id", "unclosed"],
-  "blog/idempotence-and-config-drift.html": ["duplicate-id", "unclosed"],
-  "blog/linux-disk-io-troubleshooting.html": ["duplicate-id", "unclosed"],
-  "blog/linux-network-tuning-without-cargo-cult.html": ["duplicate-id", "unclosed"],
-  "blog/secrets-without-a-vault-team.html": ["duplicate-id", "unclosed"],
-};
-
-/**
- * The one orphan </div> that every page carries, from the same function.
- *
- * injectRootContent replaces `<div id="root"> ... </div> <style>` with a
- * string that closes #root itself:
- *
- *     `<div id="root">${CSS}<div id="prerender">${content}</div></div>\n    <style>`
- *
- * The template's own `</div>` after the spinner's <style> block is not part
- * of the match, so it survives, and every document ends with two <div> opens
- * against three closes. Browsers drop an unmatched end tag, so nothing looks
- * wrong, but the served markup is invalid on all 336 pages.
- *
- * Narrowly scoped on purpose: only a `</div>` with nothing after it but
- * `</body>` and `</html>` is waved through. A stray close anywhere else is a
- * new bug and still fails the build.
- *
- * Fix: either extend the pattern to `[\\s\\S]*?</div>\\s*<style>[\\s\\S]*?</style>\\s*</div>`
- * and emit the closing `</div>` once, or drop one `</div>` from the
- * replacement string. Owner: script/prerender.ts.
- */
-const KNOWN_TRAILING_DIV = "trailing </div> from injectRootContent";
+const KNOWN = {};
 
 /** Elements that never have an end tag. */
 const VOID = new Set([
@@ -241,11 +218,6 @@ function inspect(html) {
   const tags = scanTags(html);
 
   /** Is this the last tag in the document apart from </body> and </html>? */
-  const atDocumentEnd = (index) =>
-    tags
-      .slice(index + 1)
-      .every((t) => t.close && (t.name === "body" || t.name === "html"));
-
   for (let index = 0; index < tags.length; index += 1) {
     const tag = tags[index];
     if (tag.name.endsWith(":unterminated")) {
@@ -302,12 +274,7 @@ function inspect(html) {
 
     const at = stack.map((t) => t.name).lastIndexOf(tag.name);
     if (at === -1) {
-      add(
-        "stray-close",
-        tag.start,
-        `</${tag.name}> with no matching <${tag.name}>`,
-        { trailingDiv: tag.name === "div" && atDocumentEnd(index) },
-      );
+      add("stray-close", tag.start, `</${tag.name}> with no matching <${tag.name}>`);
       continue;
     }
     // Anything above the match was left open.
@@ -343,7 +310,6 @@ if (pages.length === 0) {
 const failures = [];
 const knownHits = [];
 const seenKnown = new Set();
-let trailingDivPages = 0;
 let totalTags = 0;
 
 for (const file of pages) {
@@ -355,10 +321,6 @@ for (const file of pages) {
   const allowed = KNOWN[rel];
   for (const fault of faults) {
     const where = `${rel}:${fault.line}`;
-    if (fault.trailingDiv) {
-      trailingDivPages += 1;
-      continue;
-    }
     if (allowed && allowed.includes(fault.kind)) {
       seenKnown.add(rel);
       knownHits.push(`  ${where}  [${fault.kind}] ${fault.detail}`);
@@ -396,20 +358,6 @@ if (stale.length > 0) {
   );
 }
 
-if (trailingDivPages === 0) {
-  fail(
-    `No page carries the ${KNOWN_TRAILING_DIV} any more.\n\n` +
-      `  That is the fix landing in injectRootContent. Delete ` +
-      `KNOWN_TRAILING_DIV\n  and the trailingDiv branch from ` +
-      `scripts-ci/check-html-validity.mjs, so a\n  stray </div> at the end of ` +
-      `a document fails the build again.`,
-  );
-}
-console.log(
-  `  ${trailingDivPages}/${pages.length} pages carry the known ` +
-    `${KNOWN_TRAILING_DIV} (see the comment on KNOWN_TRAILING_DIV).`,
-);
-
 if (knownHits.length > 0) {
   console.log(
     `\n${knownHits.length} known fault(s) on ${seenKnown.size} page(s), ` +
@@ -440,7 +388,9 @@ if (failures.length > 0) {
 const clean = pages.length - seenKnown.size;
 console.log(
   `\nOK  ${clean} of ${pages.length} pages parse cleanly: no duplicate ids, no ` +
-    `nested\n    anchors, no blocks inside a <p>, every element closed. The ` +
-    `remaining\n    ${seenKnown.size} carry only the known faults listed above, ` +
-    `and no new fault\n    was found anywhere.`,
+    `nested\n    anchors, no blocks inside a <p>, every element closed.` +
+    (seenKnown.size > 0
+      ? ` The remaining\n    ${seenKnown.size} carry only the faults listed for ` +
+        `them in KNOWN, and no new\n    fault was found anywhere.`
+      : ``),
 );

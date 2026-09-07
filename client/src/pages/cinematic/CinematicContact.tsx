@@ -259,7 +259,17 @@ export function CinematicContact() {
                 >
                   <div className="relative border-b border-[hsl(var(--brand-iron))] p-6">
                     <div className="scanline pointer-events-none absolute inset-0 opacity-10" />
-                    <div className="relative flex items-center justify-between">
+                    {/*
+                      Wraps, because it did not.
+
+                      justify-between with two items that cannot shrink below
+                      their content put "channel · live" 12px past the right
+                      edge of a 375px screen, and the card around it is
+                      overflow-hidden, so the badge was cut off mid-word
+                      rather than merely tight. It drops under the heading on
+                      a narrow screen now and sits beside it from sm up.
+                    */}
+                    <div className="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                       <div>
                         <ClipReveal delay={0.1} direction="left">
                           <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">

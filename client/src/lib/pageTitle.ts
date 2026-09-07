@@ -2,8 +2,8 @@
  * Page titles that survive a Google results page.
  *
  * Google renders roughly 60 characters of a <title> and cuts the rest. 114 of
- * this site's 331 pages were over that, every one because a specific, well
- * written article title had " | Max Doubin" appended. The branding is what
+ * this site's pages were over that when it was measured, every one because a
+ * specific, well written article title had " | Max Doubin" appended. The branding is what
  * got shown; the words a searcher typed are what got cut.
  *
  * So the suffix is a nice-to-have. Short titles keep it, where the brand is

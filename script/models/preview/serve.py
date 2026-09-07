@@ -56,6 +56,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-socketserver.TCPServer.allow_reuse_address = True
-with socketserver.TCPServer(('127.0.0.1', int(sys.argv[1] if len(sys.argv) > 1 else 4310)), Handler) as srv:
+class Server(socketserver.ThreadingTCPServer):
+    """Threaded: a viewer page opens the model, three.js, a decoder and a
+    transcoder at once, and a single threaded server answers those in series
+    while the next page waits, which at a few hundred models is the
+    difference between minutes and hours."""
+
+    allow_reuse_address = True
+    daemon_threads = True
+
+
+with Server(('127.0.0.1', int(sys.argv[1] if len(sys.argv) > 1 else 4310)), Handler) as srv:
     srv.serve_forever()

@@ -1071,6 +1071,7 @@ export function ScrollProgressBar({
 
   return (
     <motion.div
+      data-print-hide
       className={`fixed left-0 right-0 top-0 z-[100] h-[2px] origin-left ${className ?? ""}`}
       style={{
         scaleX,
@@ -1108,6 +1109,7 @@ export function CursorGlow({
 
   return (
     <motion.div
+      data-print-hide
       className="pointer-events-none fixed z-[90] rounded-full blur-3xl"
       style={{
         left: springX,

@@ -11,6 +11,7 @@
  */
 
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
@@ -106,7 +107,12 @@ export function CinematicRackDetail() {
     description: rack
       ? `An annotated ${rack.name} rack elevation: every device, port count and published wattage, with sources. Click any device to learn what it does.`
       : "This rack is not in the library.",
-    canonical: `${SITE_URL}/racks/${params?.slug ?? ""}`,
+    canonical: rack ? `${SITE_URL}/racks/${rack.slug}` : `${SITE_URL}/racks`,
+    // A slug that matches nothing still renders a page, because the router
+    // cannot know the library from a static host. Without this the soft 404
+    // is indexable, and the canonical above used to point at the bad URL,
+    // which asks for it to be indexed rather than ignored.
+    noindex: !rack,
   });
 
   if (!rack) {
@@ -164,7 +170,10 @@ export function CinematicRackDetail() {
         <div className="mx-auto max-w-[1200px]">
           <header className="max-w-3xl">
             <nav aria-label="Breadcrumb" className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
-              <Link href="/racks" className="transition-colors hover:text-[hsl(var(--brand-signal))]">
+              <Link
+                href="/racks"
+                className="inline-flex min-h-[24px] items-center transition-colors hover:text-[hsl(var(--brand-signal))]"
+              >
                 Rack Library
               </Link>
               <span aria-hidden="true"> / </span>
@@ -228,8 +237,11 @@ export function CinematicRackDetail() {
                   </h2>
                   <dl className="mt-4">
                     {[
-                      ["Frame", `${rack.height} rack units`],
-                      ["Mounted", `${unitsUsed(rack)}U across ${rack.devices.length} devices`],
+                      ["Frame", `${rack.height} rack ${pluralise(rack.height, "unit")}`],
+                      [
+                        "Mounted",
+                        `${unitsUsed(rack)}U across ${rack.devices.length} ${pluralise(rack.devices.length, "device")}`,
+                      ],
                       [
                         "Published draw",
                         power.total > 0
@@ -290,7 +302,7 @@ export function CinematicRackDetail() {
                         <button
                           type="button"
                           onClick={() => select(d.id)}
-                          className="group flex w-full items-baseline justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[hsl(220_10%_9%)]"
+                          className="group flex w-full items-baseline justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[hsl(var(--brand-graphite))]"
                         >
                           <span className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
                             {d.vendor === "Generic" ? d.model : `${d.vendor} ${d.model}`}
@@ -309,11 +321,18 @@ export function CinematicRackDetail() {
                   <ul className="mt-3 space-y-2">
                     {rack.sources.map((s) => (
                       <li key={s.url} className="font-mono-tight text-[13px] leading-relaxed">
+                        {/*
+                          inline-flex with a minimum height rather than the
+                          text's own 15 pixels. WCAG 2.2 exempts a link inside
+                          a sentence, and these are not: they are a list of
+                          separate targets, one per row, and on a phone the
+                          rows were close enough together to hit the wrong one.
+                        */}
                         <a
                           href={s.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+                          className="inline-flex min-h-[24px] items-center text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
                         >
                           {s.label}
                           <span className="sr-only"> (opens in a new tab)</span>

@@ -44,7 +44,7 @@ function ObjectiveRow({ result }: { result: ObjectiveResult }) {
               ? "border-emerald-400/70 bg-emerald-400/20 text-emerald-200"
               : isBrokenGuard
                 ? "border-rose-400/70 bg-rose-500/15 text-rose-200"
-                : "border-white/25 text-white/40"
+                : "border-white/25 text-white/50"
           }`}
         >
           {met ? "✓" : isBrokenGuard ? "!" : ""}
@@ -77,7 +77,7 @@ function ObjectiveRow({ result }: { result: ObjectiveResult }) {
             <span className="font-mono text-white/60">{progress.text}</span>
             <span
               className={
-                met ? "text-emerald-300" : isBrokenGuard ? "text-rose-300" : "text-white/40"
+                met ? "text-emerald-300" : isBrokenGuard ? "text-rose-300" : "text-white/50"
               }
             >
               {met ? "met" : isBrokenGuard ? "broken" : "not yet"}
@@ -120,7 +120,7 @@ export function ScenarioPanel({
           reports: rack count, measured load, cooling against the plant that is online, and the
           equipment installed. Objectives keep evaluating while the panel is closed.
         </p>
-        <div className="text-[10px] uppercase tracking-widest text-white/40">
+        <div className="text-[10px] uppercase tracking-widest text-white/50">
           {completedIds.length} of {scenarios.length} closed out
         </div>
         <ul className="space-y-2">
@@ -178,7 +178,7 @@ export function ScenarioPanel({
         </div>
         <div className="shrink-0 text-right">
           <div className="font-mono text-[11px] text-white/70">{formatElapsed(elapsedSeconds)}</div>
-          <div className="text-[9px] uppercase tracking-widest text-white/40">
+          <div className="text-[9px] uppercase tracking-widest text-white/50">
             {evaluation ? `${evaluation.metCount}/${evaluation.total}` : "0/0"}
           </div>
         </div>
@@ -195,7 +195,7 @@ export function ScenarioPanel({
         <>
           <p className="text-[11px] leading-relaxed text-white/70">{scenario.briefing}</p>
           <p className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 text-[10px] leading-relaxed text-white/55">
-            <span className="uppercase tracking-widest text-white/40">Starting condition · </span>
+            <span className="uppercase tracking-widest text-white/50">Starting condition · </span>
             {scenario.startingCondition}
           </p>
         </>

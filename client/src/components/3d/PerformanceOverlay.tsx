@@ -90,7 +90,7 @@ export function PerformanceOverlay({
           </div>
           <div className="mt-1 grid grid-cols-3 gap-2 text-[10px] font-mono">
             <div>
-              <div className="text-white/40">FPS</div>
+              <div className="text-white/50">FPS</div>
               <div
                 className={
                   warnRef.current.isLow ? "text-orange-300" : "text-cyan-200"
@@ -100,7 +100,7 @@ export function PerformanceOverlay({
               </div>
             </div>
             <div>
-              <div className="text-white/40">Frame</div>
+              <div className="text-white/50">Frame</div>
               <div
                 className={
                   warnRef.current.isLow ? "text-orange-300" : "text-cyan-200"
@@ -110,7 +110,7 @@ export function PerformanceOverlay({
               </div>
             </div>
             <div>
-              <div className="text-white/40">Quality</div>
+              <div className="text-white/50">Quality</div>
               <div
                 className={
                   qualityMode === "high" ? "text-cyan-200" : "text-white/60"

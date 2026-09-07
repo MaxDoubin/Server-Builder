@@ -5,7 +5,7 @@
  * difficulty in its front matter. The label below is computed from the two
  * things the generated index actually knows about a post, its tags and its
  * word count, using the fixed scoring rules in this file. Nobody sat down
- * and graded 236 articles.
+ * and graded them.
  *
  * That makes the label a hint about the assumed background, not a promise.
  * It answers "roughly how much do I need to already know before this is

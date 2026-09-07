@@ -181,8 +181,8 @@ export function CinematicRacks() {
       kicker: "Build your own",
       title: "The rack builder",
       blurb:
-        "Fifty one rack mountable UniFi devices and an empty frame. Pick hardware, stack it, and see what the build weighs. Saves in your browser and shares as a link.",
-      stats: ["51 devices", "6U to 42U", "shareable"],
+        "Seventy five rack mountable devices from six vendors and an empty frame. Pick hardware, stack it, and see what the build weighs. Saves in your browser and shares as a link.",
+      stats: ["75 devices", "6U to 42U", "shareable"],
       art: <BuilderMini />,
     },
     {
@@ -248,9 +248,17 @@ export function CinematicRacks() {
 
           <section className="mt-14">
             <div className="flex items-baseline gap-4">
-              <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              {/*
+                A heading, not a styled div. It reads as the section's title
+                and it labels the cards below it, and while it was a div the
+                document outline went straight from the page h1 to the h3 on
+                each card with nothing in between: a screen reader listing the
+                headings saw a level skipped and no name for the group. The
+                type is unchanged.
+              */}
+              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · In 3D · Vendor geometry
-              </div>
+              </h2>
               <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
             </div>
             <p className="mt-4 max-w-3xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
@@ -266,10 +274,10 @@ export function CinematicRacks() {
                 <Link
                   key={f.href}
                   href={f.href}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_10%_6%)] transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:border-[hsl(var(--brand-signal))]"
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite))] transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:border-[hsl(var(--brand-signal))]"
                   data-testid={`link-featured-${f.slug}`}
                 >
-                  <div className="aspect-[22/15] border-b border-[hsl(var(--brand-iron)/0.7)] bg-[hsl(220_12%_4%)] p-3 transition-transform duration-300 motion-safe:group-hover:scale-[1.015]">
+                  <div className="aspect-[22/15] border-b border-[hsl(var(--brand-iron)/0.7)] bg-[hsl(var(--brand-void))] p-3 transition-transform duration-300 motion-safe:group-hover:scale-[1.015]">
                     {f.art}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
@@ -307,7 +315,7 @@ export function CinematicRacks() {
                 <Link
                   key={rack.slug}
                   href={`/racks/${rack.slug}`}
-                  className="group rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(220_10%_6%)] p-5 transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:border-[hsl(var(--brand-signal))]"
+                  className="group rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite))] p-5 transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:border-[hsl(var(--brand-signal))]"
                   data-testid={`link-rack-${rack.slug}`}
                 >
                   <div className="mx-auto max-w-[300px] transition-transform duration-300 motion-safe:group-hover:scale-[1.02]">

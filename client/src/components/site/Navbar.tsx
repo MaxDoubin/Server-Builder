@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useTheme } from "@/lib/theme-provider";
-import { Menu, X, Sun, Moon } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { DisplayMenu } from "@/components/ui/display-menu";
 
 const navLinks = [
   { href: "/", label: "About" },
@@ -20,7 +13,6 @@ const navLinks = [
 
 export function Navbar() {
   const [location] = useLocation();
-  const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -33,6 +25,7 @@ export function Navbar() {
       <a
         href="#main-content"
         data-nosnippet
+        data-print-hide
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
         data-testid="link-skip-to-content"
       >
@@ -65,47 +58,13 @@ export function Navbar() {
               </Link>
             ))}
             
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 ml-2" data-testid="button-theme-toggle">
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Sun className="mr-2 h-4 w-4" />
-                  <span>Light</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <Moon className="mr-2 h-4 w-4" />
-                  <span>Dark</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="ml-2">
+              <DisplayMenu />
+            </div>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9" data-testid="button-theme-toggle-mobile">
-                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Sun className="mr-2 h-4 w-4" />
-                  <span>Light</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <Moon className="mr-2 h-4 w-4" />
-                  <span>Dark</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+             <DisplayMenu testId="button-display-menu-mobile" />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"

@@ -497,19 +497,37 @@ export function VlsmPractice() {
             </div>
           </form>
 
-          {graded ? (
-            <p
-              role="status"
-              className={`mt-5 font-mono-tight text-sm ${
-                allCorrect ? "text-[hsl(var(--brand-signal))]" : "text-[hsl(var(--brand-amber))]"
-              }`}
-            >
-              <span aria-hidden="true">{allCorrect ? "✓" : "!"}</span>{" "}
-              {allCorrect
-                ? "All parts correct."
-                : `${question.fields.filter((field) => graded[field.id]).length} of ${question.fields.length} parts correct.`}
-            </p>
-          ) : null}
+          {/*
+            Always in the DOM, empty until there is a verdict.
+
+            It used to be rendered only once graded, and a live region that
+            arrives at the same moment as its text is a region the screen
+            reader was not watching when the text appeared: several announce
+            nothing at all. Present from the start, the change is a change
+            to a region already being observed, which is the case the spec
+            actually describes.
+          */}
+          <p
+            role="status"
+            aria-live="polite"
+            data-testid="text-verdict"
+            className={`mt-5 font-mono-tight text-sm ${
+              !graded
+                ? "sr-only"
+                : allCorrect
+                  ? "text-[hsl(var(--brand-signal))]"
+                  : "text-[hsl(var(--brand-amber))]"
+            }`}
+          >
+            {graded ? (
+              <>
+                <span aria-hidden="true">{allCorrect ? "✓" : "!"}</span>{" "}
+                {allCorrect
+                  ? "All parts correct."
+                  : `${question.fields.filter((field) => graded[field.id]).length} of ${question.fields.length} parts correct.`}
+              </>
+            ) : null}
+          </p>
         </ToolPanel>
 
         {revealed ? (

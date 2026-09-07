@@ -26,6 +26,9 @@ interface EquipmentPickerProps {
   capacity?: FacilityCapacity;
 }
 
+const PICKER_FOCUSABLE =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
 const categoryConfig: Record<string, { label: string; icon: typeof Server; types: string[] }> = {
   servers: {
     label: "Servers",
@@ -64,11 +67,22 @@ const RECENTS_STORAGE_KEY = "equipment-picker-recents";
 const MAX_RECENTS = 8;
 const ROW_HEIGHT = 140;
 
-const getStoredIds = (key: string) => {
+const getStoredIds = (key: string): string[] => {
   if (typeof window === "undefined") return [];
   try {
     const stored = window.localStorage.getItem(key);
-    return stored ? (JSON.parse(stored) as string[]) : [];
+    if (!stored) return [];
+    const parsed: unknown = JSON.parse(stored);
+    /*
+      The cast this replaced sat inside the try and the use of the value sat
+      outside it, so the guard covered the wrong thing. A stored object
+      parses fine, gets called a string[], and reaches new Set(favoriteIds)
+      during render, where a non-iterable throws and takes the picker with
+      it. Checking the shape here is what the try was meant to be doing.
+    */
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is string => typeof id === "string")
+      : [];
   } catch {
     return [];
   }
@@ -76,7 +90,13 @@ const getStoredIds = (key: string) => {
 
 const storeIds = (key: string, ids: string[]) => {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(ids));
+  // getStoredIds above is wrapped and this was not, so favouriting a device
+  // threw where reading the favourites had been handled.
+  try {
+    window.localStorage.setItem(key, JSON.stringify(ids));
+  } catch {
+    /* Favourites and recents last as long as the page does. */
+  }
 };
 
 interface VirtualizedListProps {
@@ -153,6 +173,77 @@ export function EquipmentPicker({
   onSuccess,
   capacity,
 }: EquipmentPickerProps) {
+  /*
+    A modal, so it has to behave like one.
+
+    It did not. The picker is a scrim across the whole scene with the page
+    behind it, and it shipped with none of the four things a dialog owes a
+    keyboard: no role saying what it is, no focus moved into it on open, no
+    Tab kept inside it, and no Escape. The only way to dismiss it was
+    clicking the backdrop. ShortcutsDialog in this same directory already
+    does all of this correctly, so this follows it rather than inventing a
+    second pattern.
+  */
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const returnFocusTo = useRef<HTMLElement | null>(null);
+
+  /*
+    onClose through a ref so the effect below can hold empty dependencies.
+
+    The parent passes it as an inline arrow, so its identity changes on every
+    render of the panel, and the panel takes a live capacity prop from the
+    running floor. With onClose in the dependency array the effect would tear
+    down and set up again on each of those renders, and its cleanup moves
+    focus back to whatever opened the picker. That is focus jumping out of a
+    dialog the reader is still using, on a schedule they do not control.
+
+    The component is only mounted while the picker is open, so mount and
+    unmount already are open and close: once is the right number of times.
+  */
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    returnFocusTo.current = document.activeElement as HTMLElement | null;
+    // The close control, not the container: it is the safe action, and it
+    // puts Tab at the top of the panel's own order.
+    closeRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        // The scene underneath binds Escape too, and must not also act on it.
+        event.stopPropagation();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(PICKER_FOCUSABLE),
+      ).filter((el) => !el.hasAttribute("disabled") && el.getClientRects().length > 0);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !panel.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      returnFocusTo.current?.focus?.();
+    };
+  }, []);
+
   const [selectedCategory, setSelectedCategory] = useState("servers");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -329,11 +420,17 @@ export function EquipmentPicker({
 
   return (
     <div 
+      data-print-hide
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={onClose}
+      role="presentation"
       data-ui="true"
     >
-      <Card 
+      <Card
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="equipment-picker-title"
         className="w-[720px] max-h-[90vh] flex flex-col bg-background/95 border-border shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -342,7 +439,7 @@ export function EquipmentPicker({
           onPointerDown={(e) => e.stopPropagation()}
         >
           <div>
-            <h2 className="font-display font-bold text-lg">Add Equipment</h2>
+            <h2 id="equipment-picker-title" className="font-display font-bold text-lg">Add Equipment</h2>
             <p className="text-sm text-muted-foreground">
               {rack.name} - Starting at U{selectedSlot}
             </p>
@@ -362,7 +459,14 @@ export function EquipmentPicker({
               </p>
             )}
           </div>
-          <Button size="icon" variant="ghost" onClick={onClose} data-testid="button-close-picker">
+          <Button
+            ref={closeRef}
+            size="icon"
+            variant="ghost"
+            onClick={onClose}
+            data-testid="button-close-picker"
+            aria-label="Close the equipment picker"
+          >
             <X className="w-5 h-5" />
           </Button>
         </div>
@@ -575,6 +679,12 @@ export function EquipmentPicker({
                             event.stopPropagation();
                             toggleFavorite(equipment.id);
                           }}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${equipment.name} from favorites`
+                              : `Add ${equipment.name} to favorites`
+                          }
                         >
                           <Star className={`w-4 h-4 ${isFavorite ? "text-yellow-400" : ""}`} />
                         </Button>

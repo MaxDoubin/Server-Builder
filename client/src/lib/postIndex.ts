@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 238 of them. Regenerate with script/generatePostIndex.ts.
+ * 250 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,114 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "csp-blocked-its-own-models",
+    title: "The Content Security Policy That Blocked Its Own 3D Models",
+    date: "2026-09-07",
+    tags: ["security","engineering","operations"],
+    excerpt: "The policy was tight, commented line by line, and refusing to compile the WebAssembly decoder the 3D pages depend on: 13 compile errors and 26 refused blob connections on one page. Nothing local sends the header, so production was its only test environment. Fixing it also overturned a careful comment of mine that nobody had ever counted.",
+    coverImage: "/images/blog/csp-blocked-its-own-models.jpg",
+    wordCount: 1266,
+  },
+  {
+    slug: "dollar-sign-string-replace",
+    title: "A Dollar Sign Ate a Third of Five Articles",
+    date: "2026-09-07",
+    tags: ["engineering","tools","operations"],
+    excerpt: "Five posts shipped with the page shell spliced into the middle of the article and <main> left open, because String.replace reads $& in its replacement as the whole match. The trigger was a grep anchor in a shell snippet, and HTML escaping is what completed the sequence. Eleven checks passed the broken pages.",
+    coverImage: "/images/blog/dollar-sign-string-replace.jpg",
+    wordCount: 1170,
+  },
+  {
+    slug: "one-tab-no-way-out",
+    title: "One Tab, and There Was No Way Out",
+    date: "2026-09-07",
+    tags: ["engineering","tools","operations"],
+    excerpt: "The search palette trapped focus correctly and handled Escape on its text input. Both were deliberate, and together they meant one press of Tab left a keyboard user with no way to close it. Forty more tabs did not help. A WCAG 2.1.2 failure that no static checker can see.",
+    coverImage: "/images/blog/one-tab-no-way-out.jpg",
+    wordCount: 1068,
+  },
+  {
+    slug: "one-blue-two-jobs",
+    title: "One Blue Cannot Be Both a Button and a Link",
+    date: "2026-09-06",
+    tags: ["engineering","tools","operations"],
+    excerpt: "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no colour that does both.",
+    coverImage: "/images/blog/one-blue-two-jobs.jpg",
+    wordCount: 1141,
+  },
+  {
+    slug: "rack-diagram-that-cannot-be-switched-on",
+    title: "The Rack Diagram That Cannot Be Switched On",
+    date: "2026-09-06",
+    tags: ["servers","hardware","operations"],
+    excerpt: "Auditing sixteen rack elevations found five that held a UPS and nothing to distribute power with, a blade chassis with no fabric interconnect behind it, a tape library with no host, and eight servers with nowhere to land a management port. None of it was a typo. Every one was a device missing because it is the kind of device nobody puts in a diagram.",
+    coverImage: "/images/blog/rack-diagram-that-cannot-be-switched-on.jpg",
+    wordCount: 1375,
+  },
+  {
+    slug: "ci-gate-blamed-fourteen-innocents",
+    title: "The CI Gate That Blamed Fourteen Innocent Devices",
+    date: "2026-09-06",
+    tags: ["operations","tools","servers"],
+    excerpt: "A check that compares a 3D rack model against its device list named sixteen devices as misplaced when two had moved, and reported the rack unit as 37mm instead of 44.45mm. Both statements were arithmetically correct and both were about the fit rather than the rack. What least squares does to a drift check, and what a median does instead.",
+    coverImage: "/images/blog/ci-gate-blamed-fourteen-innocents.jpg",
+    wordCount: 1661,
+  },
+  {
+    slug: "nist-password-rules-changed",
+    title: "Fifteen Characters, And No Complexity Rules At All",
+    date: "2026-09-06",
+    tags: ["security","cybersecurity","operations"],
+    excerpt: "NIST SP 800-63B revision 4 is final, and most of the password policy your organisation runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
+    coverImage: "/images/blog/nist-password-rules-changed.jpg",
+    wordCount: 1255,
+  },
+  {
+    slug: "what-an-optic-tells-the-switch",
+    title: "What An Optic Tells The Switch About Itself",
+    date: "2026-09-05",
+    tags: ["networking","hardware","operations","homelab"],
+    excerpt: "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fibre plant and almost nobody reads it until something breaks.",
+    coverImage: "/images/blog/what-an-optic-tells-the-switch.jpg",
+    wordCount: 1381,
+  },
+  {
+    slug: "certificate-lifetimes-are-200-days-now",
+    title: "Certificates Are 200 Days Now, And 47 By 2029",
+    date: "2026-09-06",
+    tags: ["security","cybersecurity","operations","networking"],
+    excerpt: "The first step of the CA/Browser Forum reduction landed in March and nobody seems to have noticed. The normative text says 199 SHOULD and 200 MUST, the validation reuse window drops to ten days by 2029, and DNSSEC became mandatory for domain control validation on the same date.",
+    coverImage: "/images/blog/certificate-lifetimes-are-200-days-now.jpg",
+    wordCount: 1302,
+  },
+  {
+    slug: "post-quantum-tls-handshake-bytes",
+    title: "What Post-Quantum Cost The TLS Handshake",
+    date: "2026-09-05",
+    tags: ["security","networking","cybersecurity"],
+    excerpt: "A client key share went from 32 bytes to 1,216. RFC 10024 says exactly where they go, the ML-KEM half comes first despite the name, and the reason this took years is that a great deal of equipment assumed a ClientHello fits in one packet.",
+    coverImage: "/images/blog/post-quantum-tls-handshake-bytes.jpg",
+    wordCount: 1091,
+  },
+  {
+    slug: "service-worker-served-a-stale-document",
+    title: "A Service Worker That Served Yesterday's Map Of The Site",
+    date: "2026-09-04",
+    tags: ["operations","engineering","homelab"],
+    excerpt: "Every fix deployed correctly and the site stayed broken, because the readers reporting it were being served a day old index.html naming bundles that had been deleted. Includes the test that reproduces it, and the control that fails.",
+    coverImage: "/images/blog/service-worker-served-a-stale-document.jpg",
+    wordCount: 1603,
+  },
+  {
+    slug: "why-models-stall-at-eighty-three-percent",
+    title: "Eighty Three Percent, Forever",
+    date: "2026-09-03",
+    tags: ["engineering","operations","hardware"],
+    excerpt: "Ten glTF files are ten downloads and thirty six image decodes, and past some number of simultaneous decodes a phone finishes neither. Two wrong diagnoses, a sliding window that deadlocked, and the stall timer that fixed it.",
+    coverImage: "/images/blog/why-models-stall-at-eighty-three-percent.jpg",
+    wordCount: 1402,
+  },
   {
     slug: "snmp-versus-streaming-telemetry",
     title: "SNMP Polling Versus Streaming Telemetry",
@@ -2361,7 +2469,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","cybersecurity","operations"],
     excerpt: "A shared secret, a clock, and an HMAC. Six digits comes from a truncation rule in RFC 4226, the drift window is a real cost, and none of it stops a phishing proxy.",
     coverImage: "/images/blog/how-totp-codes-actually-work.jpg",
-    wordCount: 1339,
+    wordCount: 1341,
   },
   {
     slug: "init-scripts-to-systemd-units",
@@ -2381,10 +2489,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 872;
+export const CITATION_COUNT = 940;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1031;
+export const CHECKED_URL_COUNT = 1099;

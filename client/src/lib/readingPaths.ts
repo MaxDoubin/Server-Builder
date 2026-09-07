@@ -1,7 +1,7 @@
 /**
  * Curated reading orders through the archive.
  *
- * The blog is 236 posts in reverse date order, which is the worst possible
+ * The blog is 250 posts in reverse date order, which is the worst possible
  * shape for someone trying to learn a subject: the newest note assumes the
  * most and the starting point is buried. A path is a hand-picked sequence
  * with a reason for each step.

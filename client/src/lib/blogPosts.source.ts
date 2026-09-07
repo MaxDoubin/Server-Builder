@@ -50,6 +50,2170 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "csp-blocked-its-own-models",
+    title: "The Content Security Policy That Blocked Its Own 3D Models",
+    date: "2026-09-07",
+    tags: ["security", "engineering", "operations"],
+    excerpt:
+      "The policy was tight, commented line by line, and refusing to compile the WebAssembly decoder the 3D pages depend on: 13 compile errors and 26 refused blob connections on one page. Nothing local sends the header, so production was its only test environment. Fixing it also overturned a careful comment of mine that nobody had ever counted.",
+    coverImage: "/images/blog/csp-blocked-its-own-models.jpg",
+    content: `## A security header was breaking the feature it protected
+
+This site has a Content Security Policy I am fairly proud of. It is tight:
+no third party script hosts, no \`unsafe-eval\`, \`object-src 'none'\`,
+\`frame-ancestors 'none'\`, \`base-uri 'self'\`, \`form-action 'self'\`. Every
+directive has a comment above it explaining what it is for.
+
+It was also silently breaking the 3D rack pages, which are the most
+interesting thing on the site.
+
+I did not find that by looking at the site. I found it by serving the built
+files myself with the response headers the CDN actually sends, which is a
+thing I had never done.
+
+## The headers are not part of the build
+
+Here is the gap. The site is static files on Cloudflare Pages, and the
+headers come from a \`_headers\` file that Pages reads at deploy time. Nothing
+in local development sends them. \`vite preview\` does not. So every check I
+run against a local build runs against a page with no CSP at all.
+
+The policy therefore had exactly one test environment: production.
+
+That is worth saying plainly, because it is not obvious from the inside. A
+static site feels like the simplest possible deployment, and the reasoning
+goes that if the files are identical then the behaviour is identical. The
+files are identical. The response is not.
+
+So I wrote thirty lines of Node that serve \`dist/public\` and set one header:
+
+\`\`\`js
+const CSP = process.env.CSP;
+createServer((req, res) => {
+  // ... resolve the file the way Pages does
+  if (CSP) res.setHeader("Content-Security-Policy", CSP);
+  res.end(readFileSync(file));
+}).listen(4199);
+\`\`\`
+
+Then I pulled the live policy off the real site and pointed a browser at it:
+
+\`\`\`bash
+curl -sSI https://maxdoubin.com/ | grep -i content-security-policy
+\`\`\`
+
+## Thirteen errors on one page
+
+\`/racks/wired\` draws a rack of real hardware from compressed geometry. The
+compression is Draco, and the decoder is WebAssembly:
+\`/draco/draco_decoder.wasm\`, 192KB, deployed, served correctly as
+\`application/wasm\`.
+
+Under the real policy, the console said this thirteen times:
+
+\`\`\`text
+WebAssembly.instantiate(): Refused to compile or instantiate WebAssembly
+module because 'unsafe-eval' is not an allowed source of script
+\`\`\`
+
+Compiling a WebAssembly module is gated by \`script-src\`, and my \`script-src\`
+did not grant it. The decoder could not start, so the geometry could not be
+decoded.
+
+Underneath that were twenty six more:
+
+\`\`\`text
+Refused to connect to 'blob:https://maxdoubin.com/71ef2cf0-...' because it
+violates the following Content Security Policy directive: "connect-src 'self'"
+\`\`\`
+
+The decoder runs in a worker it builds from a blob URL, and then fetches its
+own module through that URL. \`worker-src\` allowed \`blob:\`, so the worker was
+created. \`connect-src\` did not, so it could not load itself.
+
+Two directives, both written carefully, neither wrong on its own terms.
+
+## The fix is narrower than the obvious one
+
+The error message names \`'unsafe-eval'\`, and that is the trap. Adding
+\`'unsafe-eval'\` would fix it and would also re-enable \`eval\` and
+\`new Function\` across the whole origin, which is most of what a CSP is for.
+
+There is a keyword for exactly this case:
+
+\`\`\`text
+script-src 'self' 'wasm-unsafe-eval'
+\`\`\`
+
+\`'wasm-unsafe-eval'\` permits WebAssembly compilation and nothing else. String
+evaluation stays blocked. It exists because the WebAssembly case is common
+and the blunt fix is bad, and it is one of those tokens you only learn about
+by reading the spec after you have already been tempted.
+
+\`connect-src 'self' blob:\` covers the second. A blob URL is readable only by
+the origin that created it, so this does not open a path off the site.
+
+Both counts go to zero.
+
+## Then the interesting part
+
+With a way to test the policy, I could ask a question I had previously only
+answered by assertion. \`script-src\` carried \`'unsafe-inline'\`, with this
+comment above it:
+
+> REQUIRED, and it is a known, accepted cost, not an oversight. Removing
+> \`'unsafe-inline'\` means either a nonce (needs a per-request server; this
+> deploys as static files) or a sha256 hash per block (one per page,
+> regenerated on every content edit, in a header with a 2000 character
+> ceiling). Neither fits.
+
+I wrote that. It is careful, it reads as considered, and the premise is
+wrong. So I counted:
+
+\`\`\`text
+731 distinct inline <script> bodies across 382 pages
+  382 pages  sha256-SwHGuGI0bYRIZC3y...  attrs=''
+  382 pages  sha256-IReDYyal7pT6AGp9c...  attrs='type="application/ld+json"'
+  ...
+\`\`\`
+
+Two facts fall out of that.
+
+**There is exactly one executable inline script on the entire site.** It is
+the boot veil in \`index.html\`, which has to run before the first paint and so
+cannot be a module. It is byte identical on all 382 pages, because it is the
+same file. One hash covers everything.
+
+**The other 730 are \`application/ld+json\`, and \`script-src\` does not gate
+them.** The HTML parser treats a script element with a non-JavaScript type as
+a *data block*. It never reaches the step where a script is prepared for
+execution, so there is nothing for the policy to allow or refuse. I had
+counted my structured data as inline script for years. It is not.
+
+So \`'unsafe-inline'\` came out, one hash went in, and I checked the result the
+way I should have checked the original: served the build under the new policy
+and loaded nineteen routes, including both 3D pages and the game. The boot
+script runs, React mounts, every JSON-LD block still parses, no violation is
+raised anywhere.
+
+## A hash is a promise that rots
+
+A hash is stricter than a keyword and much easier to get quietly wrong. Edit
+one character of that boot script, or let a formatter touch it, and the hash
+stops matching. The script is then refused, the veil never runs, and every
+visitor sees the page a moment before the entrance animation.
+
+Nothing would fail. The site still works. It just works slightly worse
+forever.
+
+So the hash is checked by a build gate that recomputes it from the output:
+
+\`\`\`text
+check-csp-hash: 1 executable inline script across 382 pages (382 instances),
+every one allowed by a hash in _headers, and no 'unsafe-inline'.
+\`\`\`
+
+It fails three ways: if the hash drifts, if a second executable inline script
+appears anywhere in the build, or if \`'unsafe-inline'\` comes back and makes
+the hash decorative. I broke it all three ways to check it says so.
+
+## What I would take from this
+
+**A response header is part of your application, and it probably has no
+tests.** Anything set by the CDN rather than the build is invisible to
+everything you run locally. Thirty lines of static server that set one header
+found a broken feature that eleven other checks had passed.
+
+**Read the error message past the first noun.** "'unsafe-eval' is not an
+allowed source" is telling you which check failed, not which keyword you
+should add. The right grant was narrower and the browser was never going to
+suggest it.
+
+**A careful comment is not evidence.** The \`'unsafe-inline'\` note was
+specific, plausible, and load bearing, and its central claim was something
+nobody had counted. Comments record what somebody believed when they wrote
+them. This one had been true of a much smaller site.
+
+**If you tighten something, gate it.** Removing \`'unsafe-inline'\` traded a
+weak policy for a strict one plus a new way to fail silently. That trade is
+only worth taking with something watching the hash.
+
+## References
+
+- [MDN: CSP \`script-src\`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src)
+- [Content Security Policy Level 3: hash source expressions](https://www.w3.org/TR/CSP3/#grammardef-hash-source)
+- [Content Security Policy Level 3: \`unsafe-hashes\` and the keyword grammar](https://www.w3.org/TR/CSP3/#grammardef-keyword-source)
+- [WebAssembly and CSP: the \`wasm-unsafe-eval\` source](https://github.com/WebAssembly/content-security-policy/blob/main/proposals/CSP.md)
+- [HTML Standard: the \`script\` element, and blocks of data](https://html.spec.whatwg.org/multipage/scripting.html#the-script-element)
+- [MDN: \`connect-src\`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/connect-src)
+- [Cloudflare Pages: custom headers with a \`_headers\` file](https://developers.cloudflare.com/pages/configuration/headers/)
+- [Draco 3D compression](https://google.github.io/draco/)
+`,
+  },
+  {
+    slug: "dollar-sign-string-replace",
+    title: "A Dollar Sign Ate a Third of Five Articles",
+    date: "2026-09-07",
+    tags: ["engineering", "tools", "operations"],
+    excerpt:
+      "Five posts shipped with the page shell spliced into the middle of the article and <main> left open, because String.replace reads $& in its replacement as the whole match. The trigger was a grep anchor in a shell snippet, and HTML escaping is what completed the sequence. Eleven checks passed the broken pages.",
+    coverImage: "/images/blog/dollar-sign-string-replace.jpg",
+    content: `## A page that passed every check and was broken anyway
+
+Five articles on this site were shipping with about a third of each one
+inside a stylesheet.
+
+Not visibly. Open one in a browser and it looked normal, because React
+mounts over the prerendered markup a moment after the page arrives and
+paints the article correctly from data. What was wrong was the document the
+server actually sent: the copy a crawler reads, the copy a reader gets with
+JavaScript off or before the bundle lands, and the copy that decides what
+the page is understood to be about.
+
+In that copy, the page shell had been spliced into the middle of the
+article, and \`<pre>\`, \`<code>\`, \`<article>\` and \`<main>\` were left open for
+the rest of the document.
+
+Eleven checks had run on those pages and passed. The pages had a title, a
+description, a canonical URL, valid structured data, resolving links, and
+enough body text to clear a minimum-length floor. Every one of those
+questions had a correct answer. None of them was the question that mattered.
+
+## The second argument of String.replace is not a string
+
+This is the whole bug:
+
+\`\`\`js
+html.replace(pattern, \`<div id="root">\${content}</div>\`);
+\`\`\`
+
+\`String.prototype.replace\` does not take a replacement string. It takes a
+replacement *template*, and a dollar sign in it starts a substitution:
+
+| Sequence | Inserts |
+| --- | --- |
+| \`$$\` | a literal dollar |
+| \`\` $\` \`\` | the text before the match |
+| \`$'\` | the text after the match |
+| \`$&\` | the entire match |
+| \`$1\` to \`$99\` | a numbered capture group |
+| \`$<name>\` | a named capture group |
+
+So if \`content\` contains \`$&\`, it does not appear in the output. The matched
+substring appears instead. The matched substring here was the page shell,
+because the pattern was looking for the shell in order to replace it.
+
+The article does not get the dollar. The article gets a copy of the page.
+
+## The trigger was a regex anchor in a shell snippet
+
+The post that surfaced it is about configuration management, and it contains
+this line:
+
+\`\`\`bash
+if ! dpkg-query -W -f='\${Status}' nginx 2>/dev/null | grep -q "^install ok installed$"; then
+\`\`\`
+
+There is no \`$&\` in that. There is a \`$\` at the end of a \`grep\` pattern,
+which is the ordinary way to anchor a match to the end of a line, followed by
+the quote that closes the shell string.
+
+The escaping is what completes the sequence. Before the article reaches the
+replacement it is escaped for HTML, and escaping turns \`"\` into \`&quot;\`. So
+\`installed$"\` becomes \`installed$&quot;\`, and \`$&\` is now sitting in the
+middle of it.
+
+That is the part worth keeping. **Escaping made the value more dangerous,
+not less.** The escaper is what supplies the ampersand. Any dollar
+immediately before a character that escapes to an entity is enough:
+
+\`\`\`text
+$"   ->  $&quot;
+$&   ->  $&amp;
+$<   ->  $&lt;
+$>   ->  $&gt;
+\`\`\`
+
+Four ways in, and one of them is a regex anchor at the end of a quoted
+string, which is a normal thing to write in an article about shell scripts.
+
+## The fix is to stop passing a template
+
+A replacement *function* returns a string that is used literally. Nothing in
+it is a pattern:
+
+\`\`\`js
+html.replace(pattern, () => \`<div id="root">\${content}</div>\`);
+\`\`\`
+
+That is the whole change for the splice. Seventeen other places on this site
+interpolated a value into a replacement string, mostly the title and the
+Open Graph and Twitter tags, and those genuinely need their \`$1\` and \`$2\`
+backreferences, so there the value itself is escaped instead:
+
+\`\`\`js
+const literal = (value) => value.replace(/\\$/g, "$$$$");
+\`\`\`
+
+Four dollars, because that expression is itself a replacement template: \`$$\`
+means one literal dollar, so \`$$$$\` means two, which is the escape the next
+call will read as one. A helper that has to escape itself is a fair sign the
+API is sharp.
+
+A title carrying a dollar can no longer corrupt a meta tag either. It never
+had, but only because nobody had written one.
+
+## What nothing noticed looks like
+
+While reading the built pages afterwards I found a second fault from the same
+function: every page, all three hundred and seventy seven of them, shipped
+one \`</div>\` too many. The pattern stops at a \`<style>\` that sits before the
+element's own closing tag, so the original close survives the replacement,
+and emitting another one left three closes against two opens.
+
+Browsers drop an unmatched end tag without complaint. Nothing ever looked
+wrong. It was invalid on every page for as long as the function had existed.
+
+Both faults share a shape: they are silent. HTML has no compiler. A document
+with a stray \`</div>\` renders. A document with \`<main>\` left open renders.
+The parser is specified to recover from exactly these mistakes, which is a
+good property for the web and a bad one for anybody hoping to be told.
+
+## The check existed and was not running
+
+The part I found hardest to like: a checker in this repository already knew
+about the splice. It described the mechanism in forty lines of comment, named
+the function, named the file, and quoted the fix.
+
+It was wired to nothing. Written, committed, and never added to the workflow,
+along with two others. One of those two named an \`http://\` citation in an
+article and said the fix was a single character.
+
+A gate that does not run is worse than no gate, because the file in the tree
+says the check exists. Somebody wrote all three carefully, and the care went
+nowhere for want of four lines of YAML.
+
+## What I would take from this
+
+**Treat \`String.replace\` with a string replacement as a footgun.** If the
+replacement contains anything you did not type yourself, use a function. The
+performance difference is nothing and the class of bug disappears.
+
+**Escaping is not sanitising.** An HTML escaper makes a value safe to put in
+HTML. It says nothing about the value being safe to put through a regex
+substitution on the way there, and here it actively created the hazard.
+
+**Ask what a passing check does not cover.** Eleven of them passed these
+pages. Each was asking a real question. None was asking whether the document
+parsed, which is the one question that would have caught it, and the check
+that did ask it was not plugged in.
+
+**Read the built output, not the source.** Everything in the source was
+correct. The corruption happened in the last step before the file was
+written, which is a step people rarely look at because it usually works.
+
+## References
+
+- [MDN: String.prototype.replace](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace)
+- [MDN: specifying a string as the replacement, and the \`$\` patterns](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement)
+- [MDN: specifying a function as the replacement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_function_as_the_replacement)
+- [ECMAScript specification: GetSubstitution](https://tc39.es/ecma262/multipage/text-processing.html#sec-getsubstitution)
+- [HTML Standard: an introduction to error handling and strange cases in the parser](https://html.spec.whatwg.org/multipage/parsing.html#an-introduction-to-error-handling-and-strange-cases-in-the-parser)
+- [MDN: HTML character references](https://developer.mozilla.org/en-US/docs/Glossary/Character_reference)
+`,
+  },
+  {
+    slug: "one-tab-no-way-out",
+    title: "One Tab, and There Was No Way Out",
+    date: "2026-09-07",
+    tags: ["engineering", "tools", "operations"],
+    excerpt:
+      "The search palette trapped focus correctly and handled Escape on its text input. Both were deliberate, and together they meant one press of Tab left a keyboard user with no way to close it. Forty more tabs did not help. A WCAG 2.1.2 failure that no static checker can see.",
+    coverImage: "/images/blog/one-tab-no-way-out.jpg",
+    content: `## One Tab, and there was no way out
+
+The search palette on this site opens with Command-K or a slash, puts the
+cursor in a text field, and closes on Escape. That is what I built and that
+is what I had tested, because testing it means opening it and pressing
+Escape, and the cursor is in the text field when you do.
+
+Press Tab first, once, and the palette could not be closed with a keyboard at
+all.
+
+I found it by writing a test that did the obvious rude thing: open the
+dialog, press Tab twenty five times, then press Escape. The palette stayed
+open. Forty more tabs did not help. There was no key that closed it, and
+because the dialog correctly traps focus, there was nowhere else to go
+either.
+
+The way out was clicking the backdrop, which is not a way out.
+
+## Two correct decisions that were wrong together
+
+Both halves of this were deliberate.
+
+The tab trap is deliberate. A modal that lets Tab wander into the page
+behind it is worse than one that does not claim to be modal, because the
+reader is now operating controls they cannot see. So the dialog keeps focus
+inside itself:
+
+\`\`\`jsx
+<div role="dialog" aria-modal="true" onKeyDown={trapTab}>
+\`\`\`
+
+Escape on the input is deliberate too. The input is where the palette's
+other keys live: Arrow Down and Arrow Up move the highlighted result, Enter
+opens it. Escape is a text-field key in the same family, so that is where it
+was written:
+
+\`\`\`jsx
+<input onKeyDown={onKeyDown} />   // Escape, ArrowDown, ArrowUp, Enter
+\`\`\`
+
+Each is reasonable on its own. Together they make a room with a lock on the
+inside of the door and the key in a drawer you cannot reach.
+
+The bug is not in either handler. It is in the pairing, and neither file
+looks wrong when you read it.
+
+## Escape belongs to the dialog
+
+The fix is to move one branch up one level:
+
+\`\`\`jsx
+const onDialogKeyDown = (e) => {
+  if (e.key === "Escape") { e.preventDefault(); close(); return; }
+  if (e.key !== "Tab") return;
+  // ... the trap
+};
+\`\`\`
+
+Keys bubble, so a handler on the dialog catches Escape from the input, from
+any result row, and from anything added to the modal later. That last part is
+the real gain: the bug came back the moment somebody made a second thing
+focusable, and putting the key on the container means it cannot.
+
+The arrow keys and Enter stay on the input. Those are search-box behaviour.
+Escape is dialog behaviour. Sorting the keys by which thing they belong to,
+rather than by which element happens to have focus when you test, is the
+lesson.
+
+## Why the usual testing misses it
+
+WCAG has a criterion for this. It is 2.1.2, No Keyboard Trap, and it is
+Level A, the lowest bar there is:
+
+> If keyboard focus can be moved to a component of the page using a keyboard
+> interface, then focus can be moved away from that component using only a
+> keyboard interface.
+
+An automated accessibility checker does not catch it. There is nothing wrong
+with the markup: the dialog has a role, it has \`aria-modal\`, it has an
+accessible name, every control is reachable, every control has a visible
+focus ring. The static properties are all correct. The fault only exists in
+a sequence of two key presses.
+
+Nor does a human tester catch it reliably, because a human tester opens the
+palette and the cursor is already in the field. You have to do the thing
+nobody does on purpose, which is press Tab in a dialog that has just given
+you a text cursor.
+
+So it wants a test that behaves like nobody: press the keys in the wrong
+order, then check you can still leave.
+
+\`\`\`js
+await page.keyboard.press('Control+k');
+await page.keyboard.press('Tab');
+await page.keyboard.press('Escape');
+// the dialog must be gone
+\`\`\`
+
+Three lines. The equivalent of them is now the thing I write first for
+anything modal.
+
+## What I checked afterwards
+
+Having found one, I went looking for the others. Three overlays on this site
+can be open at once with the page behind them:
+
+The mobile navigation drawer was already right, and interestingly not by
+being a dialog. It is a disclosure with \`aria-expanded\`, and its focus loop
+deliberately spans the site header as well as the drawer, because the button
+that closes it lives in the header and \`aria-modal\` would have hidden that
+button from assistive technology. Thirty tabs never left the loop, Escape
+closed it, and focus went back to the toggle. Somebody had thought about it
+properly and written down why.
+
+The equipment picker in the 3D scene had nothing at all. No role saying what
+it was, no name, no focus moved into it, no trap, no Escape. It was a full
+screen overlay dismissable only by clicking. It now follows the same pattern
+as the keyboard shortcuts dialog in the same directory, which had been
+written correctly all along and even says so in its own docstring.
+
+That is the pattern I keep meeting on this site: the good version of a thing
+already exists somewhere in the tree, and the broken version is the one
+written later by someone who did not know to look.
+
+## What I would take from this
+
+**Test the sequence, not the state.** Everything about the palette was
+correct at rest. The fault needed two key presses in an order nobody chooses.
+
+**Put a dismiss key on the container, not the control.** A handler on the
+element that happens to have focus first is a handler that stops working the
+moment focus moves. Escape is a property of the dialog.
+
+**A focus trap raises the stakes on every other bug.** Trapping focus is the
+right thing to do, and it converts "this key does not work" into "you cannot
+leave". If you trap, the dismiss path is no longer a convenience.
+
+**Look for the version somebody already got right.** Both fixes here were
+copies of a correct implementation sitting a few files away.
+
+## References
+
+- [WCAG 2.2, Success Criterion 2.1.2: No Keyboard Trap](https://www.w3.org/TR/WCAG22/#no-keyboard-trap)
+- [WCAG 2.2, Success Criterion 2.1.1: Keyboard](https://www.w3.org/TR/WCAG22/#keyboard)
+- [ARIA Authoring Practices Guide: the dialog (modal) pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+- [ARIA Authoring Practices Guide: keyboard interaction for a modal dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/#keyboardinteraction)
+- [MDN: the \`aria-modal\` attribute](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-modal)
+- [MDN: event bubbling](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling)
+`,
+  },
+  {
+    slug: "one-blue-two-jobs",
+    title: "One Blue Cannot Be Both a Button and a Link",
+    date: "2026-09-06",
+    tags: ["engineering", "tools", "operations"],
+    excerpt:
+      "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no colour that does both.",
+    coverImage: "/images/blog/one-blue-two-jobs.jpg",
+    content: `
+## Two numbers, both just under the line
+
+I was measuring contrast across this site and found the same colour failing
+twice, in two different places, by a small margin each time.
+
+The brand blue is one token, \`--primary\`. In the dark theme it was
+\`217 91% 55%\`, which is \`rgb(36, 116, 245)\`. It does two jobs. It is the fill
+behind a button, with a near-white label on top of it, and it is the colour of
+a link sitting on the page itself.
+
+As a button fill, the label on it measured 4.11:1. As link text on the page
+background, it measured 4.29:1. On a card, 4.07:1.
+
+WCAG puts the floor for body text at 4.5:1:
+
+> The visual presentation of text and images of text has a contrast ratio of
+> at least 4.5:1
+>
+> Success Criterion 1.4.3, Contrast (Minimum), Level AA
+
+So every primary button and every primary link on the site was under the
+floor, in the theme the site opens in. Not by much. Enough.
+
+## The obvious fix does not work
+
+A shortfall of 0.4 looks like a nudge. Make the blue a little darker and white
+sits better on it; make it a little lighter and it reads better on a dark
+page. One of those has to be right.
+
+They are the same knob turned in opposite directions.
+
+The button wants a dark fill, because the label on it is near-white and
+contrast is a ratio between two luminances: the darker the fill, the further
+apart they are. The link wants a light colour, because the page behind it is
+near-black and the same arithmetic applies in reverse. Every step that helps
+one hurts the other by about as much.
+
+Holding hue and saturation at the shipped values and walking the lightness:
+
+| Lightness | White label on the fill | The same blue as link text |
+| --- | --- | --- |
+| 48 | 5.19 | 3.40 |
+| 50 | 4.86 | 3.63 |
+| 52 | 4.53 | 3.89 |
+| 54 | 4.26 | 4.14 |
+| 56 | 3.98 | 4.43 |
+| 58 | 3.73 | 4.72 |
+| 60 | 3.49 | 5.06 |
+
+The label clears 4.5 at 52 and below. The link clears it at 58 and above.
+There is no overlap, and the two curves cross at about 54, where both are
+around 4.2 and both are failing.
+
+## Searching the rest of the space
+
+Lightness is not the only thing that moves. Hue and saturation change
+luminance too, so it is fair to ask whether some other blue does both jobs.
+
+I searched the space: hue 200 to 230 in steps of one, saturation 50 to 100 in
+steps of two, lightness 35 to 75 in steps of one. That is 31 by 26 by 41,
+about thirty three thousand colours. For each one, the contrast of near-white
+on it, and its contrast on the page background.
+
+Nothing satisfied both. Not one.
+
+The best it can do in each direction is instructive. The best fill, taking the
+one that clears 4.5 with the label and then reads highest as text, manages
+4.09 as text. The best text colour, by the mirror of that, manages 4.09 under
+the label.
+
+Read that against the shipped 4.11 and 4.29 and it is worse than it looks.
+Tuning the single token to make either job pass does not leave the other
+where it was: it pushes it down to 4.09, below the number it was already
+failing at. There is no move that does not cost more than it buys.
+
+The blue is not badly chosen. There is no well-chosen one.
+
+## Why a token gets into this position
+
+The name is the tell. \`--primary\` names an identity, not a job. It says "the
+brand colour" and says nothing about whether it is behind text or is the text,
+and those two situations have contrast requirements that point in opposite
+directions.
+
+That is easy to miss because it is invisible in the light theme. There,
+\`--primary\` is \`217 91% 45%\` and measures 5.75:1 both as a fill under white
+and as text on the page ground. The page is light and the colour is dark, so
+being dark enough for a white label and dark enough to read on white are the
+same requirement. The conflict only appears when the page goes dark and the
+two requirements separate.
+
+So a palette can be correct for years, gain a dark theme, and acquire a
+contradiction in a token nobody edited.
+
+## The fix is two tokens
+
+\`--primary\` stays the fill and moves to \`217 91% 50%\`, where the label
+measures 4.86:1. A new \`--primary-text\` sits at \`217 91% 62%\` and measures
+5.46:1 on the page and 5.18:1 on a card.
+
+Both are close to the value they replaced, which is worth saying: the fix is
+not a redesign, and neither the buttons nor the links look meaningfully
+different. They are five and seven points of lightness from where they were.
+
+Tailwind derives \`.text-primary\` and \`.bg-primary\` from a single colour key,
+so splitting the token in the config would mean editing every call site. There
+were forty one. One rule does it instead, mapping \`text-primary\` onto the text
+value inside the dark theme, and the cinematic pages declare the same token so
+the rule is a no-op where their palette already differs.
+
+## What I would check in any palette
+
+**Find every token that is both a fill and a foreground.** That is where this
+lives. A colour used only as a fill, or only as text, cannot contradict
+itself.
+
+**Check the dark theme separately, and check both jobs.** A single number per
+token is not enough, because a token that passes as text can fail as a fill at
+the same time.
+
+**When a fix does not converge, stop tuning.** Two constraints that move
+together under one variable will meet in the middle and fail there. The
+search above took a few minutes to write and settled the question that an
+afternoon of nudging would not have.
+
+**Gate the pairing, not the colour.** The gate this site already had checked
+brand foregrounds against brand surfaces and never looked at the shadcn
+palette, so the whole thing went unchecked. It now checks eight themed
+pairings by name: the label on a primary button, a primary link on the page,
+the same inside a card, in each theme. Each is the thing a reader would point
+at if it were unreadable.
+
+## References
+
+- [WCAG 2.2, Success Criterion 1.4.3: Contrast (Minimum)](https://www.w3.org/TR/WCAG22/#contrast-minimum)
+- [WCAG 2.2: relative luminance](https://www.w3.org/TR/WCAG22/#dfn-relative-luminance)
+- [WCAG 2.2: contrast ratio](https://www.w3.org/TR/WCAG22/#dfn-contrast-ratio)
+- [WCAG 2.2, Success Criterion 1.4.11: Non-text Contrast](https://www.w3.org/TR/WCAG22/#non-text-contrast)
+- [CSS Color Module Level 4: the HSL notation](https://www.w3.org/TR/css-color-4/#the-hsl-notation)
+- [WebAIM: Contrast and Color Accessibility](https://webaim.org/articles/contrast/)
+`,
+  },
+  {
+    slug: "rack-diagram-that-cannot-be-switched-on",
+    title: "The Rack Diagram That Cannot Be Switched On",
+    date: "2026-09-06",
+    tags: ["servers", "hardware", "operations"],
+    excerpt:
+      "Auditing sixteen rack elevations found five that held a UPS and nothing to distribute power with, a blade chassis with no fabric interconnect behind it, a tape library with no host, and eight servers with nowhere to land a management port. None of it was a typo. Every one was a device missing because it is the kind of device nobody puts in a diagram.",
+    coverImage: "/images/blog/rack-diagram-that-cannot-be-switched-on.jpg",
+    content: `
+## A rack diagram is a claim that something can be built
+
+I keep a library of rack elevations on this site, sixteen of them, each one a
+list of devices and the units they occupy. They are drawn to be read: this is
+what a service provider edge looks like, this is what a storage rack looks
+like, here is where the weight goes.
+
+Going through them properly, I found that five of the sixteen described a
+rack that could not have been switched on, and one described a blade chassis
+that had nothing to switch it on with. None of it was a rendering fault or a
+typo. Every one was a device that was missing because it is the kind of
+device nobody puts in a diagram.
+
+## The blade chassis with nothing behind it
+
+The Cisco rack held a UCS 5108. Six rack units, eight half width blades, four
+power supplies, and a front with no network ports on it at all.
+
+That last part is the point, and Cisco are direct about it. The 5108 has
+
+> a passive midplane
+
+and, in the sentence that matters most,
+
+> the chassis uses fewer physical components, has no need for independent
+> management, and enables greater energy efficiency than traditional blade
+> server chassis
+
+No need for independent management is not a boast about simplicity in the
+abstract. It means the management is somewhere else. The chassis has two I/O
+bays, and what goes in them is a fabric extender: a device that presents the
+blades' interfaces to something upstream rather than switching between them
+itself. Upstream is a pair of fabric interconnects, which is where UCS
+Manager actually runs and where every blade's uplink actually terminates.
+
+My rack had the chassis and no interconnects. Not a missing cable, a missing
+device, and one that occupies rack units and draws power.
+
+**The honest caveat**, because the first version of this note in my own
+generator overstated it: those same I/O bays will also take a UCS 6324,
+which is a fabric interconnect small enough to live inside the chassis. Cisco
+list both options in the same paragraph:
+
+> can support either Cisco UCS 2000 Series Fabric Extenders or the Cisco UCS
+> 6324 Fabric Interconnect
+
+So "a 5108 cannot run alone" is too strong. What is true is that it needs one
+of those two arrangements, and my rack had neither. I wrote the stronger
+version into a code comment before I had read the datasheet closely enough,
+which is a small example of the same failure this whole article is about.
+
+## Five racks with a UPS and no PDU
+
+The other five were duller and more embarrassing.
+
+A rack UPS in this library is a 2U line interactive unit. It has a handful of
+outlets on the back, four or eight. Five of my racks held one of those, held
+between three and eleven other powered devices, and held nothing to
+distribute power with. One of them, a 9U MikroTik stack, had neither a PDU
+nor a UPS, and on top of that declared six units of hardware in a nine unit
+frame, so three units of it were open rack that nothing in the definition
+accounted for.
+
+I do not think this happened because I do not know what a PDU is. It happened
+because a PDU is the least interesting object in a rack. It has no ports
+worth drawing, no model number anybody recognises, and no role in the story
+the rack is telling. When you sit down to describe a service provider edge,
+you think about the MX240 and the leaf pair and the firewall, and the strip
+that feeds all of them is furniture.
+
+Which is exactly why it goes missing, and exactly why nobody notices.
+
+## The general shape of the fault
+
+Once I had a name for it, the same fault turned up in three more places, all
+of them dependency omissions rather than mistakes:
+
+**A tape library with no host.** The storage rack held a 4U LTO library and
+nothing to drive it. A library is a robot and some drives; something has to
+stage backups to disk and stream them out, and that something is a media
+server full of spinning disk.
+
+**A protection chain with a hole in the middle.** The same rack held disk and
+it held tape and nothing joined them. Without a deduplicating target, the
+daily full that is almost entirely the same as yesterday's is written out in
+full, and the library stops being a second copy and becomes the only copy
+somebody can afford to keep.
+
+**Eight servers and nowhere to land a management port.** The Dell rack had
+two top of rack switches carrying data, eight PowerEdge nodes and an MX7000
+enclosure, and every one of those presents an iDRAC or an OME port that has
+to go somewhere. There was no management switch. In a row rack this is the
+one omission that costs you everything at once, because everything in the
+rack is reached the same way.
+
+What all of these have in common is that the missing thing is the *support*
+for the interesting thing. A diagram drawn from the top down, starting with
+what the rack is for, reliably produces the interesting things and reliably
+loses the ones that only exist to make them work.
+
+## Checking it instead of remembering it
+
+The fix for each rack was a device. The fix for the class is a check, and the
+useful realisation was that most of these can be stated as an invariant over
+the device list rather than as knowledge about hardware.
+
+Three now run on every build of this site:
+
+**A rack must fill its frame.** Contents that add up to more than the frame
+is a drawing of something that cannot be built. Contents that add up to less
+means units the elevation draws as nothing and the definition never mentions.
+That second half is the one that caught the 9U stack, and the reason it took
+so long is that the equivalent check already existed and only ran for racks
+with a 3D model. It is the small racks, drawn only as elevations, that nobody
+counts by hand.
+
+**A rack with a UPS and more than two powered devices must have a PDU.** Not
+a style rule. It is a statement about outlet counts, and it is false in
+exactly the cases where somebody forgot the strip.
+
+**Every device in the model must be a device in the list, and the reverse.**
+The oldest of the three, and the one that catches a generator drifting from
+the definition it is supposed to be drawing.
+
+None of these encode taste. Each one is a fact about whether the thing
+described could exist, which is the only kind of rule worth putting in a
+build.
+
+## What I would check in your diagrams
+
+Not a checklist so much as a set of questions that each found something here:
+
+**What manages this?** For every chassis, appliance and enclosure, name the
+thing that configures it and find that thing in the rack or say deliberately
+that it is elsewhere. Blade chassis and disk shelves are the usual offenders
+because both are designed to be dependent.
+
+**What powers it, and through what?** Count the outlets you have drawn
+against the devices you have drawn. A UPS is not a PDU.
+
+**What reaches it when the network is broken?** Console access is the thing
+you only need on the day you cannot get it any other way, and a rack that
+has it is a rack somebody has already had a bad night in.
+
+**Does it add up?** Sum the rack units. It is the cheapest check available
+and it caught a rack of mine that was a third empty in a way nothing rendered
+as an error.
+
+**And what is the least interesting device that should be here?** That is the
+one that is missing.
+
+## References
+
+- [Cisco UCS 5100 Series Blade Server Chassis datasheet](https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs-5100-series-blade-server-chassis/data_sheet_c78-526830.html)
+- [Cisco UCS 6536 Fabric Interconnect datasheet](https://www.cisco.com/c/en/us/products/collateral/servers-unified-computing/ucs6536-fabric-interconnect-ds.html)
+- [The rack library these were found in](/racks)
+- [The published rack dataset, every device in every rack](/data/rack-library.json)
+`,
+  },
+  {
+    slug: "ci-gate-blamed-fourteen-innocents",
+    title: "The CI Gate That Blamed Fourteen Innocent Devices",
+    date: "2026-09-06",
+    tags: ["operations", "tools", "servers"],
+    excerpt:
+      "A check that compares a 3D rack model against its device list named sixteen devices as misplaced when two had moved, and reported the rack unit as 37mm instead of 44.45mm. Both statements were arithmetically correct and both were about the fit rather than the rack. What least squares does to a drift check, and what a median does instead.",
+    coverImage: "/images/blog/ci-gate-blamed-fourteen-innocents.jpg",
+    content: `
+## A check that names the wrong thing is worse than no check
+
+This site draws sixteen server racks. Each one exists twice: as a rack
+definition, a list of devices and the units they occupy, and as a 3D model
+built by a generator that keeps its own copy of the layout. Two sources for
+one truth is a drift waiting to happen, so there is a check in CI that reads
+the shipped model, pulls out the vertical position of every device, and fits
+it against the order the definition declares. If a device is not where the
+list says, the build fails.
+
+It has caught real faults. It also, one afternoon, told me that sixteen of
+twenty one devices in a Cisco rack had moved, that a rack unit in the model
+measured 37mm instead of 44.45mm, and that this was what two devices being
+swapped looks like.
+
+Nothing was swapped. One thing had moved, and the check was describing its
+own arithmetic.
+
+## What it was doing
+
+The fit is a straight line. Device centres go down the rack at one rack unit
+per unit, so the height of the nth device is a linear function of n, and
+recovering that line gives you both a check on the unit size and a residual
+per device. The rack's origin has to be recovered rather than assumed,
+because a 12U studio frame on casters and a 42U cabinet bolted to the floor
+do not start their first unit in the same place.
+
+The line was fitted with least squares, which is the thing anybody reaches
+for and is wrong here for a specific reason.
+
+## Why least squares was the wrong tool
+
+Least squares minimises the sum of squared residuals, which means every
+point pulls the line and a distant point pulls hardest:
+
+> least squares estimates for regression models are highly sensitive to
+> outliers: an outlier with twice the error magnitude of a typical
+> observation contributes four (two squared) times as much to the squared
+> error loss
+
+The consequence has a name, and it is exactly what I was looking at:
+
+> Because the least squares predictions are dragged towards the outliers,
+> and because the variance of the estimates is artificially inflated, the
+> result is that outliers can be masked.
+
+Masked. The two devices that had actually moved were sitting in a list of
+sixteen, indistinguishable from fourteen that had not, and the fourteen were
+only there because the two had dragged the line out from under them.
+
+This is the same property that makes an average useless on a dataset with
+one absurd value in it. The formal version of the idea is the breakdown
+point: the fraction of the data you can corrupt arbitrarily before the
+estimate can be made to say anything at all.
+
+> the mean has a breakdown point of 0, as a single large observation can
+> throw it off
+
+Zero is not a small number here. Zero means one bad point out of any number
+of good ones is enough, which is precisely the situation a drift check
+exists to be in: it is looking for one or two devices out of place among
+twenty that are fine.
+
+## The fit that survives it
+
+The replacement is Theil-Sen, proposed by Henri Theil in 1950 and extended
+by Pranab K. Sen in 1968. It is almost embarrassingly simple to state:
+
+> the median m of the slopes (yj - yi)/(xj - xi) determined by all pairs of
+> sample points
+
+and then the intercept is the median of what is left over:
+
+> the median of the values yi - m*xi
+
+Every pair of points votes on the gradient and the middle vote wins. A point
+that has moved is in some of those pairs and not in most of them, and it
+cannot move a median it is not near the centre of. The published breakdown
+point is:
+
+> 1 - 1/sqrt(2), approximately 29.3%
+
+so it tolerates roughly a third of the data being arbitrarily wrong. For a
+check reading twenty one devices, that is six of them out of place before
+the fit itself becomes untrustworthy, which is far past the point where the
+rack has bigger problems than a fit.
+
+## The measurement
+
+I did not want to take this on the theory, so the check now carries the test
+that made the argument. Twenty one rungs of a perfect ladder, two of them
+exchanged, which is an ordinary fault: two devices swapped between the
+generator and the device list.
+
+| | rack unit measured | devices flagged | of which had moved |
+| --- | --- | --- | --- |
+| Least squares | 37.47mm | 16 | 2 |
+| Theil-Sen | 44.45mm | 2 | 2 |
+
+The cover figure on this article is that table drawn out: every device's
+residual under both fits, against the 0.45U band a device has to leave
+before the check calls it misplaced. The Theil-Sen residuals are a flat line
+on zero with two carets at the clipped edges. The least squares residuals
+are a diagonal sweep, because dragging one end of a line down lifts
+everything at the other end, and fourteen devices that never moved end up
+outside the band in an orderly fan.
+
+Notice the rack unit figure as well. Least squares does not merely
+mis-attribute the fault, it also reports the rack unit as 37.47mm against a
+3 percent tolerance, so a single swap raises a second failure claiming the
+rack is dimensionally wrong. It is not. That is two false statements from
+one true fault.
+
+## The part that is not about statistics
+
+The thing that cost the afternoon was not the arithmetic. It was that I
+believed the output.
+
+The message the check prints is specific and confident. It names a device,
+gives a drift in rack units to two decimal places, and adds a parenthetical
+explaining that a whole unit of drift is what two devices being swapped
+looks like. That sentence is true in general and it was false about every
+device it was attached to. I spent an hour reading a generator that was
+correct, because a tool I had written told me precisely which lines to
+suspect.
+
+A check that says nothing is a gap you know about. A check that says the
+wrong thing with a decimal point in it is a gap you do not, and it spends
+somebody's afternoon on your behalf.
+
+So the fit is not just replaced, it is pinned. The check builds that
+twenty one rung ladder on every invocation, swaps two rungs, and fails the
+build if the fit flags anything other than exactly those two:
+
+\`\`\`
+the position fit is not robust: two swapped rungs out of 21 should flag
+exactly those two, but it flagged 16 (R0, R1, R2, R3, R4, R5, R6, R7, R13,
+R14, R15, R16, R17, R18, R19, R20). A fit that spreads one fault across the
+innocent devices makes this check's output misleading.
+\`\`\`
+
+That is the message you get if you put least squares back, and I generated
+it by putting least squares back. A comment explaining why the fit is a
+median would have been ignored by a future me in a hurry. A failing build
+is not.
+
+## The second lying measurement, for completeness
+
+There is a footnote to this, and it is the same lesson wearing different
+clothes.
+
+The models ship compressed. Every POSITION accessor in the file declares
+\`componentType\` 5122 and \`normalized: true\`, which is a signed 16 bit
+integer scaled across its full range, and its \`min\` and \`max\` are in those
+raw units rather than in metres: one reads \`[-32767, -1384, -1472]\`. The
+check reads node extents straight out of those bounds and divides by 32767,
+which is fast and correct against a compressed file and meaningless against
+an uncompressed one, where the same fields are already in metres. Point it
+at raw generator output and it reports a rack unit of 25mm and half the
+devices metres out of place.
+
+I did that, concluded the build was not reproducible, and wrote it down as a
+finding. It was not a finding. Regenerating the rack and compressing it with
+the documented command reproduces the committed artifact to the same
+SHA-256, which I only established after going back and doubting the
+measurement instead of the model.
+
+Both mistakes have the same shape. A number arrived, it was precise, and
+being precise is not the same as being about the thing you think it is
+about.
+
+## What to take from it
+
+**Ask what your fit's breakdown point is** before you use one on data whose
+whole purpose is to contain outliers. If the answer is zero, and for least
+squares and for the mean it is, then a single bad value can make the output
+say anything.
+
+**A residual is a statement about a fit, not about a data point.** Every
+number in that sixteen device list was arithmetically correct. They were all
+correct residuals against a line that had no business being where it was.
+
+**Encode the property, not the reasoning.** The argument for a robust fit
+lives in a comment and the comment is worth having, but what actually keeps
+it there is a test that fails when the property stops holding.
+
+**And doubt your instrument before your subject**, particularly when the
+instrument is one you wrote and the subject is one you did not.
+
+## References
+
+- [Robust regression, on least squares sensitivity and outlier masking](https://en.wikipedia.org/wiki/Robust_regression)
+- [Robust statistics, on the breakdown point](https://en.wikipedia.org/wiki/Robust_statistics)
+- [The Theil-Sen estimator, its construction and its 29.3% breakdown point](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
+- [Pranab K. Sen, Estimates of the Regression Coefficient Based on Kendall's Tau, JASA 63(324), 1968](https://www.jstor.org/stable/2285891)
+- [KHR_mesh_quantization, which permits the normalized short positions this model ships with](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md)
+- [EXT_meshopt_compression, which compresses the already quantised data](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
+`,
+  },
+  {
+    slug: "nist-password-rules-changed",
+    title: "Fifteen Characters, And No Complexity Rules At All",
+    date: "2026-09-06",
+    tags: ["security", "cybersecurity", "operations"],
+    excerpt:
+      "NIST SP 800-63B revision 4 is final, and most of the password policy your organisation runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
+    coverImage: "/images/blog/nist-password-rules-changed.jpg",
+    content: `
+## Fifteen characters, and no complexity rules at all
+
+The password advice most organisations run on is a fossil. Eight characters,
+one uppercase, one number, one symbol, changed every ninety days. It has been
+wrong for years, and as of the fourth revision of NIST SP 800-63B it is not
+merely discouraged, most of it is forbidden in normative language.
+
+The revision is final. It was published in August 2025 and it supersedes the
+document nearly every security policy in the country still quotes.
+
+Here is what it actually requires, in its own words.
+
+## The length floor moved, and it moved a long way
+
+> Verifiers and CSPs **SHALL** require passwords that are used as a single
+> factor authentication mechanism to be a minimum of 15 characters in length.
+>
+> SP 800-63B, section 3.1.1.2
+
+Fifteen. Not eight. Eight survives only behind a second factor:
+
+> Verifiers and CSPs **MAY** allow passwords that are only used as part of
+> multi-factor authentication processes to be shorter but **SHALL** require
+> them to be a minimum of eight characters.
+
+And there is a ceiling requirement in the other direction, which exists
+because systems that silently truncate are a real and common failure:
+
+> Verifiers and CSPs **SHOULD** permit a maximum password length of at least
+> 64 characters.
+
+If your login form rejects a 40 character passphrase, that is now
+specifically the thing the standard is telling you not to do.
+
+## Four things you are now told not to do
+
+Each of these is a SHALL NOT, which in this vocabulary is a prohibition, not
+a suggestion.
+
+**Composition rules are out.**
+
+> Verifiers and CSPs **SHALL NOT** impose other composition rules (e.g.,
+> requiring mixtures of different character types) for passwords.
+
+The reasoning is behavioural rather than mathematical. Demanding an uppercase
+and a digit and a symbol does not produce high entropy passwords, it produces
+\`Password1!\`, because people satisfy the rule in the cheapest way available.
+The rule shrinks the search space an attacker has to cover rather than
+expanding it.
+
+**Periodic rotation is out.**
+
+> Verifiers and CSPs **SHALL NOT** require subscribers to change passwords
+> periodically. However, verifiers **SHALL** force a change if there is
+> evidence that the authenticator has been compromised.
+
+Same reasoning. Ninety day rotation produces \`Summer2026!\` followed by
+\`Autumn2026!\`, and it means the password in use is one a person picked in a
+hurry while irritated. Change on evidence of compromise, which is when
+changing it actually accomplishes something.
+
+**Hints are out.**
+
+> Verifiers and CSPs **SHALL NOT** permit the subscriber to store a hint
+> (e.g., a reminder of how the password was created) that is accessible to an
+> unauthenticated claimant.
+
+A hint readable before authentication is a clue handed to whoever asks.
+
+**Knowledge-based authentication is out.**
+
+> Verifiers and CSPs **SHALL NOT** prompt subscribers to use knowledge-based
+> authentication (KBA).
+
+Mother's maiden name, first school, first pet. These are not secrets. They are
+facts, most of them are public, and the ones that are not are guessable from a
+social media profile. Every one of them is also a permanent credential,
+because you cannot change where you went to school.
+
+## The one thing you are told to add
+
+> [Verifiers] **SHALL** compare the prospective secret against a blocklist
+> that contains known commonly used, expected, or compromised passwords.
+
+This is the part that replaces composition rules, and it is a strictly better
+mechanism, because it targets the actual failure. A complexity rule is a
+guess about what makes a password hard to crack. A blocklist is a measurement
+of what attackers actually try.
+
+The practical version is a list of the passwords that have appeared in
+breaches, checked at the moment a password is set. If it is in the list, it
+is already in a wordlist somewhere, and it does not matter how many character
+classes it contains.
+
+Note what the requirement does *not* say: it does not say check it on every
+login, and it does not say check it against an unbounded list. Checking at
+the point of setting is where the user can do something about it.
+
+## SMS is restricted rather than banned
+
+The previous revision's treatment of SMS was famously equivocal. This one is
+clearer about the actual threat:
+
+> Verifiers **SHOULD** consider risk indicators (e.g., device swap, SIM
+> change, number porting, other abnormal behavior) before using the PSTN to
+> deliver an out-of-band authentication secret.
+>
+> section 3.1.3.3
+
+Read the list. Device swap, SIM change, number porting. Those are the steps
+of a SIM swap attack, described in order. The standard is not saying SMS is
+weak in the abstract, it is naming the specific sequence that defeats it and
+telling you to watch for it.
+
+The honest summary is that SMS is better than a password alone and worse than
+anything that binds to the origin. If it is what you have, keep it, and put
+the risk indicators above in front of it.
+
+## What this means for a policy you actually own
+
+If you run authentication for anything, the changes are concrete:
+
+1. **Raise the minimum to 15** where a password stands alone, and allow 8
+   only where a genuine second factor is present.
+2. **Accept at least 64 characters**, and check that nothing in your stack
+   truncates. Test it with a 64 character passphrase, not by reading the code.
+3. **Delete the composition rules.** All of them.
+4. **Delete the expiry policy**, and replace it with a forced reset on
+   evidence of compromise, which means you need to be able to detect that.
+5. **Add a breach blocklist check** at the point a password is set.
+6. **Remove security questions** wherever they are still a recovery path,
+   which is usually where nobody has looked in five years.
+
+Points 3 and 4 are the ones that meet resistance, because removing a control
+feels like weakening security. It is worth having the argument with the
+document open: these are not relaxations, they are corrections, and the
+standard's own reasoning is that the old rules made passwords worse.
+
+## And the thing none of this fixes
+
+A perfect password, 64 characters of high entropy, unique, never reused, in a
+manager, is still typed into whatever page asked for it. If that page is a
+proxy in front of the real one, the password is gone and so is the six digit
+code that followed it.
+
+Length requirements are a defence against guessing, and guessing is not how
+accounts are taken any more. Phishing is. The only authenticator that
+survives a live phishing proxy is one that binds to the origin, and that means
+WebAuthn: the browser will not release a credential registered for your bank
+to a site that is not your bank, and it does not matter how convincing the
+page is, because the check is on the domain rather than on the human.
+
+So: fifteen characters and a blocklist for everything, and hardware backed
+WebAuthn for anything that matters. The first is the standard catching up
+with what we already knew. The second is the part the standard cannot make
+you do.
+
+## References
+
+- [NIST SP 800-63B revision 4: Digital Identity Guidelines, Authentication and Authenticator Management](https://pages.nist.gov/800-63-4/sp800-63b.html)
+- [NIST SP 800-63 revision 4, the full suite](https://pages.nist.gov/800-63-4/)
+- [NIST SP 800-63B-4, the PDF of record](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-63b-4.pdf)
+- [W3C Web Authentication Level 3](https://www.w3.org/TR/webauthn-3/)
+- [RFC 2119: Key words for use in RFCs to Indicate Requirement Levels](https://www.rfc-editor.org/rfc/rfc2119.html)
+- [RFC 6238: TOTP, Time-Based One-Time Password Algorithm](https://www.rfc-editor.org/rfc/rfc6238.html)
+`,
+  },
+  {
+    slug: "what-an-optic-tells-the-switch",
+    title: "What An Optic Tells The Switch About Itself",
+    date: "2026-09-05",
+    tags: ["networking", "hardware", "operations", "homelab"],
+    excerpt:
+      "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fibre plant and almost nobody reads it until something breaks.",
+    coverImage: "/images/blog/what-an-optic-tells-the-switch.jpg",
+    content: `
+## The switch is reading the optic's mind
+
+Plug an [SFP+](/blog/sfp-transceivers-explained) into a switch and it knows, within a second, the module's vendor,
+its part number, its serial number, the wavelength it transmits on, how far it
+is rated to reach, how hot it currently is, what voltage its rail is sitting
+at, how much current is going through the laser, how much light is leaving,
+and how much light is arriving.
+
+None of that came over the network. It came over two wires, from an EEPROM
+the size of a grain of rice inside the module, and the whole arrangement is
+described in one document: SFF-8472.
+
+The reason this is worth knowing is that the last figure in the list, how much
+light is arriving, is the single most useful number in a fibre plant, and
+almost nobody looks at it until something has already broken.
+
+## Two addresses on one bus
+
+The module hangs off a two-wire bus, and it answers at two addresses.
+
+The first, A0h, is the identity page. Vendor, part number, serial, date code,
+the transceiver's compliance codes, the nominal bit rate, the wavelength, the
+supported link lengths per fibre type. It is static, written at the factory,
+and it is what a switch reads to decide whether it likes the optic.
+
+The second is where the interesting part lives. SFF-8472 puts it at
+
+> address 1010001X, commonly referred to as A2h, where X can be 1 for a read
+> operation
+
+and that page is not static. It is a live instrument. Byte 96 onward, in the
+A2h page, holds five measurements the module takes of itself, each updated
+continuously:
+
+| Offset | What | Raw unit |
+| --- | --- | --- |
+| 96 | Module temperature | 1/256 °C, signed |
+| 98 | Supply voltage | 100 µV |
+| 100 | Laser bias current | 2 µA |
+| 102 | Transmit optical power | 0.1 µW |
+| 104 | Receive optical power | 0.1 µW |
+
+Those raw units are not something to take on faith. They are exactly the
+divisors \`ethtool\` applies, and you can read them in its source:
+
+\`\`\`c
+#define PRINT_TEMP(string, temp)  ... (double)(temp / 256.)          /* °C  */
+#define PRINT_VCC(string, v)      ... (double)(v / 10000.)           /* V   */
+#define PRINT_BIAS(string, b)     ... (double)(b / 500.)             /* mA  */
+#define PRINT_xX_PWR(string, var) ... (double)((var) / 10000.)       /* mW  */
+\`\`\`
+
+Read that last one carefully. A sixteen bit unsigned value divided by ten
+thousand to get milliwatts means the smallest step is 0.1 microwatts and the
+top of the range is about 6.5 milliwatts. Optical power is reported linearly,
+in watts, and everybody who works with it thinks in dBm, which is why the
+conversion appears in every tool that prints it.
+
+## Why receive power is the number that matters
+
+Every optical link has a budget. The transmitter puts out some amount of
+light, the fibre and every connector and splice in between takes some away,
+and the receiver needs a minimum amount left to recover the signal. The
+difference between what arrives and that minimum is your margin.
+
+A link with two dB of margin and a link with twelve dB of margin both show as
+up. They both pass traffic. They both look identical in every dashboard that
+reports interface state, because interface state is a boolean and margin is
+not.
+
+The two dB link is the one that fails when somebody leans on a patch panel,
+or when a connector picks up dust, or when the run warms up in summer. It was
+always going to fail, and the module has been telling you the whole time, in
+a page most monitoring never reads.
+
+\`\`\`console
+$ ethtool -m enp3s0f0 | grep -E 'power|Temp|bias'
+        Laser bias current                        : 6.520 mA
+        Laser output power                        : 0.5012 mW / -3.00 dBm
+        Receiver signal average optical power     : 0.3311 mW / -4.80 dBm
+        Module temperature                        : 41.20 degrees C
+\`\`\`
+
+Take that receive figure, subtract the receiver's rated sensitivity from the
+A0h page or the datasheet, and you have the margin in decibels. Do it on the
+day you commission the link and write it down, because a single reading tells
+you almost nothing and the same reading six months later tells you everything.
+
+## The alarms the module raises on its own
+
+The module also carries thresholds, high and low, alarm and warning, for every
+one of those five measurements, and it sets a flag when a value crosses one.
+That is forty separate conditions in two bytes:
+
+\`\`\`c
+{ "Laser bias current high alarm",   SFF_A2_ALRM_FLG, (1 << 3) },
+{ "Module temperature high warning", SFF_A2_WARN_FLG, (1 << 7) },
+{ "Laser rx power low alarm",        SFF_A2_ALRM_FLG + 1, (1 << 6) },
+\`\`\`
+
+The thresholds come from the manufacturer, in the module, and they are the
+manufacturer's own opinion about when their part is unhappy. That makes them
+better than a threshold you picked, and it makes "any alarm flag set on any
+optic" a genuinely useful thing to alert on, because it needs no tuning and
+no baseline.
+
+Rising laser bias current at constant output power is the classic one. It
+means the laser is being driven harder to produce the same light, which is
+what a laser does as it ages. It is one of the few pieces of hardware in a
+rack that will tell you it is dying before it dies.
+
+## Calibration, and why two identical optics disagree
+
+There are two flavours of this, and byte 92 of the A0h page says which one
+you have.
+
+**Internally calibrated** modules do the arithmetic themselves and hand you
+values already in the units above. Most modern optics are this.
+
+**Externally calibrated** modules hand you raw ADC counts and a table of slope
+and offset constants, and the host is expected to apply them. \`ethtool\` does:
+
+\`\`\`c
+/* Calibration slope is a number between 0.0 included and 256.0 excluded. */
+#define A2_OFFSET_TO_SLP(offset) \\
+    (id[SFF_A2_BASE + (offset)] + id[SFF_A2_BASE + (offset) + 1] / 256.)
+\`\`\`
+
+Receive power is the exception even then: its calibration is a fourth order
+polynomial with five IEEE-754 coefficients, because a photodiode's response is
+not a straight line.
+
+If you are reading this page yourself rather than through a tool, and you skip
+the calibration bit, an externally calibrated module will give you numbers
+that look plausible and are wrong. That is worse than an error.
+
+## Reading it, on the platforms you actually have
+
+**Linux**, and the reason every figure above is checkable:
+
+\`\`\`console
+$ ethtool -m enp3s0f0            # decoded
+$ ethtool -m enp3s0f0 raw on > optic.bin   # both pages, 512 bytes
+\`\`\`
+
+**[Cisco IOS](/blog/cisco-ios-fundamentals)**: \`show interfaces transceiver detail\` gives you the same five
+values with the thresholds beside them.
+
+**Junos**: \`show interfaces diagnostics optics ge-0/0/0\`.
+
+**MikroTik**: \`/interface ethernet monitor sfp1\` reports the same page, and
+RouterOS is unusually willing to talk to third-party optics, which is a
+separate conversation.
+
+The point of listing them together is that they are all reading the same two
+bytes at the same offset in the same page of the same EEPROM. The vendor
+differences are entirely in the formatting.
+
+## What to actually do with this
+
+**Record receive power at commissioning.** One number per link, on the day it
+went in. Everything useful you can say later is a comparison against it.
+
+**Alert on the module's own flags, not on a threshold you invented.** They are
+per part, set by the people who built it, and they need no tuning.
+
+**Watch bias current against output power.** Rising bias with flat output is
+a laser aging out, and it is one of very few genuinely predictive signals in
+a rack.
+
+**Do not trust a single reading.** Temperature moves optical power. A reading
+taken at 08:00 in January and one taken at 15:00 in July are not the same
+measurement, and the module tells you its temperature precisely so you can
+account for that.
+
+## References
+
+- [SFF-8472: Management Interface for SFP+](https://www.snia.org/technology-communities/sff/specifications) (SNIA SFF specification library)
+- [ethtool source: sfpdiag.c, the SFF-8472 decoder](https://git.kernel.org/pub/scm/network/ethtool/ethtool.git/plain/sfpdiag.c)
+- [ethtool source: sff-common.h, the unit conversions quoted above](https://git.kernel.org/pub/scm/network/ethtool/ethtool.git/plain/sff-common.h)
+- [ethtool(8)](https://man7.org/linux/man-pages/man8/ethtool.8.html)
+- [Linux kernel networking documentation](https://www.kernel.org/doc/html/latest/networking/index.html)
+- [Cisco: show interfaces transceiver](https://www.cisco.com/c/en/us/td/docs/interfaces_modules/transceiver_modules/installation/note/78_15160.html)
+- [Juniper: monitoring optical interfaces](https://www.juniper.net/documentation/us/en/software/junos/interfaces-ethernet/index.html)
+`,
+  },
+  {
+    slug: "certificate-lifetimes-are-200-days-now",
+    title: "Certificates Are 200 Days Now, And 47 By 2029",
+    date: "2026-09-06",
+    tags: ["security", "cybersecurity", "operations", "networking"],
+    excerpt:
+      "The first step of the CA/Browser Forum reduction landed in March and nobody seems to have noticed. The normative text says 199 SHOULD and 200 MUST, the validation reuse window drops to ten days by 2029, and DNSSEC became mandatory for domain control validation on the same date.",
+    coverImage: "/images/blog/certificate-lifetimes-are-200-days-now.jpg",
+    content: `
+## It already happened
+
+A lot of writing about the certificate lifetime reduction is still in the
+future tense. It is not. The first step landed on 15 March 2026, and every
+publicly trusted TLS certificate issued since then has a maximum validity of
+200 days.
+
+If you renew annually, the renewal you did in February was the last one-year
+certificate you will ever buy for a public name, and the one you do next is
+good for a bit over six months.
+
+## The schedule, from the document that binds
+
+This is not a vendor's roadmap. It is the CA/Browser Forum Baseline
+Requirements, section 6.3.2, which is what every publicly trusted CA is
+audited against. The table there reads:
+
+| Issued on or after | Issued before | Maximum validity |
+| --- | --- | --- |
+|  | 2026-03-15 | 398 days |
+| 2026-03-15 | 2027-03-15 | **200 days** |
+| 2027-03-15 | 2029-03-15 | 100 days |
+| 2029-03-15 |  | 47 days |
+
+The prose either side of that table has a detail the table does not, and it is
+the one that will catch an automation pipeline out. Each step is written twice:
+
+> Subscriber Certificates issued on or after 2026-03-15 and before 2027-03-15
+> SHOULD NOT have a Validity Period greater than 199 days and MUST NOT have a
+> Validity Period greater than 200 days.
+
+199 SHOULD, 200 MUST. The reason is arithmetic, and the BRs spell it out: a day
+is 86,400 seconds, and "any amount of time greater than this, including
+fractional seconds and/or leap seconds, shall represent an additional day". Ask
+for exactly the maximum and a rounding you did not think about turns a 200 day
+certificate into a 201 day certificate, which is a misissuance. So the
+requirements tell you, in normative language, not to ask for the maximum.
+
+If you have a script with \`--days 200\` in it, change it to 199. If you have one
+with 398 in it, it stopped working in March.
+
+## What changes about how you run things
+
+The validity number is the headline and it is not the interesting part. The
+interesting part is what a 47 day certificate does to an organisation's
+assumptions.
+
+**Renewal stops being an event.** At 398 days it is something a person does,
+badly, once a year, from a calendar reminder that may or may not still point at
+someone who works there. At 200 days it is twice a year and the same person
+usually still exists. At 47 days it is roughly eight times a year, and at that
+frequency a manual process is not a process, it is a queue of outages waiting
+for a holiday.
+
+**Your inventory becomes the constraint.** Automating renewal for the
+certificates you know about is easy. The ones that take a site down are the
+ones nobody listed: the appliance a vendor installed in 2019, the internal
+tool on a public name, the load balancer somebody configured by hand. Those
+survive an annual cycle because a year is long enough for the person who
+remembers to still be there. They do not survive eight cycles a year.
+
+**Certificate Transparency is your inventory.** This is the practical
+suggestion worth acting on today. Every publicly trusted certificate is logged,
+the logs are public, and you can query them for your own domains. A CT search
+for your organisation's names will find certificates you did not know existed,
+because it lists what was issued rather than what you remember deploying. It is
+the only inventory method that does not depend on already knowing.
+
+## The other half of the ballot
+
+Validity got the attention. The reuse periods for domain validation changed
+alongside it and will bite sooner in some setups:
+
+| From | Domain and IP validation reuse |
+| --- | --- |
+| 2026-03-15 | 200 days |
+| 2027-03-15 | 100 days |
+| 2029-03-15 | **10 days** |
+
+That last row is the one to plan for. Ten days means a CA cannot lean on a
+validation you passed last quarter: you prove control of the name again, very
+nearly every time you issue. Any workflow where domain validation is a
+one-off performed by a different team, at a different time, with a DNS change
+raised as a ticket, stops working. It has to become part of issuance, which in
+practice means ACME.
+
+## And a change that is not about time at all
+
+Two other requirements took effect on the same date and got almost no
+coverage, both about [DNSSEC](/blog/dns-security-dnssec):
+
+> DNSSEC validation back to the IANA DNSSEC root trust anchor MUST be performed
+> on all DNS queries associated with the validation of domain authorization or
+> control by the Primary Network Perspective.
+
+with a companion clause for CAA lookups, and a third saying CAs "MUST NOT use
+local policy to disable DNSSEC validation" on those queries.
+
+Read that from the subscriber's side. If your zone is signed and your signing
+is broken, in a way that resolvers with validation disabled would happily
+ignore, your CA is now required to notice. A SERVFAIL from a DNSSEC failure
+"MUST NOT be treated as permission to issue". A zone that has been quietly
+misconfigured for two years and works fine for everyone will fail validation
+the next time you need a certificate, which at 47 days is next month.
+
+If you sign your zones, test them now, while a failure is an inconvenience
+rather than an outage.
+
+## What to actually do
+
+In rough order of how much grief each one saves:
+
+1. **Find out what you have.** Query Certificate Transparency for your domains
+   before you do anything else. You cannot automate renewal for a certificate
+   you do not know about, and the ones you do not know about are the ones that
+   will page you.
+2. **Get ACME in front of everything you can.** It is not the only way to
+   automate this, but it is the one with the widest client support, and the
+   10 day validation reuse period in 2029 assumes something like it.
+3. **Fix the \`--days\` constants.** 199, not 200. The BRs specifically tell you
+   not to ask for the ceiling and explain why.
+4. **Check the things ACME cannot reach.** Appliances with a web UI and no API,
+   embedded management controllers, anything where the certificate is uploaded
+   by hand. These are the real work and the timeline for them is 2029, which
+   sounds distant and is two renewal cycles of procurement.
+5. **Validate your DNSSEC** if your zones are signed.
+6. **Alert on age, not on expiry.** An alert that fires seven days before
+   expiry was reasonable at 398 days. At 47, seven days is fifteen percent of
+   the certificate's life, and the useful signal is "this should have renewed
+   by now and did not", which fires much earlier and points at the automation
+   rather than at the clock.
+
+The direction here is not really about certificates. It is that a compromised
+key stays useful for exactly as long as the certificate naming it stays valid,
+revocation has never worked reliably at internet scale, and shortening the
+window is the mitigation that does not depend on revocation working. Every
+step in the table is that argument winning again.
+
+## References
+
+- [CA/Browser Forum Baseline Requirements for TLS Server Certificates](https://raw.githubusercontent.com/cabforum/servercert/main/docs/BR.md) (section 6.3.2 for validity, 4.2.1 for validation data reuse, 1.2.2 for the schedule of relevant dates)
+- [Ballot SC081v3: Introduce Schedule of Reducing Validity and Data Reuse Periods](https://cabforum.org/2025/04/11/ballot-sc081v3-introduce-schedule-of-reducing-validity-and-data-reuse-periods/)
+- [RFC 8555: Automatic Certificate Management Environment (ACME)](https://www.rfc-editor.org/rfc/rfc8555.html)
+- [RFC 8657: CAA Record Extensions for Account URI and ACME Method Binding](https://www.rfc-editor.org/rfc/rfc8657.html)
+- [RFC 6962: Certificate Transparency](https://www.rfc-editor.org/rfc/rfc6962.html)
+- [RFC 8659: DNS Certification Authority Authorization (CAA) Resource Record](https://www.rfc-editor.org/rfc/rfc8659.html)
+- [RFC 4033: DNS Security Introduction and Requirements](https://www.rfc-editor.org/rfc/rfc4033.html)
+`,
+  },
+  {
+    slug: "post-quantum-tls-handshake-bytes",
+    title: "What Post-Quantum Cost The TLS Handshake",
+    date: "2026-09-05",
+    tags: ["security", "networking", "cybersecurity"],
+    excerpt:
+      "A client key share went from 32 bytes to 1,216. RFC 10024 says exactly where they go, the ML-KEM half comes first despite the name, and the reason this took years is that a great deal of equipment assumed a ClientHello fits in one packet.",
+    coverImage: "/images/blog/post-quantum-tls-handshake-bytes.jpg",
+    content: `
+## The first message got thirty eight times bigger
+
+For most of [TLS 1.3](/blog/tls-modern-encryption)'s life the client's key share was thirty two bytes. That is
+an X25519 public key, and thirty two bytes is small enough that you never had
+to think about it: the ClientHello fitted in one packet, it had always fitted
+in one packet, and a great deal of network equipment quietly came to depend on
+that.
+
+It is 1,216 bytes now, on any connection your browser negotiates with
+X25519MLKEM768. That is the number RFC 10024 gives, published in August 2026
+on the standards track, and it is worth sitting with for a second, because
+almost nothing else about the handshake changed and this one field grew by a
+factor of thirty eight.
+
+## Where the bytes go
+
+RFC 10024 defines two hybrid groups. The one that matters in practice is
+X25519MLKEM768, code point 4588 in the IANA TLS Supported Groups registry.
+The client sends:
+
+\`\`\`text
+client key_share  =  ML-KEM-768 encapsulation key  ‖  X25519 share
+                     1184 bytes                       32 bytes
+                  =  1216 bytes
+\`\`\`
+
+and the server answers with:
+
+\`\`\`text
+server key_share  =  ML-KEM-768 ciphertext  ‖  X25519 share
+                     1088 bytes                32 bytes
+                  =  1120 bytes
+\`\`\`
+
+The 1184 and 1088 are FIPS 203's numbers for ML-KEM-768, not choices anyone
+made here. The shared secret is the concatenation of the two secrets, thirty
+two bytes each, sixty four bytes total, fed into the key schedule in place of
+the ECDHE output.
+
+One detail catches people out, and the RFC is candid about it: the ML-KEM part
+comes **first**, before the X25519 part, which is the opposite of what the name
+X25519MLKEM768 suggests. The specification says outright that this "does not
+adhere to the naming convention" and keeps it for historical reasons. If you
+are parsing these by hand, that ordering is the bug you are about to write.
+
+## Why both, and not just the new one
+
+The obvious question is why a connection carries an elliptic curve share at
+all if the point is to survive a quantum computer. The answer is that ML-KEM is
+young. It was standardised in 2024 and the cryptanalysis that would find a
+flaw in it, if there is one, has had about two years to run. X25519 has had
+twenty.
+
+So a hybrid derives its secret from both, and an attacker has to break both to
+recover it. RFC 9954, published a month earlier as Informational, is the
+document that lays out that reasoning and the security properties a hybrid has
+to preserve. Reading them in the other order, 9954 then 10024, is the right
+way round: one is why, the other is exactly what.
+
+There is a second reason, less discussed and just as real. Harvest now, decrypt
+later is not a hypothetical for anything with a long confidentiality life. A
+session recorded today and broken in fifteen years is still a breach if what
+crossed the wire was a medical record. The hybrid costs a kilobyte now against
+a risk that only compounds.
+
+## The part that breaks
+
+Here is where a kilobyte in a handshake stops being a rounding error.
+
+Cloudflare wrote up what happened when Chrome first ran this as an experiment,
+and the failure mode was not slowness, it was connections that did not
+complete at all. Middleboxes, load balancers and TLS-terminating proxies had
+been written on the assumption that a ClientHello arrives in one packet,
+because for twenty years it always had. Feed them one that spans two and some
+of them simply stop. Their measurements found breakage clustering around 10kB
+and 30kB, thresholds that correspond to nothing in the protocol and everything
+in somebody's buffer.
+
+This is protocol ossification, and it is the most useful thing to take away
+from the whole exercise. Nothing in TLS ever said the ClientHello fitted in a
+packet. It just did, for long enough that the assumption calcified into
+equipment, and the standard could not be extended until that equipment was
+either fixed or routed around.
+
+## What to actually check
+
+If you run anything that terminates or inspects TLS, three things are worth
+your time.
+
+**Does your ClientHello still fit?** With a 1,216 byte key share plus SNI, ALPN,
+the extension block and the record header, you are comfortably over a 1500 byte
+Ethernet MTU once a second key share is offered alongside the hybrid, which
+clients do while they are hedging. Over TCP that means two segments before the
+server has said anything, and if your path MTU is smaller than you think, more
+than two.
+
+**Does your library actually have it?** OpenSSL 3.5 shipped ML-KEM and ML-DSA
+natively, with no provider plug-in. That is the line in the sand: before it,
+post-quantum meant oqs-provider and a build; after it, it is a group name in a
+config file.
+
+**Are you inspecting traffic you can no longer inspect?** A middlebox with a
+hardcoded list of supported groups will negotiate a downgrade to a classical
+group, and it will do it silently. The handshake succeeds, the connection
+works, and the post-quantum protection you think you deployed is not there.
+The only way to know is to look at what was actually negotiated, not at what
+was offered.
+
+## The version that is not solved
+
+Key agreement is the easy half, and it is the half that is done. The other
+half is authentication, and it is not.
+
+A key exchange only has to resist an attacker who is recording today and
+computing later, so a hybrid key agreement fixes it today. A signature has to
+resist an attacker at the moment it is verified, which means certificates do
+not have the same urgency, and that is fortunate, because ML-DSA signatures
+and public keys are far larger than ECDSA's and a certificate chain contains
+several of each. Nobody has yet made a chain of those fit gracefully into a
+handshake that is already spilling out of one packet.
+
+So the honest summary of where this stands: your browser's key agreement is
+already post-quantum on most of the internet's large properties, your
+certificates are not, and the reason is arithmetic about bytes rather than
+anything about cryptography.
+
+## References
+
+- [RFC 10024: Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3](https://www.rfc-editor.org/rfc/rfc10024.html)
+- [RFC 9954: Terminology and Design Considerations for Hybrid Key Exchange](https://www.rfc-editor.org/rfc/rfc9954.html)
+- [NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
+- [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml)
+- [Cloudflare: The state of the post-quantum Internet](https://blog.cloudflare.com/pq-2024/)
+- [OpenSSL 3.5 release notes](https://openssl-library.org/news/openssl-3.5-notes/)
+- [RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3](https://www.rfc-editor.org/rfc/rfc8446.html)
+`,
+  },
+  {
+    slug: "service-worker-served-a-stale-document",
+    title: "A Service Worker That Served Yesterday's Map Of The Site",
+    date: "2026-09-04",
+    tags: ["operations", "engineering", "homelab"],
+    excerpt:
+      "Every fix deployed correctly and the site stayed broken, because the readers reporting it were being served a day old index.html naming bundles that had been deleted. Includes the test that reproduces it, and the control that fails.",
+    coverImage: "/images/blog/service-worker-served-a-stale-document.jpg",
+    content: `
+## Every fix worked, and the site stayed broken
+
+For about a week this site had a bug I could not reproduce and could not stop
+hearing about. The rack pages would load partway and stall. I would find a
+cause, fix it, deploy it, check the deployed files with curl, confirm the fix
+was live, and be told it was still broken. Then I would find another cause.
+
+Three of those causes were real, and fixing them changed nothing, because none
+of them was the reason the page in front of the reader was broken. The reason
+was that the reader was not running any of the code I kept deploying.
+
+## What a document actually is
+
+A modern single page application's HTML is not the page. It is a manifest. It
+is a short file whose entire job is to name the JavaScript and CSS bundles that
+are the page:
+
+\`\`\`html
+<script type="module" src="/assets/index-D8kR2p.js"></script>
+<link rel="stylesheet" href="/assets/index-9fLm0x.css">
+\`\`\`
+
+Those hashes are content hashes. Change one line of source and the bundle gets
+a new name, the old name stops existing, and the new HTML points at the new
+name. That is the whole cache-busting scheme and it is a good one: assets can
+be cached forever precisely because their names change when their contents do.
+
+It works on exactly one condition. The document has to be current. A document
+is a map of which files exist, and an old map is not a slightly worse map, it
+is a map of a place that has been demolished.
+
+## The cache policy that did it
+
+The service worker had this shape, and if you have written one you have
+probably written this shape:
+
+\`\`\`js
+// Documents: serve from cache if the copy is fresh enough,
+// and revalidate in the background.
+if (cached && !isOlderThan(cached, 24 * 60 * 60 * 1000)) {
+  event.waitUntil(revalidate(request));
+  return cached;
+}
+\`\`\`
+
+Stale-while-revalidate. It is the standard recommendation, it makes repeat
+visits instant, and for a document on a site that deploys often it is a
+loaded gun.
+
+Read what it does on the third day of a busy week. A reader visited on Monday
+and the worker cached Monday's document. I deployed on Tuesday, twice on
+Wednesday. Cloudflare has long since dropped Monday's bundles. On Thursday the
+reader opens the site, the worker checks its copy, decides eighteen hours old
+is fresh enough, and serves Monday's manifest. The browser dutifully requests
+\`/assets/index-D8kR2p.js\`, which has not existed since Tuesday, and gets a 404.
+
+What the reader sees depends on where the missing chunk was. If it was the
+entry bundle, a blank page. If it was a lazily loaded route, that route throws
+and the error boundary catches it. If it was one model in a set of ten, the
+progress readout stops at ninety percent and stays there forever.
+
+That last one is what I spent a week chasing.
+
+## The bit that makes it vicious
+
+The natural thing to do with a broken page is reload it. Reloading requests
+the document again, which the service worker answers from the same cache, so
+you get the same broken document. And because the entry is revalidated in the
+background, a reload that happens to be served by the *old* worker can write
+another copy of a stale document back into the cache.
+
+So the user-facing symptom is a page that is broken, stays broken when you
+reload it, and is fine on any device that has never visited before. Which is
+every device I was testing on, because I was testing in a fresh browser
+against a fresh deployment, where there is no cached document at all and the
+network is the only source. My testing was structurally incapable of seeing
+the bug.
+
+## The fix, which is four lines
+
+Documents go network-first. Not stale-while-revalidate, not
+cache-first-with-a-freshness-window. Network first, with the cache as the
+offline fallback it was always meant to be:
+
+\`\`\`js
+const DOCUMENT_NETWORK_TIMEOUT_MS = 4000;
+
+try {
+  const response = await Promise.race([
+    fromNetwork(event, request),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("slow")), cached ? DOCUMENT_NETWORK_TIMEOUT_MS : 30000),
+    ),
+  ]);
+  if (isStorable(response)) {
+    event.waitUntil(store(cache, request, response.clone(), SHELL_CACHE));
+  }
+  return response;
+} catch {
+  // Only now, and only because there is nothing better.
+  if (cached) return cached;
+  ...
+}
+\`\`\`
+
+The timeout is the part worth explaining. Network-first with no timeout means
+a reader on a bad connection waits out the full request before getting the
+cached copy, which is worse than what we had. Four seconds is long enough that
+a normal request wins and short enough that a stalled one does not hold the
+page hostage, and the race only applies when there is a cached copy to fall
+back to. With nothing cached there is nothing to fall back to, so it waits the
+full thirty.
+
+The assets keep their old policy, and should. Their names are content hashes.
+A cached \`index-D8kR2p.js\` is byte-identical to the one on the server or it
+does not exist. Cache-first is not just safe there, it is the entire reason
+for hashing the names.
+
+## Getting the old worker out
+
+Deploying the fix does not fix anybody, which is the second thing that
+surprised me. The old worker is still installed and still controlling open
+tabs, and a page controlled by the old worker gets the old worker's cache
+policy, including for the request that would fetch the new worker's document.
+
+Two things move it along. The cache version string is in every cache name, so
+bumping it means \`activate\` deletes every cache that is not on the new list:
+
+\`\`\`js
+const CACHE_VERSION = "v3";                 // was v2
+const SHELL_CACHE  = \`maxdoubin-shell-\${CACHE_VERSION}\`;
+const ASSET_CACHE  = \`maxdoubin-assets-\${CACHE_VERSION}\`;
+\`\`\`
+
+And the reader has to close the tab. Not reload it: close it. A service worker
+update installs in the background and then waits, because taking over from a
+running worker mid-session can leave a page half-served by each. It activates
+when the last client controlling it goes away. \`skipWaiting()\` shortcuts that
+and I did not use it, because it trades this problem for a page whose already
+loaded chunks and newly fetched chunks come from different builds.
+
+## Testing it, which took longer than fixing it
+
+I had already claimed three times that something was fixed and been wrong, so
+this one needed a test rather than an assertion. The test had to answer one
+question: does the worker serve a stale document, yes or no.
+
+\`\`\`text
+1. serve the real production build the way Pages serves it
+2. open /racks/wired, wait for navigator.serviceWorker.controller
+3. write a poisoned document into the shell cache: a valid page whose
+   <script> names /assets/index-GONEFOREVER.js
+4. reload
+5. did the poison come back?
+\`\`\`
+
+Two things made this harder than it reads.
+
+The first is that a service worker needs a secure context, and the site's own
+registration code unregisters the worker on localhost so that development is
+not fighting a cache. So the test runs against a hosts-file entry with
+Chromium launched with \`--unsafely-treat-insecure-origin-as-secure\` pointed at
+it. My first attempt skipped this, found no controller, no cache and no
+failure, and looked exactly like a pass. It was not a pass, it was a test that
+had not run.
+
+The second is that a test only means something if it can fail. So I ran the
+whole thing again with the old stale-first worker in place:
+
+\`\`\`text
+with the fix (v3, network-first)
+  4. after reload: title="The wired UniFi rack" | stale script present: false
+     PASS: network won, poison ignored
+  5. canvas present: true | page errors: none
+
+control (v2, stale-first), same test
+  4. after reload: title="STALE" | stale script present: true
+     FAIL: served the poisoned document
+  5. canvas present: false
+\`\`\`
+
+The control failing is the whole value of the exercise. Without it I have a
+green check mark and no evidence it is measuring anything. With it I know the
+test reproduces the exact reported symptom under the old code and does not
+under the new.
+
+## What I would tell myself a week earlier
+
+**A document is a manifest, not a page.** Caching it stale means serving a list
+of files that may not exist. There is no freshness window short enough to make
+that safe on a site that deploys more than once a day.
+
+**Verifying a deployment is not verifying a delivery.** Every \`curl\` I ran
+against the origin was correct and none of it was evidence, because the bug
+lived between the origin and the reader. Fetching a file proves the file is
+there. It does not prove that is the file anybody gets.
+
+**A bug you cannot reproduce may be a bug about state you do not have.** A
+fresh browser is a browser with no cache, no worker and no history, and if the
+bug is in accumulated state then a fresh browser is the one client guaranteed
+not to have it. Reproducing it meant deliberately constructing the state:
+install the worker, poison the cache, then reload.
+
+**Fix the delivery before you fix anything else.** The three earlier causes
+were all real, and one of them, a load window that deadlocked, was worse than
+what it replaced. But shipping them was pointless while the readers reporting
+the problem were running a build from Monday. Until the document is current,
+nothing else you deploy has happened.
+
+## References
+
+- [MDN: Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+- [W3C Service Workers specification: the activation algorithm](https://www.w3.org/TR/service-workers/#activation-algorithm)
+- [MDN: Cache](https://developer.mozilla.org/en-US/docs/Web/API/Cache)
+- [Google Web Fundamentals: The Offline Cookbook](https://web.dev/articles/offline-cookbook)
+- [Vite: static asset handling and content hashing](https://vite.dev/guide/assets)
+- [Cloudflare Pages: build output and caching](https://developers.cloudflare.com/pages/configuration/serving-pages/)
+`,
+  },
+  {
+    slug: "why-models-stall-at-eighty-three-percent",
+    title: "Eighty Three Percent, Forever",
+    date: "2026-09-03",
+    tags: ["engineering", "operations", "hardware"],
+    excerpt:
+      "Ten glTF files are ten downloads and thirty six image decodes, and past some number of simultaneous decodes a phone finishes neither. Two wrong diagnoses, a sliding window that deadlocked, and the stall timer that fixed it.",
+    coverImage: "/images/blog/why-models-stall-at-eighty-three-percent.jpg",
+    content: `
+## Eighty three percent, forever
+
+The rack pages on this site load ten glTF files, one per device, and draw them
+into one scene. On a desktop this is unremarkable. On an iPhone the progress
+readout would climb to something like "38 of 46 models, 83%" and then stop.
+Not slow down. Stop. Ten minutes later it still said 83%.
+
+The interesting part of this bug is that the requests did not fail. There was
+no error, no timeout, no rejected promise, nothing in the console. Eight
+models were simply in a state of having been asked for and never answered,
+and the code waiting on them waited for the rest of the session.
+
+## Two wrong answers first
+
+I want to record the wrong turns, because both were plausible and one of them
+produced a real improvement that fixed nothing.
+
+**Wrong answer one: the transcoder.** Each \`GLTFLoader\` was being handed its
+own \`KTX2Loader\`, so ten models meant ten Basis transcoders, each with its own
+WebAssembly instance and worker pool. That is genuinely wasteful and I fixed
+it, sharing one transcoder across every loader. It could not have been the
+cause, and I should have known that before writing the fix: these models
+carry no KTX2 at all. Their textures are \`EXT_texture_webp\`. The transcoder I
+was so pleased to have deduplicated was never being invoked.
+
+**Wrong answer two: the Dell page works, so it must be about count.** One page
+on the site shows a single Dell rack as one large model and it never stalled.
+I read that as "one request is fine, ten requests are not" and started
+thinking about connection limits. That is the wrong reading of the same clue,
+and I made it twice. The Dell page works not because it makes one request
+instead of ten, but because being one model means **its textures decode
+alone**.
+
+That second sentence is the whole bug.
+
+## What is actually happening
+
+Textures in these files are embedded, not external. So ten models is not ten
+downloads. It is ten downloads and roughly thirty six image decodes, all
+handed to the browser inside the same tick, because all ten loaders start at
+once and each one hits its images at about the same moment.
+
+Which decode path those thirty six images take depends on the browser, and
+three.js chooses it from the user agent. This is the actual line, from
+\`GLTFLoader.js\`:
+
+\`\`\`js
+if ( typeof createImageBitmap === 'undefined'
+     || ( isSafari && safariVersion < 17 )
+     || ( isFirefox && firefoxVersion < 98 ) ) {
+  this.textureLoader = new TextureLoader( this.options.manager );
+} else {
+  this.textureLoader = new ImageBitmapLoader( this.options.manager );
+}
+\`\`\`
+
+So an older iPhone decodes through an \`HTMLImageElement\` pointed at a blob URL,
+and a current one goes through \`createImageBitmap\` on a worker. I want to be
+careful here, because I got this wrong the first time I wrote it up and
+asserted the \`<img>\` path as the mechanism on all of iOS. It is not: Safari 17
+and later takes the other branch.
+
+What I can state from measurement is narrower, and it is enough:
+
+- The stall is real, reproducible on the reporter's device, and always in the
+  same shape. Some subset of models never resolves.
+- Nothing fails. No rejected promise, no \`error\` event, no console output, no
+  network entry in a failed state.
+- Capping how many models load at once removes it entirely, and the cap that
+  works is small: two on a phone.
+
+What I am inferring, and cannot prove from here, is why: that thirty six
+simultaneous decodes exceed what the engine will finish on a memory
+constrained device, and that whichever path it is on, the work is abandoned
+without the abandonment being reported. Both paths have the same failure
+shape from the caller's side, which is a promise or an event that never
+arrives.
+
+That distinction matters for what you do about it. If the mechanism were a
+specific decode path I could route around it. Because it is concurrency
+pressure, the fix is a limit, and the limit is right whichever branch a given
+phone takes.
+
+## The fix that made it worse
+
+The obvious response is to stop asking for everything at once, so I put the
+devices behind a sliding window. Mount the first few, and each one that
+finishes lets the next one start.
+
+\`\`\`ts
+// The first version. Do not ship this.
+return { visible: Math.min(total, ready + limit), markReady };
+\`\`\`
+
+Read that carefully with the bug in mind. \`ready\` only rises when a model
+resolves. The bug is that a model sometimes never resolves. So one stuck decode
+means \`ready\` stops rising, the window never widens, and every device behind
+it never even starts.
+
+I turned a page that loaded most of its models and stopped into a page that
+loaded four and stopped. The report I got back was "stuck at 81 percent,
+21 of 26", which is a *worse* number than the one I was trying to fix. Any
+bounded queue needs a way out of a slot that never returns, and I had built
+one without.
+
+## The fix that worked
+
+A stall timer. If nothing has completed for a while, open one more slot
+anyway:
+
+\`\`\`ts
+const STALL_MS = 8000;
+
+const stalled = ready + grace;
+useEffect(() => {
+  if (ready + grace >= total) return;
+  const t = window.setTimeout(() => setGrace((g) => g + 1), STALL_MS);
+  return () => window.clearTimeout(t);
+}, [stalled, ready, grace, total]);
+
+return { visible: Math.min(total, ready + grace + limit), markReady, ready };
+\`\`\`
+
+Three details in there matter.
+
+**The timer restarts on every completion**, because the effect depends on
+\`ready + grace\`. A rack that is merely slow opens one extra slot at a time
+rather than all of them at once, so the window degrades towards unbounded
+instead of jumping there.
+
+**Completion is keyed, not counted.** A device can re-render for reasons that
+have nothing to do with loading, a selection change or a dim toggle, and
+counting those would widen the window early and put us straight back into the
+original problem.
+
+\`\`\`ts
+const markReady = useCallback((key: string) => {
+  if (done.current.has(key)) return;
+  done.current.add(key);
+  setReady(done.current.size);
+}, []);
+\`\`\`
+
+**The width depends on the device.** A coarse pointer is the nearest thing to a
+reliable "this is a phone" signal that does not involve parsing a user agent,
+and phones are where this breaks:
+
+\`\`\`ts
+function concurrency(): number {
+  if (typeof window === "undefined" || !window.matchMedia) return 3;
+  return window.matchMedia("(pointer: coarse)").matches ? 2 : 4;
+}
+\`\`\`
+
+Total bytes are unchanged. The rack still fills in visibly, device by device,
+which if anything reads better than everything appearing at once. The browser
+is simply never holding more decodes than it can finish.
+
+## What generalises
+
+**A silent failure needs a timeout, not better error handling.** There was no
+error to handle. Any queue whose slots are freed by a callback needs an escape
+hatch for the callback that never arrives, and it is worth writing that on the
+first version rather than the third.
+
+**Count the work, not the requests.** Ten files sounds like ten units of work.
+It was ten downloads plus thirty six decodes, and the decodes were the
+constraint. Whatever your concurrency limit is written in terms of, check that
+it is the thing that actually runs out.
+
+**A clue that fits two theories has told you nothing.** "The single model page
+works" was compatible with a connection limit and with a decode limit, and I
+picked the first one twice without asking what would distinguish them. The
+distinguishing test was cheap: load ten copies of the same tiny model, versus
+one model with ten textures. I could have run it on day one.
+
+**Deduplicating something wasteful is not the same as fixing something broken.**
+Sharing one transcoder was a real improvement to code that should have been
+written that way. It was also, on these files, a change to a code path that
+never executes. Two improvements landing in the same week does not make one of
+them the cause of the other's symptom, and saying it did was the actual
+mistake.
+
+## References
+
+- [three.js GLTFLoader](https://threejs.org/docs/#examples/en/loaders/GLTFLoader)
+- [three.js source: how GLTFLoader picks its texture loader](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/jsm/loaders/GLTFLoader.js)
+- [MDN: createImageBitmap](https://developer.mozilla.org/en-US/docs/Web/API/Window/createImageBitmap)
+- [MDN: HTMLImageElement.decode](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decode)
+- [glTF extension: EXT_texture_webp](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Vendor/EXT_texture_webp/README.md)
+- [MDN: matchMedia and the pointer media feature](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/pointer)
+- [MDN: ImageBitmap](https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap)
+`,
+  },
+  {
     slug: "snmp-versus-streaming-telemetry",
     title: "SNMP Polling Versus Streaming Telemetry",
     date: "2026-05-09",
@@ -30750,7 +32914,7 @@ before choosing anything else.
 - [RFC 4226: HOTP, An HMAC-Based One-Time Password Algorithm](https://www.rfc-editor.org/rfc/rfc4226.html)
 - [RFC 2104: HMAC, Keyed-Hashing for Message Authentication](https://www.rfc-editor.org/rfc/rfc2104.html)
 - [RFC 4648: The Base16, Base32, and Base64 Data Encodings](https://www.rfc-editor.org/rfc/rfc4648.html)
-- [NIST SP 800-63B: Digital Identity Guidelines, Authentication](https://pages.nist.gov/800-63-3/sp800-63b.html)
+- [NIST SP 800-63B revision 4: Digital Identity Guidelines, Authentication](https://pages.nist.gov/800-63-4/sp800-63b.html)
 - [W3C Web Authentication Level 3](https://www.w3.org/TR/webauthn-3/)
 - [oathtool(1)](https://man.archlinux.org/man/oathtool.1)
 `,

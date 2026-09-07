@@ -111,7 +111,17 @@ export function CinematicTeardown() {
                 <LoadProgress label="parts" />
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 border-t border-[hsl(var(--brand-iron)/0.6)] px-5 py-4">
+              {/*
+                Transport for the 3D view. The view itself is a <canvas>,
+                which print already drops, so on paper this was a play button
+                and a scrub bar for a model that is not there. The "order of
+                removal" list below prints, and that is the part worth having
+                on paper next to the machine.
+              */}
+              <div
+                data-print-hide
+                className="flex flex-wrap items-center gap-4 border-t border-[hsl(var(--brand-iron)/0.6)] px-5 py-4"
+              >
                 <button
                   type="button"
                   onClick={() => {

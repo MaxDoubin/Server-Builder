@@ -54,9 +54,35 @@ const BLOCKS_ROBOTS = new Set([
 ]);
 
 const CONCURRENCY = 8;
+/**
+ * Minimum gap between two requests to the same host, and a hard limit of one
+ * in flight per host.
+ *
+ * Concurrency was global, so eight workers pulling from one alphabetically
+ * sorted list hit the same host eight times at once, because citations to the
+ * same host sort next to each other. w3.org answered that burst with a status
+ * the retry set does not cover, and two live specifications were reported as
+ * broken links on a run where every other check passed. Retrying harder does
+ * not fix that. Not making the burst does.
+ */
+const PER_HOST_GAP_MS = 900;
 const TIMEOUT_MS = 30_000;
 const RETRY_STATUS = new Set([0, 429, 502, 503, 504]);
-const UA =
+/**
+ * Say who this is.
+ *
+ * This used to claim to be Chrome, on the theory that a browser string gets
+ * past more doors. It does the opposite on the hosts that matter here. A
+ * browser user agent arriving without any of the headers a browser sends
+ * alongside it is a well known bot signature, and w3.org and cisco.com both
+ * answer it with 403 while answering an honest identifier with 200. Two live
+ * W3C specifications were being reported as broken links on that basis.
+ *
+ * So: an honest identifier first, and the browser string only as a fallback
+ * for a host that refuses it, because a few do go the other way.
+ */
+const UA = "maxdoubin.com-linkcheck/1.0 (+https://maxdoubin.com; citation checker)";
+const UA_FALLBACK =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
@@ -98,7 +124,30 @@ function countChar(text, char) {
   return n;
 }
 
-async function statusOf(url) {
+/**
+ * One request at a time per host, spaced out.
+ *
+ * Each host gets a promise chain. A new request for that host waits on the
+ * previous one, then waits out the remainder of the gap. Different hosts are
+ * untouched by this and still run at full concurrency, which is where the
+ * throughput was anyway.
+ */
+const hostQueue = new Map();
+
+function throttled(url, run) {
+  const host = safeHost(url);
+  const prior = hostQueue.get(host) ?? Promise.resolve();
+  const next = prior.then(async () => {
+    const out = await run();
+    await new Promise((r) => setTimeout(r, PER_HOST_GAP_MS));
+    return out;
+  });
+  // Keep the chain alive past a rejection, and do not retain every result.
+  hostQueue.set(host, next.then(() => undefined, () => undefined));
+  return next;
+}
+
+async function statusOf(url, agent = UA) {
   let last = 0;
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const controller = new AbortController();
@@ -108,7 +157,7 @@ async function statusOf(url) {
       const res = await fetch(url, {
         redirect: "follow",
         signal: controller.signal,
-        headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml,application/pdf,*/*" },
+        headers: { "user-agent": agent, accept: "text/html,application/xhtml+xml,application/pdf,*/*" },
       });
       status = res.status;
       // Drain so the socket can be reused rather than left half open.
@@ -126,6 +175,13 @@ async function statusOf(url) {
     await new Promise((r) => setTimeout(r, (attempt + 1) * 8000));
   }
   return last;
+}
+
+/** Honest identifier first, browser string only for a host that refuses it. */
+async function statusOfEither(url) {
+  const status = await statusOf(url);
+  if (status !== 403 && status !== 401) return status;
+  return statusOf(url, UA_FALLBACK);
 }
 
 /**
@@ -192,7 +248,7 @@ async function main() {
     while (cursor < urls.length) {
       const url = urls[cursor];
       cursor += 1;
-      const status = await statusOf(url);
+      const status = await throttled(url, () => statusOfEither(url));
       const host = safeHost(url);
       const ok = status >= 200 && status < 300;
       const verdict = ok
@@ -218,7 +274,7 @@ async function main() {
     }
     for (const entry of suspect) {
       await new Promise((r) => setTimeout(r, 4000));
-      const status = await statusOf(entry.url);
+      const status = await statusOfEither(entry.url);
       entry.status = status;
       if (status >= 200 && status < 300) {
         entry.verdict = "OK";

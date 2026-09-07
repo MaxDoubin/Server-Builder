@@ -20,6 +20,57 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="canonical" href="https://maxdoubin.com" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <!--
+      The entrance has to be the first thing painted, not the second.
+
+      Every page here is prerendered, so the article is legible at about
+      150ms, while React does not hydrate until about 1.5s. The preloader is
+      a React component, so it arrived after the content it exists to
+      precede: a flash of the page, then a loading screen over the top of it,
+      then the page again.
+
+      This paints the preloader's own background from the first byte and
+      hides the prerendered body under it, so the first thing on screen is
+      the entrance. Preloader removes the class in a layout effect the moment
+      it mounts, which runs before the browser paints, so the veil goes and
+      the animation appears in the same frame with nothing in between.
+
+      The literal colour is deliberate. It has to match --brand-obsidian
+      (220 12% 4%), but it cannot reference it: the token lives in the
+      bundled stylesheet, which has not arrived yet at the point this needs
+      to paint. Without it the ground would be the default light background,
+      because the theme class is applied by React too, so the flash of text
+      would simply become a flash of white.
+
+      Three things stop this being a way to hide the site by accident. It is
+      only ever added by script, so a reader with JavaScript off never gets
+      it. It is only added where the prerenderer marked an entrance, so the
+      dashboards and the 404 page are untouched. And it takes itself off
+      after eight seconds if the preloader never arrives to do it.
+    -->
+    <style>
+      html.booting #root { visibility: hidden; }
+      html.booting::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        background: hsl(220 12% 4%);
+      }
+    </style>
+    <script>
+      (function () {
+        var el = document.documentElement;
+        if (el.getAttribute("data-boot") !== "1") return;
+        try {
+          if (sessionStorage.getItem("cinematic-booted") === "1") return;
+        } catch (e) {}
+        el.classList.add("booting");
+        setTimeout(function () {
+          el.classList.remove("booting");
+        }, 8000);
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:ital,wght@0,400..700;1,400..700&family=Orbitron:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap">
