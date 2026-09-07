@@ -46,12 +46,7 @@ const DIST = path.resolve("dist/public");
  * entry that no longer matches anything also fails the build, so the list
  * cannot outlive the bug it documents.
  */
-const KNOWN_INSECURE = {
-  "http://factordb.com/":
-    "client/src/lib/nclGuides.ts, the factordb tool entry. The host serves " +
-    "https\n      correctly, so the fix is the single character: " +
-    "https://factordb.com/",
-};
+const KNOWN_INSECURE = {};
 
 /** Attributes that hold a URL, by element. */
 const URL_ATTRS = {

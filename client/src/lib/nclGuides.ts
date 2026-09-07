@@ -226,7 +226,7 @@ const cryptography: NclGuide = {
   resources: [
     { label: "CyberChef", detail: "The chain-of-operations tool for encodings and ciphers.", url: "https://gchq.github.io/CyberChef/" },
     { label: "dcode.fr", detail: "Cipher identifier and solver for classical schemes.", url: "https://www.dcode.fr/en" },
-    { label: "factordb", detail: "Known factorisations for RSA moduli.", url: "http://factordb.com/" },
+    { label: "factordb", detail: "Known factorisations for RSA moduli.", url: "https://factordb.com/" },
     { label: "Cryptopals", detail: "A progression of hands-on cryptography attack challenges.", url: "https://cryptopals.com/" },
     { label: "RsaCtfTool", detail: "Automated RSA attacks for CTF-style keys.", url: "https://github.com/RsaCtfTool/RsaCtfTool" },
     { label: "NIST FIPS 197", detail: "The official AES specification.", url: "https://csrc.nist.gov/pubs/fips/197/final" },

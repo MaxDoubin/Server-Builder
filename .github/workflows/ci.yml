@@ -244,6 +244,25 @@ jobs:
       - name: Heading outlines
         run: node scripts-ci/check-heading-order.mjs
 
+      # Three gates that were written, committed, and never wired to
+      # anything. They pass, and between them they were already describing
+      # two real bugs nobody was being told about: the prerender $ splice
+      # and an http:// citation. A gate that does not run is worse than no
+      # gate, because the file in the tree says the check exists.
+      #
+      # All three read the built HTML only, reach nothing off the machine,
+      # and finish in seconds. check-sources.mjs stays out on purpose: it
+      # makes 920 serial requests to ninety third parties, and its own
+      # header explains why that must never gate a build.
+      - name: Canonical URLs
+        run: node scripts-ci/check-canonical.mjs
+
+      - name: HTML structure
+        run: node scripts-ci/check-html-validity.mjs
+
+      - name: Link safety
+        run: node scripts-ci/check-link-safety.mjs
+
       # A fixed element is viewport chrome, and print has no viewport: the
       # browser drops it on page one of the printout and leaves it there.
       # Printing a post used to come out with the site header across the top,

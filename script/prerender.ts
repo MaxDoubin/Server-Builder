@@ -84,6 +84,39 @@ function esc(str: string | null | undefined): string {
     .replace(/>/g, "&gt;");
 }
 
+/*
+  Make a value safe to interpolate into a String.replace replacement.
+
+  The second argument of String.replace is not a plain string. A dollar in it
+  begins a pattern: $& is the whole match, $1 a capture group, $` and $' the
+  text either side. So a value carrying one of those does not land in the
+  output, something else does.
+
+  Five posts shipped this way. One contains the shell line
+
+      grep -q "^install ok installed$"
+
+  and esc() above turns that closing quote into &quot;, which puts a literal
+  $& in front of it. injectRootContent then spliced the entire page shell,
+  the match for its own regex, into the middle of the article, and left
+  <pre>, <code>, <article> and <main> open for the rest of the document. A
+  third of the page sat inside a stylesheet. Eleven other gates passed it:
+  the page had a title, a description, a canonical, valid JSON-LD and
+  resolving links.
+
+  Note the direction of the trap: esc() makes a value MORE dangerous here,
+  not less, because it introduces the ampersands. Any $ before a character
+  that escapes to an entity is enough, and a regex anchor at the end of a
+  quoted string is the common way to write one.
+
+  $$ is the escape for a literal dollar, so doubling every one is the whole
+  fix. Applied to values, not to the replacement as a whole, because several
+  callers below use $1 and $3 backreferences on purpose.
+*/
+function literal(value: string): string {
+  return value.replace(/\$/g, "$$$$");
+}
+
 /** Replace a meta tag's attribute value in raw HTML using a regex. */
 function replaceMeta(
   html: string,
@@ -101,22 +134,22 @@ function replaceMeta(
     `(<${escaped}[^>]*\\s${attrName}=")([^"]*)(")`,
     "i",
   );
-  return html.replace(re, `$1${esc(value)}$3`);
+  return html.replace(re, `$1${literal(esc(value))}$3`);
 }
 
 function replaceTitle(html: string, title: string): string {
-  return html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`);
+  return html.replace(/<title>[^<]*<\/title>/, () => `<title>${esc(title)}</title>`);
 }
 
 function replaceCanonical(html: string, url: string): string {
   return html.replace(
     /(<link rel="canonical" href=")[^"]*(")/,
-    `$1${url}$2`,
+    `$1${literal(url)}$2`,
   );
 }
 
 function injectBeforeHead(html: string, injection: string): string {
-  return html.replace("</head>", `${injection}\n</head>`);
+  return html.replace("</head>", () => `${injection}\n</head>`);
 }
 
 /**
@@ -215,9 +248,17 @@ body{background:hsl(220 12% 4%);margin:0}
 function injectRootContent(html: string, content: string): string {
   // Replace the spinner placeholder with pre-rendered content.
   // React's createRoot overwrites this on mount, styles and all.
+  // A function, not a string: its return value is used literally, so neither
+  // the article nor the two constants can be read as a $ pattern.
   return html.replace(
     /<div id="root">[\s\S]*?<\/div>\s*<style>/,
-    `<div id="root">${PRERENDER_CSS}<div id="prerender">${content}${SITE_NAV}</div></div>\n    <style>`,
+    () =>
+      // One </div>, not two. The regex stops at the spinner's <style>, so the
+      // </div> that closes #root in index.html is still there after the match
+      // and closes it. Emitting a second one left every page with three
+      // closes against two opens. Browsers drop the orphan, so it never
+      // looked wrong, and all 377 pages served invalid markup.
+      `<div id="root">${PRERENDER_CSS}<div id="prerender">${content}${SITE_NAV}</div>\n    <style>`,
   );
 }
 
@@ -271,23 +312,23 @@ function buildPageHtml(base: string, meta: PageMeta): string {
   // <meta name="description">
   html = html.replace(
     /(<meta name="description" content=")[^"]*(")/,
-    `$1${esc(description)}$2`,
+    `$1${literal(esc(description))}$2`,
   );
 
   // Open Graph
-  html = html.replace(/(<meta property="og:title" content=")[^"]*(")/,   `$1${esc(title)}$2`);
-  html = html.replace(/(<meta property="og:description" content=")[^"]*(")/,`$1${esc(description)}$2`);
-  html = html.replace(/(<meta property="og:url" content=")[^"]*(")/,     `$1${canonical}$2`);
-  html = html.replace(/(<meta property="og:type" content=")[^"]*(")/,    `$1${ogType}$2`);
-  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${ogImage}$2`);
-  html = html.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1${esc(ogImageAlt)}$2`);
+  html = html.replace(/(<meta property="og:title" content=")[^"]*(")/,   `$1${literal(esc(title))}$2`);
+  html = html.replace(/(<meta property="og:description" content=")[^"]*(")/,`$1${literal(esc(description))}$2`);
+  html = html.replace(/(<meta property="og:url" content=")[^"]*(")/,     `$1${literal(canonical)}$2`);
+  html = html.replace(/(<meta property="og:type" content=")[^"]*(")/,    `$1${literal(ogType)}$2`);
+  html = html.replace(/(<meta property="og:image" content=")[^"]*(")/,   `$1${literal(ogImage)}$2`);
+  html = html.replace(/(<meta property="og:image:alt" content=")[^"]*(")/,`$1${literal(esc(ogImageAlt))}$2`);
 
   // Twitter
-  html = html.replace(/(<meta name="twitter:title" content=")[^"]*(")/,      `$1${esc(title)}$2`);
-  html = html.replace(/(<meta name="twitter:description" content=")[^"]*(")/,`$1${esc(description)}$2`);
-  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${ogImage}$2`);
-  html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${esc(ogImageAlt)}$2`);
-  html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${canonical}$2`);
+  html = html.replace(/(<meta name="twitter:title" content=")[^"]*(")/,      `$1${literal(esc(title))}$2`);
+  html = html.replace(/(<meta name="twitter:description" content=")[^"]*(")/,`$1${literal(esc(description))}$2`);
+  html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/,      `$1${literal(ogImage)}$2`);
+  html = html.replace(/(<meta name="twitter:image:alt" content=")[^"]*(")/,  `$1${literal(esc(ogImageAlt))}$2`);
+  html = html.replace(/(<meta name="twitter:url" content=")[^"]*(")/,        `$1${literal(canonical)}$2`);
 
   if (noindex) {
     html = html.replace(
