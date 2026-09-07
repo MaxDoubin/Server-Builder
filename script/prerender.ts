@@ -600,6 +600,14 @@ async function prerenderPost(
   const cardPath = `/images/og/${post.slug}.jpg`;
   const hasCard = existsSync(path.join(DIST, cardPath.slice(1)));
   const ogImage = `${SITE_URL}${hasCard ? cardPath : post.coverImage}`;
+  /*
+    Absolute for the structured data, which schema.org requires and which
+    Google reads off whatever origin it crawls. The <img> further down uses
+    post.coverImage as it is, root relative, because an absolute src pins the
+    element to the production hostname: on a preview deployment that is a
+    cross origin request and img-src 'self' refuses it, so every post
+    reviewed on a preview showed no cover at all.
+  */
   const coverImage = `${SITE_URL}${post.coverImage}`;
 
   /*
@@ -729,7 +737,7 @@ ${JSON.stringify({
   const rootContent = `
 <main>
   <a href="${SITE_URL}/blog">← Back to Blog</a>
-  <img src="${coverImage}" alt="${esc(post.title)}" width="800" height="320" />
+  <img src="${post.coverImage}" alt="${esc(post.title)}" width="800" height="320" />
   <article>
     <time datetime="${post.date}">${dateStr}</time>${updatedStr} · ${readMins} min read
     <h1>${esc(post.title)}</h1>

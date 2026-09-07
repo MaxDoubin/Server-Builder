@@ -263,6 +263,13 @@ jobs:
       - name: Link safety
         run: node scripts-ci/check-link-safety.mjs
 
+      # script-src names one sha256 rather than carrying 'unsafe-inline', so
+      # the boot veil is the only inline script that may run. Edit a character
+      # of it and the hash stops matching: the veil silently stops working and
+      # nothing else would notice. This recomputes it from the build.
+      - name: CSP script hash
+        run: node scripts-ci/check-csp-hash.mjs
+
       # A fixed element is viewport chrome, and print has no viewport: the
       # browser drops it on page one of the printout and leaves it there.
       # Printing a post used to come out with the site header across the top,
