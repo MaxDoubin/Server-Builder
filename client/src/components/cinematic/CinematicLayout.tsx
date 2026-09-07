@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { SmoothScrollProvider } from "@/lib/motion/SmoothScrollProvider";
 import { Preloader } from "./Preloader";
 import { CinematicNav } from "./CinematicNav";
@@ -116,9 +117,26 @@ export function CinematicLayout({
         >
           Skip to content
         </a>
-        {!skipPreloader && !bootedOnce && (
-          <Preloader onDone={markBooted} />
-        )}
+        {/*
+          Portalled to <body>, not rendered here.
+
+          Every route renders inside .route-fade, which animates opacity from
+          0 to 1 over 380ms. Opacity below 1 composites the whole subtree as
+          one group, so while that runs the entrance animation was being
+          faded in by the route transition rather than being the first thing
+          on screen. Caught by reading the ancestor chain during boot: the
+          preloader sat under a .route-fade measured at opacity 0, then
+          0.88, then 1.
+
+          Portalled, the chain above it is body and html, both at opacity 1,
+          so its own fixed position and z-index answer to the viewport and
+          nothing dims it on the way in. Everything else stays here, because
+          whether it plays at all is a property of the page: the 404 skips
+          it, and sessionStorage remembers that this tab has seen it.
+        */}
+        {!skipPreloader &&
+          !bootedOnce &&
+          createPortal(<Preloader onDone={markBooted} />, document.body)}
         {!hideNav && <CinematicNav overHero={overHero} />}
         {/*
           Outside the nav, because the palette has to work on the pages that
