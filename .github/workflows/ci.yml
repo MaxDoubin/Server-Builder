@@ -279,6 +279,15 @@ jobs:
       - name: Print chrome
         run: node scripts-ci/check-print-chrome.mjs
 
+      # A service worker outlives the deploy that installed it, so getting the
+      # document strategy wrong does not show up as a bad-looking page, it
+      # shows up as returning visitors stuck on a build whose chunk files the
+      # CDN no longer has. This runs sw.js against a fake network and asserts
+      # what a reader gets on a fast connection, a slow one, and no connection
+      # at all. Source only; no browser and no build needed.
+      - name: Service worker documents
+        run: node scripts-ci/check-sw-documents.mjs
+
       # A module no import reaches is a module the bundler never sees, so
       # nothing else here can notice it: every other gate scans it, typecheck
       # compiles it, npm installs its dependencies, and none of that reaches a

@@ -426,17 +426,44 @@ async function documentStrategy(event, request) {
     along: the offline answer. The timeout keeps a slow connection from
     hanging on a document we already have a usable copy of.
   */
+  const network = fromNetwork(event, request);
+
+  /*
+    Store what the network returns whether or not it wins the race below.
+
+    Attached before the race, and outside it, on purpose. Storing inside the
+    winning branch looks equivalent and is not: when the timeout wins, the
+    request is still in flight, and its response used to be dropped. The
+    cache then still held the old document, so the next load timed out
+    against the same slow connection and served the same stale manifest, and
+    so did the one after that. A reader on a bad train line would keep
+    getting last week's chunk names until they happened to load a page fast
+    enough to beat four seconds. The staleness outlived the outage.
+
+    waitUntil, so a worker that has already answered from cache is not killed
+    with the write half done.
+  */
+  event.waitUntil(
+    network
+      .then((response) =>
+        isStorable(response)
+          ? store(cache, request, response.clone(), SHELL_CACHE)
+          : undefined,
+      )
+      .catch(() => undefined),
+  );
+
+  let timer;
   try {
-    const response = await Promise.race([
-      fromNetwork(event, request),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("slow")), cached ? DOCUMENT_NETWORK_TIMEOUT_MS : 30000),
-      ),
+    return await Promise.race([
+      network,
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("slow")),
+          cached ? DOCUMENT_NETWORK_TIMEOUT_MS : 30000,
+        );
+      }),
     ]);
-    if (isStorable(response)) {
-      event.waitUntil(store(cache, request, response.clone(), SHELL_CACHE));
-    }
-    return response;
   } catch {
     // Offline. An expired copy still beats an error page by a mile.
     if (cached) return cached;
@@ -452,6 +479,9 @@ async function documentStrategy(event, request) {
       the reader chooses to follow.
     */
     return offlineResponse();
+  } finally {
+    /* The race is decided; a pending timer would only hold the worker up. */
+    clearTimeout(timer);
   }
 }
 
