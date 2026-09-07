@@ -10,12 +10,27 @@
  * the callers format the number differently: some interpolate it raw, some
  * run it through toLocaleString first.
  *
- *   `${n} ${pluralise(n, "digit")}`            -> "1 digit" / "12 digits"
- *   `${n} ${pluralise(n, "entry", "entries")}` -> "1 entry" / "3 entries"
+ *   `${n} ${pluralise(n, "digit")}`     -> "1 digit" / "12 digits"
+ *   `${n} ${pluralise(n, "address")}`   -> "1 address" / "4 addresses"
+ *   `${n} ${pluralise(n, "entry", "entries")}`
  *
- * English only, and deliberately so: it takes the irregular plural as an
- * argument rather than trying to derive one.
+ * English only.
  */
-export function pluralise(count: number, one: string, many = `${one}s`): string {
-  return count === 1 ? one : many;
+
+/**
+ * After a sibilant the regular plural is "es", not "s". This is the rule
+ * rather than a guess at an irregular, which is why it lives here: the first
+ * caller to pass one of these words got "256 addresss" precisely because the
+ * default was a bare "s".
+ *
+ * Anything genuinely irregular still passes its plural explicitly. A helper
+ * that tried to derive "mice" or "quizzes" would be wrong more often than it
+ * was right, so it does not try.
+ */
+const SIBILANT = /(?:s|x|z|ch|sh)$/i;
+
+export function pluralise(count: number, one: string, many?: string): string {
+  if (count === 1) return one;
+  if (many !== undefined) return many;
+  return SIBILANT.test(one) ? `${one}es` : `${one}s`;
 }

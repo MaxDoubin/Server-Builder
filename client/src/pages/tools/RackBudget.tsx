@@ -11,6 +11,7 @@
  */
 
 import { useMemo, useState } from "react";
+import { pluralise } from "@/lib/plural";
 import { ToolShell } from "./ToolShell";
 import {
   BTU_PER_WATT,
@@ -99,10 +100,32 @@ export function RackBudget() {
     ["Rack capex", usd(r.rackCapex), `${fmt(RACK_CAPEX_USD)} per cabinet, enclosure only, no equipment.`],
   ];
 
+  /*
+    A spoken version of the table, for a live region.
+
+    Every number on this page is derived from the four fields beside it, so
+    nudging a stepper rewrites ten rows at once and, without this, announced
+    none of them. Not the whole table read aloud: the four figures someone
+    changing an input is actually watching.
+  */
+  const summary =
+    `${racks} ${pluralise(racks, "rack")} at ${fmt(kwPerRack)} kW: ` +
+    `${fmt(r.facilityW / 1000, 1)} kW facility power, PUE ${fmt(r.pue, 3)}, ` +
+    `${r.crahUnits} CRAH ${pluralise(r.crahUnits, "unit")} plus one spare, ` +
+    `${usd(r.annualCost)} a year in energy.`;
+
   return (
     <ToolShell
       slug="rack-budget"
     >
+      <p
+        role="status"
+        aria-live="polite"
+        data-testid="text-summary"
+        className="sr-only"
+      >
+        {summary}
+      </p>
       <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
         <div className="space-y-5">
           {FIELDS.map((f) => (
