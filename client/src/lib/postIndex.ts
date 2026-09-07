@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 249 of them. Regenerate with script/generatePostIndex.ts.
+ * 250 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "csp-blocked-its-own-models",
+    title: "The Content Security Policy That Blocked Its Own 3D Models",
+    date: "2026-09-07",
+    tags: ["security","engineering","operations"],
+    excerpt: "The policy was tight, commented line by line, and refusing to compile the WebAssembly decoder the 3D pages depend on: 13 compile errors and 26 refused blob connections on one page. Nothing local sends the header, so production was its only test environment. Fixing it also overturned a careful comment of mine that nobody had ever counted.",
+    coverImage: "/images/blog/csp-blocked-its-own-models.jpg",
+    wordCount: 1266,
+  },
   {
     slug: "dollar-sign-string-replace",
     title: "A Dollar Sign Ate a Third of Five Articles",
@@ -2480,10 +2489,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 932;
+export const CITATION_COUNT = 940;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1091;
+export const CHECKED_URL_COUNT = 1099;
