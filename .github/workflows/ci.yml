@@ -279,6 +279,14 @@ jobs:
       - name: Print chrome
         run: node scripts-ci/check-print-chrome.mjs
 
+      # A module no import reaches is a module the bundler never sees, so
+      # nothing else here can notice it: every other gate scans it, typecheck
+      # compiles it, npm installs its dependencies, and none of that reaches a
+      # browser. Sixty-five such files were found at once, holding twenty-seven
+      # packages in place.
+      - name: Dead modules
+        run: node scripts-ci/check-dead-modules.mjs
+
       # Last because it reads both the source trees and the built HTML.
       - name: Em dashes
         run: node scripts-ci/check-em-dashes.mjs
