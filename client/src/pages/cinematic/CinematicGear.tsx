@@ -396,11 +396,24 @@ export function CinematicGear() {
                             ) : null}
 
                             <div className="flex flex-1 flex-col gap-2 p-4">
-                              <div className="flex items-baseline justify-between gap-3">
+                              {/*
+                                Wraps, and the SKU can break.
+
+                                shrink-0 kept the SKU from being squeezed to
+                                nothing beside a long name, and in doing so
+                                made it unbounded. At the 130% text size this
+                                site offers, on a 375px screen,
+                                UA-Retrofit-Reader-Fingerprint ran 42px past
+                                the card, which is overflow-hidden, so it was
+                                simply cut. It drops to its own line now, and
+                                overflow-wrap breaks it there only if it
+                                still does not fit.
+                              */}
+                              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                                 <h3 className="font-display text-base font-medium leading-tight text-[hsl(var(--brand-bone))]">
                                   {d.name}
                                 </h3>
-                                <span className="shrink-0 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                                <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] [overflow-wrap:anywhere]">
                                   {d.sku}
                                 </span>
                               </div>
