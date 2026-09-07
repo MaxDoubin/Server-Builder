@@ -42,6 +42,13 @@ interface RouteChunk {
    */
   deeper?: RouteChunk;
   /**
+   * Chunks for a deeper path whose last segment is a fixed word rather than
+   * an id. /study/security-plus/sheet is the printable revision sheet, not a
+   * domain called "sheet", and keyed by the word rather than by the exam so
+   * a fourth exam does not need an entry here.
+   */
+  deeperLeaf?: Record<string, RouteChunk>;
+  /**
    * True for a route whose chunk is large enough that speculatively pulling
    * it is a real cost. /game drags in three.js and react-three-fiber, roughly
    * 800KB. Worth prefetching on a fast link, rude on a metered one.
@@ -129,6 +136,9 @@ const PREFIX_ROUTES: Record<string, RouteChunk> = {
   "/study/": {
     load: () => import("@/pages/cinematic/CinematicStudyExam"),
     deeper: { load: () => import("@/pages/cinematic/CinematicStudyDomain") },
+    deeperLeaf: {
+      sheet: { load: () => import("@/pages/cinematic/CinematicStudySheet") },
+    },
   },
   "/topics/": { load: () => import("@/pages/cinematic/CinematicTag") },
   "/ncl/": { load: () => import("@/pages/cinematic/CinematicNclGuide") },
@@ -166,6 +176,9 @@ function resolveRoute(path: string): { key: string; chunk: RouteChunk } | null {
     // "/study/ccna" has one segment after the prefix, "/study/ccna/ip-x" has two.
     const rest = path.slice(bestKey.length);
     if (chunk.deeper && rest.includes("/")) {
+      const last = rest.slice(rest.lastIndexOf("/") + 1);
+      const leaf = chunk.deeperLeaf?.[last];
+      if (leaf) return { key: `${bestKey}*/${last}`, chunk: leaf };
       return { key: `${bestKey}*/`, chunk: chunk.deeper };
     }
     return { key: bestKey, chunk };

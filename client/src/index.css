@@ -1372,6 +1372,20 @@ html.lenis-smooth {
 }
 
 /*
+  The sheet spells out each link's address for print. On screen the link
+  text is enough and the address is noise, so it is hidden the way any
+  visually hidden text is, and the print block above puts it back.
+*/
+.sheet-url {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/*
   Printing a post.
 
   Teachers and students print things. Without this, printing a post gives
@@ -1438,6 +1452,70 @@ html.lenis-smooth {
 
   main {
     padding: 0 !important;
+  }
+
+  /*
+    The hero gap at the top of a page.
+
+    Four pages open with pt-[22vh], which is the space the headline needs to
+    breathe under a fixed nav on a screen. On paper the nav is gone and the
+    viewport is a sheet, so that same rule was leaving the first 28 percent
+    of page one blank: measured at 281px of a 1056px Letter page, three times
+    on the index pages and once on the revision sheet, which is a page whose
+    entire purpose is to be printed.
+
+    Named by the utility rather than by a class added to each page, because
+    the utility is the thing that is wrong here and any page that reaches for
+    it later has the same problem.
+  */
+  .pt-\[22vh\] {
+    padding-top: 0 !important;
+  }
+
+  /*
+    The revision sheet's URLs.
+
+    The rule further up appends an href only inside article prose, which is
+    right for an article: a paragraph does not want every link spelled out.
+    A sheet is different. It exists to be carried away from the screen, and
+    a reading list on paper whose entries cannot be typed into anything is
+    not a reading list.
+
+    So the sheet writes the address itself, in a span it hides on screen and
+    shows here, rather than through a generated ::after. Generated content is
+    not selectable and does not always survive a copy, and someone reading
+    this on a screen may well want to copy a line out of it.
+  */
+  .sheet-url {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+
+  /* A box to tick. Only worth anything on paper. */
+  .study-sheet .sheet-item {
+    list-style: none;
+    padding-left: 1.4em;
+    position: relative;
+    break-inside: avoid;
+  }
+  .study-sheet .sheet-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.25em;
+    width: 0.75em;
+    height: 0.75em;
+    border: 1px solid #000 !important;
+  }
+
+  .study-sheet section {
+    break-inside: avoid;
   }
 
   /*

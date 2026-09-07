@@ -13,26 +13,19 @@ import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { getAllPosts, readMinutes } from "@/lib/blogPosts";
-import { getDomain, type ExamDomain } from "@/lib/examObjectives";
+import { getDomain, postsForDomain } from "@/lib/examObjectives";
 import { getTool } from "@/lib/toolsRegistry";
 
 const SITE_URL = "https://maxdoubin.com";
-
-/** Posts whose title or tags match any of the domain's keywords. */
-function matchPosts(domain: ExamDomain) {
-  const needles = domain.keywords.map((k) => k.toLowerCase());
-  return getAllPosts().filter((p) => {
-    const title = p.title.toLowerCase();
-    const tags = p.tags.map((t) => t.toLowerCase());
-    return needles.some((n) => title.includes(n) || tags.includes(n));
-  });
-}
 
 export function CinematicStudyDomain() {
   const [, params] = useRoute("/study/:exam/:domain");
   const found = getDomain(params?.exam ?? "", params?.domain ?? "");
 
-  const posts = useMemo(() => (found ? matchPosts(found.domain) : []), [found]);
+  const posts = useMemo(
+    () => (found ? postsForDomain(found.domain, getAllPosts()) : []),
+    [found],
+  );
 
   useSEO({
     title: found

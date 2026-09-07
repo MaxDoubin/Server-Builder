@@ -2493,6 +2493,61 @@ ${JSON.stringify({
 </main>`,
     });
 
+    /*
+      The revision sheet. Everything the exam's domain pages hold, on one
+      page, because a sheet is a thing to carry away from a screen. The
+      prerendered version is the same content flat, which is also what a
+      crawler wants: one URL that answers "what is on this exam" without
+      following five links.
+    */
+    const sheetDomains = exam.domains.map(
+      (domain: { slug: string; name: string; weight: number | null; summary: string; keywords: string[] }) => ({
+        domain,
+        matched: posts.filter((post) => {
+          const title = post.title.toLowerCase();
+          const tags = post.tags.map((t) => t.toLowerCase());
+          return domain.keywords.some(
+            (k) => title.includes(k.toLowerCase()) || tags.includes(k.toLowerCase()),
+          );
+        }),
+      }),
+    );
+    const sheetPostCount = new Set(
+      sheetDomains.flatMap((d) => d.matched.map((p: { slug: string }) => p.slug)),
+    ).size;
+
+    await writePage(`study/${exam.slug}/sheet`, base, {
+      title: pageTitle(`${exam.name} ${exam.code} revision sheet`),
+      description: `Every ${exam.name} ${exam.code} domain on one printable page, with its published weighting and the ${sheetPostCount} articles and free tools on this site that cover it.`,
+      canonical: `${SITE_URL}/study/${exam.slug}/sheet`,
+      rootContent: `
+<main>
+  <nav><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/study">Study</a> / <a href="${SITE_URL}/study/${exam.slug}">${esc(exam.code)}</a></nav>
+  <h1>${esc(exam.name)} ${esc(exam.code)} revision sheet</h1>
+  <p>Every domain on one page, made to print. Weightings are ${esc(exam.vendor)}'s published figures, and objectives change between exam versions, so check them against <a href="${exam.officialUrl}">the official objectives</a> before you rely on them.</p>
+  ${sheetDomains
+    .map(
+      ({ domain, matched }) => `<section>
+    <h2>${esc(domain.name)}${domain.weight === null ? "" : ` (${domain.weight}% of the exam)`}</h2>
+    <p>${esc(domain.summary)}</p>
+    ${
+      matched.length === 0
+        ? "<p>Nothing in the archive covers this one yet.</p>"
+        : `<h3>Read</h3>
+    <ul>${matched
+      .map(
+        (post: { slug: string; title: string }) =>
+          `<li><a href="${SITE_URL}/blog/${post.slug}">${esc(post.title)}</a></li>`,
+      )
+      .join("\n      ")}</ul>`
+    }
+  </section>`,
+    )
+    .join("\n  ")}
+  <nav><a href="${SITE_URL}/study/${exam.slug}">${esc(exam.code)} domains</a> · <a href="${SITE_URL}/study">All exams</a></nav>
+</main>`,
+    });
+
     for (const domain of exam.domains) {
       const matched = posts.filter((post) => {
         const title = post.title.toLowerCase();
@@ -2852,6 +2907,15 @@ async function writeSitemap(
   for (const exam of EXAMS) {
     urls.push({
       loc: `${SITE_URL}/study/${exam.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+    // The revision sheet is the whole exam on one page, so it answers "what
+    // is on this exam" in one fetch. Same priority as the exam page it
+    // summarises.
+    urls.push({
+      loc: `${SITE_URL}/study/${exam.slug}/sheet`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

@@ -386,6 +386,10 @@ const CinematicStudyDomain = lazyWithRetry(() =>
   })),
 );
 
+const CinematicStudySheet = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicStudySheet").then((m) => ({ default: m.CinematicStudySheet })),
+);
+
 const CinematicNotFound = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNotFound").then((module) => ({
     default: module.CinematicNotFound,
@@ -985,6 +989,15 @@ function AnimatedRoutes() {
           <Route path="/study/:exam">
             <Suspense fallback={<RouteLoading />}>
               <CinematicStudyExam />
+            </Suspense>
+          </Route>
+          {/*
+            Before /study/:exam/:domain, because wouter takes the first
+            match and "sheet" would otherwise be read as a domain slug.
+          */}
+          <Route path="/study/:exam/sheet">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicStudySheet />
             </Suspense>
           </Route>
           <Route path="/study/:exam/:domain">
