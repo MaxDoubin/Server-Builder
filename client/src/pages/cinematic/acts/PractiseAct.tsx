@@ -32,6 +32,7 @@ import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
+import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
@@ -141,6 +142,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A thousand failed passwords are a bot that got nowhere. Say what happened, then point at the one line that proves it.",
     count: `${LOGS.length} logs, ${LOGS.reduce((sum, item) => sum + item.lines.length, 0)} lines`,
+  },
+  {
+    href: "/space",
+    eyebrow: "Compare",
+    title: "No space left on device",
+    blurb:
+      "df is the tool most likely to mislead you here, because it answers a different question from the one you asked. The diagnosis is a disagreement between two numbers.",
+    count: `${SPACE_CASES.length} filesystems, ${new Set(SPACE_CASES.map((item) => spaceFailure(item.filesystem, item.write))).size} causes`,
   },
   {
     href: "/clock",

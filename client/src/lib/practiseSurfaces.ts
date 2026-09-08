@@ -111,6 +111,7 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
   { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose"  , reading: ["troubleshooting-packet-captures", "wireshark-packet-analysis"] },
   { href: "/vlan", eyebrow: "Follow", title: "The frame that arrived untagged", group: "diagnose" , reading: ["the-request-arrived-the-reply-did-not", "vlan-segmentation-guide", "network-access-control-8021x"] },
   { href: "/clock", eyebrow: "Measure", title: "Four errors, none of which says the word time", group: "diagnose" , reading: ["ntp-enterprise-networks", "how-totp-codes-actually-work", "certificate-lifetimes-are-200-days-now"] },
+  { href: "/space", eyebrow: "Compare", title: "No space left on device", group: "diagnose" , reading: ["linux-disk-io-troubleshooting", "filesystem-journal-explained", "prometheus-server-monitoring"] },
   { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  , reading: ["four-faults-one-sentence", "recursive-resolver-internals", "dns-negative-caching"] },
   { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  , reading: ["ssl-tls-certificates-explained", "certificate-rotation-automation", "certificate-lifetimes-are-200-days-now"] },
   { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" , reading: ["mtu-mismatch-troubleshooting", "mtu-black-hole-troubleshooting", "jumbo-frames-path-mtu"] },

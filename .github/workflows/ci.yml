@@ -512,6 +512,15 @@ jobs:
       - name: Clock skew narrows to one range
         run: npx tsx scripts-ci/check-clock.ts
 
+      # ENOSPC covers five distinct faults and EDQUOT is the sixth, so the
+      # cases carry a filesystem rather than a cause and the model works out
+      # which one refused the write. Then the model is held to the rules over
+      # generated filesystems, whose corpus is measured first: the version of
+      # this that would have shipped had a generator giving every quota to
+      # the user doing the writing, so reading the wrong quota row passed.
+      - name: Disk-full causes are derived, not declared
+        run: npx tsx scripts-ci/check-space.ts
+
       # And the gate that would have caught the four above being absent. Four
       # gates were written in one day, each blinded a dozen ways to prove it
       # caught what it was for, and none was added to this file: forty-six

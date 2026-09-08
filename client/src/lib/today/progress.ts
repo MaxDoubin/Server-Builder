@@ -20,6 +20,7 @@ import { FINDINGS as PATCHES } from "@/lib/patch/index";
 import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
+import { CASES as SPACES } from "@/lib/space/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
@@ -36,6 +37,7 @@ import { loadSolvedPatches } from "@/lib/patch/progress";
 import { loadSolvedRetries } from "@/lib/retry/progress";
 import { loadSolvedVlans } from "@/lib/vlan/progress";
 import { loadSolvedClocks } from "@/lib/clock/progress";
+import { loadSolvedSpaces } from "@/lib/space/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
 import { loadSolvedChains } from "@/lib/chain/progress";
@@ -103,6 +105,13 @@ export function readProgress(): Line[] {
       done: loadSolvedVlans().filter((slug) => VLANS.some((item) => item.slug === slug)).length,
       total: VLANS.length,
       noun: "followed right",
+    },
+    {
+      label: "Disk full",
+      href: "/space",
+      done: loadSolvedSpaces().filter((slug) => SPACES.some((item) => item.slug === slug)).length,
+      total: SPACES.length,
+      noun: "read right",
     },
     {
       label: "Clock skew",

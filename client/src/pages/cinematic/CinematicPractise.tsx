@@ -26,6 +26,7 @@ import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
+import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -298,6 +299,20 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/space",
+      eyebrow: "Compare",
+      title: "No space left on device",
+      blurb:
+        "One message, six filesystems, six things to do. Two of them are not out of space and one is the filesystem working as designed.",
+      reachFor: "the disk is full and deleting things does not help",
+      stats: [
+        `${SPACE_CASES.length} filesystems`,
+        `${new Set(SPACE_CASES.map((item) => spaceFailure(item.filesystem, item.write))).size} distinct causes`,
+        "live model",
+      ],
       progress: null,
     },
     {
