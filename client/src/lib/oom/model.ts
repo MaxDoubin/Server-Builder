@@ -78,11 +78,18 @@ export function scored(machine: Machine, trigger: Trigger): { task: Process; poi
 /**
  * The task the kernel selects, or null when there is nothing to select.
  *
- * Ties go to the task the walk reached first, because `select_bad_process`
- * only replaces its choice on a strictly greater score. That is worth being
- * exact about: a pool of identical workers is a pool of ties, and a model
- * that picked the last one would disagree with the kernel on the only
- * scenario where it matters.
+ * Ties go to the task the walk reached last. This is worth being exact
+ * about, and I had it backwards from memory until I read the source:
+ *
+ *     points = oom_badness(task, oc->totalpages);
+ *     if (points == LONG_MIN || points < oc->chosen_points)
+ *             goto next;
+ *     select:
+ *
+ * The skip is on strictly less, so an equal score falls through and replaces
+ * the standing choice. A pool of identical forked workers is a pool of exact
+ * ties, and that is the one scenario where the rule is observable, so a model
+ * that kept the first would be wrong precisely where it is asked.
  */
 export function chosen(machine: Machine, trigger: Trigger): Process | null {
   const { candidates, total } = scope(machine, trigger);
@@ -91,7 +98,7 @@ export function chosen(machine: Machine, trigger: Trigger): Process | null {
   for (const task of candidates) {
     const points = badness(task, total);
     if (points === null) continue;
-    if (points > bestPoints) {
+    if (points >= bestPoints) {
       best = task;
       bestPoints = points;
     }

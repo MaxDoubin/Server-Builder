@@ -268,6 +268,13 @@ for (const [at, count] of counts) {
   would fail the exactly-one check, so the tie rule is never exercised by the
   data. It is exercised here, because two identical forked workers is the
   scenario where it matters and the one a reader is most likely to meet.
+
+  This assertion was written the wrong way round first, from memory, and it
+  passed against a model that was wrong the same way. Reading mm/oom_kill.c
+  settled it: oom_evaluate_task skips on `points < oc->chosen_points`, so an
+  equal score falls through to select and replaces the standing choice. The
+  last equal task wins. Two things agreeing is not evidence when the same
+  belief wrote both of them.
 */
 const tied: Machine = {
   ram: 4000,
@@ -279,8 +286,8 @@ const tied: Machine = {
   ],
 };
 const system: Trigger = { kind: "system" };
-if (chosen(tied, system)?.pid !== 11) {
-  problems.push("a tie does not go to the task the walk reached first, which is what the kernel does");
+if (chosen(tied, system)?.pid !== 12) {
+  problems.push("a tie does not go to the task the walk reached last, which is what the kernel does");
 }
 
 /* An immune task is not a last resort. It is not in the running at all. */
