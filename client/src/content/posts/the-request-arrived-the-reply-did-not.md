@@ -31,7 +31,7 @@ interface Te1/1/1
 The access switch was hardened last year by somebody moving the native VLAN
 off 1, which is standard advice. The distribution switch arrived with the
 factory default and nobody touched the trunk, because the trunk came up and
-the VLANs passed. Each configuration is defensible on its own and each would
+the [VLANs](/blog/vlan-segmentation-guide) passed. Each configuration is defensible on its own and each would
 pass a review on its own.
 
 A trunk sends its native VLAN with no tag at all. That is not a bug or an
