@@ -147,6 +147,9 @@ const CinematicHandshake = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicHandshake").then((m) => ({ default: m.CinematicHandshake })),
 );
 
+const CinematicLogs = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLogs").then((m) => ({ default: m.CinematicLogs })),
+);
 const CinematicTransfer = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTransfer").then((m) => ({ default: m.CinematicTransfer })),
 );
@@ -782,6 +785,11 @@ function AnimatedRoutes() {
           <Route path="/today">
             <Suspense fallback={<RouteLoading />}>
               <CinematicToday />
+            </Suspense>
+          </Route>
+          <Route path="/logs">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLogs />
             </Suspense>
           </Route>
           <Route path="/transfer">

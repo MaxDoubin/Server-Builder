@@ -26,6 +26,7 @@ const EXPECTED = [
   "chain",
   "allocate",
   "transfer",
+  "logs",
 ];
 
 const today = picksFor(0);

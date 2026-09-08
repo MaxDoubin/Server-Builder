@@ -20,6 +20,7 @@ import { RACKS, KIND_LABELS, portSummary, publishedWatts, unitsUsed } from "../c
 import { staticEquipmentCatalog } from "../client/src/lib/static-equipment";
 import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
 import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/transfer/index";
+import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -2104,7 +2105,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 8,
+  numberOfItems: 9,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2114,6 +2115,7 @@ ${JSON.stringify({
     ["Browser tools", "/tools"],
     ["Glossary", "/glossary"],
     ["Why the transfer is slow", "/transfer"],
+    ["Read the log", "/logs"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2149,6 +2151,8 @@ ${JSON.stringify({
       one saying what people reliably get wrong about it.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>: the three
       ceilings over a TCP stream, on ${TRANSFERS.length} real complaints.</li>
+    <li><a href="${SITE_URL}/logs">Read the log</a>: what happened, and the one
+      line that proves it. ${LOGS.length} logs.</li>
   </ul>
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
@@ -2497,6 +2501,7 @@ ${JSON.stringify({
     <li><a href="${SITE_URL}/chain">Certificate chains</a>, a TLS error and whose problem it is.</li>
     <li><a href="${SITE_URL}/allocate">Address plans</a>, a block to divide between competing needs.</li>
     <li><a href="${SITE_URL}/transfer">Throughput</a>, a slow transfer and which ceiling is costing the time.</li>
+    <li><a href="${SITE_URL}/logs">Read the log</a>, what happened and the line that proves it.</li>
   </ul>
   <p>
     It also shows how far you have got on each, read from what those pages
@@ -2504,6 +2509,63 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── read the log ──
+  /*
+    The logs go into the static body in full, because they are the content
+    and a crawler that cannot see them sees an empty exercise. The answers
+    and the deciding lines stay out: printing them would put the answer key
+    in a search result.
+  */
+  const logsDescription =
+    "A thousand failed passwords are a bot that got nowhere. The line that matters is the quiet " +
+    `one four hundred rows down. ${LOGS.length} logs, each with one conclusion to reach and one ` +
+    "line that proves it.";
+
+  await writePage("logs", base, {
+    title: "Read the Log | Max Doubin",
+    description: logsDescription,
+    canonical: `${SITE_URL}/logs`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Read the log",
+  description: logsDescription,
+  url: `${SITE_URL}/logs`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Reading system, authentication, mail and firewall logs, and citing the evidence for a conclusion",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Read the log</h1>
+  <p>
+    A thousand failed passwords are a bot that got nowhere. The line that
+    matters is the quiet one four hundred rows further down, and it is usually
+    a success rather than a failure. Reading logs badly means reading the
+    loudest thing and stopping.
+  </p>
+  <p>
+    So each of these asks for two things: what happened, and which single line
+    settles it. They are marked separately, because an explanation you cannot
+    point at is a guess that happened to be right.
+  </p>
+${LOGS.map((item) => `  <article>
+    <h2>${esc(item.title)}</h2>
+    <p>${esc(item.brief)}</p>
+    <pre>${item.lines.map((line) => esc(renderLine(item, line))).join("\n")}</pre>
+  </article>`).join("\n")}
+  <p>
+    Every line above is rendered to real syslog format and parsed back at
+    build time, so a line no daemon would emit fails the build rather than
+    teaching you to recognise something you will never see.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -4269,6 +4331,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/today`, lastmod: today, changefreq: "daily", priority: "0.9" },
     { loc: `${SITE_URL}/glossary`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

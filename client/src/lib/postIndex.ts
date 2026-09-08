@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 257 of them. Regenerate with script/generatePostIndex.ts.
+ * 258 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -2543,6 +2543,15 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/init-scripts-to-systemd-units.jpg",
     wordCount: 1344,
   },
+  {
+    slug: "the-invoice-is-not-the-ceiling",
+    title: "The Invoice Is Not the Ceiling",
+    date: "2026-09-08",
+    tags: ["networking","performance","tcp"],
+    excerpt: "A gigabit link across an ocean with a default window carries 6.6 Mbps. Three ceilings sit over a single TCP stream, only one of them is on the invoice, and it is almost never the one that is binding.",
+    coverImage: "/images/blog/the-invoice-is-not-the-ceiling.jpg",
+    wordCount: 1643,
+  },
 ];
 
 /**
@@ -2552,10 +2561,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 965;
+export const CITATION_COUNT = 970;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1124;
+export const CHECKED_URL_COUNT = 1129;

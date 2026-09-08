@@ -104,6 +104,7 @@ PAGE_EYEBROWS = {
     "today": "TODAY",
     "glossary": "GLOSSARY",
     "transfer": "THROUGHPUT",
+    "logs": "READ THE LOG",
     "handshake": "PROTOCOL HANDSHAKES",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",

@@ -14,6 +14,7 @@ import { MESSAGES } from "@/lib/triage/index";
 import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
+import { CASES as LOGS } from "@/lib/logs/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { loadSolved } from "@/lib/labs/progress";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
@@ -21,6 +22,7 @@ import { loadJudgements } from "@/lib/triage/progress";
 import { loadSolvedFirewall } from "@/lib/firewall/progress";
 import { loadSolvedPlans } from "@/lib/allocate/progress";
 import { loadSolvedTransfers } from "@/lib/transfer/progress";
+import { loadSolvedLogs } from "@/lib/logs/progress";
 
 export interface Line {
   label: string;
@@ -78,6 +80,13 @@ export function readProgress(): Line[] {
       done: loadSolvedTransfers().filter((slug) => TRANSFERS.some((item) => item.slug === slug)).length,
       total: TRANSFERS.length,
       noun: "called right",
+    },
+    {
+      label: "Read the log",
+      href: "/logs",
+      done: loadSolvedLogs().filter((slug) => LOGS.some((item) => item.slug === slug)).length,
+      total: LOGS.length,
+      noun: "read right",
     },
   ];
 }
