@@ -23,6 +23,7 @@ import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/trans
 import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
+import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -2107,7 +2108,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 11,
+  numberOfItems: 12,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2120,6 +2121,7 @@ ${JSON.stringify({
     ["Read the log", "/logs"],
     ["Ping works and the transfer hangs", "/mtu"],
     ["Longest prefix wins", "/route"],
+    ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2161,6 +2163,8 @@ ${JSON.stringify({
       MTU, on ${MTU_PATHS.length} paths, two of which fail silently.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>: why a routing
       table is not a firewall chain. ${ROUTE_TABLES.length} tables.</li>
+    <li><a href="${SITE_URL}/restore">You have backups, not restores</a>: which
+      copies survive the incident. ${RESTORES.length} postures.</li>
   </ul>
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
@@ -2517,6 +2521,75 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── backups and restores ──
+  /*
+    The postures go into the static body in full: the configuration is the
+    content, and a reader is meant to look at it and decide. Which copies
+    survive stays out, because that is the exercise.
+  */
+  const restoreDescription =
+    "Every organisation that lost data had backups. Six incidents, each with a backup posture " +
+    "that would pass an audit, and between zero and one copy that turns out to be worth anything.";
+
+  await writePage("restore", base, {
+    title: "You Have Backups, Not Restores | Max Doubin",
+    description: restoreDescription,
+    canonical: `${SITE_URL}/restore`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "You have backups, not restores",
+  description: restoreDescription,
+  url: `${SITE_URL}/restore`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Recovery point and recovery time objectives, failure domains behind the 3-2-1 rule, and why immutability rather than copy count decides a ransomware outcome",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>You have backups, not restores</h1>
+  <p>
+    Every organisation that lost data had backups. That is not a paradox and
+    it is not carelessness: a backup is a job that reports success, and a
+    restore is a thing nobody does until the worst day of the year. The gap
+    between the two is where the losses live.
+  </p>
+  <h2>The three things this keeps showing</h2>
+  <ul>
+    <li>A copy is only a copy if the incident cannot reach it. The 3-2-1 rule
+      counts copies, media and sites, and the number that matters is none of
+      those: it is how many ways there are to lose all of them at once.</li>
+    <li>Recovery point is the backup interval plus how long the problem went
+      unnoticed. For silent corruption that second term is measured in weeks,
+      and retention rather than frequency decides whether you recover.</li>
+    <li>Recovery time is mostly not the transfer. It is finding what to
+      restore, getting the media back, moving bytes at restore speed rather
+      than backup speed, rebuilding what sat on top, and proving it is right.</li>
+  </ul>
+  <h2>The incidents</h2>
+${RESTORES.map((item) => `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <p>${item.gigabytes.toLocaleString()} GB to restore, noticed after ${item.detectionHours} hours, ` +
+    `${item.rebuildHours} hours of rebuild on top, across ${failureDomains(item.copies)} independent failure domains.</p>
+    <ul>
+${item.copies.map((c) => `      <li>${esc(c.name)}: ${esc(c.medium)}, every ${c.intervalHours} hours, kept ${c.retentionDays} days, ` +
+      `${c.immutable ? "immutable" : "writable"}${c.sharesWith === "none" ? "" : `, shares the ${c.sharesWith}`}, ` +
+      `${c.retrievalHours} hours to reach, restores at ${c.restoreMbps} MB/s${c.everRestored ? "" : ", never restored from"}</li>`).join("\n")}
+    </ul>
+  </article>`).join("\n")}
+  <p>
+    The arithmetic here is deliberately optimistic: it assumes you know what
+    to restore, the media is where the inventory says, and nothing fails
+    during the restore. A real recovery is longer than this, every time.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/transfer", "Why the transfer is slow"], ["/array", "Array calculator"]])}
 </main>`,
   });
 
@@ -4467,6 +4540,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

@@ -22,6 +22,7 @@ import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
+import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
@@ -245,6 +246,16 @@ export function CinematicPractise() {
         "Security+, Network+ and CCNA, domain by domain with the vendor's own weightings, mapped to the material here that genuinely addresses each one.",
       reachFor: "you need to know what to study next, and for how long",
       stats: [`${EXAMS.length} exams`, `${totals.domains} domains`, "printable sheets"],
+      progress: null,
+    },
+    {
+      href: "/restore",
+      eyebrow: "Recover",
+      title: "You have backups, not restores",
+      blurb:
+        "Six incidents, each with a backup posture that would pass an audit, and between zero and one copy that turns out to be worth anything.",
+      reachFor: "you want to know whether your backups are copies",
+      stats: [`${RESTORES.length} incidents`, `${RESTORES.reduce((sum, s) => sum + s.copies.length, 0)} copies`, "live model"],
       progress: null,
     },
     {

@@ -28,6 +28,7 @@ import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
+import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -150,6 +151,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A firewall chain is ordered and a routing table is not. Same wall of prefixes, opposite rule, and the habit from one is wrong for the other.",
     count: `${ROUTE_TABLES.length} tables, ${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`,
+  },
+  {
+    href: "/restore",
+    eyebrow: "Recover",
+    title: "You have backups, not restores",
+    blurb:
+      "Every organisation that lost data had backups. Read the posture, then run the incident and see how many copies were copies.",
+    count: `${RESTORES.length} incidents, ${RESTORES.reduce((sum, s) => sum + s.copies.length, 0)} copies`,
   },
 ];
 

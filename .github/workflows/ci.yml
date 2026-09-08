@@ -391,6 +391,15 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # A scenario whose copies all survive its own incident demonstrates
+      # nothing while reading as if it demonstrates something, so the
+      # survival outcome is compared against what each scenario claims about
+      # itself. It also pins the megabytes-per-second to gigabytes-per-hour
+      # conversion, which is out by 2.4 per cent forever if you divide by
+      # 1000, in the direction that flatters the estimate.
+      - name: Backup and restore model
+        run: npx tsx scripts-ci/check-restore.ts
+
       # Bitwise operators in JavaScript return signed 32 bit values, so a
       # /24 mask comes back as -256 without an unsigned shift and every
       # comparison after that is wrong while still looking right for small
