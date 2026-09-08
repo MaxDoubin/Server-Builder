@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as UNIT_CASES, correctOption as unitCorrect, directivesOf as unitDirectives, levels as unitLevels, meansStarted as unitMeansStarted, outcomeOf as unitOutcome } from "../client/src/lib/units/index";
 import { CASES as OOM_CASES, adjWorth as oomAdjWorth, fattestSurvives as oomFattestSurvives, human as oomHuman, killed as oomKilled, correctOption as oomCorrect, scope as oomScope, scored as oomScored } from "../client/src/lib/oom/index";
 import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
@@ -861,6 +862,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/clock">Four errors, none of which says the word time</a>, how wrong the clock is, worked backwards from what broke.</li>
     <li><a href="${SITE_URL}/space">No space left on device</a>, six filesystems and six different things that message means.</li>
     <li><a href="${SITE_URL}/oom">Something has to die</a>, ten machines out of memory and one expression that decides which process the kernel kills.</li>
+    <li><a href="${SITE_URL}/units">It started before the thing it needs</a>, ten sets of systemd unit files where After= and Requires= mean different things.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2151,6 +2153,7 @@ ${JSON.stringify({
     ["Four errors, none of which says the word time", "/clock"],
     ["No space left on device", "/space"],
     ["Something has to die", "/oom"],
+    ["It started before the thing it needs", "/units"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3040,6 +3043,138 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     on the underlying filesystem, still spending its blocks, and unreachable by any path.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
+</main>`,
+  });
+
+  // ── systemd unit ordering ──
+  /*
+    The unit files go into the static body verbatim, because they are the
+    subject: somebody searching "systemd After= not working" is exactly the
+    reader this page is for, and the four lines they are about to paste into
+    a drop-in are the thing worth showing them. The transaction and the
+    ordering are computed, so a change to the model cannot leave the prose
+    describing a different outcome.
+  */
+  const unitFailing = UNIT_CASES.filter((item) => unitOutcome(item).failed.length > 0).length;
+  const unitsDescription =
+    "After= is ordering and Requires= is requirement, and neither implies the other. A failed " +
+    "Requires= only stops a unit when After= is set on the failing unit as well, Requires= " +
+    "without After= starts both at once, After= alone orders against a unit nothing pulls in, and " +
+    `Type=simple calls a unit started before its binary has been executed. ${UNIT_CASES.length} sets of unit ` +
+    `files, ${unitFailing} of them ending in a failure, each with the transaction systemd builds from them.`;
+
+  await writePage("units", base, {
+    title: "It Started Before the Thing It Needs | Max Doubin",
+    description: unitsDescription,
+    canonical: `${SITE_URL}/units`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "It started before the thing it needs",
+  description: unitsDescription,
+  url: `${SITE_URL}/units`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "systemd unit dependencies: why After= does not start the other unit, why a failed Requires= only blocks when After= is also set, why Requires= alone starts both units in parallel, what Requisite= does differently, how BindsTo= and PartOf= propagate a stop, why an ordering cycle is broken rather than refused, and why Type=simple reports success for a unit whose binary does not exist",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>It started before the thing it needs</h1>
+  <p>
+    ${UNIT_CASES.length} sets of systemd unit files and one <code>systemctl start</code>, and the
+    question every time is what ends up running. ${unitFailing} of the ${UNIT_CASES.length} end in
+    a failure, and in four of them every directive did exactly what it says.
+  </p>
+  <p>
+    <code>After=</code> says when. <code>Requires=</code> says whether. Neither implies the other,
+    and every combination of the two means something different.
+  </p>
+  <h2>The combinations, and what each one does</h2>
+  <ul>
+    <li><strong>After= alone.</strong> Ordering, and only if the other unit is in the same
+    transaction. It does not pull anything in, so a unit with After= on a service nobody enabled
+    starts happily without it.</li>
+    <li><strong>Requires= alone.</strong> The other unit is pulled in and started at the same
+    moment, because requirement dependencies do not influence order. And a failure does not stop
+    this unit: systemd.unit(5) makes that conditional on After= being set on the failing unit
+    too.</li>
+    <li><strong>Requires= and After= together.</strong> Pulled in, ordered, and a failure stops
+    this unit. This is the pair to write, every time.</li>
+    <li><strong>Wants= and After=.</strong> Pulled in and ordered, and a failure is ignored. The
+    recommended shape for anything optional, and the cost is that the optional thing failing looks
+    like it working.</li>
+    <li><strong>Requisite= and After=.</strong> Not pulled in. It must already be running or this
+    unit fails immediately, which is the directive for "refuse rather than start it".</li>
+    <li><strong>BindsTo= and After=.</strong> All of Requires=, plus this unit is stopped whenever
+    the other stops, for any reason. What you want for anything holding a filesystem open.</li>
+    <li><strong>PartOf=.</strong> Stop and restart propagation only, one way: stopping the listed
+    unit stops this one, and stopping this one does nothing to the listed unit.</li>
+  </ul>
+  <h2>And then Type=</h2>
+  <p>
+    Ordering gets you as far as "started", and started is a claim about a process rather than about
+    a service. What each type waits for:
+  </p>
+  <ul>
+${(Object.entries(unitMeansStarted) as [string, string][])
+  .map(([type, means]) => `    <li><code>Type=${esc(type)}</code>: ${esc(means)}.</li>`)
+  .join("\n")}
+  </ul>
+  <p>
+    <code>Type=simple</code> is the default, and it is the weakest of those: systemd considers the
+    unit started immediately after the main process has been forked, before execve. So
+    <code>systemctl start</code> reports success for a unit whose binary does not exist, and a
+    dependent with both Requires= and After= starts against nothing.
+  </p>
+  <h2>The cases</h2>
+${UNIT_CASES.map((item) => {
+  const outcome = unitOutcome(item);
+  const groups = unitLevels(outcome.transaction, outcome.edges);
+  const right = unitCorrect(item);
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <pre>${item.units
+      .map((unit) => {
+        const lines = [`# /etc/systemd/system/${unit.name}`, "[Unit]", `Description=${unit.description}`];
+        for (const [name, value] of unitDirectives(unit)) lines.push(`${name}=${value}`);
+        if (unit.name.endsWith(".service")) lines.push("", "[Service]", `Type=${unit.type}`);
+        if (unit.alreadyActive) lines.push("", "# this unit is already running");
+        return esc(lines.join("\n"));
+      })
+      .join("\n\n")}
+
+$ systemctl start ${esc(item.start.join(" "))}${item.stop && item.stop.length > 0 ? `\n$ systemctl stop ${esc(item.stop.join(" "))}` : ""}
+
+${groups ? `start order: ${groups.map((group) => group.join(" + ")).join(" -> ")}` : `ordering cycle: ${(outcome.cycle ?? []).join(" -> ")} -> ${(outcome.cycle ?? [])[0]}, one edge deleted by systemd`}
+running afterwards: ${outcome.active.join(", ") || "nothing"}${outcome.failed.length > 0 ? `\nfailed: ${outcome.failed.map((f) => `${f.unit} (${f.why})`).join(", ")}` : ""}${outcome.notPulled.length > 0 ? `\nnot in the transaction: ${outcome.notPulled.join(", ")}` : ""}</pre>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option === right ? " (this one)" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real machine</h2>
+  <ol>
+    <li><code>systemctl list-dependencies --all &lt;unit&gt;</code> for what gets pulled in, and
+    <code>systemctl list-dependencies --after &lt;unit&gt;</code> for what it is ordered behind.
+    Two different questions and two different flags, which is the whole subject.</li>
+    <li><code>systemctl show &lt;unit&gt; -p Requires -p Wants -p After -p Before -p BindsTo -p PartOf</code>
+    to see the dependencies after drop-ins and default dependencies are merged in, which is rarely
+    what the unit file alone says.</li>
+    <li><code>systemd-analyze critical-chain &lt;unit&gt;</code> for the ordering that actually
+    happened on this boot, with the time each step waited.</li>
+    <li><code>journalctl -b | grep -i "ordering cycle"</code> on anything whose boot is
+    intermittently wrong.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/blog/systemd-units-that-behave", "systemd units that behave"], ["/blog/init-scripts-to-systemd-units", "From init scripts to systemd units"]])}
 </main>`,
   });
 
@@ -5358,6 +5493,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/space`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/cache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/oom`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/units`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

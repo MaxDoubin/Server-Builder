@@ -28,6 +28,7 @@ import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
 import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib/oom/index";
+import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -314,6 +315,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/units",
+      eyebrow: "Order",
+      title: "It started before the thing it needs",
+      blurb:
+        "Ten sets of unit files and one systemctl start. After= says when, Requires= says whether, and neither implies the other. Work out what ends up running.",
+      reachFor: "a service came up before its database and the unit file says After=",
+      stats: [
+        `${UNIT_CASES.length} unit sets`,
+        `${UNIT_CASES.filter((item) => unitOutcome(item).failed.length > 0).length} end in a failure`,
+        "live model",
       ],
       progress: null,
     },
