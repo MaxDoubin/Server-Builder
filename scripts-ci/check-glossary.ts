@@ -170,8 +170,24 @@ const NOT_JARGON: Record<string, string> = {
 
 const THRESHOLD = 25;
 
+/**
+ * Frequency is counted over prose, and a URL is not prose.
+ *
+ * This check reported that US appears 26 times across the articles and wants
+ * a glossary entry. Twenty of those twenty-six were the `en-US` in an MDN
+ * link, and the rest were the country in a sentence about wall outlets. A
+ * term that appears only inside a link is not vocabulary the site is putting
+ * in front of a reader, and counting it meant the threshold could be crossed
+ * by adding references.
+ *
+ * Stripped for the frequency count only. The backwards direction still reads
+ * the full text, because an entry appearing anywhere is evidence the site
+ * uses it and there is no reason to be stricter there than the writing is.
+ */
+const unlinked = written.replace(/https?:\/\/\S+/g, " ");
+
 const counts = new Map<string, number>();
-for (const match of written.matchAll(/\b[A-Z][A-Z0-9]{1,6}\b/g)) {
+for (const match of unlinked.matchAll(/\b[A-Z][A-Z0-9]{1,6}\b/g)) {
   const token = match[0];
   if (/^\d/.test(token)) continue;
   counts.set(token, (counts.get(token) ?? 0) + 1);

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 266 of them. Regenerate with script/generatePostIndex.ts.
+ * 267 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -66,6 +66,15 @@ export const postIndex: PostMeta[] = [
     excerpt: "The rule you added is correct and it does nothing, because a broader rule three lines above already decided. No firewall interface shows you that. I built eight broken chains and counted how often it happens.",
     coverImage: "/images/blog/first-match-wins.jpg",
     wordCount: 930,
+  },
+  {
+    slug: "the-cache-was-never-told-what-a-user-is",
+    title: "The Cache Was Never Told What a User Is",
+    date: "2026-09-08",
+    tags: ["security","networking","operations"],
+    excerpt: "I built seven request sequences through a shared cache implemented to RFC 9111. Five serve one account's page to another, and in five of the seven three accounts produce one cache key. The finding I did not expect: of seven common Cache-Control values, three switch off the rule protecting authenticated endpoints, so an endpoint with no cache headers is safer than one with must-revalidate.",
+    coverImage: "/images/blog/the-cache-was-never-told-what-a-user-is.jpg",
+    wordCount: 1777,
   },
   {
     slug: "the-disk-was-not-full",
@@ -2627,10 +2636,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 266;
+export const POST_COUNT = 267;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty six";
+export const POST_COUNT_SPELLED = "two hundred and sixty seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2639,10 +2648,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty six";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1006;
+export const CITATION_COUNT = 1011;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1165;
+export const CHECKED_URL_COUNT = 1170;
