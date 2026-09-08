@@ -469,6 +469,50 @@ jobs:
       - name: Every practise surface is findable
         run: npx tsx scripts-ci/check-practise-surfaces.ts
 
+      # Nine mode bits, and the two thirds of them the kernel never consults.
+      # The cases carry no answer key: each declares its four decision points
+      # and the model works out the verdict, so prose that disagrees with its
+      # own tree fails here. The model is then checked against the rules
+      # rather than against the cases, over generated paths whose corpus is
+      # measured first, because the version of this that shipped was passing
+      # against four thousand inputs that never reached a target node.
+      - name: File permissions resolve correctly
+        run: npx tsx scripts-ci/check-permissions.ts
+
+      # The deployer decision tree, transcribed rather than reimplemented, so
+      # a single flipped cell would teach a wrong judgement with a citation
+      # attached. Checked by a property instead of by fetching the source on
+      # every build: worsening any one decision point must never lower the
+      # priority, which holds across all 186 single-step comparisons.
+      - name: Patch priority matches the published tree
+        run: npx tsx scripts-ci/check-patch.ts
+
+      # Retries multiply and nobody writes the product. Exactly one option
+      # per case has to match what the model computes, which catches both a
+      # case whose arithmetic has drifted from its prose and two options that
+      # are accidentally the same answer written twice.
+      - name: Retry amplification adds up
+        run: npx tsx scripts-ci/check-retry.ts
+
+      # 802.1Q, where the native VLAN crosses a trunk with nothing on it and
+      # two ends that disagree join two broadcast domains in silence. The
+      # model is held to the tagging rules over generated paths, including
+      # the one the surface exists for: changing the receiving end's native
+      # VLAN has to move an untagged frame.
+
+      - name: VLAN tagging follows 802.1Q
+        run: npx tsx scripts-ci/check-vlan.ts
+
+      # And the gate that would have caught the four above being absent. Four
+      # gates were written in one day, each blinded a dozen ways to prove it
+      # caught what it was for, and none was added to this file: forty-six
+      # deliberate breakages, all correctly detected, by scripts that ran on
+      # one laptop and on no commit. Nothing noticed because nothing here
+      # read the workflow. This compares the workflow against the directory
+      # in both directions.
+      - name: Every gate actually runs
+        run: node scripts-ci/check-ci-coverage.mjs
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
