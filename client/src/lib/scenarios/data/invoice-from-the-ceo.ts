@@ -31,6 +31,7 @@ export const invoiceFromTheCeo: Scenario = {
   scenes: [
     {
       id: "inbox",
+      mood: "calm",
       where: "Your inbox",
       body: [
         "You read it twice. It sounds like her: short sentences, no greeting, sent from a phone.",
@@ -88,6 +89,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "the-invoice",
+      mood: "tense",
       where: "The PDF",
       body: [
         "It is a good forgery. Kestrel's logo, their address, their VAT number, the right project reference, and a number in their invoice series.",
@@ -136,6 +138,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "ask-the-fd",
+      mood: "tense",
       where: "The finance director's desk",
       body: [
         "He reads it over your shoulder and says the useful thing immediately, which is that Sarah is not in Manchester today, she is in the meeting room down the corridor.",
@@ -162,6 +165,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "read-the-address",
+      mood: "tense",
       where: "The message header",
       body: [
         "The company domain is bramleyarchitects.co.uk. This came from bramleyarchitects.co, which is a different domain that somebody registered eleven days ago.",
@@ -203,6 +207,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "replied",
+      mood: "tense",
       where: "Your sent folder",
       body: [
         "You reply asking her to confirm the account number and sort code.",
@@ -243,6 +248,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "rang-supplier",
+      mood: "tense",
       where: "On the phone to Kestrel Steel",
       body: [
         "Kestrel's accounts office is still open. They have not changed their bank details, they have not threatened to down tools, and invoice 44219 was paid three weeks ago.",
@@ -265,6 +271,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "rang-sarah",
+      mood: "recovering",
       where: "On the phone to the Manchester office",
       body: [
         "Sarah picks up on the second ring, because she is not in back to back meetings, she is eating a sandwich.",
@@ -286,6 +293,7 @@ export const invoiceFromTheCeo: Scenario = {
 
     {
       id: "reported",
+      mood: "recovering",
       where: "The IT helpdesk",
       body: [
         "IT confirm the lookalike domain, block it at the gateway, and search the mail logs.",

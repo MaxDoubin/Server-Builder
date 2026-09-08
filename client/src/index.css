@@ -1602,3 +1602,257 @@ html.lenis-smooth {
 .dark .focus-visible\:text-primary:focus-visible {
   color: hsl(var(--primary-text));
 }
+
+/* ===========================================================================
+   Incident scenarios: the stage.
+
+   A scenario is meant to feel like being in the room, so the room changes.
+   The whole viewport carries the scenario's accent and the current scene's
+   mood, rather than the page being a column of text on the usual ground.
+
+   Everything here is built from --brand-* tokens, so it re-themes with the
+   rest of the site: in the light theme the same layers read as a pale wash
+   rather than a dark one, at the same strengths.
+
+   Three knobs:
+     --stage        the accent hue, set per scenario category
+     --stage-lift   how strongly the accent washes in, set per mood
+     --stage-close  how tight the vignette is, set per mood
+
+   The layer is fixed, behind everything, and pointer-events: none, so it can
+   never intercept a click or trap focus.
+   =========================================================================== */
+
+.scenario-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  --stage: var(--brand-signal);
+  --stage-lift: 0.05;
+  --stage-close: 78%;
+  transition: opacity 700ms ease;
+}
+
+.scenario-stage[data-accent="danger"] { --stage: var(--brand-danger); }
+.scenario-stage[data-accent="amber"]  { --stage: var(--brand-amber); }
+.scenario-stage[data-accent="cyan"]   { --stage: var(--brand-cyan); }
+.scenario-stage[data-accent="signal"] { --stage: var(--brand-signal); }
+
+/* Mood drives how much of the room the incident has taken over. */
+.scenario-stage[data-mood="calm"]       { --stage-lift: 0.07; --stage-close: 94%; }
+.scenario-stage[data-mood="tense"]      { --stage-lift: 0.16; --stage-close: 76%; }
+.scenario-stage[data-mood="critical"]   { --stage-lift: 0.30; --stage-close: 54%; }
+.scenario-stage[data-mood="recovering"] { --stage-lift: 0.13; --stage-close: 84%; }
+
+/* Two corner washes in the accent, and a vignette that closes in on you. */
+.scenario-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      60rem 44rem at 12% -8%,
+      hsl(var(--stage) / var(--stage-lift)),
+      transparent 60%
+    ),
+    radial-gradient(
+      52rem 40rem at 92% 108%,
+      hsl(var(--stage) / calc(var(--stage-lift) * 0.75)),
+      transparent 62%
+    ),
+    radial-gradient(
+      36rem 30rem at 50% 50%,
+      hsl(var(--stage) / calc(var(--stage-lift) * 0.35)),
+      transparent 70%
+    );
+  transition: background 700ms ease;
+}
+
+/*
+  A hairline grid, at the accent, that only becomes visible as things get
+  worse. It reads as instrumentation rather than decoration, and at calm it
+  is genuinely not there.
+*/
+.scenario-stage[data-mood="tense"] > .scenario-grid,
+.scenario-stage[data-mood="critical"] > .scenario-grid {
+  opacity: 1;
+}
+
+.scenario-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 700ms ease;
+  background-image:
+    linear-gradient(hsl(var(--stage) / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--stage) / 0.05) 1px, transparent 1px);
+  background-size: 74px 74px;
+  mask-image: radial-gradient(120% 90% at 50% 30%, #000 20%, transparent 78%);
+}
+
+.scenario-stage[data-mood="critical"] > .scenario-grid {
+  background-image:
+    linear-gradient(hsl(var(--stage) / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--stage) / 0.1) 1px, transparent 1px);
+}
+
+.scenario-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    130% 110% at 50% 42%,
+    transparent var(--stage-close),
+    hsl(var(--brand-void) / 0.85) 100%
+  );
+  transition: background 700ms ease;
+}
+
+/*
+  A hairline of the accent across the very top, which is the one element that
+  is always in view and always the current mood's colour.
+*/
+.scenario-rule {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--stage) / 0.55) 12%,
+    hsl(var(--stage) / 0.9) 50%,
+    hsl(var(--stage) / 0.55) 88%,
+    transparent
+  );
+  transition: background 700ms ease, opacity 700ms ease;
+}
+
+/*
+  The clock's own pressure. A scanning sheen crosses the rule while a scene is
+  critical, which is the only motion on the page and the only thing that says
+  "this is still running" without a countdown.
+*/
+.scenario-stage[data-mood="critical"] ~ .scenario-rule::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--brand-bone) / 0.7),
+    transparent
+  );
+  width: 22%;
+  animation: scenario-sweep 3.2s linear infinite;
+}
+
+@keyframes scenario-sweep {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(560%); }
+}
+
+/*
+  An ending takes the whole room. The wash is stronger than any scene's and
+  it does not move, because the incident is over one way or the other.
+*/
+.scenario-stage[data-ending="best"],
+.scenario-stage[data-ending="good"] { --stage: var(--brand-signal); --stage-lift: 0.22; --stage-close: 88%; }
+.scenario-stage[data-ending="mixed"] { --stage: var(--brand-amber); --stage-lift: 0.2; --stage-close: 80%; }
+.scenario-stage[data-ending="bad"] { --stage: var(--brand-amber); --stage-lift: 0.3; --stage-close: 66%; }
+.scenario-stage[data-ending="catastrophic"] { --stage: var(--brand-danger); --stage-lift: 0.42; --stage-close: 46%; }
+.scenario-stage[data-ending] > .scenario-grid { opacity: 0; }
+
+/*
+  Choosing is the moment the page should acknowledge. A single 420ms wash of
+  the accent over the whole viewport, then it is gone.
+*/
+.scenario-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 50%,
+    hsl(var(--stage, var(--brand-signal)) / 0.16),
+    transparent 70%
+  );
+  animation: scenario-flash 420ms ease-out forwards;
+}
+
+@keyframes scenario-flash {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/*
+  Choices.
+
+  A left rule in the accent that lights along its whole height on hover or
+  focus. Border colour alone is too quiet against a washed background, and a
+  fill is too loud next to three siblings.
+*/
+.scenario-choice {
+  position: relative;
+  overflow: hidden;
+}
+
+.scenario-choice::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: hsl(var(--stage, var(--brand-signal)));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scenario-choice:hover::before,
+.scenario-choice:focus-visible::before {
+  transform: scaleY(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario-choice::before { transition: none; }
+}
+
+/* A scene arrives rather than appearing. */
+.scenario-scene {
+  animation: scenario-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes scenario-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/*
+  Reduced motion keeps every colour and drops every movement.
+
+  The mood washes are information, not decoration: they say how bad this is.
+  Removing them would remove content. The sweep, the flash and the entrance
+  are decoration, so they go.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .scenario-stage[data-mood="critical"] ~ .scenario-rule::after { display: none; }
+  .scenario-flash { display: none; }
+  .scenario-scene { animation: none; }
+  .scenario-stage,
+  .scenario-stage::before,
+  .scenario-stage::after,
+  .scenario-rule { transition: none; }
+}
+
+/* Printing an incident write-up should not print the room. */
+@media print {
+  .scenario-stage,
+  .scenario-rule,
+  .scenario-flash { display: none !important; }
+}

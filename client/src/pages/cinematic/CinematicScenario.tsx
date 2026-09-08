@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { EvidenceBlock } from "@/components/scenarios/EvidenceBlock";
+import { ScenarioStage, accentFor } from "@/components/scenarios/ScenarioStage";
 import { useSEO } from "@/lib/useSEO";
 import { getScenario } from "@/lib/scenarios/index";
 import {
@@ -26,6 +27,7 @@ import {
   type Choice,
   type EndingGrade,
   type Scenario,
+  type SceneMood,
 } from "@/lib/scenarios/types";
 import { loadFoundFor, recordEnding } from "@/lib/scenarios/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
@@ -174,9 +176,24 @@ function Player({ scenario }: { scenario: Scenario }) {
 
   const foundCount = found.filter((id) => endingsById.has(id)).length;
 
+  /*
+    What the room looks like right now.
+
+    Before you begin it is calm, because nothing has happened yet. During a
+    scene it is whatever that scene says, defaulting to tense. At an ending
+    the outcome's grade takes over the accent entirely.
+  */
+  const mood: SceneMood = !started ? "calm" : (scene?.mood ?? (ending ? "recovering" : "tense"));
+
   return (
     <CinematicLayout>
-      <div className="relative px-6 pb-32 pt-32 md:px-10">
+      <ScenarioStage
+        accent={accentFor(scenario.category)}
+        mood={mood}
+        ending={ending?.grade}
+        flashKey={trail.length}
+      />
+      <div className="relative z-10 px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[780px]">
           <Link
             href="/scenarios"
@@ -199,9 +216,13 @@ function Player({ scenario }: { scenario: Scenario }) {
             <h1
               ref={headingRef}
               tabIndex={-1}
-              className="mt-4 font-display text-[clamp(2rem,5vw,3.4rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))] focus:outline-none"
+              className={`mt-4 font-display font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))] transition-[font-size] duration-500 focus:outline-none ${
+                started
+                  ? "text-[clamp(1.5rem,3.2vw,2.1rem)]"
+                  : "text-[clamp(2rem,5vw,3.4rem)]"
+              }`}
             >
-              {started && scene ? (scene.where ?? scenario.title) : started && ending ? ending.title : scenario.title}
+              {started && ending ? ending.title : scenario.title}
             </h1>
           </header>
 
@@ -210,8 +231,16 @@ function Player({ scenario }: { scenario: Scenario }) {
               className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
               data-testid="scenario-clock"
             >
-              <span>
-                <span className="text-[hsl(var(--brand-bone))]">{clockAfter(scenario.clockStart, elapsed)}</span>
+              <span
+                className={
+                  elapsed >= 240
+                    ? "text-[hsl(var(--brand-danger))]"
+                    : elapsed >= 60
+                      ? "text-[hsl(var(--brand-amber))]"
+                      : "text-[hsl(var(--brand-bone))]"
+                }
+              >
+                {clockAfter(scenario.clockStart, elapsed)}
               </span>
               <span>{elapsedLabel(elapsed)} elapsed</span>
               <span>
@@ -223,10 +252,19 @@ function Player({ scenario }: { scenario: Scenario }) {
             </div>
           ) : null}
 
+          {started && scene?.where ? (
+            <p
+              className="mt-5 font-techno text-[10px] uppercase tracking-[0.42em] text-[hsl(var(--brand-bone-dim))]"
+              data-testid="scene-where"
+            >
+              {scene.where}
+            </p>
+          ) : null}
+
           {!started ? (
             <Brief scenario={scenario} foundCount={foundCount} onBegin={() => setStarted(true)} />
           ) : scene ? (
-            <section className="mt-8" data-testid={`scene-${scene.id}`}>
+            <section key={scene.id} className="scenario-scene mt-7" data-testid={`scene-${scene.id}`}>
               {scene.body.map((paragraph, index) => (
                 <p
                   key={index}
@@ -249,7 +287,7 @@ function Player({ scenario }: { scenario: Scenario }) {
                       type="button"
                       onClick={() => take(choice, scene.id)}
                       data-testid={`choice-${index + 1}`}
-                      className="group flex w-full items-start gap-4 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.55)] px-4 py-3.5 text-left transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.06)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                      className="scenario-choice group flex w-full items-start gap-4 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.7)] px-5 py-4 text-left backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-bone-dim)/0.5)] hover:bg-[hsl(var(--brand-graphite)/0.9)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                     >
                       <span
                         aria-hidden
@@ -377,7 +415,7 @@ function EndingView({
   const foundCount = found.filter((id) => scenario.endings.some((e) => e.id === id)).length;
 
   return (
-    <section className="mt-8" data-testid={`ending-${ending.id}`}>
+    <section className="scenario-scene mt-8" data-testid={`ending-${ending.id}`}>
       <div className="flex flex-wrap items-center gap-3">
         <span
           className={`rounded-full border px-3 py-1 font-techno text-[10px] uppercase tracking-[0.28em] ${GRADE_TONE[ending.grade]}`}
@@ -404,7 +442,7 @@ function EndingView({
         </p>
       ))}
 
-      <div className="mt-8 rounded-2xl border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.05)] p-6">
+      <div className="mt-8 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-6 backdrop-blur-sm">
         <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
           · What separated this from the best outcome
         </h2>

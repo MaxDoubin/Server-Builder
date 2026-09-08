@@ -29,6 +29,7 @@ export const keyInTheRepo: Scenario = {
   scenes: [
     {
       id: "the-alert",
+      mood: "critical",
       where: "The repository, on your phone",
       body: [
         "The alert names the file, the line and the key prefix. The commit is fifteen minutes old and the repository has 340 stars.",
@@ -72,6 +73,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "revoked",
+      mood: "recovering",
       where: "The AWS console",
       body: [
         "The key is deactivated and then deleted. Anything holding it now gets an InvalidClientTokenId, which includes your own laptop and, it turns out, a scheduled job.",
@@ -119,6 +121,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "the-nightly-job",
+      mood: "tense",
       where: "The CI logs, and your own laptop",
       body: [
         "Revoking it broke two things: your laptop, which you expected, and the nightly artifact upload, which you did not, because nobody knew it was using a human's personal access key rather than a role.",
@@ -163,6 +166,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "scoped-it",
+      mood: "critical",
       where: "CloudTrail and the bucket inventory",
       body: [
         "Thirty-seven seconds after the push, someone in a hosting range you do not recognise used the key. They tried to list users and describe instances, were refused both, and then listed and downloaded fourteen objects from the deployment artifacts bucket.",
@@ -199,6 +203,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "escalated",
+      mood: "tense",
       where: "A call with the team lead",
       body: [
         "Stripe key rolled, database password changed, session secret rotated (which logs everybody out, which is noticed, which is fine).",
@@ -233,6 +238,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "force-pushed",
+      mood: "critical",
       where: "git push --force",
       body: [
         "The commit is gone from the branch. The alert stays open, because GitHub still has the object.",
@@ -274,6 +280,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "made-private",
+      mood: "critical",
       where: "Repository settings",
       body: [
         "The repository is private. Nobody new can read it.",
@@ -296,6 +303,7 @@ export const keyInTheRepo: Scenario = {
 
     {
       id: "history-cleaned",
+      mood: "recovering",
       where: "git filter-repo",
       body: [
         "The history is rewritten and the repository is force pushed. Everyone with a clone has to re-clone, which annoys four people for an afternoon.",

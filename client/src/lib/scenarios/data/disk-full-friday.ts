@@ -31,6 +31,7 @@ export const diskFullFriday: Scenario = {
   scenes: [
     {
       id: "first-look",
+      mood: "critical",
       where: "SSH on the application server",
       body: [
         "You are in. The prompt still works, which means there is enough space for your shell but not for the application's next write.",
@@ -74,6 +75,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "found-the-size",
+      mood: "tense",
       where: "Walking the tree",
       body: [
         "Thirty-one gigabytes of it is in one directory, and nearly all of that is one file that nothing has rotated since June.",
@@ -118,6 +120,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "removed-open-file",
+      mood: "critical",
       where: "Back at df",
       body: [
         "The file is gone from the listing. df still says 100 percent.",
@@ -153,6 +156,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "truncated",
+      mood: "recovering",
       where: "Back at df",
       body: [
         "You run `: > /var/log/shopfront/debug.log`. Space is freed immediately, the file handle stays valid, and the application starts writing orders again without a restart.",
@@ -189,6 +193,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "read-the-tail",
+      mood: "tense",
       where: "Reading the log",
       body: [
         "The last two million lines are the same line. A third-party address validation call started timing out on 14 June, and the retry loop logs the whole request and response body at debug level on every attempt.",
@@ -235,6 +240,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "wrote-rotation",
+      mood: "recovering",
       where: "/etc/logrotate.d/shopfront",
       body: [
         "You write the rule: daily, keep 14, compress, and copytruncate because the application holds its handle open and does not respond to a signal.",
@@ -279,6 +285,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "restarted-after-rm",
+      mood: "recovering",
       where: "systemctl restart shopfront",
       body: [
         "The handle closes, 31 gigabytes come back, and the application starts writing orders again.",
@@ -305,6 +312,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "extended",
+      mood: "tense",
       where: "The hypervisor console, then growpart",
       body: [
         "You grow the volume to 100 gigabytes and resize the filesystem. Space is available, the application recovers, trading resumes at 17:16.",
@@ -331,6 +339,7 @@ export const diskFullFriday: Scenario = {
 
     {
       id: "deleted-blind",
+      mood: "critical",
       where: "Guessing",
       body: [
         "You delete the biggest thing in /var/log that looks disposable, which turns out to be the nginx access log for the last four months.",

@@ -23,9 +23,40 @@ import {
   type Scenario,
 } from "@/lib/scenarios/types";
 import { loadFound, type FoundMap } from "@/lib/scenarios/progress";
+import { accentFor, type StageAccent } from "@/components/scenarios/ScenarioStage";
 import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";
+
+/**
+ * The four accents, written out rather than composed.
+ *
+ * Tailwind reads class names statically, so `text-[hsl(var(--brand-${x}))]`
+ * produces no CSS at all. Every variant has to appear literally somewhere in
+ * the source, which is what this table is.
+ */
+const ACCENT_CLASS: Record<StageAccent, { text: string; ring: string; glow: string }> = {
+  signal: {
+    text: "text-[hsl(var(--brand-signal))]",
+    ring: "hover:border-[hsl(var(--brand-signal)/0.6)]",
+    glow: "hover:bg-[hsl(var(--brand-signal)/0.05)]",
+  },
+  amber: {
+    text: "text-[hsl(var(--brand-amber))]",
+    ring: "hover:border-[hsl(var(--brand-amber)/0.6)]",
+    glow: "hover:bg-[hsl(var(--brand-amber)/0.05)]",
+  },
+  cyan: {
+    text: "text-[hsl(var(--brand-cyan))]",
+    ring: "hover:border-[hsl(var(--brand-cyan)/0.6)]",
+    glow: "hover:bg-[hsl(var(--brand-cyan)/0.05)]",
+  },
+  danger: {
+    text: "text-[hsl(var(--brand-danger))]",
+    ring: "hover:border-[hsl(var(--brand-danger)/0.6)]",
+    glow: "hover:bg-[hsl(var(--brand-danger)/0.05)]",
+  },
+};
 
 const DIFFICULTY_TONE: Record<Difficulty, string> = {
   easy: "text-[hsl(var(--brand-signal))]",
@@ -158,15 +189,16 @@ function ScenarioCard({
   const ids = new Set(scenario.endings.map((ending) => ending.id));
   const foundCount = found.filter((id) => ids.has(id)).length;
   const complete = foundCount === scenario.endings.length;
+  const accent = ACCENT_CLASS[accentFor(scenario.category)];
 
   return (
     <li>
       <Link
         href={`/scenarios/${scenario.slug}`}
         data-testid={`card-scenario-${scenario.slug}`}
-        className="flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+        className={`flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${accent.ring} ${accent.glow}`}
       >
-        <span className="font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+        <span className={`font-techno text-[9px] uppercase tracking-[0.32em] ${accent.text}`}>
           {scenario.category}
         </span>
         <span className="mt-2 font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">

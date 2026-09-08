@@ -31,6 +31,7 @@ export const eastWingOffline: Scenario = {
   scenes: [
     {
       id: "the-laptop",
+      mood: "tense",
       where: "The laptop on your desk",
       body: [
         "It is associated to the access point and it has an address. You look at the address.",
@@ -78,6 +79,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "dhcp-suspected",
+      mood: "tense",
       where: "The DHCP server console",
       body: [
         "169.254.0.0/16 is what an operating system assigns itself when no DHCP server answered. It is not a wireless fault and it is not a password fault: association succeeded and the address request did not.",
@@ -123,6 +125,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "read-the-leases",
+      mood: "tense",
       where: "The lease table",
       body: [
         "Ninety-one of the 151 leases were issued to devices that have not been seen since Wednesday of last week: open evening, when 200 visitors joined the guest network.",
@@ -166,6 +169,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "fixed-vlan",
+      mood: "recovering",
       where: "The wireless controller, then the DHCP server",
       body: [
         "Visitor-East goes back to VLAN 40. The 91 stale leases are released. The scope drops to 60 of 151 in use and everyone in the east wing gets an address within a minute of reconnecting.",
@@ -192,6 +196,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "released-only",
+      mood: "recovering",
       where: "The DHCP server",
       body: [
         "You release the 91 stale leases. Addresses free up, devices reconnect, the east wing works.",
@@ -209,6 +214,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "widened",
+      mood: "tense",
       where: "Renumbering the scope",
       body: [
         "You change 10.30.0.0/24 to 10.30.0.0/23 and extend the range. This means changing the interface address on the layer 3 switch too, which drops the east wing entirely for ninety seconds while it reconverges.",
@@ -226,6 +232,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "widened-found",
+      mood: "tense",
       where: "The lease table, after the fact",
       body: [
         "Ninety-one of the leases belong to devices last seen on Wednesday of last week, which was open evening.",
@@ -259,6 +266,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "shortened-lease",
+      mood: "tense",
       where: "Scope options",
       body: [
         "You drop the lease from eight days to four hours. Nothing changes for twenty minutes, because a shorter lease only helps when the existing ones expire, and the existing ones have up to eight days left.",
@@ -276,6 +284,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "rebooted-aps",
+      mood: "critical",
       where: "The east wing riser",
       body: [
         "Nine access points reboot. Everyone who was connected is disconnected, including the west wing devices that had roamed east.",
@@ -297,6 +306,7 @@ export const eastWingOffline: Scenario = {
 
     {
       id: "static-test",
+      mood: "calm",
       where: "The laptop, with a static address",
       body: [
         "You set 10.30.0.60, mask /24, gateway 10.30.0.1, and a public resolver. It works immediately: the gateway pings, DNS resolves, pages load.",

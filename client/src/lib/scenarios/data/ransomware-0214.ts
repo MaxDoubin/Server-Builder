@@ -33,6 +33,7 @@ export const ransomware0214: Scenario = {
   scenes: [
     {
       id: "wake",
+      mood: "critical",
       where: "On the VPN, still in bed",
       body: [
         "You are on the VPN. FS01 does not answer SMB but it does answer ping, and RDP gets you a session after an unusually long wait.",
@@ -78,6 +79,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "look-first",
+      mood: "critical",
       where: "RDP session on FS01",
       body: [
         "Task Manager sorted by disk. One process, running as a service account you recognise from the print server migration, is writing at more than a gigabyte a second.",
@@ -139,6 +141,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "isolated-clean",
+      mood: "tense",
       where: "At the rack, crash cart on FS01",
       body: [
         "You shut the switch port. FS01 drops off the network. It carries on encrypting its own local disk, which is annoying but is now the whole of the damage it can do.",
@@ -166,6 +169,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "isolated-fast",
+      mood: "critical",
       where: "At the rack, crash cart on FS01",
       body: [
         "You shut the switch port. FS01 drops off the network mid-write. It is still running, still encrypting its own local disk, and now you cannot see it.",
@@ -189,6 +193,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "killed-process",
+      mood: "tense",
       where: "FS01 console",
       body: [
         "The process dies. Disk write drops to nothing. About sixty percent of the share is encrypted; the rest is intact.",
@@ -216,6 +221,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "power-pulled",
+      mood: "critical",
       where: "FS01 console, twenty minutes later",
       body: [
         "FS01 goes dark. The write storm stops, which feels like winning.",
@@ -250,6 +256,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "backup-first",
+      mood: "critical",
       where: "The backup console",
       body: [
         "BKP01 answers. The Veeam console opens. The nightly job failed at 01:57 with an I/O error, and the repository volume is mounted, writable, and visible to the whole file server VLAN.",
@@ -293,6 +300,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "tapes-secured",
+      mood: "tense",
       where: "The tape library",
       body: [
         "The repository volume is offline and the two tape copies are physically out of the library and on the desk. Whatever else happens tonight, there is a restorable copy of the estate from nine days ago.",
@@ -315,6 +323,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "mass-shutdown",
+      mood: "critical",
       where: "The hypervisor console",
       body: [
         "You shut everything down: file servers, application servers, the domain controllers, the hypervisors. The estate is dark inside eight minutes.",
@@ -337,6 +346,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "estate-sweep",
+      mood: "critical",
       where: "Your laptop, scripting it",
       body: [
         "You script it: every host, look for the process name, the directory under ProgramData, and the ransom note filename.",
@@ -382,6 +392,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "account-killed",
+      mood: "tense",
       where: "Active Directory Users and Computers",
       body: [
         "Four ports shut. svc_print disabled, and while you are in there you notice it is a member of Domain Admins, which it has no business being, and which explains the speed of all this.",
@@ -408,6 +419,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "hosts-only",
+      mood: "critical",
       where: "Watching the sweep re-run",
       body: [
         "The four hosts are off the network. Encryption stops on those four.",
@@ -435,6 +447,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "memory-image",
+      mood: "tense",
       where: "At the rack with the incident kit",
       body: [
         "You take a memory image off FS01 with a USB tool from the incident kit that you are quietly amazed is where the runbook says it is.",
@@ -452,6 +465,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "escalate",
+      mood: "tense",
       where: "On the phone to the director",
       body: [
         "The director answers on the fourth ring. You give them the short version: ransomware, at least four hosts, backups partly encrypted, data theft claimed in the note.",
@@ -493,6 +507,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "notified",
+      mood: "recovering",
       where: "On a bridge call with the insurer",
       body: [
         "The insurer's hotline answers at three in the morning, which is what the premium is for. They appoint a response firm who are on a call with you inside forty minutes and take over the forensics.",
@@ -515,6 +530,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "restore-attempt",
+      mood: "tense",
       where: "The restore wizard",
       body: [
         "You mount the repository and start a restore of the file share.",
@@ -529,6 +545,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "restore-tape",
+      mood: "recovering",
       where: "Two days at the tape library",
       body: [
         "The tapes restore. It takes twenty-six hours across two of them and one retry, and the finance team spends the following fortnight re-keying nine days of invoices from PDFs in mailboxes.",
@@ -550,6 +567,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "notify-late",
+      mood: "tense",
       where: "Thursday afternoon, the insurer's loss adjuster",
       body: [
         "You spend Tuesday and Wednesday restoring and do not notify anyone outside the company until Thursday afternoon, by which point you have a clean story to tell.",
@@ -561,6 +579,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "negotiate",
+      mood: "tense",
       where: "The operator's chat portal",
       body: [
         "You open the chat portal in the note. The operator is polite, professional and immediately produces a file tree of the HR share as proof, along with three sample documents.",
@@ -589,6 +608,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "sanctions-check",
+      mood: "tense",
       where: "Legal's office",
       body: [
         "Legal runs the wallet and the group's known aliases past the sanctions lists. It comes back clean, which is not the same as safe, and they put the advice in writing either way.",
@@ -607,6 +627,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "key-recovered",
+      mood: "recovering",
       where: "A call from the response firm",
       body: [
         "The response firm calls. The encryptor on FS01 was still resident when you imaged it, and this family holds its per-host symmetric key in memory until the process exits.",
@@ -618,6 +639,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "paid",
+      mood: "tense",
       where: "The finance director's office",
       body: [
         "The transfer goes out. The decryptor arrives nine hours later.",
@@ -629,6 +651,7 @@ export const ransomware0214: Scenario = {
 
     {
       id: "cold-rebuild",
+      mood: "tense",
       where: "Four days in the server room",
       body: [
         "Rebuilding a domain from cold, with two hosts that will not boot and no memory evidence from any of them, takes four days.",

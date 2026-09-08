@@ -69,8 +69,21 @@ export interface Choice {
   cost?: number;
 }
 
+/**
+ * How bad it is right now.
+ *
+ * Drives the whole viewport: the accent wash, how tightly the vignette
+ * closes, and whether the rule at the top of the screen is sweeping. This is
+ * information rather than decoration, which is why it survives reduced
+ * motion: a scene marked critical looks different from one marked calm even
+ * with every animation off.
+ */
+export type SceneMood = "calm" | "tense" | "critical" | "recovering";
+
 export interface Scene {
   id: string;
+  /** Defaults to "tense", which is where most of an incident lives. */
+  mood?: SceneMood;
   /**
    * Where you physically are: "At the rack, crash cart on FS01".
    *
