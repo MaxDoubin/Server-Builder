@@ -22,6 +22,7 @@ import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
+import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -294,6 +295,16 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/patch",
+      eyebrow: "Rank",
+      title: "The queue is sorted wrong",
+      blurb:
+        "Every scanner sorts by base score, and the specification says the base score is not a risk score. Ten advisories in one week to call.",
+      reachFor: "the list is sorted and you do not believe the order",
+      stats: [`${PATCH_FINDINGS.length} advisories`, `worst move ${worstMove(PATCH_FINDINGS)} places`, "published tree"],
       progress: null,
     },
     {

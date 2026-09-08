@@ -118,6 +118,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Longest prefix wins", href: "/route", detail: "Why a routing table is not a firewall chain", terms: "routing table longest prefix match administrative distance metric next hop" },
   { kind: "Page", title: "Ping works and the transfer hangs", href: "/mtu", detail: "Path MTU, and the firewall that swallowed the explanation", terms: "mtu pmtud fragmentation icmp blackhole tunnel jumbo df" },
   { kind: "Page", title: "The first class that matches", href: "/permissions", detail: "Unix mode bits, and the two thirds of them the kernel never looks at", terms: "permissions chmod chown umask setuid setgid sticky mode octal rwx posix unix linux acl" },
+  { kind: "Page", title: "The queue is sorted wrong", href: "/patch", detail: "CVSS is not a risk score, and the decision tree that is", terms: "patch cvss ssvc epss kev vulnerability advisory prioritisation prioritization severity exploited triage" },
   { kind: "Page", title: "Read the log", href: "/logs", detail: "What happened, and the one line that proves it", terms: "syslog auth journal grep incident evidence" },
   { kind: "Page", title: "Why the transfer is slow", href: "/transfer", detail: "Which of the three ceilings is binding", terms: "throughput bandwidth window latency loss bdp tcp" },
   { kind: "Page", title: "Archive", href: "/archive", detail: "Every article by date", terms: "all posts index" },
