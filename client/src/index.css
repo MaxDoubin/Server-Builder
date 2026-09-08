@@ -1856,3 +1856,28 @@ html.lenis-smooth {
   .practise-rule,
   .practise-flash { display: none !important; }
 }
+
+/*
+  Handshakes: a step arrives.
+
+  The slide is decoration and the opacity is not: a step that has not been
+  reached yet must read as absent whether or not the reader has motion turned
+  on, so reduced motion drops the transform and keeps everything else.
+*/
+.handshake-step {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 300ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.handshake-step.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .handshake-step {
+    transform: none;
+    transition: opacity 1ms linear;
+  }
+}

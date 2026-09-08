@@ -382,6 +382,15 @@ jobs:
       - name: Daily selection
         run: npx tsx scripts-ci/check-today.ts
 
+      # A break whose stop point drifts past the end of its sequence still
+      # renders: the page draws a diagram, greys out nothing, and describes a
+      # symptom belonging to a step that does not exist. This checks every
+      # break lands on a real step, that the breaks in one handshake do not all
+      # stop in the same place, and that directions alternate unless a step
+      # declares itself part of a flight.
+      - name: Handshake sequences
+        run: npx tsx scripts-ci/check-handshake.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
