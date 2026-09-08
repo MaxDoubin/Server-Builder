@@ -92,6 +92,7 @@ PAGE_EYEBROWS = {
     "scenarios": "INCIDENT SCENARIOS",
     "labs": "HANDS-ON LABS",
     "capture": "PACKET CAPTURES",
+    "practise": "PRACTISE",
     "contact": "CONTACT",
     "colophon": "COLOPHON",
     "changelog": "CHANGELOG",

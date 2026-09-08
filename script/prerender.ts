@@ -2057,6 +2057,71 @@ ${JSON.stringify({
     });
   }
 
+  // ── the practise hub ──
+  const practiseDescription =
+    "Everything on this site you do rather than read: branching incident scenarios with many " +
+    "endings, a simulated Linux host with a fault in it, packet captures with a real display " +
+    "filter bar, spaced-repetition flashcards and exam objective sheets.";
+
+  await writePage("practise", base, {
+    title: "Practise | Max Doubin",
+    description: practiseDescription,
+    canonical: `${SITE_URL}/practise`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Practise",
+  description: practiseDescription,
+  url: `${SITE_URL}/practise`,
+  numberOfItems: 6,
+  itemListElement: [
+    ["Incident scenarios", "/scenarios"],
+    ["Hands-on labs", "/labs"],
+    ["Packet captures", "/capture"],
+    ["Flashcards", "/flashcards"],
+    ["Exam objectives", "/study"],
+    ["Browser tools", "/tools"],
+  ].map(([name, path], index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name,
+    url: `${SITE_URL}${path}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Practise</h1>
+  <p>
+    Reading about an incident and being in one are different skills, and only
+    one of them is what a bad night asks for. These are the parts of this site
+    that make you do something.
+  </p>
+  <ul>
+    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>: the first fifteen
+      minutes of an incident, made repeatable. ${SCENARIOS.length} scenarios,
+      ${SCENARIOS.reduce((sum, s) => sum + s.endings.length, 0)} endings.</li>
+    <li><a href="${SITE_URL}/labs">Hands-on labs</a>: a Linux host simulated in
+      the browser with something wrong with it. ${LABS.length} labs.</li>
+    <li><a href="${SITE_URL}/capture">Packet captures</a>: a packet list and a
+      real Wireshark display filter bar.
+      ${CAPTURES.reduce((sum, c) => sum + c.packets.length, 0)} packets.</li>
+    <li><a href="${SITE_URL}/flashcards">Flashcards</a>: spaced repetition over
+      ports, protocols, Linux and crypto.</li>
+    <li><a href="${SITE_URL}/study">Exam objectives</a>: Security+, Network+ and
+      CCNA, domain by domain with the vendor's weightings.</li>
+    <li><a href="${SITE_URL}/tools">Browser tools</a>: subnetting, packet
+      headers, cron, regex, encoding and ciphers, all in the page.</li>
+  </ul>
+  <p>
+    Nothing here is scored and nothing needs an account. Progress is kept in
+    your browser and nowhere else.
+  </p>
+  ${backLinks([["/blog", "Field Notes"], ["/study", "Study guides"], ["/ncl", "National Cyber League notes"]])}
+</main>`,
+  });
+
   // ── packet captures ──
   const capturesIndexDescription =
     "Read a packet capture in the browser, with a real Wireshark display filter bar. Find the " +
@@ -3235,6 +3300,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },

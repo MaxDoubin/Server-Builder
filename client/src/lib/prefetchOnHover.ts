@@ -68,6 +68,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/study": { load: () => import("@/pages/cinematic/CinematicStudy") },
   "/topics": { load: () => import("@/pages/cinematic/CinematicTopics") },
   "/roadmap": { load: () => import("@/pages/cinematic/CinematicRoadmap") },
+  "/practise": { load: () => import("@/pages/cinematic/CinematicPractise") },
   "/capture": { load: () => import("@/pages/cinematic/CinematicCaptures") },
   "/labs": { load: () => import("@/pages/cinematic/CinematicLabs") },
   "/scenarios": { load: () => import("@/pages/cinematic/CinematicScenarios") },

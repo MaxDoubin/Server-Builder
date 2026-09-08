@@ -131,6 +131,10 @@ const CinematicContact = lazyWithRetry(() =>
   })),
 );
 
+const CinematicPractise = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicPractise").then((m) => ({ default: m.CinematicPractise })),
+);
+
 const CinematicCaptures = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCaptures").then((m) => ({ default: m.CinematicCaptures })),
 );
@@ -701,6 +705,11 @@ function AnimatedRoutes() {
     <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
+          <Route path="/practise">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicPractise />
+            </Suspense>
+          </Route>
           <Route path="/capture">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCaptures />
