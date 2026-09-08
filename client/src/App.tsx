@@ -131,6 +131,18 @@ const CinematicContact = lazyWithRetry(() =>
   })),
 );
 
+const CinematicScenarios = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicScenarios").then((module) => ({
+    default: module.CinematicScenarios,
+  })),
+);
+
+const CinematicScenario = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicScenario").then((module) => ({
+    default: module.CinematicScenario,
+  })),
+);
+
 const CinematicGame = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicGame").then((module) => ({
     default: module.CinematicGame,
@@ -673,6 +685,16 @@ function AnimatedRoutes() {
     <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
+          <Route path="/scenarios">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicScenarios />
+            </Suspense>
+          </Route>
+          <Route path="/scenarios/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicScenario />
+            </Suspense>
+          </Route>
           <Route path="/blog">
             <Suspense fallback={<RouteLoading />}>
               <CinematicBlog />

@@ -160,7 +160,12 @@ export function CinematicNcl() {
               </InfoCard>
               <InfoCard title="Practice in the Gymnasium">
                 Work challenges before the games, not during. The goal of practice
-                is to make your mistakes where they do not cost you points.
+                is to make your mistakes where they do not cost you points, which
+                is also the point of the{" "}
+                <Link href="/scenarios" className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline">
+                  incident scenarios
+                </Link>{" "}
+                here.
               </InfoCard>
               <InfoCard title="Learn your tools cold">
                 CyberChef, Wireshark, hashcat, binwalk, and exiftool should be

@@ -99,6 +99,7 @@ export function CinematicFooter() {
               { href: "/archive", label: "Archive", testId: "link-footer-archive" },
               { href: "/tools", label: "Tools", testId: "link-footer-tools" },
               { href: "/ncl", label: "NCL guides", testId: "link-footer-ncl" },
+              { href: "/scenarios", label: "Scenarios", testId: "link-footer-scenarios" },
               { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
               { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },
             ].map((item) => (
