@@ -50,6 +50,7 @@ const { COVERS, TAKEAWAYS } = await import("../client/src/lib/campsConfig.ts");
 const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig.ts");
 const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
 const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
+const { LABS } = await import("../client/src/lib/labs/labs.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
 );
@@ -2055,6 +2056,118 @@ ${JSON.stringify({
     });
   }
 
+  // ── hands-on labs ──
+  /*
+    The labs are a simulated shell, so the static body is the brief and the
+    hints rather than anything you could type into it. Writing the solutions
+    out would remove the whole exercise for anyone arriving from search.
+  */
+  const labsIndexDescription =
+    "A simulated Linux host in the browser, with a fault in it. Read the interface, the routing " +
+    "table, the sockets and the logs, and say what is wrong. Nothing here touches a real machine.";
+
+  await writePage("labs", base, {
+    title: "Hands-on Labs | Max Doubin",
+    description: labsIndexDescription,
+    canonical: `${SITE_URL}/labs`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Hands-on Linux and networking labs",
+  description: labsIndexDescription,
+  url: `${SITE_URL}/labs`,
+  numberOfItems: LABS.length,
+  itemListElement: LABS.map((lab, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: lab.title,
+    description: lab.tagline,
+    url: `${SITE_URL}/labs/${lab.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Hands-on labs</h1>
+  <p>
+    A Linux host, simulated in the browser, with something wrong with it. Real
+    command output, real permission bits, a real routing table, real logs.
+  </p>
+  <p>
+    Most of these ask for a diagnosis rather than a repair, because that is
+    the shape of nearly all troubleshooting: you are not asked to fix the
+    router, you are asked to say which of six things is wrong before anyone
+    lets you near it.
+  </p>
+  <ul>
+${LABS.map(
+  (lab) =>
+    `    <li><a href="${SITE_URL}/labs/${lab.slug}">${esc(lab.title)}</a> ` +
+    `(${esc(lab.difficulty)}): ${esc(lab.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/scenarios", "Incident scenarios"], ["/tools", "Browser tools"], ["/study", "Study guides"]])}
+</main>`,
+  });
+
+  for (const lab of LABS) {
+    const url = `${SITE_URL}/labs/${lab.slug}`;
+    await writePage(`labs/${lab.slug}`, base, {
+      title: pageTitle(`${lab.title} | Lab`),
+      description: `${lab.tagline} A hands-on ${lab.difficulty} lab in a simulated Linux shell.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: lab.title,
+  description: lab.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: lab.difficulty,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Labs", item: `${SITE_URL}/labs` },
+    { "@type": "ListItem", position: 3, name: lab.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(lab.title)}</h1>
+  <p>${esc(lab.tagline)}</p>
+  <h2>The brief</h2>
+${lab.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>How it works</h2>
+  <p>
+    The lab runs a simulated Linux host in your browser. Nothing reaches a
+    real machine and nothing you type leaves the page. There are
+    ${lab.hints.length} hints, opened one at a time, and the machine can be
+    restarted at any point.
+  </p>
+${
+  lab.reading?.length
+    ? `  <h2>The written version</h2>\n  <ul>\n${lab.reading
+        .map((link) => `    <li><a href="${SITE_URL}${link.href}">${esc(link.label)}</a></li>`)
+        .join("\n")}\n  </ul>`
+    : ""
+}
+  ${backLinks([["/labs", "All labs"], ["/scenarios", "Incident scenarios"], ["/tools", "Browser tools"]])}
+</main>`,
+    });
+  }
+
   // ── branching incident scenarios ──
   /*
     The index and one page per scenario.
@@ -2114,7 +2227,7 @@ ${SCENARIOS.map(
     `${esc(scenario.tagline)}</li>`,
 ).join("\n")}
   </ul>
-  ${backLinks([["/study", "Study guides"], ["/ncl", "National Cyber League notes"], ["/tools", "Browser tools"]])}
+  ${backLinks([["/labs", "Hands-on labs"], ["/study", "Study guides"], ["/ncl", "National Cyber League notes"]])}
 </main>`,
   });
 
@@ -3017,6 +3130,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
@@ -3072,6 +3186,14 @@ async function writeSitemap(
   for (const slug of NCL_GUIDE_DATA.map((g: { slug: string }) => g.slug)) {
     urls.push({
       loc: `${SITE_URL}/ncl/${slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const lab of LABS) {
+    urls.push({
+      loc: `${SITE_URL}/labs/${lab.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

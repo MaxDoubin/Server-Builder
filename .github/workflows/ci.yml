@@ -279,6 +279,16 @@ jobs:
       - name: Print chrome
         run: node scripts-ci/check-print-chrome.mjs
 
+      # Every lab ships a transcript that solves it, replayed here through the
+      # real shell against a real build of the machine. It proves the lab is
+      # solvable, that the predicate matches the intended route, and that
+      # every command the solution uses still works. It also checks the
+      # negative: an empty session must not report solved. Both halves have
+      # found real bugs, including two labs whose solutions were entirely
+      # Permission denied while the lab still reported itself solved.
+      - name: Lab solutions
+        run: npx tsx scripts-ci/check-labs.ts
+
       # A branching scenario is a graph written by hand in a prose file, which
       # is exactly the kind of thing that grows a choice pointing at a scene
       # that was renamed, an ending nothing routes to, or a loop a reader can

@@ -34,6 +34,7 @@ const DYNAMIC_COVERED_BY = {
   "/ncl/:slug": "ncl",
   "/racks/:slug": "racks",
   "/scenarios/:slug": "scenarios",
+  "/labs/:slug": "labs",
   "/study/:exam": "study",
   "/study/:exam/:domain": "study",
   "/study/:exam/sheet": "study",
