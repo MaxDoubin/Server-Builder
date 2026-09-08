@@ -25,6 +25,7 @@ import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../
 import { CASES as PERMISSION_CASES, octal as modeOctal, symbolic as lsLine } from "../client/src/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invertedPairs, priorityFor, worstMove } from "../client/src/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as retryMs, orphaned as retryOrphaned, requestsAt, truncatingCaller } from "../client/src/lib/retry/index";
+import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -852,6 +853,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/permissions">The first class that matches</a>, Unix mode bits and the two thirds of them the kernel never looks at.</li>
     <li><a href="${SITE_URL}/patch">The queue is sorted wrong</a>, why a base score is not a risk score and what to sort by instead.</li>
     <li><a href="${SITE_URL}/retry">Three retries, four layers</a>, how one button press becomes eighty-one queries.</li>
+    <li><a href="${SITE_URL}/vlan">The frame that arrived untagged</a>, native VLAN mismatches and the wire that says nothing.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2137,6 +2139,7 @@ ${JSON.stringify({
     ["The first class that matches", "/permissions"],
     ["The queue is sorted wrong", "/patch"],
     ["Three retries, four layers", "/retry"],
+    ["The frame that arrived untagged", "/vlan"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2712,6 +2715,95 @@ ${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocks
     interface, which fixes TCP and does nothing for UDP.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
+</main>`,
+  });
+
+  // ── VLAN tagging ──
+  /*
+    Both configurations go into the static body in full, because they are the
+    exercise: the whole difficulty is that each one is individually correct.
+    The answer does not, for the same reason it does not on the logs page.
+  */
+  const silentMismatches = VLAN_PATHS.filter((path) => nativeMismatches(path).length > 0).length;
+  const vlanDescription =
+    "A trunk sends its native VLAN with nothing on it, so if the two ends name different natives, every " +
+    "frame in one VLAN arrives in another and no switch reports an error. " +
+    `${VLAN_PATHS.length} frames to follow across configurations that are each individually correct, ` +
+    `${silentMismatches} of them across a link whose two ends silently disagree.`;
+
+  await writePage("vlan", base, {
+    title: "The Frame That Arrived Untagged | Max Doubin",
+    description: vlanDescription,
+    canonical: `${SITE_URL}/vlan`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The frame that arrived untagged",
+  description: vlanDescription,
+  url: `${SITE_URL}/vlan`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "IEEE 802.1Q tagging: how access and trunk ports classify frames, why the native VLAN crosses a trunk untagged, what a native VLAN mismatch does, how allowed lists are enforced independently at each end, and the configuration that makes VLAN hopping possible",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The frame that arrived untagged</h1>
+  <p>
+    A VLAN tag is four bytes that exist only on the wire between switches. On
+    either side of that wire the frame belongs to a VLAN because of a decision
+    a switch made, and the decision is made twice: once on the way in from one
+    port's configuration, and once on the way out from another port's
+    configuration at the other end.
+  </p>
+  <p>
+    A trunk sends its native VLAN with nothing on it at all, which is the point
+    of having one. So if the two ends name different natives, every frame in
+    the first switch's native VLAN arrives on the second in the second's, two
+    broadcast domains are joined, and nothing anywhere reports an error,
+    because each end is doing exactly what it was told.
+  </p>
+  <h2>The rules, in the order a switch applies them</h2>
+  <ol>
+    <li>Arriving on an access port, the frame joins that port's VLAN. The port does not read the tag, which is the whole mechanism behind VLAN hopping.</li>
+    <li>Arriving on a trunk with a tag, the frame joins the VLAN in the tag. Arriving with no tag, it joins the native VLAN.</li>
+    <li>Leaving on a trunk, the switch adds a tag, unless the frame's VLAN is the native one, in which case it adds nothing.</li>
+    <li>Leaving on an access port, the switch adds nothing, and the frame only leaves at all if its VLAN is that port's VLAN.</li>
+  </ol>
+  <h2>The frames</h2>
+${VLAN_PATHS.map((path) => `  <article>
+    <h3>${esc(path.name)}</h3>
+    <p>${esc(path.brief)}</p>
+    <p>On the wire from the host: ${esc(path.frame.label)}, ${onWire(path.frame.tags)}.</p>
+    <ul>
+${path.hops.map((hop) => `      <li>${esc(hop.device)}: ${esc(hop.ingress.name)} is ${hop.ingress.mode === "access" ? `an access port in VLAN ${accessVlanOf(hop.ingress)}` : `a trunk with native VLAN ${nativeVlanOf(hop.ingress)}${hop.ingress.allowed ? `, allowing ${hop.ingress.allowed.join(", ")}` : ""}`}; ${esc(hop.egress.name)} is ${hop.egress.mode === "access" ? `an access port in VLAN ${accessVlanOf(hop.egress)}` : `a trunk with native VLAN ${nativeVlanOf(hop.egress)}${hop.egress.allowed ? `, allowing ${hop.egress.allowed.join(", ")}` : ""}`}.</li>`).join("\n")}
+    </ul>
+    <p>${esc(path.question)}</p>
+    <ol>
+${path.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")}
+    </ol>
+    <p>
+      ${(() => {
+        const outcome = carry(path);
+        const wire = outcome.steps.map((step) => `${esc(step.device)} put it in VLAN ${step.internal} by its ${step.decidedBy}`).join(", then ");
+        return `${wire}. ${vlanAnswer(path) === "dropped" ? "The frame does not arrive." : `It arrives in VLAN ${vlanAnswer(path)}.`}`;
+      })()}
+      ${nativeMismatches(path).length > 0 ? "The two ends of a trunk here disagree about the native VLAN, and neither will tell you." : ""}
+      It breaks the belief ${esc(path.breaks)}.
+    </p>
+  </article>`).join("\n")}
+  <h2>The fix</h2>
+  <p>
+    Make the native VLAN a VLAN with no hosts in it. Then a mismatch moves
+    traffic that does not exist, and a host has nothing to write a tag from.
+    Dropping tagged frames on access ports is the other half, and checking
+    both ends of every trunk rather than only the end you are logged into is
+    the habit.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/blog/vlan-segmentation-guide", "VLAN segmentation"]])}
 </main>`,
   });
 
@@ -4787,6 +4879,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/permissions`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/patch`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retry`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/vlan`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

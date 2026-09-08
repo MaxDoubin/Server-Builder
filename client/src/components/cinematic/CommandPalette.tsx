@@ -120,6 +120,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "The first class that matches", href: "/permissions", detail: "Unix mode bits, and the two thirds of them the kernel never looks at", terms: "permissions chmod chown umask setuid setgid sticky mode octal rwx posix unix linux acl" },
   { kind: "Page", title: "The queue is sorted wrong", href: "/patch", detail: "CVSS is not a risk score, and the decision tree that is", terms: "patch cvss ssvc epss kev vulnerability advisory prioritisation prioritization severity exploited triage" },
   { kind: "Page", title: "Three retries, four layers", href: "/retry", detail: "Why one button press becomes eighty-one queries", terms: "retry retries timeout backoff jitter idempotent amplification thundering herd deadline budget resilience" },
+  { kind: "Page", title: "The frame that arrived untagged", href: "/vlan", detail: "Native VLAN mismatches, and the wire that says nothing", terms: "vlan 802.1q tag tagging trunk access native allowed pruning hopping double tagging switch broadcast domain" },
   { kind: "Page", title: "Read the log", href: "/logs", detail: "What happened, and the one line that proves it", terms: "syslog auth journal grep incident evidence" },
   { kind: "Page", title: "Why the transfer is slow", href: "/transfer", detail: "Which of the three ceilings is binding", terms: "throughput bandwidth window latency loss bdp tcp" },
   { kind: "Page", title: "Archive", href: "/archive", detail: "Every article by date", terms: "all posts index" },
