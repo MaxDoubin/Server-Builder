@@ -106,6 +106,8 @@ PAGE_EYEBROWS = {
     "transfer": "THROUGHPUT",
     "logs": "READ THE LOG",
     "mtu": "PATH MTU",
+    "route": "ROUTING TABLES",
+    "restore": "BACKUPS AND RESTORES",
     "handshake": "PROTOCOL HANDSHAKES",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",

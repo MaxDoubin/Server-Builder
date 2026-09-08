@@ -13,6 +13,8 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { CHAIN_CASES, validate, type ChainCase } from "@/lib/chain/index";
 import { PractiseStage } from "@/components/practise/PractiseStage";
+import { recordSolvedChains } from "@/lib/chain/progress";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -115,6 +117,8 @@ export function CinematicChain() {
             does the same thing for DNS.
           </p>
         </div>
+        <ReadAboutThis href="/chain" />
+
       </div>
     </CinematicLayout>
   );
@@ -215,6 +219,7 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
                 setPicked(index);
                 setOpen(true);
                 onAnswer(index === item.answer);
+                if (index === item.answer) recordSolvedChains(item.id);
               }}
               disabled={picked !== null}
               aria-pressed={chosen}

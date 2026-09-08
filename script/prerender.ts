@@ -22,6 +22,9 @@ import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
 import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/transfer/index";
 import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
+import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
+import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
+import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -824,8 +827,9 @@ async function main(): Promise<void> {
   </ul>
   <h2>Practise, in the browser</h2>
   <p>
-    Ten places to practise, none of which need anything installed, none of
-    which reach a real machine, and none of which send anything anywhere.
+    ${PRACTISE_SURFACES.filter((surface) => surface.group !== "ground").length} places to
+    practise, none of which need anything installed, none of which reach a
+    real machine, and none of which send anything anywhere.
     Every exercise ships a solution that CI replays on every push.
   </p>
   <ul>
@@ -840,6 +844,12 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/chain">Certificate chains</a>, and which party can fix a given TLS error.</li>
     <li><a href="${SITE_URL}/allocate">Address plans</a>, dividing a block with the map drawn to scale.</li>
     <li><a href="${SITE_URL}/handshake">Protocol handshakes</a>, breaking one step and seeing where it stops.</li>
+    <li><a href="${SITE_URL}/logs">Read the log</a>, what happened and the one line that proves it.</li>
+    <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>, path MTU and the firewall that swallowed the explanation.</li>
+    <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
+    <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
+    <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
+    <li><a href="${SITE_URL}/restore">You have backups, not restores</a>, which copies survive the incident.</li>
     <li><a href="${SITE_URL}/practise">The practise hub</a>, all of it with what each one is for.</li>
   </ul>
   <h2>About</h2>
@@ -2106,7 +2116,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 10,
+  numberOfItems: 12,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2118,6 +2128,8 @@ ${JSON.stringify({
     ["Why the transfer is slow", "/transfer"],
     ["Read the log", "/logs"],
     ["Ping works and the transfer hangs", "/mtu"],
+    ["Longest prefix wins", "/route"],
+    ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2132,32 +2144,16 @@ ${JSON.stringify({
   <p>
     Reading about an incident and being in one are different skills, and only
     one of them is what a bad night asks for. These are the parts of this site
-    that make you do something.
+    that make you do something, grouped by the situation you are in rather
+    than by subject, because the subject is not what anybody arrives knowing.
   </p>
+${GROUPS.map((group) => `  <h2 id="${group}">${esc(GROUP_HEADING[group])}</h2>
+  <p>${esc(GROUP_BLURB[group])}</p>
   <ul>
-    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>: the first fifteen
-      minutes of an incident, made repeatable. ${SCENARIOS.length} scenarios,
-      ${SCENARIOS.reduce((sum, s) => sum + s.endings.length, 0)} endings.</li>
-    <li><a href="${SITE_URL}/labs">Hands-on labs</a>: a Linux host simulated in
-      the browser with something wrong with it. ${LABS.length} labs.</li>
-    <li><a href="${SITE_URL}/capture">Packet captures</a>: a packet list and a
-      real Wireshark display filter bar.
-      ${CAPTURES.reduce((sum, c) => sum + c.packets.length, 0)} packets.</li>
-    <li><a href="${SITE_URL}/flashcards">Flashcards</a>: spaced repetition over
-      ports, protocols, Linux and crypto.</li>
-    <li><a href="${SITE_URL}/study">Exam objectives</a>: Security+, Network+ and
-      CCNA, domain by domain with the vendor's weightings.</li>
-    <li><a href="${SITE_URL}/tools">Browser tools</a>: subnetting, packet
-      headers, cron, regex, encoding and ciphers, all in the page.</li>
-    <li><a href="${SITE_URL}/glossary">Glossary</a>: ${TERMS.length} terms, each
-      one saying what people reliably get wrong about it.</li>
-    <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>: the three
-      ceilings over a TCP stream, on ${TRANSFERS.length} real complaints.</li>
-    <li><a href="${SITE_URL}/logs">Read the log</a>: what happened, and the one
-      line that proves it. ${LOGS.length} logs.</li>
-    <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>: path
-      MTU, on ${MTU_PATHS.length} paths, two of which fail silently.</li>
-  </ul>
+${PRACTISE_SURFACES.filter((surface) => surface.group === group)
+  .map((surface) => `    <li><a href="${SITE_URL}${surface.href}">${esc(surface.title)}</a></li>`)
+  .join("\n")}
+  </ul>`).join("\n")}
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
     your browser and nowhere else.
@@ -2513,6 +2509,136 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── backups and restores ──
+  /*
+    The postures go into the static body in full: the configuration is the
+    content, and a reader is meant to look at it and decide. Which copies
+    survive stays out, because that is the exercise.
+  */
+  const restoreDescription =
+    "Every organisation that lost data had backups. Six incidents, each with a backup posture " +
+    "that would pass an audit, and between zero and one copy that turns out to be worth anything.";
+
+  await writePage("restore", base, {
+    title: "You Have Backups, Not Restores | Max Doubin",
+    description: restoreDescription,
+    canonical: `${SITE_URL}/restore`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "You have backups, not restores",
+  description: restoreDescription,
+  url: `${SITE_URL}/restore`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Recovery point and recovery time objectives, failure domains behind the 3-2-1 rule, and why immutability rather than copy count decides a ransomware outcome",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>You have backups, not restores</h1>
+  <p>
+    Every organisation that lost data had backups. That is not a paradox and
+    it is not carelessness: a backup is a job that reports success, and a
+    restore is a thing nobody does until the worst day of the year. The gap
+    between the two is where the losses live.
+  </p>
+  <h2>The three things this keeps showing</h2>
+  <ul>
+    <li>A copy is only a copy if the incident cannot reach it. The 3-2-1 rule
+      counts copies, media and sites, and the number that matters is none of
+      those: it is how many ways there are to lose all of them at once.</li>
+    <li>Recovery point is the backup interval plus how long the problem went
+      unnoticed. For silent corruption that second term is measured in weeks,
+      and retention rather than frequency decides whether you recover.</li>
+    <li>Recovery time is mostly not the transfer. It is finding what to
+      restore, getting the media back, moving bytes at restore speed rather
+      than backup speed, rebuilding what sat on top, and proving it is right.</li>
+  </ul>
+  <h2>The incidents</h2>
+${RESTORES.map((item) => `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <p>${item.gigabytes.toLocaleString()} GB to restore, noticed after ${item.detectionHours} hours, ` +
+    `${item.rebuildHours} hours of rebuild on top, across ${failureDomains(item.copies)} independent failure domains.</p>
+    <ul>
+${item.copies.map((c) => `      <li>${esc(c.name)}: ${esc(c.medium)}, every ${c.intervalHours} hours, kept ${c.retentionDays} days, ` +
+      `${c.immutable ? "immutable" : "writable"}${c.sharesWith === "none" ? "" : `, shares the ${c.sharesWith}`}, ` +
+      `${c.retrievalHours} hours to reach, restores at ${c.restoreMbps} MB/s${c.everRestored ? "" : ", never restored from"}</li>`).join("\n")}
+    </ul>
+  </article>`).join("\n")}
+  <p>
+    The arithmetic here is deliberately optimistic: it assumes you know what
+    to restore, the media is where the inventory says, and nothing fails
+    during the restore. A real recovery is longer than this, every time.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/transfer", "Why the transfer is slow"], ["/array", "Array calculator"]])}
+</main>`,
+  });
+
+  // ── longest prefix wins ──
+  /*
+    The tables go into the static body in full, because they are the content.
+    The answers stay out: which route wins is the exercise, and printing it
+    beside each destination would put the answer key in a search result.
+  */
+  const routeDescription =
+    "A firewall chain is ordered and the first rule that matches decides. A routing table is not " +
+    "ordered at all: the longest prefix wins wherever it sits in the output. Same wall of " +
+    "prefixes, opposite rule, and the habit you build reading one is wrong for the other.";
+
+  await writePage("route", base, {
+    title: "Longest Prefix Wins | Max Doubin",
+    description: routeDescription,
+    canonical: `${SITE_URL}/route`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Longest prefix wins",
+  description: routeDescription,
+  url: `${SITE_URL}/route`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Longest prefix match, administrative distance as a tie-break, and why a routing table is not read like a firewall chain",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Longest prefix wins</h1>
+  <p>
+    A firewall chain is ordered and the first rule that matches decides. A
+    routing table is not ordered at all: the longest prefix wins wherever it
+    sits in the output. Reading one the way you read the other is the single
+    most common way to get the wrong answer, and both are printed as the same
+    wall of prefixes.
+  </p>
+  <p>
+    Administrative distance is the second trap. It is a tie-break within one
+    prefix length and nothing else. A static route at distance 1 does not beat
+    an OSPF route at distance 110, and an OSPF /24 beats a static /16 every
+    time.
+  </p>
+${ROUTE_TABLES.map((table) => `  <article>
+    <h2>${esc(table.name)}</h2>
+    <p>${esc(table.brief)}</p>
+    <ul>
+${table.routes.map((route) => `      <li>${prefixOf(route)} via ${esc(route.nextHop ?? (route.iface === "null0" ? "discard" : "on-link"))} on ${esc(route.iface)}, ${esc(route.protocol)}, distance ${route.distance}, metric ${route.metric}</li>`).join("\n")}
+    </ul>
+    <p>Destinations worth resolving against it: ${table.probes.map((probe) => esc(probe.destination)).join(", ")}.</p>
+  </article>`).join("\n")}
+  <p>
+    One simplification: where two routes tie on everything, a real router
+    installs both and hashes flows across them. This picks the first, and the
+    one table here that reaches that case says so.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises, where first match does win"], ["/allocate", "Address plans"]])}
 </main>`,
   });
 
@@ -4401,6 +4527,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

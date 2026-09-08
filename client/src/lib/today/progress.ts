@@ -15,6 +15,9 @@ import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
+import { CAPTURES } from "@/lib/capture/index";
+import { CASES as DNS_CASES } from "@/lib/resolve/index";
+import { CHAIN_CASES } from "@/lib/chain/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { loadSolved } from "@/lib/labs/progress";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
@@ -23,6 +26,9 @@ import { loadSolvedFirewall } from "@/lib/firewall/progress";
 import { loadSolvedPlans } from "@/lib/allocate/progress";
 import { loadSolvedTransfers } from "@/lib/transfer/progress";
 import { loadSolvedLogs } from "@/lib/logs/progress";
+import { loadSolvedCaptures } from "@/lib/capture/progress";
+import { loadSolvedResolves } from "@/lib/resolve/progress";
+import { loadSolvedChains } from "@/lib/chain/progress";
 
 export interface Line {
   label: string;
@@ -87,6 +93,27 @@ export function readProgress(): Line[] {
       done: loadSolvedLogs().filter((slug) => LOGS.some((item) => item.slug === slug)).length,
       total: LOGS.length,
       noun: "read right",
+    },
+    {
+      label: "Packet captures",
+      href: "/capture",
+      done: loadSolvedCaptures().filter((slug) => CAPTURES.some((item) => item.slug === slug)).length,
+      total: CAPTURES.length,
+      noun: "read",
+    },
+    {
+      label: "DNS resolution",
+      href: "/resolve",
+      done: loadSolvedResolves().filter((id) => DNS_CASES.some((item) => item.id === id)).length,
+      total: DNS_CASES.length,
+      noun: "attributed",
+    },
+    {
+      label: "Certificate chains",
+      href: "/chain",
+      done: loadSolvedChains().filter((id) => CHAIN_CASES.some((item) => item.id === id)).length,
+      total: CHAIN_CASES.length,
+      noun: "attributed",
     },
   ];
 }

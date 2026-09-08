@@ -27,6 +27,9 @@ import { HANDSHAKES } from "@/lib/handshake/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
+import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
+import { SCENARIOS as RESTORES } from "@/lib/restore/index";
+import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -141,6 +144,30 @@ const SURFACES: Surface[] = [
     blurb:
       "The fault that survives every test somebody thinks to run, because every test somebody thinks to run sends small packets.",
     count: `${MTU_PATHS.length} paths, 2 of them silent`,
+  },
+  {
+    href: "/route",
+    eyebrow: "Resolve",
+    title: "Longest prefix wins",
+    blurb:
+      "A firewall chain is ordered and a routing table is not. Same wall of prefixes, opposite rule, and the habit from one is wrong for the other.",
+    count: `${ROUTE_TABLES.length} tables, ${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`,
+  },
+  {
+    href: "/restore",
+    eyebrow: "Recover",
+    title: "You have backups, not restores",
+    blurb:
+      "Every organisation that lost data had backups. Read the posture, then run the incident and see how many copies were copies.",
+    count: `${RESTORES.length} incidents, ${RESTORES.reduce((sum, s) => sum + s.copies.length, 0)} copies`,
+  },
+  {
+    href: "/array",
+    eyebrow: "Size",
+    title: "Array calculator",
+    blurb:
+      "Capacity, tolerance and rebuild time for a set of disks, and the unrecoverable-read arithmetic that decides whether the rebuild finishes.",
+    count: `${Object.keys(LEVEL_LABEL).length} RAID levels, ${ARRAY_CONFIGS.length} worked examples`,
   },
 ];
 
@@ -269,4 +296,12 @@ export function PractiseAct() {
 }
 
 /** The routes this act must link to. Read by CI so the front door cannot quietly lose one. */
-export const PRACTISE_ROUTES = SURFACES.map((surface) => surface.href);
+/*
+  Re-exported from the registry rather than derived from the cards above.
+
+  Deriving it from SURFACES made it a restatement of this file: the gate
+  that used it could only ever confirm the act linked what the act linked,
+  which is why a surface missing from here went unnoticed for a month. The
+  registry is the list now, and CI compares this file against it.
+*/
+export { PRACTISE_ROUTES } from "@/lib/practiseSurfaces";

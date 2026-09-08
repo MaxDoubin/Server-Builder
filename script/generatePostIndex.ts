@@ -42,6 +42,27 @@ for (const file of await readdir(MD_DIR)) {
 }
 
 const j = (value: unknown) => JSON.stringify(value);
+/**
+ * 259 -> "two hundred and fifty nine", matching how the site's copy writes it.
+ *
+ * British usage keeps the "and". No hyphens, because the copy does not use
+ * them and the point is that the generated string drops straight in.
+ */
+function spellNumber(n: number): string {
+  const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+    "eighteen", "nineteen"];
+  const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  if (n < 20) return ONES[n];
+  if (n < 100) {
+    const tens = TENS[Math.floor(n / 10)];
+    return n % 10 ? `${tens} ${ONES[n % 10]}` : tens;
+  }
+  const hundreds = `${ONES[Math.floor(n / 100)]} hundred`;
+  const rest = n % 100;
+  return rest ? `${hundreds} and ${spellNumber(rest)}` : hundreds;
+}
+
 const out: string[] = [];
 
 out.push(`/**
@@ -168,6 +189,24 @@ for (const post of blogPosts) {
   if (post.coverCredit.licenseUrl) attributionUrls.add(post.coverCredit.licenseUrl);
 }
 
+/*
+  How many posts there are, as a literal.
+
+  Page copy used to type this number by hand in five places, and it went
+  stale three times: an article is published, and the colophon quietly tells
+  a reader the archive is smaller than it is. Emitting it here means the copy
+  interpolates rather than claims, and check-stated-counts now refuses a
+  hand-typed one rather than merely noticing when it drifts.
+
+  A literal rather than postIndex.length, so a page that only wants the count
+  does not pull the whole index into its chunk.
+*/
+out.push("/** How many posts are published. A literal, so importing it costs nothing. */");
+out.push(`export const POST_COUNT = ${blogPosts.length};`);
+out.push("");
+out.push("/** The same number spelled out, for copy that reads better in words. */");
+out.push(`export const POST_COUNT_SPELLED = ${JSON.stringify(spellNumber(blogPosts.length))};`);
+out.push("");
 out.push("/**");
 out.push(" * Unique external reference URLs in the article text.");
 out.push(" *");

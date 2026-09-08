@@ -30,6 +30,7 @@ import {
 } from "@/lib/triage/progress";
 import { pluralise } from "@/lib/plural";
 import { PractiseStage } from "@/components/practise/PractiseStage";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -272,6 +273,8 @@ export function CinematicTriage() {
             collects the scenarios, labs, captures and challenges in one place.
           </p>
         </div>
+        <ReadAboutThis href="/triage" />
+
       </div>
     </CinematicLayout>
   );

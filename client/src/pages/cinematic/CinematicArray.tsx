@@ -22,6 +22,7 @@ import {
   tbToTib,
   type Level,
 } from "@/lib/array/index";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -275,6 +276,8 @@ export function CinematicArray() {
             are next door.
           </p>
         </div>
+        <ReadAboutThis href="/array" />
+
       </div>
     </CinematicLayout>
   );

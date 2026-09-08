@@ -114,6 +114,8 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Address plans", href: "/allocate", detail: "Divide a block between competing needs", terms: "subnetting vlsm cidr ipam" },
   { kind: "Page", title: "Array calculator", href: "/array", detail: "Capacity, rebuild time and the URE arithmetic", terms: "raid storage disks parity" },
   { kind: "Page", title: "Protocol handshakes", href: "/handshake", detail: "Step by step, with the breaks", terms: "tcp tls dhcp sequence diagram" },
+  { kind: "Page", title: "You have backups, not restores", href: "/restore", detail: "Which copies survive the incident, and how long they take", terms: "backup restore rpo rto immutable ransomware 3-2-1 retention snapshot tape" },
+  { kind: "Page", title: "Longest prefix wins", href: "/route", detail: "Why a routing table is not a firewall chain", terms: "routing table longest prefix match administrative distance metric next hop" },
   { kind: "Page", title: "Ping works and the transfer hangs", href: "/mtu", detail: "Path MTU, and the firewall that swallowed the explanation", terms: "mtu pmtud fragmentation icmp blackhole tunnel jumbo df" },
   { kind: "Page", title: "Read the log", href: "/logs", detail: "What happened, and the one line that proves it", terms: "syslog auth journal grep incident evidence" },
   { kind: "Page", title: "Why the transfer is slow", href: "/transfer", detail: "Which of the three ceilings is binding", terms: "throughput bandwidth window latency loss bdp tcp" },

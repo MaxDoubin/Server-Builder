@@ -28,6 +28,7 @@ import {
   type Facility,
 } from "@/lib/logs/index";
 import { pluralise } from "@/lib/plural";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -345,6 +346,9 @@ export function CinematicLogs() {
             {/* The plural follows the total, not the count: "1 of 8 logs", never "1 of 8 log". */}
             {mounted ? `${solved.length} of ${CASES.length} ${pluralise(CASES.length, "log")} read right` : " "}
           </p>
+
+
+          <ReadAboutThis href="/logs" />
 
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every line here is rendered to real syslog format and parsed back at build time, so a

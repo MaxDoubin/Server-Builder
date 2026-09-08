@@ -4,3 +4,4 @@ export { CASES } from "./data/cases";
 export type { Case } from "./data/cases";
 export { resolve } from "./resolver";
 export * from "./types";
+export { loadSolvedResolves, recordSolvedResolves } from "./progress";

@@ -11,3 +11,4 @@ export const getCapture = (slug: string): Capture | undefined =>
 
 export * from "./types";
 export { compileFilter } from "./filter";
+export { loadSolvedCaptures, recordSolvedCaptures } from "./progress";

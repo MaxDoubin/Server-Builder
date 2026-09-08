@@ -15,6 +15,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { siteConfig } from "@/lib/siteConfig";
 import { useSEO } from "@/lib/useSEO";
 import { ANSWERED } from "@/lib/askConfig";
+import { POST_COUNT } from "@/lib/postIndex";
 
 const SITE_URL = "https://maxdoubin.com";
 const DISCUSSIONS_NEW =
@@ -367,7 +368,7 @@ export function CinematicAsk() {
               >
                 The archive
               </Link>{" "}
-              holds 258 posts, and there is a new one most days.
+              holds {POST_COUNT} posts, and there is a new one most days.
             </p>
           </section>
         </div>
