@@ -18,6 +18,7 @@
 import { CAPTURES } from "../client/src/lib/capture/index";
 import { compileFilter } from "../client/src/lib/capture/filter";
 import { fieldsOf, isCorrect, normalise } from "../client/src/lib/capture/types";
+import { dns, eth, resetSequence, tls, udp } from "../client/src/lib/capture/builders";
 
 const problems: string[] = [];
 const note = (slug: string, message: string) => problems.push(`${slug}: ${message}`);
@@ -121,6 +122,83 @@ if (CAPTURES.length === 0) {
   console.error("FAIL  no captures are registered, so this check proved nothing.");
   process.exit(1);
 }
+/* ------------------------------------------------- the layer builders */
+
+/*
+  Five builders were exported and named by nothing in this file until a check
+  over every logic file found them. They are what turns a scenario into the
+  field names a reader searches on, and a field named wrong is a reader
+  learning a filter that will not work in Wireshark.
+*/
+
+/*
+  eth and udp take positional arguments, which is the shape that invites
+  getting the order wrong, so each is checked for putting its arguments where
+  it says it does.
+*/
+{
+  const layer = eth("aa:bb:cc:dd:ee:ff", "11:22:33:44:55:66");
+  const find = (name: string) => layer.fields.find((field) => field.name === name)?.value;
+  if (layer.short !== "eth") problems.push(`eth() has the short name "${layer.short}"`);
+  if (find("eth.src") !== "aa:bb:cc:dd:ee:ff") problems.push(`eth() put "${find("eth.src")}" in eth.src`);
+  if (find("eth.dst") !== "11:22:33:44:55:66") problems.push(`eth() put "${find("eth.dst")}" in eth.dst`);
+  if (find("eth.type") === undefined) problems.push("eth() has no eth.type field");
+}
+{
+  const layer = udp(53124, 53, 72);
+  const find = (name: string) => layer.fields.find((field) => field.name === name)?.value;
+  if (layer.short !== "udp") problems.push(`udp() has the short name "${layer.short}"`);
+  if (find("udp.srcport") !== 53124) problems.push(`udp() put ${find("udp.srcport")} in udp.srcport`);
+  if (find("udp.dstport") !== 53) problems.push(`udp() put ${find("udp.dstport")} in udp.dstport`);
+  if (find("udp.length") !== 72) problems.push(`udp() put ${find("udp.length")} in udp.length`);
+}
+
+/*
+  dns and tls take a record and derive each label from the field name, so the
+  property is that nothing is dropped, nothing is renamed, and the order is
+  the order given, since a reader reads them down the pane.
+*/
+for (const [name, build] of [
+  ["dns", dns],
+  ["tls", tls],
+] as [string, (fields: Record<string, string | number>) => { short: string; fields: { name: string; label: string; value: string | number }[] }][]) {
+  const given = {
+    [`${name}.qry_name`]: "example.invalid",
+    [`${name}.flags_response`]: 1,
+    [`${name}.count_answers`]: 0,
+  };
+  const layer = build(given);
+  if (layer.short !== name) problems.push(`${name}() has the short name "${layer.short}"`);
+  const names = layer.fields.map((field) => field.name);
+  if (names.join(",") !== Object.keys(given).join(",")) {
+    problems.push(`${name}() reordered or dropped fields: ${names.join(", ")}`);
+  }
+  for (const [key, value] of Object.entries(given)) {
+    const found = layer.fields.find((field) => field.name === key);
+    if (found?.value !== value) problems.push(`${name}() put ${found?.value} in ${key}`);
+    /* The label is the name without its protocol prefix, underscores spaced. */
+    const want = key.split(".").slice(1).join(" ").replace(/_/g, " ");
+    if (found?.label !== want) problems.push(`${name}() labelled ${key} "${found?.label}" rather than "${want}"`);
+  }
+  if (build({}).fields.length !== 0) problems.push(`${name}({}) invented a field`);
+}
+
+/*
+  resetSequence puts the TCP sequence counter back, which is what keeps the
+  shipped captures identical between runs. Checked by building the same
+  capture twice: without a reset the second one differs, and with one it does
+  not. That is the whole reason the function exists.
+*/
+{
+  const first = JSON.stringify(CAPTURES.map((capture) => capture.packets.map((packet) => packet.layers)));
+  resetSequence();
+  const again = JSON.stringify(CAPTURES.map((capture) => capture.packets.map((packet) => packet.layers)));
+  if (first !== again) {
+    problems.push("the shipped captures are not identical when read twice, so a sequence number is leaking between them");
+  }
+  if (typeof resetSequence() !== "undefined") problems.push("resetSequence() returned something");
+}
+
 if (problems.length) {
   console.error(`FAIL  ${problems.length} problem(s) in the packet captures:\n`);
   for (const problem of problems) console.error(`        ${problem}`);

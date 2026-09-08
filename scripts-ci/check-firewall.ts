@@ -15,8 +15,24 @@
 
 import { EXERCISES } from "../client/src/lib/firewall/data/exercises";
 import { checkRuleset, isSolved } from "../client/src/lib/firewall/index";
-import { evaluate } from "../client/src/lib/firewall/evaluate";
-import { parseRuleset } from "../client/src/lib/firewall/parse";
+import { evaluate, testRule } from "../client/src/lib/firewall/evaluate";
+import { inCidr, parseCidr, parseIPv4, parseRuleset } from "../client/src/lib/firewall/parse";
+/*
+  The other CIDR implementation on this site, imported here on purpose.
+
+  /allocate does the same arithmetic with shifts and this file does it with
+  multiplication, and nothing compared them until a check over every logic
+  file noticed that parseIPv4, parseCidr and inCidr were named by no gate at
+  all. Two implementations that disagree mean one of two surfaces teaches
+  something wrong, and neither would have said so.
+*/
+import {
+  broadcastOf,
+  contains,
+  networkOf,
+  parseAddress,
+  toDotted,
+} from "../client/src/lib/allocate/cidr";
 import type { Action, Packet } from "../client/src/lib/firewall/types";
 
 const problems: string[] = [];
@@ -223,6 +239,147 @@ for (const [source, pattern] of REFUSALS) {
       `refusals: "${source}" was refused, but not for ${pattern}. Got: ${parsed.map((e) => e.message).join(" / ")}`,
     );
   }
+}
+
+/* ------------------------------------------------ one rule at a time */
+
+/*
+  testRule() decides whether a single rule matches a single packet, and
+  evaluate() is a loop over it, so it was exercised transitively and named by
+  nothing until a check over every logic file found it.
+
+  Two properties, over every rule and packet in the shipped exercises. A step
+  reports a failing field exactly when it did not match, since the page prints
+  that field as the reason. And evaluate()'s own steps have to be what
+  testRule says for the same pairs, or the trace a reader is shown is not the
+  trace that produced the verdict.
+*/
+for (const exercise of EXERCISES) {
+  const ruleset = parseRuleset(exercise.solution);
+  if ("error" in ruleset) continue;
+  for (const expectation of exercise.expectations) {
+    const trace = evaluate(ruleset, expectation.packet);
+    for (const step of trace.steps) {
+      const direct = testRule(step.rule, expectation.packet);
+
+      /* Matched and a named failing field are exclusive and exhaustive. */
+      if (direct.matched && direct.failedOn !== undefined) {
+        problems.push(`${exercise.slug}: a matching rule also named ${direct.failedOn} as the field that failed`);
+      }
+      if (!direct.matched && direct.failedOn === undefined) {
+        problems.push(`${exercise.slug}: a rule missed and named no field, so the page has nothing to print`);
+      }
+      if (!direct.matched && !direct.because) {
+        problems.push(`${exercise.slug}: a rule missed on ${direct.failedOn} with no reason given`);
+      }
+
+      /* And the loop agrees with the single call, on the same rule and packet. */
+      if (direct.matched !== step.matched) {
+        problems.push(
+          `${exercise.slug}: evaluate says matched=${step.matched} and testRule says ${direct.matched} for the same rule`,
+        );
+      }
+      if (direct.failedOn !== step.failedOn) {
+        problems.push(
+          `${exercise.slug}: evaluate blames ${step.failedOn} and testRule blames ${direct.failedOn}`,
+        );
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------- the address arithmetic */
+
+let addrSeed = 0x1f3b7d;
+const nextAddr = () => {
+  addrSeed ^= addrSeed << 13;
+  addrSeed >>>= 0;
+  addrSeed ^= addrSeed >>> 17;
+  addrSeed ^= addrSeed << 5;
+  addrSeed >>>= 0;
+  return addrSeed;
+};
+
+let agreed = 0;
+for (let round = 0; round < 3000; round += 1) {
+  const value = nextAddr();
+  const dotted = toDotted(value);
+
+  /*
+    The cross-check. This file parses with `value * 256 + octet` and /allocate
+    parses with `(value << 8) | octet`, which are the same number until one of
+    them overflows into a signed result. They have to agree on every address.
+  */
+  if (parseIPv4(dotted) !== parseAddress(dotted)) {
+    problems.push(
+      `the two parsers disagree on ${dotted}: this one says ${parseIPv4(dotted)} and /allocate says ${parseAddress(dotted)}`,
+    );
+  }
+  if (parseIPv4(dotted) !== value) problems.push(`parseIPv4("${dotted}") is ${parseIPv4(dotted)} rather than ${value}`);
+  agreed += 1;
+
+  for (const prefix of [0, 1, 8, 16, 23, 24, 30, 31, 32]) {
+    const text = `${dotted}/${prefix}`;
+    const here = parseCidr(text);
+    if (here === null) {
+      problems.push(`parseCidr("${text}") refused a well formed block`);
+      continue;
+    }
+    if (here.base !== value || here.prefix !== prefix) {
+      problems.push(`parseCidr("${text}") came back as ${toDotted(here.base)}/${here.prefix}`);
+    }
+
+    /*
+      inCidr against /allocate's containment, which computes it from the
+      network and broadcast addresses rather than by masking. Same question,
+      different arithmetic.
+    */
+    const block = { base: value, prefix };
+    const network = networkOf(block);
+    const broadcast = broadcastOf(block);
+    for (const probe of [network, broadcast, value, nextAddr()]) {
+      const mine = inCidr(toDotted(probe), text);
+      const theirs = contains(block, { base: probe, prefix: 32 });
+      if (mine !== theirs) {
+        problems.push(
+          `inCidr says ${mine} and /allocate's contains says ${theirs} for ${toDotted(probe)} in ${text}`,
+        );
+      }
+    }
+
+    /* The ends are in, and the addresses either side are not. */
+    if (!inCidr(toDotted(network), text)) problems.push(`${text} does not contain its own network address`);
+    if (!inCidr(toDotted(broadcast), text)) problems.push(`${text} does not contain its own broadcast address`);
+    if (prefix > 0 && network > 0 && inCidr(toDotted(network - 1), text)) {
+      problems.push(`${text} contains the address below it`);
+    }
+    if (prefix > 0 && broadcast < 0xffffffff && inCidr(toDotted(broadcast + 1), text)) {
+      problems.push(`${text} contains the address above it`);
+    }
+  }
+
+  /* /0 matches everything, which is the rule an any-any rule depends on. */
+  if (!inCidr(dotted, "0.0.0.0/0")) problems.push(`${dotted} is not inside 0.0.0.0/0`);
+  /* And a bare address is a /32, which is what makes a host rule a host rule. */
+  const bare = parseCidr(dotted);
+  if (bare === null || bare.prefix !== 32) {
+    problems.push(`parseCidr("${dotted}") did not default to a /32`);
+  }
+  if (!inCidr(dotted, dotted)) problems.push(`${dotted} is not inside itself`);
+}
+
+if (agreed < 3000) problems.push(`only ${agreed} addresses were compared against the other implementation`);
+
+/* What both have to refuse, because a lenient parser accepts a typo silently. */
+for (const bad of ["", "10.0.0", "10.0.0.1.2", "10.0.0.256", "ten.0.0.1", "10..0.1"]) {
+  if (parseIPv4(bad) !== null) problems.push(`parseIPv4("${bad}") returned ${parseIPv4(bad)} rather than refusing`);
+}
+for (const bad of ["10.0.0.0/33", "10.0.0.0/x", "10.0.0.0/", "not-an-address/24"]) {
+  if (parseCidr(bad) !== null) problems.push(`parseCidr("${bad}") returned a block rather than refusing`);
+}
+/* A malformed block matches nothing rather than everything, which is the safe direction. */
+for (const bad of ["10.0.0.0/33", "garbage", ""]) {
+  if (inCidr("10.0.0.1", bad)) problems.push(`inCidr treated the malformed block "${bad}" as a match`);
 }
 
 if (problems.length) {

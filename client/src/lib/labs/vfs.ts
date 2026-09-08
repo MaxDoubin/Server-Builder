@@ -108,18 +108,37 @@ const MAX_LINK_HOPS = 16;
  * `rm`, which want the link itself rather than what it points at. Every
  * intermediate component is always followed, as the kernel does.
  */
-export function lookup(root: FsNode, cwd: string, path: string, follow = true): Lookup {
+/**
+ * Resolve a path to a node, following symlinks.
+ *
+ * `hops` is the number of links already traversed on this resolution, and it
+ * has to be a parameter rather than a local, which took a property test to
+ * notice. It was a local, so every recursive call started the count again and
+ * MAX_LINK_HOPS could never be reached: a link pointing at itself recursed
+ * until the stack ran out. In a browser that is a blank page, not an error
+ * message.
+ *
+ * Counting hops across the whole resolution rather than per call is also what
+ * a kernel does. Linux allows forty per pathname, total, for the same reason.
+ */
+export function lookup(
+  root: FsNode,
+  cwd: string,
+  path: string,
+  follow = true,
+  hops = 0,
+): Lookup {
   const absolute = resolvePath(cwd, path);
   const parts = segments(absolute);
   let node = root;
   let here = "";
-  let hops = 0;
+  let used = hops;
 
   for (let i = 0; i < parts.length; i++) {
     if (node.kind === "link") {
-      if (++hops > MAX_LINK_HOPS) return { ok: false, error: "ELOOP" };
+      if (++used > MAX_LINK_HOPS) return { ok: false, error: "ELOOP" };
       const to = resolvePath(parentOf(here), node.target ?? "");
-      const jumped = lookup(root, "/", to, true);
+      const jumped = lookup(root, "/", to, true, used);
       if (!jumped.ok) return jumped;
       node = jumped.node;
       here = jumped.path;
@@ -132,8 +151,8 @@ export function lookup(root: FsNode, cwd: string, path: string, follow = true): 
   }
 
   if (follow && node.kind === "link") {
-    if (++hops > MAX_LINK_HOPS) return { ok: false, error: "ELOOP" };
-    return lookup(root, parentOf(here || "/"), node.target ?? "", true);
+    if (++used > MAX_LINK_HOPS) return { ok: false, error: "ELOOP" };
+    return lookup(root, parentOf(here || "/"), node.target ?? "", true, used);
   }
   return { ok: true, node, path: here === "" ? "/" : here };
 }

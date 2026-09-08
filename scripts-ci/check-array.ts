@@ -8,7 +8,7 @@
  * than as an error.
  */
 
-import { analyse, formatDuration, parityDisksFor, tbToTib, toleranceFor } from "../client/src/lib/array/analyse";
+import { analyse, formatDuration, formatProbability, parityDisksFor, tbToTib, toleranceFor } from "../client/src/lib/array/analyse";
 import { MIN_DISKS, type Level } from "../client/src/lib/array/types";
 import { CONFIGS } from "../client/src/lib/array/data/configs";
 
@@ -184,6 +184,54 @@ for (const config of CONFIGS) {
   if (a.usableTb <= 0 && config.array.level !== "raid0") {
     problems.push(`${config.id}: no usable capacity`);
   }
+}
+
+/* ------------------------------------------------------ what gets rendered */
+
+/*
+  formatProbability() is the number a reader takes away from this page, and it
+  was exported and named by nothing in this file until a check over every logic
+  file found it. Four tiers, each rendering differently, so it is pinned at
+  every boundary and then required to be monotonic, because a higher risk
+  printing as a lower one is worse than a wrong unit.
+*/
+for (const [p, want] of [
+  [1, "essentially certain"],
+  [0.995, "essentially certain"],
+  [0.9949, "99.5 per cent"],
+  [0.5, "50.0 per cent"],
+  [0.01, "1.0 per cent"],
+  [0.0099, "0.990 per cent"],
+  [0.0001, "0.010 per cent"],
+  [0.00009, "about 1 in 11,111"],
+  [0.000001, "about 1 in 1,000,000"],
+  [0, "about 1 in 1,000,000,000,000"],
+] as [number, string][]) {
+  if (formatProbability(p) !== want) {
+    problems.push(`formatProbability(${p}) reads "${formatProbability(p)}" rather than "${want}"`);
+  }
+}
+
+/*
+  Monotonic in the reader's sense: as the probability rises the rendering must
+  never describe a smaller risk. Read back through whichever form was used.
+*/
+const readProbability = (shown: string): number => {
+  if (shown === "essentially certain") return 1;
+  const percent = /^([\d.]+) per cent$/.exec(shown);
+  if (percent) return Number(percent[1]) / 100;
+  const odds = /^about 1 in ([\d,]+)$/.exec(shown);
+  if (odds) return 1 / Number(odds[1].replace(/,/g, ""));
+  problems.push(`formatProbability produced "${shown}", which is none of its three forms`);
+  return Number.NaN;
+};
+let previousProbability = -1;
+for (const p of [0, 1e-9, 1e-6, 0.00005, 0.0001, 0.001, 0.0099, 0.01, 0.1, 0.5, 0.9, 0.99, 0.995, 1]) {
+  const back = readProbability(formatProbability(p));
+  if (Number.isFinite(back) && back < previousProbability) {
+    problems.push(`formatProbability went backwards: ${p} reads "${formatProbability(p)}"`);
+  }
+  if (Number.isFinite(back)) previousProbability = back;
 }
 
 if (problems.length) {
