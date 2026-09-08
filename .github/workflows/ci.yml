@@ -541,6 +541,19 @@ jobs:
       - name: Every model function is exercised by its gate
         run: node scripts-ci/check-model-coverage.mjs
 
+      # And the one beside it. That gate asks whether anything exercises a
+      # model function; this one asks whether the page uses the answer the
+      # model computed, or has its own. Two surfaces had their own: a
+      # hand-typed index into the options array, bounds-checked and otherwise
+      # believed. Repointing /resolve's at "The mail server is refusing
+      # connections" passed every gate, on the one exercise whose subject is
+      # that the symptom does not tell you which fault you have. The
+      # denominator is the point: an earlier version counted five of five by
+      # looking for names it already knew, and neither broken surface was in
+      # the five.
+      - name: Answers are computed, not declared
+        run: node scripts-ci/check-answer-keys.mjs
+
       # And the gate that would have caught the four above being absent. Four
       # gates were written in one day, each blinded a dozen ways to prove it
       # caught what it was for, and none was added to this file: forty-six

@@ -10,7 +10,7 @@
  * per case, so nothing here starts failing when the calendar moves.
  */
 
-import type { Certificate, TrustStore } from "../types";
+import type { Certificate, ChainFault, TrustStore, Validation } from "../types";
 
 export const MODERN_STORE: TrustStore = {
   name: "a current browser",
@@ -116,6 +116,37 @@ const leaf = (
   ...over,
 });
 
+/**
+ * One thing somebody might conclude from the symptom.
+ *
+ * `names` is the fault this claim asserts and `blames` the party it says has
+ * to act, and between them they are how the page knows which option is
+ * right: the validator runs, and the option asserting what it found is the
+ * answer. Nothing in the data says which one that is.
+ *
+ * This replaced an `answer` index typed in by hand and checked only for
+ * being inside the array. Repointing it at "The certificate is too
+ * short-lived" passed CI and the page marked that right.
+ *
+ * `blames` is load-bearing rather than decoration, and two cases need it.
+ * A certificate whose validity starts tomorrow is not-yet-valid whether the
+ * client's clock is behind or the CA issued it with the wrong start date, and
+ * those are different options: the validator tells them apart by who has to
+ * fix it, and so does the reader. Where the fault alone is enough, `blames`
+ * still has to agree, which is a free second assertion.
+ *
+ * `null` names nothing. "Chrome is ignoring an error" and "the wildcard is in
+ * the CN rather than a SAN" are things people say that this validator does
+ * not model at all: it reads subject alternative names and ignores the common
+ * name, exactly as a browser has since 2017. A claim about the common name
+ * can therefore never match, which is what a distractor should do.
+ */
+export interface Option {
+  claim: string;
+  names: ChainFault | null;
+  blames: Validation["owner"] | null;
+}
+
 export interface ChainCase {
   id: string;
   symptom: string;
@@ -127,8 +158,7 @@ export interface ChainCase {
   extra?: Certificate[];
   fault: string;
   owner: string;
-  options: string[];
-  answer: number;
+  options: Option[];
   explain: string[];
 }
 
@@ -147,12 +177,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "ok",
     owner: "nobody",
     options: [
-      "Valid",
-      "The root was not presented, so it cannot be trusted",
-      "The certificate is too short-lived",
-      "The intermediate should have been first",
+      { claim: "Valid", names: "ok", blames: "nobody" },
+      { claim: "The root was not presented, so it cannot be trusted", names: "untrusted-root", blames: "client" },
+      { claim: "The certificate is too short-lived", names: null, blames: null },
+      { claim: "The intermediate should have been first", names: "out-of-order", blames: "server" },
     ],
-    answer: 0,
     explain: [
       "Two certificates presented, leaf then intermediate, and the root comes from the client's own store. That is the correct arrangement: a server that also sends the root is wasting a kilobyte on every handshake, because a client that does not already have the root would not trust it for being sent one.",
       "The ninety-day lifetime is not a problem either. It is now the normal case, and it exists because a certificate you have to renew constantly is a certificate you have automated.",
@@ -171,12 +200,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "missing-intermediate",
     owner: "server",
     options: [
-      "The certificate has expired",
-      "The server is not sending the intermediate",
-      "The hostname does not match",
-      "Chrome is ignoring an error",
+      { claim: "The certificate has expired", names: "expired", blames: "server" },
+      { claim: "The server is not sending the intermediate", names: "missing-intermediate", blames: "server" },
+      { claim: "The hostname does not match", names: "name-mismatch", blames: "requester" },
+      { claim: "Chrome is ignoring an error", names: null, blames: null },
     ],
-    answer: 1,
     explain: [
       "The server sends only the leaf. The client has the root and does not have Public Issuing CA 7, so the path cannot be built.",
       "It works in a browser because browsers cache intermediates they have seen elsewhere and several will fetch a missing one from the URL in the certificate. curl does neither. Neither does most server-to-server tooling, which is why the first thing to break is a webhook and not a person.",
@@ -198,12 +226,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "expired-in-chain",
     owner: "ca",
     options: [
-      "The leaf is still the old one",
-      "An expired intermediate is being sent above a leaf that is in date",
-      "The clock on the server is wrong",
-      "The root has expired",
+      { claim: "The leaf is still the old one", names: "expired", blames: "server" },
+      { claim: "An expired intermediate is being sent above a leaf that is in date", names: "expired-in-chain", blames: "ca" },
+      { claim: "The clock on the server is wrong", names: null, blames: null },
+      { claim: "The root has expired", names: "expired-in-chain", blames: "client" },
     ],
-    answer: 1,
     explain: [
       "The leaf was issued a week ago and expires in December. It is not the problem. Public Issuing CA 4 expired in March, and the server is still sending it.",
       "This is why renewing did not help. Most renewal tooling writes a new leaf into the same chain file and leaves whatever was above it, so an intermediate that quietly expired stays there through renewal after renewal.",
@@ -225,12 +252,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "name-mismatch",
     owner: "requester",
     options: [
-      "The wildcard does not cover the bare domain",
-      "The certificate has expired",
-      "The intermediate is missing",
-      "The wildcard is in the CN rather than a SAN",
+      { claim: "The wildcard does not cover the bare domain", names: "name-mismatch", blames: "requester" },
+      { claim: "The certificate has expired", names: "expired", blames: "server" },
+      { claim: "The intermediate is missing", names: "missing-intermediate", blames: "server" },
+      { claim: "The wildcard is in the CN rather than a SAN", names: null, blames: null },
     ],
-    answer: 0,
     explain: [
       "A wildcard covers exactly one label. *.northbay.example matches www.northbay.example and does not match northbay.example, and it does not match a.b.northbay.example either.",
       "Both of those surprise people and both are deliberate. The bare domain is not a subdomain of itself, and allowing a wildcard to span dots would make a single certificate for *.example cover the whole namespace under it.",
@@ -251,12 +277,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "untrusted-root",
     owner: "client",
     options: [
-      "The server needs a different certificate",
-      "The client's trust store does not contain the root",
-      "The kiosk's clock is wrong",
-      "The intermediate is missing",
+      { claim: "The server needs a different certificate", names: null, blames: null },
+      { claim: "The client's trust store does not contain the root", names: "untrusted-root", blames: "client" },
+      { claim: "The kiosk's clock is wrong", names: null, blames: null },
+      { claim: "The intermediate is missing", names: "missing-intermediate", blames: "server" },
     ],
-    answer: 1,
     explain: [
       "The chain is correct and complete and terminates at Public Root G2, which this device has never heard of because it has not had an update since 2019.",
       "Nothing the server does fixes this, and that is the part worth internalising. Reissuing the certificate produces another one under the same root. Adding intermediates changes nothing. The missing piece is in the client and only the client can supply it.",
@@ -278,12 +303,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "not-yet-valid",
     owner: "client",
     options: [
-      "The certificate was issued with the wrong start date",
-      "The client's clock is behind",
-      "The CA has not published the certificate yet",
-      "The intermediate is not valid yet",
+      { claim: "The certificate was issued with the wrong start date", names: "not-yet-valid", blames: "ca" },
+      { claim: "The client's clock is behind", names: "not-yet-valid", blames: "client" },
+      { claim: "The CA has not published the certificate yet", names: null, blames: null },
+      { claim: "The intermediate is not valid yet", names: "not-yet-valid", blames: "ca" },
     ],
-    answer: 1,
     explain: [
       "A certificate that is not valid yet is almost never a certificate problem. Somebody's clock is wrong, and it is nearly always the client's, because a server with a wrong clock breaks in far louder ways first.",
       "A flat CMOS battery, a device restored from an image, a virtual machine resumed from a snapshot: all of them come up in the past, and all of them produce this exact error against every site at once.",
@@ -304,12 +328,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "out-of-order",
     owner: "server",
     options: [
-      "The intermediate is presented before the leaf",
-      "The leaf has expired",
-      "The Java client has an old trust store",
-      "The health check is using the wrong hostname",
+      { claim: "The intermediate is presented before the leaf", names: "out-of-order", blames: "server" },
+      { claim: "The leaf has expired", names: "expired", blames: "server" },
+      { claim: "The Java client has an old trust store", names: "untrusted-root", blames: "client" },
+      { claim: "The health check is using the wrong hostname", names: "name-mismatch", blames: "requester" },
     ],
-    answer: 0,
     explain: [
       "The server sends the intermediate first. TLS says the leaf comes first and each subsequent certificate certifies the one before it, and this chain is the other way round.",
       "Browsers repair it, because browsers repair almost everything, and strict clients do not. That split is the signature of the fault: if a thing is broken only in the tooling and never in a browser, suspect the chain rather than the certificate.",
@@ -330,12 +353,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "untrusted-root",
     owner: "client",
     options: [
-      "The internal CA root is not installed on that machine",
-      "The certificate is self-signed",
-      "The certificate has expired",
-      "The hostname does not match",
+      { claim: "The internal CA root is not installed on that machine", names: "untrusted-root", blames: "client" },
+      { claim: "The certificate is self-signed", names: "self-signed", blames: "server" },
+      { claim: "The certificate has expired", names: "expired", blames: "server" },
+      { claim: "The hostname does not match", names: "name-mismatch", blames: "requester" },
     ],
-    answer: 0,
     explain: [
       "The chain is complete and correct and ends at Northbay Root CA X1, which is a private CA. Managed laptops have it because a management tool put it there; a contractor's machine has no reason to.",
       "It is not a self-signed certificate, and the distinction matters when someone asks. A self-signed certificate is its own issuer and vouches for nothing. This is a properly issued certificate under a root that this particular client does not happen to trust, which is a fact about the audience, not about the certificate.",
@@ -355,12 +377,11 @@ export const CHAIN_CASES: ChainCase[] = [
     fault: "expired-in-chain",
     owner: "ca",
     options: [
-      "Yes, the leaf's own signature is SHA-1",
-      "No, it is the root's self-signature, which nothing verifies",
-      "The chain has a bigger problem than the algorithm",
-      "No, SHA-1 is still acceptable for certificates",
+      { claim: "Yes, the leaf's own signature is SHA-1", names: "weak-signature", blames: "ca" },
+      { claim: "No, it is the root's self-signature, which nothing verifies", names: null, blames: null },
+      { claim: "The chain has a bigger problem than the algorithm", names: "expired-in-chain", blames: "ca" },
+      { claim: "No, SHA-1 is still acceptable for certificates", names: null, blames: null },
     ],
-    answer: 2,
     explain: [
       "The SHA-1 in the scanner output is Public Root G1's signature on itself, and a root's self-signature is never verified by anything: a root is trusted because it is in the store, not because of its maths. On that narrow question the scanner is wrong.",
       "But read the whole trace before agreeing with the reassuring answer. Public Root G1 expired on 30 September 2021, and this device still trusts it, which is the thing worth acting on.",

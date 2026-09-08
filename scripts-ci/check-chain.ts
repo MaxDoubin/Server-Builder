@@ -13,6 +13,7 @@
 
 import { CHAIN_CASES } from "../client/src/lib/chain/data/cases";
 import { validate } from "../client/src/lib/chain/validate";
+import { correctOption, matching } from "../client/src/lib/chain/answer";
 import { at, nameMatches } from "../client/src/lib/chain/types";
 
 const problems: string[] = [];
@@ -40,11 +41,27 @@ for (const item of CHAIN_CASES) {
   }
   if (result.steps.length === 0) problems.push(`${item.id}: no steps, so there is nothing to read`);
   if (item.options.length < 3) problems.push(`${item.id}: fewer than three options is not a choice`);
-  if (item.answer < 0 || item.answer >= item.options.length) {
-    problems.push(`${item.id}: the answer index is outside the options`);
-  }
-  if (new Set(item.options).size !== item.options.length) {
+  if (new Set(item.options.map((option) => option.claim)).size !== item.options.length) {
     problems.push(`${item.id}: two options say the same thing`);
+  }
+
+  /*
+    Exactly one option has to assert what the validator found, because that is
+    how the page picks the answer. None leaves the reader four wrong options;
+    more than one means two of them are the same answer in different words and
+    the page marks neither right.
+
+    This replaced a bounds check on a hand-typed index, which is to say it
+    replaced nothing: moving that index to "The certificate is too
+    short-lived" passed the gate and the page then marked it correct.
+  */
+  const hits = matching(item);
+  if (hits.length !== 1) {
+    problems.push(
+      `${item.id}: ${hits.length} of ${item.options.length} options assert ${result.fault} by` +
+        ` ${result.owner}, which is what the validator finds. Exactly one has to.` +
+        (hits.length > 1 ? ` These do: ${hits.map((hit) => `"${hit.claim}"`).join(", ")}.` : ""),
+    );
   }
   if (item.explain.length < 2) problems.push(`${item.id}: the explanation is too thin`);
 
@@ -60,6 +77,40 @@ for (const item of CHAIN_CASES) {
       }
     }
   }
+}
+
+/*
+  correctOption has to refuse rather than guess.
+
+  The loop above fails the build when a case has zero matches or several, so
+  the corpus can never exercise the branch where the page has no answer to
+  show. If that branch returned the first option, everything here would still
+  pass and a mistagged case would ship a confident wrong answer. Both states
+  are therefore built on purpose, from a case that is fine.
+
+  The third assertion is the one that would have caught the owner half being
+  dropped: with blames ignored, the-clock has three options asserting
+  not-yet-valid and the reader is told none of them is right.
+*/
+const sample = CHAIN_CASES[0];
+const found = validate(sample.presented, sample.store, sample.hostname, sample.now, sample.extra ?? []);
+const nothingNames = { ...sample, options: sample.options.map((option) => ({ ...option, names: null })) };
+if (correctOption(nothingNames) !== null) {
+  problems.push("correctOption returns an option when none of them asserts what the validator found");
+}
+const allName = {
+  ...sample,
+  options: sample.options.map((option) => ({ ...option, names: found.fault, blames: found.owner })),
+};
+if (correctOption(allName) !== null) {
+  problems.push("correctOption returns an option when several of them assert what the validator found");
+}
+const wrongParty = {
+  ...sample,
+  options: sample.options.map((option) => ({ ...option, names: found.fault, blames: "requester" as const })),
+};
+if (found.owner !== "requester" && matching(wrongParty).length !== 0) {
+  problems.push("matching accepts an option that names the right fault and blames the wrong party");
 }
 
 if (!CHAIN_CASES.some((item) => item.fault === "ok")) {

@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
-import { CASES, WORLD, resolve, type Case, type RRType } from "@/lib/resolve/index";
+import { CASES, WORLD, correctOption, resolve, type Case, type RRType } from "@/lib/resolve/index";
 import { pluralise } from "@/lib/plural";
 import { PractiseStage } from "@/components/practise/PractiseStage";
 import { recordSolvedResolves } from "@/lib/resolve/progress";
@@ -254,6 +254,12 @@ function CaseCard({
 }) {
   const [picked, setPicked] = useState<number | null>(null);
 
+  /*
+    The right option is whichever names what the resolver reaches, worked out
+    here rather than read off the case. CI proves every case has exactly one.
+  */
+  const answer = useMemo(() => correctOption(item), [item]);
+
   return (
     <li className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
       <p className="font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone))]">
@@ -271,7 +277,7 @@ function CaseCard({
       <div className="mt-3 flex flex-col gap-2">
         {item.options.map((option, index) => {
           const chosen = picked === index;
-          const right = index === item.answer;
+          const right = option === answer;
           const show = picked !== null;
           const tone = !show
             ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -282,18 +288,18 @@ function CaseCard({
                 : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]";
           return (
             <button
-              key={option}
+              key={option.claim}
               type="button"
               onClick={() => {
                 setPicked(index);
-                if (index === item.answer) recordSolvedResolves(item.id);
+                if (option === answer) recordSolvedResolves(item.id);
               }}
               disabled={picked !== null}
               aria-pressed={chosen}
               data-testid={`resolve-option-${item.id}-${index}`}
               className={`rounded-xl border px-4 py-2.5 text-left font-mono-tight text-[12.5px] leading-snug transition-colors ${tone}`}
             >
-              {option}
+              {option.claim}
             </button>
           );
         })}
@@ -302,7 +308,7 @@ function CaseCard({
       {picked !== null ? (
         <div className="mt-4 border-t border-[hsl(var(--brand-iron))] pt-3" data-testid={`resolve-explain-${item.id}`}>
           <p className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
-            · {picked === item.answer ? "That is it" : "Not that one"}
+            · {picked !== null && item.options[picked] === answer ? "That is it" : "Not that one"}
           </p>
           {item.explain.map((paragraph, index) => (
             <p
