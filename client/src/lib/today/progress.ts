@@ -24,6 +24,7 @@ import { CASES as SPACES } from "@/lib/space/index";
 import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as NATS } from "@/lib/nat/index";
+import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -45,6 +46,7 @@ import { loadSolvedSpaces } from "@/lib/space/progress";
 import { loadSolvedOoms } from "@/lib/oom/progress";
 import { loadSolvedUnits } from "@/lib/units/progress";
 import { loadSolvedNats } from "@/lib/nat/progress";
+import { loadSolvedAlerts } from "@/lib/alerts/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -120,6 +122,13 @@ export function readProgress(): Line[] {
       done: loadSolvedCaches().filter((slug) => CACHES.some((item) => item.slug === slug)).length,
       total: CACHES.length,
       noun: "read right",
+    },
+    {
+      label: "Alerting rules",
+      href: "/alerts",
+      done: loadSolvedAlerts().filter((slug) => ALERTS.some((item) => item.slug === slug)).length,
+      total: ALERTS.length,
+      noun: "called right",
     },
     {
       label: "Address translation",
