@@ -24,6 +24,7 @@ import { FINDINGS as PATCHES } from "@/lib/patch/index";
 import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
+import { CASES as SPACES } from "@/lib/space/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -68,6 +69,7 @@ const OFFSET = {
   retry: 67,
   vlan: 71,
   clock: 73,
+  space: 79,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -226,6 +228,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Follow one frame across two configurations that are each individually correct, and say which VLAN it lands in.",
       href: "/vlan",
       outOf: VLANS.length,
+    });
+  }
+
+  const volume = pickFor(SPACES, day, OFFSET.space);
+  if (volume) {
+    out.push({
+      surface: "space",
+      eyebrow: "Compare",
+      title: volume.name,
+      blurb: "One error message, six things it can mean. Say which two numbers disagree and what to do about it.",
+      href: "/space",
+      outOf: SPACES.length,
     });
   }
 

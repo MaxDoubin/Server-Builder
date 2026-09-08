@@ -27,6 +27,7 @@ import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invert
 import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as retryMs, orphaned as retryOrphaned, requestsAt, truncatingCaller } from "../client/src/lib/retry/index";
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
+import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -856,6 +857,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/retry">Three retries, four layers</a>, how one button press becomes eighty-one queries.</li>
     <li><a href="${SITE_URL}/vlan">The frame that arrived untagged</a>, native VLAN mismatches and the wire that says nothing.</li>
     <li><a href="${SITE_URL}/clock">Four errors, none of which says the word time</a>, how wrong the clock is, worked backwards from what broke.</li>
+    <li><a href="${SITE_URL}/space">No space left on device</a>, six filesystems and six different things that message means.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2143,6 +2145,7 @@ ${JSON.stringify({
     ["Three retries, four layers", "/retry"],
     ["The frame that arrived untagged", "/vlan"],
     ["Four errors, none of which says the word time", "/clock"],
+    ["No space left on device", "/space"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2807,6 +2810,114 @@ ${path.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     the habit.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/blog/vlan-segmentation-guide", "VLAN segmentation"]])}
+</main>`,
+  });
+
+  // ── no space left on device ──
+  /*
+    Every figure in the static body is computed, including the terminal
+    output, because the whole claim of the page is that the numbers are the
+    diagnosis. A hand-typed df output here would be a fabrication of the one
+    thing being taught.
+  */
+  const spaceCauses = new Set(SPACE_CASES.map((item) => spaceFailure(item.filesystem, item.write)));
+  const spaceDescription =
+    "One error message and six filesystems, of which two are not out of space at all and one is the " +
+    "filesystem working exactly as designed. df reports blocks accounted to the filesystem, not what a " +
+    "user may consume, not what a tree contains and not what is allocated to a file with no name, so the " +
+    `diagnosis is a disagreement between two numbers. ${SPACE_CASES.length} cases, ${spaceCauses.size} distinct causes, ` +
+    "each with a different fix.";
+
+  await writePage("space", base, {
+    title: "No Space Left on Device | Max Doubin",
+    description: spaceDescription,
+    canonical: `${SITE_URL}/space`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "No space left on device",
+  description: spaceDescription,
+  url: `${SITE_URL}/space`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Diagnosing ENOSPC on Linux: why df and du disagree when a process holds a deleted file open, why a filesystem with space can refuse a new file when its inodes are exhausted, what the ext4 root reserve does to a full filesystem, why a quota reports EDQUOT and is invisible to df, and how data can fill a volume from under a mount point",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>No space left on device</h1>
+  <p>
+    ${SPACE_CASES.length} filesystems, one message, and ${spaceCauses.size} different things to do
+    about it. Two of the ${SPACE_CASES.length} are not out of space at all, and one of them is the
+    filesystem working exactly as it was designed to.
+  </p>
+  <p>
+    The instinct is to look at <code>df</code>, and <code>df</code> is the tool most likely to
+    mislead you here, because it answers a different question from the one you asked. It reports
+    blocks accounted to the filesystem. It does not report what a given user may consume, or what
+    a directory tree contains, or what is still allocated to a file with no name. So the diagnosis
+    is never a number. It is a disagreement between two numbers.
+  </p>
+  <h2>The pairs, and what each one means</h2>
+  <ul>
+    <li><code>df</code> full and <code>du</code> agreeing with it: the data is there and the volume is too small.</li>
+    <li><code>df</code> full and <code>du</code> much smaller: blocks held by a file with no name, or by a directory behind a mount. Both are unreachable and neither shows up in a tidy-up.</li>
+    <li><code>df</code> not full and <code>df -i</code> full: out of inodes, with space to spare. Space and inodes are independent budgets and a new file needs both.</li>
+    <li><code>df</code> full for a service and root writing fine: the reserved blocks, which exist so that a full filesystem can still be administered.</li>
+    <li><code>df</code> fine and one user unable to write: a quota, which <code>df</code> knows nothing about and which reports EDQUOT rather than ENOSPC.</li>
+  </ul>
+  <h2>The filesystems</h2>
+${SPACE_CASES.map((item) => {
+  const fs = item.filesystem;
+  const cause = spaceFailure(fs, item.write)!;
+  const narrows = spaceCandidates(fs, item.write);
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <pre>$ df ${esc(fs.mount)}
+Filesystem  Size  Used  Avail  Use%  Mounted on
+${esc(fs.mount.padEnd(11))} ${spaceHuman(fs.totalBlocks)}  ${spaceHuman(dfUsed(fs))}  ${spaceHuman(dfAvailable(fs))}  ${dfPercent(fs)}%  ${esc(fs.mount)}
+
+$ df -i ${esc(fs.mount)}
+Inodes: ${fs.usedInodes.toLocaleString()} of ${fs.totalInodes.toLocaleString()} used, ${inodePercent(fs)}%
+
+$ du -sx ${esc(fs.mount)}
+${spaceHuman(duTotal(fs))}\t${esc(fs.mount)}
+
+$ sudo -u ${esc(item.write.user)} ${esc(item.write.what)}
+${spaceErrno(cause)}: ${spaceErrno(cause) === "EDQUOT" ? "Disk quota exceeded" : "No space left on device"}</pre>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")}
+    </ol>
+    <p>
+      It is ${esc(SPACE_CAUSE[cause])}, reported as ${spaceErrno(cause)}. The tell is that
+      ${esc(spaceTell(fs, item.write, cause))}, and ${esc(item.write.user)} has
+      ${spaceHuman(spaceAvailableTo(fs, item.write.user))} available here against the
+      ${spaceHuman(dfAvailable(fs))} that df offers.
+      ${narrows.causes.length > 1 ? `Two numbers do not settle this one: df and du narrow it to ${narrows.causes.map((c) => esc(SPACE_CAUSE[c])).join(" or ")}, with ${spaceHuman(spaceInvisible(fs))} accounted for and unreachable either way, and ${esc(narrows.separator)}.` : ""}
+    </p>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>The four commands, in order</h2>
+  <ol>
+    <li><code>df -h</code> and <code>df -i</code> together, always. The second one costs nothing and rules out the cause nobody thinks of.</li>
+    <li><code>du -sx</code> on the mount point. The <code>-x</code> matters: without it du crosses into anything mounted below and counts the wrong filesystem.</li>
+    <li><code>lsof +L1</code>, or <code>ls -l /proc/*/fd | grep deleted</code>. This is the one that explains a df and du gap most of the time.</li>
+    <li><code>repquota -a</code>, if a single user is affected and nobody else is.</li>
+  </ol>
+  <p>
+    And if df and du disagree and lsof finds nothing, bind mount the filesystem root somewhere
+    else and walk underneath the mount points. Data written before a volume was mounted is still
+    on the underlying filesystem, still spending its blocks, and unreachable by any path.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
 </main>`,
   });
 
@@ -5007,6 +5118,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/retry`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/vlan`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/clock`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/space`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
