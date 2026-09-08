@@ -143,6 +143,10 @@ const CinematicCapture = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCapture").then((m) => ({ default: m.CinematicCapture })),
 );
 
+const CinematicResolve = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicResolve").then((m) => ({ default: m.CinematicResolve })),
+);
+
 const CinematicFirewalls = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicFirewalls").then((m) => ({ default: m.CinematicFirewalls })),
 );
@@ -738,6 +742,11 @@ function AnimatedRoutes() {
           <Route path="/capture/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCapture />
+            </Suspense>
+          </Route>
+          <Route path="/resolve">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicResolve />
             </Suspense>
           </Route>
           <Route path="/firewall">

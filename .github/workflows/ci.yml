@@ -335,6 +335,15 @@ jobs:
       - name: Firewall exercises
         run: npx tsx scripts-ci/check-firewall.ts
 
+      # Every DNS case names an outcome, and the exercise is learning to tell
+      # those outcomes apart, so a case that says "lame delegation" while the
+      # resolver reaches no-glue teaches the wrong lesson while looking
+      # entirely correct. This runs each one and compares. It also refuses any
+      # name outside a reserved suffix or address outside a documentation
+      # range, so nothing copied out of the page reaches anything real.
+      - name: DNS resolution cases
+        run: npx tsx scripts-ci/check-resolve.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
