@@ -97,44 +97,10 @@ export function useScrollReveal<T extends HTMLElement>(
       return;
     }
 
-    const { ScrollTrigger } = ensureGsapRegistered();
     const ctx = gsap.context(() => {
       unmountRef.current = build({ gsap });
     }, target.current);
-
-    /*
-      Refresh once the layout has stopped moving, and this is not optional.
-
-      A ScrollTrigger records its start position when it is created. On this
-      home page the hero is a lazily loaded 3D scene, three acts arrive behind
-      Suspense, and the display font loads after first paint, so every one of
-      those triggers is measured against a layout that then changes underneath
-      it. A trigger whose start ends up somewhere the reader will never cross
-      simply never fires.
-
-      That would be a cosmetic problem if the reveals animated only position.
-      They animate opacity from zero, so a trigger that never fires leaves the
-      content permanently invisible. It was doing exactly that: at 768px the
-      biography, the telemetry section and the practise grid were all sitting
-      at opacity 0 after scrolling the whole page, with nothing in the console
-      and nothing failing.
-
-      This site has met this failure before, and the colophon already says the
-      rule it produced: a transition is decoration, and it must never be the
-      thing that decides whether the page is visible. The refresh is the fix
-      for the measurement; the acts should also stop animating opacity from
-      zero, and the one added with this change does not.
-    */
-    const refresh = () => ScrollTrigger.refresh();
-    const raf = window.requestAnimationFrame(refresh);
-    const settled = window.setTimeout(refresh, 600);
-    window.addEventListener("load", refresh);
-    document.fonts?.ready.then(refresh).catch(() => {});
-
     return () => {
-      window.cancelAnimationFrame(raf);
-      window.clearTimeout(settled);
-      window.removeEventListener("load", refresh);
       if (typeof unmountRef.current === "function") unmountRef.current();
       ctx.revert();
     };

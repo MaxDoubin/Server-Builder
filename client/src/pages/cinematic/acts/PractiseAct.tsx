@@ -125,16 +125,18 @@ export function PractiseAct() {
   /*
     Position only. Nothing here animates opacity, and that is deliberate.
 
-    A gsap.from that starts at opacity 0 hands the visibility of the content
-    to a ScrollTrigger firing, and a trigger measured against a layout that
-    later shifts does not always fire. I wrote this act with an opacity fade
-    first and then found the whole grid sitting invisible at 768px, along with
-    two sections that predate it.
+    A gsap.from starting at opacity 0 hands the visibility of the content to a
+    ScrollTrigger firing. Scrolling through the page, it fires. Arriving at the
+    section without scrolling through it does not always: with a fade in place
+    this grid sat at exactly opacity 0 at 390px when the test jumped straight
+    to it rather than scrolling down. A reader following an anchor, or one
+    whose browser restored a scroll position, arrives the same way.
 
-    The shared helper now refreshes ScrollTrigger once the layout settles,
-    which fixes the measurement. This is the second half: even if the trigger
-    never runs, every word here is on screen, because the only thing the
-    animation can fail to undo is a six pixel offset.
+    SmoothScrollProvider already re-measures triggers on resize, on load and
+    when fonts resolve, which is the right place for that and covers the
+    layout-shift case properly. This is the other half and it is cheap: even
+    if the trigger never runs, every word here is on screen, because the most
+    the animation can fail to undo is a six pixel offset.
   */
   useScrollReveal(
     rootRef,
