@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 253 of them. Regenerate with script/generatePostIndex.ts.
+ * 254 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-authentication-passed-anyway",
+    title: "The Authentication Passed Anyway",
+    date: "2026-09-08",
+    tags: ["security","email","training"],
+    excerpt: "I built a phishing triage inbox with fourteen messages in it. Eight of the nine hostile ones pass SPF, DKIM and DMARC cleanly. That is not a flaw in the exercise, it is the actual state of email, and it decides what the exercise has to teach.",
+    coverImage: "/images/blog/the-authentication-passed-anyway.jpg",
+    wordCount: 1282,
+  },
   {
     slug: "sixty-five-files-nothing-imported",
     title: "Sixty-Five Files That Nothing Imported",
@@ -2516,10 +2525,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 955;
+export const CITATION_COUNT = 958;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1114;
+export const CHECKED_URL_COUNT = 1117;

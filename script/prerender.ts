@@ -52,6 +52,7 @@ const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
 const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
 const { LABS } = await import("../client/src/lib/labs/labs.ts");
 const { CHALLENGES } = await import("../client/src/lib/challenges/index.ts");
+const { MESSAGES: TRIAGE_MESSAGES } = await import("../client/src/lib/triage/index.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2337,6 +2338,90 @@ ${
     });
   }
 
+  // ── phishing triage inbox ──
+  /*
+    One page, and the static body is the inbox as a list plus what each message
+    turns on. The bodies and headers are interactive and stay that way; what a
+    crawler gets is the shape of the exercise and the vocabulary, which is the
+    part anyone is actually searching for.
+  */
+  const triagePhish = TRIAGE_MESSAGES.filter((m) => m.verdict === "phish").length;
+  const triageDescription =
+    `Fourteen messages with their real headers, ${triagePhish} of them hostile. Call each one, then ` +
+    "say which signal settles it. Five are genuine mail wearing the things people are taught to fear.";
+
+  await writePage("triage", base, {
+    title: "Phishing Triage Inbox | Max Doubin",
+    description: triageDescription,
+    canonical: `${SITE_URL}/triage`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Phishing triage inbox",
+  description: triageDescription,
+  url: `${SITE_URL}/triage`,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  teaches: [
+    "Reading SPF, DKIM and DMARC results",
+    "Telling a lookalike domain from a real one",
+    "Distinguishing a hard signal from a red herring",
+  ],
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Phishing triage</h1>
+  <p>
+    One morning of mail for a school district technician. ${TRIAGE_MESSAGES.length}
+    messages, ${triagePhish} of them hostile, every header the real thing. Call
+    each one, then say which signal settles it.
+  </p>
+  <p>
+    ${TRIAGE_MESSAGES.length - triagePhish} are genuine, and they are the reason
+    this is worth doing. They arrive wearing the things people are taught to
+    fear: a mismatched envelope sender, a Reply-To somewhere else, a shortened
+    link, a request to change bank details, a broken DKIM signature. Reporting
+    one of those costs an afternoon and a little of the credibility the next
+    real report will need.
+  </p>
+  <h2>What settles a message, and what does not</h2>
+  <p>
+    The hard signals are the ones that decide it on their own: an
+    authentication failure the domain's own DMARC policy stands behind, a
+    display name asserting a sender the address does not support, a
+    registrable domain imitating a brand, a link whose text names one host and
+    whose target is another, and an attachment whose type is the delivery
+    mechanism.
+  </p>
+  <p>
+    The rest look alarming and prove nothing. An envelope sender that differs
+    from the From address is how nearly all bulk mail works. A Reply-To
+    pointing elsewhere is how every ticketing system works. Suppliers do
+    change banks, real work is often urgent, and SPF and DKIM break on
+    forwarding and mailing lists every day in mail nobody forged.
+  </p>
+  <h2>The inbox</h2>
+  <ul>
+${TRIAGE_MESSAGES.map(
+  (message) =>
+    `    <li>${esc(message.subject)} &mdash; from ${esc(message.displayName)} ` +
+    `&lt;${esc(message.fromAddress)}&gt;</li>`,
+).join("\n")}
+  </ul>
+  <p>
+    Every address and host in this inbox is invented, and the ones that imitate
+    a brand sit under reserved names that resolve to nothing.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/challenges", "Capture the flag"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
   // ── capture the flag challenges ──
   /*
     The artefacts are printed into the static body deliberately: a hex dump
@@ -3426,6 +3511,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/challenges`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/triage`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },

@@ -23,6 +23,8 @@ import { LABS } from "@/lib/labs/labs";
 import { loadSolved } from "@/lib/labs/progress";
 import { CHALLENGES } from "@/lib/challenges";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
+import { MESSAGES } from "@/lib/triage/index";
+import { loadJudgements } from "@/lib/triage/progress";
 import { CAPTURES } from "@/lib/capture/index";
 import { DECKS } from "@/lib/flashcardDecks";
 import { EXAMS } from "@/lib/examObjectives";
@@ -55,6 +57,7 @@ export function CinematicPractise() {
   const [foundEndings, setFoundEndings] = useState(0);
   const [solvedLabs, setSolvedLabs] = useState(0);
   const [solvedChallenges, setSolvedChallenges] = useState(0);
+  const [triaged, setTriaged] = useState(0);
 
   useEffect(() => {
     const found = loadFound();
@@ -68,6 +71,8 @@ export function CinematicPractise() {
     setSolvedChallenges(
       loadSolvedChallenges().filter((slug) => CHALLENGES.some((c) => c.slug === slug)).length,
     );
+    const judged = loadJudgements();
+    setTriaged(MESSAGES.filter((message) => judged[message.id]?.right).length);
     setMounted(true);
   }, []);
 
@@ -134,6 +139,20 @@ export function CinematicPractise() {
         `${totals.questions} questions`,
       ],
       progress: null,
+    },
+    {
+      href: "/triage",
+      eyebrow: "Judge",
+      title: "Phishing triage",
+      blurb:
+        "One morning of mail with every header intact. Nine are hostile and five are genuine mail wearing the things people are taught to fear, which cost the same to get wrong.",
+      reachFor: "you want to read headers rather than vibes",
+      stats: [
+        `${MESSAGES.length} messages`,
+        `${MESSAGES.filter((m) => m.verdict === "legitimate").length} of them real`,
+        "SPF, DKIM, DMARC",
+      ],
+      progress: { done: triaged, total: MESSAGES.length, noun: "called right" },
     },
     {
       href: "/flashcards",

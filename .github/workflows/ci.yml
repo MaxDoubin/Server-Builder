@@ -316,6 +316,15 @@ jobs:
       - name: Challenge flags
         run: npx tsx scripts-ci/check-challenges.ts
 
+      # The triage inbox is hand-written prose about hand-written headers, and
+      # the two drift silently: move a hyphen and the only finding in a message
+      # disappears while the analysis still calls it hostile. This derives every
+      # message's signals from its own headers with the same detectors the page
+      # uses and refuses a mismatch in either direction, including a message
+      # meant to be clean that picked up a real tell by accident.
+      - name: Triage inbox
+        run: npx tsx scripts-ci/check-triage.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
