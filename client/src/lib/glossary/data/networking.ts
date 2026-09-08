@@ -174,6 +174,16 @@ export const NETWORKING: Term[] = [
     see: ["VLAN", "firewall"],
   },
   {
+    term: "LAN",
+    expansion: "Local Area Network",
+    field: "networking",
+    definition:
+      "The network inside one site, on addresses the internet does not route to, behind whatever box does the translation on the way out.",
+    confusion:
+      "Being on the LAN changes how you reach a service on the LAN, which is not obvious until it bites. A machine that asks for the site's public address is asking a box on its own network to translate a packet and send it back out of the interface it came in on, and the reply from the server goes straight across the switch instead of back through that box, so it arrives from an address the client never contacted and is discarded. The port forward is correct and the connection hangs.",
+    see: ["WAN", "NAT", "VLAN"],
+  },
+  {
     term: "WAN",
     expansion: "Wide Area Network",
     field: "networking",

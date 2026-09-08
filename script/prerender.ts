@@ -3152,7 +3152,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     first is inside ${esc(NAT_CASES.some((item) => !natRoutable(item.router)) ? "100.64.0.0/10" : "a private range")},
     the forward is on a box the internet cannot address.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/netfilter-hook-order", "Netfilter hook order"], ["/firewall", "Firewall exercises"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/nothing-translates-the-reply", "Nothing translates the reply"], ["/blog/netfilter-hook-order", "Netfilter hook order"]])}
 </main>`,
   });
 

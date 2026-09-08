@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 268 of them. Regenerate with script/generatePostIndex.ts.
+ * 269 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "nothing-translates-the-reply",
+    title: "Nothing Translates the Reply",
+    date: "2026-09-08",
+    tags: ["networking","linux","operations"],
+    excerpt: "A port forward is not a rule that rewrites packets. It is a rule that creates a binding, once, and the binding rewrites everything after it in both directions. So the question is never whether the rule matches: it is whether the reply passes back through the box holding the binding. On a LAN client it does not, and the browser hangs while both halves of the system report success.",
+    coverImage: "/images/blog/nothing-translates-the-reply.jpg",
+    wordCount: 1749,
+  },
   {
     slug: "minus-one-thousand-is-not-a-hint",
     title: "Minus One Thousand Is Not a Hint",
@@ -2645,10 +2654,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 268;
+export const POST_COUNT = 269;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty eight";
+export const POST_COUNT_SPELLED = "two hundred and sixty nine";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2657,10 +2666,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1016;
+export const CITATION_COUNT = 1020;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1175;
+export const CHECKED_URL_COUNT = 1179;
