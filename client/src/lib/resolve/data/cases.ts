@@ -11,17 +11,46 @@
 
 import type { Outcome, RRType } from "../types";
 
+/**
+ * One thing somebody might conclude from the symptom.
+ *
+ * `names` is the resolution this claim describes, and it is how the page
+ * knows which option is right: the resolver runs, and the option naming what
+ * it reached is the answer. Nothing here says which one that is.
+ *
+ * This replaced an `answer` index typed in by hand, which was checked for
+ * being inside the array and against nothing else. Editing it to point at
+ * "The mail server is refusing connections" passed CI, and the page marked
+ * that right, on an exercise whose whole subject is that the client-side
+ * symptom does not tell you which fault you have.
+ *
+ * `null` is for a claim the resolver has no opinion about. "The TTL expired"
+ * and "The registrar has not published the delegation" are things people say
+ * that this model does not represent, so they can never match, which is
+ * exactly what a distractor should do. CI requires that one option matches
+ * and that the rest do not.
+ */
+export interface Option {
+  claim: string;
+  names: Outcome | null;
+}
+
 export interface Case {
   id: string;
   /** What the person reporting it said. */
   symptom: string;
   name: string;
   type: RRType;
-  /** What the resolver should conclude. CI checks this against the engine. */
+  /**
+   * What the resolver should conclude. CI checks this against the engine.
+   *
+   * Kept alongside the tagged options rather than derived from them, because
+   * the two fail differently: a model change that moves the outcome makes
+   * this disagree, and an option retagged by mistake makes the match count
+   * wrong. Either one on its own leaves a hole the other covers.
+   */
   outcome: Outcome;
-  options: string[];
-  /** Index into options. */
-  answer: number;
+  options: Option[];
   explain: string[];
 }
 
@@ -33,12 +62,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "nxdomain",
     options: [
-      "The northbay.example zone is down",
-      "mail.northbay.example is a CNAME to a name that does not exist",
-      "The MX record is missing",
-      "The mail server is refusing connections",
+      { claim: "The northbay.example zone is down", names: null },
+      { claim: "mail.northbay.example is a CNAME to a name that does not exist", names: "nxdomain" },
+      { claim: "The MX record is missing", names: "nodata" },
+      { claim: "The mail server is refusing connections", names: null },
     ],
-    answer: 1,
     explain: [
       "The alias resolves perfectly. Its target does not exist, and that is where the NXDOMAIN comes from: not from the name that was asked for, but from the name it pointed at.",
       "This is the reason an NXDOMAIN on a name you can see in your own zone file is not a contradiction. The zone is fine. What is missing is somewhere else entirely, and in this case it is a whole zone that was never created.",
@@ -52,12 +80,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "lame",
     options: [
-      "The nameserver is blocked by a firewall",
-      "The zone was deleted",
-      "The parent delegates to a server that does not hold the zone",
-      "The TTL expired",
+      { claim: "The nameserver is blocked by a firewall", names: null },
+      { claim: "The zone was deleted", names: "nxdomain" },
+      { claim: "The parent delegates to a server that does not hold the zone", names: "lame" },
+      { claim: "The TTL expired", names: null },
     ],
-    answer: 2,
     explain: [
       "The parent zone still delegates archive.example to ns1.retired-dns.example, and that server answers, and what it answers is that it is not authoritative. The delegation outlived the hosting.",
       "This is a lame delegation, and it is the fault most often misdiagnosed as a firewall, because from a client both produce a query that yields nothing useful. The difference is that a firewall gives you silence and a lame server gives you a reply. The trace shows a reply.",
@@ -72,12 +99,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "no-glue",
     options: [
-      "The zone file has a syntax error",
-      "The nameservers are inside the zone and the parent sends no glue",
-      "The serial number was not incremented",
-      "The registrar has not published the delegation",
+      { claim: "The zone file has a syntax error", names: null },
+      { claim: "The nameservers are inside the zone and the parent sends no glue", names: "no-glue" },
+      { claim: "The serial number was not incremented", names: null },
+      { claim: "The registrar has not published the delegation", names: null },
     ],
-    answer: 1,
     explain: [
       "quarry.example is served by ns1.quarry.example and ns2.quarry.example, which are inside quarry.example. To find their addresses a resolver needs to ask the servers for quarry.example, which are the things it is trying to find.",
       "Glue is what breaks the circle: A records for those hostnames, held at the parent, handed out with the referral. They are the parent's copy of the child's data, which is why they go stale when the child renumbers and nobody tells the registrar.",
@@ -92,12 +118,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "no-address",
     options: [
-      "The nameserver named in the delegation has no address record anywhere",
-      "The zone is lame",
-      "The name does not exist",
-      "The parent zone is missing the delegation",
+      { claim: "The nameserver named in the delegation has no address record anywhere", names: "no-address" },
+      { claim: "The zone is lame", names: "lame" },
+      { claim: "The name does not exist", names: "nxdomain" },
+      { claim: "The parent zone is missing the delegation", names: null },
     ],
-    answer: 0,
     explain: [
       "The delegation exists and names ns1.depot-dns.example. That host has no A record in any zone a resolver can reach, so there is nothing to send the query to.",
       "It is worth separating this from a lame delegation. Lame means the server answered and disclaimed the zone. This means there is no server: the resolution stops one step earlier, before any packet is sent.",
@@ -111,12 +136,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "answer",
     options: [
-      "Yes, half of lookups will fail",
-      "Yes, resolution will be slow for everyone",
-      "No, this is what a second nameserver is for",
-      "No, because DNS caches the answer",
+      { claim: "Yes, half of lookups will fail", names: null },
+      { claim: "Yes, resolution will be slow for everyone", names: null },
+      { claim: "No, this is what a second nameserver is for", names: "answer" },
+      { claim: "No, because DNS caches the answer", names: null },
     ],
-    answer: 2,
     explain: [
       "A resolver that gets no useful reply from one server tries the next one in the set. Two servers where one is dead is a zone that works, which is the entire reason a delegation lists more than one.",
       "The lookup here succeeds and the trace shows why. This is included precisely because the other seven cases are faults: an exercise made only of broken things teaches that everything unusual is broken.",
@@ -131,12 +155,11 @@ export const CASES: Case[] = [
     type: "AAAA",
     outcome: "nodata",
     options: [
-      "The name does not exist",
-      "The name exists and has no record of the type asked for",
-      "The zone is misconfigured",
-      "The resolver is broken",
+      { claim: "The name does not exist", names: "nxdomain" },
+      { claim: "The name exists and has no record of the type asked for", names: "nodata" },
+      { claim: "The zone is misconfigured", names: null },
+      { claim: "The resolver is broken", names: null },
     ],
-    answer: 1,
     explain: [
       "NOERROR with zero answers is not NXDOMAIN. The name exists; it has no AAAA. The application asked for an address family the host does not have.",
       "The distinction matters operationally. NXDOMAIN is a fact about a name across every record type, and a resolver caches it that way. NODATA is a fact about one type, and the same name may answer perfectly for A a microsecond later.",
@@ -150,12 +173,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "answer",
     options: [
-      "The web server is slow to start",
-      "The name goes through two aliases, each restarting resolution at the root",
-      "The nameserver is far away",
-      "The TTL is too long",
+      { claim: "The web server is slow to start", names: null },
+      { claim: "The name goes through two aliases, each restarting resolution at the root", names: "answer" },
+      { claim: "The nameserver is far away", names: null },
+      { claim: "The TTL is too long", names: null },
     ],
-    answer: 1,
     explain: [
       "portal.northbay.example is a CNAME to portal.cdn.example, which is a CNAME to edge-42.cdn.example. Each alias sends the resolver back to the root to start again with the new name.",
       "Nine queries for one address, and every one of them is a round trip. On a cold cache that is the whole of the delay, and it disappears on the second lookup because everything in the chain is now cached, which is exactly the shape the reporter described.",
@@ -170,12 +192,11 @@ export const CASES: Case[] = [
     type: "A",
     outcome: "loop",
     options: [
-      "The nameserver is overloaded",
-      "Two CNAMEs point at each other",
-      "The zone is lame",
-      "The name does not exist",
+      { claim: "The nameserver is overloaded", names: null },
+      { claim: "Two CNAMEs point at each other", names: "loop" },
+      { claim: "The zone is lame", names: "lame" },
+      { claim: "The name does not exist", names: "nxdomain" },
     ],
-    answer: 1,
     explain: [
       "ring.cdn.example is a CNAME to ring-b.cdn.example, and ring-b.cdn.example is a CNAME back to ring.cdn.example. Neither is wrong on its own and together they never terminate.",
       "A resolver detects this with a hop limit rather than by understanding it, so what a client sees is a delay followed by SERVFAIL, which reads as a server problem. The server is fine; the data is a circle.",

@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
-import { CHAIN_CASES, validate, type ChainCase } from "@/lib/chain/index";
+import { CHAIN_CASES, correctOption, validate, type ChainCase } from "@/lib/chain/index";
 import { PractiseStage } from "@/components/practise/PractiseStage";
 import { recordSolvedChains } from "@/lib/chain/progress";
 import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
@@ -133,6 +133,12 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
     [item],
   );
 
+  /*
+    The right option is whichever asserts what the validator found, worked out
+    here rather than read off the case. CI proves every case has exactly one.
+  */
+  const answer = useMemo(() => correctOption(item), [item]);
+
   return (
     <li className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
       <p className="font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone))]">
@@ -202,7 +208,7 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
       <div className="mt-4 flex flex-col gap-2">
         {item.options.map((option, index) => {
           const chosen = picked === index;
-          const right = index === item.answer;
+          const right = option === answer;
           const show = picked !== null;
           const tone = !show
             ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -213,20 +219,20 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
                 : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]";
           return (
             <button
-              key={option}
+              key={option.claim}
               type="button"
               onClick={() => {
                 setPicked(index);
                 setOpen(true);
-                onAnswer(index === item.answer);
-                if (index === item.answer) recordSolvedChains(item.id);
+                onAnswer(option === answer);
+                if (option === answer) recordSolvedChains(item.id);
               }}
               disabled={picked !== null}
               aria-pressed={chosen}
               data-testid={`chain-option-${item.id}-${index}`}
               className={`rounded-xl border px-4 py-2.5 text-left font-mono-tight text-[12.5px] leading-snug transition-colors ${tone}`}
             >
-              {option}
+              {option.claim}
             </button>
           );
         })}
@@ -238,7 +244,7 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
           data-testid={`chain-explain-${item.id}`}
         >
           <p className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
-            · {picked === item.answer ? "That is it" : "Not that one"} ·{" "}
+            · {picked !== null && item.options[picked] === answer ? "That is it" : "Not that one"} ·{" "}
             {FAULT_LABEL[result.fault] ?? result.fault}
           </p>
           <p className="mt-2 font-mono-tight text-[12px] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">

@@ -16,6 +16,7 @@ import { CASES } from "../client/src/lib/resolve/data/cases";
 import { WORLD } from "../client/src/lib/resolve/data/world";
 import { resolve } from "../client/src/lib/resolve/resolver";
 import { inZone } from "../client/src/lib/resolve/types";
+import { correctOption, matching } from "../client/src/lib/resolve/answer";
 
 const problems: string[] = [];
 
@@ -37,13 +38,55 @@ for (const item of CASES) {
     problems.push(`${item.id}: no queries, so there is no trace to read`);
   }
   if (item.options.length < 3) problems.push(`${item.id}: fewer than three options is not a choice`);
-  if (item.answer < 0 || item.answer >= item.options.length) {
-    problems.push(`${item.id}: the answer index is outside the options`);
-  }
-  if (new Set(item.options).size !== item.options.length) {
+  if (new Set(item.options.map((option) => option.claim)).size !== item.options.length) {
     problems.push(`${item.id}: two options say the same thing`);
   }
+
+  /*
+    Exactly one option has to name what the resolver reached, because that is
+    how the page picks the answer. None means the reader is shown four wrong
+    options; more than one means two options are the same answer written
+    twice, and the page shows neither as right.
+
+    This replaced a bounds check on a hand-typed index. Repointing that index
+    at "The mail server is refusing connections" passed this gate, and the
+    page then marked it correct, on the one exercise whose entire subject is
+    that the symptom does not tell you which fault you have.
+  */
+  const hits = matching(item);
+  if (hits.length !== 1) {
+    problems.push(
+      `${item.id}: ${hits.length} of ${item.options.length} options name ${result.outcome}, which is` +
+        ` what the resolver reaches. Exactly one has to, or there is no answer to show.` +
+        (hits.length > 1 ? ` These do: ${hits.map((hit) => `"${hit.claim}"`).join(", ")}.` : ""),
+    );
+  }
+
   if (item.explain.length < 2) problems.push(`${item.id}: the explanation is too thin`);
+}
+
+/*
+  correctOption has to refuse rather than guess.
+
+  No case in the corpus has zero matches or several, because the loop above
+  fails the build if one does, which means the corpus cannot exercise the
+  branch where the page has no answer to show. If that branch returned the
+  first option instead of nothing, every check here would still pass and a
+  mistagged case would ship a confident wrong answer. So the two states are
+  built here on purpose.
+*/
+const sample = CASES[0];
+const reached = resolve(WORLD, sample.name, sample.type).outcome;
+const nothingNames = { ...sample, options: sample.options.map((option) => ({ ...option, names: null })) };
+if (correctOption(nothingNames) !== null) {
+  problems.push("correctOption returns an option when none of them names what the resolver reached");
+}
+const allName = { ...sample, options: sample.options.map((option) => ({ ...option, names: reached })) };
+if (correctOption(allName) !== null) {
+  problems.push("correctOption returns an option when several of them name what the resolver reached");
+}
+if (matching(allName).length !== sample.options.length) {
+  problems.push("matching does not find every option when they all name the same outcome");
 }
 
 /*
