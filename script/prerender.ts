@@ -58,6 +58,7 @@ const { CASES: DNS_CASES } = await import("../client/src/lib/resolve/data/cases.
 const { CHAIN_CASES } = await import("../client/src/lib/chain/data/cases.ts");
 const { PROBLEMS: PLANS } = await import("../client/src/lib/allocate/data/problems.ts");
 const { CONFIGS: ARRAY_CONFIGS } = await import("../client/src/lib/array/data/configs.ts");
+const { HANDSHAKES } = await import("../client/src/lib/handshake/data/handshakes.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2343,6 +2344,80 @@ ${
     });
   }
 
+  // ── protocol handshakes ──
+  /*
+    The steps and the breaks go into the static body in full. A page listing
+    what a TCP handshake carries and what a lost SYN-ACK looks like is exactly
+    what somebody searches for at two in the morning, and none of it is a
+    puzzle to be spoiled.
+  */
+  const handshakeDescription =
+    "TCP, TLS 1.3, DHCP and 802.1X drawn as conversations, with a control for breaking one step " +
+    "and seeing where the exchange stops and what the symptom is.";
+
+  await writePage("handshake", base, {
+    title: "Protocol Handshakes | Max Doubin",
+    description: handshakeDescription,
+    canonical: `${SITE_URL}/handshake`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Protocol handshakes",
+  description: handshakeDescription,
+  url: `${SITE_URL}/handshake`,
+  learningResourceType: "Reference",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  teaches: HANDSHAKES.map((handshake) => handshake.title),
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Handshakes</h1>
+  <p>
+    Four exchanges drawn as conversations, playable a step at a time, each with
+    a control for breaking one step and watching where the sequence stops.
+  </p>
+  <p>
+    The stopping point is the diagnosis. A SYN with no reply and a SYN answered
+    by a reset are the same experience to a person and opposite facts about the
+    firewall. Every break named here says where it stops, what you would
+    actually see, and who can fix it.
+  </p>
+${HANDSHAKES.map(
+  (handshake) => `  <h2>${esc(handshake.title)}</h2>
+  <p>${esc(handshake.tagline)}</p>
+${handshake.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h3>The exchange</h3>
+  <ol>
+${handshake.steps
+  .map(
+    (step) =>
+      `    <li><strong>${esc(step.label)}</strong>, ${esc(step.from)} to ${esc(step.to)}: ` +
+      `${esc(step.detail)} Carries ${esc(step.carries.join(", "))}.</li>`,
+  )
+  .join("\n")}
+  </ol>
+  <h3>Where it goes wrong</h3>
+  <ul>
+${handshake.breaks
+  .map(
+    (item) =>
+      `    <li><strong>${esc(item.label)}</strong>: stops at step ${item.stopsAt}. ` +
+      `${esc(item.symptom)} Fixed by ${esc(item.owner)}. ${esc(item.explain[0])}</li>`,
+  )
+  .join("\n")}
+  </ul>
+${handshake.notes.map((note) => `  <p>${esc(note)}</p>`).join("\n")}`,
+).join("\n")}
+  ${backLinks([["/capture", "Packet captures"], ["/chain", "Certificate chains"], ["/practise", "All practise material"]])}
+</main>`,
+  });
+
   // ── today ──
   /*
     The static body cannot name today's items, because the build ran on some
@@ -4037,6 +4112,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/array`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/today`, lastmod: today, changefreq: "daily", priority: "0.9" },
+    { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },

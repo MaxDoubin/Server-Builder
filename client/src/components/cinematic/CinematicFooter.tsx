@@ -110,6 +110,7 @@ export function CinematicFooter() {
               { href: "/chain", label: "Chain", testId: "link-footer-chain" },
               { href: "/allocate", label: "Address plans", testId: "link-footer-allocate" },
               { href: "/array", label: "Array calculator", testId: "link-footer-array" },
+              { href: "/handshake", label: "Handshakes", testId: "link-footer-handshake" },
               { href: "/capture", label: "Captures", testId: "link-footer-capture" },
               { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
               { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },
