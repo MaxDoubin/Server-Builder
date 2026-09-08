@@ -28,6 +28,7 @@ import { loadJudgements } from "@/lib/triage/progress";
 import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { loadSolvedFirewall } from "@/lib/firewall/progress";
 import { CASES as DNS_CASES, WORLD } from "@/lib/resolve/index";
+import { CHAIN_CASES } from "@/lib/chain/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { DECKS } from "@/lib/flashcardDecks";
 import { EXAMS } from "@/lib/examObjectives";
@@ -186,6 +187,20 @@ export function CinematicPractise() {
         `${DNS_CASES.length} symptoms`,
         `${WORLD.zones.length} zones`,
         "full query trace",
+      ],
+      progress: null,
+    },
+    {
+      href: "/chain",
+      eyebrow: "Attribute",
+      title: "Certificate chains",
+      blurb:
+        "Nine chains validated check by check. A missing intermediate, an expired one, a wildcard that misses the bare domain and a root a device is too old to have all look identical from a browser.",
+      reachFor: "you need to know whose problem a TLS error is",
+      stats: [
+        `${CHAIN_CASES.length} chains`,
+        `${new Set(CHAIN_CASES.map((c) => c.owner)).size} different owners`,
+        "check by check",
       ],
       progress: null,
     },

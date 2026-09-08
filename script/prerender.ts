@@ -55,6 +55,7 @@ const { CHALLENGES } = await import("../client/src/lib/challenges/index.ts");
 const { MESSAGES: TRIAGE_MESSAGES } = await import("../client/src/lib/triage/index.ts");
 const { EXERCISES: FIREWALL } = await import("../client/src/lib/firewall/data/exercises.ts");
 const { CASES: DNS_CASES } = await import("../client/src/lib/resolve/data/cases.ts");
+const { CHAIN_CASES } = await import("../client/src/lib/chain/data/cases.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2340,6 +2341,77 @@ ${
     });
   }
 
+  // ── certificate chain validation ──
+  const chainDescription =
+    "Nine servers presenting nine chains, validated check by check. A missing intermediate, an " +
+    "expired intermediate, a wildcard that does not cover the bare domain, and a root a device " +
+    "is too old to have all look the same from a browser.";
+
+  await writePage("chain", base, {
+    title: "Certificate Chain Validation | Max Doubin",
+    description: chainDescription,
+    canonical: `${SITE_URL}/chain`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Certificate chain validation",
+  description: chainDescription,
+  url: `${SITE_URL}/chain`,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  teaches: [
+    "Telling a missing intermediate from an expired one",
+    "Why a wildcard does not cover the bare domain",
+    "Which party can fix a given TLS error",
+  ],
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Certificate chain validation</h1>
+  <p>
+    Nine servers presenting nine chains, validated check by check against a
+    named trust store at a named moment.
+  </p>
+  <p>
+    A browser reduces all of this to one interstitial and about five error
+    codes, and openssl gives you a verify code and a chain dump. Neither
+    answers the question anyone actually has, which is not whether it is broken
+    but which of us fixes it. A missing intermediate is the server operator's.
+    An expired root is the client's, and no amount of reissuing helps. A
+    wildcard that does not cover the bare domain was wrong before it was
+    signed.
+  </p>
+  <h2>The cases</h2>
+  <ul>
+${CHAIN_CASES.map(
+  (item) => `    <li>${esc(item.symptom)} (${esc(item.hostname)}, ${esc(item.store.name)})</li>`,
+).join("\n")}
+  </ul>
+  <h2>Some rules that surprise people</h2>
+  <ul>
+    <li>A wildcard covers exactly one label. <code>*.example.com</code> matches
+      <code>www.example.com</code>, and matches neither <code>example.com</code>
+      nor <code>a.b.example.com</code>.</li>
+    <li>A root's own signature is never verified by anything. It is trusted
+      because it is in the store, so a weak algorithm on a self-signed root is
+      not the finding a scanner thinks it is.</li>
+    <li>An expired intermediate produces the same browser error as an expired
+      leaf, which is why renewing the certificate does not help.</li>
+    <li>A chain that stops early is reported by several tools as a self-signed
+      certificate, and there is no self-signed certificate involved.</li>
+    <li>A certificate that is not valid yet is almost always a wrong clock, and
+      the tell is that every site fails at once rather than one.</li>
+  </ul>
+  ${backLinks([["/practise", "All practise material"], ["/resolve", "DNS resolution"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
   // ── DNS resolution walkthrough ──
   /*
     One page. The symptoms go into the static body with the name each one
@@ -3712,6 +3784,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/triage`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/firewall`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/resolve`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/chain`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
