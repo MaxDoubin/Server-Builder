@@ -54,6 +54,7 @@ const { LABS } = await import("../client/src/lib/labs/labs.ts");
 const { CHALLENGES } = await import("../client/src/lib/challenges/index.ts");
 const { MESSAGES: TRIAGE_MESSAGES } = await import("../client/src/lib/triage/index.ts");
 const { EXERCISES: FIREWALL } = await import("../client/src/lib/firewall/data/exercises.ts");
+const { CASES: DNS_CASES } = await import("../client/src/lib/resolve/data/cases.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2339,6 +2340,89 @@ ${
     });
   }
 
+  // ── DNS resolution walkthrough ──
+  /*
+    One page. The symptoms go into the static body with the name each one
+    turns on, because "why does one subdomain not resolve when nothing was
+    changed" is a search someone makes at a bad hour. The answers do not.
+  */
+  const resolveDescription =
+    "Watch an iterative resolver walk from the root, and tell a lame delegation from a missing " +
+    "glue record from an alias that points at nothing. Eight symptoms with the trace that " +
+    "explains each one.";
+
+  await writePage("resolve", base, {
+    title: "DNS Resolution Walkthrough | Max Doubin",
+    description: resolveDescription,
+    canonical: `${SITE_URL}/resolve`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "DNS resolution walkthrough",
+  description: resolveDescription,
+  url: `${SITE_URL}/resolve`,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  teaches: [
+    "Reading an iterative resolution from the root",
+    "Telling a lame delegation from a missing glue record",
+    "The difference between NXDOMAIN and NODATA",
+  ],
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>DNS resolution walkthrough</h1>
+  <p>
+    A small simulated internet with nine zones and several things wrong with
+    it. Ask for any name and watch an iterative resolver walk down from the
+    root: every query, which server took it, and what came back.
+  </p>
+  <p>
+    From a client nearly every DNS fault produces the same sentence. A lame
+    delegation, a missing glue record, a nameserver whose own name has no
+    address, and an alias pointing at a zone that was never created are four
+    different problems, four different people to talk to, and one symptom.
+  </p>
+  <h2>The failure modes</h2>
+  <ul>
+    <li><strong>Lame delegation</strong>: the parent points at a server that
+      answers and disclaims the zone. From a client it looks like a firewall.
+      The fix is at the parent, and nobody inside the child zone can make it.</li>
+    <li><strong>No glue</strong>: the nameservers are inside the zone they
+      serve, and the parent sends no address records for them, so finding them
+      needs the servers being looked for. The child's zone file is correct and
+      unreachable.</li>
+    <li><strong>A delegation to nothing</strong>: the nameserver named in the
+      delegation has no address record anywhere, so no query is ever sent.</li>
+    <li><strong>NXDOMAIN against NODATA</strong>: one says the name does not
+      exist, across every type. The other says it exists and has no record of
+      the type asked for, which is the normal answer to an AAAA query for a
+      host without IPv6.</li>
+    <li><strong>An alias to nowhere</strong>: the CNAME resolves, its target
+      does not, and the error names a host the reporter never typed.</li>
+    <li><strong>An alias loop</strong>: two CNAMEs point at each other. Each
+      zone is individually valid and the resolution never terminates.</li>
+  </ul>
+  <h2>The symptoms</h2>
+  <ul>
+${DNS_CASES.map(
+  (item) => `    <li>${esc(item.symptom)} (look up ${esc(item.name)} ${esc(item.type)})</li>`,
+).join("\n")}
+  </ul>
+  <p>
+    Every name is under a reserved suffix and every address is in a
+    documentation range, so nothing here reaches anything real.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
   // ── firewall exercises ──
   /*
     Index plus one page per exercise. The starting chain goes into the static
@@ -3627,6 +3711,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/challenges`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/triage`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/firewall`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/resolve`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },

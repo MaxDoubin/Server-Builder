@@ -27,6 +27,7 @@ import { MESSAGES } from "@/lib/triage/index";
 import { loadJudgements } from "@/lib/triage/progress";
 import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { loadSolvedFirewall } from "@/lib/firewall/progress";
+import { CASES as DNS_CASES, WORLD } from "@/lib/resolve/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { DECKS } from "@/lib/flashcardDecks";
 import { EXAMS } from "@/lib/examObjectives";
@@ -173,6 +174,20 @@ export function CinematicPractise() {
         "match trace",
       ],
       progress: { done: solvedFirewall, total: FIREWALL.length, noun: "chains fixed" },
+    },
+    {
+      href: "/resolve",
+      eyebrow: "Trace",
+      title: "DNS resolution",
+      blurb:
+        "A small internet with things wrong with it. Watch a resolver walk from the root, and tell a lame delegation from a missing glue record from an alias pointing at nothing.",
+      reachFor: "something does not resolve and you need to know whose problem it is",
+      stats: [
+        `${DNS_CASES.length} symptoms`,
+        `${WORLD.zones.length} zones`,
+        "full query trace",
+      ],
+      progress: null,
     },
     {
       href: "/flashcards",
