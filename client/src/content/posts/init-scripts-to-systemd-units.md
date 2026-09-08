@@ -71,7 +71,11 @@ systemd splits them, and the split is where most boot bugs live.
 - `After=` and `Before=` control **order only**. Neither one causes a unit to
   start.
 - `Wants=` causes a unit to start, and does not care if it fails.
-- `Requires=` causes it to start, and fails your unit if it fails to start.
+- `Requires=` causes it to start, and fails your unit if it fails to start
+  **and you also set `After=` on it**. Without the `After=`, the two are
+  started at the same moment and yours is already up by the time the other one
+  fails, so nothing goes back to reconsider it. The manual puts the condition
+  in the middle of the sentence and it is easy to read past.
 - `BindsTo=` is `Requires=` plus: if the other unit stops later, yours stops.
 
 Read that list again with this in mind: `Requires=` says nothing about order.
@@ -96,6 +100,12 @@ a socket to a Postgres that has not finished recovery, and it fails maybe one
 boot in four. Intermittent, host-specific, and impossible to reproduce by hand,
 because when you type `systemctl start inventory-api` the database has been up
 for an hour.
+
+And it is worse than a race, which is the part people miss. In that
+configuration the requirement does not protect you either: if PostgreSQL fails
+outright, the API still starts, because the rule that stops it is conditional
+on the `After=` that is not there. You get a running API in front of no
+database, and both units report exactly what their files asked for.
 
 Ask the running system rather than guessing:
 
@@ -222,6 +232,10 @@ Use `systemctl edit` for changes to packaged units so a drop-in survives the
 next upgrade, and `systemctl cat` to see the merged result. Between those two
 and `verify`, a unit file becomes something you can reason about, which is
 more than an init script ever offered.
+
+You can work through ten sets of unit files, including the one where every
+directive is correct and the database is not running, at [it started before the
+thing it needs](/units).
 
 ## References
 
