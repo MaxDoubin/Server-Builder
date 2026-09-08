@@ -121,6 +121,7 @@ export function CinematicFooter() {
               { href: "/patch", label: "Patch priority", testId: "link-footer-patch" },
               { href: "/retry", label: "Retry amplification", testId: "link-footer-retry" },
               { href: "/vlan", label: "VLAN tagging", testId: "link-footer-vlan" },
+              { href: "/clock", label: "Clock skew", testId: "link-footer-clock" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },
               { href: "/capture", label: "Captures", testId: "link-footer-capture" },
