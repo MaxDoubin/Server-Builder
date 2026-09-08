@@ -28,6 +28,8 @@ import {
   readable,
   satisfies,
   spanText,
+  toleranceSpread,
+  tolerances,
   width,
   type Check,
   type Rule,
@@ -172,6 +174,37 @@ if (fails < 4) problems.push(`only ${fails} observations across the set are of s
 const widths = CASES.map((item) => width(narrowed(item.checks) ?? { from: 0, to: 0 }));
 if (!widths.some((w) => w < 300)) problems.push("no case narrows to under five minutes");
 if (!widths.some((w) => w > 86400)) problems.push("no case is a matter of days, so the wide skews are never shown");
+
+/*
+  And the page's sentence about those tolerances is rendered from this list,
+  so the list has to keep saying what the sentence needs: at least two graded
+  tolerances so there is a factor to state, and at least one with none at all
+  so there is a cliff to point at.
+
+  Written after finding that same sentence hardcoded in five places, claiming
+  two orders of magnitude for a set that spans one. No gate here reads prose,
+  so nothing caught it. The fix was to render the numbers; this keeps the
+  numbers worth rendering.
+*/
+const spread = tolerances(CASES);
+const graded = spread.filter((value) => value > 0);
+if (graded.length < 2) {
+  problems.push(
+    `only ${graded.length} distinct tolerance above zero, so there is no factor between them` +
+      ` to state and the page's sentence about them says nothing`,
+  );
+}
+if (!spread.includes(0)) {
+  problems.push(
+    "every check tolerates something, so nothing demonstrates the hard edge that does the measuring",
+  );
+}
+if (graded.length >= 2 && toleranceSpread(CASES) < 5) {
+  problems.push(
+    `the graded tolerances are ${spread.join(", ")}, a factor of ${toleranceSpread(CASES)},` +
+      ` which is not enough of a range to break in a legible order`,
+  );
+}
 
 /* A peer that is itself wrong, which is the case people never think of. */
 if (!CASES.some((item) => item.checks.some((c) => c.rule.kind === "mutual" && c.rule.peerOffset !== 0))) {

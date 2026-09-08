@@ -18,13 +18,22 @@
  * and everything either of them does against a third party fails. Which
  * means the machine you are logged into can look completely healthy.
  *
- * And the tolerances differ by two orders of magnitude. Kerberos allows five
- * minutes by default. A one-time code allows a step or two, so a minute or
- * so. A certificate allows nothing: the window has hard edges. So the set of
- * things that are broken is itself a measurement, and that is the exercise
- * here: not "given the skew, what breaks", which is arithmetic, but "given
- * what broke and what did not, how wrong is the clock", which is what you
- * actually have in front of you.
+ * And the tolerances are not on one scale. Kerberos allows 300 seconds by
+ * default. A one-time code allows a step either side, so 30. A certificate
+ * window and an RRSIG allow nothing at all: the edges are hard. A factor of
+ * ten between the two that tolerate anything, and then a cliff, and the
+ * cliff is the useful part, because a check with no tolerance and a known
+ * timestamp measures rather than reassures.
+ *
+ * So the set of things that are broken is itself a measurement, and that is
+ * the exercise here: not "given the skew, what breaks", which is arithmetic,
+ * but "given what broke and what did not, how wrong is the clock", which is
+ * what you actually have in front of you.
+ *
+ * Those three figures are not written down anywhere that matters. See
+ * tolerances() in ./model, which derives them from the cases, because the
+ * sentence they replaced said two orders of magnitude in five places and was
+ * wrong by a factor of ten.
  */
 
 /**

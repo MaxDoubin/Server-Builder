@@ -26,7 +26,7 @@ import { CASES as PERMISSION_CASES, octal as modeOctal, symbolic as lsLine } fro
 import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invertedPairs, priorityFor, worstMove } from "../client/src/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as retryMs, orphaned as retryOrphaned, requestsAt, truncatingCaller } from "../client/src/lib/retry/index";
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
-import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan } from "../client/src/lib/clock/index";
+import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -2819,10 +2819,13 @@ ${path.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     number, which is what the evidence supports.
   */
   const clockObservations = CLOCK_CASES.reduce((sum, item) => sum + item.checks.length, 0);
+  /* Derived, so the sentence quoting them cannot drift from the cases. */
+  const clockTolerances = clockToleranceList(CLOCK_CASES);
+  const clockSpread = clockToleranceSpread(CLOCK_CASES);
   const clockDescription =
     "A wrong clock reports itself under four unrelated names and three of them never mention time: a certificate " +
     "that is not yet valid, an authentication code that is invalid, a DNSSEC answer that is bogus, and log lines " +
-    "in an order the events did not happen in. The tolerances differ by two orders of magnitude, so what broke " +
+    "in an order the events did not happen in. The tolerances range from 300 seconds down to none at all, so what broke " +
     `is itself a measurement. ${CLOCK_CASES.length} clocks, ${clockObservations} observations, worked backwards.`;
 
   /* A rule as a sentence, so the static body says what each check tolerates. */
@@ -2874,13 +2877,18 @@ ${JSON.stringify({
     are logged into can look completely healthy.
   </p>
   <p>
-    And the tolerances differ by two orders of magnitude. Kerberos allows
-    five minutes by default. A one-time code allows a step or two, so thirty
-    to sixty seconds. A certificate window and an RRSIG allow nothing: the
-    edges are hard. So the set of things that are broken is itself a
-    measurement, and the question worth asking is not the arithmetic one.
-    Given the skew, what breaks, is easy. Given what broke and what did not,
-    how wrong is the clock, is what you actually have in front of you.
+    And the tolerances are not on one scale. The checks in these cases that
+    tolerate anything allow ${clockTolerances.filter((value) => value > 0).join(" and ")}
+    seconds; a certificate window and an RRSIG allow nothing at all, because
+    their edges are hard. A factor of ${clockSpread} between the two graded
+    ones, and then a cliff, and the cliff is the useful part: a check with no
+    tolerance and a known timestamp measures rather than reassures.
+  </p>
+  <p>
+    So the set of things that are broken is itself a measurement, and the
+    question worth asking is not the arithmetic one. Given the skew, what
+    breaks, is easy. Given what broke and what did not, how wrong is the
+    clock, is what you actually have in front of you.
   </p>
   <h2>The clocks</h2>
 ${CLOCK_CASES.map((item) => {

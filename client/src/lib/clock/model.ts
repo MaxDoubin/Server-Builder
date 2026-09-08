@@ -112,6 +112,33 @@ export const correctOption = (item: Case) => {
   return item.options.find((option) => option.from === span.from && option.to === span.to);
 };
 
+/* ------------------------------------------------------ what the set spans */
+
+/**
+ * The distinct tolerances the cases actually use, widest first.
+ *
+ * Derived rather than written down. A sentence claiming these tolerances span
+ * two orders of magnitude appeared in five places and was wrong by a factor
+ * of ten: they are 300 seconds, 30 seconds and zero, so the gap between the
+ * two that tolerate anything is 10x and the interesting part is the cliff to
+ * nothing. None of the gates on this surface read prose, so nothing caught
+ * it. Prose that quotes the data cannot disagree with the data.
+ */
+export const tolerances = (cases: Case[]): number[] =>
+  [
+    ...new Set(
+      cases.flatMap((item) =>
+        item.checks.map((check) => (check.rule.kind === "mutual" ? check.rule.tolerance : 0)),
+      ),
+    ),
+  ].sort((a, b) => b - a);
+
+/** The ratio between the widest and the narrowest tolerance above zero. */
+export const toleranceSpread = (cases: Case[]): number => {
+  const graded = tolerances(cases).filter((value) => value > 0);
+  return graded.length < 2 ? 1 : graded[0] / graded[graded.length - 1];
+};
+
 /* ---------------------------------------------------------------- reading */
 
 /**

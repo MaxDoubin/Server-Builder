@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 264 of them. Regenerate with script/generatePostIndex.ts.
+ * 265 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -66,6 +66,15 @@ export const postIndex: PostMeta[] = [
     excerpt: "The rule you added is correct and it does nothing, because a broader rule three lines above already decided. No firewall interface shows you that. I built eight broken chains and counted how often it happens.",
     coverImage: "/images/blog/first-match-wins.jpg",
     wordCount: 930,
+  },
+  {
+    slug: "the-clock-is-the-last-thing-anybody-checks",
+    title: "The Clock Is the Last Thing Anybody Checks",
+    date: "2026-09-08",
+    tags: ["security","operations","networking"],
+    excerpt: "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
+    coverImage: "/images/blog/the-clock-is-the-last-thing-anybody-checks.jpg",
+    wordCount: 1774,
   },
   {
     slug: "the-request-arrived-the-reply-did-not",
@@ -2609,10 +2618,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 264;
+export const POST_COUNT = 265;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty four";
+export const POST_COUNT_SPELLED = "two hundred and sixty five";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2621,10 +2630,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty four";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 997;
+export const CITATION_COUNT = 1000;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1156;
+export const CHECKED_URL_COUNT = 1159;
