@@ -29,6 +29,7 @@ import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
 import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib/oom/index";
 import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index";
+import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -315,6 +316,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/nat",
+      eyebrow: "Trace",
+      title: "It works from outside",
+      blurb:
+        "Ten port forwards and the paths their replies take. Most of the rules are written exactly as the documentation says, and a reply is not routed by the rule that translated the request.",
+      reachFor: "the port forward works on mobile data and not on the wifi",
+      stats: [
+        `${NAT_CASES.length} port forwards`,
+        `${NAT_CASES.filter((item) => natTrace(item).outcome !== "connected").length} that do not connect`,
+        "live model",
       ],
       progress: null,
     },

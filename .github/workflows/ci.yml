@@ -554,6 +554,17 @@ jobs:
       - name: Unit ordering is not unit requirement
         run: npx tsx scripts-ci/check-units.ts
 
+      # The NAT surface is a path rather than a rule, so this gate checks the
+      # path: the hooks in netfilter order, on the trace itself. That check
+      # spent its first version comparing prerouting against itself, because
+      # "gw prerouting" ends with the letters "routing" and the lookup matched
+      # on a suffix. It also requires each rule's nftables text to agree with
+      # the structured rule beside it, and every address in every case to be
+      # inside a documentation or private range, so that nothing a reader
+      # pastes into a terminal reaches somebody.
+      - name: Address translation follows the path
+        run: npx tsx scripts-ci/check-nat.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the
