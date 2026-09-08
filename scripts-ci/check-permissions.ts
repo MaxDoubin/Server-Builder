@@ -28,11 +28,14 @@ import {
   check,
   classFor,
   applyUmask,
+  inheritedGroup,
   naiveSubtract,
   octal,
   onTarget,
   pathOf,
+  stickyBlocks,
   symbolic,
+  triad,
 } from "../client/src/lib/permissions/model";
 import { EXEC, STICKY, type Actor, type Node, type Operation } from "../client/src/lib/permissions/types";
 
@@ -241,6 +244,79 @@ for (let round = 0; round < ROUNDS; round += 1) {
   if (verdict.steps.length === path.length) reachedTarget += 1;
   if (operation === "delete" && (path[last - 1].mode & STICKY) !== 0) stickyDeletes += 1;
   if (path[last].owner === actor.user) ownedTarget += 1;
+
+  /*
+    triad() renders three bits, and a reader believes what it renders.
+
+    Round-tripped rather than compared against a table, because a table would
+    be a second copy of the same mapping. Every value it prints has to parse
+    back to the bits it was given, and each letter has to appear exactly when
+    its bit is set.
+  */
+  for (const bits of [0, 1, 2, 3, 4, 5, 6, 7]) {
+    const rendered = triad(bits);
+    if (rendered.length !== 3) problems.push(`round ${round}: triad(${bits}) is "${rendered}"`);
+    const back =
+      (rendered[0] === "r" ? 4 : 0) + (rendered[1] === "w" ? 2 : 0) + (rendered[2] === "x" ? 1 : 0);
+    if (back !== bits) problems.push(`round ${round}: triad(${bits}) reads back as ${back}`);
+    if ((rendered[0] === "r") !== ((bits & 4) !== 0)) problems.push(`round ${round}: triad(${bits}) got read wrong`);
+    if ((rendered[1] === "w") !== ((bits & 2) !== 0)) problems.push(`round ${round}: triad(${bits}) got write wrong`);
+    if ((rendered[2] === "x") !== ((bits & 1) !== 0)) problems.push(`round ${round}: triad(${bits}) got execute wrong`);
+  }
+
+  /*
+    stickyBlocks() is the sticky bit, and it protects the name rather than the
+    bytes: on a sticky directory, only the file's owner or the directory's
+    owner may unlink it, whatever the directory's write bit says.
+
+    Three properties, because all three are ways to get it wrong. It must
+    never fire without the bit. It must never block the target's owner. And
+    it must never block the directory's owner, which is the clause people
+    forget, because it is what lets root's /tmp be tidied by root.
+  */
+  if (last >= 1) {
+    const parent = path[last - 1];
+    const target = path[last];
+    const blocked = stickyBlocks(parent, target, actor);
+    if (blocked && (parent.mode & STICKY) === 0) {
+      problems.push(`round ${round}: sticky blocked a delete on a directory with no sticky bit`);
+    }
+    if (blocked && actor.user === target.owner) {
+      problems.push(`round ${round}: sticky blocked ${actor.user} from unlinking its own file`);
+    }
+    if (blocked && actor.user === parent.owner) {
+      problems.push(`round ${round}: sticky blocked the directory's own owner`);
+    }
+    /* And with the bit set and neither ownership, it must fire. */
+    const sticky = { ...parent, mode: parent.mode | STICKY, owner: "somebody-else" };
+    const notOurs = { ...target, owner: "somebody-else" };
+    if (actor.user !== "somebody-else" && !stickyBlocks(sticky, notOurs, actor)) {
+      problems.push(`round ${round}: sticky did not block a stranger unlinking a stranger's file`);
+    }
+  }
+
+  /*
+    inheritedGroup() is setgid on a directory, which decides what group a new
+    file gets. Without it the file takes the creator's primary group, which is
+    the default nobody notices until a shared directory stops being shared.
+  */
+  {
+    const parent = path[Math.max(0, last - 1)];
+    const withSetgid = { ...parent, mode: parent.mode | 0o2000 };
+    const withoutSetgid = { ...parent, mode: parent.mode & ~0o2000 };
+    if (inheritedGroup(withSetgid, actor) !== parent.group) {
+      problems.push(`round ${round}: setgid on ${parent.name} did not pass on its group`);
+    }
+    if (inheritedGroup(withoutSetgid, actor) !== actor.groups[0]) {
+      problems.push(`round ${round}: without setgid the new file did not take the creator's group`);
+    }
+    /* And the two disagree exactly when the groups differ, which is the point. */
+    const same = parent.group === actor.groups[0];
+    const agrees = inheritedGroup(withSetgid, actor) === inheritedGroup(withoutSetgid, actor);
+    if (agrees !== same) {
+      problems.push(`round ${round}: setgid changed nothing on a directory whose group differs`);
+    }
+  }
 
   /*
     Rule: the class is the first one that matches, so on a node the actor

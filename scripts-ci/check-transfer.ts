@@ -26,7 +26,9 @@ import {
   analyse,
   bdpBytes,
   bindingFor,
+  duration,
   lossLimit,
+  size,
   timeToTransfer,
   windowLimit,
 } from "../client/src/lib/transfer/model";
@@ -241,6 +243,78 @@ for (const item of CASES) {
       }
     }
   }
+}
+
+/* ------------------------------------------------------ what gets rendered */
+
+/*
+  duration() and size() are what a reader actually sees, and a formatter that
+  lies still lies. Both are pinned at their unit boundaries, because the
+  boundary is the whole behaviour, and then checked for monotonicity, because
+  a longer transfer that prints as a shorter one is worse than a wrong unit.
+
+  Both were exported and named by nothing in this file until a check over the
+  models found them. Three functions elsewhere in the same state turned out to
+  be breakable in silence.
+*/
+for (const [seconds, want] of [
+  [Infinity, "never"],
+  [0, "0 ms"],
+  [0.5, "500 ms"],
+  [0.999, "999 ms"],
+  [1, "1.0 s"],
+  [9.94, "9.9 s"],
+  [10, "10 s"],
+  [89, "89 s"],
+  [90, "1.5 min"],
+  [599, "10.0 min"],
+  [600, "10 min"],
+  [5399, "90 min"],
+  [5400, "1.5 h"],
+  [7200, "2.0 h"],
+] as [number, string][]) {
+  if (duration(seconds) !== want) {
+    problems.push(`duration(${seconds}) reads "${duration(seconds)}" rather than "${want}"`);
+  }
+}
+
+for (const [bytes, want] of [
+  [0, "0 B"],
+  [1023, "1023 B"],
+  [1024, "1 KiB"],
+  [1024 * 1024 - 1, "1024 KiB"],
+  [1024 * 1024, "1.00 MiB"],
+  [10 * 1024 * 1024 - 1, "10.00 MiB"],
+  [10 * 1024 * 1024, "10 MiB"],
+  [1024 ** 3, "1.00 GiB"],
+  [5 * 1024 ** 3, "5.00 GiB"],
+] as [number, string][]) {
+  if (size(bytes) !== want) problems.push(`size(${bytes}) reads "${size(bytes)}" rather than "${want}"`);
+}
+
+/*
+  Monotonic, read back through the unit. A rendering that goes backwards over
+  a boundary is the failure mode these two invite, because each tier rounds
+  to a different number of places.
+*/
+const UNITS: Record<string, number> = { ms: 0.001, s: 1, min: 60, h: 3600 };
+let previousSeconds = -1;
+for (const seconds of [0, 0.5, 0.999, 1, 5, 9.9, 10, 60, 89, 90, 300, 599, 600, 3600, 5399, 5400, 7200, 36000]) {
+  const shown = duration(seconds);
+  const [value, unit] = shown.split(" ");
+  const back = Number(value) * UNITS[unit];
+  if (back < previousSeconds) problems.push(`duration() went backwards: ${seconds} reads "${shown}"`);
+  previousSeconds = back;
+}
+
+const SCALES: Record<string, number> = { B: 1, KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3 };
+let previousBytes = -1;
+for (const bytes of [0, 512, 1023, 1024, 4096, 1024 ** 2 - 1, 1024 ** 2, 5 * 1024 ** 2, 10 * 1024 ** 2, 1024 ** 3, 8 * 1024 ** 3]) {
+  const shown = size(bytes);
+  const [value, unit] = shown.split(" ");
+  const back = Number(value) * SCALES[unit];
+  if (back < previousBytes) problems.push(`size() went backwards: ${bytes} reads "${shown}"`);
+  previousBytes = back;
 }
 
 if (problems.length) {
