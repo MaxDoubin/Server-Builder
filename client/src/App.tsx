@@ -107,33 +107,6 @@ function lazyWithRetry<T extends ComponentType<any>>(
   });
 }
 
-/**
- * The legacy profile page. Lazy like every other legacy route.
- *
- * It was a static import, and it imports blogPosts, so the full text of the
- * whole archive was linked into the entry chunk. Every visitor downloaded
- * every post before the landing page could run.
- */
-const Home = lazyWithRetry(() =>
-  import("@/pages/Home").then((module) => ({ default: module.Home })),
-);
-
-const Blog = lazyWithRetry(() =>
-  import("@/pages/Blog").then((module) => ({ default: module.Blog })),
-);
-
-const BlogPost = lazyWithRetry(() =>
-  import("@/pages/BlogPost").then((module) => ({ default: module.BlogPost })),
-);
-
-const Projects = lazyWithRetry(() =>
-  import("@/pages/Projects").then((module) => ({ default: module.Projects })),
-);
-
-const Contact = lazyWithRetry(() =>
-  import("@/pages/Contact").then((module) => ({ default: module.Contact })),
-);
-
 const CinematicProjects = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicProjects").then((module) => ({
     default: module.CinematicProjects,
@@ -156,10 +129,6 @@ const CinematicContact = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicContact").then((module) => ({
     default: module.CinematicContact,
   })),
-);
-
-const GamePage = lazyWithRetry(() =>
-  import("@/pages/GamePage").then((module) => ({ default: module.GamePage })),
 );
 
 const CinematicGame = lazyWithRetry(() =>
@@ -704,31 +673,6 @@ function AnimatedRoutes() {
     <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
-          <Route path="/legacy">
-            <Suspense fallback={<RouteLoading />}>
-              <Home />
-            </Suspense>
-          </Route>
-          <Route path="/legacy/blog">
-            <Suspense fallback={<RouteLoading />}>
-              <Blog />
-            </Suspense>
-          </Route>
-          <Route path="/legacy/blog/:slug">
-            <Suspense fallback={<RouteLoading />}>
-              <BlogPost />
-            </Suspense>
-          </Route>
-          <Route path="/legacy/projects">
-            <Suspense fallback={<RouteLoading />}>
-              <Projects />
-            </Suspense>
-          </Route>
-          <Route path="/legacy/contact">
-            <Suspense fallback={<RouteLoading />}>
-              <Contact />
-            </Suspense>
-          </Route>
           <Route path="/blog">
             <Suspense fallback={<RouteLoading />}>
               <CinematicBlog />
@@ -1049,11 +993,6 @@ function AnimatedRoutes() {
           </Route>
           <Route path="/build">
             <OpsRoute><BuildDashboard /></OpsRoute>
-          </Route>
-          <Route path="/legacy/game">
-            <Suspense fallback={<GameLoading />}>
-              <GamePage />
-            </Suspense>
           </Route>
           <Route>
             <Suspense fallback={<RouteLoading />}>

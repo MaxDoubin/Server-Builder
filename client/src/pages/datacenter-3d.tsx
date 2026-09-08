@@ -49,7 +49,7 @@ type DockTab = "cost" | "scenarios" | "layouts" | "awards";
   mode its Build button chose, and Explore is one click away in the control
   dock once the scene is up, so nothing the gate offered is lost.
 */
-const DIRECT_ENTRY_PATHS = new Set(["/game", "/legacy/game", "/floor"]);
+const DIRECT_ENTRY_PATHS = new Set(["/game", "/floor"]);
 
 const DOCK_TABS: Array<{ id: DockTab; label: string; tour?: string }> = [
   { id: "scenarios", label: "Scenarios", tour: "scenarios" },

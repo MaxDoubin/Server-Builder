@@ -15,21 +15,21 @@
      stale entries cannot accumulate across deploys. Bump it whenever the
      shape of what is stored changes, not just when a bug is fixed.
 
-  2. NO HTML DOCUMENT IS EVER SERVED WITHOUT A REVALIDATION BEHIND IT.
+  2. THE NETWORK DECIDES WHAT AN HTML DOCUMENT SAYS, ALWAYS.
      This is the rule that stops sites bricking. A prerendered document hard
      codes content hashed asset filenames (/assets/index-BkpAYz8l.js). After a
-     redeploy those files are gone from the CDN. A document served from cache
-     with no refresh scheduled would keep asking for asset URLs that now 404,
-     forever, and the reader has no way to clear it. So documents are stale
-     while revalidate: the cached copy is handed over immediately and a fresh
-     one is pulled in the background for next time. The staleness window is
-     exactly one page load, never longer.
+     redeploy those files are gone from the CDN, so a document out of cache
+     names chunks that now 404. Documents are therefore network first, and the
+     cached copy is the offline answer rather than the fast path. This was
+     stale while revalidate once, which is the right trade for a page whose
+     assets are stable and the wrong one for a site that deploys several times
+     in an afternoon: see the long note in documentStrategy.
 
-  3. Even one stale load is capped by MAX_STALE_DOCUMENT_MS. Past that age a
-     cached document is treated as a fallback only, and the network goes
-     first. A document cached three weeks ago is far more likely to reference
-     assets the CDN has dropped than one cached this morning, and the reader
-     is more likely to want the current text.
+  3. A slow connection still gets an answer. When there is a cached copy to
+     fall back on, the network gets DOCUMENT_NETWORK_TIMEOUT_MS to win the
+     race before that copy is served instead. Losing the race does not cancel
+     the request: whatever it returns is still stored, or the next load would
+     be stale too, and so would the one after it.
 
   4. Cache first is correct for /assets/* and for the Google Fonts files
      precisely because those names are content hashed: the URL changes
@@ -105,9 +105,6 @@ const CACHE_LIMITS = {
   fires on something that should not be in a cache anyway.
 */
 const MAX_ENTRY_BYTES = 2 * 1024 * 1024;
-
-/** See rule 3. A day is comfortably longer than a reading session. */
-const MAX_STALE_DOCUMENT_MS = 24 * 60 * 60 * 1000;
 
 /**
  * How long to wait for a fresh document before falling back to the cache.
@@ -392,8 +389,8 @@ self.addEventListener("fetch", (event) => {
 });
 
 /**
- * Documents. Stale while revalidate inside the freshness window, network
- * first outside it, offline document as the last resort. See rules 2 and 3.
+ * Documents. Network first, the cached copy when the network is too slow or
+ * gone, the offline document when there is no copy either. See rules 2 and 3.
  */
 async function documentStrategy(event, request) {
   const cache = await openCache(SHELL_CACHE);
@@ -429,17 +426,44 @@ async function documentStrategy(event, request) {
     along: the offline answer. The timeout keeps a slow connection from
     hanging on a document we already have a usable copy of.
   */
+  const network = fromNetwork(event, request);
+
+  /*
+    Store what the network returns whether or not it wins the race below.
+
+    Attached before the race, and outside it, on purpose. Storing inside the
+    winning branch looks equivalent and is not: when the timeout wins, the
+    request is still in flight, and its response used to be dropped. The
+    cache then still held the old document, so the next load timed out
+    against the same slow connection and served the same stale manifest, and
+    so did the one after that. A reader on a bad train line would keep
+    getting last week's chunk names until they happened to load a page fast
+    enough to beat four seconds. The staleness outlived the outage.
+
+    waitUntil, so a worker that has already answered from cache is not killed
+    with the write half done.
+  */
+  event.waitUntil(
+    network
+      .then((response) =>
+        isStorable(response)
+          ? store(cache, request, response.clone(), SHELL_CACHE)
+          : undefined,
+      )
+      .catch(() => undefined),
+  );
+
+  let timer;
   try {
-    const response = await Promise.race([
-      fromNetwork(event, request),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("slow")), cached ? DOCUMENT_NETWORK_TIMEOUT_MS : 30000),
-      ),
+    return await Promise.race([
+      network,
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("slow")),
+          cached ? DOCUMENT_NETWORK_TIMEOUT_MS : 30000,
+        );
+      }),
     ]);
-    if (isStorable(response)) {
-      event.waitUntil(store(cache, request, response.clone(), SHELL_CACHE));
-    }
-    return response;
   } catch {
     // Offline. An expired copy still beats an error page by a mile.
     if (cached) return cached;
@@ -455,6 +479,9 @@ async function documentStrategy(event, request) {
       the reader chooses to follow.
     */
     return offlineResponse();
+  } finally {
+    /* The race is decided; a pending timer would only hold the worker up. */
+    clearTimeout(timer);
   }
 }
 
@@ -472,17 +499,6 @@ async function fromNetwork(event, request) {
     preloaded = undefined;
   }
   return preloaded || fetch(request);
-}
-
-/** The background half of stale while revalidate for documents. */
-async function revalidate(event, request, cache, cacheName) {
-  try {
-    const response = await fromNetwork(event, request);
-    if (isStorable(response)) await store(cache, request, response, cacheName);
-  } catch {
-    // Offline, and the reader already has the copy they asked for. Nothing
-    // to report and nothing to fix.
-  }
 }
 
 /**
@@ -614,21 +630,6 @@ function isStorable(response) {
   if (Number.isFinite(declared) && declared > MAX_ENTRY_BYTES) return false;
 
   return true;
-}
-
-/**
- * True when the response is older than maxAgeMs, or when its age cannot be
- * established at all. Unprovable freshness counts as stale: the cost of
- * being wrong that way is one network request, and the cost of being wrong
- * the other way is serving a document from before the last three deploys.
- */
-function isOlderThan(response, maxAgeMs) {
-  const date = response.headers.get("date");
-  if (!date) return true;
-  const age = Date.now() - new Date(date).getTime();
-  // NaN from an unparseable header, and a negative age from a skewed clock,
-  // both fail this and are treated as stale.
-  return !(age >= 0 && age < maxAgeMs);
 }
 
 /** caches.open throws outright where storage is denied. Never let that pass. */

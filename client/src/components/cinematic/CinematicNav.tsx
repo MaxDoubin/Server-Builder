@@ -358,11 +358,11 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
 
           <div className="flex items-center gap-3">
             {/*
-              Theme, text size and high contrast, on every page rather than on
-              the five legacy routes.
+              Theme, text size and high contrast, on every page.
 
-              All three were reachable only from the old navbar, so about 360
-              pages had no way to any of them. Text size was the sharpest
+              All three were reachable only from the old site's navbar, which
+              five routes mounted, so about 360 pages had no way to any of
+              them. Text size was the sharpest
               miss: it moves the rem basis on the root element, so it always
               worked here, and the control that sets it was simply somewhere
               else. Theme and high contrast now work here too, since

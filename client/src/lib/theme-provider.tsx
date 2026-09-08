@@ -141,9 +141,9 @@ export function ThemeProvider({
     () => ({
       theme,
       toggleTheme,
-      // The legacy navbar picks a theme directly rather than toggling. It
-      // was destructuring setTheme from here, which was undefined, so every
-      // click threw and the theme never changed.
+      // The display menu picks a theme directly rather than toggling. It was
+      // destructuring setTheme from here, which was undefined, so every click
+      // threw and the theme never changed.
       setTheme,
       fontScale,
       setFontScale,
