@@ -344,6 +344,16 @@ jobs:
       - name: DNS resolution cases
         run: npx tsx scripts-ci/check-resolve.ts
 
+      # Each chain case names both a fault and the party who has to fix it,
+      # and the owner is the half that would rot silently: an explanation
+      # saying only the client can fix this, against a validator naming the
+      # server, teaches someone to open a ticket with the wrong team while
+      # looking entirely correct. Both are compared against the validator, plus
+      # the RFC 6125 wildcard rules, which are the piece people implement from
+      # memory and get wrong in the same two ways every time.
+      - name: Certificate chains
+        run: npx tsx scripts-ci/check-chain.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the

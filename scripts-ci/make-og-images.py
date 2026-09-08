@@ -97,6 +97,7 @@ PAGE_EYEBROWS = {
     "triage": "PHISHING TRIAGE",
     "firewall": "FIREWALL EXERCISES",
     "resolve": "DNS RESOLUTION",
+    "chain": "CERTIFICATE CHAINS",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",
