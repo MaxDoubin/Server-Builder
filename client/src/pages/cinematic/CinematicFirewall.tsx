@@ -24,6 +24,7 @@ import {
   saveDraft,
 } from "@/lib/firewall/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
+import { PractiseStage } from "@/components/practise/PractiseStage";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -86,8 +87,33 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
   const chosen = exercise.expectations[Math.min(probe, exercise.expectations.length - 1)];
   const trace: Trace | null = Array.isArray(parsed) ? null : evaluate(parsed, chosen.packet);
 
+  /*
+    The room reflects how close the chain is. Nothing else on the page says
+    "two of six" as immediately as the whole screen easing off, and a checklist
+    one line from green should not look like one that is empty.
+
+    It will not read as recovering until the reader has actually changed
+    something, though. An exercise that starts at two of three would otherwise
+    greet you with a calm room for a chain that is broken, which is the page
+    telling you the opposite of the truth on the one screen where it matters.
+  */
+  const passing = checks.filter((check) => check.pass).length;
+  const touched = source !== exercise.start;
+  const mood =
+    passing === 0
+      ? "critical"
+      : touched && passing >= checks.length - 1
+        ? "recovering"
+        : "tense";
+
   return (
     <CinematicLayout>
+      <PractiseStage
+        accent="signal"
+        mood={mood}
+        ending={solved ? "best" : undefined}
+        flashKey={passing}
+      />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[980px]">
           <Link

@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { EvidenceBlock } from "@/components/scenarios/EvidenceBlock";
-import { ScenarioStage, accentFor } from "@/components/scenarios/ScenarioStage";
+import { PractiseStage, accentFor } from "@/components/practise/PractiseStage";
 import { useSEO } from "@/lib/useSEO";
 import { getScenario } from "@/lib/scenarios/index";
 import {
@@ -187,7 +187,7 @@ function Player({ scenario }: { scenario: Scenario }) {
 
   return (
     <CinematicLayout>
-      <ScenarioStage
+      <PractiseStage
         accent={accentFor(scenario.category)}
         mood={mood}
         ending={ending?.grade}
