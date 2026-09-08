@@ -363,6 +363,15 @@ jobs:
       - name: Address plans
         run: npx tsx scripts-ci/check-allocate.ts
 
+      # The array calculator is entirely arithmetic, so the check is a table of
+      # capacities, tolerances, rebuild times and probabilities worked out by
+      # hand. It earned its keep immediately: the textbook form of the URE
+      # expression silently returns zero for small rates, because subtracting
+      # 1e-17 from 1 in a float64 gives exactly 1, and the wrong answer reads
+      # as a very reassuring number rather than as an error.
+      - name: Array arithmetic
+        run: npx tsx scripts-ci/check-array.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
