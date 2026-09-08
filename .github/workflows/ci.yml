@@ -391,6 +391,15 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # The palette is the one box that reaches everything, which only holds
+      # while it knows about every page. Sixteen surfaces had been built,
+      # shipped and linked from the footer without ever being added to it:
+      # typing "firewall" returned articles that mention firewalls and not
+      # the firewall exercise. Every route must now be named in the palette,
+      # generated from a registry it loads, or excepted with a reason.
+      - name: The palette reaches every page
+        run: npx tsx scripts-ci/check-palette.ts
+
       # An explanation with a number in it goes stale the moment a parameter is
       # edited, and a case that says "about 14 Mbps" beside a model computing
       # 17 is worse than one with no number: the reader believes the sentence.

@@ -1,12 +1,18 @@
 /**
  * One box that reaches everything on the site.
  *
- * The archive is 247 articles, 20 tools, 16 rack elevations, 249 hardware
- * models, nine competition guides and three dozen other pages, behind a
+ * The archive is a few hundred articles, twenty tools, sixteen rack
+ * elevations, a couple of hundred hardware models, ninety-six glossary
+ * entries, a dozen practise surfaces and three dozen other pages, behind a
  * nine item navigation bar. Everything is reachable and almost nothing is
  * findable: knowing the site has a chmod calculator does not tell you it is
  * under Tools rather than under the study material, and knowing there is an
  * article about RAID rebuild arithmetic does not tell you what it is called.
+ *
+ * The counts above are deliberately approximate. An exact figure in a
+ * comment is a figure that is wrong within a fortnight, and check-palette
+ * asserts the coverage that actually matters: every route in App.tsx is
+ * reachable from here, or excepted with a reason.
  *
  * Cmd+K, or Ctrl+K, or pressing / anywhere that is not already a text field.
  *
@@ -43,7 +49,7 @@ import type { RackDefinition } from "@/lib/rackTypes";
 /** One thing you can go to. */
 interface Entry {
   /** Grouping, and the label on the section header. */
-  kind: "Page" | "Tool" | "Rack" | "Hardware" | "Article";
+  kind: "Page" | "Term" | "Tool" | "Rack" | "Hardware" | "Article";
   title: string;
   href: string;
   /** Shown under the title. */
@@ -86,6 +92,30 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Subscribe", href: "/subscribe", terms: "rss newsletter email" },
   { kind: "Page", title: "Ask me anything", href: "/ask" },
   { kind: "Page", title: "Contact", href: "/contact", terms: "email get in touch hire" },
+  /*
+    The practise surfaces and the reference pages.
+
+    These were missing for as long as they existed, which is the failure the
+    palette is supposed to prevent: a reader who knows the site has a
+    firewall exercise could not reach it by typing "firewall", because the
+    only firewall hits were articles.
+  */
+  { kind: "Page", title: "Practise", href: "/practise", detail: "Everything here you do rather than read", terms: "exercises drills training" },
+  { kind: "Page", title: "Today", href: "/today", detail: "One thing from each surface, chosen by the date", terms: "daily selection" },
+  { kind: "Page", title: "Glossary", href: "/glossary", detail: "The vocabulary, and what people get wrong about it", terms: "definitions terms jargon acronyms" },
+  { kind: "Page", title: "Incident scenarios", href: "/scenarios", terms: "decide branching incident response tabletop" },
+  { kind: "Page", title: "Hands-on labs", href: "/labs", detail: "A simulated Linux host with a fault in it", terms: "terminal shell diagnose" },
+  { kind: "Page", title: "Packet captures", href: "/capture", detail: "A real display filter bar", terms: "wireshark pcap read tcpdump" },
+  { kind: "Page", title: "Capture the flag", href: "/challenges", terms: "ctf flag artefact forensics" },
+  { kind: "Page", title: "Phishing triage", href: "/triage", detail: "Call it, then say which signal settles it", terms: "email judge headers spf dkim dmarc" },
+  { kind: "Page", title: "Firewall exercises", href: "/firewall", detail: "A chain with something wrong with it", terms: "iptables rules order first match" },
+  { kind: "Page", title: "DNS resolution", href: "/resolve", detail: "Attribute the fault from the trace", terms: "dns delegation nxdomain lame glue" },
+  { kind: "Page", title: "Certificate chains", href: "/chain", detail: "A TLS error and whose problem it is", terms: "tls x509 pki intermediate expiry" },
+  { kind: "Page", title: "Address plans", href: "/allocate", detail: "Divide a block between competing needs", terms: "subnetting vlsm cidr ipam" },
+  { kind: "Page", title: "Array calculator", href: "/array", detail: "Capacity, rebuild time and the URE arithmetic", terms: "raid storage disks parity" },
+  { kind: "Page", title: "Protocol handshakes", href: "/handshake", detail: "Step by step, with the breaks", terms: "tcp tls dhcp sequence diagram" },
+  { kind: "Page", title: "Why the transfer is slow", href: "/transfer", detail: "Which of the three ceilings is binding", terms: "throughput bandwidth window latency loss bdp tcp" },
+  { kind: "Page", title: "Archive", href: "/archive", detail: "Every article by date", terms: "all posts index" },
 ];
 
 /** Shape of the hardware catalogue, only the fields the palette needs. */
@@ -128,7 +158,15 @@ function rank(entry: Entry, terms: string[]): number {
   return total - entry.title.length * 0.05;
 }
 
-const KIND_ORDER: Entry["kind"][] = ["Page", "Tool", "Rack", "Hardware", "Article"];
+/*
+  Terms sit second, above tools and articles.
+
+  Somebody typing four letters that happen to be an acronym almost always
+  wants to know what it means, and the definition is one line rather than a
+  page they have to read to find out. An article that merely mentions VLAN
+  should not outrank the entry that defines it.
+*/
+const KIND_ORDER: Entry["kind"][] = ["Page", "Term", "Tool", "Rack", "Hardware", "Article"];
 const MAX_SHOWN = 24;
 
 export function CommandPalette() {
@@ -140,6 +178,16 @@ export function CommandPalette() {
   const [posts, setPosts] = useState<PostMeta[] | null>(null);
   const [tools, setTools] = useState<ToolEntry[] | null>(null);
   const [racks, setRacks] = useState<RackDefinition[] | null>(null);
+  /*
+    Terms arrive already shaped as entries.
+
+    slugFor lives in the glossary module, and importing it here statically
+    would put that module in the critical path of every page, which is the
+    mistake the note at the top of this file describes twice. Building the
+    rows inside the dynamic import's callback keeps the whole thing behind
+    the first keypress.
+  */
+  const [termEntries, setTermEntries] = useState<Entry[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -187,12 +235,22 @@ export function CommandPalette() {
       import("@/lib/postIndex"),
       import("@/lib/toolsRegistry"),
       import("@/lib/racks"),
+      import("@/lib/glossary/index"),
     ])
-      .then(([p, t, r]) => {
+      .then(([p, t, r, g]) => {
         if (!live) return;
         setPosts(p.postIndex);
         setTools(t.TOOLS);
         setRacks(r.RACKS);
+        setTermEntries(
+          g.TERMS.map((term) => ({
+            kind: "Term" as const,
+            title: term.term,
+            href: `/glossary#${g.slugFor(term)}`,
+            detail: term.definition,
+            terms: `${term.expansion ?? ""} ${term.field}`,
+          })),
+        );
       })
       .catch(() => {
         /* Those sections are then absent; pages and hardware still work. */
@@ -239,6 +297,7 @@ export function CommandPalette() {
 
   const entries = useMemo<Entry[]>(() => {
     const out: Entry[] = [...PAGES];
+    out.push(...(termEntries ?? []));
     for (const t of tools ?? []) {
       out.push({
         kind: "Tool",
@@ -277,7 +336,7 @@ export function CommandPalette() {
       });
     }
     return out;
-  }, [gear, posts, tools, racks]);
+  }, [gear, posts, tools, racks, termEntries]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
