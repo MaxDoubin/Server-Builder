@@ -125,7 +125,7 @@ export const CASES: Case[] = [
       { id: "d", claim: "Between 5 minutes slow and 41 seconds slow. Past the code window and past a forty second old certificate, and inside what Kerberos allows.", from: -300, to: -41 },
     ],
     why:
-      "This is the ordering that makes clock skew diagnosable. The tolerances in a normal stack differ by two orders of magnitude, so they break in a fixed sequence: one-time codes go at about thirty seconds, a certificate issued moments ago goes as soon as the clock is behind its notBefore, and Kerberos holds out to five minutes. Codes failing while Kerberos works therefore reads as somewhere between half a minute and five minutes, and the forty second old certificate failing narrows the near edge. Re-enrolling was never going to help: the seed was fine and the arithmetic on both ends was fine.",
+      "This is the ordering that makes clock skew diagnosable. The tolerances in a normal stack are not on one scale, so they break in a fixed sequence: one-time codes go at about thirty seconds, a certificate issued moments ago goes as soon as the clock is behind its notBefore, and Kerberos holds out to five minutes. Codes failing while Kerberos works therefore reads as somewhere between half a minute and five minutes, and the forty second old certificate failing narrows the near edge. Re-enrolling was never going to help: the seed was fine and the arithmetic on both ends was fine.",
     breaks: "that a code being rejected is about the code, when the tightest tolerance in the stack is the first thing to break",
   },
   {

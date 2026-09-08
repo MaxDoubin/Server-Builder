@@ -34,6 +34,8 @@ import {
   readable,
   recordSolvedClock,
   spanText,
+  toleranceSpread,
+  tolerances,
   width,
   type Case,
   type Span,
@@ -41,6 +43,9 @@ import {
 import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";
+
+/* Read off the cases, so the sentence about them cannot drift from them. */
+const SPREAD = tolerances(CASES);
 
 /** How wrong the clock turns out to be, which is what the room takes its colour from. */
 function severity(item: Case): StageAccent {
@@ -167,10 +172,12 @@ export function CinematicClock() {
               wrong thing, and the wrong thing is right there and looks fine.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
-              The tolerances differ by two orders of magnitude, which is what makes this
-              diagnosable: five minutes for Kerberos, about thirty seconds for a one-time code,
-              and none at all for a certificate. So what broke is a measurement. These ask the
-              reverse question: given what failed and what did not, how wrong is the clock?
+              The tolerances are not on one scale, which is what makes this diagnosable:{" "}
+              {SPREAD.filter((value) => value > 0).join(" seconds, ")} seconds for the checks that
+              tolerate anything, and none at all for a certificate window or an RRSIG. A factor of{" "}
+              {toleranceSpread(CASES)} between the two, and then a cliff. So what broke is a
+              measurement, and these ask the reverse question: given what failed and what did not,
+              how wrong is the clock?
             </p>
           </header>
 
