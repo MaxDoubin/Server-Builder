@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 259 of them. Regenerate with script/generatePostIndex.ts.
+ * 260 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -2561,13 +2561,22 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/the-check-that-tested-nothing.jpg",
     wordCount: 1603,
   },
+  {
+    slug: "three-copies-one-credential",
+    title: "Three Copies, One Credential",
+    date: "2026-09-08",
+    tags: ["operations","security","storage"],
+    excerpt: "Every organisation that lost data had backups. 3-2-1 is a good rule stated in the least useful possible way, because the three numbers are proxies for the thing that matters and none of them is it.",
+    coverImage: "/images/blog/three-copies-one-credential.jpg",
+    wordCount: 1561,
+  },
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 259;
+export const POST_COUNT = 260;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and fifty nine";
+export const POST_COUNT_SPELLED = "two hundred and sixty";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2576,10 +2585,10 @@ export const POST_COUNT_SPELLED = "two hundred and fifty nine";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 972;
+export const CITATION_COUNT = 977;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1131;
+export const CHECKED_URL_COUNT = 1136;
