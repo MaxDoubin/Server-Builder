@@ -18,6 +18,8 @@ import { scrollableTables } from "../client/src/lib/markdownTables";
 import { uniqueHeadingId } from "../client/src/lib/headingSlug";
 import { RACKS, KIND_LABELS, portSummary, publishedWatts, unitsUsed } from "../client/src/lib/racks";
 import { staticEquipmentCatalog } from "../client/src/lib/static-equipment";
+import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
+import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/transfer/index";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -817,6 +819,26 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/game">Hyperscale</a>, a datacenter simulator running on real power and cooling maths.</li>
     <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all nine scored categories.</li>
     <li><a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>, a free twelve week plan for starting a school cybersecurity club.</li>
+  </ul>
+  <h2>Practise, in the browser</h2>
+  <p>
+    Ten places to practise, none of which need anything installed, none of
+    which reach a real machine, and none of which send anything anywhere.
+    Every exercise ships a solution that CI replays on every push.
+  </p>
+  <ul>
+    <li><a href="${SITE_URL}/today">Today</a>, one thing from each of these, chosen by the date.</li>
+    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>, the first fifteen minutes of an incident with many endings.</li>
+    <li><a href="${SITE_URL}/labs">Hands-on labs</a>, a Linux host simulated in the browser with something wrong with it.</li>
+    <li><a href="${SITE_URL}/capture">Packet captures</a>, a real trace and a Wireshark display filter bar.</li>
+    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artefact and a question with one exact answer.</li>
+    <li><a href="${SITE_URL}/triage">Phishing triage</a>, a morning of mail with every header intact.</li>
+    <li><a href="${SITE_URL}/firewall">Firewall exercises</a>, broken iptables chains with a rule-by-rule match trace.</li>
+    <li><a href="${SITE_URL}/resolve">DNS resolution</a>, telling a lame delegation from a missing glue record.</li>
+    <li><a href="${SITE_URL}/chain">Certificate chains</a>, and which party can fix a given TLS error.</li>
+    <li><a href="${SITE_URL}/allocate">Address plans</a>, dividing a block with the map drawn to scale.</li>
+    <li><a href="${SITE_URL}/handshake">Protocol handshakes</a>, breaking one step and seeing where it stops.</li>
+    <li><a href="${SITE_URL}/practise">The practise hub</a>, all of it with what each one is for.</li>
   </ul>
   <h2>About</h2>
   <ul>
@@ -2082,7 +2104,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 6,
+  numberOfItems: 8,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2090,6 +2112,8 @@ ${JSON.stringify({
     ["Flashcards", "/flashcards"],
     ["Exam objectives", "/study"],
     ["Browser tools", "/tools"],
+    ["Glossary", "/glossary"],
+    ["Why the transfer is slow", "/transfer"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2121,6 +2145,10 @@ ${JSON.stringify({
       CCNA, domain by domain with the vendor's weightings.</li>
     <li><a href="${SITE_URL}/tools">Browser tools</a>: subnetting, packet
       headers, cron, regex, encoding and ciphers, all in the page.</li>
+    <li><a href="${SITE_URL}/glossary">Glossary</a>: ${TERMS.length} terms, each
+      one saying what people reliably get wrong about it.</li>
+    <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>: the three
+      ceilings over a TCP stream, on ${TRANSFERS.length} real complaints.</li>
   </ul>
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
@@ -2427,7 +2455,8 @@ ${handshake.notes.map((note) => `  <p>${esc(note)}</p>`).join("\n")}`,
   const todayDescription =
     "One thing from every practise surface, chosen by the date and the same for everybody: an " +
     "incident to decide, a host to diagnose, a capture to read, a flag to find, a message to " +
-    "judge, a chain to reorder, a name to resolve, a certificate to attribute and a block to divide.";
+    "judge, a chain to reorder, a name to resolve, a certificate to attribute, a block to divide " +
+    "and a slow transfer to explain.";
 
   await writePage("today", base, {
     title: "Today | Max Doubin",
@@ -2447,8 +2476,8 @@ ${JSON.stringify({
 <main>
   <h1>Today</h1>
   <p>
-    One thing from each of the nine practise surfaces, chosen by the date. The
-    same nine for everybody, and different tomorrow.
+    One thing from each practise surface, chosen by the date. The same set for
+    everybody, and different tomorrow.
   </p>
   <p>
     The selection is a rotation rather than a shuffle, so each surface walks
@@ -2467,6 +2496,7 @@ ${JSON.stringify({
     <li><a href="${SITE_URL}/resolve">DNS resolution</a>, a symptom to attribute from the trace.</li>
     <li><a href="${SITE_URL}/chain">Certificate chains</a>, a TLS error and whose problem it is.</li>
     <li><a href="${SITE_URL}/allocate">Address plans</a>, a block to divide between competing needs.</li>
+    <li><a href="${SITE_URL}/transfer">Throughput</a>, a slow transfer and which ceiling is costing the time.</li>
   </ul>
   <p>
     It also shows how far you have got on each, read from what those pages
@@ -2474,6 +2504,131 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── why the transfer is slow ──
+  /*
+    The static body carries every complaint and the numbers behind it, but
+    not the answers: the exercise is deciding which ceiling is binding, and
+    printing "window" beside each one would hand a crawler the answer key and
+    put it in a search result.
+  */
+  const transferDescription =
+    "A gigabit link across an ocean with a default 64KiB window carries about six megabits. " +
+    "Model the three ceilings a single TCP stream sits under, work out which one is binding on " +
+    `${TRANSFERS.length} real complaints, and see which expensive upgrade would have done nothing.`;
+
+  await writePage("transfer", base, {
+    title: "Why the Transfer Is Slow | Max Doubin",
+    description: transferDescription,
+    canonical: `${SITE_URL}/transfer`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Why the transfer is slow",
+  description: transferDescription,
+  url: `${SITE_URL}/transfer`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Bandwidth-delay product, TCP receive window sizing, and the effect of packet loss on single-stream throughput",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Why the transfer is slow</h1>
+  <p>
+    A gigabit link across an ocean with a default 64KiB window carries about
+    six megabits. Not because anything is broken: a single stream can only
+    have so much unacknowledged data in flight, and dividing that by the round
+    trip is the whole of it. Neither number is on the invoice.
+  </p>
+  <p>
+    Three ceilings sit over a stream and the lowest one wins. The link rate
+    itself, the receive window divided by the round trip, and the Mathis bound
+    on a lossy path, which falls with the square root of the loss rate and has
+    no line rate in it at all. A fourth answer is not a ceiling: a transfer
+    small enough to finish while the window is still opening is paying round
+    trips, and a faster line does nothing for it.
+  </p>
+  <h2>The complaints</h2>
+${TRANSFERS.map((item) => {
+  const result = analyse(item.link);
+  return `  <article>
+    <h3>${esc(item.title)}</h3>
+    <p>${esc(item.complaint)}</p>
+    <p>${rate(item.link.bandwidth)} link, ${item.link.rtt} ms round trip, ${size(item.link.window)} window, ` +
+    `${item.link.loss === 0 ? "no loss" : `${(item.link.loss * 100).toFixed(4)} per cent loss`}, moving ${size(item.bytes)}. ` +
+    `Filling this path needs ${size(result.bdp)} in flight.</p>
+  </article>`;
+}).join("\n")}
+  <p>
+    The loss ceiling is the Mathis bound, an approximation of a Reno-shaped
+    sawtooth rather than a law. The shape is the part worth keeping: a
+    hundredfold reduction in loss buys a tenfold increase in speed, and no
+    amount of bandwidth buys any.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/glossary", "Glossary"], ["/capture", "Packet captures"]])}
+</main>`,
+  });
+
+  // ── glossary ──
+  /*
+    The whole glossary goes into the static body, not a summary of it. A
+    definition a crawler cannot read is a definition that only exists for
+    people who already arrived, and the terms are the reason anyone would
+    find this page at all.
+  */
+  const glossaryDescription =
+    `${TERMS.length} terms from networking, security, systems and storage, each one saying what ` +
+    "the thing is and what people reliably get wrong about it. A VLAN is not a security " +
+    "boundary. A URE figure is a warranty bound, not a measured rate.";
+
+  await writePage("glossary", base, {
+    title: "Glossary | Max Doubin",
+    description: glossaryDescription,
+    canonical: `${SITE_URL}/glossary`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "DefinedTermSet",
+  name: "Glossary",
+  description: glossaryDescription,
+  url: `${SITE_URL}/glossary`,
+  hasDefinedTerm: TERMS.map((term) => ({
+    "@type": "DefinedTerm",
+    name: term.term,
+    description: term.definition,
+    inDefinedTermSet: `${SITE_URL}/glossary`,
+    url: `${SITE_URL}/glossary#${slugFor(term)}`,
+  })),
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Glossary</h1>
+  <p>
+    Every glossary will tell you that VLAN stands for virtual LAN. Almost none
+    of them will tell you that a VLAN is not a security boundary, which is the
+    sentence that changes what somebody builds. The expansion is the small
+    print here.
+  </p>
+  <p>
+    ${TERMS.filter((term) => term.confusion).length} of the ${TERMS.length} entries close with what
+    people get wrong. Nothing here is defined that the site does not use, and a term the writing
+    leans on and this page has not defined fails the build, so the glossary cannot fall behind the
+    articles.
+  </p>
+${TERMS.map((term) => `  <article id="${slugFor(term)}">
+    <h2>${esc(term.term)}${term.expansion ? ` (${esc(term.expansion)})` : ""}</h2>
+    <p>${esc(FIELD_LABEL[term.field])}</p>
+    <p>${esc(term.definition)}</p>
+${term.confusion ? `    <p>What people get wrong: ${esc(term.confusion)}</p>` : ""}
+  </article>`).join("\n")}
+  ${backLinks([["/practise", "The practise hub"], ["/blog", "Field Notes"], ["/study", "Study guides"]])}
 </main>`,
   });
 
@@ -4112,6 +4267,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/array`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/today`, lastmod: today, changefreq: "daily", priority: "0.9" },
+    { loc: `${SITE_URL}/glossary`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

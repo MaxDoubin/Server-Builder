@@ -391,6 +391,32 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # An explanation with a number in it goes stale the moment a parameter is
+      # edited, and a case that says "about 14 Mbps" beside a model computing
+      # 17 is worse than one with no number: the reader believes the sentence.
+      # This replays every case's declared answer against the model, checks the
+      # model against arithmetic done by hand, and matches every throughput
+      # quoted in the prose to a figure the model actually produces.
+      - name: Throughput model
+        run: npx tsx scripts-ci/check-transfer.ts
+
+      # A glossary is the surface that rots quietest: nothing breaks when the
+      # writing starts using a term nobody defined, and nothing breaks when a
+      # definition outlives the last article that used the word. This checks
+      # both directions. Every entry must appear somewhere in the site's prose,
+      # and any acronym the articles use more than 25 times with no entry fails
+      # the build, so the glossary cannot fall behind what is being written.
+      - name: Glossary coverage
+        run: npx tsx scripts-ci/check-glossary.ts
+
+      # A failure with no symptom: for weeks the home page linked to two
+      # places while ten interactive surfaces sat reachable only from the nav.
+      # Nothing was broken and nothing reported it. This asserts the front
+      # door carries a link to every practise route, in the prerendered body
+      # and in the act, and that no count on it is a hand-typed literal.
+      - name: The front door mentions the practise surfaces
+        run: node scripts-ci/check-home-links.mjs
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the

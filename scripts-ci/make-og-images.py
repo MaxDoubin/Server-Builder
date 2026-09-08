@@ -102,6 +102,8 @@ PAGE_EYEBROWS = {
     "allocate": "ADDRESS PLANS",
     "array": "ARRAY CALCULATOR",
     "today": "TODAY",
+    "glossary": "GLOSSARY",
+    "transfer": "THROUGHPUT",
     "handshake": "PROTOCOL HANDSHAKES",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",

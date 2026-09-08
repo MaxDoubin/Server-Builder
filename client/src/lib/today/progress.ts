@@ -13,12 +13,14 @@ import { CHALLENGES } from "@/lib/challenges/index";
 import { MESSAGES } from "@/lib/triage/index";
 import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
+import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { loadSolved } from "@/lib/labs/progress";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
 import { loadJudgements } from "@/lib/triage/progress";
 import { loadSolvedFirewall } from "@/lib/firewall/progress";
 import { loadSolvedPlans } from "@/lib/allocate/progress";
+import { loadSolvedTransfers } from "@/lib/transfer/progress";
 
 export interface Line {
   label: string;
@@ -69,6 +71,13 @@ export function readProgress(): Line[] {
       done: loadSolvedPlans().filter((slug) => PLANS.some((p) => p.slug === slug)).length,
       total: PLANS.length,
       noun: "finished",
+    },
+    {
+      label: "Throughput",
+      href: "/transfer",
+      done: loadSolvedTransfers().filter((slug) => TRANSFERS.some((item) => item.slug === slug)).length,
+      total: TRANSFERS.length,
+      noun: "called right",
     },
   ];
 }

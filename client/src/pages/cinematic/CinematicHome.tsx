@@ -10,6 +10,9 @@ const BiographyAct = lazy(() =>
 const TelemetryAct = lazy(() =>
   import("./acts/TelemetryAct").then((m) => ({ default: m.TelemetryAct })),
 );
+const PractiseAct = lazy(() =>
+  import("./acts/PractiseAct").then((m) => ({ default: m.PractiseAct })),
+);
 const CTAAct = lazy(() =>
   import("./acts/CTAAct").then((m) => ({ default: m.CTAAct })),
 );
@@ -134,6 +137,9 @@ export function CinematicHome() {
         </Suspense>
         <Suspense fallback={<ActFallback minHeight="80vh" />}>
           <TelemetryAct />
+        </Suspense>
+        <Suspense fallback={<ActFallback minHeight="90vh" />}>
+          <PractiseAct />
         </Suspense>
         <Suspense fallback={<ActFallback minHeight="60vh" />}>
           <CTAAct />

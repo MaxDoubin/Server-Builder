@@ -1,10 +1,10 @@
 /**
  * One thing from every practise surface, chosen by the date.
  *
- * The site has ten places to practise and a reader arriving at the hub has to
- * choose between them before they have done anything. This removes that
- * choice for anyone who does not want it: nine items, picked by the day,
- * the same nine for everybody, gone tomorrow.
+ * The site has more than a dozen places to practise and a reader arriving at
+ * the hub has to choose between them before they have done anything. This
+ * removes that choice for anyone who does not want it: one item from each,
+ * picked by the day, the same set for everybody, gone tomorrow.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -29,7 +29,7 @@ export function CinematicToday() {
   useSEO({
     title: "Today | Max Doubin",
     description:
-      "One thing from every practise surface, chosen by the date and the same for everybody: an incident to decide, a host to diagnose, a capture to read, a flag to find, a message to judge, a chain to reorder, a name to resolve, a certificate to attribute and a block to divide.",
+      "One thing from every practise surface, chosen by the date and the same for everybody: an incident to decide, a host to diagnose, a capture to read, a flag to find, a message to judge, a chain to reorder, a name to resolve, a certificate to attribute, a block to divide and a slow transfer to explain.",
     canonical: `${SITE_URL}/today`,
   });
 

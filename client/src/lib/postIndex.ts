@@ -1465,7 +1465,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Self signed certificates everywhere is not a plan. A two tier internal CA, short lifetimes, and automated issuance, with the design decisions that matter most.",
     coverImage: "/images/blog/internal-pki-private-ca.jpg",
     coverCredit: {"author":"Ashley Basil","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/28438417@N08/31172894922"},
-    wordCount: 863,
+    wordCount: 964,
   },
   {
     slug: "reading-rfcs-practically",
