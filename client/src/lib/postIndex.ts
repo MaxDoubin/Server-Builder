@@ -2563,6 +2563,12 @@ export const postIndex: PostMeta[] = [
   },
 ];
 
+/** How many posts are published. A literal, so importing it costs nothing. */
+export const POST_COUNT = 259;
+
+/** The same number spelled out, for copy that reads better in words. */
+export const POST_COUNT_SPELLED = "two hundred and fifty nine";
+
 /**
  * Unique external reference URLs in the article text.
  *

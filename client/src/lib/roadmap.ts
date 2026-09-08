@@ -1,3 +1,4 @@
+import { POST_COUNT } from "./postIndex";
 /**
  * The site's own roadmap.
  *
@@ -88,7 +89,7 @@ export const ROADMAP: RoadmapGroup[] = [
   {
     key: "archive",
     title: "The archive",
-    blurb: "Making 259 posts navigable rather than merely present.",
+    blurb: `Making ${POST_COUNT} posts navigable rather than merely present.`,
     items: [
       { id: 27, title: "Client-side search", status: "done" },
       { id: 28, title: "Curated reading paths", status: "done" },
