@@ -126,6 +126,7 @@ export function CinematicFooter() {
               { href: "/oom", label: "OOM killer", testId: "link-footer-oom" },
               { href: "/units", label: "Unit ordering", testId: "link-footer-units" },
               { href: "/nat", label: "Port forwards", testId: "link-footer-nat" },
+              { href: "/alerts", label: "Alerting rules", testId: "link-footer-alerts" },
               { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },

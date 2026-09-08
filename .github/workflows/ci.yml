@@ -565,6 +565,16 @@ jobs:
       - name: Address translation follows the path
         run: npx tsx scripts-ci/check-nat.ts
 
+      # The alerting state machine is four rules and the corpus can only ever
+      # show one answer per case, so this gate asserts each rule on its own
+      # fixture and runs every case a second time through a differently
+      # shaped implementation. It caught the model's keep_firing_for counting
+      # from the last active evaluation rather than from the first one that
+      # missed, which is what rules/alerting.go actually does and one whole
+      # evaluation interval away from the documentation's wording.
+      - name: Alerting rules fire when they say
+        run: npx tsx scripts-ci/check-alerts.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

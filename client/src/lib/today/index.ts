@@ -28,6 +28,7 @@ import { CASES as SPACES } from "@/lib/space/index";
 import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as NATS } from "@/lib/nat/index";
+import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -78,6 +79,7 @@ const OFFSET = {
   oom: 89,
   units: 97,
   nat: 101,
+  alerts: 103,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -260,6 +262,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "One error message, six things it can mean. Say which two numbers disagree and what to do about it.",
       href: "/space",
       outOf: SPACES.length,
+    });
+  }
+
+  const alerting = pickFor(ALERTS, day, OFFSET.alerts);
+  if (alerting) {
+    out.push({
+      surface: "alerts",
+      eyebrow: "Predict",
+      title: alerting.name,
+      blurb: "One rule, one metric, two intervals. Work out what the alert does before you look at the state band.",
+      href: "/alerts",
+      outOf: ALERTS.length,
     });
   }
 

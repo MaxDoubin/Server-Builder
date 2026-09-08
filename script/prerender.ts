@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as ALERT_CASES, asYaml as alertYaml, clock as alertClock, correctOption as alertCorrect, evaluationTimes as alertTicks, firesAt as alertFires, run as alertRun, staleFrom as alertStale } from "../client/src/lib/alerts/index";
 import { CASES as NAT_CASES, OUTCOME_LABEL as NAT_OUTCOME, correctOption as natCorrect, isPrivate as natIsPrivate, trace as natTrace, wanRoutable as natRoutable } from "../client/src/lib/nat/index";
 import { CASES as UNIT_CASES, correctOption as unitCorrect, directivesOf as unitDirectives, levels as unitLevels, meansStarted as unitMeansStarted, outcomeOf as unitOutcome } from "../client/src/lib/units/index";
 import { CASES as OOM_CASES, adjWorth as oomAdjWorth, fattestSurvives as oomFattestSurvives, human as oomHuman, killed as oomKilled, correctOption as oomCorrect, scope as oomScope, scored as oomScored } from "../client/src/lib/oom/index";
@@ -865,6 +866,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/oom">Something has to die</a>, ten machines out of memory and one expression that decides which process the kernel kills.</li>
     <li><a href="${SITE_URL}/units">It started before the thing it needs</a>, ten sets of systemd unit files where After= and Requires= mean different things.</li>
     <li><a href="${SITE_URL}/nat">It works from outside</a>, ten port forwards and the paths their replies take.</li>
+    <li><a href="${SITE_URL}/alerts">The graph crossed the line</a>, ten runs of one alerting rule and what each one actually does.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2157,6 +2159,7 @@ ${JSON.stringify({
     ["Something has to die", "/oom"],
     ["It started before the thing it needs", "/units"],
     ["It works from outside", "/nat"],
+    ["The graph crossed the line", "/alerts"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3046,6 +3049,119 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     on the underlying filesystem, still spending its blocks, and unreachable by any path.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
+</main>`,
+  });
+
+  // ── alerting rules ──
+  /*
+    The state at every evaluation goes into the static body as a row of
+    letters, because that is the shape of the answer and a paragraph
+    describing it is not. Somebody searching "prometheus alert not firing"
+    lands here, and what they need is to see four pending evaluations, one
+    inactive, and four more pending, on a metric that was over the line the
+    whole time.
+  */
+  const alertsSilent = ALERT_CASES.filter((item) => alertFires(item.setup) === null).length;
+  const alertsDescription =
+    "An alerting rule is a question asked at a fixed cadence, of whatever value the query engine " +
+    "can find at that instant, and every surprise comes from one of those two words. A spike " +
+    "shorter than the evaluation interval never happened. A for clause is cleared by one " +
+    "evaluation that misses rather than paused. A query returns the newest sample within the " +
+    `lookback period. ${ALERT_CASES.length} runs of one rule here, ${alertsSilent} of which never fire, ` +
+    "with the state at every evaluation worked out from the samples.";
+
+  await writePage("alerts", base, {
+    title: "The Graph Crossed the Line and Nothing Fired | Max Doubin",
+    description: alertsDescription,
+    canonical: `${SITE_URL}/alerts`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The graph crossed the line",
+  description: alertsDescription,
+  url: `${SITE_URL}/alerts`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Prometheus alerting semantics: why a spike between evaluations never fires, why one inactive evaluation clears the for clause rather than pausing it, why a for shorter than the evaluation interval rounds up to it, what keep_firing_for does and what it does not, why an alert resolves when its target dies, why absent() is the only expression that notices, and why an exporter that sets its own timestamps keeps a rule firing for the whole lookback period after the data stops",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The graph crossed the line and nothing fired</h1>
+  <p>
+    ${ALERT_CASES.length} runs of one alerting rule, and the question every time is what the alert
+    does. ${alertsSilent} of them never fire at all, and in one of those the metric is over the
+    threshold in twelve of fifteen evaluations.
+  </p>
+  <p>
+    An alerting rule is not a question asked of a graph. It is a question asked at a fixed cadence,
+    of whatever value the query engine can find at that instant.
+  </p>
+  <h2>The four things that decide it</h2>
+  <ul>
+    <li><strong>The evaluation interval.</strong> A condition that was true between two
+    evaluations was never true as far as the rule is concerned. Scrape resolution decides what the
+    graph can show; the evaluation interval decides what the alert can see, and on most
+    installations they are different numbers.</li>
+    <li><strong>The for clause does not accumulate and does not pause.</strong> Prometheus checks
+    the alert continues to be active during each evaluation, so one evaluation where it is not
+    clears the start time. A for longer than the period of a flapping metric produces silence.</li>
+    <li><strong>for rounds up to the evaluation interval.</strong> On a group evaluated every
+    minute, <code>for: 30s</code> and <code>for: 60s</code> are the same alert.</li>
+    <li><strong>An instant query has a lookback.</strong> The newest sample less than five minutes
+    old, unless the series was marked stale, in which case nothing. Which of those two happens when
+    a target dies depends on whether the exporter sets its own timestamps.</li>
+  </ul>
+  <h2>The runs</h2>
+${ALERT_CASES.map((item) => {
+  const setup = item.setup;
+  const evaluations = alertRun(setup);
+  const right = alertCorrect(item);
+  const fires = alertFires(setup);
+  const stale = alertStale(setup);
+  const band = evaluations.map((entry) => entry.state[0]).join("");
+  const axis = alertTicks(setup)
+    .map((at) => (at % (setup.evaluationInterval * 5) === 0 ? "|" : " "))
+    .join("");
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <pre>scrape_interval: ${esc(alertClock(setup.scrapeInterval))}   evaluation_interval: ${esc(alertClock(setup.evaluationInterval))}   lookback: ${esc(alertClock(setup.lookback))}${setup.series.ownTimestamps ? "\nthe exporter puts its own timestamps on samples" : ""}
+
+${esc(alertYaml(setup.rule))}
+
+samples:     ${setup.series.samples.map((sample) => sample.value).join(" ")}
+state:       ${esc(band)}
+             ${esc(axis)}
+             i inactive, p pending, f firing, one letter per evaluation over ${esc(alertClock(setup.window))}
+
+${fires === null ? "never fires" : `fires at ${esc(alertClock(fires))}`}${stale !== null ? `\nthe series is marked stale at ${esc(alertClock(stale))}` : ""}</pre>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option === right ? " (this one)" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real Prometheus</h2>
+  <ol>
+    <li>The alert's own page, at <code>/alerts</code>, shows pending and firing with the time each
+    one became active. An alert that is permanently pending and never firing is the flapping case,
+    and it is invisible in a notification history because it never produced one.</li>
+    <li><code>ALERTS{alertstate="pending"}</code> is itself a series, so you can graph how long a
+    rule spends pending and see the clock being cleared.</li>
+    <li>For a rule that should have fired, evaluate its expression as an instant query at the
+    timestamp you care about rather than as a range, because the range is what the graph drew and
+    the instant is what the rule asked.</li>
+    <li><code>scrape_duration_seconds</code> and <code>up</code> next to the metric itself, to tell
+    a value that changed from a target that stopped answering.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/blog/prometheus-server-monitoring", "Prometheus server monitoring"], ["/logs", "Read the log"]])}
 </main>`,
   });
 
@@ -5605,6 +5721,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/oom`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/units`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/nat`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/alerts`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

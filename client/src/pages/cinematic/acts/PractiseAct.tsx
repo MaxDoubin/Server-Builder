@@ -36,6 +36,7 @@ import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index
 import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib/oom/index";
 import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index";
 import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
+import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -154,6 +155,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/alerts",
+    eyebrow: "Predict",
+    title: "The graph crossed the line",
+    blurb:
+      "A spike shorter than the evaluation interval never happened. A for clause is cleared by one evaluation that misses, not paused. Work out what each rule actually does.",
+    count: `${ALERT_CASES.length} runs, ${ALERT_CASES.filter((item) => alertFires(item.setup) === null).length} that never fire`,
   },
   {
     href: "/nat",

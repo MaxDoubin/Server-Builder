@@ -85,6 +85,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/oom": { load: () => import("@/pages/cinematic/CinematicOom") },
   "/units": { load: () => import("@/pages/cinematic/CinematicUnits") },
   "/nat": { load: () => import("@/pages/cinematic/CinematicNat") },
+  "/alerts": { load: () => import("@/pages/cinematic/CinematicAlerts") },
   "/cache": { load: () => import("@/pages/cinematic/CinematicCache") },
   "/route": { load: () => import("@/pages/cinematic/CinematicRoute") },
   "/restore": { load: () => import("@/pages/cinematic/CinematicRestore") },
