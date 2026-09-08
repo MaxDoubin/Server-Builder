@@ -165,6 +165,9 @@ const CinematicPatch = lazyWithRetry(() =>
 const CinematicRetry = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicRetry").then((m) => ({ default: m.CinematicRetry })),
 );
+const CinematicVlan = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicVlan").then((m) => ({ default: m.CinematicVlan })),
+);
 const CinematicLogs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLogs").then((m) => ({ default: m.CinematicLogs })),
 );
@@ -833,6 +836,11 @@ function AnimatedRoutes() {
           <Route path="/retry">
             <Suspense fallback={<RouteLoading />}>
               <CinematicRetry />
+            </Suspense>
+          </Route>
+          <Route path="/vlan">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicVlan />
             </Suspense>
           </Route>
           <Route path="/logs">

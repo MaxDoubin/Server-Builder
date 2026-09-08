@@ -22,6 +22,7 @@ import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSIONS } from "@/lib/permissions/index";
 import { FINDINGS as PATCHES } from "@/lib/patch/index";
 import { CHAINS as RETRIES } from "@/lib/retry/index";
+import { PATHS as VLANS } from "@/lib/vlan/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -64,6 +65,7 @@ const OFFSET = {
   permissions: 59,
   patch: 61,
   retry: 67,
+  vlan: 71,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -210,6 +212,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Walk a packet down it and find where it dies, and what swallowed the explanation.",
       href: "/mtu",
       outOf: MTU_PATHS.length,
+    });
+  }
+
+  const frame = pickFor(VLANS, day, OFFSET.vlan);
+  if (frame) {
+    out.push({
+      surface: "vlan",
+      eyebrow: "Follow",
+      title: frame.name,
+      blurb: "Follow one frame across two configurations that are each individually correct, and say which VLAN it lands in.",
+      href: "/vlan",
+      outOf: VLANS.length,
     });
   }
 

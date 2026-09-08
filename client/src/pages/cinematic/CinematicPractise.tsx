@@ -24,6 +24,7 @@ import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
+import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -296,6 +297,20 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/vlan",
+      eyebrow: "Follow",
+      title: "The frame that arrived untagged",
+      blurb:
+        "A trunk sends its native VLAN with nothing on it, so two ends that disagree join two broadcast domains and no switch says a word.",
+      reachFor: "hosts in one VLAN can reach hosts in another",
+      stats: [
+        `${VLAN_PATHS.length} frames`,
+        `${VLAN_PATHS.filter((path) => nativeMismatches(path).length > 0).length} silent mismatches`,
+        "live model",
+      ],
       progress: null,
     },
     {

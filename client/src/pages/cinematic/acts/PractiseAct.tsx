@@ -30,6 +30,7 @@ import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
+import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
@@ -139,6 +140,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A thousand failed passwords are a bot that got nowhere. Say what happened, then point at the one line that proves it.",
     count: `${LOGS.length} logs, ${LOGS.reduce((sum, item) => sum + item.lines.length, 0)} lines`,
+  },
+  {
+    href: "/vlan",
+    eyebrow: "Follow",
+    title: "The frame that arrived untagged",
+    blurb:
+      "Four bytes that exist only between switches, and the fault that appears when they are absent and both ends guess differently.",
+    count: `${VLAN_PATHS.length} frames, ${VLAN_PATHS.filter((path) => nativeMismatches(path).length > 0).length} silent`,
   },
   {
     href: "/retry",

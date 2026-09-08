@@ -79,6 +79,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/permissions": { load: () => import("@/pages/cinematic/CinematicPermissions") },
   "/patch": { load: () => import("@/pages/cinematic/CinematicPatch") },
   "/retry": { load: () => import("@/pages/cinematic/CinematicRetry") },
+  "/vlan": { load: () => import("@/pages/cinematic/CinematicVlan") },
   "/route": { load: () => import("@/pages/cinematic/CinematicRoute") },
   "/restore": { load: () => import("@/pages/cinematic/CinematicRestore") },
   "/array": { load: () => import("@/pages/cinematic/CinematicArray") },
