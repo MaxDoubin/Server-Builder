@@ -34,7 +34,7 @@ These are two independent things and conflating them causes most boot ordering b
 
 - `After=` and `Before=` control **order only**. They do not pull anything in.
 - `Wants=` pulls a unit in but does not fail if it fails. The soft dependency.
-- `Requires=` pulls it in and fails your unit if it fails. Note this still says nothing about order, so you nearly always want `Requires=` plus `After=` together.
+- `Requires=` pulls it in, and fails your unit if it fails **only when you also set `After=` on the failing unit**. Without the ordering the two start together, yours is already up when the other fails, and the requirement quietly did nothing. It says nothing about order on its own, which is why you want `Requires=` plus `After=` together every time.
 - `BindsTo=` is `Requires=` plus: your unit stops if the other one stops later.
 
 On networking specifically, `network.target` means "the network stack is being brought up", not "you have an IP address". If your service binds to a specific address at startup, you want `network-online.target`, and that target only works if the corresponding wait service is enabled.
@@ -131,6 +131,10 @@ Put a `Documentation=` line pointing at the runbook in every unit. Future you, a
 Use drop ins rather than editing packaged units: `systemctl edit foo.service` creates an override that survives package upgrades.
 
 Always run `systemd-analyze verify` on a new unit before enabling it, and always `systemctl daemon-reload` after editing. Half of "my change did nothing" is a forgotten reload.
+
+There are ten sets of unit files to work through at [it started before the
+thing it needs](/units), including the one where `systemctl start` returns zero
+and the binary does not exist.
 
 ## References
 

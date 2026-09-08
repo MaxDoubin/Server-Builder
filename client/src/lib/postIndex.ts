@@ -1327,7 +1327,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","operations","automation"],
     excerpt: "A service that restarts forever, starts before the network, and runs as root is three unit file directives away from being fixed.",
     coverImage: "/images/blog/systemd-units-that-behave.jpg",
-    wordCount: 795,
+    wordCount: 861,
   },
   {
     slug: "llm-application-attack-surface",
@@ -2613,7 +2613,7 @@ export const postIndex: PostMeta[] = [
     tags: ["linux","operations","servers"],
     excerpt: "If you can write a SysV init script, most of a unit file is a translation exercise. The parts that are not are dependency ordering, restart policy, and the journal.",
     coverImage: "/images/blog/init-scripts-to-systemd-units.jpg",
-    wordCount: 1344,
+    wordCount: 1496,
   },
   {
     slug: "the-invoice-is-not-the-ceiling",
