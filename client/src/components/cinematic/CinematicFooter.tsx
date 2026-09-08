@@ -119,6 +119,7 @@ export function CinematicFooter() {
               { href: "/mtu", label: "Path MTU", testId: "link-footer-mtu" },
               { href: "/permissions", label: "File permissions", testId: "link-footer-permissions" },
               { href: "/patch", label: "Patch priority", testId: "link-footer-patch" },
+              { href: "/retry", label: "Retry amplification", testId: "link-footer-retry" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },
               { href: "/capture", label: "Captures", testId: "link-footer-capture" },
