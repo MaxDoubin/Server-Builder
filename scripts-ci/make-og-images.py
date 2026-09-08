@@ -105,6 +105,7 @@ PAGE_EYEBROWS = {
     "glossary": "GLOSSARY",
     "transfer": "THROUGHPUT",
     "logs": "READ THE LOG",
+    "mtu": "PATH MTU",
     "handshake": "PROTOCOL HANDSHAKES",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",

@@ -391,6 +391,16 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # The path MTU model computes each path's MTU twice, once as the
+      # minimum of its links and once by walking a packet of every size
+      # through the simulation the page actually draws, and the two must
+      # agree. It also enforces the lesson: a path claiming to blackhole must
+      # be one a default ping crosses, and the hop blamed for swallowing the
+      # ICMP must be the last blocker at or before the drop point. The weaker
+      # form of that last rule let a bug through in review.
+      - name: Path MTU model
+        run: npx tsx scripts-ci/check-mtu.ts
+
       # A synthetic log drifts into shapes no daemon emits, which teaches
       # somebody to recognise something they will never see. Every line is
       # rendered to syslog format and parsed back by a deliberately strict
