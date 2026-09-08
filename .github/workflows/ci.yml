@@ -543,6 +543,17 @@ jobs:
       - name: The OOM killer picks by arithmetic
         run: npx tsx scripts-ci/check-oom.ts
 
+      # Ordering and requirement are two things and one sentence in most
+      # people's heads, so this gate asserts each rule directly and in both
+      # directions rather than trusting the cases: every case has exactly one
+      # answer by construction, and a model where Requires= blocked without
+      # After= would still produce ten cases with one answer each and four of
+      # them wrong. That is not hypothetical. The first version of the
+      # assertion for exactly that rule passed against exactly that bug,
+      # because its fixture walked the failing dependency second.
+      - name: Unit ordering is not unit requirement
+        run: npx tsx scripts-ci/check-units.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

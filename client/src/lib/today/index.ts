@@ -26,6 +26,7 @@ import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
 import { CASES as SPACES } from "@/lib/space/index";
 import { CASES as OOMS } from "@/lib/oom/index";
+import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -74,6 +75,7 @@ const OFFSET = {
   space: 79,
   cache: 83,
   oom: 89,
+  units: 97,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -256,6 +258,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "One error message, six things it can mean. Say which two numbers disagree and what to do about it.",
       href: "/space",
       outOf: SPACES.length,
+    });
+  }
+
+  const wiring = pickFor(UNITS, day, OFFSET.units);
+  if (wiring) {
+    out.push({
+      surface: "units",
+      eyebrow: "Order",
+      title: wiring.name,
+      blurb: "After= says when and Requires= says whether. Read the unit files and say what ends up running.",
+      href: "/units",
+      outOf: UNITS.length,
     });
   }
 

@@ -34,6 +34,7 @@ import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
 import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib/oom/index";
+import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -152,6 +153,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/units",
+    eyebrow: "Order",
+    title: "It started before the thing it needs",
+    blurb:
+      "After= is ordering and Requires= is requirement, and a failed Requires= only stops a unit when After= is set on the failing unit too. Four directives, and every combination means something else.",
+    count: `${UNIT_CASES.length} unit sets, ${UNIT_CASES.filter((item) => unitOutcome(item).failed.length > 0).length} ending in a failure`,
   },
   {
     href: "/oom",

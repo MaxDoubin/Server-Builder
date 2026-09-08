@@ -177,6 +177,9 @@ const CinematicSpace = lazyWithRetry(() =>
 const CinematicOom = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicOom").then((m) => ({ default: m.CinematicOom })),
 );
+const CinematicUnits = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicUnits").then((m) => ({ default: m.CinematicUnits })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -868,6 +871,11 @@ function AnimatedRoutes() {
           <Route path="/oom">
             <Suspense fallback={<RouteLoading />}>
               <CinematicOom />
+            </Suspense>
+          </Route>
+          <Route path="/units">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicUnits />
             </Suspense>
           </Route>
           <Route path="/cache">
