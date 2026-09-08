@@ -279,6 +279,15 @@ jobs:
       - name: Print chrome
         run: node scripts-ci/check-print-chrome.mjs
 
+      # A branching scenario is a graph written by hand in a prose file, which
+      # is exactly the kind of thing that grows a choice pointing at a scene
+      # that was renamed, an ending nothing routes to, or a loop a reader can
+      # wander forever. None of those are type errors and none are visible in
+      # review. Ending rarity is a share of all start-to-ending paths, so a
+      # cycle would make it infinite and an orphan ending would make it a lie.
+      - name: Scenario graphs
+        run: npx tsx scripts-ci/check-scenarios.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the

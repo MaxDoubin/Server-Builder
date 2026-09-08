@@ -68,6 +68,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/study": { load: () => import("@/pages/cinematic/CinematicStudy") },
   "/topics": { load: () => import("@/pages/cinematic/CinematicTopics") },
   "/roadmap": { load: () => import("@/pages/cinematic/CinematicRoadmap") },
+  "/scenarios": { load: () => import("@/pages/cinematic/CinematicScenarios") },
   "/projects": { load: () => import("@/pages/cinematic/CinematicProjects") },
   "/contact": { load: () => import("@/pages/cinematic/CinematicContact") },
   "/game": { load: () => import("@/pages/cinematic/CinematicGame"), heavy: true },
@@ -136,6 +137,7 @@ const PREFIX_ROUTES: Record<string, RouteChunk> = {
   },
   "/topics/": { load: () => import("@/pages/cinematic/CinematicTag") },
   "/ncl/": { load: () => import("@/pages/cinematic/CinematicNclGuide") },
+  "/scenarios/": { load: () => import("@/pages/cinematic/CinematicScenario") },
   "/racks/": { load: () => import("@/pages/cinematic/CinematicRackDetail") },
 };
 

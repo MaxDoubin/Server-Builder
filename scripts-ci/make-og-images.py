@@ -67,6 +67,7 @@ SECTION_EYEBROWS = [
     ("tools", "TOOLS"),
     ("study", "STUDY"),
     ("ncl", "NATIONAL CYBER LEAGUE"),
+    ("scenarios", "INCIDENT SCENARIO"),
 ]
 
 # Exact eyebrows for the top level pages, where the slug alone is a poor label.
@@ -86,6 +87,7 @@ PAGE_EYEBROWS = {
     "uses": "USES",
     "links": "LINKS",
     "faq": "QUESTIONS",
+    "scenarios": "INCIDENT SCENARIOS",
     "contact": "CONTACT",
     "colophon": "COLOPHON",
     "changelog": "CHANGELOG",

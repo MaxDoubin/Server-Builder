@@ -49,6 +49,10 @@ const { ANSWERED } = await import("../client/src/lib/askConfig.ts");
 const { COVERS, TAKEAWAYS } = await import("../client/src/lib/campsConfig.ts");
 const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig.ts");
 const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
+const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
+const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
+  "../client/src/lib/scenarios/types.ts"
+);
 const POSTS_DIR = path.resolve("client/src/content/posts");
 
 /** One post's markdown, straight off disk. */
@@ -2051,6 +2055,141 @@ ${JSON.stringify({
     });
   }
 
+  // ── branching incident scenarios ──
+  /*
+    The index and one page per scenario.
+
+    The scenes are the whole point and they are interactive, so none of them
+    are written into the static body: what a crawler gets is the brief, the
+    role, the shape of the thing, and the reading it points at. That is the
+    honest static version of an interactive page. Writing the scenes out
+    would also spoil every branch for a reader arriving from search, and
+    listing the ending titles would spoil the endings, so the static page
+    counts the endings by grade instead of naming them.
+  */
+  const scenarioIndexDescription =
+    "Branching cyber incident scenarios: ransomware at two in the morning, a server that will not come back, " +
+    "an insider with a resignation letter. Multiple choice, many endings, and every ending says what separated " +
+    "it from the best one.";
+
+  await writePage("scenarios", base, {
+    title: "Incident Scenarios | Max Doubin",
+    description: scenarioIndexDescription,
+    canonical: `${SITE_URL}/scenarios`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Branching incident scenarios",
+  description: scenarioIndexDescription,
+  url: `${SITE_URL}/scenarios`,
+  numberOfItems: SCENARIOS.length,
+  itemListElement: SCENARIOS.map((scenario, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: scenario.title,
+    description: scenario.tagline,
+    url: `${SITE_URL}/scenarios/${scenario.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Incident scenarios</h1>
+  <p>
+    The expensive mistakes in an incident are made in the first fifteen
+    minutes, by someone tired, with incomplete information, under pressure to
+    do something visible. These are those fifteen minutes, made repeatable.
+  </p>
+  <p>
+    Every ending says what separated it from the best available outcome, and
+    how rare it is: rarity is the share of all routes through the scenario
+    that finish there, counted from the graph rather than guessed.
+  </p>
+  <ul>
+${SCENARIOS.map(
+  (scenario) =>
+    `    <li><a href="${SITE_URL}/scenarios/${scenario.slug}">${esc(scenario.title)}</a> ` +
+    `(${esc(DIFFICULTY_LABEL[scenario.difficulty])}, ${esc(scenario.category)}): ` +
+    `${esc(scenario.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/study", "Study guides"], ["/ncl", "National Cyber League notes"], ["/tools", "Browser tools"]])}
+</main>`,
+  });
+
+  for (const scenario of SCENARIOS) {
+    const url = `${SITE_URL}/scenarios/${scenario.slug}`;
+    const byGrade = new Map<string, number>();
+    for (const ending of scenario.endings) {
+      byGrade.set(ending.grade, (byGrade.get(ending.grade) ?? 0) + 1);
+    }
+    const gradeSummary = [...byGrade.entries()]
+      .map(([grade, count]) => `${count} ${esc(GRADE_LABEL[grade as keyof typeof GRADE_LABEL].toLowerCase())}`)
+      .join(", ");
+
+    await writePage(`scenarios/${scenario.slug}`, base, {
+      title: pageTitle(`${scenario.title} | Incident scenario`),
+      description: `${scenario.tagline} A branching ${DIFFICULTY_LABEL[scenario.difficulty].toLowerCase()} incident scenario with ${scenario.endings.length} endings and ${pathCount(scenario).toLocaleString("en-GB")} routes.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: scenario.title,
+  description: scenario.tagline,
+  url,
+  learningResourceType: "Simulation",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: DIFFICULTY_LABEL[scenario.difficulty],
+  about: { "@type": "Thing", name: scenario.category },
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Scenarios", item: `${SITE_URL}/scenarios` },
+    { "@type": "ListItem", position: 3, name: scenario.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(scenario.title)}</h1>
+  <p>${esc(scenario.tagline)}</p>
+  <p><strong>${esc(DIFFICULTY_LABEL[scenario.difficulty])}</strong>. ${esc(DIFFICULTY_BLURB[scenario.difficulty])}</p>
+  <h2>Your role</h2>
+  <p>${esc(scenario.role)}</p>
+  <h2>The brief</h2>
+  <p><em>${esc(scenario.clockStart)}</em></p>
+${scenario.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>How it works</h2>
+  <p>
+    ${scenario.scenes.length} scenes, ${scenario.endings.length} endings
+    (${gradeSummary}), and
+    ${pathCount(scenario).toLocaleString("en-GB")} distinct routes from the
+    first decision to the last. Every ending says what separated it from the
+    best available outcome, and how rare it is. Nothing is scored and nothing
+    is timed in real seconds: any decision can be taken again differently.
+  </p>
+${
+  scenario.reading?.length
+    ? `  <h2>The written version</h2>\n  <ul>\n${scenario.reading
+        .map((link) => `    <li><a href="${SITE_URL}${link.href}">${esc(link.label)}</a></li>`)
+        .join("\n")}\n  </ul>`
+    : ""
+}
+  ${backLinks([["/scenarios", "All scenarios"], ["/study", "Study guides"], ["/blog", "Field Notes"]])}
+</main>`,
+    });
+  }
+
   // ── tools ──
   /*
     One string, used as both the meta description and the ItemList's own
@@ -2877,6 +3016,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/racks/build`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
@@ -2932,6 +3072,14 @@ async function writeSitemap(
   for (const slug of NCL_GUIDE_DATA.map((g: { slug: string }) => g.slug)) {
     urls.push({
       loc: `${SITE_URL}/ncl/${slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const scenario of SCENARIOS) {
+    urls.push({
+      loc: `${SITE_URL}/scenarios/${scenario.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
