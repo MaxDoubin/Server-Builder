@@ -532,6 +532,15 @@ jobs:
       - name: Cache keys decide who sees what
         run: npx tsx scripts-ci/check-cache.ts
 
+      # And the gate one level below check-ci-coverage. That one finds a gate
+      # the workflow never runs; this one finds a model function no gate ever
+      # names. Three of those turned up in one day, each found by breaking the
+      # code and noticing nothing broke, which is a good habit and a bad
+      # system: it only finds what you think to break. On its first run this
+      # found nine more, across four surfaces.
+      - name: Every model function is exercised by its gate
+        run: node scripts-ci/check-model-coverage.mjs
+
       # And the gate that would have caught the four above being absent. Four
       # gates were written in one day, each blinded a dozen ways to prove it
       # caught what it was for, and none was added to this file: forty-six

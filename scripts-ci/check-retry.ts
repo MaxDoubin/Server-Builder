@@ -28,6 +28,9 @@ import {
   correctOption,
   delays,
   elapsed,
+  healthy,
+  ms,
+  needsAtLeast,
   orphaned,
   requestsAt,
   synchronised,
@@ -190,7 +193,12 @@ function randomChain(): Chain {
     name: "generated",
     brief: "",
     callers,
-    leaf: { name: "leaf", latency: between(1, 40) * 250 },
+    /*
+      A distinctive name, because a generator that calls every dependency
+      "leaf" cannot fail a property about preserving the name. A blinding that
+      made healthy() rewrite it passed 6,000 rounds for exactly that reason.
+    */
+    leaf: { name: `dep-${next() % 10000}`, latency: between(1, 40) * 250 },
     ask: { kind: "amplification" },
     question: "",
     options: [],
@@ -282,6 +290,47 @@ for (let round = 0; round < ROUNDS; round += 1) {
     note("orphaned work and abandoning callers disagree");
   }
 
+  /*
+    needsAtLeast() is the timeout a layer would need for the one below it to
+    finish first, which is the number the page tells a reader to go and set.
+    So it has to be exactly the point where truncation stops: at that timeout
+    the layer no longer abandons its callee, and one millisecond under it
+    still does.
+  */
+  for (let index = 0; index < depth; index += 1) {
+    const need = needsAtLeast(chain, index);
+    const generous: Chain = {
+      ...chain,
+      callers: chain.callers.map((caller, at) => (at === index ? { ...caller, timeout: need } : caller)),
+    };
+    if (abandoning(generous).includes(generous.callers[index])) {
+      note(`a layer given needsAtLeast(${index}) still abandoned its callee`);
+    }
+    if (need > 1) {
+      const mean: Chain = {
+        ...chain,
+        callers: chain.callers.map((caller, at) => (at === index ? { ...caller, timeout: need - 1 } : caller)),
+      };
+      if (!abandoning(mean).includes(mean.callers[index])) {
+        note(`a layer one millisecond under needsAtLeast(${index}) did not abandon anything`);
+      }
+    }
+  }
+
+  /*
+    healthy() replaces a leaf's latency and nothing else, which is what makes
+    it usable as a control: the chain it returns has to differ in exactly that
+    one number.
+  */
+  {
+    const quick = healthy(chain.leaf, 1);
+    if (quick.latency !== 1) note("healthy() did not set the latency it was given");
+    if (quick.name !== chain.leaf.name) note("healthy() changed the leaf's name");
+    if (healthy(chain.leaf, chain.leaf.latency).latency !== chain.leaf.latency) {
+      note("healthy() with the existing latency changed it");
+    }
+  }
+
   /* Rule: a layer's answer time is at least its attempts times what it waits for. */
   for (let index = 0; index < depth; index += 1) {
     const caller = chain.callers[index];
@@ -303,6 +352,37 @@ if (withoutTruncation < ROUNDS / 20) problems.push(`only ${withoutTruncation} of
 if (withOrphans < ROUNDS / 20) problems.push(`only ${withOrphans} of ${ROUNDS} generated chains orphan work`);
 if (multiLayer < ROUNDS / 2) problems.push(`only ${multiLayer} of ${ROUNDS} generated chains have more than one layer, so multiplication is barely tested`);
 if (amplified < ROUNDS / 10) problems.push(`only ${amplified} of ${ROUNDS} generated chains amplify to 8 or more`);
+
+/*
+  ms() renders a duration, and a reader believes what it renders.
+
+  Table-driven at the boundary rather than by property, because the boundary
+  is the whole behaviour: under a second it reads in milliseconds, at or over
+  it reads in seconds, and a whole number of seconds drops the decimal. A
+  formatter that lies still lies to a reader.
+*/
+for (const [value, want] of [
+  [0, "0ms"],
+  [1, "1ms"],
+  [999, "999ms"],
+  [1000, "1s"],
+  [1500, "1.5s"],
+  [2000, "2s"],
+  [4600, "4.6s"],
+  [60000, "60s"],
+] as [number, string][]) {
+  if (ms(value) !== want) problems.push(`ms(${value}) reads "${ms(value)}" rather than "${want}"`);
+}
+/* And it has to be monotonic, or a longer wait can print as a shorter one. */
+{
+  let previous = -1;
+  for (const value of [0, 1, 250, 999, 1000, 1001, 1500, 2000, 5000, 30000]) {
+    const shown = ms(value);
+    const parsed = shown.endsWith("ms") ? Number(shown.slice(0, -2)) : Number(shown.slice(0, -1)) * 1000;
+    if (parsed < previous) problems.push(`ms() is not monotonic: ${value} reads "${shown}"`);
+    previous = parsed;
+  }
+}
 
 /* A hand-worked example, so the recursion is pinned to a number I can check on paper. */
 {

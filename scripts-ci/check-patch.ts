@@ -30,6 +30,7 @@ import {
   displacement,
   invertedPairs,
   keyFor,
+  misrankedByScore,
   priorityFor,
   severityFor,
   worstMove,
@@ -268,6 +269,49 @@ if (settled < 2) {
 }
 if (settled > FINDINGS.length * 0.7) {
   problems.push(`${settled} of ${FINDINGS.length} findings do not move, so the two queues barely differ`);
+}
+
+/*
+  misrankedByScore() is what the page highlights, so it has to mean what the
+  page says it means: the findings the base score puts at least three places
+  away from where the decision tree puts them.
+
+  Recomputed from displacement() rather than compared against a list, and
+  checked from both sides: everything it returns has moved at least three
+  places, and nothing it leaves out has. It was exported and named by nothing
+  in this file until a check over the models found it.
+*/
+{
+  const flagged = misrankedByScore(FINDINGS);
+  const ids = new Set(flagged.map((finding) => finding.id));
+  for (const finding of flagged) {
+    const move = Math.abs(moves.get(finding.id) ?? 0);
+    if (move < 3) {
+      problems.push(`misrankedByScore includes ${finding.id}, which moves ${move} places`);
+    }
+  }
+  for (const finding of FINDINGS) {
+    const move = Math.abs(moves.get(finding.id) ?? 0);
+    if (move >= 3 && !ids.has(finding.id)) {
+      problems.push(`misrankedByScore leaves out ${finding.id}, which moves ${move} places`);
+    }
+  }
+  /* Every flagged finding has to be one of the set, not a copy or a stranger. */
+  for (const finding of flagged) {
+    if (!FINDINGS.some((item) => item.id === finding.id)) {
+      problems.push(`misrankedByScore returned ${finding.id}, which is not in the set`);
+    }
+  }
+  /*
+    And the set has to contain some, or the page highlights nothing and the
+    argument it is making is invisible.
+  */
+  if (flagged.length === 0) {
+    problems.push("no finding moves three or more places, so the page has nothing to highlight");
+  }
+  if (flagged.length === FINDINGS.length) {
+    problems.push(`all ${FINDINGS.length} findings are badly misranked, which teaches that base score is simply reversed`);
+  }
 }
 
 /* The top of each queue has to be a different finding, or the picture is dull. */
