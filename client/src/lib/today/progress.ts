@@ -23,6 +23,7 @@ import { CASES as CLOCKS } from "@/lib/clock/index";
 import { CASES as SPACES } from "@/lib/space/index";
 import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as UNITS } from "@/lib/units/index";
+import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -43,6 +44,7 @@ import { loadSolvedClocks } from "@/lib/clock/progress";
 import { loadSolvedSpaces } from "@/lib/space/progress";
 import { loadSolvedOoms } from "@/lib/oom/progress";
 import { loadSolvedUnits } from "@/lib/units/progress";
+import { loadSolvedNats } from "@/lib/nat/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -118,6 +120,13 @@ export function readProgress(): Line[] {
       done: loadSolvedCaches().filter((slug) => CACHES.some((item) => item.slug === slug)).length,
       total: CACHES.length,
       noun: "read right",
+    },
+    {
+      label: "Address translation",
+      href: "/nat",
+      done: loadSolvedNats().filter((slug) => NATS.some((item) => item.slug === slug)).length,
+      total: NATS.length,
+      noun: "traced right",
     },
     {
       label: "Unit ordering",

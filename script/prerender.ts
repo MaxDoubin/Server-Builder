@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as NAT_CASES, OUTCOME_LABEL as NAT_OUTCOME, correctOption as natCorrect, isPrivate as natIsPrivate, trace as natTrace, wanRoutable as natRoutable } from "../client/src/lib/nat/index";
 import { CASES as UNIT_CASES, correctOption as unitCorrect, directivesOf as unitDirectives, levels as unitLevels, meansStarted as unitMeansStarted, outcomeOf as unitOutcome } from "../client/src/lib/units/index";
 import { CASES as OOM_CASES, adjWorth as oomAdjWorth, fattestSurvives as oomFattestSurvives, human as oomHuman, killed as oomKilled, correctOption as oomCorrect, scope as oomScope, scored as oomScored } from "../client/src/lib/oom/index";
 import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
@@ -863,6 +864,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/space">No space left on device</a>, six filesystems and six different things that message means.</li>
     <li><a href="${SITE_URL}/oom">Something has to die</a>, ten machines out of memory and one expression that decides which process the kernel kills.</li>
     <li><a href="${SITE_URL}/units">It started before the thing it needs</a>, ten sets of systemd unit files where After= and Requires= mean different things.</li>
+    <li><a href="${SITE_URL}/nat">It works from outside</a>, ten port forwards and the paths their replies take.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2154,6 +2156,7 @@ ${JSON.stringify({
     ["No space left on device", "/space"],
     ["Something has to die", "/oom"],
     ["It started before the thing it needs", "/units"],
+    ["It works from outside", "/nat"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3043,6 +3046,113 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     on the underlying filesystem, still spending its blocks, and unreachable by any path.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
+</main>`,
+  });
+
+  // ── address translation ──
+  /*
+    Every packet header in the static body is traced rather than typed, and
+    the rulesets are the nftables lines a reader is about to paste into their
+    own router. Somebody searching "port forward works outside not inside"
+    lands on this page, and what they need is the reply path drawn out, which
+    is the half no port forwarding guide shows.
+  */
+  const natBroken = NAT_CASES.filter((item) => natTrace(item).outcome !== "connected").length;
+  const natDescription =
+    "A port forward rewrites the destination of the request and nothing rewrites the reply, " +
+    "unless the reply happens to pass back through the box holding the connection tracking entry. " +
+    `${NAT_CASES.length} port forwards here, ${natBroken} of which do not connect, and most of the rules are ` +
+    "written exactly as the documentation says: the hairpin from inside the LAN, the server whose " +
+    "default gateway points elsewhere, the filter rule written against the public address, and the " +
+    "router whose own outside address is inside the ISP's carrier grade NAT.";
+
+  await writePage("nat", base, {
+    title: "The Port Forward Works From Outside | Max Doubin",
+    description: natDescription,
+    canonical: `${SITE_URL}/nat`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "It works from outside",
+  description: natDescription,
+  url: `${SITE_URL}/nat`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Netfilter address translation: why dnat happens in prerouting and snat in postrouting, why a forward filter rule sees the translated destination and the original source, why a port forward that works from the internet fails from the LAN, what hairpin NAT costs you in the access log, why an asymmetric return path breaks a connection the request half of which arrived fine, how masquerade differs from snat on a multi homed router, and why a port forward behind carrier grade NAT can never work",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>It works from outside</h1>
+  <p>
+    ${NAT_CASES.length} port forwards and the paths their replies take. ${natBroken} of them do not
+    connect, and most of the rules are written exactly as the documentation says to write them.
+  </p>
+  <p>
+    The rule is stateful. The first packet of a flow is used to look up a matching rule, which sets
+    up the binding for that flow; no rule lookup happens for the packets after it, in either
+    direction. So the question is never whether the rule matches. It is where the reply goes, and
+    whether it passes back through the box holding the binding.
+  </p>
+  <h2>Where the rewrites happen</h2>
+  <pre>prerouting    dstnat, priority -100      the destination is rewritten
+routing       the interface it leaves by, decided on the NEW destination
+forward       filter, priority 0         the translated destination, the original source
+postrouting   srcnat, priority +100      the source is rewritten</pre>
+  <p>
+    That table answers two questions people get wrong in opposite directions. A filter rule written
+    against the public address never matches, because the destination was rewritten one hook
+    earlier. A filter rule written against the translated source never matches either, because the
+    source is rewritten one hook later.
+  </p>
+  <h2>The cases</h2>
+${NAT_CASES.map((item) => {
+  const exchange = natTrace(item);
+  const right = natCorrect(item);
+  const line = (step: { where: string; packet: { saddr: string; sport: number; daddr: string; dport: number }; note?: string }) =>
+    `  ${esc(step.where.padEnd(26))} ${esc(step.packet.saddr)}:${step.packet.sport} -> ${esc(step.packet.daddr)}:${step.packet.dport}${step.note ? `   ${esc(step.note)}` : ""}`;
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <pre>${esc(item.router.name)}
+${item.router.nics.map((nic) => `  ${esc(nic.name.padEnd(6))} ${esc(nic.address.padEnd(15))} ${esc(nic.network)}${natIsPrivate(nic.address) ? "   (not routable from the internet)" : ""}`).join("\n")}
+${item.router.upstream ? `  default via ${esc(item.router.upstream)}` : "  no default route"}
+
+${item.hosts.map((host) => `  ${esc(host.name.padEnd(8))} ${esc(host.address.padEnd(15))} ${host.gateway ? `gw ${esc(host.gateway)}` : "on the internet"}`).join("\n")}
+
+table ip nat {
+${item.router.rules.map((rule) => `  chain ${esc(rule.chain)} { ${esc(rule.written)} }`).join("\n")}
+}
+
+request:
+${exchange.request.map(line).join("\n")}${exchange.reply.length > 0 ? `\n\nreply, routed separately:\n${exchange.reply.map(line).join("\n")}` : ""}
+
+outcome: ${esc(NAT_OUTCOME[exchange.outcome])}${exchange.seenBy ? `, the far end sees ${esc(exchange.seenBy)}` : ""}</pre>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option === right ? " (this one)" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real router</h2>
+  <ol>
+    <li><code>conntrack -L -d &lt;public address&gt;</code>. A connection with packets counted in one
+    direction and zero in the other is an asymmetric return path, and that is the whole diagnosis.</li>
+    <li><code>nft list ruleset</code> and read which chain each rule is in. A source rewrite in
+    prerouting or a destination rewrite in postrouting is a rule that will never do what it says.</li>
+    <li>On the server, <code>ip route get &lt;client address&gt;</code>. If the answer is not the
+    router holding the binding, no rule on the router will help.</li>
+    <li>Compare the address on the WAN interface against what an outside service reports. If the
+    first is inside ${esc(NAT_CASES.some((item) => !natRoutable(item.router)) ? "100.64.0.0/10" : "a private range")},
+    the forward is on a box the internet cannot address.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/blog/netfilter-hook-order", "Netfilter hook order"], ["/firewall", "Firewall exercises"]])}
 </main>`,
   });
 
@@ -5494,6 +5604,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/cache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/oom`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/units`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/nat`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
