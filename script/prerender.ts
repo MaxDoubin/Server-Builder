@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as OOM_CASES, adjWorth as oomAdjWorth, human as oomHuman, killed as oomKilled, chosen as oomChosen, correctOption as oomCorrect, scope as oomScope, scored as oomScored } from "../client/src/lib/oom/index";
 import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
@@ -859,6 +860,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/vlan">The frame that arrived untagged</a>, native VLAN mismatches and the wire that says nothing.</li>
     <li><a href="${SITE_URL}/clock">Four errors, none of which says the word time</a>, how wrong the clock is, worked backwards from what broke.</li>
     <li><a href="${SITE_URL}/space">No space left on device</a>, six filesystems and six different things that message means.</li>
+    <li><a href="${SITE_URL}/oom">Something has to die</a>, ten machines out of memory and one expression that decides which process the kernel kills.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2148,6 +2150,7 @@ ${JSON.stringify({
     ["The frame that arrived untagged", "/vlan"],
     ["Four errors, none of which says the word time", "/clock"],
     ["No space left on device", "/space"],
+    ["Something has to die", "/oom"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3037,6 +3040,128 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     on the underlying filesystem, still spending its blocks, and unreachable by any path.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
+</main>`,
+  });
+
+  // ── the oom killer ──
+  /*
+    Every score in the static body is computed, including the arm that
+    oom_score_adj contributes, because the arithmetic is the entire claim of
+    the page. Writing the scores out by hand here would be the one
+    fabrication that mattered: a reader arriving on a search for "why did the
+    oom killer choose this process" is owed a number they can reproduce.
+  */
+  const oomCgroupKills = OOM_CASES.filter((item) => item.trigger.kind === "cgroup").length;
+  const oomBiggestLives = OOM_CASES.filter((item) => {
+    const { candidates, total } = oomScope(item.machine, item.trigger);
+    const live = oomScored(item.machine, item.trigger).filter((row) => row.points !== null);
+    if (live.length === 0) return false;
+    const fattest = [...candidates].sort((a, b) => b.rss - a.rss)[0];
+    void total;
+    return oomChosen(item.machine, item.trigger) !== fattest;
+  }).length;
+  const oomDescription =
+    "The out of memory killer does not kill the biggest process, or the process whose allocation " +
+    "failed. It kills the highest of rss plus swap plus page tables plus oom_score_adj times a " +
+    `thousandth of total memory, and ${OOM_CASES.length} machines here show what falls out of that: ` +
+    `in ${oomBiggestLives} of them the largest process survives, ${oomCgroupKills} are cgroup kills that ` +
+    "cannot see the real hog, and one has no killable task left at all.";
+
+  await writePage("oom", base, {
+    title: "Which Process Does the OOM Killer Kill? | Max Doubin",
+    description: oomDescription,
+    canonical: `${SITE_URL}/oom`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Which process does the OOM killer kill?",
+  description: oomDescription,
+  url: `${SITE_URL}/oom`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "How the Linux out of memory killer selects a victim: the oom_badness expression, why oom_score_adj is a proportion of total memory rather than a weighting, why -1000 means never rather than last, why swap and page tables count and top does not show them, why shared pages are charged in full to every process that maps them, how a cgroup OOM differs from a system OOM in both scope and normaliser, what memory.oom.group changes, and why a machine of unkillable tasks panics",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Something has to die</h1>
+  <p>
+    ${OOM_CASES.length} machines with nothing left to allocate, and one expression that decides
+    what the kernel kills. In ${oomBiggestLives} of the ${OOM_CASES.length} the largest process
+    survives.
+  </p>
+  <pre>badness = rss + swap + page tables + oom_score_adj &times; (total / 1000)</pre>
+  <p>
+    The kernel kills the highest. It is not weighted by uptime, or by which process asked for the
+    memory that could not be found, or by how much of a shared mapping belongs to whom. Everything
+    surprising about the killer falls out of that line, including the fact that a machine can run
+    out of things it is allowed to kill.
+  </p>
+  <h2>What each term does to the answer</h2>
+  <ul>
+    <li><strong>oom_score_adj is a proportion, not a nudge.</strong> The kernel computes
+    <code>adj &times; (totalpages / 1000)</code> in integer arithmetic, so an adj of 200 is a fifth
+    of the machine. On a 16 GiB host that is ${oomHuman(oomAdjWorth(200, 16384))}, and on a 256 GiB
+    host the same setting is ${oomHuman(oomAdjWorth(200, 262144))}.</li>
+    <li><strong>-1000 means never, not last.</strong> The kernel tests for it before doing any
+    arithmetic and skips the task. A machine where everything is set to -1000 has no candidate, and
+    an OOM with no candidate is a panic rather than a kill.</li>
+    <li><strong>Swap and page tables are terms.</strong> <code>top</code> shows neither by default.
+    A process with a gigabyte resident and five in swap outranks one with four and a half resident.</li>
+    <li><strong>Shared pages are counted in full, per process.</strong> A pool of forked workers
+    each carrying the same shared segment all score the same and all score modestly, so the pool
+    holding the machine down is rarely the thing killed.</li>
+    <li><strong>A cgroup OOM is a different question.</strong> Only tasks in the cgroup are
+    candidates, and the normaliser is the cgroup's limit rather than the machine's memory, which
+    makes every adj inside it worth far less.</li>
+  </ul>
+  <h2>The machines</h2>
+${OOM_CASES.map((item) => {
+  const { total } = oomScope(item.machine, item.trigger);
+  const dead = oomKilled(item.machine, item.trigger);
+  const right = oomCorrect(item);
+  const rows = oomScored(item.machine, item.trigger);
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <pre>${item.trigger.kind === "cgroup" ? `cgroup OOM: ${esc(item.trigger.path)} at its memory.max` : "system OOM"}
+scores are a share of ${oomHuman(total)}
+
+   PID COMMAND            RES     SWAP      PTE   adj   badness
+${item.machine.processes
+  .map((task) => {
+    const row = rows.find((entry) => entry.task.pid === task.pid);
+    const score = row ? row.points : null;
+    return `${String(task.pid).padStart(6)} ${esc(task.name).padEnd(15)} ${oomHuman(task.rss).padStart(8)} ${(task.swap > 0 ? oomHuman(task.swap) : "-").padStart(8)} ${oomHuman(task.pageTables).padStart(8)} ${(task.unkillable ? "kern" : String(task.oomScoreAdj)).padStart(5)}   ${row === undefined ? "out of scope" : score === null ? "not a candidate" : oomHuman(score)}`;
+  })
+  .join("\n")}
+
+${dead.length === 0 ? "Out of memory and no killable processes... the kernel panics." : dead.length === 1 ? `Killed process ${dead[0].pid} (${esc(dead[0].name)})` : `Killed every task in the cgroup: ${dead.map((task) => task.pid).join(", ")}`}</pre>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option === right ? " (this one)" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Where to read it on a real machine</h2>
+  <ol>
+    <li><code>dmesg -T | grep -i -A20 "invoked oom-killer"</code>. Two lines matter and they are
+    different processes: the one that invoked it and the one that was killed. The first is a
+    symptom of the machine being full and tells you almost nothing about what filled it.</li>
+    <li>The kernel prints its whole candidate table in that dump, with an oom_score_adj column.
+    That table is the arithmetic above, already done for you.</li>
+    <li><code>/proc/PID/status</code> for VmRSS, VmSwap and VmPTE, which are three of the four
+    terms and none of which are in <code>top</code>'s default columns.</li>
+    <li><code>/sys/fs/cgroup/&lt;path&gt;/memory.events</code> to tell a cgroup kill from a system
+    one. If <code>oom_kill</code> there is climbing, the machine was never out of memory.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/blog/oom-killer-and-swap-sizing", "The OOM killer and swap sizing"], ["/blog/cgroups-v2-resource-limits", "cgroup v2 resource limits"]])}
 </main>`,
   });
 
@@ -5239,6 +5364,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/clock`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/space`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/cache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/oom`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

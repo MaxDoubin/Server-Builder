@@ -21,6 +21,7 @@ import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
 import { CASES as SPACES } from "@/lib/space/index";
+import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -39,6 +40,7 @@ import { loadSolvedRetries } from "@/lib/retry/progress";
 import { loadSolvedVlans } from "@/lib/vlan/progress";
 import { loadSolvedClocks } from "@/lib/clock/progress";
 import { loadSolvedSpaces } from "@/lib/space/progress";
+import { loadSolvedOoms } from "@/lib/oom/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -114,6 +116,13 @@ export function readProgress(): Line[] {
       done: loadSolvedCaches().filter((slug) => CACHES.some((item) => item.slug === slug)).length,
       total: CACHES.length,
       noun: "read right",
+    },
+    {
+      label: "OOM killer",
+      href: "/oom",
+      done: loadSolvedOoms().filter((slug) => OOMS.some((item) => item.slug === slug)).length,
+      total: OOMS.length,
+      noun: "called right",
     },
     {
       label: "Disk full",
