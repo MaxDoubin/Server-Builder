@@ -57,6 +57,7 @@ const { EXERCISES: FIREWALL } = await import("../client/src/lib/firewall/data/ex
 const { CASES: DNS_CASES } = await import("../client/src/lib/resolve/data/cases.ts");
 const { CHAIN_CASES } = await import("../client/src/lib/chain/data/cases.ts");
 const { PROBLEMS: PLANS } = await import("../client/src/lib/allocate/data/problems.ts");
+const { CONFIGS: ARRAY_CONFIGS } = await import("../client/src/lib/array/data/configs.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2342,6 +2343,74 @@ ${
     });
   }
 
+  // ── array calculator ──
+  const arrayDescription =
+    "Usable capacity, guaranteed fault tolerance, rebuild time and the unrecoverable read error " +
+    "arithmetic behind RAID 5 is dead, with the specification figure and an observed one side by side.";
+
+  await writePage("array", base, {
+    title: "RAID and RAIDZ Array Calculator | Max Doubin",
+    description: arrayDescription,
+    canonical: `${SITE_URL}/array`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Array calculator",
+  description: arrayDescription,
+  url: `${SITE_URL}/array`,
+  applicationCategory: "UtilitiesApplication",
+  operatingSystem: "Any browser",
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Array calculator</h1>
+  <p>
+    Usable capacity, the fault tolerance you can actually rely on, how long a
+    rebuild takes, and the unrecoverable read error calculation that the phrase
+    RAID 5 is dead comes from.
+  </p>
+  <p>
+    That calculation is shown twice, on purpose. Once with the manufacturer's
+    figure, which is a warranty bound rather than a measurement, and once with
+    a rate two orders of magnitude better, which is a conservative reading of
+    what field studies find. The conclusion moves a very long way between them.
+  </p>
+  <h2>What it works out</h2>
+  <ul>
+    <li>Usable capacity in decimal TB and in the TiB an operating system
+      reports, which is where the missing nine per cent goes.</li>
+    <li>Guaranteed simultaneous failures survived. For striped mirrors that is
+      one, not half the disks: the second failure landing on the partner of the
+      first is the case you plan around.</li>
+    <li>Rebuild time, from the bytes that must be read. A parity rebuild reads
+      every surviving member in full, so the cost grows with the array rather
+      than with the failed disk.</li>
+    <li>The probability of an unrecoverable read error during that rebuild, at
+      the specification rate and at an observed one.</li>
+    <li>What a URE during a rebuild actually costs, which differs by level and
+      by implementation and is not always the array.</li>
+  </ul>
+  <h2>Configurations worth comparing</h2>
+  <ul>
+${ARRAY_CONFIGS.map((config) => `    <li>${esc(config.label)}: ${esc(config.notes[0])}</li>`).join("\n")}
+  </ul>
+  <h2>What it cannot compute</h2>
+  <p>
+    None of this is a backup. Every level protects against a disk failing and
+    against nothing else. The failure that is not modelled is correlated
+    failure: disks bought together, run at the same temperature for the same
+    years, do not fail independently, and a rebuild puts every survivor under
+    sustained full read load at exactly the moment you need them to behave.
+  </p>
+  ${backLinks([["/tools/rack-budget", "Rack power and cooling budget"], ["/racks", "The rack library"], ["/tools", "All browser tools"]])}
+</main>`,
+  });
+
   // ── address plans ──
   /*
     The requirements and the block go into the static body, because "divide a
@@ -3907,6 +3976,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/resolve`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/chain`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/array`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },

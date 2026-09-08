@@ -100,6 +100,7 @@ PAGE_EYEBROWS = {
     "resolve": "DNS RESOLUTION",
     "chain": "CERTIFICATE CHAINS",
     "allocate": "ADDRESS PLANS",
+    "array": "ARRAY CALCULATOR",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",
