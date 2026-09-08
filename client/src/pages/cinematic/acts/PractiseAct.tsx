@@ -33,7 +33,7 @@ import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
-import { CASES as OOM_CASES } from "@/lib/oom/index";
+import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib/oom/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -159,7 +159,7 @@ const SURFACES: Surface[] = [
     title: "Something has to die",
     blurb:
       "The out of memory killer does not kill the biggest process, or the one that asked. It kills the highest of one expression, and two of its four terms are columns top does not show you.",
-    count: `${OOM_CASES.length} machines, ${OOM_CASES.filter((item) => item.trigger.kind === "cgroup").length} cgroup kills`,
+    count: `${OOM_CASES.length} machines, ${OOM_CASES.filter(oomFattestSurvives).length} where the biggest survives`,
   },
   {
     href: "/space",

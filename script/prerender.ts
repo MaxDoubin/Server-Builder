@@ -28,7 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
-import { CASES as OOM_CASES, adjWorth as oomAdjWorth, human as oomHuman, killed as oomKilled, chosen as oomChosen, correctOption as oomCorrect, scope as oomScope, scored as oomScored } from "../client/src/lib/oom/index";
+import { CASES as OOM_CASES, adjWorth as oomAdjWorth, fattestSurvives as oomFattestSurvives, human as oomHuman, killed as oomKilled, correctOption as oomCorrect, scope as oomScope, scored as oomScored } from "../client/src/lib/oom/index";
 import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
@@ -3052,14 +3052,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     oom killer choose this process" is owed a number they can reproduce.
   */
   const oomCgroupKills = OOM_CASES.filter((item) => item.trigger.kind === "cgroup").length;
-  const oomBiggestLives = OOM_CASES.filter((item) => {
-    const { candidates, total } = oomScope(item.machine, item.trigger);
-    const live = oomScored(item.machine, item.trigger).filter((row) => row.points !== null);
-    if (live.length === 0) return false;
-    const fattest = [...candidates].sort((a, b) => b.rss - a.rss)[0];
-    void total;
-    return oomChosen(item.machine, item.trigger) !== fattest;
-  }).length;
+  const oomBiggestLives = OOM_CASES.filter(oomFattestSurvives).length;
   const oomDescription =
     "The out of memory killer does not kill the biggest process, or the process whose allocation " +
     "failed. It kills the highest of rss plus swap plus page tables plus oom_score_adj times a " +

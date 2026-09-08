@@ -41,7 +41,7 @@ export const CASES: Case[] = [
       { id: "node", claim: "node, it is the newest thing on the box", names: [2210] },
     ],
     why:
-      "An oom_score_adj of -800 subtracts eight tenths of the machine from the score. Eight tenths of 18 GiB of RAM plus swap is over fourteen gigabytes, so the JVM scores about minus two and a half gigabytes: not merely unlikely, but below every other candidate by a distance nothing it does could close. postgres, with no adj at all, scores what it is using, and that is the highest number on the box.",
+      "An oom_score_adj of -800 subtracts eight tenths of the machine from the score. Eight tenths of 18 GiB of RAM plus swap is over fourteen gigabytes, so the JVM scores -2.8 GiB: not merely unlikely, but below every other candidate by a distance nothing it does could close. postgres, with no adj at all, scores what it is using, and that is the highest number on the box.",
     fix:
       "Decide whether -800 was meant to mean what it means. It is not a hint that the JVM is important; it is an instruction that four fifths of the machine has to be in use by one other process before the JVM is even in the running. If the intent was 'prefer to kill something else first', -100 does that and leaves the JVM killable when it is genuinely the problem.",
     breaks: "a negative oom_score_adj is a preference rather than a proportion of the whole machine",
@@ -202,7 +202,7 @@ export const CASES: Case[] = [
       { id: "code", claim: "code, the editor, since it is idle", names: [3200] },
     ],
     why:
-      "Swapped pages are still charged to the process that owns them. gradle is 1.4 GiB resident and 5.1 GiB swapped, which is 6.5 GiB of anonymous memory that has to live somewhere, and the somewhere is nearly full. chrome, at 4.5 GiB resident with two hundred megabytes out, scores nearly two gigabytes lower. Sorting by RES answers the question 'what is in RAM now', and the killer is asking 'who owns the most memory', which on a swapping machine is a different question with a different answer.",
+      "Swapped pages are still charged to the process that owns them. gradle is 1.4 GiB resident and 5.1 GiB swapped, which is 6.5 GiB of anonymous memory that has to live somewhere, and the somewhere is nearly full. chrome, at 4.5 GiB resident with 204 MiB out, scores 1.8 GiB lower. Sorting by RES answers the question 'what is in RAM now', and the killer is asking 'who owns the most memory', which on a swapping machine is a different question with a different answer.",
     fix:
       "Sort by the column that matches the question. `smem` or the SWAP column in `top` after pressing f, or just read /proc/*/status for VmRSS plus VmSwap. On a machine that swaps, RES alone is not a ranking of anything.",
     breaks: "RES is the score, so the top of top is the next to die",
@@ -232,7 +232,7 @@ export const CASES: Case[] = [
       { id: "loki", claim: "loki, once the adj is added in", names: [6200] },
     ],
     why:
-      "The adj is normalised against total memory, so 200 is two tenths of it: 200 times 16384 divided by 1000, which is a little over three gigabytes added to loki's score. loki is 3.0 GiB using and 6.2 GiB scored, and prometheus is 5.1 GiB using and 5.1 GiB scored. The setting was not a tiebreak. On this machine it was worth three gigabytes, and on a 256 GiB host the same 200 would be worth fifty.",
+      "The adj is a thousandth of total memory per point, counted in pages and truncated, so 200 points is a fifth of the machine: 3.2 GiB added to loki's score. loki is 3.0 GiB using and 6.3 GiB scored, and prometheus is 5.1 GiB using and 5.1 GiB scored. The setting was not a tiebreak. On this machine it was worth 3.2 GiB, and on a 256 GiB host the same 200 would be worth fifty one gigabytes.",
     fix:
       "Work out what the number costs on the machine it is set on, and set it there rather than in a template. If the intent is a genuine tiebreak between two services of similar size, the adj that does that is single digits, and the honest version of 'logs matter less' is a memory limit on the log service rather than a thumb on the scale of every future OOM.",
     breaks: "oom_score_adj is a small weighting rather than a percentage of total memory",
@@ -241,7 +241,7 @@ export const CASES: Case[] = [
     slug: "page-tables-are-memory",
     name: "The backend with less resident memory is the one that died",
     brief:
-      "A 4 GiB database VM, no swap, running postgres with a 40 GiB shared_buffers setting and no huge pages. An ETL job in python is the other big thing on the box. `top` shows the python job with more resident memory.",
+      "A 4 GiB database VM, no swap, running postgres with a 48 GiB shared_buffers setting and no huge pages. An ETL job in python is the other big thing on the box. `top` shows the python job with more resident memory.",
     machine: {
       ram: 4096,
       swap: 0,
@@ -262,9 +262,9 @@ export const CASES: Case[] = [
       { id: "sshd", claim: "sshd, the smallest process, since something has to go", names: [620] },
     ],
     why:
-      "Page tables are in the sum, and a process mapping a forty gigabyte segment with four kilobyte pages pays about two thousandths of it in tables: ninety six megabytes, which is more than the sixty two megabytes of resident memory that python3 is ahead by. So postgres scores 2198 and python3 scores 2178, and the process with less memory in RES is the one the kernel picks. Nothing in `top` shows this column.",
+      "Page tables are in the sum, and a process mapping a forty eight gigabyte segment with four kilobyte pages pays one five hundred and twelfth of it in tables, because a page table entry is eight bytes and it covers four kilobytes: ninety six megabytes, which is more than the sixty two megabytes of resident memory that python3 is ahead by. So postgres scores 2198 and python3 scores 2178, and the process with less memory in RES is the one the kernel picks. Nothing in `top` shows this column.",
     fix:
-      "Give a database with a large shared segment huge pages, which is the documented reason they exist: one entry per two megabytes instead of one per four kilobytes cuts the table cost by a factor of five hundred, and on a host with a hundred backends mapping the same segment it is the difference between a rounding error and gigabytes. /proc/PID/status has VmPTE if you want to see what you are paying now.",
+      "Give a database with a large shared segment huge pages, which is the documented reason they exist: one entry per two megabytes instead of one per four kilobytes cuts the table cost by a factor of five hundred and twelve, and on a host with a hundred backends mapping the same segment it is the difference between a rounding error and gigabytes. /proc/PID/status has VmPTE if you want to see what you are paying now.",
     breaks: "the score is resident memory plus swap and nothing else",
   },
   {

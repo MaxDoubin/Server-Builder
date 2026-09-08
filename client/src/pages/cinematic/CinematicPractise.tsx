@@ -27,7 +27,7 @@ import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
-import { CASES as OOM_CASES } from "@/lib/oom/index";
+import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib/oom/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -322,7 +322,7 @@ export function CinematicPractise() {
       eyebrow: "Predict",
       title: "Something has to die",
       blurb:
-        "Ten machines out of memory. Work out which process the kernel picks, from the same four columns it uses. In four of the ten the biggest process survives.",
+        `Ten machines out of memory. Work out which process the kernel picks, from the same four columns it uses. In ${OOM_CASES.filter(oomFattestSurvives).length} of the ${OOM_CASES.length} the biggest candidate survives.`,
       reachFor: "a process was killed and it was not the one using the memory",
       stats: [
         `${OOM_CASES.length} machines`,

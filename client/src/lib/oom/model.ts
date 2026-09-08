@@ -25,15 +25,37 @@ import { IMMUNE, type Case, type Cgroup, type Machine, type Option, type Process
 export function badness(task: Process, total: number): number | null {
   if (task.unkillable) return null;
   if (task.oomScoreAdj === IMMUNE) return null;
-  /*
-    The kernel does `adj *= totalpages / 1000` in integer arithmetic, so the
-    normaliser is truncated before it is multiplied. On a machine that is not
-    a round number of gigabytes this is not the same as scaling by a
-    thousandth, and getting it wrong moves scores by tens of MiB.
-  */
-  const perThousandth = Math.trunc(total / 1000);
-  return task.rss + task.swap + task.pageTables + task.oomScoreAdj * perThousandth;
+  return task.rss + task.swap + task.pageTables + adjWorth(task.oomScoreAdj, total);
 }
+
+/**
+ * Pages per MiB, which is to say four kilobyte pages.
+ *
+ * The unit matters here and not only for readability. The kernel counts in
+ * pages, and it truncates: `adj *= totalpages / 1000`. Truncating a page
+ * count and truncating a MiB count are not the same operation, and this file
+ * kept its figures in MiB first and truncated there, which moved every adj by
+ * about a fortieth. On a 16 GiB host that is eighty megabytes of error in a
+ * number the page invites the reader to reproduce.
+ *
+ * x86-64 and the usual arm64 build both use 4 KiB pages. A kernel built for
+ * 16K or 64K pages would move the truncation again, which is a good reminder
+ * that this term is an artefact of an implementation rather than a law.
+ */
+export const PAGES_PER_MIB = 256;
+
+/**
+ * What one point of oom_score_adj is worth, in MiB.
+ *
+ * A thousandth of total memory, truncated to a whole page count first. The
+ * truncation is why an adj is not exactly a thousandth of anything: on a
+ * 1001 MiB cgroup one point is worth 1 MiB rather than 1.001.
+ */
+export const adjUnit = (total: number): number =>
+  Math.trunc((total * PAGES_PER_MIB) / 1000) / PAGES_PER_MIB;
+
+/** How much of the machine one adj setting is worth, which is the surprise. */
+export const adjWorth = (adj: number, total: number): number => adj * adjUnit(total);
 
 export const cgroupAt = (machine: Machine, path: string): Cgroup | undefined =>
   machine.cgroups.find((group) => group.path === path);
@@ -152,8 +174,28 @@ export function human(mib: number): string {
   return `${sign}${gib} GiB`;
 }
 
-/** How much of the machine one adj setting is worth, which is the surprise. */
-export const adjWorth = (adj: number, total: number): number => adj * Math.trunc(total / 1000);
+/**
+ * Does the largest task the kernel will consider survive?
+ *
+ * Exported because four places wanted to say how often it does, and all four
+ * said "four of the ten" while the prerendered page computed five. The count
+ * is a fact about the corpus, so it is derived once here and rendered
+ * everywhere, and the gate asserts it is near half: a set where the obvious
+ * answer is always wrong teaches "never pick the big one", which is its own
+ * superstition, and a set where it is usually right teaches nothing at all.
+ *
+ * Largest among the candidates rather than on the machine, because a reader
+ * looking at `top` and reasoning about the killer has already excluded the
+ * tasks it cannot touch. A machine with no victim counts as survival: the
+ * biggest process is still running.
+ */
+export function fattestSurvives(item: Case): boolean {
+  const { candidates, total } = scope(item.machine, item.trigger);
+  const live = candidates.filter((task) => badness(task, total) !== null);
+  if (live.length === 0) return true;
+  const fattest = [...live].sort((a, b) => b.rss - a.rss)[0];
+  return !killed(item.machine, item.trigger).some((task) => task === fattest);
+}
 
 /**
  * The option that is right, found rather than declared.

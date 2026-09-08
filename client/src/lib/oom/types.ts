@@ -49,10 +49,11 @@ export interface Process {
   /**
    * Page tables for this address space, in MiB.
    *
-   * Roughly two thousandths of what a process maps, at 4K pages. Small until
+   * One five hundred and twelfth of what a process maps, at 4K pages: a page
+   * table entry is eight bytes and it covers four kilobytes. Small until
    * a process maps a great deal, and then not small: this is the documented
    * reason to give a database huge pages, because two hundred backends each
-   * mapping the same forty gigabyte segment each pay for their own tables.
+   * mapping the same forty eight gigabyte segment each pay for their own tables.
    */
   pageTables: number;
   /**

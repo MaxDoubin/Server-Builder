@@ -29,6 +29,7 @@ import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
   IMMUNE,
+  fattestSurvives,
   adjWorth,
   cgroupAt,
   chosen as chosenTask,
@@ -64,6 +65,9 @@ export function CinematicOom() {
     canonical: `${SITE_URL}/oom`,
     ogImage: `${SITE_URL}/images/og/oom.jpg`,
   });
+
+  /* Counted rather than stated, because four places stated it and disagreed. */
+  const survives = useMemo(() => CASES.filter(fattestSurvives).length, []);
 
   const [active, setActive] = useState<Case>(CASES[0]);
   const [picked, setPicked] = useState<string | null>(null);
@@ -134,7 +138,9 @@ export function CinematicOom() {
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Ten machines with nothing left to allocate. Work out which process the kernel picks,
-              from the same columns it uses. In four of the ten the biggest process survives.
+              from the same columns it uses. In {survives} of the {CASES.length} the biggest
+              process the kernel will consider survives, which is close enough to half that
+              guessing tells you nothing.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
               The whole selection is one line of arithmetic:{" "}
