@@ -21,6 +21,7 @@ import { TERMS } from "@/lib/glossary/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
+import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
@@ -244,6 +245,16 @@ export function CinematicPractise() {
         "Security+, Network+ and CCNA, domain by domain with the vendor's own weightings, mapped to the material here that genuinely addresses each one.",
       reachFor: "you need to know what to study next, and for how long",
       stats: [`${EXAMS.length} exams`, `${totals.domains} domains`, "printable sheets"],
+      progress: null,
+    },
+    {
+      href: "/route",
+      eyebrow: "Resolve",
+      title: "Longest prefix wins",
+      blurb:
+        "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
+      reachFor: "the route looks right and the traffic goes somewhere else",
+      stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
       progress: null,
     },
     {

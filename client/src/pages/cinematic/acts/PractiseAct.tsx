@@ -27,6 +27,7 @@ import { HANDSHAKES } from "@/lib/handshake/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
+import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -141,6 +142,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The fault that survives every test somebody thinks to run, because every test somebody thinks to run sends small packets.",
     count: `${MTU_PATHS.length} paths, 2 of them silent`,
+  },
+  {
+    href: "/route",
+    eyebrow: "Resolve",
+    title: "Longest prefix wins",
+    blurb:
+      "A firewall chain is ordered and a routing table is not. Same wall of prefixes, opposite rule, and the habit from one is wrong for the other.",
+    count: `${ROUTE_TABLES.length} tables, ${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`,
   },
 ];
 

@@ -22,6 +22,7 @@ import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
 import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/transfer/index";
 import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
+import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -2106,7 +2107,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 10,
+  numberOfItems: 11,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2118,6 +2119,7 @@ ${JSON.stringify({
     ["Why the transfer is slow", "/transfer"],
     ["Read the log", "/logs"],
     ["Ping works and the transfer hangs", "/mtu"],
+    ["Longest prefix wins", "/route"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2157,6 +2159,8 @@ ${JSON.stringify({
       line that proves it. ${LOGS.length} logs.</li>
     <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>: path
       MTU, on ${MTU_PATHS.length} paths, two of which fail silently.</li>
+    <li><a href="${SITE_URL}/route">Longest prefix wins</a>: why a routing
+      table is not a firewall chain. ${ROUTE_TABLES.length} tables.</li>
   </ul>
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
@@ -2513,6 +2517,67 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── longest prefix wins ──
+  /*
+    The tables go into the static body in full, because they are the content.
+    The answers stay out: which route wins is the exercise, and printing it
+    beside each destination would put the answer key in a search result.
+  */
+  const routeDescription =
+    "A firewall chain is ordered and the first rule that matches decides. A routing table is not " +
+    "ordered at all: the longest prefix wins wherever it sits in the output. Same wall of " +
+    "prefixes, opposite rule, and the habit you build reading one is wrong for the other.";
+
+  await writePage("route", base, {
+    title: "Longest Prefix Wins | Max Doubin",
+    description: routeDescription,
+    canonical: `${SITE_URL}/route`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Longest prefix wins",
+  description: routeDescription,
+  url: `${SITE_URL}/route`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Longest prefix match, administrative distance as a tie-break, and why a routing table is not read like a firewall chain",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Longest prefix wins</h1>
+  <p>
+    A firewall chain is ordered and the first rule that matches decides. A
+    routing table is not ordered at all: the longest prefix wins wherever it
+    sits in the output. Reading one the way you read the other is the single
+    most common way to get the wrong answer, and both are printed as the same
+    wall of prefixes.
+  </p>
+  <p>
+    Administrative distance is the second trap. It is a tie-break within one
+    prefix length and nothing else. A static route at distance 1 does not beat
+    an OSPF route at distance 110, and an OSPF /24 beats a static /16 every
+    time.
+  </p>
+${ROUTE_TABLES.map((table) => `  <article>
+    <h2>${esc(table.name)}</h2>
+    <p>${esc(table.brief)}</p>
+    <ul>
+${table.routes.map((route) => `      <li>${prefixOf(route)} via ${esc(route.nextHop ?? (route.iface === "null0" ? "discard" : "on-link"))} on ${esc(route.iface)}, ${esc(route.protocol)}, distance ${route.distance}, metric ${route.metric}</li>`).join("\n")}
+    </ul>
+    <p>Destinations worth resolving against it: ${table.probes.map((probe) => esc(probe.destination)).join(", ")}.</p>
+  </article>`).join("\n")}
+  <p>
+    One simplification: where two routes tie on everything, a real router
+    installs both and hashes flows across them. This picks the first, and the
+    one table here that reaches that case says so.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises, where first match does win"], ["/allocate", "Address plans"]])}
 </main>`,
   });
 
@@ -4401,6 +4466,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

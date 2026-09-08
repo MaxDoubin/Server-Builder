@@ -391,6 +391,16 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # Bitwise operators in JavaScript return signed 32 bit values, so a
+      # /24 mask comes back as -256 without an unsigned shift and every
+      # comparison after that is wrong while still looking right for small
+      # prefixes. This pins the arithmetic against masks and block boundaries
+      # worked out by hand, replays every lookup, and requires a majority of
+      # the probes to be ones where longest prefix and first match disagree:
+      # a set that reading top to bottom answers correctly teaches nothing.
+      - name: Routing table lookups
+        run: npx tsx scripts-ci/check-route.ts
+
       # The path MTU model computes each path's MTU twice, once as the
       # minimum of its links and once by walking a packet of every size
       # through the simulation the page actually draws, and the two must
