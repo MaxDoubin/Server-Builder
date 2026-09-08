@@ -29,6 +29,7 @@ import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
+import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -160,6 +161,14 @@ const SURFACES: Surface[] = [
       "Every organisation that lost data had backups. Read the posture, then run the incident and see how many copies were copies.",
     count: `${RESTORES.length} incidents, ${RESTORES.reduce((sum, s) => sum + s.copies.length, 0)} copies`,
   },
+  {
+    href: "/array",
+    eyebrow: "Size",
+    title: "Array calculator",
+    blurb:
+      "Capacity, tolerance and rebuild time for a set of disks, and the unrecoverable-read arithmetic that decides whether the rebuild finishes.",
+    count: `${Object.keys(LEVEL_LABEL).length} RAID levels, ${ARRAY_CONFIGS.length} worked examples`,
+  },
 ];
 
 export function PractiseAct() {
@@ -287,4 +296,12 @@ export function PractiseAct() {
 }
 
 /** The routes this act must link to. Read by CI so the front door cannot quietly lose one. */
-export const PRACTISE_ROUTES = SURFACES.map((surface) => surface.href);
+/*
+  Re-exported from the registry rather than derived from the cards above.
+
+  Deriving it from SURFACES made it a restatement of this file: the gate
+  that used it could only ever confirm the act linked what the act linked,
+  which is why a surface missing from here went unnoticed for a month. The
+  registry is the list now, and CI compares this file against it.
+*/
+export { PRACTISE_ROUTES } from "@/lib/practiseSurfaces";

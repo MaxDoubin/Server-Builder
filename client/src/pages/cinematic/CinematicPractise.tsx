@@ -23,6 +23,9 @@ import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
+import { HANDSHAKES } from "@/lib/handshake/index";
+import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
+import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "@/lib/practiseSurfaces";
 import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
@@ -249,6 +252,30 @@ export function CinematicPractise() {
       progress: null,
     },
     {
+      href: "/handshake",
+      eyebrow: "Sequence",
+      title: "Protocol handshakes",
+      blurb:
+        "TCP, TLS, DHCP and 802.1X step by step, with one step broken so you can see where the sequence stops and what the symptom looks like from each end.",
+      reachFor: "you know the protocol works and not what it does",
+      stats: [`${HANDSHAKES.length} handshakes`, "step by step", "breaks on every step"],
+      progress: null,
+    },
+    {
+      href: "/array",
+      eyebrow: "Size",
+      title: "Array calculator",
+      blurb:
+        "Capacity, tolerance and rebuild time for a set of disks, and the unrecoverable-read arithmetic that decides whether the rebuild finishes at all.",
+      reachFor: "somebody has asked how many disks and how big",
+      stats: [
+        `${Object.keys(LEVEL_LABEL).length} RAID levels`,
+        `${ARRAY_CONFIGS.length} worked examples`,
+        "URE probability",
+      ],
+      progress: null,
+    },
+    {
       href: "/restore",
       eyebrow: "Recover",
       title: "You have backups, not restores",
@@ -358,8 +385,61 @@ export function CinematicPractise() {
           </p>
 </header>
 
-          <ul className="mt-12 space-y-4">
-            {pillars.map((pillar) => (
+          {/*
+            Jump links, because grouping alone did not shorten the page.
+
+            Four headings over twenty cards is still thirteen phone screens
+            if the only way to reach the fourth group is to scroll past the
+            first three. These make the four groups four choices. Plain
+            anchors, so they work with no JavaScript and the browser handles
+            the scrolling and the focus.
+          */}
+          <nav aria-label="Jump to a kind of practice" className="mt-10 flex flex-wrap gap-2">
+            {GROUPS.map((group) => (
+              <a
+                key={group}
+                href={`#${group}`}
+                data-testid={`jump-${group}`}
+                className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              >
+                {GROUP_HEADING[group]}{" "}
+                <span className="text-[hsl(var(--brand-signal))]">
+                  {PRACTISE_SURFACES.filter((surface) => surface.group === group).length}
+                </span>
+              </a>
+            ))}
+          </nav>
+
+          {/*
+            Grouped by the reader's situation, from the practise registry.
+
+            This was one flat list of eighteen cards, which on a phone was
+            twelve screens of scrolling with nothing to navigate by. Somebody
+            arriving knows something is broken, or that they have a call to
+            make, or that a number has to be right; they do not arrive
+            knowing which of eighteen subjects that maps to.
+          */}
+          {GROUPS.map((group) => {
+            const inGroup = PRACTISE_SURFACES.filter((surface) => surface.group === group);
+            const cards = inGroup
+              .map((surface) => pillars.find((pillar) => pillar.href === surface.href))
+              .filter((pillar): pillar is Pillar => pillar !== undefined);
+            if (cards.length === 0) return null;
+            return (
+              <section
+                key={group}
+                id={group}
+                className="mt-14 scroll-mt-24"
+                data-testid={`group-${group}`}
+              >
+                <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                  · {GROUP_HEADING[group]}
+                </h2>
+                <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  {GROUP_BLURB[group]}
+                </p>
+                <ul className="mt-6 space-y-4">
+                  {cards.map((pillar) => (
               <li key={pillar.href}>
                 <Link
                   href={pillar.href}
@@ -411,8 +491,11 @@ export function CinematicPractise() {
                   ) : null}
                 </Link>
               </li>
-            ))}
-          </ul>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
 
           <section className="mt-16 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.4)] p-6 md:p-8">
             <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">

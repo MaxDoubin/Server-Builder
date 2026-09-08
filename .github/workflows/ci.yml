@@ -459,11 +459,15 @@ jobs:
 
       # A failure with no symptom: for weeks the home page linked to two
       # places while ten interactive surfaces sat reachable only from the nav.
-      # Nothing was broken and nothing reported it. This asserts the front
-      # door carries a link to every practise route, in the prerendered body
-      # and in the act, and that no count on it is a hand-typed literal.
-      - name: The front door mentions the practise surfaces
-        run: node scripts-ci/check-home-links.mjs
+      # The gate written for that kept a hand-typed list of twelve routes, so
+      # six surfaces added in one day were never checked and the array
+      # calculator, which had never been in the list, sat reachable only from
+      # the footer while the gate reported OK. The list is derived from the
+      # practise registry now, and this checks both directions: every surface
+      # is linked from the act, the hub, the palette and the footer, and
+      # every practise-looking link in those places is a registered surface.
+      - name: Every practise surface is findable
+        run: npx tsx scripts-ci/check-practise-surfaces.ts
 
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it

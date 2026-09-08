@@ -24,6 +24,7 @@ import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/inde
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
+import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -826,8 +827,9 @@ async function main(): Promise<void> {
   </ul>
   <h2>Practise, in the browser</h2>
   <p>
-    Ten places to practise, none of which need anything installed, none of
-    which reach a real machine, and none of which send anything anywhere.
+    ${PRACTISE_SURFACES.filter((surface) => surface.group !== "ground").length} places to
+    practise, none of which need anything installed, none of which reach a
+    real machine, and none of which send anything anywhere.
     Every exercise ships a solution that CI replays on every push.
   </p>
   <ul>
@@ -842,6 +844,12 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/chain">Certificate chains</a>, and which party can fix a given TLS error.</li>
     <li><a href="${SITE_URL}/allocate">Address plans</a>, dividing a block with the map drawn to scale.</li>
     <li><a href="${SITE_URL}/handshake">Protocol handshakes</a>, breaking one step and seeing where it stops.</li>
+    <li><a href="${SITE_URL}/logs">Read the log</a>, what happened and the one line that proves it.</li>
+    <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>, path MTU and the firewall that swallowed the explanation.</li>
+    <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
+    <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
+    <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
+    <li><a href="${SITE_URL}/restore">You have backups, not restores</a>, which copies survive the incident.</li>
     <li><a href="${SITE_URL}/practise">The practise hub</a>, all of it with what each one is for.</li>
   </ul>
   <h2>About</h2>
@@ -2136,36 +2144,16 @@ ${JSON.stringify({
   <p>
     Reading about an incident and being in one are different skills, and only
     one of them is what a bad night asks for. These are the parts of this site
-    that make you do something.
+    that make you do something, grouped by the situation you are in rather
+    than by subject, because the subject is not what anybody arrives knowing.
   </p>
+${GROUPS.map((group) => `  <h2 id="${group}">${esc(GROUP_HEADING[group])}</h2>
+  <p>${esc(GROUP_BLURB[group])}</p>
   <ul>
-    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>: the first fifteen
-      minutes of an incident, made repeatable. ${SCENARIOS.length} scenarios,
-      ${SCENARIOS.reduce((sum, s) => sum + s.endings.length, 0)} endings.</li>
-    <li><a href="${SITE_URL}/labs">Hands-on labs</a>: a Linux host simulated in
-      the browser with something wrong with it. ${LABS.length} labs.</li>
-    <li><a href="${SITE_URL}/capture">Packet captures</a>: a packet list and a
-      real Wireshark display filter bar.
-      ${CAPTURES.reduce((sum, c) => sum + c.packets.length, 0)} packets.</li>
-    <li><a href="${SITE_URL}/flashcards">Flashcards</a>: spaced repetition over
-      ports, protocols, Linux and crypto.</li>
-    <li><a href="${SITE_URL}/study">Exam objectives</a>: Security+, Network+ and
-      CCNA, domain by domain with the vendor's weightings.</li>
-    <li><a href="${SITE_URL}/tools">Browser tools</a>: subnetting, packet
-      headers, cron, regex, encoding and ciphers, all in the page.</li>
-    <li><a href="${SITE_URL}/glossary">Glossary</a>: ${TERMS.length} terms, each
-      one saying what people reliably get wrong about it.</li>
-    <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>: the three
-      ceilings over a TCP stream, on ${TRANSFERS.length} real complaints.</li>
-    <li><a href="${SITE_URL}/logs">Read the log</a>: what happened, and the one
-      line that proves it. ${LOGS.length} logs.</li>
-    <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>: path
-      MTU, on ${MTU_PATHS.length} paths, two of which fail silently.</li>
-    <li><a href="${SITE_URL}/route">Longest prefix wins</a>: why a routing
-      table is not a firewall chain. ${ROUTE_TABLES.length} tables.</li>
-    <li><a href="${SITE_URL}/restore">You have backups, not restores</a>: which
-      copies survive the incident. ${RESTORES.length} postures.</li>
-  </ul>
+${PRACTISE_SURFACES.filter((surface) => surface.group === group)
+  .map((surface) => `    <li><a href="${SITE_URL}${surface.href}">${esc(surface.title)}</a></li>`)
+  .join("\n")}
+  </ul>`).join("\n")}
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
     your browser and nowhere else.
