@@ -21,6 +21,7 @@ import { staticEquipmentCatalog } from "../client/src/lib/static-equipment";
 import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
 import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/transfer/index";
 import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
+import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -2105,7 +2106,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 9,
+  numberOfItems: 10,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2116,6 +2117,7 @@ ${JSON.stringify({
     ["Glossary", "/glossary"],
     ["Why the transfer is slow", "/transfer"],
     ["Read the log", "/logs"],
+    ["Ping works and the transfer hangs", "/mtu"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2153,6 +2155,8 @@ ${JSON.stringify({
       ceilings over a TCP stream, on ${TRANSFERS.length} real complaints.</li>
     <li><a href="${SITE_URL}/logs">Read the log</a>: what happened, and the one
       line that proves it. ${LOGS.length} logs.</li>
+    <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>: path
+      MTU, on ${MTU_PATHS.length} paths, two of which fail silently.</li>
   </ul>
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
@@ -2509,6 +2513,70 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── path MTU ──
+  const mtuDescription =
+    `A default ping is ${PING_DEFAULT} bytes and crosses almost anything, so the fault that only ` +
+    "breaks big packets survives every test somebody thinks to run. Walk a packet down six real " +
+    "paths and see where it dies, and which firewall swallowed the message that would have explained it.";
+
+  await writePage("mtu", base, {
+    title: "Ping Works and the Transfer Hangs | Max Doubin",
+    description: mtuDescription,
+    canonical: `${SITE_URL}/mtu`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Ping works and the transfer hangs",
+  description: mtuDescription,
+  url: `${SITE_URL}/mtu`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches: "Path MTU discovery, IP fragmentation, and how blocking ICMP type 3 code 4 turns a clear error into a silent hang",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Ping works and the transfer hangs</h1>
+  <p>
+    A default ping is ${PING_DEFAULT} bytes on the wire. It crosses a path with
+    a 1400 byte link in it without noticing, DNS is fine, SSH connects, and
+    then the first large response stops dead and never comes back. Every test
+    somebody thinks to run sends small packets.
+  </p>
+  <p>
+    A router that cannot forward an oversized packet with Don't Fragment set
+    must drop it and send back an ICMP type 3 code 4 saying what size it could
+    have taken. When something in between drops that ICMP, the sender never
+    hears it, keeps sending the same packet, and the connection hangs rather
+    than fails. There is no error, and nothing logs anything.
+  </p>
+  <h2>The paths</h2>
+${MTU_PATHS.map((path) => `  <article>
+    <h3>${esc(path.name)}</h3>
+    <p>Path MTU ${pathMtu(path)}, so a TCP stack should settle on an MSS of ${mssFor(pathMtu(path))}.${
+      pingLies(path)
+        ? " A default ping crosses this path and a full-size packet disappears without an error."
+        : ""
+    }</p>
+    <ul>
+${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocksIcmp ? ", drops ICMP" : ""}${hop.note ? `. ${esc(hop.note)}` : ""}</li>`).join("\n")}
+    </ul>
+  </article>`).join("\n")}
+  <h2>Finding it</h2>
+  <p>
+    Send the packet the application would send, with Don't Fragment set, and
+    walk the size down until something arrives. On Linux that is
+    <code>ping -M do -s 1472</code>, where the payload is 28 bytes short of the
+    size on the wire. The fix is usually to let the ICMP through, which is the
+    correct one and costs nothing, or to clamp the MSS on the tunnel
+    interface, which fixes TCP and does nothing for UDP.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
 </main>`,
   });
 
@@ -4332,6 +4400,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/glossary`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

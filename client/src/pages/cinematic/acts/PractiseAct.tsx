@@ -26,6 +26,7 @@ import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
+import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -132,6 +133,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A thousand failed passwords are a bot that got nowhere. Say what happened, then point at the one line that proves it.",
     count: `${LOGS.length} logs, ${LOGS.reduce((sum, item) => sum + item.lines.length, 0)} lines`,
+  },
+  {
+    href: "/mtu",
+    eyebrow: "Trace",
+    title: "Ping works and the transfer hangs",
+    blurb:
+      "The fault that survives every test somebody thinks to run, because every test somebody thinks to run sends small packets.",
+    count: `${MTU_PATHS.length} paths, 2 of them silent`,
   },
 ];
 

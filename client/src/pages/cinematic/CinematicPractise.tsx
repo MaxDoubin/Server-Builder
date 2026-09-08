@@ -20,6 +20,7 @@ import { useSEO } from "@/lib/useSEO";
 import { TERMS } from "@/lib/glossary/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
+import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
@@ -243,6 +244,16 @@ export function CinematicPractise() {
         "Security+, Network+ and CCNA, domain by domain with the vendor's own weightings, mapped to the material here that genuinely addresses each one.",
       reachFor: "you need to know what to study next, and for how long",
       stats: [`${EXAMS.length} exams`, `${totals.domains} domains`, "printable sheets"],
+      progress: null,
+    },
+    {
+      href: "/mtu",
+      eyebrow: "Trace",
+      title: "Ping works and the transfer hangs",
+      blurb:
+        "Walk a packet down a path and watch where it dies, and which firewall swallowed the message that would have explained it.",
+      reachFor: "small things work and big things do not",
+      stats: [`${MTU_PATHS.length} paths`, "2 blackholes", "live model"],
       progress: null,
     },
     {
