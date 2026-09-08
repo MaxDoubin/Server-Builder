@@ -113,6 +113,7 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
   { href: "/clock", eyebrow: "Measure", title: "Four errors, none of which says the word time", group: "diagnose" , reading: ["ntp-enterprise-networks", "how-totp-codes-actually-work", "certificate-lifetimes-are-200-days-now"] },
   { href: "/space", eyebrow: "Compare", title: "No space left on device", group: "diagnose" , reading: ["linux-disk-io-troubleshooting", "filesystem-journal-explained", "prometheus-server-monitoring"] },
   { href: "/cache", eyebrow: "Read", title: "The page that showed somebody else's name", group: "diagnose" , reading: ["http-caching-headers-etags", "caching-model-endpoint", "the-disk-was-not-full"] },
+  { href: "/oom", eyebrow: "Predict", title: "Something has to die", group: "diagnose" , reading: ["oom-killer-and-swap-sizing", "cgroups-v2-resource-limits", "linux-page-cache-and-io"] },
   { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  , reading: ["four-faults-one-sentence", "recursive-resolver-internals", "dns-negative-caching"] },
   { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  , reading: ["ssl-tls-certificates-explained", "certificate-rotation-automation", "certificate-lifetimes-are-200-days-now"] },
   { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" , reading: ["mtu-mismatch-troubleshooting", "mtu-black-hole-troubleshooting", "jumbo-frames-path-mtu"] },

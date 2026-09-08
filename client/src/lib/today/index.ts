@@ -25,6 +25,7 @@ import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
 import { CASES as SPACES } from "@/lib/space/index";
+import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -72,6 +73,7 @@ const OFFSET = {
   clock: 73,
   space: 79,
   cache: 83,
+  oom: 89,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -254,6 +256,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "One error message, six things it can mean. Say which two numbers disagree and what to do about it.",
       href: "/space",
       outOf: SPACES.length,
+    });
+  }
+
+  const doomed = pickFor(OOMS, day, OFFSET.oom);
+  if (doomed) {
+    out.push({
+      surface: "oom",
+      eyebrow: "Predict",
+      title: doomed.name,
+      blurb: "One expression decides what the kernel kills. Work out which process it picks before you read the scores.",
+      href: "/oom",
+      outOf: OOMS.length,
     });
   }
 

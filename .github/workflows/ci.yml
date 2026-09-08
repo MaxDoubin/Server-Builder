@@ -532,6 +532,17 @@ jobs:
       - name: Cache keys decide who sees what
         run: npx tsx scripts-ci/check-cache.ts
 
+      # The OOM surface is arithmetic all the way down, so the gate recomputes
+      # every case a second time and requires exactly one option to name what
+      # dies. The second half is the one that earned its place: every figure
+      # in the prose has to be a quantity the case produces. Writing them by
+      # hand I got five wrong in one sitting, all the same way, dividing MiB
+      # by a thousand instead of 1024. It also caught eight of ten answers
+      # sitting in the same option position, which no amount of proofreading
+      # the numbers would have found.
+      - name: The OOM killer picks by arithmetic
+        run: npx tsx scripts-ci/check-oom.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the
