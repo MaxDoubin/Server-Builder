@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 258 of them. Regenerate with script/generatePostIndex.ts.
+ * 259 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -2552,6 +2552,15 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/the-invoice-is-not-the-ceiling.jpg",
     wordCount: 1643,
   },
+  {
+    slug: "the-check-that-tested-nothing",
+    title: "The Check That Tested Nothing",
+    date: "2026-09-08",
+    tags: ["engineering","testing","operations"],
+    excerpt: "A green check is evidence only if you have seen it go red. Two checks I wrote this week passed on broken code, and both failed the same way: I asserted a consequence of the rule instead of the rule.",
+    coverImage: "/images/blog/the-check-that-tested-nothing.jpg",
+    wordCount: 1603,
+  },
 ];
 
 /**
@@ -2561,10 +2570,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 970;
+export const CITATION_COUNT = 972;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1129;
+export const CHECKED_URL_COUNT = 1131;
