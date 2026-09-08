@@ -23,6 +23,7 @@ import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/trans
 import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
 import { CASES as PERMISSION_CASES, octal as modeOctal, symbolic as lsLine } from "../client/src/lib/permissions/index";
+import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invertedPairs, priorityFor, worstMove } from "../client/src/lib/patch/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -848,6 +849,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/logs">Read the log</a>, what happened and the one line that proves it.</li>
     <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>, path MTU and the firewall that swallowed the explanation.</li>
     <li><a href="${SITE_URL}/permissions">The first class that matches</a>, Unix mode bits and the two thirds of them the kernel never looks at.</li>
+    <li><a href="${SITE_URL}/patch">The queue is sorted wrong</a>, why a base score is not a risk score and what to sort by instead.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2131,6 +2133,7 @@ ${JSON.stringify({
     ["Read the log", "/logs"],
     ["Ping works and the transfer hangs", "/mtu"],
     ["The first class that matches", "/permissions"],
+    ["The queue is sorted wrong", "/patch"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2706,6 +2709,86 @@ ${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocks
     interface, which fixes TCP and does nothing for UDP.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
+</main>`,
+  });
+
+  // ── patch prioritisation ──
+  /*
+    The whole queue goes into the static body twice, once in each order, which
+    is the argument the page makes visually. The decision points go in too,
+    because they are the evidence; the tier each finding lands in is derived
+    from the tree here exactly as it is in the page.
+  */
+  const patchInverted = invertedPairs(PATCH_FINDINGS);
+  const patchDescription =
+    "Every scanner sorts by CVSS base score, and the specification says the base score is not a risk score. " +
+    `${PATCH_FINDINGS.length} advisories in one week, called with the published deployer decision tree: ` +
+    `${patchInverted.inverted} of ${patchInverted.pairs} pairs come out in the other order, and the worst single ` +
+    `disagreement moves a finding ${worstMove(PATCH_FINDINGS)} places.`;
+
+  await writePage("patch", base, {
+    title: "The Queue Is Sorted Wrong | Max Doubin",
+    description: patchDescription,
+    canonical: `${SITE_URL}/patch`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The queue is sorted wrong",
+  description: patchDescription,
+  url: `${SITE_URL}/patch`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Vulnerability response prioritisation: why a CVSS base score is not a risk score, and how exploitation, system exposure, automatability and human impact decide what you actually do about an advisory",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The queue is sorted wrong</h1>
+  <p>
+    Every vulnerability management tool sorts by base score, because that is
+    the only number that arrives with the advisory. So a 9.8 goes to the top, a
+    6.5 goes near the bottom, and whoever works the queue starts at the top.
+  </p>
+  <p>
+    The scoring specification says plainly that the base score describes
+    intrinsic characteristics and is meant to be adjusted by environmental
+    metrics that almost nobody fills in. It cannot know whether the affected
+    component is reachable from where an attacker is, whether the feature is
+    enabled in your build, whether anybody is exploiting it, or what the
+    machine does. All four change the answer.
+  </p>
+  <h2>The advisories</h2>
+${PATCH_FINDINGS.map((finding) => `  <article>
+    <h3>${esc(finding.product)}, ${esc(finding.id)}</h3>
+    <p>${esc(finding.summary)} Published as ${esc(finding.severity)}, base score ${finding.cvss.toFixed(1)}.</p>
+    <ul>
+${finding.estate.map((note) => `      <li>${esc(note)}</li>`).join("\n")}
+    </ul>
+    <p>
+      Exploitation ${esc(finding.points.exploitation)}, system exposure ${esc(finding.points.exposure)},
+      automatable ${esc(finding.points.automatable)}, human impact ${esc(finding.points.impact)}, so
+      ${esc(PRIORITY_LABEL[priorityFor(finding.points)].toLowerCase())}.
+    </p>
+  </article>`).join("\n")}
+  <h2>The same week, sorted by base score</h2>
+  <ol>
+${byScore(PATCH_FINDINGS).map((finding) => `    <li>${esc(finding.product)}, ${esc(finding.id)}, ${finding.cvss.toFixed(1)}</li>`).join("\n")}
+  </ol>
+  <h2>The same week, sorted by what to do about it</h2>
+  <ol>
+${byPriority(PATCH_FINDINGS).map((finding) => `    <li>${esc(finding.product)}, ${esc(finding.id)}, ${esc(PRIORITY_LABEL[priorityFor(finding.points)].toLowerCase())}</li>`).join("\n")}
+  </ol>
+  <p>
+    ${patchInverted.inverted} of the ${patchInverted.pairs} pairs are ordered
+    differently by the two, and the worst single disagreement moves a finding
+    ${worstMove(PATCH_FINDINGS)} places. The advisories are constructed, which
+    is why they are numbered ADV rather than CVE. The scoring system, the four
+    decision points and the tree are real.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/scenarios/no-patch-until-tuesday", "No Patch Until Tuesday"], ["/firewall", "Firewall exercises"]])}
 </main>`,
   });
 
@@ -4610,6 +4693,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/permissions`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/patch`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

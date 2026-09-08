@@ -20,6 +20,7 @@ import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSIONS } from "@/lib/permissions/index";
+import { FINDINGS as PATCHES } from "@/lib/patch/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -60,6 +61,7 @@ const OFFSET = {
   handshake: 47,
   array: 53,
   permissions: 59,
+  patch: 61,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -206,6 +208,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Walk a packet down it and find where it dies, and what swallowed the explanation.",
       href: "/mtu",
       outOf: MTU_PATHS.length,
+    });
+  }
+
+  const advisory = pickFor(PATCHES, day, OFFSET.patch);
+  if (advisory) {
+    out.push({
+      surface: "patch",
+      eyebrow: "Rank",
+      title: advisory.product,
+      blurb: "Read the advisory and your own estate, and say what you actually do about it this week.",
+      href: "/patch",
+      outOf: PATCHES.length,
     });
   }
 

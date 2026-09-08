@@ -159,6 +159,9 @@ const CinematicMtu = lazyWithRetry(() =>
 const CinematicPermissions = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicPermissions").then((m) => ({ default: m.CinematicPermissions })),
 );
+const CinematicPatch = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicPatch").then((m) => ({ default: m.CinematicPatch })),
+);
 const CinematicLogs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLogs").then((m) => ({ default: m.CinematicLogs })),
 );
@@ -817,6 +820,11 @@ function AnimatedRoutes() {
           <Route path="/permissions">
             <Suspense fallback={<RouteLoading />}>
               <CinematicPermissions />
+            </Suspense>
+          </Route>
+          <Route path="/patch">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicPatch />
             </Suspense>
           </Route>
           <Route path="/logs">

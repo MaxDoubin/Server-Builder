@@ -16,6 +16,7 @@ import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { CASES as PERMISSIONS } from "@/lib/permissions/index";
+import { FINDINGS as PATCHES } from "@/lib/patch/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
@@ -28,6 +29,7 @@ import { loadSolvedPlans } from "@/lib/allocate/progress";
 import { loadSolvedTransfers } from "@/lib/transfer/progress";
 import { loadSolvedLogs } from "@/lib/logs/progress";
 import { loadSolvedPermissions } from "@/lib/permissions/progress";
+import { loadSolvedPatches } from "@/lib/patch/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
 import { loadSolvedChains } from "@/lib/chain/progress";
@@ -87,6 +89,13 @@ export function readProgress(): Line[] {
       href: "/transfer",
       done: loadSolvedTransfers().filter((slug) => TRANSFERS.some((item) => item.slug === slug)).length,
       total: TRANSFERS.length,
+      noun: "called right",
+    },
+    {
+      label: "Patch priority",
+      href: "/patch",
+      done: loadSolvedPatches().filter((id) => PATCHES.some((item) => item.id === id)).length,
+      total: PATCHES.length,
       noun: "called right",
     },
     {
