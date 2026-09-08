@@ -21,6 +21,7 @@ import { TERMS } from "@/lib/glossary/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
+import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -293,6 +294,16 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/permissions",
+      eyebrow: "Resolve",
+      title: "The first class that matches",
+      blurb:
+        "Owner, group, other, and the kernel picks exactly one of the three. Fourteen accesses to call before the shell tells you.",
+      reachFor: "the bits look right and the access is denied",
+      stats: [`${PERMISSION_CASES.length} calls`, "one class, never a union", "live model"],
       progress: null,
     },
     {

@@ -1828,6 +1828,40 @@ html.lenis-smooth {
   animation: scenario-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/*
+  The permission walk runs down the tree rather than resolving all at once.
+
+  Each row is staggered by its depth, so the marking arrives in the order the
+  kernel consults the path: root, then each directory, then the file. The
+  point of the animation is the order, which is the part people get wrong.
+  Under reduced motion the rows arrive together and every colour stays,
+  because the colours are the answer and the timing is the flourish.
+*/
+.permission-row[data-state="passed"],
+.permission-row[data-state="halted"] {
+  animation: permission-mark 320ms ease-out both;
+}
+
+/*
+  The unreached rows fade to the same 40% the utility class holds them at,
+  rather than to full strength, so the animation and the resting state agree
+  and reduced motion lands on exactly the same picture. Opacity only: a
+  transform on a table row is not reliably a transform.
+*/
+.permission-row[data-state="unreached"] {
+  animation: permission-unreached 320ms ease-out both;
+}
+
+@keyframes permission-mark {
+  from { opacity: 0.25; }
+  to   { opacity: 1; }
+}
+
+@keyframes permission-unreached {
+  from { opacity: 0.25; }
+  to   { opacity: 0.4; }
+}
+
 @keyframes scenario-enter {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
@@ -1844,6 +1878,7 @@ html.lenis-smooth {
   .practise-stage[data-mood="critical"] ~ .practise-rule::after { display: none; }
   .practise-flash { display: none; }
   .scenario-scene { animation: none; }
+  .permission-row[data-state] { animation: none; }
   .practise-stage,
   .practise-stage::before,
   .practise-stage::after,

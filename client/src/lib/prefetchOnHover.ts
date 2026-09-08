@@ -76,6 +76,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/transfer": { load: () => import("@/pages/cinematic/CinematicTransfer") },
   "/logs": { load: () => import("@/pages/cinematic/CinematicLogs") },
   "/mtu": { load: () => import("@/pages/cinematic/CinematicMtu") },
+  "/permissions": { load: () => import("@/pages/cinematic/CinematicPermissions") },
   "/route": { load: () => import("@/pages/cinematic/CinematicRoute") },
   "/restore": { load: () => import("@/pages/cinematic/CinematicRestore") },
   "/array": { load: () => import("@/pages/cinematic/CinematicArray") },

@@ -22,6 +22,7 @@ import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
 import { CASES as TRANSFERS, analyse, rate, size } from "../client/src/lib/transfer/index";
 import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/index";
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
+import { CASES as PERMISSION_CASES, octal as modeOctal, symbolic as lsLine } from "../client/src/lib/permissions/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -846,6 +847,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/handshake">Protocol handshakes</a>, breaking one step and seeing where it stops.</li>
     <li><a href="${SITE_URL}/logs">Read the log</a>, what happened and the one line that proves it.</li>
     <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>, path MTU and the firewall that swallowed the explanation.</li>
+    <li><a href="${SITE_URL}/permissions">The first class that matches</a>, Unix mode bits and the two thirds of them the kernel never looks at.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2128,6 +2130,7 @@ ${JSON.stringify({
     ["Why the transfer is slow", "/transfer"],
     ["Read the log", "/logs"],
     ["Ping works and the transfer hangs", "/mtu"],
+    ["The first class that matches", "/permissions"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2703,6 +2706,85 @@ ${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocks
     interface, which fixes TCP and does nothing for UDP.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
+</main>`,
+  });
+
+  // ── file permissions ──
+  /*
+    The tree and the four claims go into the static body in full: they are the
+    exercise, and a crawler that sees only the heading sees an empty page. The
+    answers are not here, for the same reason they are not in the logs.
+  */
+  const permissionsDescription =
+    "Every other permission system you have met adds rights up. Unix mode bits pick exactly one of " +
+    `owner, group and other and ignore the other two. ${PERMISSION_CASES.length} accesses to call: a file you own and cannot ` +
+    "write, a file you cannot read and can delete, a home directory at 711 that is not private, and the one thing root cannot do.";
+
+  await writePage("permissions", base, {
+    title: "The First Class That Matches | Max Doubin",
+    description: permissionsDescription,
+    canonical: `${SITE_URL}/permissions`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The first class that matches",
+  description: permissionsDescription,
+  url: `${SITE_URL}/permissions`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "POSIX file mode bits: that the kernel selects one class rather than combining them, that deleting is a directory permission, that traversal needs execute on every parent, and what the setgid and sticky bits actually do",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The first class that matches</h1>
+  <p>
+    Roles, groups in a directory service, IAM policies, the access control
+    lists bolted on beside these very bits: in all of them rights accumulate,
+    and being in one more group can only help. So the model arrives fully
+    formed and wrong, because the nine bits pick exactly one of the three sets
+    and ignore the other two entirely.
+  </p>
+  <p>
+    Own the file and you get the owner bits. Not the owner bits plus the group
+    bits. If they say you cannot write it then you cannot write it, no matter
+    that the group can, no matter that the whole world can, and no matter that
+    you are in the group as well. Two more things behave differently from how
+    they read: deleting a file is write on the directory holding it rather
+    than any permission on the file, and reaching a file at all needs the
+    execute bit on every directory above it.
+  </p>
+  <h2>The accesses</h2>
+${PERMISSION_CASES.map((item) => `  <article>
+    <h3>${esc(item.title)}</h3>
+    <p>${esc(item.brief)}</p>
+    <p><code>${esc(item.actor.user)}: ${esc(item.command)}</code>, with groups ${esc(item.actor.groups.join(", "))}.</p>
+    <ul>
+${item.path.map((node) => `      <li><code>${lsLine(node)}</code> ${esc(node.owner)} ${esc(node.group)} ${modeOctal(node.mode)} ${esc(node.name)}${node.note ? `. ${esc(node.note)}` : ""}</li>`).join("\n")}
+    </ul>
+    <p>Does it work?</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")}
+    </ol>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`).join("\n")}
+  <h2>The rule, in the order the kernel applies it</h2>
+  <ol>
+    <li>Walk the path from the top. Every directory above the target needs the execute bit, which here means search rather than run.</li>
+    <li>At each node pick the class: owner if you own it, else group if you are in its group, else other. One of the three, never a union.</li>
+    <li>Apply what the operation needs. Read, write and execute land on the target. Creating and deleting land on the directory and require nothing at all of the target.</li>
+    <li>If the directory is sticky and this is a removal, the file has to be yours or the directory has to be.</li>
+  </ol>
+  <p>
+    Root skips steps two and three by the kernel declining to check, with one
+    exception: running a file still needs an execute bit to exist somewhere in
+    the nine, because there the question is whether the file is a program
+    rather than whether you are allowed.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises, the same first-match rule on packets"], ["/tools/chmod-calculator", "Permissions calculator"]])}
 </main>`,
   });
 
@@ -4527,6 +4609,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/transfer`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/logs`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/permissions`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

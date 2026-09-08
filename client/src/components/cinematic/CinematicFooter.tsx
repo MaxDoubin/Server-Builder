@@ -117,6 +117,7 @@ export function CinematicFooter() {
               { href: "/transfer", label: "Throughput", testId: "link-footer-transfer" },
               { href: "/logs", label: "Read the log", testId: "link-footer-logs" },
               { href: "/mtu", label: "Path MTU", testId: "link-footer-mtu" },
+              { href: "/permissions", label: "File permissions", testId: "link-footer-permissions" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },
               { href: "/capture", label: "Captures", testId: "link-footer-capture" },
