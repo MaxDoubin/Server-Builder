@@ -391,6 +391,14 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # A failure with no symptom: for weeks the home page linked to two
+      # places while ten interactive surfaces sat reachable only from the nav.
+      # Nothing was broken and nothing reported it. This asserts the front
+      # door carries a link to every practise route, in the prerendered body
+      # and in the act, and that no count on it is a hand-typed literal.
+      - name: The front door mentions the practise surfaces
+        run: node scripts-ci/check-home-links.mjs
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the

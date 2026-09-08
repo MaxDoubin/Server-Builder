@@ -818,6 +818,26 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all nine scored categories.</li>
     <li><a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>, a free twelve week plan for starting a school cybersecurity club.</li>
   </ul>
+  <h2>Practise, in the browser</h2>
+  <p>
+    Ten places to practise, none of which need anything installed, none of
+    which reach a real machine, and none of which send anything anywhere.
+    Every exercise ships a solution that CI replays on every push.
+  </p>
+  <ul>
+    <li><a href="${SITE_URL}/today">Today</a>, one thing from each of these, chosen by the date.</li>
+    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>, the first fifteen minutes of an incident with many endings.</li>
+    <li><a href="${SITE_URL}/labs">Hands-on labs</a>, a Linux host simulated in the browser with something wrong with it.</li>
+    <li><a href="${SITE_URL}/capture">Packet captures</a>, a real trace and a Wireshark display filter bar.</li>
+    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artefact and a question with one exact answer.</li>
+    <li><a href="${SITE_URL}/triage">Phishing triage</a>, a morning of mail with every header intact.</li>
+    <li><a href="${SITE_URL}/firewall">Firewall exercises</a>, broken iptables chains with a rule-by-rule match trace.</li>
+    <li><a href="${SITE_URL}/resolve">DNS resolution</a>, telling a lame delegation from a missing glue record.</li>
+    <li><a href="${SITE_URL}/chain">Certificate chains</a>, and which party can fix a given TLS error.</li>
+    <li><a href="${SITE_URL}/allocate">Address plans</a>, dividing a block with the map drawn to scale.</li>
+    <li><a href="${SITE_URL}/handshake">Protocol handshakes</a>, breaking one step and seeing where it stops.</li>
+    <li><a href="${SITE_URL}/practise">The practise hub</a>, all of it with what each one is for.</li>
+  </ul>
   <h2>About</h2>
   <ul>
     <li><a href="${SITE_URL}/resume">Resume</a> and <a href="${SITE_URL}/timeline">timeline</a>.</li>
