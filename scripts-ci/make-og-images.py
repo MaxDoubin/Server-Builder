@@ -103,6 +103,7 @@ PAGE_EYEBROWS = {
     "array": "ARRAY CALCULATOR",
     "today": "TODAY",
     "glossary": "GLOSSARY",
+    "transfer": "THROUGHPUT",
     "handshake": "PROTOCOL HANDSHAKES",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",

@@ -16,6 +16,7 @@ import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
+import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { dayNumber, pickFor } from "./pick";
 
 export interface Pick {
@@ -44,6 +45,7 @@ const OFFSET = {
   resolve: 17,
   chain: 19,
   allocate: 23,
+  transfer: 29,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -154,6 +156,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: plan.tagline,
       href: `/allocate/${plan.slug}`,
       outOf: PLANS.length,
+    });
+  }
+
+  const slow = pickFor(TRANSFERS, day, OFFSET.transfer);
+  if (slow) {
+    out.push({
+      surface: "transfer",
+      eyebrow: "Measure",
+      title: slow.title,
+      blurb: "Read the ceilings, then say what is actually costing the time.",
+      href: "/transfer",
+      outOf: TRANSFERS.length,
     });
   }
 

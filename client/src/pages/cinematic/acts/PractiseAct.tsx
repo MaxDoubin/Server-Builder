@@ -24,6 +24,7 @@ import { CASES as DNS_CASES } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
+import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -114,6 +115,14 @@ const SURFACES: Surface[] = [
     blurb:
       "TCP, TLS, DHCP and 802.1X as conversations. Break one step and watch where the exchange stops.",
     count: `${HANDSHAKES.length} handshakes, ${HANDSHAKES.reduce((sum, h) => sum + h.breaks.length, 0)} ways to break them`,
+  },
+  {
+    href: "/transfer",
+    eyebrow: "Measure",
+    title: "Why the transfer is slow",
+    blurb:
+      "Three ceilings sit over a single stream and the lowest one wins. Work out which, and which expensive upgrade would have done nothing.",
+    count: `${TRANSFERS.length} complaints, 4 answers`,
   },
 ];
 

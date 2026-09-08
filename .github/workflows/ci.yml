@@ -391,6 +391,15 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # An explanation with a number in it goes stale the moment a parameter is
+      # edited, and a case that says "about 14 Mbps" beside a model computing
+      # 17 is worse than one with no number: the reader believes the sentence.
+      # This replays every case's declared answer against the model, checks the
+      # model against arithmetic done by hand, and matches every throughput
+      # quoted in the prose to a figure the model actually produces.
+      - name: Throughput model
+        run: npx tsx scripts-ci/check-transfer.ts
+
       # A glossary is the surface that rots quietest: nothing breaks when the
       # writing starts using a term nobody defined, and nothing breaks when a
       # definition outlives the last article that used the word. This checks
