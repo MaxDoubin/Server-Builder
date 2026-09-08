@@ -143,6 +143,14 @@ const CinematicCapture = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCapture").then((m) => ({ default: m.CinematicCapture })),
 );
 
+const CinematicAllocations = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAllocations").then((m) => ({ default: m.CinematicAllocations })),
+);
+
+const CinematicAllocate = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAllocate").then((m) => ({ default: m.CinematicAllocate })),
+);
+
 const CinematicChain = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicChain").then((m) => ({ default: m.CinematicChain })),
 );
@@ -746,6 +754,16 @@ function AnimatedRoutes() {
           <Route path="/capture/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCapture />
+            </Suspense>
+          </Route>
+          <Route path="/allocate">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAllocations />
+            </Suspense>
+          </Route>
+          <Route path="/allocate/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAllocate />
             </Suspense>
           </Route>
           <Route path="/chain">

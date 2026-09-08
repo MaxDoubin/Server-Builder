@@ -29,6 +29,8 @@ import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
 import { loadSolvedFirewall } from "@/lib/firewall/progress";
 import { CASES as DNS_CASES, WORLD } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
+import { PROBLEMS as PLANS } from "@/lib/allocate/index";
+import { loadSolvedPlans } from "@/lib/allocate/progress";
 import { CAPTURES } from "@/lib/capture/index";
 import { DECKS } from "@/lib/flashcardDecks";
 import { EXAMS } from "@/lib/examObjectives";
@@ -63,6 +65,7 @@ export function CinematicPractise() {
   const [solvedChallenges, setSolvedChallenges] = useState(0);
   const [triaged, setTriaged] = useState(0);
   const [solvedFirewall, setSolvedFirewall] = useState(0);
+  const [solvedPlans, setSolvedPlans] = useState(0);
 
   useEffect(() => {
     const found = loadFound();
@@ -81,6 +84,7 @@ export function CinematicPractise() {
     setSolvedFirewall(
       loadSolvedFirewall().filter((slug) => FIREWALL.some((e) => e.slug === slug)).length,
     );
+    setSolvedPlans(loadSolvedPlans().filter((slug) => PLANS.some((p) => p.slug === slug)).length);
     setMounted(true);
   }, []);
 
@@ -203,6 +207,20 @@ export function CinematicPractise() {
         "check by check",
       ],
       progress: null,
+    },
+    {
+      href: "/allocate",
+      eyebrow: "Design",
+      title: "Address plans",
+      blurb:
+        "One block, several things that want space, and a map drawn to scale. Overlaps look like two different numbers in a spreadsheet and like an overlap here.",
+      reachFor: "you are laying out a network rather than subnetting one address",
+      stats: [
+        `${PLANS.length} plans`,
+        `${PLANS.reduce((sum, p) => sum + p.requirements.length, 0)} subnets`,
+        "marked on behaviour",
+      ],
+      progress: { done: solvedPlans, total: PLANS.length, noun: "plans finished" },
     },
     {
       href: "/flashcards",

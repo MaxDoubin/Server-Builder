@@ -71,6 +71,7 @@ SECTION_EYEBROWS = [
     ("labs", "HANDS-ON LAB"),
     ("challenges", "CAPTURE THE FLAG"),
     ("firewall", "FIREWALL EXERCISE"),
+    ("allocate", "ADDRESS PLAN"),
     ("capture", "PACKET CAPTURE"),
 ]
 
@@ -98,6 +99,7 @@ PAGE_EYEBROWS = {
     "firewall": "FIREWALL EXERCISES",
     "resolve": "DNS RESOLUTION",
     "chain": "CERTIFICATE CHAINS",
+    "allocate": "ADDRESS PLANS",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",

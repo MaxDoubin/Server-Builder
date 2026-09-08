@@ -56,6 +56,7 @@ const { MESSAGES: TRIAGE_MESSAGES } = await import("../client/src/lib/triage/ind
 const { EXERCISES: FIREWALL } = await import("../client/src/lib/firewall/data/exercises.ts");
 const { CASES: DNS_CASES } = await import("../client/src/lib/resolve/data/cases.ts");
 const { CHAIN_CASES } = await import("../client/src/lib/chain/data/cases.ts");
+const { PROBLEMS: PLANS } = await import("../client/src/lib/allocate/data/problems.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2341,6 +2342,126 @@ ${
     });
   }
 
+  // ── address plans ──
+  /*
+    The requirements and the block go into the static body, because "divide a
+    /22 between these five VLANs" is a question people search for with the
+    numbers in it. The solutions do not, for the same reason the labs withhold
+    theirs.
+  */
+  const allocateIndexDescription =
+    "Six blocks to divide between competing requirements, with a map drawn to scale. Overlaps, " +
+    "unaligned networks, summary routes and growth, marked on behaviour rather than on matching " +
+    "one answer.";
+
+  await writePage("allocate", base, {
+    title: "Address Plan Exercises | Max Doubin",
+    description: allocateIndexDescription,
+    canonical: `${SITE_URL}/allocate`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "IPv4 address plan exercises",
+  description: allocateIndexDescription,
+  url: `${SITE_URL}/allocate`,
+  numberOfItems: PLANS.length,
+  itemListElement: PLANS.map((plan, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: plan.title,
+    description: plan.tagline,
+    url: `${SITE_URL}/allocate/${plan.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Address plans</h1>
+  <p>
+    One block, several things that need space, and constraints that make it a
+    puzzle rather than a division. Type a CIDR against each requirement and a
+    map of the block fills in as you go.
+  </p>
+  <p>
+    The map is the part a spreadsheet cannot do. An address plan written as a
+    column of CIDRs hides both of the mistakes that matter: an overlap looks
+    like two different numbers, and a gap you cannot use looks like nothing at
+    all. Drawn to scale, both are immediate.
+  </p>
+  <ul>
+${PLANS.map(
+  (plan) =>
+    `    <li><a href="${SITE_URL}/allocate/${plan.slug}">${esc(plan.title)}</a> ` +
+    `(${esc(plan.difficulty)}, ${esc(plan.block)}): ${esc(plan.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/tools/vlsm-practice", "The subnetting drill"]])}
+</main>`,
+  });
+
+  for (const plan of PLANS) {
+    const url = `${SITE_URL}/allocate/${plan.slug}`;
+    await writePage(`allocate/${plan.slug}`, base, {
+      title: pageTitle(`${plan.title} | Address plan`),
+      description: `${plan.tagline} A ${plan.difficulty} IPv4 address plan exercise on ${plan.block}.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: plan.title,
+  description: plan.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: plan.difficulty,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Address plans", item: `${SITE_URL}/allocate` },
+    { "@type": "ListItem", position: 3, name: plan.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(plan.title)}</h1>
+  <p>${esc(plan.tagline)}</p>
+  <h2>The brief</h2>
+${plan.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>The block</h2>
+  <p>${esc(plan.block)}</p>
+  <h2>What needs space</h2>
+  <ul>
+${plan.requirements
+  .map(
+    (requirement) =>
+      `    <li>${esc(requirement.label)}: ${requirement.hosts} hosts` +
+      `${requirement.within ? `, inside ${esc(requirement.within)}` : ""}` +
+      `${requirement.note ? `. ${esc(requirement.note)}` : ""}</li>`,
+  )
+  .join("\n")}
+  </ul>
+  <p>
+    The exercise is marked by behaviour rather than by matching one answer, so
+    any plan that meets every requirement without overlapping is right. The
+    interactive page draws the block to scale as you fill it and there are
+    ${plan.hints.length} hints.
+  </p>
+  ${backLinks([["/allocate", "All address plans"], ["/firewall", "Firewall exercises"], ["/labs", "Hands-on labs"]])}
+</main>`,
+    });
+  }
+
   // ── certificate chain validation ──
   const chainDescription =
     "Nine servers presenting nine chains, validated check by check. A missing intermediate, an " +
@@ -3785,6 +3906,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/firewall`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/resolve`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/chain`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
@@ -3874,6 +3996,14 @@ async function writeSitemap(
   for (const exercise of FIREWALL) {
     urls.push({
       loc: `${SITE_URL}/firewall/${exercise.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const plan of PLANS) {
+    urls.push({
+      loc: `${SITE_URL}/allocate/${plan.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

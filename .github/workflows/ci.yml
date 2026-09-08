@@ -354,6 +354,15 @@ jobs:
       - name: Certificate chains
         run: npx tsx scripts-ci/check-chain.ts
 
+      # An address plan can be arithmetically infeasible, and it is easy to
+      # write one by accident: I did, and the first run of this caught it while
+      # I was still calling it an exercise. Every solution is replayed, every
+      # empty plan must fail, host counts are summed against the block and
+      # against each summary constraint, and a table of alignment, overlap and
+      # usable-count results worked out by hand checks the arithmetic itself.
+      - name: Address plans
+        run: npx tsx scripts-ci/check-allocate.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
