@@ -18,6 +18,11 @@ import { CHAIN_CASES } from "@/lib/chain/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
+import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
+import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
+import { SCENARIOS as RESTORES } from "@/lib/restore/index";
+import { HANDSHAKES } from "@/lib/handshake/index";
+import { CONFIGS as ARRAY_CONFIGS } from "@/lib/array/index";
 import { dayNumber, pickFor } from "./pick";
 
 export interface Pick {
@@ -48,6 +53,11 @@ const OFFSET = {
   allocate: 23,
   transfer: 29,
   logs: 31,
+  mtu: 37,
+  route: 41,
+  restore: 43,
+  handshake: 47,
+  array: 53,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -182,6 +192,66 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Say what happened, then point at the one line that proves it.",
       href: "/logs",
       outOf: LOGS.length,
+    });
+  }
+
+  const path = pickFor(MTU_PATHS, day, OFFSET.mtu);
+  if (path) {
+    out.push({
+      surface: "mtu",
+      eyebrow: "Trace",
+      title: path.name,
+      blurb: "Walk a packet down it and find where it dies, and what swallowed the explanation.",
+      href: "/mtu",
+      outOf: MTU_PATHS.length,
+    });
+  }
+
+  const table = pickFor(ROUTE_TABLES, day, OFFSET.route);
+  if (table) {
+    out.push({
+      surface: "route",
+      eyebrow: "Resolve",
+      title: table.name,
+      blurb: "Which route wins, and what reading the table in order would have told you.",
+      href: "/route",
+      outOf: ROUTE_TABLES.length,
+    });
+  }
+
+  const posture = pickFor(RESTORES, day, OFFSET.restore);
+  if (posture) {
+    out.push({
+      surface: "restore",
+      eyebrow: "Recover",
+      title: posture.name,
+      blurb: "Read the posture, then run the incident and see how many copies were copies.",
+      href: "/restore",
+      outOf: RESTORES.length,
+    });
+  }
+
+  const shake = pickFor(HANDSHAKES, day, OFFSET.handshake);
+  if (shake) {
+    out.push({
+      surface: "handshake",
+      eyebrow: "Sequence",
+      title: shake.title,
+      blurb: "Step through it, then break one step and see where the sequence stops.",
+      href: "/handshake",
+      outOf: HANDSHAKES.length,
+    });
+  }
+
+  const config = pickFor(ARRAY_CONFIGS, day, OFFSET.array);
+  if (config) {
+    out.push({
+      surface: "array",
+      eyebrow: "Size",
+      title: config.label,
+      blurb: "Capacity, tolerance and whether the rebuild finishes.",
+      href: "/array",
+      outOf: ARRAY_CONFIGS.length,
     });
   }
 

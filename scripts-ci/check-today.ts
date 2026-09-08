@@ -1,42 +1,87 @@
 /**
  * The daily selection has to cover everything and repeat nothing early.
  *
- * The failure this guards against is quiet: a surface whose list is renamed or
- * emptied simply stops appearing, and the page still renders a tidy grid with
- * one fewer card. Nobody notices that the labs have not been offered for a
- * month.
+ * The failure this guards against is quiet: a surface whose list is renamed
+ * or emptied simply stops appearing, and the page still renders a tidy grid
+ * with one fewer card. Nobody notices that the labs have not been offered
+ * for a month.
+ *
+ * It happened anyway, because this file kept a hand-typed list of the
+ * surfaces to expect. Five were built and never added to the rotation, so
+ * they never appeared on a page whose own copy says it offers one thing from
+ * every practise surface, and the check agreed with the page because both
+ * were reading the same incomplete list. Three surfaces with progress stores
+ * had no line in the progress panel for the same reason.
+ *
+ * The expected set is derived from the practise registry now. A surface that
+ * should not rotate declares why, in the registry, and this reads that
+ * declaration: absent is a decision with a reason rather than an omission.
  */
 
 import { cycleDays, picksFor } from "../client/src/lib/today/index";
 import { pickFor } from "../client/src/lib/today/pick";
+import { PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
+import { readFileSync } from "node:fs";
 
 const problems: string[] = [];
 
 /*
-  Every surface must appear, every day. A missing one is the failure above.
+  Every surface that has not declared otherwise must appear, every day.
 */
-const EXPECTED = [
-  "scenarios",
-  "labs",
-  "captures",
-  "challenges",
-  "triage",
-  "firewall",
-  "resolve",
-  "chain",
-  "allocate",
-  "transfer",
-  "logs",
-];
+const rotating = PRACTISE_SURFACES.filter((surface) => !surface.noRotation);
+const EXPECTED = rotating.map((surface) => surface.href.slice(1));
 
-const today = picksFor(0);
-for (const surface of EXPECTED) {
-  if (!today.some((pick) => pick.surface === surface)) {
-    problems.push(`${surface} is missing from the selection`);
+/*
+  The rotation's surface names have to match the registry's routes. "captures"
+  against /capture is the kind of near-miss that makes a derived check quietly
+  compare nothing, so the mapping is explicit and checked rather than assumed.
+*/
+const ALIAS: Record<string, string> = { capture: "captures" };
+const expectedNames = EXPECTED.map((name) => ALIAS[name] ?? name);
+
+for (const surface of PRACTISE_SURFACES) {
+  if (surface.noRotation && surface.noRotation.length < 20) {
+    problems.push(`${surface.href} says it does not rotate and the reason is too short to be one`);
+  }
+  if (surface.noProgress && surface.noProgress.length < 20) {
+    problems.push(`${surface.href} says it has no progress line and the reason is too short to be one`);
   }
 }
-if (today.length !== EXPECTED.length) {
-  problems.push(`expected ${EXPECTED.length} picks, got ${today.length}`);
+
+
+const today = picksFor(0);
+for (const surface of expectedNames) {
+  if (!today.some((pick) => pick.surface === surface)) {
+    problems.push(
+      `${surface} is a practise surface with no declared reason to sit out, and it is missing from the selection`,
+    );
+  }
+}
+if (today.length !== expectedNames.length) {
+  problems.push(`expected ${expectedNames.length} picks, got ${today.length}`);
+}
+/* And nothing that declared itself out may sneak back in. */
+for (const surface of PRACTISE_SURFACES.filter((item) => item.noRotation)) {
+  const name = ALIAS[surface.href.slice(1)] ?? surface.href.slice(1);
+  if (today.some((pick) => pick.surface === name)) {
+    problems.push(`${surface.href} declares it does not rotate and it is in the selection`);
+  }
+}
+
+/*
+  The progress panel is the same rule. A surface with a progress store and no
+  line is invisible on the page that summarises how far you have got, which is
+  the whole reason that page exists.
+*/
+const panel = readFileSync("client/src/lib/today/progress.ts", "utf8");
+for (const surface of PRACTISE_SURFACES) {
+  const listed = panel.includes(`href: "${surface.href}"`);
+  if (!surface.noProgress && !listed) {
+    problems.push(`${surface.href} has no line in the progress panel and no declared reason`);
+  }
+  if (surface.noProgress && listed) {
+    problems.push(`${surface.href} declares it has no progress and appears in the panel`);
+  }
 }
 
 /* Deterministic: the same day must give the same answer. */
@@ -57,7 +102,7 @@ for (const day of [0, 1, 12345, 20704, -3]) {
 /* Negative days must not throw or index out of range: the modulo has to be the positive one. */
 for (const day of [-1, -7, -1000]) {
   const picks = picksFor(day);
-  if (picks.length !== EXPECTED.length) {
+  if (picks.length !== expectedNames.length) {
     problems.push(`day ${day} produced ${picks.length} picks; a negative day number broke the index`);
   }
 }

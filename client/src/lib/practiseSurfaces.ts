@@ -58,6 +58,23 @@ export interface PractiseSurface {
   /** The name both surfaces show. */
   title: string;
   group: PractiseGroup;
+  /**
+   * Why this surface is not in the daily rotation, when it is not.
+   *
+   * /today says it offers one thing from every practise surface, and for a
+   * while that was false: five surfaces had never been added to its list and
+   * the page's own copy claimed otherwise. Absent is now a declaration with
+   * a reason rather than an omission nobody noticed, and CI reads it.
+   */
+  noRotation?: string;
+  /**
+   * Why this surface has no progress line on /today, when it has none.
+   *
+   * A calculator has nothing to be part-way through. An exercise with right
+   * answers does, and leaving it out of the panel is a bug rather than a
+   * design.
+   */
+  noProgress?: string;
 }
 
 /**
@@ -73,23 +90,23 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
 
   { href: "/labs", eyebrow: "Diagnose", title: "Hands-on labs", group: "diagnose" },
   { href: "/logs", eyebrow: "Read", title: "Read the log", group: "diagnose" },
-  { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose" },
-  { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose" },
-  { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose" },
-  { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" },
-  { href: "/handshake", eyebrow: "Sequence", title: "Protocol handshakes", group: "diagnose" },
+  { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose" , noProgress: "no progress store yet; the surface predates the pattern" },
+  { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose" , noProgress: "no progress store yet; the surface predates the pattern" },
+  { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose" , noProgress: "no progress store yet; the surface predates the pattern" },
+  { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" },
+  { href: "/handshake", eyebrow: "Sequence", title: "Protocol handshakes", group: "diagnose" , noProgress: "a sequence to step through rather than a scored set" },
 
   { href: "/firewall", eyebrow: "Order", title: "Firewall exercises", group: "compute" },
-  { href: "/route", eyebrow: "Resolve", title: "Longest prefix wins", group: "compute" },
+  { href: "/route", eyebrow: "Resolve", title: "Longest prefix wins", group: "compute" , noProgress: "a lookup tool with worked examples rather than a scored set" },
   { href: "/allocate", eyebrow: "Divide", title: "Address plans", group: "compute" },
-  { href: "/array", eyebrow: "Size", title: "Array calculator", group: "compute" },
+  { href: "/array", eyebrow: "Size", title: "Array calculator", group: "compute" , noProgress: "a calculator; nothing to be part-way through" },
   { href: "/transfer", eyebrow: "Measure", title: "Why the transfer is slow", group: "compute" },
-  { href: "/restore", eyebrow: "Recover", title: "You have backups, not restores", group: "compute" },
+  { href: "/restore", eyebrow: "Recover", title: "You have backups, not restores", group: "compute" , noProgress: "a model to run rather than a scored set" },
 
-  { href: "/glossary", eyebrow: "Look up", title: "Glossary", group: "ground" },
-  { href: "/flashcards", eyebrow: "Recall", title: "Flashcards", group: "ground" },
-  { href: "/study", eyebrow: "Plan", title: "Exam objectives", group: "ground" },
-  { href: "/tools", eyebrow: "Compute", title: "Browser tools", group: "ground" },
+  { href: "/glossary", eyebrow: "Look up", title: "Glossary", group: "ground" , noRotation: "reference, not an exercise: there is nothing to get right", noProgress: "nothing to be part-way through" },
+  { href: "/flashcards", eyebrow: "Recall", title: "Flashcards", group: "ground" , noRotation: "has its own spaced-repetition schedule, and a second scheduler picking one card would fight it", noProgress: "the SM-2 scheduler is the progress, and it does not reduce to a fraction" },
+  { href: "/study", eyebrow: "Plan", title: "Exam objectives", group: "ground" , noRotation: "a plan rather than a drill: picking one domain a day is not how anybody revises", noProgress: "tracked per exam on the study pages themselves" },
+  { href: "/tools", eyebrow: "Compute", title: "Browser tools", group: "ground" , noRotation: "utilities you reach for with a job in hand, not things to be handed", noProgress: "nothing to be part-way through" },
 ];
 
 /** The groups in reading order, each with its surfaces. */
