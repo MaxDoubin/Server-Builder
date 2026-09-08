@@ -90,9 +90,9 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
 
   { href: "/labs", eyebrow: "Diagnose", title: "Hands-on labs", group: "diagnose" },
   { href: "/logs", eyebrow: "Read", title: "Read the log", group: "diagnose" },
-  { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose" , noProgress: "no progress store yet; the surface predates the pattern" },
-  { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose" , noProgress: "no progress store yet; the surface predates the pattern" },
-  { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose" , noProgress: "no progress store yet; the surface predates the pattern" },
+  { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose"  },
+  { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  },
+  { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  },
   { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" },
   { href: "/handshake", eyebrow: "Sequence", title: "Protocol handshakes", group: "diagnose" , noProgress: "a sequence to step through rather than a scored set" },
 

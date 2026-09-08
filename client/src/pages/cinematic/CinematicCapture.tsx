@@ -11,7 +11,7 @@
  * screen reader, searched with the browser's own find, and copied out.
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
@@ -19,6 +19,7 @@ import { getCapture } from "@/lib/capture/index";
 import { compileFilter } from "@/lib/capture/filter";
 import { isCorrect, type Capture, type Packet } from "@/lib/capture/types";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
+import { recordSolvedCaptures } from "@/lib/capture/progress";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -66,6 +67,18 @@ function Workbench({ capture }: { capture: Capture }) {
   }, []);
 
   const solvedCount = capture.questions.filter((q) => marked[q.id]).length;
+
+  /*
+    A capture counts as read once every question in it is answered right.
+    Recorded here rather than at each answer, because part-way through is
+    not a state the progress panel has a word for, and a capture with one
+    question left is not a capture you have read.
+  */
+  useEffect(() => {
+    if (capture.questions.length > 0 && solvedCount === capture.questions.length) {
+      recordSolvedCaptures(capture.slug);
+    }
+  }, [capture.questions.length, capture.slug, solvedCount]);
 
   return (
     <CinematicLayout>

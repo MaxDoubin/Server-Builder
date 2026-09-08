@@ -14,6 +14,7 @@ import { useSEO } from "@/lib/useSEO";
 import { CASES, WORLD, resolve, type Case, type RRType } from "@/lib/resolve/index";
 import { pluralise } from "@/lib/plural";
 import { PractiseStage } from "@/components/practise/PractiseStage";
+import { recordSolvedResolves } from "@/lib/resolve/progress";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -280,7 +281,10 @@ function CaseCard({
             <button
               key={option}
               type="button"
-              onClick={() => setPicked(index)}
+              onClick={() => {
+                setPicked(index);
+                if (index === item.answer) recordSolvedResolves(item.id);
+              }}
               disabled={picked !== null}
               aria-pressed={chosen}
               data-testid={`resolve-option-${item.id}-${index}`}
