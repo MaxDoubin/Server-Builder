@@ -279,6 +279,15 @@ jobs:
       - name: Print chrome
         run: node scripts-ci/check-print-chrome.mjs
 
+      # A capture exercise rots in two ways that are invisible in review: a
+      # hint filter stops matching anything, so the hint sends the reader to
+      # an empty list, or the accepted answer drifts from what is in the
+      # packets, so a correct reading is marked wrong. Both are checked here,
+      # along with the filter engine itself against a table of expressions
+      # with results worked out by hand.
+      - name: Packet captures
+        run: npx tsx scripts-ci/check-captures.ts
+
       # Every lab ships a transcript that solves it, replayed here through the
       # real shell against a real build of the machine. It proves the lab is
       # solvable, that the predicate matches the intended route, and that

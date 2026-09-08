@@ -101,6 +101,7 @@ export function CinematicFooter() {
               { href: "/ncl", label: "NCL guides", testId: "link-footer-ncl" },
               { href: "/scenarios", label: "Scenarios", testId: "link-footer-scenarios" },
               { href: "/labs", label: "Labs", testId: "link-footer-labs" },
+              { href: "/capture", label: "Captures", testId: "link-footer-capture" },
               { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
               { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },
             ].map((item) => (

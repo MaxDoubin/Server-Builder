@@ -131,6 +131,14 @@ const CinematicContact = lazyWithRetry(() =>
   })),
 );
 
+const CinematicCaptures = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCaptures").then((m) => ({ default: m.CinematicCaptures })),
+);
+
+const CinematicCapture = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCapture").then((m) => ({ default: m.CinematicCapture })),
+);
+
 const CinematicLabs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLabs").then((module) => ({ default: module.CinematicLabs })),
 );
@@ -693,6 +701,16 @@ function AnimatedRoutes() {
     <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
+          <Route path="/capture">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCaptures />
+            </Suspense>
+          </Route>
+          <Route path="/capture/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCapture />
+            </Suspense>
+          </Route>
           <Route path="/labs">
             <Suspense fallback={<RouteLoading />}>
               <CinematicLabs />

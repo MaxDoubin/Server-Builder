@@ -51,6 +51,7 @@ const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig
 const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
 const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
 const { LABS } = await import("../client/src/lib/labs/labs.ts");
+const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
 );
@@ -2056,6 +2057,108 @@ ${JSON.stringify({
     });
   }
 
+  // ── packet captures ──
+  const capturesIndexDescription =
+    "Read a packet capture in the browser, with a real Wireshark display filter bar. Find the " +
+    "password sent in the clear, and the beacon that checks in every sixty seconds.";
+
+  await writePage("capture", base, {
+    title: "Packet Captures | Max Doubin",
+    description: capturesIndexDescription,
+    canonical: `${SITE_URL}/capture`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Packet capture exercises",
+  description: capturesIndexDescription,
+  url: `${SITE_URL}/capture`,
+  numberOfItems: CAPTURES.length,
+  itemListElement: CAPTURES.map((capture, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: capture.title,
+    description: capture.tagline,
+    url: `${SITE_URL}/capture/${capture.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Packet captures</h1>
+  <p>
+    A packet list, a detail tree and a display filter bar that takes real
+    Wireshark syntax. Type a filter, narrow a hundred packets to four, and
+    answer the question.
+  </p>
+  <p>
+    The filter bar supports equality and inequality, ordering, substring
+    matching with contains, field existence, and boolean operators with
+    brackets, on any field the packets carry. It refuses what it cannot do
+    rather than quietly ignoring half an expression.
+  </p>
+  <ul>
+${CAPTURES.map(
+  (capture) =>
+    `    <li><a href="${SITE_URL}/capture/${capture.slug}">${esc(capture.title)}</a> ` +
+    `(${esc(capture.difficulty)}, ${capture.packets.length} packets): ${esc(capture.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/labs", "Hands-on labs"], ["/scenarios", "Incident scenarios"], ["/tools", "Browser tools"]])}
+</main>`,
+  });
+
+  for (const capture of CAPTURES) {
+    const url = `${SITE_URL}/capture/${capture.slug}`;
+    await writePage(`capture/${capture.slug}`, base, {
+      title: pageTitle(`${capture.title} | Packet capture`),
+      description: `${capture.tagline} A ${capture.difficulty} packet analysis exercise with ${capture.questions.length} questions.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: capture.title,
+  description: capture.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: capture.difficulty,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Captures", item: `${SITE_URL}/capture` },
+    { "@type": "ListItem", position: 3, name: capture.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(capture.title)}</h1>
+  <p>${esc(capture.tagline)}</p>
+${capture.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>The questions</h2>
+  <ol>
+${capture.questions.map((question) => `    <li>${esc(question.prompt)}</li>`).join("\n")}
+  </ol>
+  <p>
+    ${capture.packets.length} packets. The workbench opens above with a filter
+    bar taking real Wireshark display filter syntax. Answers are not written
+    into this page, because the exercise is finding them.
+  </p>
+  ${backLinks([["/capture", "All captures"], ["/labs", "Hands-on labs"], ["/tools", "Browser tools"]])}
+</main>`,
+    });
+  }
+
   // ── hands-on labs ──
   /*
     The labs are a simulated shell, so the static body is the brief and the
@@ -3131,6 +3234,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
@@ -3186,6 +3290,14 @@ async function writeSitemap(
   for (const slug of NCL_GUIDE_DATA.map((g: { slug: string }) => g.slug)) {
     urls.push({
       loc: `${SITE_URL}/ncl/${slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const capture of CAPTURES) {
+    urls.push({
+      loc: `${SITE_URL}/capture/${capture.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
