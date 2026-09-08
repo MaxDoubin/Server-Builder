@@ -25,6 +25,7 @@ import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
+import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -297,6 +298,20 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/clock",
+      eyebrow: "Measure",
+      title: "Four errors, none of which says the word time",
+      blurb:
+        "A wrong clock reports itself under four unrelated names, and three of them send you somewhere else. Work backwards from what broke.",
+      reachFor: "a certificate is not yet valid and the code is always wrong",
+      stats: [
+        `${CLOCK_CASES.length} clocks`,
+        `${CLOCK_CASES.reduce((sum, item) => sum + item.checks.length, 0)} observations`,
+        "live interval algebra",
+      ],
       progress: null,
     },
     {

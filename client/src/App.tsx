@@ -168,6 +168,9 @@ const CinematicRetry = lazyWithRetry(() =>
 const CinematicVlan = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicVlan").then((m) => ({ default: m.CinematicVlan })),
 );
+const CinematicClock = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicClock").then((m) => ({ default: m.CinematicClock })),
+);
 const CinematicLogs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLogs").then((m) => ({ default: m.CinematicLogs })),
 );
@@ -841,6 +844,11 @@ function AnimatedRoutes() {
           <Route path="/vlan">
             <Suspense fallback={<RouteLoading />}>
               <CinematicVlan />
+            </Suspense>
+          </Route>
+          <Route path="/clock">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicClock />
             </Suspense>
           </Route>
           <Route path="/logs">

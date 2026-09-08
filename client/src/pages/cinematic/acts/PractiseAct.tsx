@@ -31,6 +31,7 @@ import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
+import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
@@ -140,6 +141,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A thousand failed passwords are a bot that got nowhere. Say what happened, then point at the one line that proves it.",
     count: `${LOGS.length} logs, ${LOGS.reduce((sum, item) => sum + item.lines.length, 0)} lines`,
+  },
+  {
+    href: "/clock",
+    eyebrow: "Measure",
+    title: "Four errors, none of which says the word time",
+    blurb:
+      "Kerberos allows five minutes, a one-time code allows thirty seconds and a certificate allows nothing, so what broke is a measurement.",
+    count: `${CLOCK_CASES.length} clocks, ${CLOCK_CASES.reduce((sum, item) => sum + item.checks.length, 0)} observations`,
   },
   {
     href: "/vlan",

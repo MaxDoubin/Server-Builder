@@ -26,6 +26,7 @@ import { CASES as PERMISSION_CASES, octal as modeOctal, symbolic as lsLine } fro
 import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invertedPairs, priorityFor, worstMove } from "../client/src/lib/patch/index";
 import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as retryMs, orphaned as retryOrphaned, requestsAt, truncatingCaller } from "../client/src/lib/retry/index";
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
+import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan } from "../client/src/lib/clock/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -854,6 +855,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/patch">The queue is sorted wrong</a>, why a base score is not a risk score and what to sort by instead.</li>
     <li><a href="${SITE_URL}/retry">Three retries, four layers</a>, how one button press becomes eighty-one queries.</li>
     <li><a href="${SITE_URL}/vlan">The frame that arrived untagged</a>, native VLAN mismatches and the wire that says nothing.</li>
+    <li><a href="${SITE_URL}/clock">Four errors, none of which says the word time</a>, how wrong the clock is, worked backwards from what broke.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2140,6 +2142,7 @@ ${JSON.stringify({
     ["The queue is sorted wrong", "/patch"],
     ["Three retries, four layers", "/retry"],
     ["The frame that arrived untagged", "/vlan"],
+    ["Four errors, none of which says the word time", "/clock"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2804,6 +2807,121 @@ ${path.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     the habit.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/blog/vlan-segmentation-guide", "VLAN segmentation"]])}
+</main>`,
+  });
+
+  // ── clock skew ──
+  /*
+    Every observation goes into the static body with its error message
+    verbatim, because the messages are the subject: three of the four never
+    mention time, and somebody searching one of those strings is exactly the
+    reader this page is for. The answer goes in too, as a range rather than a
+    number, which is what the evidence supports.
+  */
+  const clockObservations = CLOCK_CASES.reduce((sum, item) => sum + item.checks.length, 0);
+  const clockDescription =
+    "A wrong clock reports itself under four unrelated names and three of them never mention time: a certificate " +
+    "that is not yet valid, an authentication code that is invalid, a DNSSEC answer that is bogus, and log lines " +
+    "in an order the events did not happen in. The tolerances differ by two orders of magnitude, so what broke " +
+    `is itself a measurement. ${CLOCK_CASES.length} clocks, ${clockObservations} observations, worked backwards.`;
+
+  /* A rule as a sentence, so the static body says what each check tolerates. */
+  const ruleText = (check: (typeof CLOCK_CASES)[number]["checks"][number]): string =>
+    check.rule.kind === "mutual"
+      ? `compared against ${esc(check.rule.peer)}, which tolerates ${clockSpan(clockPassing(check.rule))} either way`
+      : `a fixed window, passing only ${clockSpan(clockPassing(check.rule))}`;
+
+  await writePage("clock", base, {
+    title: "Four Errors, None of Which Says the Word Time | Max Doubin",
+    description: clockDescription,
+    canonical: `${SITE_URL}/clock`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Four errors, none of which says the word time",
+  description: clockDescription,
+  url: `${SITE_URL}/clock`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Diagnosing clock skew from its symptoms: why TLS reports a certificate as not yet valid, why a TOTP code is rejected, why DNSSEC returns SERVFAIL with a bogus signature, and why correlated logs read in the wrong order, plus how the differing tolerances of Kerberos, one-time codes and certificate windows bound the offset from both sides",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Four errors, none of which says the word time</h1>
+  <p>
+    A wrong clock is the only fault I know of that reports itself under four
+    unrelated names, and three of them send you somewhere else. TLS says the
+    certificate is not yet valid, so you go and look at the certificate. An
+    authenticator says the code is invalid, so you go and look at the seed.
+    DNSSEC says the answer is bogus, so you go and look at the zone. Log
+    correlation says nothing at all: the events are simply in the wrong
+    order, and the conclusion you draw from reading them backwards is wrong
+    in a way nothing will contradict.
+  </p>
+  <p>
+    Only Kerberos is honest about it, and Kerberos is the one that usually
+    still works, because five minutes is the widest tolerance in the stack.
+  </p>
+  <h2>Two things that make it harder than it sounds</h2>
+  <p>
+    The skew that matters is relative. Two hosts that are both ten minutes
+    fast agree with each other perfectly, so everything between them works
+    and everything either does against a third party fails. The machine you
+    are logged into can look completely healthy.
+  </p>
+  <p>
+    And the tolerances differ by two orders of magnitude. Kerberos allows
+    five minutes by default. A one-time code allows a step or two, so thirty
+    to sixty seconds. A certificate window and an RRSIG allow nothing: the
+    edges are hard. So the set of things that are broken is itself a
+    measurement, and the question worth asking is not the arithmetic one.
+    Given the skew, what breaks, is easy. Given what broke and what did not,
+    how wrong is the clock, is what you actually have in front of you.
+  </p>
+  <h2>The clocks</h2>
+${CLOCK_CASES.map((item) => {
+  const span = clockNarrowed(item.checks);
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <p>The host in question is ${esc(item.host)}.</p>
+    <ul>
+${item.checks
+  .map(
+    (check) =>
+      `      <li>${esc(check.label)}, ${ruleText(check)}: it ${check.observed}. <q>${esc(check.message)}</q></li>`,
+  )
+  .join("\n")}
+    </ul>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")}
+    </ol>
+    <p>
+      The observations allow ${span ? clockSpan(span) : "no single range"}, and nothing narrower.
+      ${esc(item.why)}
+      It breaks the belief ${esc(item.breaks)}.
+    </p>
+  </article>`;
+}).join("\n")}
+  <h2>The fix, and the part of it people skip</h2>
+  <p>
+    Run NTP everywhere, from the same small set of servers, and monitor the
+    offset rather than the daemon. A running chronyd that has never managed
+    to step the clock is the exact failure this page is about, and
+    <code>systemctl is-active</code> reports it as fine.
+  </p>
+  <p>
+    The part people skip is monitoring the offset on the things that are not
+    servers: the domain controllers are usually right and the appliance, the
+    switch, the hypervisor host and the laptop that has been suspended for a
+    week are usually not. Alert on the measurement, not on the process.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/blog/ntp-enterprise-networks", "NTP in enterprise networks"], ["/blog/how-totp-codes-actually-work", "How TOTP codes actually work"]])}
 </main>`,
   });
 
@@ -4880,6 +4998,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/patch`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retry`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/vlan`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/clock`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

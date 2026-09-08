@@ -503,6 +503,15 @@ jobs:
       - name: VLAN tagging follows 802.1Q
         run: npx tsx scripts-ci/check-vlan.ts
 
+      # A wrong clock reports itself under four names and three never mention
+      # time, so the exercise runs backwards: given what broke and what did
+      # not, how wrong is the clock. The cases carry no answer key. The gate
+      # intersects the rules to a range, requires exactly one option to claim
+      # it, and then checks that interval algebra against counting every
+      # second across the whole fortnight, over generated observation sets.
+      - name: Clock skew narrows to one range
+        run: npx tsx scripts-ci/check-clock.ts
+
       # And the gate that would have caught the four above being absent. Four
       # gates were written in one day, each blinded a dozen ways to prove it
       # caught what it was for, and none was added to this file: forty-six

@@ -23,6 +23,7 @@ import { CASES as PERMISSIONS } from "@/lib/permissions/index";
 import { FINDINGS as PATCHES } from "@/lib/patch/index";
 import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
+import { CASES as CLOCKS } from "@/lib/clock/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -66,6 +67,7 @@ const OFFSET = {
   patch: 61,
   retry: 67,
   vlan: 71,
+  clock: 73,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -224,6 +226,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Follow one frame across two configurations that are each individually correct, and say which VLAN it lands in.",
       href: "/vlan",
       outOf: VLANS.length,
+    });
+  }
+
+  const skew = pickFor(CLOCKS, day, OFFSET.clock);
+  if (skew) {
+    out.push({
+      surface: "clock",
+      eyebrow: "Measure",
+      title: skew.name,
+      blurb: "Four errors, none of which says the word time. Work out how wrong the clock is from what broke and what did not.",
+      href: "/clock",
+      outOf: CLOCKS.length,
     });
   }
 
