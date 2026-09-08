@@ -19,6 +19,7 @@ import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
 import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
+import { CASES as PERMISSIONS } from "@/lib/permissions/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -58,6 +59,7 @@ const OFFSET = {
   restore: 43,
   handshake: 47,
   array: 53,
+  permissions: 59,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -204,6 +206,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Walk a packet down it and find where it dies, and what swallowed the explanation.",
       href: "/mtu",
       outOf: MTU_PATHS.length,
+    });
+  }
+
+  const access = pickFor(PERMISSIONS, day, OFFSET.permissions);
+  if (access) {
+    out.push({
+      surface: "permissions",
+      eyebrow: "Resolve",
+      title: access.title,
+      blurb: "Say whether the call succeeds before the shell does, and which of the three sets of bits decided it.",
+      href: "/permissions",
+      outOf: PERMISSIONS.length,
     });
   }
 
