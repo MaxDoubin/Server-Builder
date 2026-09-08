@@ -53,6 +53,7 @@ const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
 const { LABS } = await import("../client/src/lib/labs/labs.ts");
 const { CHALLENGES } = await import("../client/src/lib/challenges/index.ts");
 const { MESSAGES: TRIAGE_MESSAGES } = await import("../client/src/lib/triage/index.ts");
+const { EXERCISES: FIREWALL } = await import("../client/src/lib/firewall/data/exercises.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2338,6 +2339,119 @@ ${
     });
   }
 
+  // ── firewall exercises ──
+  /*
+    Index plus one page per exercise. The starting chain goes into the static
+    body because a broken iptables ruleset with an explanation of what is wrong
+    with it is exactly the thing people search for at two in the morning. The
+    solution does not, for the same reason the labs withhold theirs.
+  */
+  const firewallIndexDescription =
+    "Eight iptables chains with something wrong with them, and a trace that shows every rule a " +
+    "packet was tested against and the first field that ruled each one out.";
+
+  await writePage("firewall", base, {
+    title: "Firewall Exercises | Max Doubin",
+    description: firewallIndexDescription,
+    canonical: `${SITE_URL}/firewall`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "iptables firewall exercises",
+  description: firewallIndexDescription,
+  url: `${SITE_URL}/firewall`,
+  numberOfItems: FIREWALL.length,
+  itemListElement: FIREWALL.map((exercise, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: exercise.title,
+    description: exercise.tagline,
+    url: `${SITE_URL}/firewall/${exercise.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Firewall exercises</h1>
+  <p>
+    Eight iptables chains with something wrong with them. Edit the rules and a
+    checklist of packets marks itself as you type.
+  </p>
+  <p>
+    The part worth having is the trace: every rule a packet was tested against,
+    in order, with the first field that ruled each one out and the rule that
+    finally decided it. Counters tell you a rule fired. They never tell you
+    which rule stole the packet you cared about, which is the actual question
+    nearly every firewall problem turns out to be.
+  </p>
+  <ul>
+${FIREWALL.map(
+  (exercise) =>
+    `    <li><a href="${SITE_URL}/firewall/${exercise.slug}">${esc(exercise.title)}</a> ` +
+    `(${esc(exercise.difficulty)}): ${esc(exercise.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/practise", "All practise material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  for (const exercise of FIREWALL) {
+    const url = `${SITE_URL}/firewall/${exercise.slug}`;
+    await writePage(`firewall/${exercise.slug}`, base, {
+      title: pageTitle(`${exercise.title} | Firewall`),
+      description: `${exercise.tagline} A ${exercise.difficulty} iptables exercise with a rule-by-rule match trace.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: exercise.title,
+  description: exercise.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: exercise.difficulty,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Firewall", item: `${SITE_URL}/firewall` },
+    { "@type": "ListItem", position: 3, name: exercise.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(exercise.title)}</h1>
+  <p>${esc(exercise.tagline)}</p>
+  <h2>The brief</h2>
+${exercise.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>The chain as you find it</h2>
+  <pre>${esc(exercise.start)}</pre>
+  <h2>What has to be true when you are done</h2>
+  <ul>
+${exercise.expectations
+  .map((expectation) => `    <li>${esc(expectation.label)}: ${esc(expectation.expect)}</li>`)
+  .join("\n")}
+  </ul>
+  <p>
+    The exercise is marked by behaviour rather than by shape, so any chain that
+    produces those verdicts is correct. The interactive page traces any of
+    these packets rule by rule and there are ${exercise.hints.length} hints.
+  </p>
+  ${backLinks([["/firewall", "All firewall exercises"], ["/labs", "Hands-on labs"], ["/capture", "Packet captures"]])}
+</main>`,
+    });
+  }
+
   // ── phishing triage inbox ──
   /*
     One page, and the static body is the inbox as a list plus what each message
@@ -3512,6 +3626,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/challenges`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/triage`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/firewall`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
@@ -3593,6 +3708,14 @@ async function writeSitemap(
   for (const challenge of CHALLENGES) {
     urls.push({
       loc: `${SITE_URL}/challenges/${challenge.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const exercise of FIREWALL) {
+    urls.push({
+      loc: `${SITE_URL}/firewall/${exercise.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

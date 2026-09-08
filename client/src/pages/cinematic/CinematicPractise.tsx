@@ -25,6 +25,8 @@ import { CHALLENGES } from "@/lib/challenges";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
 import { MESSAGES } from "@/lib/triage/index";
 import { loadJudgements } from "@/lib/triage/progress";
+import { EXERCISES as FIREWALL } from "@/lib/firewall/index";
+import { loadSolvedFirewall } from "@/lib/firewall/progress";
 import { CAPTURES } from "@/lib/capture/index";
 import { DECKS } from "@/lib/flashcardDecks";
 import { EXAMS } from "@/lib/examObjectives";
@@ -58,6 +60,7 @@ export function CinematicPractise() {
   const [solvedLabs, setSolvedLabs] = useState(0);
   const [solvedChallenges, setSolvedChallenges] = useState(0);
   const [triaged, setTriaged] = useState(0);
+  const [solvedFirewall, setSolvedFirewall] = useState(0);
 
   useEffect(() => {
     const found = loadFound();
@@ -73,6 +76,9 @@ export function CinematicPractise() {
     );
     const judged = loadJudgements();
     setTriaged(MESSAGES.filter((message) => judged[message.id]?.right).length);
+    setSolvedFirewall(
+      loadSolvedFirewall().filter((slug) => FIREWALL.some((e) => e.slug === slug)).length,
+    );
     setMounted(true);
   }, []);
 
@@ -153,6 +159,20 @@ export function CinematicPractise() {
         "SPF, DKIM, DMARC",
       ],
       progress: { done: triaged, total: MESSAGES.length, noun: "called right" },
+    },
+    {
+      href: "/firewall",
+      eyebrow: "Order",
+      title: "Firewall exercises",
+      blurb:
+        "Eight iptables chains with something wrong with them, and a trace showing every rule a packet was tested against and the first field that ruled each one out.",
+      reachFor: "you want to see why the rule you added never ran",
+      stats: [
+        `${FIREWALL.length} chains`,
+        `${FIREWALL.reduce((sum, e) => sum + e.expectations.length, 0)} packets`,
+        "match trace",
+      ],
+      progress: { done: solvedFirewall, total: FIREWALL.length, noun: "chains fixed" },
     },
     {
       href: "/flashcards",

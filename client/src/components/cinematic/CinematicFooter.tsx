@@ -104,6 +104,7 @@ export function CinematicFooter() {
               { href: "/labs", label: "Labs", testId: "link-footer-labs" },
               { href: "/challenges", label: "Challenges", testId: "link-footer-challenges" },
               { href: "/triage", label: "Triage", testId: "link-footer-triage" },
+              { href: "/firewall", label: "Firewall", testId: "link-footer-firewall" },
               { href: "/capture", label: "Captures", testId: "link-footer-capture" },
               { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
               { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },

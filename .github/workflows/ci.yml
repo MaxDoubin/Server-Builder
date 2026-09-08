@@ -325,6 +325,16 @@ jobs:
       - name: Triage inbox
         run: npx tsx scripts-ci/check-triage.ts
 
+      # Each firewall exercise ships a chain that satisfies it, replayed here
+      # through the real evaluator. The other half matters as much: the
+      # STARTING chain has to fail, or an exercise that is accidentally already
+      # correct passes CI forever while marking every reader instantly done.
+      # A table of packets with verdicts worked out by hand checks the engine
+      # itself, because otherwise a broken first-match-wins would still let
+      # every solution "solve" its exercise against the same broken engine.
+      - name: Firewall exercises
+        run: npx tsx scripts-ci/check-firewall.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
