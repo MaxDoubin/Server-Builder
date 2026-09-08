@@ -70,6 +70,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/roadmap": { load: () => import("@/pages/cinematic/CinematicRoadmap") },
   "/practise": { load: () => import("@/pages/cinematic/CinematicPractise") },
   "/capture": { load: () => import("@/pages/cinematic/CinematicCaptures") },
+  "/triage": { load: () => import("@/pages/cinematic/CinematicTriage") },
   "/challenges": { load: () => import("@/pages/cinematic/CinematicChallenges") },
   "/labs": { load: () => import("@/pages/cinematic/CinematicLabs") },
   "/scenarios": { load: () => import("@/pages/cinematic/CinematicScenarios") },

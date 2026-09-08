@@ -93,6 +93,7 @@ PAGE_EYEBROWS = {
     "scenarios": "INCIDENT SCENARIOS",
     "labs": "HANDS-ON LABS",
     "challenges": "CAPTURE THE FLAG",
+    "triage": "PHISHING TRIAGE",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",

@@ -147,9 +147,16 @@ export function CinematicChallenges() {
               href="/captures"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              packet captures
+                packet captures
             </Link>{" "}
-            give you a filter bar and a trace.
+            give you a filter bar and a trace, and{" "}
+            <Link
+              href="/triage"
+              className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+            >
+              triage
+            </Link>{" "}
+            gives you a morning of mail to judge.
           </p>
         </div>
       </div>
