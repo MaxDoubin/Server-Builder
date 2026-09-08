@@ -16,6 +16,25 @@
 
 import { SCENARIOS } from "../client/src/lib/scenarios/index";
 import { rarityOf, type Scenario } from "../client/src/lib/scenarios/types";
+import { postIndex } from "../client/src/lib/postIndex";
+import { TOOLS } from "../client/src/lib/toolsRegistry";
+
+/**
+ * Reading links have to point at something that exists.
+ *
+ * Writing a scenario means reaching for "the post about DHCP" from memory,
+ * and memory produces /blog/dhcp-deep-dive when the archive says
+ * /blog/dhcp-snooping-arp-inspection. check-links catches it later, from the
+ * built HTML, which means a full build first. Catching it here costs nothing
+ * and names the scenario rather than the page it ended up on.
+ */
+const KNOWN_POSTS = new Set(postIndex.map((post) => `/blog/${post.slug}`));
+const KNOWN_TOOLS = new Set(TOOLS.map((tool) => `/tools/${tool.slug}`));
+const KNOWN_PAGES = new Set([
+  "/", "/blog", "/tools", "/racks", "/study", "/topics", "/archive", "/paths",
+  "/ncl", "/data", "/game", "/gear", "/teardown", "/flashcards", "/scenarios",
+  "/certifications", "/cyber-club", "/coding-camps", "/resume", "/timeline",
+]);
 
 /** What a scenario has to satisfy to be worth a reader's time. */
 const MIN_SCENES = 8;
@@ -113,9 +132,16 @@ for (const scenario of SCENARIOS) {
     if ((rarity[ending.id]?.paths ?? 0) === 0) note(scenario, `ending "${ending.id}" has no path to it`);
   }
 
-  /* Reading links must be site-relative, since they all point here. */
+  /* Reading links must be site-relative and must resolve. */
   for (const link of scenario.reading ?? []) {
-    if (!link.href.startsWith("/")) note(scenario, `reading link "${link.href}" is not site-relative`);
+    if (!link.href.startsWith("/")) {
+      note(scenario, `reading link "${link.href}" is not site-relative`);
+      continue;
+    }
+    const target = link.href.split("#")[0].replace(/\/$/, "") || "/";
+    if (!KNOWN_POSTS.has(target) && !KNOWN_TOOLS.has(target) && !KNOWN_PAGES.has(target)) {
+      note(scenario, `reading link "${link.href}" is not a post, a tool or a known page`);
+    }
   }
 }
 
