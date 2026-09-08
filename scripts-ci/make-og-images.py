@@ -70,6 +70,7 @@ SECTION_EYEBROWS = [
     ("scenarios", "INCIDENT SCENARIO"),
     ("labs", "HANDS-ON LAB"),
     ("challenges", "CAPTURE THE FLAG"),
+    ("firewall", "FIREWALL EXERCISE"),
     ("capture", "PACKET CAPTURE"),
 ]
 
@@ -94,6 +95,7 @@ PAGE_EYEBROWS = {
     "labs": "HANDS-ON LABS",
     "challenges": "CAPTURE THE FLAG",
     "triage": "PHISHING TRIAGE",
+    "firewall": "FIREWALL EXERCISES",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",
