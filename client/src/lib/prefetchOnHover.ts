@@ -72,6 +72,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/capture": { load: () => import("@/pages/cinematic/CinematicCaptures") },
   "/handshake": { load: () => import("@/pages/cinematic/CinematicHandshake") },
   "/today": { load: () => import("@/pages/cinematic/CinematicToday") },
+  "/glossary": { load: () => import("@/pages/cinematic/CinematicGlossary") },
   "/array": { load: () => import("@/pages/cinematic/CinematicArray") },
   "/allocate": { load: () => import("@/pages/cinematic/CinematicAllocations") },
   "/chain": { load: () => import("@/pages/cinematic/CinematicChain") },

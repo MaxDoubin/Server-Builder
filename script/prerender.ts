@@ -18,6 +18,7 @@ import { scrollableTables } from "../client/src/lib/markdownTables";
 import { uniqueHeadingId } from "../client/src/lib/headingSlug";
 import { RACKS, KIND_LABELS, portSummary, publishedWatts, unitsUsed } from "../client/src/lib/racks";
 import { staticEquipmentCatalog } from "../client/src/lib/static-equipment";
+import { FIELD_LABEL, TERMS, slugFor } from "../client/src/lib/glossary/index";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -2102,7 +2103,7 @@ ${JSON.stringify({
   name: "Practise",
   description: practiseDescription,
   url: `${SITE_URL}/practise`,
-  numberOfItems: 6,
+  numberOfItems: 7,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
     ["Hands-on labs", "/labs"],
@@ -2110,6 +2111,7 @@ ${JSON.stringify({
     ["Flashcards", "/flashcards"],
     ["Exam objectives", "/study"],
     ["Browser tools", "/tools"],
+    ["Glossary", "/glossary"],
   ].map(([name, path], index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -2141,6 +2143,8 @@ ${JSON.stringify({
       CCNA, domain by domain with the vendor's weightings.</li>
     <li><a href="${SITE_URL}/tools">Browser tools</a>: subnetting, packet
       headers, cron, regex, encoding and ciphers, all in the page.</li>
+    <li><a href="${SITE_URL}/glossary">Glossary</a>: ${TERMS.length} terms, each
+      one saying what people reliably get wrong about it.</li>
   </ul>
   <p>
     Nothing here is scored and nothing needs an account. Progress is kept in
@@ -2494,6 +2498,64 @@ ${JSON.stringify({
     machine you are on.
   </p>
   ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
+  // ── glossary ──
+  /*
+    The whole glossary goes into the static body, not a summary of it. A
+    definition a crawler cannot read is a definition that only exists for
+    people who already arrived, and the terms are the reason anyone would
+    find this page at all.
+  */
+  const glossaryDescription =
+    `${TERMS.length} terms from networking, security, systems and storage, each one saying what ` +
+    "the thing is and what people reliably get wrong about it. A VLAN is not a security " +
+    "boundary. A URE figure is a warranty bound, not a measured rate.";
+
+  await writePage("glossary", base, {
+    title: "Glossary | Max Doubin",
+    description: glossaryDescription,
+    canonical: `${SITE_URL}/glossary`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "DefinedTermSet",
+  name: "Glossary",
+  description: glossaryDescription,
+  url: `${SITE_URL}/glossary`,
+  hasDefinedTerm: TERMS.map((term) => ({
+    "@type": "DefinedTerm",
+    name: term.term,
+    description: term.definition,
+    inDefinedTermSet: `${SITE_URL}/glossary`,
+    url: `${SITE_URL}/glossary#${slugFor(term)}`,
+  })),
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Glossary</h1>
+  <p>
+    Every glossary will tell you that VLAN stands for virtual LAN. Almost none
+    of them will tell you that a VLAN is not a security boundary, which is the
+    sentence that changes what somebody builds. The expansion is the small
+    print here.
+  </p>
+  <p>
+    ${TERMS.filter((term) => term.confusion).length} of the ${TERMS.length} entries close with what
+    people get wrong. Nothing here is defined that the site does not use, and a term the writing
+    leans on and this page has not defined fails the build, so the glossary cannot fall behind the
+    articles.
+  </p>
+${TERMS.map((term) => `  <article id="${slugFor(term)}">
+    <h2>${esc(term.term)}${term.expansion ? ` (${esc(term.expansion)})` : ""}</h2>
+    <p>${esc(FIELD_LABEL[term.field])}</p>
+    <p>${esc(term.definition)}</p>
+${term.confusion ? `    <p>What people get wrong: ${esc(term.confusion)}</p>` : ""}
+  </article>`).join("\n")}
+  ${backLinks([["/practise", "The practise hub"], ["/blog", "Field Notes"], ["/study", "Study guides"]])}
 </main>`,
   });
 
@@ -4132,6 +4194,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/array`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/today`, lastmod: today, changefreq: "daily", priority: "0.9" },
+    { loc: `${SITE_URL}/glossary`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },

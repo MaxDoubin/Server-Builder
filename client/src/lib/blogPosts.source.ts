@@ -20157,6 +20157,8 @@ Do not issue certificates directly from your root.
 
 The root's job is to sign one thing: an intermediate CA certificate. Then the root key goes offline, encrypted, on media that is not attached to a running machine, ideally with a copy somewhere physically separate. The intermediate does the day to day issuing.
 
+That offline root is one of the few places an air gap is worth the trouble. The root signs a handful of times over its whole life, so the awkwardness of fetching the media, doing the work on a machine with no network, and putting it back is a cost you pay once every few years rather than every week. Most things called air-gapped are not, because a USB workflow for updates is a path with a human in it, and that path is the one that gets used. A key that genuinely comes out twice a decade is the exception.
+
 The reason is recovery. If the issuing key is compromised, you revoke the intermediate, bring the root out, sign a new intermediate, and reissue. Painful but survivable, and the root certificate distributed to every client stays valid. If the root key itself is compromised, you have to reinstall trust on every device you own, which in practice means the CA is finished.
 
 Give the root a long life, ten to twenty years, since replacing it means touching every client. Give the intermediate something much shorter, a few years, since rotating it is comparatively cheap.

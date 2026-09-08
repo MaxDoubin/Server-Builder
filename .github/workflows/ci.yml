@@ -391,6 +391,15 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # A glossary is the surface that rots quietest: nothing breaks when the
+      # writing starts using a term nobody defined, and nothing breaks when a
+      # definition outlives the last article that used the word. This checks
+      # both directions. Every entry must appear somewhere in the site's prose,
+      # and any acronym the articles use more than 25 times with no entry fails
+      # the build, so the glossary cannot fall behind what is being written.
+      - name: Glossary coverage
+        run: npx tsx scripts-ci/check-glossary.ts
+
       # A failure with no symptom: for weeks the home page linked to two
       # places while ten interactive surfaces sat reachable only from the nav.
       # Nothing was broken and nothing reported it. This asserts the front

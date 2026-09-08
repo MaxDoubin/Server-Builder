@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
+import { TERMS } from "@/lib/glossary/index";
 import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
@@ -240,6 +241,20 @@ export function CinematicPractise() {
         "Security+, Network+ and CCNA, domain by domain with the vendor's own weightings, mapped to the material here that genuinely addresses each one.",
       reachFor: "you need to know what to study next, and for how long",
       stats: [`${EXAMS.length} exams`, `${totals.domains} domains`, "printable sheets"],
+      progress: null,
+    },
+    {
+      href: "/glossary",
+      eyebrow: "Look up",
+      title: "Glossary",
+      blurb:
+        "The vocabulary, with the part an expansion cannot give you: what each thing actually is, and where there is one, the thing people reliably get wrong about it.",
+      reachFor: "a word came up and the expansion did not help",
+      stats: [
+        `${TERMS.length} terms`,
+        `${TERMS.filter((term) => term.confusion).length} misconceptions`,
+        "seven fields",
+      ],
       progress: null,
     },
     {

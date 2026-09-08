@@ -100,6 +100,7 @@ export function CinematicFooter() {
               { href: "/tools", label: "Tools", testId: "link-footer-tools" },
               { href: "/ncl", label: "NCL guides", testId: "link-footer-ncl" },
               { href: "/today", label: "Today", testId: "link-footer-today" },
+              { href: "/glossary", label: "Glossary", testId: "link-footer-glossary" },
               { href: "/practise", label: "Practise", testId: "link-footer-practise" },
               { href: "/scenarios", label: "Scenarios", testId: "link-footer-scenarios" },
               { href: "/labs", label: "Labs", testId: "link-footer-labs" },
