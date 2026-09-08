@@ -21,6 +21,7 @@ import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
 import { CASES as SPACES } from "@/lib/space/index";
+import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
@@ -38,6 +39,7 @@ import { loadSolvedRetries } from "@/lib/retry/progress";
 import { loadSolvedVlans } from "@/lib/vlan/progress";
 import { loadSolvedClocks } from "@/lib/clock/progress";
 import { loadSolvedSpaces } from "@/lib/space/progress";
+import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
 import { loadSolvedChains } from "@/lib/chain/progress";
@@ -105,6 +107,13 @@ export function readProgress(): Line[] {
       done: loadSolvedVlans().filter((slug) => VLANS.some((item) => item.slug === slug)).length,
       total: VLANS.length,
       noun: "followed right",
+    },
+    {
+      label: "Cache keys",
+      href: "/cache",
+      done: loadSolvedCaches().filter((slug) => CACHES.some((item) => item.slug === slug)).length,
+      total: CACHES.length,
+      noun: "read right",
     },
     {
       label: "Disk full",

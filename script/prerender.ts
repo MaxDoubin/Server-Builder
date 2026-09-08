@@ -27,6 +27,7 @@ import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invert
 import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as retryMs, orphaned as retryOrphaned, requestsAt, truncatingCaller } from "../client/src/lib/retry/index";
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
+import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
@@ -858,6 +859,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/vlan">The frame that arrived untagged</a>, native VLAN mismatches and the wire that says nothing.</li>
     <li><a href="${SITE_URL}/clock">Four errors, none of which says the word time</a>, how wrong the clock is, worked backwards from what broke.</li>
     <li><a href="${SITE_URL}/space">No space left on device</a>, six filesystems and six different things that message means.</li>
+    <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2146,6 +2148,7 @@ ${JSON.stringify({
     ["The frame that arrived untagged", "/vlan"],
     ["Four errors, none of which says the word time", "/clock"],
     ["No space left on device", "/space"],
+    ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2810,6 +2813,122 @@ ${path.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     the habit.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/blog/vlan-segmentation-guide", "VLAN segmentation"]])}
+</main>`,
+  });
+
+  // ── the shared cache ──
+  /*
+    The headers go in verbatim and the computed key goes in beside them,
+    because the key is the finding and a static page that withholds it is a
+    static page with nothing in it. Somebody searching for the exact string
+    "Vary: Accept-Encoding" next to the word cookie is the reader this is for.
+  */
+  const cacheLeaking = CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length;
+  const cacheDescription =
+    "A shared cache keys on the method, the URL, and exactly those request headers the response named " +
+    "in Vary. Not the cookie unless Vary says Cookie, not the token unless Vary says Authorization. So a " +
+    "user reloading a page and seeing another account's data is usually a response that said it could be " +
+    `stored and did not name the header that made it personal. ${CACHE_CASES.length} sequences of requests, ` +
+    `${cacheLeaking} of which serve one account's page to another.`;
+
+  await writePage("cache", base, {
+    title: "The Page That Showed Somebody Else's Name | Max Doubin",
+    description: cacheDescription,
+    canonical: `${SITE_URL}/cache`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The page that showed somebody else's name",
+  description: cacheDescription,
+  url: `${SITE_URL}/cache`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How a shared HTTP cache computes its key under RFC 9111: why a missing Vary header lets one account's page be served to another, why Cache-Control private is an instruction to a CDN and not to a browser, why s-maxage switches off the protection that keeps Authorization requests out of a shared cache, why a stored Set-Cookie is replayed to later visitors, and why Vary: Cookie keys on the whole cookie jar rather than on the session",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The page that showed somebody else's name</h1>
+  <p>
+    A user reloads a dashboard and sees another account's data. Every instinct says session
+    handling: a token mixed up, a thread local reused, a global that should not be. So that is
+    where everybody looks, and it is all correct, because the application never ran. A shared
+    cache answered from storage, and it answered correctly according to the only thing it was told
+    to key on.
+  </p>
+  <p>
+    A cache keys on the method, the URL, and exactly those request headers the response named in
+    <code>Vary</code>. Nothing else. Not the cookie, unless Vary says Cookie. Not the
+    <code>Authorization</code> header, unless Vary says Authorization. It does not know what a
+    user is and it is not supposed to.
+  </p>
+  <p>
+    So the fault is almost never in the cache. It is a response that said it could be stored, or
+    did not say it could not, and did not name the header that made it personal. Both halves are
+    omissions, which is why this gets to production: nothing is misconfigured, something is
+    missing, and the page works perfectly for the first person to ask for it.
+  </p>
+  <h2>What a shared cache does differently from a browser</h2>
+  <ul>
+    <li><code>private</code> is a real instruction to a CDN and no instruction at all to the browser it is private to. It does not mean confidential; it means one thing, which is that a shared cache must not store this.</li>
+    <li><code>s-maxage</code> exists only for shared caches and beats <code>max-age</code> when both are present.</li>
+    <li>A request carrying <code>Authorization</code> must not be stored by a shared cache unless the response says <code>public</code>, <code>must-revalidate</code> or <code>s-maxage</code>. Not <code>max-age</code>, which is the one people reach for.</li>
+    <li>A stored response includes its headers, so a <code>Set-Cookie</code> is replayed to whoever gets the hit.</li>
+    <li><code>Vary: Cookie</code> keys on the whole Cookie header as one opaque string. There is no way in HTTP to vary on one cookie and ignore the rest.</li>
+  </ul>
+  <h2>The sequences</h2>
+${CACHE_CASES.map((item) => {
+  const steps = cacheReplay(item.exchanges);
+  const at = cacheLeakAt(item.exchanges);
+  return `  <article>
+    <h3>${esc(item.name)}</h3>
+    <p>${esc(item.brief)}</p>
+    <pre>${item.exchanges
+      .map((exchange, index) => {
+        const step = steps[index];
+        const headers = Object.entries(exchange.request.headers)
+          .map(([name, value]) => `  ${esc(name)}: ${esc(value)}`)
+          .join("\n");
+        return `${esc(exchange.request.id)}  ${esc(exchange.request.who)}
+${esc(exchange.request.method)} ${esc(exchange.request.path)}
+${headers}
+  <- ${exchange.response.status}
+  Cache-Control: ${esc(exchange.response.cacheControl || "(none set)")}
+  Vary: ${esc(exchange.response.vary ?? "(none set)")}${exchange.response.setCookie ? `\n  Set-Cookie: ${esc(exchange.response.setCookie)}` : ""}
+  body: ${esc(exchange.response.body)}
+  key: ${esc(step.key)}
+  ${esc(step.outcome)}: ${esc(step.because)}`;
+      })
+      .join("\n\n")}</pre>
+    <p>${esc(item.question)}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")}
+    </ol>
+    <p>
+      ${at ? `${esc(at)} receives a body belonging to somebody else.` : "Nothing here receives somebody else's data."}
+      ${cacheHits(item.exchanges)} of ${item.exchanges.length} requests were answered from storage.
+      ${cacheVaryOn(item.exchanges[0].response).length > 0 ? `This response names ${cacheVaryOn(item.exchanges[0].response).map((name) => esc(name)).join(" and ")} in Vary.` : "This response names nothing in Vary."}
+    </p>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>The rule that would have prevented all five</h2>
+  <p>
+    <code>Cache-Control: private, no-store</code> on anything with a session in it, applied by the
+    framework rather than route by route. Every one of these faults arrived because a default was
+    permissive and a person had to remember. A route added next quarter will not remember.
+  </p>
+  <p>
+    And in review, read what <code>Vary</code> names rather than that it exists. A Vary header is
+    not a safety property. It is a list, and the question is whether the header that made the body
+    personal is on it.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/blog/http-caching-headers-etags", "HTTP caching headers and ETags"], ["/blog/the-disk-was-not-full", "The disk was not full"]])}
 </main>`,
   });
 
@@ -5119,6 +5238,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/vlan`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/clock`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/space`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/cache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

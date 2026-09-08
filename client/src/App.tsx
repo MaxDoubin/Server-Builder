@@ -174,6 +174,9 @@ const CinematicClock = lazyWithRetry(() =>
 const CinematicSpace = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicSpace").then((m) => ({ default: m.CinematicSpace })),
 );
+const CinematicCache = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
+);
 const CinematicLogs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLogs").then((m) => ({ default: m.CinematicLogs })),
 );
@@ -857,6 +860,11 @@ function AnimatedRoutes() {
           <Route path="/space">
             <Suspense fallback={<RouteLoading />}>
               <CinematicSpace />
+            </Suspense>
+          </Route>
+          <Route path="/cache">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCache />
             </Suspense>
           </Route>
           <Route path="/logs">

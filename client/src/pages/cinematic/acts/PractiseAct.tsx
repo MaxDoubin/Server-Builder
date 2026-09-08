@@ -33,6 +33,7 @@ import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
+import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
@@ -142,6 +143,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A thousand failed passwords are a bot that got nowhere. Say what happened, then point at the one line that proves it.",
     count: `${LOGS.length} logs, ${LOGS.reduce((sum, item) => sum + item.lines.length, 0)} lines`,
+  },
+  {
+    href: "/cache",
+    eyebrow: "Read",
+    title: "The page that showed somebody else's name",
+    blurb:
+      "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
+    count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
   },
   {
     href: "/space",

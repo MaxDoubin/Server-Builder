@@ -25,6 +25,7 @@ import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { PATHS as VLANS } from "@/lib/vlan/index";
 import { CASES as CLOCKS } from "@/lib/clock/index";
 import { CASES as SPACES } from "@/lib/space/index";
+import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -70,6 +71,7 @@ const OFFSET = {
   vlan: 71,
   clock: 73,
   space: 79,
+  cache: 83,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -228,6 +230,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Follow one frame across two configurations that are each individually correct, and say which VLAN it lands in.",
       href: "/vlan",
       outOf: VLANS.length,
+    });
+  }
+
+  const sequence = pickFor(CACHES, day, OFFSET.cache);
+  if (sequence) {
+    out.push({
+      surface: "cache",
+      eyebrow: "Read",
+      title: sequence.name,
+      blurb: "Three requests through a shared cache. Say which one receives somebody else's page, and which header decided it.",
+      href: "/cache",
+      outOf: CACHES.length,
     });
   }
 
