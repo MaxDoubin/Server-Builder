@@ -307,6 +307,15 @@ jobs:
       - name: Scenario graphs
         run: npx tsx scripts-ci/check-scenarios.ts
 
+      # A challenge is only worth doing if the flag it accepts is the flag the
+      # artefact yields. The flags themselves live in this script and nowhere
+      # in the bundle, so the check hashes each one, compares it to what the
+      # page will compare against, and rejects a near miss. It also greps the
+      # brief, the hints and the tagline for the flag, because a challenge
+      # whose answer is printed above the answer box is not a challenge.
+      - name: Challenge flags
+        run: npx tsx scripts-ci/check-challenges.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the

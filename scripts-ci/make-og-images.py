@@ -69,6 +69,7 @@ SECTION_EYEBROWS = [
     ("ncl", "NATIONAL CYBER LEAGUE"),
     ("scenarios", "INCIDENT SCENARIO"),
     ("labs", "HANDS-ON LAB"),
+    ("challenges", "CAPTURE THE FLAG"),
     ("capture", "PACKET CAPTURE"),
 ]
 
@@ -91,6 +92,7 @@ PAGE_EYEBROWS = {
     "faq": "QUESTIONS",
     "scenarios": "INCIDENT SCENARIOS",
     "labs": "HANDS-ON LABS",
+    "challenges": "CAPTURE THE FLAG",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",

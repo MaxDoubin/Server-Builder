@@ -51,6 +51,7 @@ const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig
 const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
 const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
 const { LABS } = await import("../client/src/lib/labs/labs.ts");
+const { CHALLENGES } = await import("../client/src/lib/challenges/index.ts");
 const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
@@ -2336,6 +2337,131 @@ ${
     });
   }
 
+  // ── capture the flag challenges ──
+  /*
+    The artefacts are printed into the static body deliberately: a hex dump
+    and a summarised auth.log are exactly the sort of thing someone searches
+    for, and a crawler that can read them is a crawler that can rank them.
+    What never goes in is the flag, and the walkthrough with it, because the
+    static page has no button to hide them behind.
+  */
+  const challengesIndexDescription =
+    "Small capture-the-flag puzzles with the artefact printed in the page: a log to count, a " +
+    "header to decode, a file whose extension lies. Every answer is exact and every method is " +
+    "written out.";
+
+  await writePage("challenges", base, {
+    title: "Capture the Flag Challenges | Max Doubin",
+    description: challengesIndexDescription,
+    canonical: `${SITE_URL}/challenges`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Capture the flag challenges",
+  description: challengesIndexDescription,
+  url: `${SITE_URL}/challenges`,
+  numberOfItems: CHALLENGES.length,
+  itemListElement: CHALLENGES.map((challenge, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: challenge.title,
+    description: challenge.tagline,
+    url: `${SITE_URL}/challenges/${challenge.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Challenges</h1>
+  <p>
+    An artefact and a question. The log, the hex dump, the scan output and the
+    digests are all printed in full, because the exercise is reading them, not
+    downloading them. Every answer is one exact string.
+  </p>
+  <p>
+    The flag is checked against a SHA-256 held in the page, which means
+    ctrl-F will not find it and a determined reader with the developer tools
+    open absolutely will. There is no score to protect, and the full method
+    sits behind one button on every challenge.
+  </p>
+  <ul>
+${CHALLENGES.map(
+  (challenge) =>
+    `    <li><a href="${SITE_URL}/challenges/${challenge.slug}">${esc(challenge.title)}</a> ` +
+    `(${esc(challenge.category)}, ${esc(challenge.difficulty)}): ${esc(challenge.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/labs", "Hands-on labs"], ["/capture", "Packet captures"], ["/ncl", "National Cyber League notes"]])}
+</main>`,
+  });
+
+  for (const challenge of CHALLENGES) {
+    const url = `${SITE_URL}/challenges/${challenge.slug}`;
+    await writePage(`challenges/${challenge.slug}`, base, {
+      title: pageTitle(`${challenge.title} | Challenge`),
+      description: `${challenge.tagline} A ${challenge.difficulty} ${challenge.category.toLowerCase()} challenge with the artefact printed in the page.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: challenge.title,
+  description: challenge.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: challenge.difficulty,
+  about: challenge.category,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Challenges", item: `${SITE_URL}/challenges` },
+    { "@type": "ListItem", position: 3, name: challenge.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(challenge.title)}</h1>
+  <p>${esc(challenge.tagline)}</p>
+  <p>${esc(challenge.category)}, ${esc(challenge.difficulty)}. The answer takes the shape ${esc(challenge.flagShape)}.</p>
+  <h2>The brief</h2>
+${challenge.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>What you are given</h2>
+${challenge.artefacts
+  .map(
+    (artefact) =>
+      `${artefact.title ? `  <h3>${esc(artefact.title)}</h3>\n` : ""}` +
+      `  <pre>${artefact.lines.map((line) => esc(line)).join("\n")}</pre>`,
+  )
+  .join("\n")}
+  <h2>Hints</h2>
+  <p>
+    There are ${challenge.hints.length} hints, opened one at a time on the
+    interactive page, and the full method is one button away whenever you
+    decide you would rather learn it than find it.
+  </p>
+${
+  challenge.reading?.length
+    ? `  <h2>The written version</h2>\n  <ul>\n${challenge.reading
+        .map((link) => `    <li><a href="${SITE_URL}${link.href}">${esc(link.label)}</a></li>`)
+        .join("\n")}\n  </ul>`
+    : ""
+}
+  ${backLinks([["/challenges", "All challenges"], ["/labs", "Hands-on labs"], ["/capture", "Packet captures"]])}
+</main>`,
+    });
+  }
+
   // ── branching incident scenarios ──
   /*
     The index and one page per scenario.
@@ -3299,6 +3425,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/challenges`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
@@ -3372,6 +3499,14 @@ async function writeSitemap(
   for (const lab of LABS) {
     urls.push({
       loc: `${SITE_URL}/labs/${lab.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const challenge of CHALLENGES) {
+    urls.push({
+      loc: `${SITE_URL}/challenges/${challenge.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

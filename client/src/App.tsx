@@ -143,6 +143,14 @@ const CinematicCapture = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCapture").then((m) => ({ default: m.CinematicCapture })),
 );
 
+const CinematicChallenges = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicChallenges").then((m) => ({ default: m.CinematicChallenges })),
+);
+
+const CinematicChallenge = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicChallenge").then((m) => ({ default: m.CinematicChallenge })),
+);
+
 const CinematicLabs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLabs").then((module) => ({ default: module.CinematicLabs })),
 );
@@ -718,6 +726,16 @@ function AnimatedRoutes() {
           <Route path="/capture/:slug">
             <Suspense fallback={<RouteLoading />}>
               <CinematicCapture />
+            </Suspense>
+          </Route>
+          <Route path="/challenges">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicChallenges />
+            </Suspense>
+          </Route>
+          <Route path="/challenges/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicChallenge />
             </Suspense>
           </Route>
           <Route path="/labs">

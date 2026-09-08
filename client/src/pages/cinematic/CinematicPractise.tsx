@@ -21,6 +21,8 @@ import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
 import { loadSolved } from "@/lib/labs/progress";
+import { CHALLENGES } from "@/lib/challenges";
+import { loadSolvedChallenges } from "@/lib/challenges/progress";
 import { CAPTURES } from "@/lib/capture/index";
 import { DECKS } from "@/lib/flashcardDecks";
 import { EXAMS } from "@/lib/examObjectives";
@@ -52,6 +54,7 @@ export function CinematicPractise() {
   const [mounted, setMounted] = useState(false);
   const [foundEndings, setFoundEndings] = useState(0);
   const [solvedLabs, setSolvedLabs] = useState(0);
+  const [solvedChallenges, setSolvedChallenges] = useState(0);
 
   useEffect(() => {
     const found = loadFound();
@@ -62,6 +65,9 @@ export function CinematicPractise() {
       }, 0),
     );
     setSolvedLabs(loadSolved().filter((slug) => LABS.some((lab) => lab.slug === slug)).length);
+    setSolvedChallenges(
+      loadSolvedChallenges().filter((slug) => CHALLENGES.some((c) => c.slug === slug)).length,
+    );
     setMounted(true);
   }, []);
 
@@ -72,7 +78,8 @@ export function CinematicPractise() {
     const questions = CAPTURES.reduce((sum, c) => sum + c.questions.length, 0);
     const cards = DECKS.reduce((sum, d) => sum + d.cards.length, 0);
     const domains = EXAMS.reduce((sum, e) => sum + e.domains.length, 0);
-    return { endings, scenes, packets, questions, cards, domains };
+    const challengeCategories = new Set(CHALLENGES.map((c) => c.category)).size;
+    return { endings, scenes, packets, questions, cards, domains, challengeCategories };
   }, []);
 
   const pillars: Pillar[] = [
@@ -99,6 +106,20 @@ export function CinematicPractise() {
       reachFor: "you want to be at a prompt, reading a machine",
       stats: [`${LABS.length} labs`, "~40 commands", "pipes and filters"],
       progress: { done: solvedLabs, total: LABS.length, noun: "labs solved" },
+    },
+    {
+      href: "/challenges",
+      eyebrow: "Find",
+      title: "Capture the flag",
+      blurb:
+        "An artefact and a question with one exact answer. A log to count, a header to decode, a file whose extension lies, a digest to name.",
+      reachFor: "you are training for a competition, or you like a puzzle with a definite end",
+      stats: [
+        `${CHALLENGES.length} ${pluralise(CHALLENGES.length, "challenge")}`,
+        `${totals.challengeCategories} categories`,
+        "full method on every one",
+      ],
+      progress: { done: solvedChallenges, total: CHALLENGES.length, noun: "challenges solved" },
     },
     {
       href: "/capture",
