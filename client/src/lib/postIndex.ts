@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 250 of them. Regenerate with script/generatePostIndex.ts.
+ * 253 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,33 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "sixty-five-files-nothing-imported",
+    title: "Sixty-Five Files That Nothing Imported",
+    date: "2026-09-08",
+    tags: ["engineering","tools","operations"],
+    excerpt: "Sixty-five of this site's 343 source files could not run: no path from the entry point, so the bundler never saw them. They held 27 npm packages in place. The first attempt to find them reported zero, because the walk was seeded from a file that imported the very pages it was testing for.",
+    coverImage: "/images/blog/sixty-five-files-nothing-imported.jpg",
+    wordCount: 1466,
+  },
+  {
+    slug: "rarity-counted-from-the-graph",
+    title: "How Rare Is That Ending? Count the Paths",
+    date: "2026-09-08",
+    tags: ["engineering","tools"],
+    excerpt: "Branching scenarios need to say how rare each ending is, and both obvious answers are bad: a hand-written tag is unfalsifiable, and counting readers needs a backend. The share of all distinct start-to-ending paths is honest, stable, and computable offline. It also needs a gate, because cycles.",
+    coverImage: "/images/blog/rarity-counted-from-the-graph.jpg",
+    wordCount: 1218,
+  },
+  {
+    slug: "a-shell-that-has-to-be-right",
+    title: "A Shell That Has to Be Right",
+    date: "2026-09-08",
+    tags: ["engineering","linux","tools"],
+    excerpt: "A simulated shell for teaching is only worth anything if what you learn in it is true elsewhere. Every lab ships a transcript that CI replays through the real shell. It found four bugs, and the fourth was a hole in the gate that had been hiding the first two.",
+    coverImage: "/images/blog/a-shell-that-has-to-be-right.jpg",
+    wordCount: 1238,
+  },
   {
     slug: "csp-blocked-its-own-models",
     title: "The Content Security Policy That Blocked Its Own 3D Models",
@@ -2489,10 +2516,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 940;
+export const CITATION_COUNT = 955;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1099;
+export const CHECKED_URL_COUNT = 1114;

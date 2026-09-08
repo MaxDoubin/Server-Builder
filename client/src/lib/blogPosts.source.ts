@@ -50,6 +50,588 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "sixty-five-files-nothing-imported",
+    title: "Sixty-Five Files That Nothing Imported",
+    date: "2026-09-08",
+    tags: ["engineering", "tools", "operations"],
+    excerpt:
+      "Sixty-five of this site's 343 source files could not run: no path from the entry point, so the bundler never saw them. They held 27 npm packages in place. The first attempt to find them reported zero, because the walk was seeded from a file that imported the very pages it was testing for.",
+    coverImage: "/images/blog/sixty-five-files-nothing-imported.jpg",
+    content: `## Sixty-five files that nothing imported
+
+There were 343 TypeScript files under \`client/src\` on this site. Sixty-five of
+them could not run. Not "were rarely used", not "were behind a feature flag":
+there was no path from the entry point to any of them, so the bundler never
+saw them and no browser could ever have loaded one.
+
+They were not junk either. Among them: eighteen shadcn/ui primitives that came
+with the project template, four components for a hero animation the site
+stopped using, five NOC and network panels, three complete dashboard pages, a
+second implementation of the 3D rack scene, and a 404 page that a newer 404
+page had replaced. Real code, written on purpose, orphaned one refactor at a
+time.
+
+## Why nothing complained
+
+A module that nothing imports is not part of the module graph. Rollup, which
+Vite builds on, starts at the entry point and follows imports; anything it
+never reaches is not "tree shaken", it is simply never considered. So the build
+is silent, and the silence is not a bug in the build. It is what a correct
+bundler does.
+
+Everything *else*, though, sees these files:
+
+- \`tsc --noEmit\` compiles them, on every push.
+- Every source-scanning check in this repository scans them. Several ask
+  questions like "does every \`position: fixed\` element carry
+  \`data-print-hide\`?", and a dead component with a fixed element makes that
+  check fail, or worse, makes someone annotate a file that cannot render.
+- \`npm ci\` installs their dependencies. This is the one that hurt. Twenty-seven
+  packages were in \`package.json\` solely because an unreachable file imported
+  them: eighteen Radix primitives, plus \`cmdk\`, \`date-fns\`,
+  \`embla-carousel-react\`, \`input-otp\`, \`react-day-picker\`, \`react-hook-form\`,
+  \`react-resizable-panels\`, \`vaul\` and \`@hookform/resolvers\`. Every install,
+  every CI run, every audit, for code that could not execute.
+
+Nothing shipped to a reader. Everything else paid.
+
+## The measurement was wrong the first time
+
+The obvious way to find this is to build the import graph and subtract. I wrote
+that, ran it against a set of pages I was fairly sure were dead, and got:
+
+\`\`\`
+reachable from the live app: 288 files
+reachable ONLY from legacy:  0 files
+\`\`\`
+
+Zero. Which would have meant those pages shared every one of their imports with
+the live app, and I nearly believed it, because zero is a boring number and
+boring numbers do not look like bugs.
+
+Here is what the script did:
+
+\`\`\`js
+const live = reach(["client/src/main.tsx", ...liveFromApp]);
+const legacyOnly = [...reach(LEGACY)].filter((f) => !live.has(f));
+\`\`\`
+
+\`liveFromApp\` was \`App.tsx\`'s imports with the legacy pages filtered out. That
+filtering was the whole idea, and it accomplished nothing, because the root list
+also contained \`main.tsx\`, and \`main.tsx\` imports \`App.tsx\`, and \`App.tsx\` still
+imported all six legacy pages. The walk entered them one hop later through the
+front door. Everything they reached landed in \`live\`, so the difference could
+not be anything but empty. The script was not measuring dead code; it was
+measuring whether \`main.tsx\` reaches \`App.tsx\`.
+
+The fix is one parameter:
+
+\`\`\`js
+const reach = (roots, blocked = new Set()) => {
+  const seen = new Set(), stack = [...roots];
+  while (stack.length) {
+    const f = stack.pop();
+    if (!f || seen.has(f) || blocked.has(f)) continue;
+    seen.add(f);
+    for (const d of imports.get(f) ?? []) stack.push(d);
+  }
+  return seen;
+};
+\`\`\`
+
+**A file is either a root or it is entered. Filtering the root list proves
+nothing about a graph that has other ways in.** With the walk refusing to enter
+those six files, the same question answered 278 and 10.
+
+That is the general shape of the mistake and it is not specific to import
+graphs. Any reachability question ("which config keys are unused", "which
+database rows are orphaned", "which permissions does nobody hold") has this trap
+in it, and it always produces the same tell: a suspiciously clean zero.
+
+## Two files were reachable, just not by an import
+
+Having fixed the walk, I ran it without any notion of "legacy" at all: which
+files does nothing reach? It returned 67. Sixty-five of them were genuinely
+dead. The other two would have been a bad afternoon.
+
+\`client/src/lib/blogPosts.source.ts\` is the source of truth for every article
+here. The app does not import it; a build script reads it, splits it into
+markdown, and the app imports the result. An import graph over \`client/src\`
+cannot see that, because the reference lives in \`script/stampUpdated.ts\`.
+
+\`client/src/lib/crypto-shim.ts\` is worse, because the reference is not in any
+file that looks like source at all. It is in the bundler config:
+
+\`\`\`js
+resolve: {
+  alias: {
+    crypto: path.resolve(import.meta.dirname, "client", "src", "lib", "crypto-shim.ts"),
+  },
+},
+\`\`\`
+
+Nothing names that file by path. Something imports the bare specifier
+\`"crypto"\`, and Vite rewrites it. Delete the file and the graph is still
+complete; the build breaks.
+
+So an import-graph dead-code check has to be told about the ways in that are not
+imports, and it has to be told them one file at a time, with a reason written
+down. A blanket "ignore \`lib/\`" would have hidden four genuinely dead files in
+the same directory.
+
+## The check
+
+It runs on every push now, and it fails in both directions:
+
+\`\`\`
+FAIL  1 file(s) under client/src that no import reaches:
+
+        client/src/lib/__probe.ts
+
+      Delete them, or import them from something the app reaches.
+      If one is loaded by a build script or a bundler alias, add it
+      to REACHED_ANOTHER_WAY in this file with the reason.
+\`\`\`
+
+and, if an allowlisted file becomes ordinarily reachable, or stops existing:
+
+\`\`\`
+FAIL  1 allowlisted file(s) no longer need the exemption:
+        client/src/lib/queryClient.ts is reachable by import now
+\`\`\`
+
+The second half matters more than it looks. An allowlist with two entries and no
+expiry is how the third entry gets added without anyone thinking about it, and
+how a note that was true in 2026 is still sitting there being wrong in 2028. If
+the exemption is not needed, the check says so.
+
+There is one more guard worth copying. The script refuses to pass if it reaches
+implausibly few files:
+
+\`\`\`js
+if (live.length < 100) {
+  console.error(\`FAIL  only \${live.length} files under \${ROOT} are reachable\`);
+  console.error("      The import syntax this script parses probably changed; fix it.");
+  process.exit(1);
+}
+\`\`\`
+
+The check parses imports with regular expressions. The day somebody adds a syntax
+those expressions do not match, the honest failure is "I could not measure this",
+not "everything is dead". A checker that cannot fail loudly when it stops working
+will eventually pass loudly while measuring nothing, which is exactly what the
+first version of the graph did.
+
+## What actually came out
+
+| | |
+|---|---|
+| Files deleted | 65 |
+| Lines deleted | 7,847 |
+| npm dependencies removed | 27 |
+| Lockfile lines removed | 791 |
+| Bundle size change | none |
+
+That last row is the point. Not one byte of this was ever sent to a reader,
+which is precisely why it survived so long. The cost was in install time, CI
+time, typecheck time, dependency audit surface, and the attention of anyone
+grepping the codebase and finding two files with the same name, one of which
+does nothing.
+
+Deleting a shadcn primitive costs nothing permanent, incidentally:
+\`components.json\` is still in the repo, so \`npx shadcn add dialog\` puts it back
+in a second when something actually needs it. Vendored UI code is worth keeping
+*when it is used*. Keeping forty copies of it against a future that may not
+arrive is just carrying the template's furniture around.
+
+## What I would tell myself
+
+**Dead code is quiet by construction.** Every other class of defect has
+something that notices: a failing test, a red build, a user. Unreachable code has
+nothing, because the mechanism that would notice is the same mechanism that
+ignores it. It has to be looked for on purpose, and once you have looked for it
+once, it is cheap to keep looking.
+
+**Distrust the clean zero.** "No problems found" from a checker you wrote ten
+minutes ago is a claim about your checker, not about your codebase. Prove it can
+fail: I only trusted this one after planting a file nothing imports and watching
+it go red, then breaking the allowlist and watching it go red the other way.
+
+**Unused dependencies are a security surface, not just weight.** Twenty-seven
+packages, with their own transitive trees, installed on every CI runner, for
+files that could not run. The right number of dependencies for code that cannot
+execute is zero.
+
+## References
+
+- [Rollup: tree shaking and the module graph](https://rollupjs.org/introduction/#tree-shaking)
+- [Vite: dependency resolution and \`resolve.alias\`](https://vite.dev/config/shared-options.html#resolve-alias)
+- [esbuild's notes on what tree shaking can and cannot remove](https://esbuild.github.io/api/#tree-shaking)
+- [shadcn/ui: components are copied into your project, not installed](https://ui.shadcn.com/docs/cli)
+- [npm docs: \`npm ci\` installs exactly what the lockfile says](https://docs.npmjs.com/cli/v10/commands/npm-ci)
+- [OpenSSF Scorecard: the checks, including dependency surface](https://github.com/ossf/scorecard/blob/main/docs/checks.md)
+`,
+  },
+  {
+    slug: "rarity-counted-from-the-graph",
+    title: "How Rare Is That Ending? Count the Paths",
+    date: "2026-09-08",
+    tags: ["engineering", "tools"],
+    excerpt:
+      "Branching scenarios need to say how rare each ending is, and both obvious answers are bad: a hand-written tag is unfalsifiable, and counting readers needs a backend. The share of all distinct start-to-ending paths is honest, stable, and computable offline. It also needs a gate, because cycles.",
+    coverImage: "/images/blog/rarity-counted-from-the-graph.jpg",
+    content: `## How rare is that ending?
+
+I built a set of branching incident scenarios for this site: you are the
+on-call engineer, a file server stops answering, and you choose what to do
+next. Each one has several endings, and the interesting question is not which
+ending you got. It is how easy it was to get.
+
+An ending you reach by ignoring three warnings in a row is a different piece of
+information from one you reach by any of forty reasonable routes, and a
+scenario that does not say which is which is telling you almost nothing about
+how you did.
+
+So each ending shows a rarity. The temptation is to make that number up. A
+tag, hand-written: this one feels rare. That is worthless, because it is
+unfalsifiable and it drifts the moment anybody edits a branch.
+
+The other temptation is to count what readers actually do, which needs a
+backend, an analytics pipeline and a privacy policy, and produces a number that
+changes with traffic and is meaningless on the first day.
+
+## Count the paths
+
+There is a third option that is honest, stable, and computable offline: rarity
+is **the share of all distinct start-to-ending paths that finish at this
+ending**.
+
+The scenario is a directed acyclic graph. Scenes are nodes, choices are edges,
+endings are sinks. Counting paths to each sink is a five-line dynamic program:
+
+\`\`\`js
+const memo = new Map();
+const countsFrom = (id) => {
+  const seen = memo.get(id);
+  if (seen) return seen;
+  const counts = new Map();
+  if (endings.has(id)) {
+    counts.set(id, 1);
+    memo.set(id, counts);
+    return counts;
+  }
+  memo.set(id, counts);
+  for (const choice of scenes.get(id).choices) {
+    for (const [ending, n] of countsFrom(choice.to)) {
+      counts.set(ending, (counts.get(ending) ?? 0) + n);
+    }
+  }
+  return counts;
+};
+\`\`\`
+
+For the ransomware scenario, which has 23 scenes and 7 endings, that produces
+1,500 distinct routes and this distribution:
+
+| Ending | Grade | Paths | Share |
+|---|---|---|---|
+| It kept spreading while you watched | catastrophic | 15 | 1.0% |
+| Four days dark, and no idea how | catastrophic | 16 | 1.1% |
+| The key was in the memory you kept | **best** | 104 | 6.9% |
+| A clean recovery and a refused claim | bad | 104 | 6.9% |
+| Paid, decrypted, published anyway | bad | 351 | 23% |
+| Nine days back, and a review nobody enjoyed | good | 455 | 30% |
+| Service restored, lessons unrecorded | mixed | 455 | 30% |
+
+That shape is doing real work. The best available outcome is 6.9 percent of
+routes, which is about right for an outcome that requires killing the encryptor
+without powering the host off and then imaging memory before anyone reboots it.
+Paying is 23 percent, which is roughly how often organisations get talked into
+it. And the two catastrophes are about one percent each, because each needs a
+specific sequence of plausible-feeling wrong turns rather than one obvious
+blunder.
+
+None of those numbers was chosen. They fell out of the graph, and when I move a
+branch they move with it.
+
+## What the number is not
+
+It is not the probability that a sensible person lands there. Path share weights
+every choice equally, and readers do not. An ending guarded behind three
+consecutive bad decisions is rare in path terms and rarer in practice; an ending
+reachable from many reasonable routes is common in both. Where the two come
+apart, the path count is still the number that can be checked by anyone who
+looks at the file, which is the property I wanted.
+
+It is also a property of the scenario's shape, which means it is a design tool.
+A distribution where one ending takes eighty percent of the paths is telling you
+that most of your choices do not matter, and that is invisible in the source: it
+only shows up when you count. I have a script that prints the table above for
+every scenario precisely so I can see it while writing.
+
+## Cycles are the reason this needs a gate
+
+Path counting terminates on a DAG. On a graph with a cycle it does not, and
+"wander back to an earlier scene" is a natural thing to write when you are
+building a branch that lets someone reconsider.
+
+I wrote five of them. Every one felt right at the time:
+
+\`\`\`
+certificate-sunday: cycle: the-error -> try-renew -> disabled-verify -> try-renew
+the-dns-that-lied:  cycle: the-report -> old-host-off -> who-are-they
+                           -> checked-record -> the-ttl -> flushed -> old-host-off
+\`\`\`
+
+Both are the same mistake. A scene that can be reached late in the story offers
+a choice that goes back to something early, because narratively that is what
+"go and check properly this time" means. The fix is not to remove the choice, it
+is to point it at a scene further along that covers the same ground, which
+usually makes the writing better anyway: the second visit should not read like
+the first.
+
+The check that catches this is one depth-first walk with three colours, and it
+runs on every push alongside the rest:
+
+- every scene reachable from the start
+- every choice pointing at a scene or an ending that exists
+- no cycles
+- every ending with at least one path to it
+- the shares summing to exactly 1
+- a spread of outcome grades, and at least one graded best
+
+On its first run against nineteen scenario files it found nine faults: five
+cycles, three endings nothing routed to, and a choice pointing at an ending id
+that had never existed. All nine are invisible in review. You find them by
+playing every path, which is the thing a computer is for.
+
+## The unreachable ending is the interesting failure
+
+Two of the three orphan endings were ones I had written first and then designed
+around. You write the ending you want the reader to reach, then build the
+branches, and by the time the branches are finished the route you imagined has
+been replaced by a better one and the ending is stranded.
+
+Nothing about that is visible when you read the file top to bottom. The ending
+is right there, well written, with a lesson attached. It is simply not connected
+to anything, and the only symptom is that no reader ever mentions it.
+
+## Making the check able to fail
+
+The last thing worth saying is about trusting the checker. I only believe a gate
+after watching it go red for a reason I planted. For this one that meant
+pointing a choice at an id that does not exist and confirming the message names
+the scenario and the id, then reintroducing a cycle and confirming it prints the
+whole loop rather than just saying "cycle detected".
+
+A cycle message that does not print the path is nearly useless in a graph with
+twenty scenes. This is what it prints:
+
+\`\`\`
+cycle: the-report -> old-host-off -> who-are-they -> checked-record
+       -> the-ttl -> flushed -> old-host-off
+\`\`\`
+
+That is enough to fix it without opening the file.
+
+## References
+
+- [Directed acyclic graphs and topological ordering](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
+- [Depth-first search, and the three-colour cycle test](https://en.wikipedia.org/wiki/Depth-first_search)
+- [Counting paths in a DAG with dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming)
+- [Memoization](https://en.wikipedia.org/wiki/Memoization)
+`,
+  },
+  {
+    slug: "a-shell-that-has-to-be-right",
+    title: "A Shell That Has to Be Right",
+    date: "2026-09-08",
+    tags: ["engineering", "linux", "tools"],
+    excerpt:
+      "A simulated shell for teaching is only worth anything if what you learn in it is true elsewhere. Every lab ships a transcript that CI replays through the real shell. It found four bugs, and the fourth was a hole in the gate that had been hiding the first two.",
+    coverImage: "/images/blog/a-shell-that-has-to-be-right.jpg",
+    content: `## A shell that has to be right
+
+I built a simulated Linux shell for the labs on this site. You get a prompt, a
+filesystem with real permission bits, a routing table, sockets, processes and
+logs, and something is wrong with the machine. Type commands, work out what.
+
+The whole value of that depends on one property: what you learn here has to be
+what you would see on a real box. A lab shell that accepts a flag and ignores it
+teaches that the flag does nothing. A lab shell where \`grep -c\` counts matches
+rather than matching lines teaches something false, and the reader carries it to
+an interview.
+
+So the rule I set was: anything this shell accepts must behave the way bash
+behaves, and anything it does not implement must be refused out loud.
+
+\`\`\`
+$ sudo -i
+sudo: an interactive root shell is not available in this lab shell.
+
+$ sed 's/a/b/' file.txt | sed -e 'y/x/y/'
+sed: this lab shell only understands 's/PATTERN/REPLACEMENT/[g]'
+
+$ netstat -tlnp
+(netstat is not in this lab shell; showing ss instead)
+\`\`\`
+
+That last one is a compromise I thought about for a while. Silently treating
+\`netstat\` as \`ss\` teaches that they are the same command. Refusing it teaches
+nothing at all. Answering it with a note is the only option that leaves the
+reader better informed than they arrived.
+
+## Every lab ships a transcript that solves it
+
+Here is the mechanism that made all of this survivable. Each lab carries a
+\`solution\`: an ordered list of commands that solves it, written by me as I built
+it. CI replays every one of them through the real shell against a real build of
+the machine, and asserts the lab then reports itself solved.
+
+\`\`\`
+OK  9 labs, 48 solution steps replayed through the real shell, all solvable.
+\`\`\`
+
+That proves three things at once. The lab is solvable. The predicate that
+decides "solved" matches the route I intended. And every command the solution
+touches still works, which makes the solutions a test suite for the shell as a
+side effect of being documentation.
+
+It also checks the negative, which turned out to matter more: an empty session
+must **not** report solved. A predicate that is already true before the reader
+types anything is the other way this breaks, and it is completely invisible from
+the inside.
+
+## Four bugs it found, in order of how embarrassing they are
+
+**One. The permissions lab was unsolvable.**
+
+The lab asks you to make a root-owned file readable by the web server. The
+shell had no \`sudo\`. \`chmod\` correctly refused, every time, and the lab could
+not be completed by anybody.
+
+I had written the lab, written the solution, and never run the solution, because
+running it meant clicking through the UI and I was confident. The gate ran it on
+the first invocation and printed the transcript.
+
+**Two. \`ls -l\` on a file required read permission on the file.**
+
+\`\`\`
+$ ls -l /var/log/auth.log
+ls: /var/log/auth.log: Permission denied
+\`\`\`
+
+Wrong. \`auth.log\` is mode 0640 owned by \`syslog:adm\`, and any user can
+\`ls -l\` it perfectly well, because the metadata lives in the *directory entry*,
+not in the file. Read permission is what you need to **list a directory**;
+naming a file only needs traverse on its parent.
+
+My implementation checked read on whatever node it landed on. The fix is one
+condition:
+
+\`\`\`js
+if (found.node.kind === "dir" && !permitted(found.node, machine.user, "r")) {
+\`\`\`
+
+This is the kind of thing you know and still get wrong when writing the code,
+because "can I read this" is one question in English and two in POSIX.
+
+**Three. Single quotes did not mean literal.**
+
+\`\`\`
+$ awk '{print $11}' file
+awk: this lab shell only understands '{print $1, $2}'
+\`\`\`
+
+The program had arrived as \`{print }\`. My parser stripped quotes into tokens
+first and expanded \`$NAME\` over the finished tokens afterwards, by which point
+nothing remembered which quotes anything had been inside. \`$11\` is not a
+variable, unset variables expand to nothing, and the field reference vanished.
+
+The fix is architectural rather than a patch: expansion moved into the
+tokeniser, which is the only place that still knows. Single quotes take the
+characters literally, double quotes expand, exactly as bash does.
+
+**Four. The gate itself had a hole, and it was hiding the first two.**
+
+This is the one worth the article. Two labs were shipping solutions in which
+*every real command failed* with Permission denied, and the gate was green.
+
+The reason is that those labs ask for a diagnosis rather than a repair, so the
+predicate reads a submitted \`answer\`. The last line of the transcript was
+\`answer DHCP did not reply...\`, which succeeded, so the lab reported itself
+solved. The gate checked the outcome and never looked at the journey.
+
+A gate that only checks the final state will pass a solution that is entirely
+broken as long as the last step happens to work.
+
+The fix is not to fail on non-zero exit status, because plenty of legitimate
+steps exit non-zero: \`grep\` with no match is 1, \`systemctl is-active\` on a
+failed unit is 3. It is to fail on failure *shapes* in stderr:
+
+\`\`\`js
+const BROKEN = [
+  /: command not found$/,
+  /Permission denied/,
+  /Operation not permitted/,
+  /No such file or directory/,
+  /only understands/,
+  /not available in this lab/,
+];
+\`\`\`
+
+Targeted, and it caught both labs immediately.
+
+## The apostrophe
+
+One more, which is not a bug in the shell so much as a bug in applying a rule
+too evenly.
+
+Several labs end with the reader typing a diagnosis:
+
+\`\`\`
+$ answer it's the MTU on the tunnel
+lab shell: unterminated quote
+\`\`\`
+
+That is correct bash behaviour. It is also a hostile thing to do to somebody who
+has just spent ten minutes working out the answer and is typing it in English,
+and English is full of apostrophes.
+
+So \`answer\` is now exempt: it takes the rest of the line verbatim, before any
+parsing happens. Every other command still follows the real rules. The
+justification is that \`answer\` is a lab builtin, not a simulation of anything,
+and its argument is prose rather than a command line.
+
+That is the kind of exception worth writing down in the code, because the next
+person to read the tokeniser will otherwise wonder why one command jumps the
+queue.
+
+## What I would tell myself
+
+**Write the solution, then make a machine run it.** The gap between "I know how
+to solve this" and "this can be solved" is where the permissions lab lived, and
+it is invisible from the author's chair.
+
+**A gate that checks only the outcome will pass a broken journey.** If your test
+asserts the final state, ask what happens when every intermediate step fails and
+the last one succeeds anyway. For two of my nine labs, the answer was: it passes.
+
+**Refuse loudly.** Every unimplemented thing in this shell prints what it does
+support instead. That costs a line of code each and turns the most frustrating
+possible experience, a tool that silently does the wrong thing, into a
+signpost.
+
+## References
+
+- [POSIX: file permission bits, and what execute means on a directory](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_05)
+- [Bash reference: quoting](https://www.gnu.org/software/bash/manual/html_node/Quoting.html)
+- [Bash reference: shell expansions and their order](https://www.gnu.org/software/bash/manual/html_node/Shell-Expansions.html)
+- [GNU grep manual, including what -c actually counts](https://www.gnu.org/software/grep/manual/grep.html)
+- [systemctl exit status conventions](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html#Exit%20status)
+`,
+  },
+  {
     slug: "csp-blocked-its-own-models",
     title: "The Content Security Policy That Blocked Its Own 3D Models",
     date: "2026-09-07",

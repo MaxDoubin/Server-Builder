@@ -50,6 +50,9 @@ const { COVERS, TAKEAWAYS } = await import("../client/src/lib/campsConfig.ts");
 const { DAY_CHECKLIST, MISTAKES } = await import("../client/src/lib/nclHubConfig.ts");
 const { TOOL_NOTES } = await import("../client/src/lib/toolNotes.ts");
 const { SCENARIOS } = await import("../client/src/lib/scenarios/index.ts");
+const { LABS } = await import("../client/src/lib/labs/labs.ts");
+const { CHALLENGES } = await import("../client/src/lib/challenges/index.ts");
+const { CAPTURES } = await import("../client/src/lib/capture/index.ts");
 const { DIFFICULTY_LABEL, DIFFICULTY_BLURB, GRADE_LABEL, pathCount } = await import(
   "../client/src/lib/scenarios/types.ts"
 );
@@ -2055,6 +2058,410 @@ ${JSON.stringify({
     });
   }
 
+  // ── the practise hub ──
+  const practiseDescription =
+    "Everything on this site you do rather than read: branching incident scenarios with many " +
+    "endings, a simulated Linux host with a fault in it, packet captures with a real display " +
+    "filter bar, spaced-repetition flashcards and exam objective sheets.";
+
+  await writePage("practise", base, {
+    title: "Practise | Max Doubin",
+    description: practiseDescription,
+    canonical: `${SITE_URL}/practise`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Practise",
+  description: practiseDescription,
+  url: `${SITE_URL}/practise`,
+  numberOfItems: 6,
+  itemListElement: [
+    ["Incident scenarios", "/scenarios"],
+    ["Hands-on labs", "/labs"],
+    ["Packet captures", "/capture"],
+    ["Flashcards", "/flashcards"],
+    ["Exam objectives", "/study"],
+    ["Browser tools", "/tools"],
+  ].map(([name, path], index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name,
+    url: `${SITE_URL}${path}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Practise</h1>
+  <p>
+    Reading about an incident and being in one are different skills, and only
+    one of them is what a bad night asks for. These are the parts of this site
+    that make you do something.
+  </p>
+  <ul>
+    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>: the first fifteen
+      minutes of an incident, made repeatable. ${SCENARIOS.length} scenarios,
+      ${SCENARIOS.reduce((sum, s) => sum + s.endings.length, 0)} endings.</li>
+    <li><a href="${SITE_URL}/labs">Hands-on labs</a>: a Linux host simulated in
+      the browser with something wrong with it. ${LABS.length} labs.</li>
+    <li><a href="${SITE_URL}/capture">Packet captures</a>: a packet list and a
+      real Wireshark display filter bar.
+      ${CAPTURES.reduce((sum, c) => sum + c.packets.length, 0)} packets.</li>
+    <li><a href="${SITE_URL}/flashcards">Flashcards</a>: spaced repetition over
+      ports, protocols, Linux and crypto.</li>
+    <li><a href="${SITE_URL}/study">Exam objectives</a>: Security+, Network+ and
+      CCNA, domain by domain with the vendor's weightings.</li>
+    <li><a href="${SITE_URL}/tools">Browser tools</a>: subnetting, packet
+      headers, cron, regex, encoding and ciphers, all in the page.</li>
+  </ul>
+  <p>
+    Nothing here is scored and nothing needs an account. Progress is kept in
+    your browser and nowhere else.
+  </p>
+  ${backLinks([["/blog", "Field Notes"], ["/study", "Study guides"], ["/ncl", "National Cyber League notes"]])}
+</main>`,
+  });
+
+  // ── packet captures ──
+  const capturesIndexDescription =
+    "Read a packet capture in the browser, with a real Wireshark display filter bar. Find the " +
+    "password sent in the clear, and the beacon that checks in every sixty seconds.";
+
+  await writePage("capture", base, {
+    title: "Packet Captures | Max Doubin",
+    description: capturesIndexDescription,
+    canonical: `${SITE_URL}/capture`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Packet capture exercises",
+  description: capturesIndexDescription,
+  url: `${SITE_URL}/capture`,
+  numberOfItems: CAPTURES.length,
+  itemListElement: CAPTURES.map((capture, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: capture.title,
+    description: capture.tagline,
+    url: `${SITE_URL}/capture/${capture.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Packet captures</h1>
+  <p>
+    A packet list, a detail tree and a display filter bar that takes real
+    Wireshark syntax. Type a filter, narrow a hundred packets to four, and
+    answer the question.
+  </p>
+  <p>
+    The filter bar supports equality and inequality, ordering, substring
+    matching with contains, field existence, and boolean operators with
+    brackets, on any field the packets carry. It refuses what it cannot do
+    rather than quietly ignoring half an expression.
+  </p>
+  <ul>
+${CAPTURES.map(
+  (capture) =>
+    `    <li><a href="${SITE_URL}/capture/${capture.slug}">${esc(capture.title)}</a> ` +
+    `(${esc(capture.difficulty)}, ${capture.packets.length} packets): ${esc(capture.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/labs", "Hands-on labs"], ["/scenarios", "Incident scenarios"], ["/tools", "Browser tools"]])}
+</main>`,
+  });
+
+  for (const capture of CAPTURES) {
+    const url = `${SITE_URL}/capture/${capture.slug}`;
+    await writePage(`capture/${capture.slug}`, base, {
+      title: pageTitle(`${capture.title} | Packet capture`),
+      description: `${capture.tagline} A ${capture.difficulty} packet analysis exercise with ${capture.questions.length} questions.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: capture.title,
+  description: capture.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: capture.difficulty,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Captures", item: `${SITE_URL}/capture` },
+    { "@type": "ListItem", position: 3, name: capture.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(capture.title)}</h1>
+  <p>${esc(capture.tagline)}</p>
+${capture.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>The questions</h2>
+  <ol>
+${capture.questions.map((question) => `    <li>${esc(question.prompt)}</li>`).join("\n")}
+  </ol>
+  <p>
+    ${capture.packets.length} packets. The workbench opens above with a filter
+    bar taking real Wireshark display filter syntax. Answers are not written
+    into this page, because the exercise is finding them.
+  </p>
+  ${backLinks([["/capture", "All captures"], ["/labs", "Hands-on labs"], ["/tools", "Browser tools"]])}
+</main>`,
+    });
+  }
+
+  // ── hands-on labs ──
+  /*
+    The labs are a simulated shell, so the static body is the brief and the
+    hints rather than anything you could type into it. Writing the solutions
+    out would remove the whole exercise for anyone arriving from search.
+  */
+  const labsIndexDescription =
+    "A simulated Linux host in the browser, with a fault in it. Read the interface, the routing " +
+    "table, the sockets and the logs, and say what is wrong. Nothing here touches a real machine.";
+
+  await writePage("labs", base, {
+    title: "Hands-on Labs | Max Doubin",
+    description: labsIndexDescription,
+    canonical: `${SITE_URL}/labs`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Hands-on Linux and networking labs",
+  description: labsIndexDescription,
+  url: `${SITE_URL}/labs`,
+  numberOfItems: LABS.length,
+  itemListElement: LABS.map((lab, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: lab.title,
+    description: lab.tagline,
+    url: `${SITE_URL}/labs/${lab.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Hands-on labs</h1>
+  <p>
+    A Linux host, simulated in the browser, with something wrong with it. Real
+    command output, real permission bits, a real routing table, real logs.
+  </p>
+  <p>
+    Most of these ask for a diagnosis rather than a repair, because that is
+    the shape of nearly all troubleshooting: you are not asked to fix the
+    router, you are asked to say which of six things is wrong before anyone
+    lets you near it.
+  </p>
+  <ul>
+${LABS.map(
+  (lab) =>
+    `    <li><a href="${SITE_URL}/labs/${lab.slug}">${esc(lab.title)}</a> ` +
+    `(${esc(lab.difficulty)}): ${esc(lab.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/scenarios", "Incident scenarios"], ["/tools", "Browser tools"], ["/study", "Study guides"]])}
+</main>`,
+  });
+
+  for (const lab of LABS) {
+    const url = `${SITE_URL}/labs/${lab.slug}`;
+    await writePage(`labs/${lab.slug}`, base, {
+      title: pageTitle(`${lab.title} | Lab`),
+      description: `${lab.tagline} A hands-on ${lab.difficulty} lab in a simulated Linux shell.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: lab.title,
+  description: lab.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: lab.difficulty,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Labs", item: `${SITE_URL}/labs` },
+    { "@type": "ListItem", position: 3, name: lab.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(lab.title)}</h1>
+  <p>${esc(lab.tagline)}</p>
+  <h2>The brief</h2>
+${lab.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>How it works</h2>
+  <p>
+    The lab runs a simulated Linux host in your browser. Nothing reaches a
+    real machine and nothing you type leaves the page. There are
+    ${lab.hints.length} hints, opened one at a time, and the machine can be
+    restarted at any point.
+  </p>
+${
+  lab.reading?.length
+    ? `  <h2>The written version</h2>\n  <ul>\n${lab.reading
+        .map((link) => `    <li><a href="${SITE_URL}${link.href}">${esc(link.label)}</a></li>`)
+        .join("\n")}\n  </ul>`
+    : ""
+}
+  ${backLinks([["/labs", "All labs"], ["/scenarios", "Incident scenarios"], ["/tools", "Browser tools"]])}
+</main>`,
+    });
+  }
+
+  // ── capture the flag challenges ──
+  /*
+    The artefacts are printed into the static body deliberately: a hex dump
+    and a summarised auth.log are exactly the sort of thing someone searches
+    for, and a crawler that can read them is a crawler that can rank them.
+    What never goes in is the flag, and the walkthrough with it, because the
+    static page has no button to hide them behind.
+  */
+  const challengesIndexDescription =
+    "Small capture-the-flag puzzles with the artefact printed in the page: a log to count, a " +
+    "header to decode, a file whose extension lies. Every answer is exact and every method is " +
+    "written out.";
+
+  await writePage("challenges", base, {
+    title: "Capture the Flag Challenges | Max Doubin",
+    description: challengesIndexDescription,
+    canonical: `${SITE_URL}/challenges`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Capture the flag challenges",
+  description: challengesIndexDescription,
+  url: `${SITE_URL}/challenges`,
+  numberOfItems: CHALLENGES.length,
+  itemListElement: CHALLENGES.map((challenge, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: challenge.title,
+    description: challenge.tagline,
+    url: `${SITE_URL}/challenges/${challenge.slug}`,
+  })),
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Challenges</h1>
+  <p>
+    An artefact and a question. The log, the hex dump, the scan output and the
+    digests are all printed in full, because the exercise is reading them, not
+    downloading them. Every answer is one exact string.
+  </p>
+  <p>
+    The flag is checked against a SHA-256 held in the page, which means
+    ctrl-F will not find it and a determined reader with the developer tools
+    open absolutely will. There is no score to protect, and the full method
+    sits behind one button on every challenge.
+  </p>
+  <ul>
+${CHALLENGES.map(
+  (challenge) =>
+    `    <li><a href="${SITE_URL}/challenges/${challenge.slug}">${esc(challenge.title)}</a> ` +
+    `(${esc(challenge.category)}, ${esc(challenge.difficulty)}): ${esc(challenge.tagline)}</li>`,
+).join("\n")}
+  </ul>
+  ${backLinks([["/labs", "Hands-on labs"], ["/capture", "Packet captures"], ["/ncl", "National Cyber League notes"]])}
+</main>`,
+  });
+
+  for (const challenge of CHALLENGES) {
+    const url = `${SITE_URL}/challenges/${challenge.slug}`;
+    await writePage(`challenges/${challenge.slug}`, base, {
+      title: pageTitle(`${challenge.title} | Challenge`),
+      description: `${challenge.tagline} A ${challenge.difficulty} ${challenge.category.toLowerCase()} challenge with the artefact printed in the page.`,
+      canonical: url,
+      schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: challenge.title,
+  description: challenge.tagline,
+  url,
+  learningResourceType: "Exercise",
+  educationalUse: "Practice",
+  interactivityType: "active",
+  isAccessibleForFree: true,
+  inLanguage: "en-US",
+  educationalLevel: challenge.difficulty,
+  about: challenge.category,
+  author: { "@type": "Person", "@id": `${SITE_URL}/#person`, name: "Max Doubin" },
+})}
+</script><script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Challenges", item: `${SITE_URL}/challenges` },
+    { "@type": "ListItem", position: 3, name: challenge.title, item: url },
+  ],
+})}
+</script>`,
+      rootContent: `
+<main>
+  <h1>${esc(challenge.title)}</h1>
+  <p>${esc(challenge.tagline)}</p>
+  <p>${esc(challenge.category)}, ${esc(challenge.difficulty)}. The answer takes the shape ${esc(challenge.flagShape)}.</p>
+  <h2>The brief</h2>
+${challenge.brief.map((paragraph) => `  <p>${esc(paragraph)}</p>`).join("\n")}
+  <h2>What you are given</h2>
+${challenge.artefacts
+  .map(
+    (artefact) =>
+      `${artefact.title ? `  <h3>${esc(artefact.title)}</h3>\n` : ""}` +
+      `  <pre>${artefact.lines.map((line) => esc(line)).join("\n")}</pre>`,
+  )
+  .join("\n")}
+  <h2>Hints</h2>
+  <p>
+    There are ${challenge.hints.length} hints, opened one at a time on the
+    interactive page, and the full method is one button away whenever you
+    decide you would rather learn it than find it.
+  </p>
+${
+  challenge.reading?.length
+    ? `  <h2>The written version</h2>\n  <ul>\n${challenge.reading
+        .map((link) => `    <li><a href="${SITE_URL}${link.href}">${esc(link.label)}</a></li>`)
+        .join("\n")}\n  </ul>`
+    : ""
+}
+  ${backLinks([["/challenges", "All challenges"], ["/labs", "Hands-on labs"], ["/capture", "Packet captures"]])}
+</main>`,
+    });
+  }
+
   // ── branching incident scenarios ──
   /*
     The index and one page per scenario.
@@ -2114,7 +2521,7 @@ ${SCENARIOS.map(
     `${esc(scenario.tagline)}</li>`,
 ).join("\n")}
   </ul>
-  ${backLinks([["/study", "Study guides"], ["/ncl", "National Cyber League notes"], ["/tools", "Browser tools"]])}
+  ${backLinks([["/labs", "Hands-on labs"], ["/study", "Study guides"], ["/ncl", "National Cyber League notes"]])}
 </main>`,
   });
 
@@ -3017,6 +3424,10 @@ async function writeSitemap(
     { loc: `${SITE_URL}/teardown`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ncl`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/scenarios`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/labs`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/challenges`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
@@ -3072,6 +3483,30 @@ async function writeSitemap(
   for (const slug of NCL_GUIDE_DATA.map((g: { slug: string }) => g.slug)) {
     urls.push({
       loc: `${SITE_URL}/ncl/${slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const capture of CAPTURES) {
+    urls.push({
+      loc: `${SITE_URL}/capture/${capture.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const lab of LABS) {
+    urls.push({
+      loc: `${SITE_URL}/labs/${lab.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    });
+  }
+  for (const challenge of CHALLENGES) {
+    urls.push({
+      loc: `${SITE_URL}/challenges/${challenge.slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

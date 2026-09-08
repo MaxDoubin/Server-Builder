@@ -22,6 +22,7 @@ const NAV_LINKS = [
   { label: "Dossier", href: "/#dossier" },
   { label: "Projects", href: "/projects" },
   { label: "Field Notes", href: "/blog" },
+  { label: "Practise", href: "/practise" },
   { label: "Tools", href: "/tools" },
   { label: "Racks", href: "/racks" },
   { label: "Gear", href: "/gear" },

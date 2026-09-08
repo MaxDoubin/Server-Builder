@@ -131,6 +131,34 @@ const CinematicContact = lazyWithRetry(() =>
   })),
 );
 
+const CinematicPractise = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicPractise").then((m) => ({ default: m.CinematicPractise })),
+);
+
+const CinematicCaptures = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCaptures").then((m) => ({ default: m.CinematicCaptures })),
+);
+
+const CinematicCapture = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicCapture").then((m) => ({ default: m.CinematicCapture })),
+);
+
+const CinematicChallenges = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicChallenges").then((m) => ({ default: m.CinematicChallenges })),
+);
+
+const CinematicChallenge = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicChallenge").then((m) => ({ default: m.CinematicChallenge })),
+);
+
+const CinematicLabs = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLabs").then((module) => ({ default: module.CinematicLabs })),
+);
+
+const CinematicLab = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLab").then((module) => ({ default: module.CinematicLab })),
+);
+
 const CinematicScenarios = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicScenarios").then((module) => ({
     default: module.CinematicScenarios,
@@ -685,6 +713,41 @@ function AnimatedRoutes() {
     <div key={location} className="route-fade">
         <Switch>
           <Route path="/" component={CinematicHome} />
+          <Route path="/practise">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicPractise />
+            </Suspense>
+          </Route>
+          <Route path="/capture">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCaptures />
+            </Suspense>
+          </Route>
+          <Route path="/capture/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicCapture />
+            </Suspense>
+          </Route>
+          <Route path="/challenges">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicChallenges />
+            </Suspense>
+          </Route>
+          <Route path="/challenges/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicChallenge />
+            </Suspense>
+          </Route>
+          <Route path="/labs">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLabs />
+            </Suspense>
+          </Route>
+          <Route path="/labs/:slug">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLab />
+            </Suspense>
+          </Route>
           <Route path="/scenarios">
             <Suspense fallback={<RouteLoading />}>
               <CinematicScenarios />

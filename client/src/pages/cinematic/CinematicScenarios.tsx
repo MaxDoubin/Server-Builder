@@ -171,6 +171,16 @@ export function CinematicScenarios() {
               </ul>
             </section>
           ))}
+          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            If you would rather be at a prompt than making a decision, the{" "}
+            <Link
+              href="/labs"
+              className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+            >
+              hands-on labs
+            </Link>{" "}
+            give you a simulated Linux host with a fault in it and a shell to find it with.
+          </p>
         </div>
       </div>
     </CinematicLayout>
