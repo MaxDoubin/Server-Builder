@@ -23,7 +23,7 @@ import {
   type Scenario,
 } from "@/lib/scenarios/types";
 import { loadFound, type FoundMap } from "@/lib/scenarios/progress";
-import { accentFor, type StageAccent } from "@/components/scenarios/ScenarioStage";
+import { accentFor, type StageAccent } from "@/components/practise/PractiseStage";
 import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";

@@ -29,6 +29,7 @@ import {
   type Judgements,
 } from "@/lib/triage/progress";
 import { pluralise } from "@/lib/plural";
+import { PractiseStage } from "@/components/practise/PractiseStage";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -95,8 +96,24 @@ export function CinematicTriage() {
     setHeadersOpen(false);
   };
 
+  /*
+    The room answers the call on the open message. A missed phish and a
+    reported newsletter are both wrong and they are not the same wrongness, so
+    the first turns the screen red and the second only warms it.
+  */
+  const current = open ? judgements[open.id] : undefined;
+  const missed = Boolean(current && !current.right && open?.verdict === "phish");
+  const stageAccent = missed ? "danger" : current && !current.right ? "amber" : "cyan";
+  const stageMood = !current ? "tense" : current.right ? "recovering" : missed ? "critical" : "tense";
+
   return (
     <CinematicLayout>
+      <PractiseStage
+        accent={stageAccent}
+        mood={stageMood}
+        ending={score.judged === MESSAGES.length && score.right === MESSAGES.length ? "best" : undefined}
+        flashKey={score.judged}
+      />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1080px]">
           <header>

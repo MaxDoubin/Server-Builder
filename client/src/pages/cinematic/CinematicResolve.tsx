@@ -13,6 +13,7 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { CASES, WORLD, resolve, type Case, type RRType } from "@/lib/resolve/index";
 import { pluralise } from "@/lib/plural";
+import { PractiseStage } from "@/components/practise/PractiseStage";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -63,8 +64,19 @@ export function CinematicResolve() {
 
   const result = useMemo(() => resolve(WORLD, name, type), [name, type]);
 
+  /*
+    The room takes the outcome. A resolution that ends at a server disclaiming
+    the zone should not look the same as one that answers, and the reader is
+    reading a wall of hostnames either way.
+  */
+  const HARD: string[] = ["lame", "no-address", "loop"];
+  const accent = result.outcome === "answer" ? "signal" : HARD.includes(result.outcome) ? "danger" : "amber";
+  const mood =
+    result.outcome === "answer" ? "calm" : HARD.includes(result.outcome) ? "critical" : "tense";
+
   return (
     <CinematicLayout>
+      <PractiseStage accent={accent} mood={mood} flashKey={result.queries.length} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>

@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { CHAIN_CASES, validate, type ChainCase } from "@/lib/chain/index";
+import { PractiseStage } from "@/components/practise/PractiseStage";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -39,6 +40,13 @@ const FAULT_LABEL: Record<string, string> = {
 };
 
 export function CinematicChain() {
+  /*
+    One room for the page rather than one per case, because nine cases are
+    open at once and nine competing moods would just be noise. It tracks the
+    most recent answer: right calms it, wrong does not.
+  */
+  const [lastRight, setLastRight] = useState<boolean | null>(null);
+
   useSEO({
     title: "Certificate chain validation | Max Doubin",
     description:
@@ -48,6 +56,11 @@ export function CinematicChain() {
 
   return (
     <CinematicLayout>
+      <PractiseStage
+        accent={lastRight === false ? "amber" : "cyan"}
+        mood={lastRight === null ? "tense" : lastRight ? "recovering" : "critical"}
+        flashKey={lastRight === null ? 0 : 1}
+      />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
@@ -73,7 +86,7 @@ export function CinematicChain() {
 
           <ol className="mt-11 space-y-6">
             {CHAIN_CASES.map((item) => (
-              <CaseCard key={item.id} item={item} />
+              <CaseCard key={item.id} item={item} onAnswer={setLastRight} />
             ))}
           </ol>
 
@@ -107,7 +120,7 @@ export function CinematicChain() {
   );
 }
 
-function CaseCard({ item }: { item: ChainCase }) {
+function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boolean) => void }) {
   const [picked, setPicked] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -201,6 +214,7 @@ function CaseCard({ item }: { item: ChainCase }) {
               onClick={() => {
                 setPicked(index);
                 setOpen(true);
+                onAnswer(index === item.answer);
               }}
               disabled={picked !== null}
               aria-pressed={chosen}
