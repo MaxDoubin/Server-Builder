@@ -2343,6 +2343,65 @@ ${
     });
   }
 
+  // ── today ──
+  /*
+    The static body cannot name today's items, because the build ran on some
+    other day and a crawler would index a set that no longer exists. What it
+    describes is the mechanism, which does not change.
+  */
+  const todayDescription =
+    "One thing from every practise surface, chosen by the date and the same for everybody: an " +
+    "incident to decide, a host to diagnose, a capture to read, a flag to find, a message to " +
+    "judge, a chain to reorder, a name to resolve, a certificate to attribute and a block to divide.";
+
+  await writePage("today", base, {
+    title: "Today | Max Doubin",
+    description: todayDescription,
+    canonical: `${SITE_URL}/today`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Today",
+  description: todayDescription,
+  url: `${SITE_URL}/today`,
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Today</h1>
+  <p>
+    One thing from each of the nine practise surfaces, chosen by the date. The
+    same nine for everybody, and different tomorrow.
+  </p>
+  <p>
+    The selection is a rotation rather than a shuffle, so each surface walks
+    through everything it has before repeating any of it. Nothing is stored and
+    nothing is fetched: the date is the whole of the state, which is also why a
+    link to this page still shows today's set when you open it twice.
+  </p>
+  <h2>What it draws from</h2>
+  <ul>
+    <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>, an incident to decide.</li>
+    <li><a href="${SITE_URL}/labs">Hands-on labs</a>, a host to diagnose at a prompt.</li>
+    <li><a href="${SITE_URL}/capture">Packet captures</a>, a trace to read with display filters.</li>
+    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artefact with one exact answer.</li>
+    <li><a href="${SITE_URL}/triage">Phishing triage</a>, a message to call and a signal to cite.</li>
+    <li><a href="${SITE_URL}/firewall">Firewall exercises</a>, a chain with something wrong with it.</li>
+    <li><a href="${SITE_URL}/resolve">DNS resolution</a>, a symptom to attribute from the trace.</li>
+    <li><a href="${SITE_URL}/chain">Certificate chains</a>, a TLS error and whose problem it is.</li>
+    <li><a href="${SITE_URL}/allocate">Address plans</a>, a block to divide between competing needs.</li>
+  </ul>
+  <p>
+    It also shows how far you have got on each, read from what those pages
+    already record in your own browser. Nothing about your progress leaves the
+    machine you are on.
+  </p>
+  ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+</main>`,
+  });
+
   // ── array calculator ──
   const arrayDescription =
     "Usable capacity, guaranteed fault tolerance, rebuild time and the unrecoverable read error " +
@@ -3977,6 +4036,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/chain`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/allocate`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/array`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/today`, lastmod: today, changefreq: "daily", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
