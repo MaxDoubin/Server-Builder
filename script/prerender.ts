@@ -24,6 +24,7 @@ import { CASES as LOGS, render as renderLine } from "../client/src/lib/logs/inde
 import { PATHS as MTU_PATHS, PING_DEFAULT, mssFor, pathMtu, pingLies } from "../client/src/lib/mtu/index";
 import { CASES as PERMISSION_CASES, octal as modeOctal, symbolic as lsLine } from "../client/src/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, PRIORITY_LABEL, byPriority, byScore, invertedPairs, priorityFor, worstMove } from "../client/src/lib/patch/index";
+import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as retryMs, orphaned as retryOrphaned, requestsAt, truncatingCaller } from "../client/src/lib/retry/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
 import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
@@ -850,6 +851,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/mtu">Ping works and the transfer hangs</a>, path MTU and the firewall that swallowed the explanation.</li>
     <li><a href="${SITE_URL}/permissions">The first class that matches</a>, Unix mode bits and the two thirds of them the kernel never looks at.</li>
     <li><a href="${SITE_URL}/patch">The queue is sorted wrong</a>, why a base score is not a risk score and what to sort by instead.</li>
+    <li><a href="${SITE_URL}/retry">Three retries, four layers</a>, how one button press becomes eighty-one queries.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
@@ -2134,6 +2136,7 @@ ${JSON.stringify({
     ["Ping works and the transfer hangs", "/mtu"],
     ["The first class that matches", "/permissions"],
     ["The queue is sorted wrong", "/patch"],
+    ["Three retries, four layers", "/retry"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
   ].map(([name, path], index) => ({
@@ -2709,6 +2712,95 @@ ${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocks
     interface, which fixes TCP and does nothing for UDP.
   </p>
   ${backLinks([["/practise", "All practise material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
+</main>`,
+  });
+
+  // ── retry amplification ──
+  /*
+    Every chain goes in with its policies, its fan-out per layer and its
+    readings, derived here from the same model the page uses. The options go
+    in too, because they are the exercise; the answer does not, for the same
+    reason it does not on the logs page.
+  */
+  const worstFanOut = Math.max(...RETRY_CHAINS.map(amplification));
+  const retryDescription =
+    `Three attempts at each of four layers is ${worstFanOut} requests, and nobody wrote ${worstFanOut}. ` +
+    `${RETRY_CHAINS.length} call paths to work out: what the dependency actually sees, who hangs up while ` +
+    "somebody else is still working, and what the person who pressed the button waits.";
+
+  await writePage("retry", base, {
+    title: "Three Retries, Four Layers | Max Doubin",
+    description: retryDescription,
+    canonical: `${SITE_URL}/retry`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Three retries, four layers",
+  description: retryDescription,
+  url: `${SITE_URL}/retry`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Retry amplification across a call path, timeout budgets and deadline propagation, orphaned work after a caller gives up, backoff without jitter, and why retrying a non-idempotent operation cannot be budgeted away",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Three retries, four layers</h1>
+  <p>
+    The browser retries a failed fetch. The edge retries an upstream error.
+    The API client retries a reset connection. The driver retries a broken
+    pipe. Three attempts each, which is the default in all four libraries and
+    which four different people configured on four different days.
+  </p>
+  <p>
+    They multiply. One person pressing a button once becomes ${worstFanOut}
+    queries against the thing that was already having a bad day. The number is
+    trivial to compute and almost never computed, because no single layer's
+    configuration contains it and no dashboard shows all four policies at
+    once.
+  </p>
+  <p>
+    Two more failures come with it. When a caller's timeout is shorter than
+    the time the layer below needs to exhaust its own retries, the caller
+    hangs up and retries while the first request is still running, and nothing
+    cancels the work it abandoned. And exponential backoff without jitter does
+    not spread retries out, it synchronises them.
+  </p>
+  <h2>The call paths</h2>
+${RETRY_CHAINS.map((chain) => `  <article>
+    <h3>${esc(chain.name)}</h3>
+    <p>${esc(chain.brief)}</p>
+    <ul>
+${chain.callers.map((caller, depth) => `      <li>${esc(caller.name)}: ${caller.attempts} ${caller.attempts === 1 ? "attempt" : "attempts"}, ${retryMs(caller.timeout)} timeout${caller.attempts > 1 ? `, ${retryMs(caller.backoff)} backoff${caller.factor > 1 ? ` times ${caller.factor}` : ""}, ${caller.jitter === 0 ? "no jitter" : `jitter ${Math.round(caller.jitter * 100)}%`}` : ""}${caller.idempotent ? "" : ", not safe to repeat"}. ${requestsAt(chain, depth + 1)} requests leave it.${caller.note ? ` ${esc(caller.note)}` : ""}</li>`).join("\n")}
+      <li>${esc(chain.leaf.name)}: answers in ${retryMs(chain.leaf.latency)}${chain.leaf.note ? `. ${esc(chain.leaf.note)}` : ""}</li>
+    </ul>
+    <p>${esc(chain.question)}</p>
+    <ol>
+${chain.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")}
+    </ol>
+    <p>
+      ${esc(chain.leaf.name)} sees ${amplification(chain)} requests, the user waits
+      ${retryMs(retryElapsed(chain))},
+      ${(() => { const t = truncatingCaller(chain); return t ? `${esc(t.name)} has a budget smaller than its callee's` : "no layer has a budget smaller than its callee's"; })()},
+      and ${retryOrphaned(chain) === 0 ? "nothing is left running" : `${retryOrphaned(chain)} requests are left running`} once everybody has given up.
+      It breaks the belief ${esc(chain.breaks)}.
+    </p>
+  </article>`).join("\n")}
+  <h2>The fix</h2>
+  <p>
+    One budget divided downwards rather than four timeouts chosen upwards, so
+    that every layer allows less time than its caller and the innermost
+    failure surfaces first. Retry in exactly one place: the layer that knows
+    whether the operation is safe to repeat and can see the whole deadline,
+    which is almost never the driver at the bottom. Jitter every backoff. And
+    for anything that is not safe to repeat, an idempotency key, because a
+    timeout tells you that you stopped listening and nothing about whether the
+    work happened.
+  </p>
+  ${backLinks([["/practise", "All practise material"], ["/transfer", "Why the transfer is slow"], ["/blog/queueing-theory-for-operators", "Queueing theory for operators"]])}
 </main>`,
   });
 
@@ -4694,6 +4786,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/mtu`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/permissions`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/patch`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/retry`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

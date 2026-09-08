@@ -21,6 +21,7 @@ import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSIONS } from "@/lib/permissions/index";
 import { FINDINGS as PATCHES } from "@/lib/patch/index";
+import { CHAINS as RETRIES } from "@/lib/retry/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -62,6 +63,7 @@ const OFFSET = {
   array: 53,
   permissions: 59,
   patch: 61,
+  retry: 67,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -208,6 +210,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Walk a packet down it and find where it dies, and what swallowed the explanation.",
       href: "/mtu",
       outOf: MTU_PATHS.length,
+    });
+  }
+
+  const callPath = pickFor(RETRIES, day, OFFSET.retry);
+  if (callPath) {
+    out.push({
+      surface: "retry",
+      eyebrow: "Multiply",
+      title: callPath.name,
+      blurb: "Work out what the dependency actually sees, and who gave up while somebody else was still working.",
+      href: "/retry",
+      outOf: RETRIES.length,
     });
   }
 

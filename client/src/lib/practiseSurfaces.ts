@@ -119,6 +119,7 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
   { href: "/allocate", eyebrow: "Divide", title: "Address plans", group: "compute" , reading: ["subnetting-practical-guide", "alignment-is-what-runs-out"] },
   { href: "/array", eyebrow: "Size", title: "Array calculator", group: "compute" , noProgress: "a calculator; nothing to be part-way through" , reading: ["raid-rebuild-risk-math", "zfs-arc-l2arc-tuning"] },
   { href: "/transfer", eyebrow: "Measure", title: "Why the transfer is slow", group: "compute" , reading: ["the-invoice-is-not-the-ceiling", "tcp-congestion-control-basics", "queueing-theory-for-operators"] },
+  { href: "/retry", eyebrow: "Multiply", title: "Three retries, four layers", group: "compute" , reading: ["queueing-theory-for-operators", "incident-response-methodology", "runbooks-infrastructure-teams"] },
   { href: "/permissions", eyebrow: "Resolve", title: "The first class that matches", group: "compute" , reading: ["permissions-do-not-add-up", "first-match-wins", "linux-server-hardening"] },
   { href: "/restore", eyebrow: "Recover", title: "You have backups, not restores", group: "compute" , noProgress: "a model to run rather than a scored set" , reading: ["three-copies-one-credential", "restore-drills-that-matter", "backup-strategy-321-rule"] },
 

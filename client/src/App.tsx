@@ -162,6 +162,9 @@ const CinematicPermissions = lazyWithRetry(() =>
 const CinematicPatch = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicPatch").then((m) => ({ default: m.CinematicPatch })),
 );
+const CinematicRetry = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicRetry").then((m) => ({ default: m.CinematicRetry })),
+);
 const CinematicLogs = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicLogs").then((m) => ({ default: m.CinematicLogs })),
 );
@@ -825,6 +828,11 @@ function AnimatedRoutes() {
           <Route path="/patch">
             <Suspense fallback={<RouteLoading />}>
               <CinematicPatch />
+            </Suspense>
+          </Route>
+          <Route path="/retry">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicRetry />
             </Suspense>
           </Route>
           <Route path="/logs">

@@ -23,6 +23,7 @@ import { CASES as LOGS } from "@/lib/logs/index";
 import { PATHS as MTU_PATHS } from "@/lib/mtu/index";
 import { CASES as PERMISSION_CASES } from "@/lib/permissions/index";
 import { FINDINGS as PATCH_FINDINGS, worstMove } from "@/lib/patch/index";
+import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -295,6 +296,16 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/retry",
+      eyebrow: "Multiply",
+      title: "Three retries, four layers",
+      blurb:
+        "Three attempts at each of four layers is eighty-one requests, and nobody wrote eighty-one. Eight call paths to work out.",
+      reachFor: "a slow dependency became a dead one and nobody changed anything",
+      stats: [`${RETRY_CHAINS.length} call paths`, `worst fan-out ${Math.max(...RETRY_CHAINS.map(amplification))}×`, "live model"],
       progress: null,
     },
     {
