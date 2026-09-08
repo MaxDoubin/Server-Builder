@@ -391,6 +391,16 @@ jobs:
       - name: Handshake sequences
         run: npx tsx scripts-ci/check-handshake.ts
 
+      # A synthetic log drifts into shapes no daemon emits, which teaches
+      # somebody to recognise something they will never see. Every line is
+      # rendered to syslog format and parsed back by a deliberately strict
+      # parser. It also enforces the point of the whole surface: the deciding
+      # line is never part of the log's loudest pattern, every distractor is
+      # supported by real lines, and the answers are spread across the option
+      # positions so a reader who always picks the second one fails.
+      - name: The logs look like logs
+        run: npx tsx scripts-ci/check-logs.ts
+
       # The palette is the one box that reaches everything, which only holds
       # while it knows about every page. Sixteen surfaces had been built,
       # shipped and linked from the footer without ever being added to it:

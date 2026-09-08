@@ -17,6 +17,7 @@ import { CASES as DNS_CASES } from "@/lib/resolve/index";
 import { CHAIN_CASES } from "@/lib/chain/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
+import { CASES as LOGS } from "@/lib/logs/index";
 import { dayNumber, pickFor } from "./pick";
 
 export interface Pick {
@@ -46,6 +47,7 @@ const OFFSET = {
   chain: 19,
   allocate: 23,
   transfer: 29,
+  logs: 31,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -168,6 +170,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Read the ceilings, then say what is actually costing the time.",
       href: "/transfer",
       outOf: TRANSFERS.length,
+    });
+  }
+
+  const log = pickFor(LOGS, day, OFFSET.logs);
+  if (log) {
+    out.push({
+      surface: "logs",
+      eyebrow: "Read",
+      title: log.title,
+      blurb: "Say what happened, then point at the one line that proves it.",
+      href: "/logs",
+      outOf: LOGS.length,
     });
   }
 

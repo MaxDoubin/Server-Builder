@@ -25,6 +25,7 @@ import { CHAIN_CASES } from "@/lib/chain/index";
 import { PROBLEMS as PLANS } from "@/lib/allocate/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
 import { CASES as TRANSFERS } from "@/lib/transfer/index";
+import { CASES as LOGS } from "@/lib/logs/index";
 import { pluralise } from "@/lib/plural";
 
 interface Surface {
@@ -123,6 +124,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Three ceilings sit over a single stream and the lowest one wins. Work out which, and which expensive upgrade would have done nothing.",
     count: `${TRANSFERS.length} complaints, 4 answers`,
+  },
+  {
+    href: "/logs",
+    eyebrow: "Read",
+    title: "Read the log",
+    blurb:
+      "A thousand failed passwords are a bot that got nowhere. Say what happened, then point at the one line that proves it.",
+    count: `${LOGS.length} logs, ${LOGS.reduce((sum, item) => sum + item.lines.length, 0)} lines`,
   },
 ];
 

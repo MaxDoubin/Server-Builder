@@ -114,6 +114,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Address plans", href: "/allocate", detail: "Divide a block between competing needs", terms: "subnetting vlsm cidr ipam" },
   { kind: "Page", title: "Array calculator", href: "/array", detail: "Capacity, rebuild time and the URE arithmetic", terms: "raid storage disks parity" },
   { kind: "Page", title: "Protocol handshakes", href: "/handshake", detail: "Step by step, with the breaks", terms: "tcp tls dhcp sequence diagram" },
+  { kind: "Page", title: "Read the log", href: "/logs", detail: "What happened, and the one line that proves it", terms: "syslog auth journal grep incident evidence" },
   { kind: "Page", title: "Why the transfer is slow", href: "/transfer", detail: "Which of the three ceilings is binding", terms: "throughput bandwidth window latency loss bdp tcp" },
   { kind: "Page", title: "Archive", href: "/archive", detail: "Every article by date", terms: "all posts index" },
 ];
