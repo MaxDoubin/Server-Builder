@@ -275,7 +275,18 @@ export function CinematicPractise() {
               and nowhere else, so it does not follow you to another device and it does not reach
               me.
             </p>
-          </header>
+          
+          <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            If you would rather not choose,{" "}
+            <Link
+              href="/today"
+              className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+            >
+              today
+            </Link>{" "}
+            picks one thing from each of these, by the date, the same for everybody.
+          </p>
+</header>
 
           <ul className="mt-12 space-y-4">
             {pillars.map((pillar) => (

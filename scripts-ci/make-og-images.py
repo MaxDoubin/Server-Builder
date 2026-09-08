@@ -101,6 +101,7 @@ PAGE_EYEBROWS = {
     "chain": "CERTIFICATE CHAINS",
     "allocate": "ADDRESS PLANS",
     "array": "ARRAY CALCULATOR",
+    "today": "TODAY",
     "capture": "PACKET CAPTURES",
     "practise": "PRACTISE",
     "contact": "CONTACT",

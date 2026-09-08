@@ -372,6 +372,16 @@ jobs:
       - name: Array arithmetic
         run: npx tsx scripts-ci/check-array.ts
 
+      # A surface whose list gets renamed or emptied simply stops appearing in
+      # the daily selection, and the page still renders a tidy grid with one
+      # fewer card: nobody notices the labs have not been offered for a month.
+      # This asserts every surface appears every day, that the pick is
+      # deterministic including for negative day numbers, and that it is a true
+      # rotation rather than a hash, so each list shows everything before it
+      # repeats anything.
+      - name: Daily selection
+        run: npx tsx scripts-ci/check-today.ts
+
       # A service worker outlives the deploy that installed it, so getting the
       # document strategy wrong does not show up as a bad-looking page, it
       # shows up as returning visitors stuck on a build whose chunk files the
