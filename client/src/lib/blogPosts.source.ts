@@ -1362,7 +1362,7 @@ in and the reason it is worth running both ways.
 - [RFC 7489: DMARC](https://www.rfc-editor.org/rfc/rfc7489)
 - [RFC 2606: reserved top-level DNS names](https://www.rfc-editor.org/rfc/rfc2606)
 - [FBI IC3 on business email compromise](https://www.ic3.gov/CrimeInfo/BEC)
-- [CISA guidance on phishing](https://www.cisa.gov/topics/cyber-threats-and-advisories/types-cyber-threats/phishing)
+- [CISA: Phishing Guidance, Stopping the Attack Cycle at Phase One](https://www.cisa.gov/resources-tools/resources/phishing-guidance-stopping-attack-cycle-phase-one)
 `,
   },
   {
@@ -3674,7 +3674,7 @@ anything about cryptography.
 - [RFC 10024: Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3](https://www.rfc-editor.org/rfc/rfc10024.html)
 - [RFC 9954: Terminology and Design Considerations for Hybrid Key Exchange](https://www.rfc-editor.org/rfc/rfc9954.html)
 - [NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
-- [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml)
+- [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters)
 - [Cloudflare: The state of the post-quantum Internet](https://blog.cloudflare.com/pq-2024/)
 - [OpenSSL 3.5 release notes](https://openssl-library.org/news/openssl-3.5-notes/)
 - [RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3](https://www.rfc-editor.org/rfc/rfc8446.html)
