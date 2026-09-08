@@ -49,19 +49,22 @@ const DIST = path.resolve("dist/public");
 const INDEX = path.join(DIST, "index.html");
 
 /*
- * 694 KB, raised from 692 by /nat and owed an explanation.
+ * 694 KB, raised from 692 by /nat, and the first explanation of that was wrong.
  *
- * The growth is not the page, which is lazy like every other route. It is the
- * home page's practise act and the practise hub, which both import the case
- * data of ten surfaces to render a count: "10 port forwards, 4 that do not
- * connect". Every surface added since has paid this, and the whole prose of
- * every case of every one of them is in the static entry to produce fourteen
- * numbers.
+ * I assumed the growth was the home page's practise act, which imports the
+ * case data of ten surfaces to render a count, and wrote that down without
+ * measuring it. Then I measured it. The act and the practise hub are both
+ * lazily loaded, so neither is in this closure at all, and no case prose is:
+ * grepping the entry for shared_buffers, influxdb or any case's brief finds
+ * nothing. The data is properly split and always was.
  *
- * So this raise is deliberate and it is also the last one of its kind: the
- * fix is to derive those counts at build time rather than to ship the cases
- * that produce them, which should take the entry back well below where it was
- * before any of them were added.
+ * What a new surface actually costs here is its command palette entry: title,
+ * detail and a list of search terms, 337 bytes for /nat, in an array that is
+ * 8.2 KB of a 419 KB entry across 62 entries. That is the site's search index
+ * and it belongs in the entry, because the palette opens on the first
+ * keystroke on any page. So the cost is real, small, and the right shape, and
+ * the number to watch is roughly a third of a kilobyte per surface rather
+ * than anything alarming.
  */
 const BUDGET_BYTES = 694 * 1024;
 
