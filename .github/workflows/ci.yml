@@ -521,6 +521,17 @@ jobs:
       - name: Disk-full causes are derived, not declared
         run: npx tsx scripts-ci/check-space.ts
 
+      # A shared cache keys on the URL and exactly what Vary names, so the
+      # cases carry requests and headers rather than a verdict and the model
+      # works out which request is served somebody else's page. Then the
+      # replay is checked against a stateless recomputation, which is what
+      # caught the first version treating a request that hit as one that had
+      # fetched a response. And every stated fix is applied to its own case
+      # and replayed, because a remedy that would not have worked is the one
+      # thing here that nothing else would notice.
+      - name: Cache keys decide who sees what
+        run: npx tsx scripts-ci/check-cache.ts
+
       # And the gate that would have caught the four above being absent. Four
       # gates were written in one day, each blinded a dozen ways to prove it
       # caught what it was for, and none was added to this file: forty-six

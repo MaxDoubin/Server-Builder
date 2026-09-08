@@ -82,6 +82,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/vlan": { load: () => import("@/pages/cinematic/CinematicVlan") },
   "/clock": { load: () => import("@/pages/cinematic/CinematicClock") },
   "/space": { load: () => import("@/pages/cinematic/CinematicSpace") },
+  "/cache": { load: () => import("@/pages/cinematic/CinematicCache") },
   "/route": { load: () => import("@/pages/cinematic/CinematicRoute") },
   "/restore": { load: () => import("@/pages/cinematic/CinematicRestore") },
   "/array": { load: () => import("@/pages/cinematic/CinematicArray") },

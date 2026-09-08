@@ -123,6 +123,7 @@ export function CinematicFooter() {
               { href: "/vlan", label: "VLAN tagging", testId: "link-footer-vlan" },
               { href: "/clock", label: "Clock skew", testId: "link-footer-clock" },
               { href: "/space", label: "Disk full", testId: "link-footer-space" },
+              { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },
               { href: "/capture", label: "Captures", testId: "link-footer-capture" },

@@ -27,6 +27,7 @@ import { CHAINS as RETRY_CHAINS, amplification } from "@/lib/retry/index";
 import { PATHS as VLAN_PATHS, nativeMismatches } from "@/lib/vlan/index";
 import { CASES as CLOCK_CASES } from "@/lib/clock/index";
 import { CASES as SPACE_CASES, failure as spaceFailure } from "@/lib/space/index";
+import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
@@ -299,6 +300,20 @@ export function CinematicPractise() {
         "Type a destination and see both answers at once: what a router does, and what reading the table top to bottom would have told you.",
       reachFor: "the route looks right and the traffic goes somewhere else",
       stats: [`${ROUTE_TABLES.length} tables`, `${ROUTE_TABLES.reduce((sum, t) => sum + t.probes.length, 0)} lookups`, "live lookup"],
+      progress: null,
+    },
+    {
+      href: "/cache",
+      eyebrow: "Read",
+      title: "The page that showed somebody else's name",
+      blurb:
+        "A shared cache keys on the URL and exactly those headers the response named in Vary. Not the cookie, unless it was told to.",
+      reachFor: "a user reloads and sees another account's data",
+      stats: [
+        `${CACHE_CASES.length} sequences`,
+        `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
+        "live RFC 9111",
+      ],
       progress: null,
     },
     {
