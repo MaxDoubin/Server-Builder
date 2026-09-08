@@ -16,14 +16,19 @@
 import { PROBLEMS } from "../client/src/lib/allocate/data/problems";
 import { review } from "../client/src/lib/allocate/review";
 import {
+  broadcastOf,
   contains,
   format,
   isAligned,
   isCidr,
+  maskFor,
+  networkOf,
   overlaps,
+  parseAddress,
   parseCidr,
   prefixForHosts,
   sizeOf,
+  toDotted,
   usableIn,
 } from "../client/src/lib/allocate/cidr";
 
@@ -225,6 +230,117 @@ for (const [text, pattern] of REFUSALS) {
   if (!pattern.test(parsed.error)) {
     problems.push(`refusals: "${text}" was refused with "${parsed.error}", not matching ${pattern}`);
   }
+}
+
+/* ------------------------------------------- the address arithmetic itself */
+
+/*
+  Five functions here were exported and named by nothing in this file until a
+  check over every logic file found them: parseAddress, toDotted, maskFor,
+  networkOf and broadcastOf. They are the arithmetic a router does, and this
+  page exists to teach it, so a quiet bug in any of them would teach it wrong
+  with a straight face.
+
+  Generated rather than tabulated, because the failure modes are all at the
+  edges: JavaScript's bitwise operators are signed, a shift count of 32 is
+  taken modulo 32 and returns its input, and >>> 0 is the only thing keeping
+  any of it unsigned.
+*/
+let cidrSeed = 0x4d2c1f;
+const nextCidr = () => {
+  cidrSeed ^= cidrSeed << 13;
+  cidrSeed >>>= 0;
+  cidrSeed ^= cidrSeed >>> 17;
+  cidrSeed ^= cidrSeed << 5;
+  cidrSeed >>>= 0;
+  return cidrSeed;
+};
+
+/* Every prefix length, every round, because 0, 31 and 32 are the whole risk. */
+for (let round = 0; round < 4000; round += 1) {
+  const value = nextCidr();
+
+  /* toDotted and parseAddress are inverses over the whole 32-bit space. */
+  const dotted = toDotted(value);
+  if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(dotted)) {
+    problems.push(`toDotted(${value}) produced "${dotted}"`);
+  }
+  for (const octet of dotted.split(".")) {
+    if (Number(octet) > 255) problems.push(`toDotted(${value}) produced the octet ${octet}`);
+  }
+  if (parseAddress(dotted) !== value) {
+    problems.push(`toDotted then parseAddress turned ${value} into ${parseAddress(dotted)}`);
+  }
+
+  for (let prefix = 0; prefix <= 32; prefix += 1) {
+    const mask = maskFor(prefix);
+
+    /* A mask is exactly `prefix` ones followed by zeros, and nothing else. */
+    let ones = 0;
+    for (let bit = 31; bit >= 0; bit -= 1) {
+      if ((mask & (1 << bit)) !== 0) ones += 1;
+      else break;
+    }
+    let population = 0;
+    for (let bit = 0; bit < 32; bit += 1) if ((mask >>> bit) & 1) population += 1;
+    if (ones !== prefix || population !== prefix) {
+      problems.push(`maskFor(${prefix}) is ${toDotted(mask)}, which is ${ones} leading and ${population} total ones`);
+    }
+    if (mask < 0) problems.push(`maskFor(${prefix}) came back signed`);
+
+    const cidr = { base: value, prefix };
+    const network = networkOf(cidr);
+    const broadcast = broadcastOf(cidr);
+
+    if (network < 0 || broadcast < 0) problems.push(`prefix ${prefix} produced a signed result`);
+    if (broadcast < network) problems.push(`prefix ${prefix}: broadcast is below the network address`);
+
+    /* The block spans exactly as many addresses as its prefix allows. */
+    if (broadcast - network + 1 !== sizeOf(prefix)) {
+      problems.push(`prefix ${prefix} spans ${broadcast - network + 1} addresses and sizeOf says ${sizeOf(prefix)}`);
+    }
+
+    /* Masking is idempotent: a network address is its own network. */
+    if (networkOf({ base: network, prefix }) !== network) {
+      problems.push(`prefix ${prefix}: masking a network address moved it`);
+    }
+    if (!isAligned({ base: network, prefix })) {
+      problems.push(`prefix ${prefix}: a network address was not reported as aligned`);
+    }
+
+    /* And the block contains its own ends and nothing outside them. */
+    if (!contains(cidr, { base: network, prefix: 32 })) {
+      problems.push(`prefix ${prefix}: the block does not contain its own network address`);
+    }
+    if (!contains(cidr, { base: broadcast, prefix: 32 })) {
+      problems.push(`prefix ${prefix}: the block does not contain its own broadcast address`);
+    }
+    if (prefix > 0 && network > 0 && contains(cidr, { base: network - 1, prefix: 32 })) {
+      problems.push(`prefix ${prefix}: the block contains the address below it`);
+    }
+    if (prefix > 0 && broadcast < 0xffffffff && contains(cidr, { base: broadcast + 1, prefix: 32 })) {
+      problems.push(`prefix ${prefix}: the block contains the address above it`);
+    }
+  }
+}
+
+/* The two ends of the space, by hand, since a generator may never hit them. */
+for (const [value, want] of [
+  [0, "0.0.0.0"],
+  [0xffffffff, "255.255.255.255"],
+  [0x0a000001, "10.0.0.1"],
+  [0xc0a80101, "192.168.1.1"],
+] as [number, string][]) {
+  if (toDotted(value) !== want) problems.push(`toDotted(${value}) is "${toDotted(value)}" rather than "${want}"`);
+  if (parseAddress(want) !== value) problems.push(`parseAddress("${want}") is ${parseAddress(want)} rather than ${value}`);
+}
+if (maskFor(0) !== 0) problems.push(`maskFor(0) is ${maskFor(0)} rather than 0`);
+if (maskFor(32) !== 0xffffffff) problems.push(`maskFor(32) is ${maskFor(32)} rather than 4294967295`);
+if (maskFor(24) !== 0xffffff00) problems.push(`maskFor(24) is ${maskFor(24)} rather than 255.255.255.0`);
+
+/* And what parseAddress must refuse, since a lenient parser accepts a typo. */
+for (const bad of ["", "10.0.0", "10.0.0.1.2", "10.0.0.256", "10.0.0.-1", "ten.0.0.1", "10..0.1", "10.0.0.1/24"]) {
+  if (parseAddress(bad) !== null) problems.push(`parseAddress("${bad}") returned ${parseAddress(bad)} rather than refusing`);
 }
 
 if (problems.length) {

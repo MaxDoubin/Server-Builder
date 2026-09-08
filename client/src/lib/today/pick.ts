@@ -32,6 +32,3 @@ export function pickFor<T>(items: readonly T[], day: number, offset: number): T 
   const index = (((day + offset) % items.length) + items.length) % items.length;
   return items[index];
 }
-
-/** How many days until this list has shown everything and starts again. */
-export const cycleLength = (length: number): number => (length === 0 ? 0 : length);

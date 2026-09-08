@@ -14,7 +14,7 @@
  */
 
 import { MESSAGES } from "../client/src/lib/triage/index";
-import { detectRedHerrings, detectTells, KNOWN_BRANDS } from "../client/src/lib/triage/signals";
+import { detectRedHerrings, detectSignals, detectTells, editDistance, KNOWN_BRANDS, lookalikeOf } from "../client/src/lib/triage/signals";
 import { domainOf, hostOf, registrableOf } from "../client/src/lib/triage/types";
 
 const problems: string[] = [];
@@ -126,6 +126,125 @@ if (withHerrings < 3) {
 const oneTell = MESSAGES.filter((m) => m.verdict === "phish" && m.tells.length === 1).length;
 if (oneTell < 2) {
   problems.push(`only ${oneTell} hostile messages turn on a single signal; those are the hard ones`);
+}
+
+/* ----------------------------------------- the lookalike detection itself */
+
+/*
+  editDistance, lookalikeOf and detectSignals were exported and named by
+  nothing in this file until a check over every logic file found them. The
+  first is what decides whether a domain is a lookalike, which is the single
+  most consequential judgement this surface makes: too loose and it teaches
+  people to distrust their own suppliers, too tight and it teaches them to
+  trust a typosquat.
+*/
+
+/*
+  Levenshtein has four properties that pin it completely, and a wrong
+  implementation fails at least one of them. Checked over generated strings
+  rather than a table, because a table would only cover what I thought of.
+*/
+let editSeed = 0x2b7e15;
+const nextEdit = () => {
+  editSeed ^= editSeed << 13;
+  editSeed >>>= 0;
+  editSeed ^= editSeed >>> 17;
+  editSeed ^= editSeed << 5;
+  editSeed >>>= 0;
+  return editSeed;
+};
+const ALPHABET = "abcdefgo0l1-.";
+const word = (length) => {
+  let out = "";
+  for (let index = 0; index < length; index += 1) out += ALPHABET[nextEdit() % ALPHABET.length];
+  return out;
+};
+
+let triangleChecks = 0;
+for (let round = 0; round < 2000; round += 1) {
+  const a = word(nextEdit() % 12);
+  const b = word(nextEdit() % 12);
+  const c = word(nextEdit() % 12);
+
+  /* Identity: nothing differs from itself. */
+  if (editDistance(a, a) !== 0) problems.push(`editDistance("${a}", itself) is ${editDistance(a, a)}`);
+
+  /* Symmetry: it is a distance, not a direction. */
+  if (editDistance(a, b) !== editDistance(b, a)) {
+    problems.push(`editDistance is not symmetric on "${a}" and "${b}"`);
+  }
+
+  /* Non-negative, and zero only for equal strings. */
+  const distance = editDistance(a, b);
+  if (distance < 0) problems.push(`editDistance("${a}", "${b}") is negative`);
+  if (distance === 0 && a !== b) problems.push(`editDistance says "${a}" and "${b}" are the same string`);
+
+  /* At least the length difference, at most the longer length. */
+  if (distance < Math.abs(a.length - b.length)) {
+    problems.push(`editDistance("${a}", "${b}") is ${distance}, below their length difference`);
+  }
+  if (distance > Math.max(a.length, b.length)) {
+    problems.push(`editDistance("${a}", "${b}") is ${distance}, above the longer length`);
+  }
+
+  /* Deleting from the empty string costs one per character. */
+  if (editDistance(a, "") !== a.length) problems.push(`editDistance("${a}", "") is not its length`);
+
+  /* Triangle inequality, which is the one a greedy implementation fails. */
+  if (editDistance(a, c) > editDistance(a, b) + editDistance(b, c)) {
+    problems.push(`the triangle inequality fails on "${a}", "${b}", "${c}"`);
+  }
+  triangleChecks += 1;
+
+  /* And one edit is exactly one, which is what the lookalike threshold rests on. */
+  if (a.length > 0) {
+    const swapped = `${a.slice(0, -1)}${a.slice(-1) === "x" ? "y" : "x"}`;
+    if (editDistance(a, swapped) !== 1) {
+      problems.push(`changing the last character of "${a}" cost ${editDistance(a, swapped)}`);
+    }
+    if (editDistance(a, `${a}z`) !== 1) problems.push(`appending one character to "${a}" cost more than 1`);
+  }
+}
+if (triangleChecks < 2000) problems.push(`only ${triangleChecks} triangle checks ran`);
+
+/*
+  lookalikeOf, from both sides. A brand is never a lookalike of itself, a
+  brand one character out is caught, and the boundary case the code comments
+  call out has to hold: a longer word that merely contains a brand's name is
+  not a lookalike of it.
+*/
+for (const brand of KNOWN_BRANDS) {
+  if (lookalikeOf(brand) !== null) {
+    problems.push(`lookalikeOf flagged the real ${brand} as a lookalike of ${lookalikeOf(brand)}`);
+  }
+  const label = brand.split(".")[0];
+  const suffix = brand.slice(brand.indexOf("."));
+  /* One character removed from the label is within the threshold. */
+  if (label.length > 3) {
+    const typo = `${label.slice(0, -1)}${suffix}`;
+    if (lookalikeOf(typo) === null) problems.push(`lookalikeOf missed the typosquat ${typo} of ${brand}`);
+  }
+  /* And the brand's label glued into a longer word is not, on a bare substring. */
+  const glued = `${label}schools.com`;
+  if (glued !== brand && lookalikeOf(glued) === brand && label.length > 4) {
+    problems.push(`lookalikeOf flagged ${glued} as ${brand} on a bare substring`);
+  }
+}
+if (lookalikeOf("example.invalid") !== null) {
+  problems.push("lookalikeOf flagged an unrelated domain");
+}
+
+/* detectSignals is the two detectors together and must be exactly that. */
+for (const message of MESSAGES) {
+  const both = detectSignals(message);
+  const tells = detectTells(message);
+  const herrings = detectRedHerrings(message);
+  if (JSON.stringify(both.tells) !== JSON.stringify(tells)) {
+    problems.push(`${message.id}: detectSignals disagrees with detectTells`);
+  }
+  if (JSON.stringify(both.redHerrings) !== JSON.stringify(herrings)) {
+    problems.push(`${message.id}: detectSignals disagrees with detectRedHerrings`);
+  }
 }
 
 if (problems.length) {
