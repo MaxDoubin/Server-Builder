@@ -65,9 +65,9 @@ export const STACK = [
 export const DECISIONS = [
   {
     id: "one-article",
-    title: "A reader downloads one article, not two hundred and fifty four",
+    title: "A reader downloads one article, not two hundred and fifty seven",
     body: [
-      "The archive is 254 posts. They used to live in one TypeScript module, which meant opening a single article pulled in roughly 1.1MB of the other 253 before a word appeared on screen.",
+      "The archive is 257 posts. They used to live in one TypeScript module, which meant opening a single article pulled in roughly 1.1MB of the other 256 before a word appeared on screen.",
       "Now each post body is its own markdown file under content/posts, loaded through a dynamic import, so Vite emits one chunk per article. Metadata (title, date, tags, excerpt, word count) stays in a generated index that is cheap to hold in memory, which is why the listing page can show a read time for every post without touching a single body. Word counts are precomputed at build time for exactly that reason: the listing was calling split() on the full text of every article just to render a number.",
     ],
   },
@@ -85,7 +85,7 @@ export const DECISIONS = [
     body: [
       "After the Vite build, a Node script walks every route and writes a real HTML file per page with the correct title, description, canonical link, Open Graph tags, and JSON-LD already in the head. Blog pages go further: the full article, rendered from markdown at build time, is written into the root element.",
       "A crawler that does not execute JavaScript therefore sees the complete article, not a spinner. React's createRoot takes over the same element when the bundle loads, and because the content matches there is no flash for a human reader.",
-      "The prerenderer also writes the onward links a crawler needs. The React page renders previous, next, and related posts, but a non-executing crawler used to see only a link back to the index, which made all 254 posts dead ends on the first pass. Those links are now in the static HTML too.",
+      "The prerenderer also writes the onward links a crawler needs. The React page renders previous, next, and related posts, but a non-executing crawler used to see only a link back to the index, which made all 257 posts dead ends on the first pass. Those links are now in the static HTML too.",
     ],
   },
   {

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 254 of them. Regenerate with script/generatePostIndex.ts.
+ * 257 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,33 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "alignment-is-what-runs-out",
+    title: "Alignment Is What Runs Out",
+    date: "2026-09-08",
+    tags: ["networking","ipv4","design"],
+    excerpt: "Address plans do not fail because the space is gone. They fail because the space that is left is in the wrong place. I built six of them as exercises and the arithmetic was never the hard part.",
+    coverImage: "/images/blog/alignment-is-what-runs-out.jpg",
+    wordCount: 1023,
+  },
+  {
+    slug: "four-faults-one-sentence",
+    title: "Four Faults, One Sentence",
+    date: "2026-09-08",
+    tags: ["dns","networking","troubleshooting"],
+    excerpt: "A lame delegation, a missing glue record, a nameserver with no address and an alias pointing at nothing all arrive as \"it does not resolve\". They are four different problems and four different people. Here is how to tell them apart from the trace.",
+    coverImage: "/images/blog/four-faults-one-sentence.jpg",
+    wordCount: 1147,
+  },
+  {
+    slug: "first-match-wins",
+    title: "First Match Wins",
+    date: "2026-09-08",
+    tags: ["networking","security","linux"],
+    excerpt: "The rule you added is correct and it does nothing, because a broader rule three lines above already decided. No firewall interface shows you that. I built eight broken chains and counted how often it happens.",
+    coverImage: "/images/blog/first-match-wins.jpg",
+    wordCount: 930,
+  },
   {
     slug: "the-authentication-passed-anyway",
     title: "The Authentication Passed Anyway",
@@ -2525,10 +2552,10 @@ export const postIndex: PostMeta[] = [
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 958;
+export const CITATION_COUNT = 965;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1117;
+export const CHECKED_URL_COUNT = 1124;
