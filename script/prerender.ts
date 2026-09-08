@@ -3154,7 +3154,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     <li><code>/sys/fs/cgroup/&lt;path&gt;/memory.events</code> to tell a cgroup kill from a system
     one. If <code>oom_kill</code> there is climbing, the machine was never out of memory.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/oom-killer-and-swap-sizing", "The OOM killer and swap sizing"], ["/blog/cgroups-v2-resource-limits", "cgroup v2 resource limits"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/minus-one-thousand-is-not-a-hint", "Minus one thousand is not a hint"], ["/blog/oom-killer-and-swap-sizing", "The OOM killer and swap sizing"]])}
 </main>`,
   });
 

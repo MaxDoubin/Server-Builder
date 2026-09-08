@@ -264,7 +264,7 @@ export const CASES: Case[] = [
     why:
       "Page tables are in the sum, and a process mapping a forty eight gigabyte segment with four kilobyte pages pays one five hundred and twelfth of it in tables, because a page table entry is eight bytes and it covers four kilobytes: ninety six megabytes, which is more than the sixty two megabytes of resident memory that python3 is ahead by. So postgres scores 2198 and python3 scores 2178, and the process with less memory in RES is the one the kernel picks. Nothing in `top` shows this column.",
     fix:
-      "Give a database with a large shared segment huge pages, which is the documented reason they exist: one entry per two megabytes instead of one per four kilobytes cuts the table cost by a factor of five hundred and twelve, and on a host with a hundred backends mapping the same segment it is the difference between a rounding error and gigabytes. /proc/PID/status has VmPTE if you want to see what you are paying now.",
+      "Give a database with a large shared segment huge pages. The kernel documents them for TLB reach rather than for this, but the table saving comes with them: one entry per two megabytes instead of one per four kilobytes cuts the table cost by a factor of five hundred and twelve, and on a host with a hundred backends mapping the same segment it is the difference between a rounding error and gigabytes. /proc/PID/status has VmPTE if you want to see what you are paying now.",
     breaks: "the score is resident memory plus swap and nothing else",
   },
   {
