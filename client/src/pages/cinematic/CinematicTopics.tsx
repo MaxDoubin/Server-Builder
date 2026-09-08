@@ -3,7 +3,7 @@
  *
  * A crawler entry point into the archive by subject rather than by date,
  * and a way for a reader to find the seam they care about without
- * scrolling 254 posts.
+ * scrolling 257 posts.
  */
 
 import { useMemo } from "react";
