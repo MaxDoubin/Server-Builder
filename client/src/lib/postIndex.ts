@@ -110,7 +110,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","email","training"],
     excerpt: "I built a phishing triage inbox with fourteen messages in it. Eight of the nine hostile ones pass SPF, DKIM and DMARC cleanly. That is not a flaw in the exercise, it is the actual state of email, and it decides what the exercise has to teach.",
     coverImage: "/images/blog/the-authentication-passed-anyway.jpg",
-    wordCount: 1282,
+    wordCount: 1288,
   },
   {
     slug: "sixty-five-files-nothing-imported",

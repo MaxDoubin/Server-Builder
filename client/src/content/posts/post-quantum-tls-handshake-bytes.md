@@ -130,7 +130,7 @@ anything about cryptography.
 - [RFC 10024: Post-Quantum Traditional (PQ/T) Hybrid Key Agreement Mechanisms for TLS 1.3](https://www.rfc-editor.org/rfc/rfc10024.html)
 - [RFC 9954: Terminology and Design Considerations for Hybrid Key Exchange](https://www.rfc-editor.org/rfc/rfc9954.html)
 - [NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)
-- [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml)
+- [IANA TLS Supported Groups registry](https://www.iana.org/assignments/tls-parameters)
 - [Cloudflare: The state of the post-quantum Internet](https://blog.cloudflare.com/pq-2024/)
 - [OpenSSL 3.5 release notes](https://openssl-library.org/news/openssl-3.5-notes/)
 - [RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3](https://www.rfc-editor.org/rfc/rfc8446.html)
