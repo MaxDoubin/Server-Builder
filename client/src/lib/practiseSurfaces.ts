@@ -104,7 +104,7 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
   { href: "/scenarios", eyebrow: "Decide", title: "Incident scenarios", group: "decide" , reading: ["incident-response-methodology", "runbooks-infrastructure-teams"] },
   { href: "/triage", eyebrow: "Judge", title: "Phishing triage", group: "decide" , reading: ["spf-dkim-dmarc", "the-authentication-passed-anyway"] },
   { href: "/challenges", eyebrow: "Find", title: "Capture the flag", group: "decide" , reading: ["ncl-competition-lessons", "log-analysis-methodology"] },
-  { href: "/patch", eyebrow: "Rank", title: "The queue is sorted wrong", group: "decide" , reading: ["threat-modeling-small-networks", "incident-response-methodology", "runbooks-infrastructure-teams"] },
+  { href: "/patch", eyebrow: "Rank", title: "The queue is sorted wrong", group: "decide" , reading: ["a-base-score-is-not-a-queue", "threat-modeling-small-networks", "incident-response-methodology"] },
 
   { href: "/labs", eyebrow: "Diagnose", title: "Hands-on labs", group: "diagnose" , reading: ["a-shell-that-has-to-be-right", "cli-tools-i-actually-use", "linux-disk-io-troubleshooting"] },
   { href: "/logs", eyebrow: "Read", title: "Read the log", group: "diagnose" , reading: ["log-analysis-methodology", "syslog-centralized-logging", "firewall-log-analysis"] },
