@@ -13,6 +13,7 @@ import { useSEO } from "@/lib/useSEO";
 import { LABS, LAB_ORDER, type Lab } from "@/lib/labs/labs";
 import { loadSolved } from "@/lib/labs/progress";
 import { pluralise } from "@/lib/plural";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -97,6 +98,8 @@ export function CinematicLabs() {
             hijack, with many endings and no score.
           </p>
         </div>
+        <ReadAboutThis href="/labs" />
+
       </div>
     </CinematicLayout>
   );

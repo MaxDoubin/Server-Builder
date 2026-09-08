@@ -29,6 +29,7 @@ import {
   type Scenario,
 } from "@/lib/restore/index";
 import { pluralise } from "@/lib/plural";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -268,6 +269,9 @@ export function CinematicRestore() {
               ))}
             </dl>
           </section>
+
+
+          <ReadAboutThis href="/restore" />
 
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             The arithmetic here is deliberately optimistic: it assumes you know what to restore, the

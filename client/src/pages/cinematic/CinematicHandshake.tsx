@@ -18,6 +18,7 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { PractiseStage } from "@/components/practise/PractiseStage";
 import { useSEO } from "@/lib/useSEO";
 import { HANDSHAKES, type Break, type Handshake } from "@/lib/handshake/index";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -93,6 +94,8 @@ export function CinematicHandshake() {
             takes the TLS one further.
           </p>
         </div>
+        <ReadAboutThis href="/handshake" />
+
       </div>
     </CinematicLayout>
   );

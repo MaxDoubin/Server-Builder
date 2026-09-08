@@ -25,6 +25,7 @@ import {
 import { loadFound, type FoundMap } from "@/lib/scenarios/progress";
 import { accentFor, type StageAccent } from "@/components/practise/PractiseStage";
 import { pluralise } from "@/lib/plural";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -182,6 +183,8 @@ export function CinematicScenarios() {
             give you a simulated Linux host with a fault in it and a shell to find it with.
           </p>
         </div>
+        <ReadAboutThis href="/scenarios" />
+
       </div>
     </CinematicLayout>
   );

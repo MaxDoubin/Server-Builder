@@ -33,6 +33,7 @@ import {
   type Link as Path,
 } from "@/lib/transfer/index";
 import { pluralise } from "@/lib/plural";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 const KiB = 1024;
@@ -508,6 +509,9 @@ export function CinematicTransfer() {
               {mounted ? `${solved.length} of ${CASES.length} called right` : " "}
             </p>
           </section>
+
+
+          <ReadAboutThis href="/transfer" />
 
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             The loss ceiling is the Mathis bound, which is an approximation of a Reno-shaped

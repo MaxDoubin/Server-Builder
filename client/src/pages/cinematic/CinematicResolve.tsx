@@ -15,6 +15,7 @@ import { CASES, WORLD, resolve, type Case, type RRType } from "@/lib/resolve/ind
 import { pluralise } from "@/lib/plural";
 import { PractiseStage } from "@/components/practise/PractiseStage";
 import { recordSolvedResolves } from "@/lib/resolve/progress";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -237,6 +238,8 @@ export function CinematicResolve() {
             puts you at a prompt with two resolvers giving different answers.
           </p>
         </div>
+        <ReadAboutThis href="/resolve" />
+
       </div>
     </CinematicLayout>
   );

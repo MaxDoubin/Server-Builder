@@ -68,6 +68,23 @@ export interface PractiseSurface {
    */
   noRotation?: string;
   /**
+   * Articles that cover what this surface makes you do.
+   *
+   * Two of two hundred and sixty articles linked to a practise surface, and
+   * one surface of twenty linked back. Somebody finishing an article on path
+   * MTU had no idea there was a page that walks a packet down one, and
+   * somebody on that page had no idea there were three articles about it.
+   * Two halves of a site that did not know about each other.
+   *
+   * Curated by hand rather than matched on keywords. I generated candidates
+   * by keyword to find them, and the scoring put an article about memory
+   * bandwidth at the top for the throughput surface and missed the one
+   * actually written for it, because relevance here is a judgement and not a
+   * word count. CI checks every slug resolves; it cannot check that the
+   * article is worth reading next, and neither can a regex.
+   */
+  reading?: string[];
+  /**
    * Why this surface has no progress line on /today, when it has none.
    *
    * A calculator has nothing to be part-way through. An exercise with right
@@ -84,24 +101,24 @@ export interface PractiseSurface {
  * from named, which is the entire point of the file.
  */
 export const PRACTISE_SURFACES: PractiseSurface[] = [
-  { href: "/scenarios", eyebrow: "Decide", title: "Incident scenarios", group: "decide" },
-  { href: "/triage", eyebrow: "Judge", title: "Phishing triage", group: "decide" },
-  { href: "/challenges", eyebrow: "Find", title: "Capture the flag", group: "decide" },
+  { href: "/scenarios", eyebrow: "Decide", title: "Incident scenarios", group: "decide" , reading: ["incident-response-methodology", "runbooks-infrastructure-teams"] },
+  { href: "/triage", eyebrow: "Judge", title: "Phishing triage", group: "decide" , reading: ["spf-dkim-dmarc", "the-authentication-passed-anyway"] },
+  { href: "/challenges", eyebrow: "Find", title: "Capture the flag", group: "decide" , reading: ["ncl-competition-lessons", "log-analysis-methodology"] },
 
-  { href: "/labs", eyebrow: "Diagnose", title: "Hands-on labs", group: "diagnose" },
-  { href: "/logs", eyebrow: "Read", title: "Read the log", group: "diagnose" },
-  { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose"  },
-  { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  },
-  { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  },
-  { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" },
-  { href: "/handshake", eyebrow: "Sequence", title: "Protocol handshakes", group: "diagnose" , noProgress: "a sequence to step through rather than a scored set" },
+  { href: "/labs", eyebrow: "Diagnose", title: "Hands-on labs", group: "diagnose" , reading: ["a-shell-that-has-to-be-right", "cli-tools-i-actually-use", "linux-disk-io-troubleshooting"] },
+  { href: "/logs", eyebrow: "Read", title: "Read the log", group: "diagnose" , reading: ["log-analysis-methodology", "syslog-centralized-logging", "firewall-log-analysis"] },
+  { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose"  , reading: ["troubleshooting-packet-captures", "wireshark-packet-analysis"] },
+  { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  , reading: ["four-faults-one-sentence", "recursive-resolver-internals", "dns-negative-caching"] },
+  { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  , reading: ["ssl-tls-certificates-explained", "certificate-rotation-automation", "certificate-lifetimes-are-200-days-now"] },
+  { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" , reading: ["mtu-mismatch-troubleshooting", "mtu-black-hole-troubleshooting", "jumbo-frames-path-mtu"] },
+  { href: "/handshake", eyebrow: "Sequence", title: "Protocol handshakes", group: "diagnose" , noProgress: "a sequence to step through rather than a scored set" , reading: ["post-quantum-tls-handshake-bytes", "network-access-control-8021x", "pxe-network-boot"] },
 
-  { href: "/firewall", eyebrow: "Order", title: "Firewall exercises", group: "compute" },
-  { href: "/route", eyebrow: "Resolve", title: "Longest prefix wins", group: "compute" , noProgress: "a lookup tool with worked examples rather than a scored set" },
-  { href: "/allocate", eyebrow: "Divide", title: "Address plans", group: "compute" },
-  { href: "/array", eyebrow: "Size", title: "Array calculator", group: "compute" , noProgress: "a calculator; nothing to be part-way through" },
-  { href: "/transfer", eyebrow: "Measure", title: "Why the transfer is slow", group: "compute" },
-  { href: "/restore", eyebrow: "Recover", title: "You have backups, not restores", group: "compute" , noProgress: "a model to run rather than a scored set" },
+  { href: "/firewall", eyebrow: "Order", title: "Firewall exercises", group: "compute" , reading: ["first-match-wins", "firewall-policy-design", "netfilter-hook-order"] },
+  { href: "/route", eyebrow: "Resolve", title: "Longest prefix wins", group: "compute" , noProgress: "a lookup tool with worked examples rather than a scored set" , reading: ["first-match-wins", "bgp-for-network-engineers", "ospf-routing-protocol"] },
+  { href: "/allocate", eyebrow: "Divide", title: "Address plans", group: "compute" , reading: ["subnetting-practical-guide", "alignment-is-what-runs-out"] },
+  { href: "/array", eyebrow: "Size", title: "Array calculator", group: "compute" , noProgress: "a calculator; nothing to be part-way through" , reading: ["raid-rebuild-risk-math", "zfs-arc-l2arc-tuning"] },
+  { href: "/transfer", eyebrow: "Measure", title: "Why the transfer is slow", group: "compute" , reading: ["the-invoice-is-not-the-ceiling", "tcp-congestion-control-basics", "queueing-theory-for-operators"] },
+  { href: "/restore", eyebrow: "Recover", title: "You have backups, not restores", group: "compute" , noProgress: "a model to run rather than a scored set" , reading: ["three-copies-one-credential", "restore-drills-that-matter", "backup-strategy-321-rule"] },
 
   { href: "/glossary", eyebrow: "Look up", title: "Glossary", group: "ground" , noRotation: "reference, not an exercise: there is nothing to get right", noProgress: "nothing to be part-way through" },
   { href: "/flashcards", eyebrow: "Recall", title: "Flashcards", group: "ground" , noRotation: "has its own spaced-repetition schedule, and a second scheduler picking one card would fight it", noProgress: "the SM-2 scheduler is the progress, and it does not reduce to a fraction" },

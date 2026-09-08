@@ -30,6 +30,7 @@ import {
   type Protocol,
   type Table,
 } from "@/lib/route/index";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -321,6 +322,9 @@ export function CinematicRoute() {
               </>
             )}
           </section>
+
+
+          <ReadAboutThis href="/route" />
 
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             One simplification: where two routes tie on everything, a real router installs both and

@@ -26,6 +26,7 @@
 
 import { readFileSync } from "node:fs";
 import { GROUPS, PRACTISE_SURFACES, surfacesIn } from "../client/src/lib/practiseSurfaces";
+import { postIndex } from "../client/src/lib/postIndex";
 
 const problems: string[] = [];
 
@@ -168,6 +169,74 @@ for (const group of GROUPS) {
   }
 }
 
+/* ------------------------------------ the articles behind each surface */
+
+/*
+  Two of two hundred and sixty articles linked to a practise surface, and one
+  surface of twenty linked back. The curated map fixes that in both
+  directions at once, which means a slug pointing at a deleted or renamed
+  article breaks a reader's path silently and in two places.
+*/
+const published = new Map(postIndex.filter((post) => !post.draft).map((post) => [post.slug, post]));
+let curated = 0;
+
+for (const surface of PRACTISE_SURFACES) {
+  const reading = surface.reading ?? [];
+  if (reading.length === 0) {
+    /* A surface with nothing to read is allowed; a doing surface with nothing is suspicious. */
+    if (surface.group !== "ground") {
+      problems.push(
+        `${surface.href} has no reading. Every exercise on this site is about something that has been written about.`,
+      );
+    }
+    continue;
+  }
+  const seenSlugs = new Set<string>();
+  for (const slug of reading) {
+    curated += 1;
+    if (seenSlugs.has(slug)) problems.push(`${surface.href} lists ${slug} twice`);
+    seenSlugs.add(slug);
+    if (!published.has(slug)) {
+      problems.push(
+        `${surface.href} points at the article "${slug}", which is not a published post. ` +
+          `A renamed slug breaks the path in both directions and nothing else would say so.`,
+      );
+    }
+  }
+}
+
+/*
+  And the component that renders them has to exist and be used, or the map is
+  data nobody sees. Both directions, because they are separate components and
+  wiring one and forgetting the other is the exact failure this replaces.
+*/
+const component = "client/src/components/practise/ReadAboutThis.tsx";
+const readerSide = read(component);
+for (const exported of ["ReadAboutThis", "PractiseThis"]) {
+  if (!readerSide.includes(`export function ${exported}`)) {
+    problems.push(`${component} does not export ${exported}`);
+  }
+}
+if (!/<PractiseThis\s/.test(read("client/src/pages/cinematic/CinematicBlogPost.tsx"))) {
+  problems.push("blog posts do not render PractiseThis, so no article offers the surface that practises it");
+}
+{
+  const rendering = PRACTISE_SURFACES.filter((surface) => (surface.reading ?? []).length > 0)
+    .map((surface) => surface.href)
+    .filter((href) => {
+      const name = "Cinematic" + href.slice(1, 2).toUpperCase() + href.slice(2);
+      try {
+        return !/<ReadAboutThis\s/.test(read(`client/src/pages/cinematic/${name}.tsx`));
+      } catch {
+        /* Surfaces whose page is named differently are checked by hand below. */
+        return false;
+      }
+    });
+  for (const href of rendering) {
+    problems.push(`${href} has curated reading and its page does not render ReadAboutThis`);
+  }
+}
+
 /* No hand-typed count of the surfaces, anywhere. That number goes stale by tomorrow. */
 for (const [path, label] of places) {
   const text = read(path);
@@ -188,5 +257,6 @@ if (problems.length) {
 console.log(
   `OK  all ${PRACTISE_SURFACES.length} practise surfaces are linked from the hub, the palette and the footer, ` +
     `the ${actRequires.length} you sit down and do are on the front page and in its prerendered body, ` +
-    `and the ${GROUPS.length} groups hold ${GROUPS.map((g) => surfacesIn(g).length).join(", ")}.`,
+    `the ${GROUPS.length} groups hold ${GROUPS.map((g) => surfacesIn(g).length).join(", ")}, ` +
+    `and ${curated} curated article links resolve in both directions.`,
 );

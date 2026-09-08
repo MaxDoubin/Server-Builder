@@ -15,6 +15,7 @@ import { useSEO } from "@/lib/useSEO";
 import { CHALLENGES, CHALLENGE_ORDER, type Challenge } from "@/lib/challenges";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
 import { pluralise } from "@/lib/plural";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -159,6 +160,8 @@ export function CinematicChallenges() {
             gives you a morning of mail to judge.
           </p>
         </div>
+        <ReadAboutThis href="/challenges" />
+
       </div>
     </CinematicLayout>
   );

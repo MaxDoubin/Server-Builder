@@ -30,6 +30,7 @@ import {
   type Fate,
   type Path,
 } from "@/lib/mtu/index";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -314,6 +315,9 @@ tracepath app.example.com`}</pre>
               gets forgotten when the tunnel changes.
             </p>
           </section>
+
+
+          <ReadAboutThis href="/mtu" />
 
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             The written version of this, with the capture that finally showed it, is at{" "}

@@ -26,6 +26,7 @@ import {
 import type { Plan, Problem } from "@/lib/allocate/types";
 import { clearPlan, loadPlan, recordSolvedPlan, savePlan } from "@/lib/allocate/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -328,6 +329,8 @@ function PlanView({ problem }: { problem: Problem }) {
             </section>
           ) : null}
         </div>
+        <ReadAboutThis href="/allocate" />
+
       </div>
     </CinematicLayout>
   );

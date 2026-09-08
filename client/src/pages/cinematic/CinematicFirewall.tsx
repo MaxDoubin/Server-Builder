@@ -25,6 +25,7 @@ import {
 } from "@/lib/firewall/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
 import { PractiseStage } from "@/components/practise/PractiseStage";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -421,6 +422,8 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
             </section>
           ) : null}
         </div>
+        <ReadAboutThis href="/firewall" />
+
       </div>
     </CinematicLayout>
   );

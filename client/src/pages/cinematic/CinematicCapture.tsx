@@ -20,6 +20,7 @@ import { compileFilter } from "@/lib/capture/filter";
 import { isCorrect, type Capture, type Packet } from "@/lib/capture/types";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
 import { recordSolvedCaptures } from "@/lib/capture/progress";
+import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -349,6 +350,8 @@ function Workbench({ capture }: { capture: Capture }) {
             </section>
           ) : null}
         </div>
+        <ReadAboutThis href="/capture" />
+
       </div>
     </CinematicLayout>
   );
