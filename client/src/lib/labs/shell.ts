@@ -321,6 +321,21 @@ const textOf = (lines: OutLine[], stream: "out" | "err"): string =>
  * relies on.
  */
 export function runLine(line: string, machine: Machine, registry: Registry): Output {
+  /*
+    `answer` takes the rest of the line verbatim, before any parsing.
+
+    Its argument is a sentence of English, and English contains apostrophes.
+    Under ordinary shell rules `answer it's the MTU` is an unterminated quote,
+    which is correct behaviour and a hostile thing to do to somebody typing a
+    diagnosis. Every other command here follows the real rules; this one is a
+    lab builtin and its argument is prose, so it is exempt.
+  */
+  const raw = /^\s*answer\s+(.+)$/.exec(line);
+  if (raw) {
+    const command = registry.get("answer");
+    if (command) return command.run([raw[1]], { machine, stdin: null, raw: line });
+  }
+
   const parsed = parse(line, machine.env);
   if ("error" in parsed) return fail(parsed.error, 2);
 

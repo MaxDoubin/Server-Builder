@@ -569,7 +569,15 @@ const lab6: Lab = {
   ],
 };
 
-export const LABS: Lab[] = [lab1, lab4, lab2, lab3, lab5, lab6];
+/*
+   Registered here rather than in labs-hard.ts so there is one list, and
+   imported at the bottom so the Lab type is defined before that module needs
+   it. Ordered easiest first within each tier; the index groups by difficulty.
+*/
+// eslint-disable-next-line import/first
+import { HARD_LABS } from "./labs-hard";
+
+export const LABS: Lab[] = [lab1, lab4, lab2, lab3, lab5, lab6, ...HARD_LABS];
 
 export const getLab = (slug: string): Lab | undefined => LABS.find((lab) => lab.slug === slug);
 
