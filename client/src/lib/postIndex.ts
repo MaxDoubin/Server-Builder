@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 274 of them. Regenerate with script/generatePostIndex.ts.
+ * 275 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -102,6 +102,15 @@ export const postIndex: PostMeta[] = [
     excerpt: "limits.conf is read by pam_limits, and pam_limits runs when somebody authenticates, so a unit systemd started at boot never sees it however correct the file is. Five mechanisms can set a descriptor limit and they are not a hierarchy: a cron job on a systemd host gets the kernel's 4096 rather than systemd's 524288, LimitNOFILE replaces both halves so setting it can lower a ceiling, and infinity is 1048576.",
     coverImage: "/images/blog/the-file-was-right-and-nobody-read-it.jpg",
     wordCount: 1391,
+  },
+  {
+    slug: "the-free-column-was-always-going-to-be-zero",
+    title: "The Free Column Was Always Going to Be Zero",
+    date: "2026-09-09",
+    tags: ["linux","operations","monitoring"],
+    excerpt: "An operating system that leaves memory unused is wasting it, so on any server up for a week the free column has gone to nothing by design. MemAvailable is three additions and two subtractions, and the subtraction is min(half the cache, the low watermark), which means the remembered rule that half the cache is available is the small machine case. It is also an estimate, and tmpfs on a host with no swap makes it optimistic by gigabytes.",
+    coverImage: "/images/blog/the-free-column-was-always-going-to-be-zero.jpg",
+    wordCount: 1431,
   },
   {
     slug: "alignment-is-what-runs-out",
@@ -2699,10 +2708,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 274;
+export const POST_COUNT = 275;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy four";
+export const POST_COUNT_SPELLED = "two hundred and seventy five";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2711,10 +2720,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy four";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1033;
+export const CITATION_COUNT = 1037;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1192;
+export const CHECKED_URL_COUNT = 1196;

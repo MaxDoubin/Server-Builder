@@ -3747,7 +3747,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li><code>/proc/pressure/memory</code> for control decisions. It measures time actually spent
     stalled rather than predicting whether reclaim might cost something.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/oom", "Something has to die"], ["/load", "Forty, and idle"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/the-free-column-was-always-going-to-be-zero", "The free column was always going to be zero"], ["/oom", "Something has to die"], ["/load", "Forty, and idle"]])}
 </main>`,
   });
 
