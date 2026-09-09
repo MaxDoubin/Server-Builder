@@ -3288,7 +3288,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Divide by <code>nproc</code> before comparing anything to anything. A threshold on the raw
     figure means something different on every machine it is copied to.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/oom", "Something has to die"], ["/alerts", "The graph crossed the line"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/forty-and-nothing-was-running", "Forty, and nothing was running"], ["/oom", "Something has to die"], ["/alerts", "The graph crossed the line"]])}
 </main>`,
   });
 

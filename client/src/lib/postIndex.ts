@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 270 of them. Regenerate with script/generatePostIndex.ts.
+ * 271 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -66,6 +66,15 @@ export const postIndex: PostMeta[] = [
     excerpt: "A for clause is not a stopwatch that pauses, it is a start time that one inactive evaluation clears, so a metric over the line four minutes in every five goes pending thirteen times out of sixteen and never fires. And when a target stops answering, whether the alert resolves or keeps firing for five minutes depends on the exporter rather than the rule.",
     coverImage: "/images/blog/the-alert-was-pending-all-day.jpg",
     wordCount: 1800,
+  },
+  {
+    slug: "forty-and-nothing-was-running",
+    title: "Forty, and Nothing Was Running",
+    date: "2026-09-09",
+    tags: ["linux","operations","monitoring"],
+    excerpt: "The load average is a count of tasks and not a percentage of anything, and it adds uninterruptible sleep to runnable tasks, so a host with a dead NFS mount reads 41 at two percent CPU. It is also damped: a machine stepping to eight busy tasks reads 4.81 after a minute, not 8, because eleven samples fit in a minute and not twelve.",
+    coverImage: "/images/blog/forty-and-nothing-was-running.jpg",
+    wordCount: 1892,
   },
   {
     slug: "alignment-is-what-runs-out",
@@ -2663,10 +2672,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 270;
+export const POST_COUNT = 271;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy";
+export const POST_COUNT_SPELLED = "two hundred and seventy one";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2675,10 +2684,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1022;
+export const CITATION_COUNT = 1025;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1181;
+export const CHECKED_URL_COUNT = 1184;
