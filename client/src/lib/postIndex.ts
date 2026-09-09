@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 272 of them. Regenerate with script/generatePostIndex.ts.
+ * 273 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -84,6 +84,15 @@ export const postIndex: PostMeta[] = [
     excerpt: "A CPU limit is a quota per period, not a rate, and every runnable thread spends it at once. Four threads empty a whole CPU's worth in 25ms and the container is stopped for the other 75, on a node with idle cores. And a batch that reads 30 percent of its limit on every graph you have can be throttled in a fifth of its periods, because the quota is enforced per 100ms and every dashboard averages over longer than that.",
     coverImage: "/images/blog/stopped-not-slow.jpg",
     wordCount: 1766,
+  },
+  {
+    slug: "it-ran-out-at-four-hundred-and-seventy",
+    title: "It Ran Out at Four Hundred and Seventy",
+    date: "2026-09-09",
+    tags: ["networking","linux","operations"],
+    excerpt: "A socket is four values, not one, so the ephemeral port range is not a pool shared between destinations: thirty thousand sockets across ten backends is fine and the same thirty thousand against one is not. TIME_WAIT is a sixty second compile time constant with no sysctl, which puts the real ceiling at 470 connections a second per destination, and tcp_fin_timeout is a different state entirely.",
+    coverImage: "/images/blog/it-ran-out-at-four-hundred-and-seventy.jpg",
+    wordCount: 1532,
   },
   {
     slug: "alignment-is-what-runs-out",
@@ -2681,10 +2690,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 272;
+export const POST_COUNT = 273;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy two";
+export const POST_COUNT_SPELLED = "two hundred and seventy three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2693,10 +2702,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy two";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1027;
+export const CITATION_COUNT = 1030;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1186;
+export const CHECKED_URL_COUNT = 1189;
