@@ -1,5 +1,5 @@
 /**
- * Every function a practise model exports has to be named by its gate.
+ * Every function a practice model exports has to be named by its gate.
  *
  * Written after the same defect turned up three times in one day, each time
  * found by accident:

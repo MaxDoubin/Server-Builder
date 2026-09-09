@@ -19,8 +19,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -141,7 +141,7 @@ export function CinematicNat() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -342,8 +342,8 @@ ${active.router.rules
           <ReadAboutThis href="/nat" />
 
           <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
-            <Link href="/practise" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
-              All practise material
+            <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
+              All practice material
             </Link>
           </p>
         </div>

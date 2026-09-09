@@ -463,11 +463,11 @@ jobs:
       # six surfaces added in one day were never checked and the array
       # calculator, which had never been in the list, sat reachable only from
       # the footer while the gate reported OK. The list is derived from the
-      # practise registry now, and this checks both directions: every surface
+      # practice registry now, and this checks both directions: every surface
       # is linked from the act, the hub, the palette and the footer, and
-      # every practise-looking link in those places is a registered surface.
-      - name: Every practise surface is findable
-        run: npx tsx scripts-ci/check-practise-surfaces.ts
+      # every practice-looking link in those places is a registered surface.
+      - name: Every practice surface is findable
+        run: npx tsx scripts-ci/check-practice-surfaces.ts
 
       # Nine mode bits, and the two thirds of them the kernel never consults.
       # The cases carry no answer key: each declares its four decision points

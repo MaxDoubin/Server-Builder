@@ -15,10 +15,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage } from "@/components/practise/PractiseStage";
+import { PracticeStage } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import { HANDSHAKES, type Break, type Handshake } from "@/lib/handshake/index";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -39,12 +39,12 @@ export function CinematicHandshake() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent="cyan" mood="calm" flashKey={0} />
+      <PracticeStage accent="cyan" mood="calm" flashKey={0} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Where it stops
+              · Practice · Where it stops
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Handshakes.

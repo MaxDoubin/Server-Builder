@@ -1,5 +1,5 @@
 /**
- * One item from every practise surface, chosen by the date.
+ * One item from every practice surface, chosen by the date.
  *
  * WHY DETERMINISTIC RATHER THAN RANDOM. Two readers comparing notes should be
  * looking at the same thing, a link to today's page should still show today's

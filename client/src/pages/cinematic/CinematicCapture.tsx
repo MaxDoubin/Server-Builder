@@ -20,7 +20,7 @@ import { compileFilter } from "@/lib/capture/filter";
 import { isCorrect, type Capture, type Packet } from "@/lib/capture/types";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
 import { recordSolvedCaptures } from "@/lib/capture/progress";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 

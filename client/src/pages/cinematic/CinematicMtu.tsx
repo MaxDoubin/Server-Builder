@@ -17,7 +17,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import {
   IP_HEADER,
@@ -30,7 +30,7 @@ import {
   type Fate,
   type Path,
 } from "@/lib/mtu/index";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -83,7 +83,7 @@ export function CinematicMtu() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={accentFor(fate)} mood={fate.kind === "blackholed" ? "critical" : "calm"} flashKey={0} />
+      <PracticeStage accent={accentFor(fate)} mood={fate.kind === "blackholed" ? "critical" : "calm"} flashKey={0} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
@@ -327,12 +327,12 @@ tracepath app.example.com`}</pre>
             >
               the MTU bug that only breaks big transfers
             </Link>
-            . The rest of the practise material is at the{" "}
+            . The rest of the practice material is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

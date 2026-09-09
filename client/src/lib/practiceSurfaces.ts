@@ -1,7 +1,7 @@
 /**
  * The one list of things on this site you do rather than read.
  *
- * There was no such list. The home page act had one, the practise hub had a
+ * There was no such list. The home page act had one, the practice hub had a
  * different one, and check-home-links had a third typed into it by hand.
  * They disagreed, silently, and the way I found out was counting: the array
  * calculator was in neither the act nor the hub, so a full surface was
@@ -31,9 +31,9 @@
  * right, and eighteen undifferentiated cards make them read all eighteen to
  * find out which. On a phone that was twelve screens of scrolling.
  */
-export type PractiseGroup = "diagnose" | "measure" | "decide" | "compute" | "ground";
+export type PracticeGroup = "diagnose" | "measure" | "decide" | "compute" | "ground";
 
-export const GROUP_HEADING: Record<PractiseGroup, string> = {
+export const GROUP_HEADING: Record<PracticeGroup, string> = {
   diagnose: "Something is broken and you have to find it",
   measure: "The machine printed a number and it does not mean that",
   decide: "There is a call to make and not enough information",
@@ -41,7 +41,7 @@ export const GROUP_HEADING: Record<PractiseGroup, string> = {
   ground: "You are covering the ground",
 };
 
-export const GROUP_BLURB: Record<PractiseGroup, string> = {
+export const GROUP_BLURB: Record<PracticeGroup, string> = {
   diagnose:
     "Evidence in front of you and a fault behind it. These give you the evidence and nothing else.",
   measure:
@@ -55,17 +55,17 @@ export const GROUP_BLURB: Record<PractiseGroup, string> = {
     "Reference and drill. Slower to pay off than the rest, and the thing the rest rests on.",
 };
 
-export interface PractiseSurface {
+export interface PracticeSurface {
   href: string;
   /** The short label the act uses as an eyebrow. */
   eyebrow: string;
   /** The name both surfaces show. */
   title: string;
-  group: PractiseGroup;
+  group: PracticeGroup;
   /**
    * Why this surface is not in the daily rotation, when it is not.
    *
-   * /today says it offers one thing from every practise surface, and for a
+   * /today says it offers one thing from every practice surface, and for a
    * while that was false: five surfaces had never been added to its list and
    * the page's own copy claimed otherwise. Absent is now a declaration with
    * a reason rather than an omission nobody noticed, and CI reads it.
@@ -74,7 +74,7 @@ export interface PractiseSurface {
   /**
    * Articles that cover what this surface makes you do.
    *
-   * Two of two hundred and sixty articles linked to a practise surface, and
+   * Two of two hundred and sixty articles linked to a practice surface, and
    * one surface of twenty linked back. Somebody finishing an article on path
    * MTU had no idea there was a page that walks a packet down one, and
    * somebody on that page had no idea there were three articles about it.
@@ -99,12 +99,12 @@ export interface PractiseSurface {
 }
 
 /**
- * Every practise surface, in the order the groups read.
+ * Every practice surface, in the order the groups read.
  *
  * Adding one here and nowhere else fails CI with the places it is missing
  * from named, which is the entire point of the file.
  */
-export const PRACTISE_SURFACES: PractiseSurface[] = [
+export const PRACTICE_SURFACES: PracticeSurface[] = [
   { href: "/scenarios", eyebrow: "Decide", title: "Incident scenarios", group: "decide" , reading: ["incident-response-methodology", "runbooks-infrastructure-teams"] },
   { href: "/triage", eyebrow: "Judge", title: "Phishing triage", group: "decide" , reading: ["spf-dkim-dmarc", "the-authentication-passed-anyway"] },
   { href: "/challenges", eyebrow: "Find", title: "Capture the flag", group: "decide" , reading: ["ncl-competition-lessons", "log-analysis-methodology"] },
@@ -147,9 +147,9 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
 ];
 
 /** The groups in reading order, each with its surfaces. */
-export const GROUPS: PractiseGroup[] = ["decide", "diagnose", "measure", "compute", "ground"];
+export const GROUPS: PracticeGroup[] = ["decide", "diagnose", "measure", "compute", "ground"];
 
-export const surfacesIn = (group: PractiseGroup): PractiseSurface[] =>
-  PRACTISE_SURFACES.filter((surface) => surface.group === group);
+export const surfacesIn = (group: PracticeGroup): PracticeSurface[] =>
+  PRACTICE_SURFACES.filter((surface) => surface.group === group);
 
-export const PRACTISE_ROUTES: string[] = PRACTISE_SURFACES.map((surface) => surface.href);
+export const PRACTICE_ROUTES: string[] = PRACTICE_SURFACES.map((surface) => surface.href);

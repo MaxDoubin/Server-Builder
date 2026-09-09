@@ -45,7 +45,7 @@ VLAN, which is 1.
 
 I expected this to be described accurately everywhere as "two VLANs get
 bridged", and to be able to move on. Then I built a model of 802.1Q for the
-practise page and asked it which VLANs actually reach which, in each
+practice page and asked it which VLANs actually reach which, in each
 direction. The answer is stranger than the summary.
 
 ```

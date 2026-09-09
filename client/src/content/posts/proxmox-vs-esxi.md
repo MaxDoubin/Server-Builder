@@ -77,7 +77,7 @@ One more honest point, specifically for a student: VCP is a credential hiring ma
 
 For a homelab, Proxmox wins on value. You get enterprise-class virtualization with no licensing restrictions, native ZFS, and full Linux flexibility. For enterprise environments or certification study, ESXi remains the standard. There is no wrong choice. Pick the one that matches your goals.
 
-As a rule: pick ESXi when the goal is to practise what an employer runs. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
+As a rule: pick ESXi when the goal is to practice what an employer runs. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
 
 ## References
 

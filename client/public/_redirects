@@ -136,3 +136,12 @@
 # one of six slots on a maintenance log. Removed, and 301'd to the roadmap,
 # which is the page that still answers "what is happening with this site".
 /changelog  /roadmap  301
+
+# Spelling: /practise was the British verb spelling, on a site whose own prose
+# says "practice" 159 times against 4. It shipped, was indexed, and was linked
+# from 133 places on the site before anyone said the obvious thing out loud.
+#
+# The route is /practice now. This 301 is what keeps the indexed URL and any
+# outside link working, and it has to stay: Google will re-crawl to the new
+# canonical, but bookmarks and other people's links do not update.
+/practise  /practice  301

@@ -1,5 +1,5 @@
 /**
- * The room a practise surface happens in.
+ * The room a practice surface happens in.
  *
  * A fixed layer behind the whole viewport carrying an accent and a mood, so a
  * page is not a column of text about a problem, it is a screen that is having
@@ -12,7 +12,7 @@
  * The mood vocabulary stays the scenarios' one on purpose. Four words that
  * already have contrast-checked colours in both themes beat five words with a
  * new one that has to be legible on white as well as on obsidian. All of it is
- * CSS driven by data attributes; see the "Practise surfaces: the stage" block
+ * CSS driven by data attributes; see the "Practice surfaces: the stage" block
  * in index.css for the layers themselves.
  *
  * pointer-events: none and aria-hidden, because it is atmosphere: it must
@@ -61,7 +61,7 @@ interface Props {
   flashKey: number;
 }
 
-export function PractiseStage({ accent, mood, ending, flashKey }: Props) {
+export function PracticeStage({ accent, mood, ending, flashKey }: Props) {
   /*
     The flash is keyed on the decision count rather than mounted and
     unmounted, so React restarts the animation by replacing the element. It
@@ -79,16 +79,16 @@ export function PractiseStage({ accent, mood, ending, flashKey }: Props) {
   return (
     <>
       <div
-        className="practise-stage"
+        className="practice-stage"
         data-accent={accent}
         data-mood={mood}
         data-ending={ending}
         aria-hidden
       >
-        <div className="practise-grid" />
+        <div className="practice-grid" />
       </div>
-      <div className="practise-rule" aria-hidden />
-      {flashing ? <div key={flashKey} className="practise-flash" aria-hidden /> : null}
+      <div className="practice-rule" aria-hidden />
+      {flashing ? <div key={flashKey} className="practice-flash" aria-hidden /> : null}
     </>
   );
 }

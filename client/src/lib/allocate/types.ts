@@ -2,7 +2,7 @@
  * Address plan exercises: one block, several competing requirements.
  *
  * Different in kind from the subnetting drill in /tools. That one generates a
- * question and grades the arithmetic, which is worth practising and is not
+ * question and grades the arithmetic, which is worth practicing and is not
  * what anyone is doing when they lay out a network. This is the planning
  * task: a block, a list of things that need space, and the constraints that
  * make it a puzzle rather than a division.

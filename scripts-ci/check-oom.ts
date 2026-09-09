@@ -362,7 +362,7 @@ for (const [slug, figures] of Object.entries(HYPOTHETICAL)) {
   useless as picking it every time. The target is half, so that "the biggest
   one" carries no information at all and a reader has to do the arithmetic.
 
-  The count is also rendered on the page, in the practise hub, in the home
+  The count is also rendered on the page, in the practice hub, in the home
   act and in the prerendered body, all four from fattestSurvives. They said
   "four of the ten" by hand while the computed body said five, which is the
   same bug as an answer key: a number about the model, typed next to it.

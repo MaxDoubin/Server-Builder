@@ -3,7 +3,7 @@
  *
  * The archive is a few hundred articles, twenty tools, sixteen rack
  * elevations, a couple of hundred hardware models, ninety-six glossary
- * entries, a dozen practise surfaces and three dozen other pages, behind a
+ * entries, a dozen practice surfaces and three dozen other pages, behind a
  * nine item navigation bar. Everything is reachable and almost nothing is
  * findable: knowing the site has a chmod calculator does not tell you it is
  * under Tools rather than under the study material, and knowing there is an
@@ -93,14 +93,14 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Ask me anything", href: "/ask" },
   { kind: "Page", title: "Contact", href: "/contact", terms: "email get in touch hire" },
   /*
-    The practise surfaces and the reference pages.
+    The practice surfaces and the reference pages.
 
     These were missing for as long as they existed, which is the failure the
     palette is supposed to prevent: a reader who knows the site has a
     firewall exercise could not reach it by typing "firewall", because the
     only firewall hits were articles.
   */
-  { kind: "Page", title: "Practise", href: "/practise", detail: "Everything here you do rather than read", terms: "exercises drills training" },
+  { kind: "Page", title: "Practice", href: "/practice", detail: "Everything here you do rather than read", terms: "exercises drills training" },
   { kind: "Page", title: "Today", href: "/today", detail: "One thing from each surface, chosen by the date", terms: "daily selection" },
   { kind: "Page", title: "Glossary", href: "/glossary", detail: "The vocabulary, and what people get wrong about it", terms: "definitions terms jargon acronyms" },
   { kind: "Page", title: "Incident scenarios", href: "/scenarios", terms: "decide branching incident response tabletop" },

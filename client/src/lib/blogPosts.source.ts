@@ -3183,7 +3183,7 @@ VLAN, which is 1.
 
 I expected this to be described accurately everywhere as "two VLANs get
 bridged", and to be able to move on. Then I built a model of 802.1Q for the
-practise page and asked it which VLANs actually reach which, in each
+practice page and asked it which VLANs actually reach which, in each
 direction. The answer is stranger than the summary.
 
 \`\`\`
@@ -3578,7 +3578,7 @@ and one.
 
 ## What actually changes
 
-I built a page for practising this: ten advisories from one week, each with a
+I built a page for practicing this: ten advisories from one week, each with a
 description of the estate they landed in, and the exercise is to say what you
 do about each. The two orderings, base score and decision tree, come out
 noticeably different on that set. Eleven of the forty-five pairs are the other
@@ -3784,7 +3784,7 @@ go and look at the file.
 
 ## What this is actually about
 
-I wrote a page for practising these, fourteen accesses to call, and behind it a
+I wrote a page for practicing these, fourteen accesses to call, and behind it a
 model of the rules. Then I wrote property tests for the model: that owning a
 file ends the search, that a delete never consults the file, that an
 unsearchable directory stops everything below it. Generate a few thousand
@@ -25138,7 +25138,7 @@ One more honest point, specifically for a student: VCP is a credential hiring ma
 
 For a homelab, Proxmox wins on value. You get enterprise-class virtualization with no licensing restrictions, native ZFS, and full Linux flexibility. For enterprise environments or certification study, ESXi remains the standard. There is no wrong choice. Pick the one that matches your goals.
 
-As a rule: pick ESXi when the goal is to practise what an employer runs. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
+As a rule: pick ESXi when the goal is to practice what an employer runs. Pick Proxmox when the goal is to run workloads, when you want ZFS or containers, or when your hardware is not on anybody's compatibility list.
 
 ## References
 

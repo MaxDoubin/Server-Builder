@@ -315,7 +315,7 @@ const SURFACES: Surface[] = [
   },
 ];
 
-export function PractiseAct() {
+export function PracticeAct() {
   const rootRef = useRef<HTMLElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLUListElement>(null);
@@ -368,8 +368,8 @@ export function PractiseAct() {
   return (
     <section
       ref={rootRef}
-      id="practise"
-      data-testid="home-practise"
+      id="practice"
+      data-testid="home-practice"
       className="relative border-t border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] px-6 py-28 md:px-10 md:py-36"
     >
       <div className="mx-auto max-w-[1080px]">
@@ -381,7 +381,7 @@ export function PractiseAct() {
             · Not only reading
           </div>
           <h2 className="mt-5 max-w-3xl font-display text-[clamp(2rem,5vw,3.6rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))]">
-            Ten places to practise, and none of them need anything installed.
+            Ten places to practice, and none of them need anything installed.
           </h2>
           <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-[15px]">
             A shell on a broken host, a packet capture with a real filter bar, an inbox of mail to
@@ -395,14 +395,14 @@ export function PractiseAct() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/today"
-              data-testid="home-practise-today"
+              data-testid="home-practice-today"
               className="inline-flex min-h-[46px] items-center rounded-lg bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Start with today
             </Link>
             <Link
-              href="/practise"
-              data-testid="home-practise-hub"
+              href="/practice"
+              data-testid="home-practice-hub"
               className="inline-flex min-h-[46px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Or choose for yourself
@@ -448,4 +448,4 @@ export function PractiseAct() {
   which is why a surface missing from here went unnoticed for a month. The
   registry is the list now, and CI compares this file against it.
 */
-export { PRACTISE_ROUTES } from "@/lib/practiseSurfaces";
+export { PRACTICE_ROUTES } from "@/lib/practiceSurfaces";

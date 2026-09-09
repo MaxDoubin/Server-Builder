@@ -3,7 +3,7 @@
  *
  * Shaped after the National Cyber League's categories, because that is what
  * the readers most likely to use this are preparing for, and because those
- * categories are a genuinely good taxonomy of "things you can practise on
+ * categories are a genuinely good taxonomy of "things you can practice on
  * your own with no infrastructure".
  *
  * HOW THE FLAG IS CHECKED, AND WHAT THAT IS WORTH. The flag itself is not in

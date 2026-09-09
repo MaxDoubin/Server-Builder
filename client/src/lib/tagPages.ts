@@ -102,7 +102,7 @@ export const TAG_PAGES: TagPage[] = [
     description:
       "Competitive cybersecurity and the fundamentals behind it: analysis technique, tooling, and how to prepare for events like the National Cyber League.",
     intro:
-      "Security as a skill you practise. Competition technique, the tools worth being fluent in, and the fundamentals that make the difference between guessing and knowing. Related: the National Cyber League preparation guides.",
+      "Security as a skill you practice. Competition technique, the tools worth being fluent in, and the fundamentals that make the difference between guessing and knowing. Related: the National Cyber League preparation guides.",
   },
   {
     tag: "monitoring",

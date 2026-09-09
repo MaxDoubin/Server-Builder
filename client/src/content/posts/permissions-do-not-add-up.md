@@ -148,7 +148,7 @@ go and look at the file.
 
 ## What this is actually about
 
-I wrote a page for practising these, fourteen accesses to call, and behind it a
+I wrote a page for practicing these, fourteen accesses to call, and behind it a
 model of the rules. Then I wrote property tests for the model: that owning a
 file ends the search, that a delete never consults the file, that an
 unsearchable directory stops everything below it. Generate a few thousand

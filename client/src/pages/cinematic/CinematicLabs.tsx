@@ -13,7 +13,7 @@ import { useSEO } from "@/lib/useSEO";
 import { LABS, LAB_ORDER, type Lab } from "@/lib/labs/labs";
 import { loadSolved } from "@/lib/labs/progress";
 import { pluralise } from "@/lib/plural";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -43,7 +43,7 @@ export function CinematicLabs() {
         <div className="mx-auto max-w-[900px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Hands on
+              · Practice · Hands on
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Labs.

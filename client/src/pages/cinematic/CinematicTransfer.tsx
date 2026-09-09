@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -33,7 +33,7 @@ import {
   type Link as Path,
 } from "@/lib/transfer/index";
 import { pluralise } from "@/lib/plural";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 const KiB = 1024;
@@ -232,7 +232,7 @@ export function CinematicTransfer() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={accent}
         mood={answer === null ? "calm" : right ? "recovering" : "tense"}
         flashKey={0}
@@ -523,10 +523,10 @@ export function CinematicTransfer() {
           <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             More of this sort of thing at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             , and the vocabulary in the{" "}
             <Link

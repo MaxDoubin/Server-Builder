@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import { FIELD_LABEL, TERMS, slugFor, type Field, type Term } from "@/lib/glossary/index";
 import { pluralise } from "@/lib/plural";
@@ -69,7 +69,7 @@ export function CinematicGlossary() {
   /*
     The stage flashes on a filter change, so the colour arrives as a wash
     rather than a swap. It counts changes rather than keying on the field
-    because PractiseStage skips zero, and "all" would otherwise never flash.
+    because PracticeStage skips zero, and "all" would otherwise never flash.
   */
   const [flash, setFlash] = useState(0);
 
@@ -162,7 +162,7 @@ export function CinematicGlossary() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={accent} mood="calm" flashKey={flash} />
+      <PracticeStage accent={accent} mood="calm" flashKey={flash} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
@@ -336,10 +336,10 @@ export function CinematicGlossary() {
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             To use any of this rather than read it, the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>{" "}
             has the exercises these terms come out of, and{" "}
             <Link

@@ -116,7 +116,7 @@ export const clubConfig = {
     {
       title: "Web exploitation",
       detail:
-        "How web applications fail, practised only against systems set up to be attacked. Scope discipline is taught alongside the technique, not after it.",
+        "How web applications fail, practiced only against systems set up to be attacked. Scope discipline is taught alongside the technique, not after it.",
     },
   ] as ClubActivity[],
 

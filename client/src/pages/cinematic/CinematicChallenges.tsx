@@ -15,7 +15,7 @@ import { useSEO } from "@/lib/useSEO";
 import { CHALLENGES, CHALLENGE_ORDER, type Challenge } from "@/lib/challenges";
 import { loadSolvedChallenges } from "@/lib/challenges/progress";
 import { pluralise } from "@/lib/plural";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -61,7 +61,7 @@ export function CinematicChallenges() {
         <div className="mx-auto max-w-[900px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Capture the flag
+              · Practice · Capture the flag
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Challenges.
@@ -126,7 +126,7 @@ export function CinematicChallenges() {
           <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             The categories follow the National Cyber League's, because that is the competition most
             readers here are pointed at, and because they are a fair description of what you can
-            practise alone with no infrastructure.{" "}
+            practice alone with no infrastructure.{" "}
             <Link
               href="/ncl"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"

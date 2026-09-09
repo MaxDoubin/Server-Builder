@@ -295,7 +295,7 @@ export const INBOX_ONE: Message[] = [
     analysis: [
       "adobe.com.docs-share.example. The registrable domain is the last two labels, and everything before them is free text belonging to whoever owns those two. There is no misspelling here and nothing to squint at: adobe.com is present, correct, and a subdomain of somebody else's estate.",
       "Sign in with your work account is the request, and it is the only thing this message actually wants. There is no document.",
-      "This one is worth practising because it survives the advice people are usually given. Check the sender's domain, and a reader who checks by scanning for a familiar name finds one.",
+      "This one is worth practicing because it survives the advice people are usually given. Check the sender's domain, and a reader who checks by scanning for a familiar name finds one.",
     ],
   },
   {

@@ -1,5 +1,5 @@
 /**
- * Today's selection, assembled from every practise surface.
+ * Today's selection, assembled from every practice surface.
  *
  * Each entry is a link and a reason, not an embedded exercise. Running eight
  * different interaction models inside one page would mean eight partial

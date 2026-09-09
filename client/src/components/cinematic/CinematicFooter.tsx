@@ -103,7 +103,7 @@ export function CinematicFooter() {
               { href: "/glossary", label: "Glossary", testId: "link-footer-glossary" },
               { href: "/flashcards", label: "Flashcards", testId: "link-footer-flashcards" },
               { href: "/study", label: "Exam objectives", testId: "link-footer-study" },
-              { href: "/practise", label: "Practise", testId: "link-footer-practise" },
+              { href: "/practice", label: "Practice", testId: "link-footer-practice" },
               { href: "/scenarios", label: "Scenarios", testId: "link-footer-scenarios" },
               { href: "/labs", label: "Labs", testId: "link-footer-labs" },
               { href: "/challenges", label: "Challenges", testId: "link-footer-challenges" },

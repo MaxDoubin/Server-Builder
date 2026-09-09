@@ -37,7 +37,7 @@ export interface ExamDomain {
   summary: string;
   /** Matched against post titles and tags, lowercased. */
   keywords: string[];
-  /** Tool slugs under /tools that practise this domain directly. */
+  /** Tool slugs under /tools that practice this domain directly. */
   tools?: string[];
 }
 

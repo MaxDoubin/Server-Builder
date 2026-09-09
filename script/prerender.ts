@@ -40,7 +40,7 @@ import { CASES as OOM_CASES, adjWorth as oomAdjWorth, fattestSurvives as oomFatt
 import { CASES as SPACE_CASES, CAUSE_LABEL as SPACE_CAUSE, availableTo as spaceAvailableTo, candidates as spaceCandidates, dfAvailable, dfPercent, dfUsed, duTotal, errnoFor as spaceErrno, failure as spaceFailure, human as spaceHuman, inodePercent, invisible as spaceInvisible, reserved as spaceReserved, tell as spaceTell } from "../client/src/lib/space/index";
 import { TABLES as ROUTE_TABLES, lookup as routeLookup, prefixOf } from "../client/src/lib/route/index";
 import { SCENARIOS as RESTORES, domains as failureDomains } from "../client/src/lib/restore/index";
-import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "../client/src/lib/practiseSurfaces";
+import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTICE_SURFACES } from "../client/src/lib/practiceSurfaces";
 
 // ─── import blog data (tsx handles .ts extensions at runtime) ────────────────
 // postIndex is plain data with no Vite-only syntax in it, so it imports
@@ -841,10 +841,10 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all nine scored categories.</li>
     <li><a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>, a free twelve week plan for starting a school cybersecurity club.</li>
   </ul>
-  <h2>Practise, in the browser</h2>
+  <h2>Practice, in the browser</h2>
   <p>
-    ${PRACTISE_SURFACES.filter((surface) => surface.group !== "ground").length} places to
-    practise, none of which need anything installed, none of which reach a
+    ${PRACTICE_SURFACES.filter((surface) => surface.group !== "ground").length} places to
+    practice, none of which need anything installed, none of which reach a
     real machine, and none of which send anything anywhere.
     Every exercise ships a solution that CI replays on every push.
   </p>
@@ -882,7 +882,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
     <li><a href="${SITE_URL}/transfer">Why the transfer is slow</a>, the three ceilings over a single TCP stream.</li>
     <li><a href="${SITE_URL}/restore">You have backups, not restores</a>, which copies survive the incident.</li>
-    <li><a href="${SITE_URL}/practise">The practise hub</a>, all of it with what each one is for.</li>
+    <li><a href="${SITE_URL}/practice">The practice hub</a>, all of it with what each one is for.</li>
   </ul>
   <h2>About</h2>
   <ul>
@@ -2131,23 +2131,23 @@ ${JSON.stringify({
     });
   }
 
-  // ── the practise hub ──
-  const practiseDescription =
+  // ── the practice hub ──
+  const practiceDescription =
     "Everything on this site you do rather than read: branching incident scenarios with many " +
     "endings, a simulated Linux host with a fault in it, packet captures with a real display " +
     "filter bar, spaced-repetition flashcards and exam objective sheets.";
 
-  await writePage("practise", base, {
-    title: "Practise | Max Doubin",
-    description: practiseDescription,
-    canonical: `${SITE_URL}/practise`,
+  await writePage("practice", base, {
+    title: "Practice | Max Doubin",
+    description: practiceDescription,
+    canonical: `${SITE_URL}/practice`,
     schema: `<script type="application/ld+json">
 ${JSON.stringify({
   "@context": "https://schema.org",
   "@type": "ItemList",
-  name: "Practise",
-  description: practiseDescription,
-  url: `${SITE_URL}/practise`,
+  name: "Practice",
+  description: practiceDescription,
+  url: `${SITE_URL}/practice`,
   numberOfItems: 12,
   itemListElement: [
     ["Incident scenarios", "/scenarios"],
@@ -2188,7 +2188,7 @@ ${JSON.stringify({
 </script>`,
     rootContent: `
 <main>
-  <h1>Practise</h1>
+  <h1>Practice</h1>
   <p>
     Reading about an incident and being in one are different skills, and only
     one of them is what a bad night asks for. These are the parts of this site
@@ -2198,7 +2198,7 @@ ${JSON.stringify({
 ${GROUPS.map((group) => `  <h2 id="${group}">${esc(GROUP_HEADING[group])}</h2>
   <p>${esc(GROUP_BLURB[group])}</p>
   <ul>
-${PRACTISE_SURFACES.filter((surface) => surface.group === group)
+${PRACTICE_SURFACES.filter((surface) => surface.group === group)
   .map((surface) => `    <li><a href="${SITE_URL}${surface.href}">${esc(surface.title)}</a></li>`)
   .join("\n")}
   </ul>`).join("\n")}
@@ -2494,7 +2494,7 @@ ${handshake.breaks
   </ul>
 ${handshake.notes.map((note) => `  <p>${esc(note)}</p>`).join("\n")}`,
 ).join("\n")}
-  ${backLinks([["/capture", "Packet captures"], ["/chain", "Certificate chains"], ["/practise", "All practise material"]])}
+  ${backLinks([["/capture", "Packet captures"], ["/chain", "Certificate chains"], ["/practice", "All practice material"]])}
 </main>`,
   });
 
@@ -2505,7 +2505,7 @@ ${handshake.notes.map((note) => `  <p>${esc(note)}</p>`).join("\n")}`,
     describes is the mechanism, which does not change.
   */
   const todayDescription =
-    "One thing from every practise surface, chosen by the date and the same for everybody: an " +
+    "One thing from every practice surface, chosen by the date and the same for everybody: an " +
     "incident to decide, a host to diagnose, a capture to read, a flag to find, a message to " +
     "judge, a chain to reorder, a name to resolve, a certificate to attribute, a block to divide " +
     "and a slow transfer to explain.";
@@ -2528,7 +2528,7 @@ ${JSON.stringify({
 <main>
   <h1>Today</h1>
   <p>
-    One thing from each practise surface, chosen by the date. The same set for
+    One thing from each practice surface, chosen by the date. The same set for
     everybody, and different tomorrow.
   </p>
   <p>
@@ -2556,7 +2556,7 @@ ${JSON.stringify({
     already record in your own browser. Nothing about your progress leaves the
     machine you are on.
   </p>
-  ${backLinks([["/practise", "The practise hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
+  ${backLinks([["/practice", "The practice hub"], ["/scenarios", "Incident scenarios"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -2625,7 +2625,7 @@ ${item.copies.map((c) => `      <li>${esc(c.name)}: ${esc(c.medium)}, every ${c.
     to restore, the media is where the inventory says, and nothing fails
     during the restore. A real recovery is longer than this, every time.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/transfer", "Why the transfer is slow"], ["/array", "Array calculator"]])}
+  ${backLinks([["/practice", "All practice material"], ["/transfer", "Why the transfer is slow"], ["/array", "Array calculator"]])}
 </main>`,
   });
 
@@ -2686,7 +2686,7 @@ ${table.routes.map((route) => `      <li>${prefixOf(route)} via ${esc(route.next
     installs both and hashes flows across them. This picks the first, and the
     one table here that reaches that case says so.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises, where first match does win"], ["/allocate", "Address plans"]])}
+  ${backLinks([["/practice", "All practice material"], ["/firewall", "Firewall exercises, where first match does win"], ["/allocate", "Address plans"]])}
 </main>`,
   });
 
@@ -2750,7 +2750,7 @@ ${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocks
     correct one and costs nothing, or to clamp the MSS on the tunnel
     interface, which fixes TCP and does nothing for UDP.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
 </main>`,
   });
 
@@ -2839,7 +2839,7 @@ ${path.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     both ends of every trunk rather than only the end you are logged into is
     the habit.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/blog/vlan-segmentation-guide", "VLAN segmentation"]])}
+  ${backLinks([["/practice", "All practice material"], ["/firewall", "Firewall exercises"], ["/blog/vlan-segmentation-guide", "VLAN segmentation"]])}
 </main>`,
   });
 
@@ -2955,7 +2955,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     not a safety property. It is a list, and the question is whether the header that made the body
     personal is on it.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/blog/http-caching-headers-etags", "HTTP caching headers and ETags"], ["/blog/the-disk-was-not-full", "The disk was not full"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/http-caching-headers-etags", "HTTP caching headers and ETags"], ["/blog/the-disk-was-not-full", "The disk was not full"]])}
 </main>`,
   });
 
@@ -3063,7 +3063,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     else and walk underneath the mount points. Data written before a volume was mounted is still
     on the underlying filesystem, still spending its blocks, and unreachable by any path.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/linux-disk-io-troubleshooting", "Linux disk IO troubleshooting"], ["/blog/filesystem-journal-explained", "Filesystem journals"]])}
 </main>`,
   });
 
@@ -3186,7 +3186,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     <li><code>scrape_duration_seconds</code> and <code>up</code> next to the metric itself, to tell
     a value that changed from a target that stopped answering.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/the-alert-was-pending-all-day", "The alert was pending all day"], ["/blog/prometheus-server-monitoring", "Prometheus server monitoring"], ["/logs", "Read the log"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-alert-was-pending-all-day", "The alert was pending all day"], ["/blog/prometheus-server-monitoring", "Prometheus server monitoring"], ["/logs", "Read the log"]])}
 </main>`,
   });
 
@@ -3300,7 +3300,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Divide by <code>nproc</code> before comparing anything to anything. A threshold on the raw
     figure means something different on every machine it is copied to.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/forty-and-nothing-was-running", "Forty, and nothing was running"], ["/oom", "Something has to die"], ["/alerts", "The graph crossed the line"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/forty-and-nothing-was-running", "Forty, and nothing was running"], ["/oom", "Something has to die"], ["/alerts", "The graph crossed the line"]])}
 </main>`,
   });
 
@@ -3415,7 +3415,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Do not reach for utilisation. Averaged over any window longer than the period it cannot
     show throttling at all, and the period is 100 milliseconds.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/stopped-not-slow", "Stopped, not slow"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/stopped-not-slow", "Stopped, not slow"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
 </main>`,
   });
 
@@ -3529,7 +3529,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Do not reach for <code>tcp_fin_timeout</code>. It is FIN_WAIT2, TIME_WAIT has no sysctl, and
     the two default to the same number, which is the whole reason for the confusion.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/it-ran-out-at-four-hundred-and-seventy", "It ran out at four hundred and seventy"], ["/nat", "It works from outside"], ["/transfer", "Why the transfer is slow"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/it-ran-out-at-four-hundred-and-seventy", "It ran out at four hundred and seventy"], ["/nat", "It works from outside"], ["/transfer", "Why the transfer is slow"]])}
 </main>`,
   });
 
@@ -3634,7 +3634,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Remember that the soft limit is a starting point. A daemon that raises itself is already
     at its hard limit and the soft value in the unit never mattered.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/the-file-was-right-and-nobody-read-it", "The file was right and nobody read it"], ["/ports", "Out of ports"], ["/units", "It started before the thing it needs"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-file-was-right-and-nobody-read-it", "The file was right and nobody read it"], ["/ports", "Out of ports"], ["/units", "It started before the thing it needs"]])}
 </main>`,
   });
 
@@ -3747,7 +3747,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li><code>/proc/pressure/memory</code> for control decisions. It measures time actually spent
     stalled rather than predicting whether reclaim might cost something.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/the-free-column-was-always-going-to-be-zero", "The free column was always going to be zero"], ["/oom", "Something has to die"], ["/load", "Forty, and idle"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-free-column-was-always-going-to-be-zero", "The free column was always going to be zero"], ["/oom", "Something has to die"], ["/load", "Forty, and idle"]])}
 </main>`,
   });
 
@@ -3854,7 +3854,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     first is inside ${esc(NAT_CASES.some((item) => !natRoutable(item.router)) ? "100.64.0.0/10" : "a private range")},
     the forward is on a box the internet cannot address.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/nothing-translates-the-reply", "Nothing translates the reply"], ["/blog/netfilter-hook-order", "Netfilter hook order"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/nothing-translates-the-reply", "Nothing translates the reply"], ["/blog/netfilter-hook-order", "Netfilter hook order"]])}
 </main>`,
   });
 
@@ -3986,7 +3986,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     <li><code>journalctl -b | grep -i "ordering cycle"</code> on anything whose boot is
     intermittently wrong.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/systemd-units-that-behave", "systemd units that behave"], ["/blog/init-scripts-to-systemd-units", "From init scripts to systemd units"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/systemd-units-that-behave", "systemd units that behave"], ["/blog/init-scripts-to-systemd-units", "From init scripts to systemd units"]])}
 </main>`,
   });
 
@@ -4101,7 +4101,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     <li><code>/sys/fs/cgroup/&lt;path&gt;/memory.events</code> to tell a cgroup kill from a system
     one. If <code>oom_kill</code> there is climbing, the machine was never out of memory.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/minus-one-thousand-is-not-a-hint", "Minus one thousand is not a hint"], ["/blog/oom-killer-and-swap-sizing", "The OOM killer and swap sizing"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/minus-one-thousand-is-not-a-hint", "Minus one thousand is not a hint"], ["/blog/oom-killer-and-swap-sizing", "The OOM killer and swap sizing"]])}
 </main>`,
   });
 
@@ -4224,7 +4224,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     switch, the hypervisor host and the laptop that has been suspended for a
     week are usually not. Alert on the measurement, not on the process.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/blog/ntp-enterprise-networks", "NTP in enterprise networks"], ["/blog/how-totp-codes-actually-work", "How TOTP codes actually work"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/ntp-enterprise-networks", "NTP in enterprise networks"], ["/blog/how-totp-codes-actually-work", "How TOTP codes actually work"]])}
 </main>`,
   });
 
@@ -4313,7 +4313,7 @@ ${chain.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n"
     timeout tells you that you stopped listening and nothing about whether the
     work happened.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/transfer", "Why the transfer is slow"], ["/blog/queueing-theory-for-operators", "Queueing theory for operators"]])}
+  ${backLinks([["/practice", "All practice material"], ["/transfer", "Why the transfer is slow"], ["/blog/queueing-theory-for-operators", "Queueing theory for operators"]])}
 </main>`,
   });
 
@@ -4393,7 +4393,7 @@ ${byPriority(PATCH_FINDINGS).map((finding) => `    <li>${esc(finding.product)}, 
     is why they are numbered ADV rather than CVE. The scoring system, the four
     decision points and the tree are real.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/scenarios/no-patch-until-tuesday", "No Patch Until Tuesday"], ["/firewall", "Firewall exercises"]])}
+  ${backLinks([["/practice", "All practice material"], ["/scenarios/no-patch-until-tuesday", "No Patch Until Tuesday"], ["/firewall", "Firewall exercises"]])}
 </main>`,
   });
 
@@ -4472,7 +4472,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     the nine, because there the question is whether the file is a program
     rather than whether you are allowed.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises, the same first-match rule on packets"], ["/tools/chmod-calculator", "Permissions calculator"]])}
+  ${backLinks([["/practice", "All practice material"], ["/firewall", "Firewall exercises, the same first-match rule on packets"], ["/tools/chmod-calculator", "Permissions calculator"]])}
 </main>`,
   });
 
@@ -4529,7 +4529,7 @@ ${LOGS.map((item) => `  <article>
     build time, so a line no daemon would emit fails the build rather than
     teaching you to recognise something you will never see.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
+  ${backLinks([["/practice", "All practice material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -4596,7 +4596,7 @@ ${TRANSFERS.map((item) => {
     hundredfold reduction in loss buys a tenfold increase in speed, and no
     amount of bandwidth buys any.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/glossary", "Glossary"], ["/capture", "Packet captures"]])}
+  ${backLinks([["/practice", "All practice material"], ["/glossary", "Glossary"], ["/capture", "Packet captures"]])}
 </main>`,
   });
 
@@ -4654,7 +4654,7 @@ ${TERMS.map((term) => `  <article id="${slugFor(term)}">
     <p>${esc(term.definition)}</p>
 ${term.confusion ? `    <p>What people get wrong: ${esc(term.confusion)}</p>` : ""}
   </article>`).join("\n")}
-  ${backLinks([["/practise", "The practise hub"], ["/blog", "Field Notes"], ["/study", "Study guides"]])}
+  ${backLinks([["/practice", "The practice hub"], ["/blog", "Field Notes"], ["/study", "Study guides"]])}
 </main>`,
   });
 
@@ -4780,7 +4780,7 @@ ${PLANS.map(
     `(${esc(plan.difficulty)}, ${esc(plan.block)}): ${esc(plan.tagline)}</li>`,
 ).join("\n")}
   </ul>
-  ${backLinks([["/practise", "All practise material"], ["/firewall", "Firewall exercises"], ["/tools/vlsm-practice", "The subnetting drill"]])}
+  ${backLinks([["/practice", "All practice material"], ["/firewall", "Firewall exercises"], ["/tools/vlsm-practice", "The subnetting drill"]])}
 </main>`,
   });
 
@@ -4913,7 +4913,7 @@ ${CHAIN_CASES.map(
     <li>A certificate that is not valid yet is almost always a wrong clock, and
       the tell is that every site fails at once rather than one.</li>
   </ul>
-  ${backLinks([["/practise", "All practise material"], ["/resolve", "DNS resolution"], ["/labs", "Hands-on labs"]])}
+  ${backLinks([["/practice", "All practice material"], ["/resolve", "DNS resolution"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -4996,7 +4996,7 @@ ${DNS_CASES.map(
     Every name is under a reserved suffix and every address is in a
     documentation range, so nothing here reaches anything real.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
+  ${backLinks([["/practice", "All practice material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -5053,7 +5053,7 @@ ${FIREWALL.map(
     `(${esc(exercise.difficulty)}): ${esc(exercise.tagline)}</li>`,
 ).join("\n")}
   </ul>
-  ${backLinks([["/practise", "All practise material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
+  ${backLinks([["/practice", "All practice material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -5193,7 +5193,7 @@ ${TRIAGE_MESSAGES.map(
     Every address and host in this inbox is invented, and the ones that imitate
     a brand sit under reserved names that resolve to nothing.
   </p>
-  ${backLinks([["/practise", "All practise material"], ["/challenges", "Capture the flag"], ["/labs", "Hands-on labs"]])}
+  ${backLinks([["/practice", "All practice material"], ["/challenges", "Capture the flag"], ["/labs", "Hands-on labs"]])}
 </main>`,
   });
 
@@ -6317,7 +6317,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/capture`, lastmod: today, changefreq: "monthly", priority: "0.9" },
-    { loc: `${SITE_URL}/practise`, lastmod: today, changefreq: "monthly", priority: "0.9" },
+    { loc: `${SITE_URL}/practice`, lastmod: today, changefreq: "monthly", priority: "0.9" },
     { loc: `${SITE_URL}/faq`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/resume`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },

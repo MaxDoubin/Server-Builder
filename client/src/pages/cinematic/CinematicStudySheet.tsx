@@ -7,7 +7,7 @@
  * to hand over.
  *
  * This is the same material gathered onto a single page: every domain with
- * its published weighting and what it asks of you, the tools that practise
+ * its published weighting and what it asks of you, the tools that practice
  * it, and the articles that cover it. The post and tool matching is the
  * shared postsForDomain, so the sheet and the domain pages cannot list
  * different things.
@@ -171,7 +171,7 @@ export function CinematicStudySheet() {
                 {tools.length > 0 && (
                   <>
                     <h3 className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
-                      Practise
+                      Practice
                     </h3>
                     <ul className="mt-2 space-y-1">
                       {tools.map((t) => (

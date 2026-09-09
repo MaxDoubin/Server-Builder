@@ -110,7 +110,7 @@ PAGE_EYEBROWS = {
     "restore": "BACKUPS AND RESTORES",
     "handshake": "PROTOCOL HANDSHAKES",
     "capture": "PACKET CAPTURES",
-    "practise": "PRACTISE",
+    "practice": "PRACTICE",
     "contact": "CONTACT",
     "colophon": "COLOPHON",
     "changelog": "CHANGELOG",

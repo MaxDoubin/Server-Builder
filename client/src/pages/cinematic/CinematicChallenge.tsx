@@ -16,7 +16,7 @@ import { getChallenge } from "@/lib/challenges/index";
 import { checkFlag, type Artefact, type Challenge } from "@/lib/challenges/types";
 import { loadSolvedChallenges, recordSolvedChallenge } from "@/lib/challenges/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -97,7 +97,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={ACCENT[challenge.category] ?? "signal"}
         mood={state === "solved" ? "recovering" : hintsOpen > 0 ? "tense" : "calm"}
         ending={state === "solved" ? "best" : undefined}

@@ -120,7 +120,7 @@ and one.
 
 ## What actually changes
 
-I built a page for practising this: ten advisories from one week, each with a
+I built a page for practicing this: ten advisories from one week, each with a
 description of the estate they landed in, and the exercise is to say what you
 do about each. The two orderings, base score and decision tree, come out
 noticeably different on that set. Eleven of the forty-five pairs are the other

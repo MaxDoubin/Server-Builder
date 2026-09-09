@@ -208,7 +208,7 @@ export const readingPaths: ReadingPath[] = [
       },
       {
         slug: "soc-home-lab-build",
-        why: "Put attack and detection in one lab and practise both. Mistakes are free here; the production version of this lesson is not.",
+        why: "Put attack and detection in one lab and practice both. Mistakes are free here; the production version of this lesson is not.",
       },
       {
         slug: "incident-response-methodology",

@@ -17,7 +17,7 @@ import { PostToc, useActiveHeading, usePostHeadings } from "@/components/blog/Po
 import { SuggestEdit } from "@/components/blog/SuggestEdit";
 import { postDifficulty } from "@/lib/postDifficulty";
 import { relatedPosts } from "@/lib/relatedPosts";
-import { PractiseThis } from "@/components/practise/ReadAboutThis";
+import { PracticeThis } from "@/components/practice/ReadAboutThis";
 import { recordProgress } from "@/lib/readingHistory";
 import { useSEO } from "@/lib/useSEO";
 import { getTagPage } from "@/lib/tagPages";
@@ -625,7 +625,7 @@ export function CinematicBlogPost() {
                 on the site where that offer can be made at the moment it
                 lands.
               */}
-              <PractiseThis slug={post.slug} />
+              <PracticeThis slug={post.slug} />
 
               {related.length > 0 && (
                 <section className="mt-12" data-testid="related-posts">

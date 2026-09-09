@@ -51,9 +51,9 @@ const INDEX = path.join(DIST, "index.html");
 /*
  * 694 KB, raised from 692 by /nat, and the first explanation of that was wrong.
  *
- * I assumed the growth was the home page's practise act, which imports the
+ * I assumed the growth was the home page's practice act, which imports the
  * case data of ten surfaces to render a count, and wrote that down without
- * measuring it. Then I measured it. The act and the practise hub are both
+ * measuring it. Then I measured it. The act and the practice hub are both
  * lazily loaded, so neither is in this closure at all, and no case prose is:
  * grepping the entry for shared_buffers, influxdb or any case's brief finds
  * nothing. The data is properly split and always was.
