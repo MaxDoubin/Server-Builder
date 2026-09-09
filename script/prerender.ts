@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as LIMIT_CASES, SOURCE_LABEL as limSource, asProcLimits as limProc, correctOption as limCorrect, effective as limEffective, failsWith as limFails, highestFd as limHighest, limit as limNum, succeeds as limOk } from "../client/src/lib/limits/index";
 import { CASES as PORT_CASES, TIME_WAIT_SECONDS as portTw, asSysctl as portSysctl, count as portCount, exhausts as portExhausts, heldBy as portHeldBy, loads as portLoads, maxRate as portMaxRate, portsHeld, rangeSize as portRangeSize, correctOption as portCorrect } from "../client/src/lib/ports/index";
 import { CASES as THROTTLE_CASES, asCpuMax as thrMax, asCpuStat as thrStat, everThrottled as thrEver, exhaustsAt as thrExhausts, finishesAt as thrFinishes, limitCpus as thrLimit, ms as thrMs, rate as thrRate, run as thrRun, stat as thrStatOf, correctOption as thrCorrect } from "../client/src/lib/throttle/index";
 import { CASES as LOAD_CASES, LOAD_FREQ as loadFreq, blame as loadBlame, clock as loadClock, correctOption as loadCorrect, countsAt as loadCounts, peak as loadPeak, perCore as loadPerCore, procLine as loadProc, readAt as loadReadAt, run as loadRun, windowOf as loadWindow } from "../client/src/lib/load/index";
@@ -873,6 +874,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/load">Forty, and idle</a>, ten readings of the load average and what the number is actually counting.</li>
     <li><a href="${SITE_URL}/throttle">Thirty percent, and stalling</a>, ten containers under a CPU limit and when the quota runs out.</li>
     <li><a href="${SITE_URL}/ports">Out of ports</a>, ten hosts against one ephemeral range and which connection fails first.</li>
+    <li><a href="${SITE_URL}/limits">Too many open files</a>, five mechanisms that set a descriptor limit and which one was in scope.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2169,6 +2171,7 @@ ${JSON.stringify({
     ["Forty, and idle", "/load"],
     ["Thirty percent, and stalling", "/throttle"],
     ["Out of ports", "/ports"],
+    ["Too many open files", "/limits"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3524,6 +3527,111 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     the two default to the same number, which is the whole reason for the confusion.</li>
   </ol>
   ${backLinks([["/practise", "All practise material"], ["/blog/it-ran-out-at-four-hundred-and-seventy", "It ran out at four hundred and seventy"], ["/nat", "It works from outside"], ["/transfer", "Why the transfer is slow"]])}
+</main>`,
+  });
+
+  // ── descriptor limits ──
+  /*
+    The five mechanisms go into the static body as a column each, because the
+    argument is that they are separate rather than ranked and a paragraph
+    saying so is weaker than a row where four of them are populated and one
+    of them is the answer. Somebody searching "ulimit not applied to systemd
+    service" lands here.
+  */
+  const limFailing = LIMIT_CASES.filter((item) => !limOk(item.setup)).length;
+  const limitsDescription =
+    "Five mechanisms can set a file descriptor limit and they are not a hierarchy. " +
+    "/etc/security/limits.conf is read by pam_limits, so it applies to a login session and never " +
+    "to a unit systemd started at boot, however correct the file is. DefaultLimitNOFILE applies " +
+    "to units and to nothing else. fs.nr_open clamps any hard limit and fs.file-max is a " +
+    `different limit with a different errno. ${LIMIT_CASES.length} processes here, ${limFailing} ` +
+    "of which fail, and the soft limit is only what the process starts with: it may raise itself " +
+    "to its hard limit at any time without privilege.";
+
+  await writePage("limits", base, {
+    title: "Too Many Open Files, and the Limit You Set Is Not the One That Applied | Max Doubin",
+    description: limitsDescription,
+    canonical: `${SITE_URL}/limits`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Too many open files",
+  description: limitsDescription,
+  url: `${SITE_URL}/limits`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Which of five mechanisms actually sets a process's RLIMIT_NOFILE: that limits.conf is a PAM module and never applies to a systemd unit, that DefaultLimitNOFILE never applies to a login, that a unit's LimitNOFILE replaces both halves of the default, that fs.nr_open clamps any hard limit so infinity is not unlimited, that a process may raise its own soft limit to its hard limit without privilege, that RLIMIT_NOFILE is one greater than the highest descriptor number, and that EMFILE and ENFILE are different limits with different files behind them",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Too many open files, and the limit you set is not the one that applied</h1>
+  <p>
+    ${LIMIT_CASES.length} processes and five places a descriptor limit can come from.
+    ${limFailing} of them fail, and in one the setting is correct, was applied, and is not in the
+    path at all.
+  </p>
+  <p>
+    These five are not a hierarchy. <code>/etc/security/limits.conf</code> is read by pam_limits,
+    which runs when somebody authenticates, so it applies to a login session and never to a unit
+    systemd started at boot. <code>DefaultLimitNOFILE</code> applies to units and to nothing else.
+    <code>fs.nr_open</code> is a ceiling on any hard limit, so <code>LimitNOFILE=infinity</code> is
+    not unlimited. And <code>fs.file-max</code> is a machine wide total with its own errno.
+  </p>
+  <h2>What applied, and what each process got</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Process</th><th>Started by</th><th>Soft</th><th>Hard</th><th>Set by</th><th>Wants</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+${LIMIT_CASES.map((item) => {
+  const e = limEffective(item.setup);
+  return `      <tr><td>${esc(item.name)}</td><td>${esc(item.setup.origin)}</td>` +
+    `<td>${esc(limNum(e.soft))}</td><td>${esc(limNum(e.hard))}</td>` +
+    `<td>${esc(e.source)}</td><td>${esc(limNum(item.setup.wants))}</td>` +
+    `<td>${limOk(item.setup) ? "succeeds" : esc(String(limFails(item.setup)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${LIMIT_CASES.map((item) => {
+  const right = limCorrect(item);
+  const e = limEffective(item.setup);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code># started by ${esc(item.setup.origin)}, wanting ${esc(limNum(item.setup.wants))} descriptors
+${esc(limProc(item.setup))}</code></pre>
+    <p>Set by ${esc(limSource[e.source])}. The highest descriptor it can hold is ${esc(limNum(limHighest(item.setup)))}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real host</h2>
+  <ol>
+    <li><code>cat /proc/$(systemctl show -p MainPID --value thing.service)/limits</code>. The
+    limits of the process that is actually failing, which is the only reading that settles this. A
+    shell tells you about shells.</li>
+    <li><code>systemctl show -p LimitNOFILE -p LimitNOFILESoft thing.service</code> for what
+    systemd thinks it set, which is a different question from what the process has now.</li>
+    <li>Both errnos, separately. <code>/proc/sys/fs/file-nr</code>'s first field is descriptors
+    allocated machine wide: near <code>fs.file-max</code> means ENFILE and no per process limit
+    will help.</li>
+    <li><code>prlimit --pid PID --nofile</code> reads and, with a value, changes the limits of a
+    running process without restarting it.</li>
+    <li>Remember that the soft limit is a starting point. A daemon that raises itself is already
+    at its hard limit and the soft value in the unit never mattered.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/ports", "Out of ports"], ["/units", "It started before the thing it needs"]])}
 </main>`,
   });
 
@@ -6087,6 +6195,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/load`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/throttle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ports`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/limits`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

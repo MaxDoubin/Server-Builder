@@ -611,6 +611,14 @@ jobs:
       - name: Ports run out where the kernel would run out
         run: npx tsx scripts-ci/check-ports.ts
 
+      # The descriptor limit surface. Its addition to the usual shape is a
+      # precedence table stated as data: nine origin and configuration pairs,
+      # each asserted, so a change that makes limits.conf apply to a systemd
+      # unit fails here even when no case happens to cover that combination.
+      # That table caught two of the nine blindings on its own.
+      - name: Descriptor limits come from the mechanism that was in scope
+        run: npx tsx scripts-ci/check-limits.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

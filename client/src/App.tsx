@@ -195,6 +195,9 @@ const CinematicThrottle = lazyWithRetry(() =>
 const CinematicPorts = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicPorts").then((m) => ({ default: m.CinematicPorts })),
 );
+const CinematicLimits = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLimits").then((m) => ({ default: m.CinematicLimits })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -916,6 +919,11 @@ function AnimatedRoutes() {
           <Route path="/ports">
             <Suspense fallback={<RouteLoading />}>
               <CinematicPorts />
+            </Suspense>
+          </Route>
+          <Route path="/limits">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLimits />
             </Suspense>
           </Route>
           <Route path="/cache">

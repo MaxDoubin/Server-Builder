@@ -40,6 +40,7 @@ import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index"
 import { CASES as LOAD_CASES, blame as loadBlame } from "@/lib/load/index";
 import { CASES as THROTTLE_CASES, everThrottled as thrEver } from "@/lib/throttle/index";
 import { CASES as PORT_CASES, exhausts as portExhausts } from "@/lib/ports/index";
+import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -158,6 +159,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/limits",
+    eyebrow: "Resolve",
+    title: "Too many open files",
+    blurb:
+      "Five places a descriptor limit can come from, and they are not a hierarchy. The file was edited, the shell confirmed it, and the service never saw it.",
+    count: `${LIMIT_CASES.length} processes, ${LIMIT_CASES.filter((item) => !limOk(item.setup)).length} failing`,
   },
   {
     href: "/ports",

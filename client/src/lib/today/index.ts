@@ -32,6 +32,7 @@ import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as LOADS } from "@/lib/load/index";
 import { CASES as THROTTLES } from "@/lib/throttle/index";
 import { CASES as PORTS } from "@/lib/ports/index";
+import { CASES as LIMITS } from "@/lib/limits/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -86,6 +87,7 @@ const OFFSET = {
   load: 107,
   throttle: 109,
   ports: 113,
+  limits: 127,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -316,6 +318,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A port range, a rate and a destination or several. Work out whether it runs out, and which connection fails.",
       href: "/ports",
       outOf: PORTS.length,
+    });
+  }
+
+  const capped2 = pickFor(LIMITS, day, OFFSET.limits);
+  if (capped2) {
+    out.push({
+      surface: "limits",
+      eyebrow: "Resolve",
+      title: capped2.name,
+      blurb: "Five places a descriptor limit can come from, and they are not a hierarchy. Work out which one was in scope.",
+      href: "/limits",
+      outOf: LIMITS.length,
     });
   }
 
