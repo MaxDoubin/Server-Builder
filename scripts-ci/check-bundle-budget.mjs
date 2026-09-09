@@ -66,17 +66,20 @@ const INDEX = path.join(DIST, "index.html");
  * the number to watch is roughly a third of a kilobyte per surface rather
  * than anything alarming.
  *
- * 696 KB, raised from 694 by /load and /throttle together. Measured the same
- * way rather than assumed, because the last raise here was written up from a
- * guess: grepping the entry for a throttle case slug, for GOMAXPROCS and for
- * cfs_period_us finds nothing at all, so no case data or prose has leaked in.
- * What is there is the registration surface, which is the route, the lazy
- * import identifier, four references to the path, and the palette entry at
- * 361 source bytes. Two surfaces cost 1.8 KB between them, which is the
- * third of a kilobyte each the note above predicts plus the second one's
- * longer term list.
+ * 698 KB, raised from 694 by /load, /throttle, /ports and /limits, and
+ * measured each time rather than assumed, because the raise before those was
+ * written up from a guess. Grepping the entry for a case slug from any of
+ * them finds nothing, so no case data or prose has leaked in. What is there
+ * is the registration surface: the route, the lazy import identifier, a
+ * couple of references to the path, and the palette entry at around 360
+ * source bytes. Four surfaces cost about 3.6 KB between them.
+ *
+ * Read the entry from index.html rather than globbing assets/index-*.js. There
+ * are seven of those and six belong to lazily loaded modules, so a glob picks
+ * a chunk that contains none of the surface and the measurement comes back
+ * reading zero for everything, which looks like a clean result.
  */
-const BUDGET_BYTES = 696 * 1024;
+const BUDGET_BYTES = 698 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

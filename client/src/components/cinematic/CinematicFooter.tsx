@@ -130,6 +130,7 @@ export function CinematicFooter() {
               { href: "/load", label: "Load average", testId: "link-footer-load" },
               { href: "/throttle", label: "CPU quota", testId: "link-footer-throttle" },
               { href: "/ports", label: "Port exhaustion", testId: "link-footer-ports" },
+              { href: "/limits", label: "Descriptor limits", testId: "link-footer-limits" },
               { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },

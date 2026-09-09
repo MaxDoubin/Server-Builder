@@ -34,6 +34,7 @@ import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index"
 import { CASES as LOAD_CASES, blame as loadBlame, peak as loadPeak } from "@/lib/load/index";
 import { CASES as THROTTLE_CASES, everThrottled as thrEver, exhaustsAt as thrExhausts } from "@/lib/throttle/index";
 import { CASES as PORT_CASES, exhausts as portExhausts, TIME_WAIT_SECONDS as portTw } from "@/lib/ports/index";
+import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -320,6 +321,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/limits",
+      eyebrow: "Resolve",
+      title: "Too many open files",
+      blurb:
+        "limits.conf is a PAM module and a systemd unit never authenticates, so the file is correct, was applied, and is not in the path. Work out which mechanism was.",
+      reachFor: "the ulimit was raised and the service still says too many open files",
+      stats: [
+        `${LIMIT_CASES.length} processes`,
+        `${LIMIT_CASES.filter((item) => !limOk(item.setup)).length} failing`,
+        "5 mechanisms",
       ],
       progress: null,
     },
