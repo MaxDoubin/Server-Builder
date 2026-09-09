@@ -372,7 +372,18 @@ export function SystemsAct() {
     },
     [reducedMotion],
     {
-      end: "+=900%",
+      /*
+        Nine screens of scrolling for six beats, which is a screen and a half
+        of wheel per beat and reads as the page having stopped working. The
+        home page measured 21.3 viewports end to end and ten of them were
+        this one pinned section.
+
+        Four screens keeps every beat and roughly two thirds of a screen
+        each, which is still a scrub rather than a jump cut. Beats are keyed
+        off normalized progress in applyProgress, not pixels, so the whole
+        sequence scales with this number and nothing else needs to move.
+      */
+      end: "+=400%",
       pin: true,
       scrub: 0.85,
       onRefresh: (self: { progress: number }) => applyProgress(self.progress),

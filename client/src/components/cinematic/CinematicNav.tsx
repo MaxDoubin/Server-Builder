@@ -305,7 +305,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             </Magnetic>
           </motion.div>
 
-          <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-1 xl:flex">
             {NAV_LINKS.map((link, i) => {
               const active = isActive(link.href);
               return (
@@ -322,7 +322,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                     {...prefetchHandlers(link.href)}
                       aria-current={active ? "page" : undefined}
                       data-testid={`link-nav-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
-                      className={`relative px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.22em] transition-colors ${
+                      className={`relative inline-flex items-center whitespace-nowrap px-3 py-2 font-mono-tight text-[11px] uppercase tracking-[0.22em] transition-colors ${
                         active
                           ? "text-[hsl(var(--brand-bone))]"
                           : overHero && !scrolled
@@ -459,7 +459,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               aria-controls="cinematic-mobile-nav"
               aria-label={open ? "Close menu" : "Open menu"}
               data-testid="button-nav-toggle"
-              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] md:hidden"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/.6)] xl:hidden"
               whileHover={{ scale: 1.1, borderColor: "hsl(72 100% 50% / 0.6)" }}
               whileTap={{ scale: 0.9 }}
               initial={{ opacity: 0, rotate: -90 }}
@@ -497,7 +497,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
             <motion.div
               aria-hidden
               data-print-hide
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm xl:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -509,7 +509,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               id="cinematic-mobile-nav"
               data-testid="mobile-nav-drawer"
               data-print-hide
-              className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md md:hidden"
+              className="fixed inset-x-0 top-16 z-40 border-b border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.96)] backdrop-blur-md xl:hidden"
               initial={{ opacity: 0, y: -20, clipPath: "inset(0 0 100% 0)" }}
               animate={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" }}
               exit={{ opacity: 0, y: -10, clipPath: "inset(0 0 100% 0)" }}
