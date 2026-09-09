@@ -3406,7 +3406,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Do not reach for utilisation. Averaged over any window longer than the period it cannot
     show throttling at all, and the period is 100 milliseconds.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/stopped-not-slow", "Stopped, not slow"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
 </main>`,
   });
 
