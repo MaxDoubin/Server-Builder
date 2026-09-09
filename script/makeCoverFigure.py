@@ -325,13 +325,36 @@ def build(slug: str, kind: str, title: str, subtitle: str, series: list[tuple[st
         # broken rather than as cropped.
         d.rectangle([PLATE_PAD, 96, PLATE_PAD + 64, 99], fill=SIGNAL)
         tracked(d, (PLATE_PAD, 124), "MAXDOUBIN.COM", font(19), ASH, 5.0)
-        tracked(d, (PLATE_PAD, 176), subtitle.upper(), font(24), ASH, 3.0)
+        # Wrapped to the plate, because it was not and a long one ran off the
+        # right edge with no warning: 1371px of text into 1120px of plate,
+        # and the last two words simply were not in the image. Letter spacing
+        # makes this easy to underestimate, so the width is measured the same
+        # way tracked() draws it rather than with a plain textlength.
+        sub_font = font(24)
+        plate_width = W - PLATE_PAD * 2
+        measure = lambda text: sum(d.textlength(ch, font=sub_font) + 3.0 for ch in text)
+        sub_lines, line = [], ""
+        for word in subtitle.upper().split():
+            trial = f"{line} {word}".strip()
+            if measure(trial) > plate_width and line:
+                sub_lines.append(line)
+                line = word
+            else:
+                line = trial
+        if line:
+            sub_lines.append(line)
+        sub_y = 176
+        for text in sub_lines[:2]:
+            tracked(d, (PLATE_PAD, sub_y), text, sub_font, ASH, 3.0)
+            sub_y += 34
+        # The figure starts below whatever the subtitle actually needed.
+        figure_top = max(250, sub_y + 26)
         if kind == "residuals":
-            residuals(d, points or [], 250, tolerance, labels, clip, PLATE_PAD)
+            residuals(d, points or [], figure_top, tolerance, labels, clip, PLATE_PAD)
         elif kind == "curves":
-            curves(d, lines or [], 250, floor, x_label, PLATE_PAD, floor_label)
+            curves(d, lines or [], figure_top, floor, x_label, PLATE_PAD, floor_label)
         else:
-            bars(d, series, 250, PLATE_PAD)
+            bars(d, series, figure_top, PLATE_PAD)
         d.line([(PLATE_PAD, H - 92), (W - PLATE_PAD, H - 92)], fill=IRON, width=1)
         tracked(d, (PLATE_PAD, H - 70), footer.upper(), font(18), ASH, 2.4)
         # Pull the whole thing back so white text laid over it stays legible.
