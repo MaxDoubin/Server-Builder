@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 269 of them. Regenerate with script/generatePostIndex.ts.
+ * 270 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -57,6 +57,15 @@ export const postIndex: PostMeta[] = [
     excerpt: "oom_score_adj reads like a nudge and it is a quantity of memory. On a 16 GiB host one point is worth 16.4 MiB, so an adj of 200 adds 3.2 GiB to a process score and -800 subtracts 12.8 GiB. And -1000 is not the bottom of the scale, it is a different code path: set it on every unit and the kernel has no candidate, so a lost process becomes a lost machine.",
     coverImage: "/images/blog/minus-one-thousand-is-not-a-hint.jpg",
     wordCount: 1833,
+  },
+  {
+    slug: "the-alert-was-pending-all-day",
+    title: "The Alert Was Pending All Day",
+    date: "2026-09-08",
+    tags: ["monitoring","prometheus","operations"],
+    excerpt: "A for clause is not a stopwatch that pauses, it is a start time that one inactive evaluation clears, so a metric over the line four minutes in every five goes pending thirteen times out of sixteen and never fires. And when a target stops answering, whether the alert resolves or keeps firing for five minutes depends on the exporter rather than the rule.",
+    coverImage: "/images/blog/the-alert-was-pending-all-day.jpg",
+    wordCount: 1800,
   },
   {
     slug: "alignment-is-what-runs-out",
@@ -2469,7 +2478,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Prometheus and Grafana together provide powerful, flexible infrastructure monitoring. Here is how to get a production-quality monitoring setup running.",
     coverImage: "/images/blog/prometheus-server-monitoring.jpg",
     coverCredit: {"author":"Joel Kennedy","license":"Public domain","licenseUrl":"https://commons.wikimedia.org/wiki/Commons:Licensing#Public_domain","sourceUrl":"https://commons.wikimedia.org/wiki/File:Grafana_screenshot_(2018).png"},
-    wordCount: 1421,
+    wordCount: 1517,
   },
   {
     slug: "bgp-route-filtering-security",
@@ -2654,10 +2663,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 269;
+export const POST_COUNT = 270;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty nine";
+export const POST_COUNT_SPELLED = "two hundred and seventy";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2666,10 +2675,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty nine";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1020;
+export const CITATION_COUNT = 1022;
 
 /** Unique cover image attribution and licence URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1179;
+export const CHECKED_URL_COUNT = 1181;

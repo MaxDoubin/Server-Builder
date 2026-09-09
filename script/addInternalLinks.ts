@@ -117,6 +117,20 @@ export function linkPost(slug: string, md: string): { out: string; added: string
     if (added.length >= MAX_PER_POST) break;
     if (entry.slug === slug) continue; // never link a post to itself
     if (!shareATag(slug, entry.slug)) continue;
+    /*
+      A target the post already links to is done, wherever that link is.
+
+      Without this the rule is "link the first bare mention" rather than "link
+      this target once", and the two differ on any post whose author put the
+      link somewhere deliberate. Writing one by hand further down left the
+      first bare mention still unlinked, so the fixer added a second link to
+      the same article and the check stayed red until it did. Worse, the
+      mechanical one wins the reader: it comes first. This showed up on a post
+      that says "the documentation says Prometheus will check ...", where a
+      link on that Prometheus promises the upstream documentation and lands on
+      a post of ours instead.
+    */
+    if (out.includes(`](/blog/${entry.slug})`)) continue;
 
     for (const term of entry.terms) {
       if (added.length >= MAX_PER_POST) break;

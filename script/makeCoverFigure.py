@@ -185,7 +185,8 @@ def residuals(d: ImageDraw.ImageDraw, points: list[tuple[float, float]], top: in
 
 
 def curves(d: ImageDraw.ImageDraw, series: list[tuple[str, list[tuple[float, float]]]],
-           top: int, floor: float, x_label: str, pad: int = 96) -> None:
+           top: int, floor: float, x_label: str, pad: int = 96,
+           floor_label: str = "") -> None:
     """Two measurements against a shared floor, over a common x axis.
 
     For a figure whose point is that no value of x satisfies both, the two
@@ -197,6 +198,7 @@ def curves(d: ImageDraw.ImageDraw, series: list[tuple[str, list[tuple[float, flo
     """
     if not series:
         return
+    import math
     left, right = pad, W - pad
     # Deeper than the other kinds leave, because this one needs three
     # separate rows under the plot: the x ticks, the axis caption beside
@@ -218,16 +220,36 @@ def curves(d: ImageDraw.ImageDraw, series: list[tuple[str, list[tuple[float, flo
     d.rectangle([left, fy, right, bottom], fill=(24, 17, 17))
     d.line([(left, fy), (right, fy)], fill=SIGNAL, width=2)
     f = font(19)
-    tracked(d, (left + 10, fy - 30), f"AA FLOOR {floor:g}:1", f, SIGNAL, 1.6)
+    tracked(d, (left + 10, fy - 30), (floor_label or f"floor {floor:g}").upper(), f, SIGNAL, 1.6)
 
-    # Gridlines on whole ratios, so the reader can read a value off the plot.
-    import math
-    for v in range(math.ceil(y0), int(y1) + 1):
-        if abs(v - floor) < 0.4:
-            continue
-        y = py(v)
-        d.line([(left, y), (right, y)], fill=(30, 33, 36), width=1)
-        tracked(d, (left - 34, y - 11), f"{v}", font(17), ASH, 0)
+    # Gridlines at a readable spacing, so a reader can take a value off the
+    # plot. This drew one line per integer, which was right for the contrast
+    # ratios it was written for, spanning 1 to 21. On a series spanning 83 to
+    # 191 it drew 108 gridlines and stacked 108 labels into an unreadable
+    # column down the left edge. So the step is chosen from the range: the
+    # smallest of 1, 2 or 5 times a power of ten that keeps the count under
+    # ten, which gives whole, roundable numbers at any scale.
+    span = y1 - y0
+    step = 1.0
+    while span / step > 9:
+        # 1 -> 2 -> 5 -> 10, repeating up the decades.
+        lead = round(step / 10 ** math.floor(math.log10(step)))
+        step = {1: 2, 2: 5, 5: 10}[lead] * 10 ** math.floor(math.log10(step))
+    while span / step < 3 and step > 0.01:
+        lead = round(step / 10 ** math.floor(math.log10(step)))
+        step = {1: 0.5, 2: 1, 5: 2}[lead] * 10 ** math.floor(math.log10(step))
+    v = math.ceil(y0 / step) * step
+    while v <= y1:
+        if abs(v - floor) >= step * 0.4:
+            y = py(v)
+            d.line([(left, y), (right, y)], fill=(30, 33, 36), width=1)
+            # Right-aligned off the axis rather than at a fixed offset, so a
+            # three-digit label does not run under the first data point the
+            # way 180 did, and a five-digit one still clears it.
+            ft = font(17)
+            text = f"{v:g}"
+            tracked(d, (left - 14 - d.textlength(text, font=ft), y - 11), text, ft, ASH, 0)
+        v += step
 
     # First series solid with hollow rings, second dashed with filled dots, so
     # the pair reads apart in greyscale and for a colourblind reader.
@@ -281,7 +303,7 @@ def build(slug: str, kind: str, title: str, subtitle: str, series: list[tuple[st
           tolerance: float = 0.0, labels: tuple[str, str] = ("", ""),
           clip: float = 0.0,
           lines: list[tuple[str, list[tuple[float, float]]]] | None = None,
-          floor: float = 0.0, x_label: str = "") -> Path:
+          floor: float = 0.0, x_label: str = "", floor_label: str = "") -> Path:
     im = Image.new("RGB", (W, H), OBSIDIAN)
     d = ImageDraw.Draw(im)
     grid(d)
@@ -307,7 +329,7 @@ def build(slug: str, kind: str, title: str, subtitle: str, series: list[tuple[st
         if kind == "residuals":
             residuals(d, points or [], 250, tolerance, labels, clip, PLATE_PAD)
         elif kind == "curves":
-            curves(d, lines or [], 250, floor, x_label, PLATE_PAD)
+            curves(d, lines or [], 250, floor, x_label, PLATE_PAD, floor_label)
         else:
             bars(d, series, 250, PLATE_PAD)
         d.line([(PLATE_PAD, H - 92), (W - PLATE_PAD, H - 92)], fill=IRON, width=1)
@@ -320,18 +342,21 @@ def build(slug: str, kind: str, title: str, subtitle: str, series: list[tuple[st
         return dst
 
     f = font(66, bold=True)
-    # Wrap the title to the panel width rather than letting it run off.
-    words, line, lines = title.split(), "", []
+    # Wrap the title to the panel width rather than letting it run off. The
+    # accumulator is named for what it holds: this was `lines`, which is also
+    # the name of the series argument, so the non-plate curves path below was
+    # handed wrapped title text instead of points.
+    words, line, wrapped = title.split(), "", []
     for w in words:
         trial = f"{line} {w}".strip()
         if d.textlength(trial, font=f) > W - 200 and line:
-            lines.append(line)
+            wrapped.append(line)
             line = w
         else:
             line = trial
-    lines.append(line)
+    wrapped.append(line)
     y = 176
-    for ln in lines[:2]:
+    for ln in wrapped[:2]:
         d.text((96, y), ln, font=f, fill=BONE)
         y += 78
 
@@ -342,7 +367,7 @@ def build(slug: str, kind: str, title: str, subtitle: str, series: list[tuple[st
     if kind == "residuals":
         residuals(d, points or [], y + 44, tolerance, labels, clip)
     elif kind == "curves":
-        curves(d, lines or [], y + 44, floor, x_label)
+        curves(d, lines or [], y + 44, floor, x_label, 96, floor_label)
     else:
         bars(d, series, y + 44)
 
@@ -381,6 +406,11 @@ def main() -> int:
     ap.add_argument("--floor", type=float, default=0.0,
                     help="curves: the threshold both series are measured against")
     ap.add_argument("--x-label", default="", help="curves: what the x axis is")
+    ap.add_argument("--floor-label", default="",
+                    help="curves: what to call the floor line. Defaults to \"floor <value>\". "
+                         "This was hardcoded to the WCAG caption of the first figure that used "
+                         "this kind, so every later one said AA FLOOR n:1 about whatever it was "
+                         "plotting.")
     a = ap.parse_args()
 
     series = []
@@ -406,7 +436,7 @@ def main() -> int:
 
     dst = build(a.slug, a.kind, a.title, a.subtitle, series, a.footer, a.plate,
                 points, a.tolerance, (first, second), a.clip,
-                lines, a.floor, a.x_label)
+                lines, a.floor, a.x_label, a.floor_label)
     print(dst)
     return 0
 

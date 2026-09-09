@@ -3161,7 +3161,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     <li><code>scrape_duration_seconds</code> and <code>up</code> next to the metric itself, to tell
     a value that changed from a target that stopped answering.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/blog/prometheus-server-monitoring", "Prometheus server monitoring"], ["/logs", "Read the log"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/the-alert-was-pending-all-day", "The alert was pending all day"], ["/blog/prometheus-server-monitoring", "Prometheus server monitoring"], ["/logs", "Read the log"]])}
 </main>`,
   });
 
