@@ -37,6 +37,7 @@ import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib
 import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index";
 import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
+import { CASES as LOAD_CASES, blame as loadBlame } from "@/lib/load/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -155,6 +156,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/load",
+    eyebrow: "Predict",
+    title: "Forty, and idle",
+    blurb:
+      "One number, hiding a sum of two unlike things, damped three ways and sampled rather than integrated. Work out what it reads before you look at the curves.",
+    count: `${LOAD_CASES.length} readings, ${LOAD_CASES.filter((item) => loadBlame(item.setup) === "io").length} on idle machines`,
   },
   {
     href: "/alerts",
