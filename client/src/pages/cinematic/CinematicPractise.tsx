@@ -32,6 +32,7 @@ import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index
 import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
 import { CASES as LOAD_CASES, blame as loadBlame, peak as loadPeak } from "@/lib/load/index";
+import { CASES as THROTTLE_CASES, everThrottled as thrEver, exhaustsAt as thrExhausts } from "@/lib/throttle/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -318,6 +319,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/throttle",
+      eyebrow: "Predict",
+      title: "Thirty percent, and stalling",
+      blurb:
+        "CFS bandwidth control is a quota per period, not a rate, and every runnable thread spends it at once. Work out when in the period the container stops.",
+      reachFor: "the container is nowhere near its limit and the p99 is 100ms",
+      stats: [
+        `${THROTTLE_CASES.length} cgroups`,
+        `${THROTTLE_CASES.filter((item) => thrEver(item.setup)).length} being stopped`,
+        `one at ${Math.min(...THROTTLE_CASES.map((item) => thrExhausts(item.setup) ?? Infinity)).toFixed(2)}ms`,
       ],
       progress: null,
     },

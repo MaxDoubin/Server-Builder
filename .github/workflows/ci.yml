@@ -587,6 +587,19 @@ jobs:
       - name: Load averages read what the kernel would print
         run: npx tsx scripts-ci/check-load.ts
 
+      # The quota surface. Same three-layer shape as check-load, plus one
+      # check the others do not have: several of these cases exist to
+      # contrast two configurations, and the contrast is the content. A
+      # change that quietly makes 20 percent as 20/100 behave like 20
+      # percent as 10/50 leaves a case where every option still reads
+      # sensibly and there is nothing in it, which no other check notices.
+      # The internal-consistency block caught a real one: exhaustsAt
+      # reported a group exhausting at the period boundary while cpu.stat
+      # reported it as never throttled, two functions describing the same
+      # period two different ways.
+      - name: CPU quotas stop where the kernel would stop them
+        run: npx tsx scripts-ci/check-throttle.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

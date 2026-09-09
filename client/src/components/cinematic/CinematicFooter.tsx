@@ -128,6 +128,7 @@ export function CinematicFooter() {
               { href: "/nat", label: "Port forwards", testId: "link-footer-nat" },
               { href: "/alerts", label: "Alerting rules", testId: "link-footer-alerts" },
               { href: "/load", label: "Load average", testId: "link-footer-load" },
+              { href: "/throttle", label: "CPU quota", testId: "link-footer-throttle" },
               { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },

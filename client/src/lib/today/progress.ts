@@ -26,6 +26,7 @@ import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as LOADS } from "@/lib/load/index";
+import { CASES as THROTTLES } from "@/lib/throttle/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -49,6 +50,7 @@ import { loadSolvedUnits } from "@/lib/units/progress";
 import { loadSolvedNats } from "@/lib/nat/progress";
 import { loadSolvedAlerts } from "@/lib/alerts/progress";
 import { loadSolvedLoads } from "@/lib/load/progress";
+import { loadSolvedThrottles } from "@/lib/throttle/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -137,6 +139,13 @@ export function readProgress(): Line[] {
       href: "/load",
       done: loadSolvedLoads().filter((slug) => LOADS.some((item) => item.slug === slug)).length,
       total: LOADS.length,
+      noun: "called right",
+    },
+    {
+      label: "CPU quota",
+      href: "/throttle",
+      done: loadSolvedThrottles().filter((slug) => THROTTLES.some((item) => item.slug === slug)).length,
+      total: THROTTLES.length,
       noun: "called right",
     },
     {
