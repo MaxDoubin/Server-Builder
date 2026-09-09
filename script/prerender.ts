@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as LIMIT_CASES, SOURCE_LABEL as limSource, asProcLimits as limProc, correctOption as limCorrect, effective as limEffective, failsWith as limFails, highestFd as limHighest, limit as limNum, succeeds as limOk } from "../client/src/lib/limits/index";
 import { CASES as PORT_CASES, TIME_WAIT_SECONDS as portTw, asSysctl as portSysctl, count as portCount, exhausts as portExhausts, heldBy as portHeldBy, loads as portLoads, maxRate as portMaxRate, portsHeld, rangeSize as portRangeSize, correctOption as portCorrect } from "../client/src/lib/ports/index";
 import { CASES as THROTTLE_CASES, asCpuMax as thrMax, asCpuStat as thrStat, everThrottled as thrEver, exhaustsAt as thrExhausts, finishesAt as thrFinishes, limitCpus as thrLimit, ms as thrMs, rate as thrRate, run as thrRun, stat as thrStatOf, correctOption as thrCorrect } from "../client/src/lib/throttle/index";
@@ -875,6 +876,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/throttle">Thirty percent, and stalling</a>, ten containers under a CPU limit and when the quota runs out.</li>
     <li><a href="${SITE_URL}/ports">Out of ports</a>, ten hosts against one ephemeral range and which connection fails first.</li>
     <li><a href="${SITE_URL}/limits">Too many open files</a>, five mechanisms that set a descriptor limit and which one was in scope.</li>
+    <li><a href="${SITE_URL}/free">Two hundred megabytes free</a>, what MemAvailable computes and what the free column is not.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2172,6 +2174,7 @@ ${JSON.stringify({
     ["Thirty percent, and stalling", "/throttle"],
     ["Out of ports", "/ports"],
     ["Too many open files", "/limits"],
+    ["Two hundred megabytes free", "/free"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3632,6 +3635,119 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     at its hard limit and the soft value in the unit never mattered.</li>
   </ol>
   ${backLinks([["/practise", "All practise material"], ["/blog/the-file-was-right-and-nobody-read-it", "The file was right and nobody read it"], ["/ports", "Out of ports"], ["/units", "It started before the thing it needs"]])}
+</main>`,
+  });
+
+  // ── the memory estimate ──
+  /*
+    The three parts of the estimate go into the static body as a table,
+    because the argument is that MemAvailable is arithmetic nobody has looked
+    at. Somebody searching "linux no free memory but plenty available" lands
+    here and the row they need shows 240Mi free next to 29.1Gi available on
+    the same machine.
+  */
+  const freeMisleading = FREE_CASES.filter(
+    (item) => freeAvailable(item.setup) > item.setup.free * 10,
+  ).length;
+  const freeOverstating = FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length;
+  const freeDescription =
+    "An operating system that leaves memory unused is wasting it, so on any server that has been " +
+    "up a week the free column is small by design. MemAvailable is the estimate that answers the " +
+    "question: free less the reserves, plus the page cache less what has to stay, plus the " +
+    "reclaimable slab less the same, where the subtraction is min(half of it, the low watermark) " +
+    "and which arm wins changes with the size of the machine. " +
+    `${FREE_CASES.length} machines here, ${freeMisleading} where available is more than ten times ` +
+    `free, and ${freeOverstating} where the estimate itself overstates because tmpfs is counted as ` +
+    "reclaimable page cache and there is no swap.";
+
+  await writePage("free", base, {
+    title: "Two Hundred Megabytes Free, and the Machine Is Fine | Max Doubin",
+    description: freeDescription,
+    canonical: `${SITE_URL}/free`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Two hundred megabytes free",
+  description: freeDescription,
+  url: `${SITE_URL}/free`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "What MemAvailable actually computes in si_mem_available: free less totalreserve, plus page cache less min(half of it, the low watermark), plus reclaimable slab less the same; why the remembered rule that half the cache is available is the small-machine arm of that min; why the used column is a residue that moves when the cache moves; why tmpfs counted as page cache makes the estimate overstate on a host with no swap; why Dirty is counted even though it has to be written first; and why a collapsed page cache rather than a small free column is what real memory pressure looks like",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Two hundred megabytes free, and the machine is fine</h1>
+  <p>
+    ${FREE_CASES.length} machines and one line of /proc/meminfo. On ${freeMisleading} of them
+    MemAvailable is more than ten times MemFree, and on ${freeOverstating} the estimate itself
+    overstates.
+  </p>
+  <p>
+    An operating system that leaves memory unused is wasting it, so the page cache grows until
+    something needs the space back and the free column goes to nearly nothing. MemAvailable is the
+    estimate that answers the question people are actually asking, and it is three additions and
+    two subtractions: free less the reserves, plus the page cache less what has to stay, plus the
+    reclaimable slab less the same. The subtraction is
+    <code>min(half of it, the low watermark)</code>, and which arm wins changes with the size of
+    the machine, which is why the remembered rule that half the cache is available is right on a
+    laptop and wrong on a server.
+  </p>
+  <h2>What each machine says, and what it means</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Machine</th><th>Total</th><th>Free</th><th>Cache</th><th>Used</th><th>Available</th><th>Held back by</th></tr>
+    </thead>
+    <tbody>
+${FREE_CASES.map((item) => {
+  const e = freeEstimate(item.setup);
+  return `      <tr><td>${esc(item.name)}</td><td>${esc(freeHuman(item.setup.total))}</td>` +
+    `<td>${esc(freeHuman(item.setup.free))}</td><td>${esc(freeHuman(freeCache(item.setup)))}</td>` +
+    `<td>${esc(freeHuman(freeUsed(item.setup)))}</td><td>${esc(freeHuman(freeAvailable(item.setup)))}</td>` +
+    `<td>${esc(e.cacheHeldBy)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${FREE_CASES.map((item) => {
+  const right = freeCorrect(item);
+  const over = freeOverstated(item.setup);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>$ free -h
+${esc(freeCmd(item.setup))}
+
+${esc(freeMeminfo(item.setup))}</code></pre>
+    <p>MemAvailable is ${freeAvailable(item.setup)} kB${over > 0 ? `, of which about ${esc(freeHuman(over))} is tmpfs that nothing can reclaim on a host with no swap` : ""}.${item.setup.wants > 0 ? ` An allocation of ${esc(freeHuman(item.setup.wants))} ${freeFits(item.setup) ? "fits" : "does not fit"}.` : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real machine</h2>
+  <ol>
+    <li><code>grep -E 'MemFree|MemAvailable|Shmem|Dirty' /proc/meminfo</code>. Available is the
+    number to alert on and free is the one that was always going to be small.</li>
+    <li>Watch the page cache size over hours, not the free column. A cache that is shrinking is the
+    early warning; a small free column is the normal state of a healthy server.</li>
+    <li>Subtract <code>Shmem</code> on any host with a large tmpfs and no swap. Those pages are
+    counted as reclaimable page cache and nothing can reclaim them.</li>
+    <li><code>Dirty</code> and <code>Writeback</code> next to it when latency matters. MemAvailable
+    counts a dirty page because it will become available, and it becomes available at the speed of
+    the disk under it.</li>
+    <li><code>/proc/pressure/memory</code> for control decisions. It measures time actually spent
+    stalled rather than predicting whether reclaim might cost something.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/oom", "Something has to die"], ["/load", "Forty, and idle"]])}
 </main>`,
   });
 
@@ -6196,6 +6312,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/throttle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ports`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/limits`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/free`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

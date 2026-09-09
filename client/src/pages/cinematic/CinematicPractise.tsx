@@ -35,6 +35,7 @@ import { CASES as LOAD_CASES, blame as loadBlame, peak as loadPeak } from "@/lib
 import { CASES as THROTTLE_CASES, everThrottled as thrEver, exhaustsAt as thrExhausts } from "@/lib/throttle/index";
 import { CASES as PORT_CASES, exhausts as portExhausts, TIME_WAIT_SECONDS as portTw } from "@/lib/ports/index";
 import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
+import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -321,6 +322,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/free",
+      eyebrow: "Read",
+      title: "Two hundred megabytes free",
+      blurb:
+        "MemAvailable is free less the reserves, plus the cache less what stays, plus the slab less the same. Work out what the kernel would print and whether it is true here.",
+      reachFor: "the memory alert fires every night and the machine is fine",
+      stats: [
+        `${FREE_CASES.length} machines`,
+        `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
+        "si_mem_available",
       ],
       progress: null,
     },

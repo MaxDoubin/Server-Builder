@@ -41,6 +41,7 @@ import { CASES as LOAD_CASES, blame as loadBlame } from "@/lib/load/index";
 import { CASES as THROTTLE_CASES, everThrottled as thrEver } from "@/lib/throttle/index";
 import { CASES as PORT_CASES, exhausts as portExhausts } from "@/lib/ports/index";
 import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
+import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -159,6 +160,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/free",
+    eyebrow: "Read",
+    title: "Two hundred megabytes free",
+    blurb:
+      "The free column is small on every healthy server, by design. MemAvailable is the number that answers the question, and it is an estimate with an arm that flips.",
+    count: `${FREE_CASES.length} machines, ${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where the estimate overstates`,
   },
   {
     href: "/limits",
