@@ -626,6 +626,9 @@ jobs:
       # is exactly how check-answer-keys came about. Doing it once also gave
       # it to /nat and /alerts, which had thirteen and three options quoting a
       # figure that nothing compared.
+      - name: Memory estimates say what si_mem_available would say
+        run: npx tsx scripts-ci/check-free.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

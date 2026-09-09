@@ -31,10 +31,11 @@
  * right, and eighteen undifferentiated cards make them read all eighteen to
  * find out which. On a phone that was twelve screens of scrolling.
  */
-export type PractiseGroup = "diagnose" | "decide" | "compute" | "ground";
+export type PractiseGroup = "diagnose" | "measure" | "decide" | "compute" | "ground";
 
 export const GROUP_HEADING: Record<PractiseGroup, string> = {
   diagnose: "Something is broken and you have to find it",
+  measure: "The machine printed a number and it does not mean that",
   decide: "There is a call to make and not enough information",
   compute: "There is a number and it has to be right",
   ground: "You are covering the ground",
@@ -43,6 +44,9 @@ export const GROUP_HEADING: Record<PractiseGroup, string> = {
 export const GROUP_BLURB: Record<PractiseGroup, string> = {
   diagnose:
     "Evidence in front of you and a fault behind it. These give you the evidence and nothing else.",
+  measure:
+    "A figure everybody reads and almost nobody has looked up. Each of these is one number, its" +
+    " actual definition, and the incident that comes of the difference.",
   decide:
     "No amount of further reading resolves these. You commit, and then you find out.",
   compute:
@@ -111,16 +115,17 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
   { href: "/capture", eyebrow: "Read", title: "Packet captures", group: "diagnose"  , reading: ["troubleshooting-packet-captures", "wireshark-packet-analysis"] },
   { href: "/vlan", eyebrow: "Follow", title: "The frame that arrived untagged", group: "diagnose" , reading: ["the-request-arrived-the-reply-did-not", "vlan-segmentation-guide", "network-access-control-8021x"] },
   { href: "/clock", eyebrow: "Measure", title: "Four errors, none of which says the word time", group: "diagnose" , reading: ["ntp-enterprise-networks", "how-totp-codes-actually-work", "certificate-lifetimes-are-200-days-now"] },
-  { href: "/space", eyebrow: "Compare", title: "No space left on device", group: "diagnose" , reading: ["linux-disk-io-troubleshooting", "filesystem-journal-explained", "prometheus-server-monitoring"] },
+  { href: "/space", eyebrow: "Compare", title: "No space left on device", group: "measure" , reading: ["linux-disk-io-troubleshooting", "filesystem-journal-explained", "prometheus-server-monitoring"] },
   { href: "/cache", eyebrow: "Read", title: "The page that showed somebody else's name", group: "diagnose" , reading: ["http-caching-headers-etags", "caching-model-endpoint", "the-disk-was-not-full"] },
-  { href: "/oom", eyebrow: "Predict", title: "Something has to die", group: "diagnose" , reading: ["minus-one-thousand-is-not-a-hint", "oom-killer-and-swap-sizing", "cgroups-v2-resource-limits"] },
+  { href: "/oom", eyebrow: "Predict", title: "Something has to die", group: "measure" , reading: ["minus-one-thousand-is-not-a-hint", "oom-killer-and-swap-sizing", "cgroups-v2-resource-limits"] },
   { href: "/units", eyebrow: "Order", title: "It started before the thing it needs", group: "diagnose" , reading: ["systemd-units-that-behave", "init-scripts-to-systemd-units", "systemd-service-hardening"] },
   { href: "/nat", eyebrow: "Trace", title: "It works from outside", group: "diagnose" , reading: ["nothing-translates-the-reply", "netfilter-hook-order", "firewall-policy-design"] },
   { href: "/alerts", eyebrow: "Predict", title: "The graph crossed the line", group: "diagnose" , reading: ["the-alert-was-pending-all-day", "prometheus-server-monitoring", "network-monitoring-system-build"] },
-  { href: "/load", eyebrow: "Predict", title: "Forty, and idle", group: "diagnose" , reading: ["forty-and-nothing-was-running", "linux-disk-io-troubleshooting", "linux-page-cache-and-io"] },
-  { href: "/throttle", eyebrow: "Predict", title: "Thirty percent, and stalling", group: "diagnose" , reading: ["stopped-not-slow", "cgroups-v2-resource-limits", "container-orchestration-basics"] },
-  { href: "/ports", eyebrow: "Predict", title: "Out of ports", group: "diagnose" , reading: ["it-ran-out-at-four-hundred-and-seventy", "tcp-congestion-control-basics", "linux-network-tuning-without-cargo-cult"] },
-  { href: "/limits", eyebrow: "Resolve", title: "Too many open files", group: "diagnose" , reading: ["the-file-was-right-and-nobody-read-it", "systemd-service-hardening", "systemd-units-that-behave"] },
+  { href: "/load", eyebrow: "Predict", title: "Forty, and idle", group: "measure" , reading: ["forty-and-nothing-was-running", "linux-disk-io-troubleshooting", "linux-page-cache-and-io"] },
+  { href: "/throttle", eyebrow: "Predict", title: "Thirty percent, and stalling", group: "measure" , reading: ["stopped-not-slow", "cgroups-v2-resource-limits", "container-orchestration-basics"] },
+  { href: "/ports", eyebrow: "Predict", title: "Out of ports", group: "measure" , reading: ["it-ran-out-at-four-hundred-and-seventy", "tcp-congestion-control-basics", "linux-network-tuning-without-cargo-cult"] },
+  { href: "/limits", eyebrow: "Resolve", title: "Too many open files", group: "measure" , reading: ["the-file-was-right-and-nobody-read-it", "systemd-service-hardening", "systemd-units-that-behave"] },
+  { href: "/free", eyebrow: "Read", title: "Two hundred megabytes free", group: "measure" , reading: ["linux-page-cache-and-io", "oom-killer-and-swap-sizing", "linux-disk-io-troubleshooting"] },
   { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  , reading: ["four-faults-one-sentence", "recursive-resolver-internals", "dns-negative-caching"] },
   { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  , reading: ["ssl-tls-certificates-explained", "certificate-rotation-automation", "certificate-lifetimes-are-200-days-now"] },
   { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" , reading: ["mtu-mismatch-troubleshooting", "mtu-black-hole-troubleshooting", "jumbo-frames-path-mtu"] },
@@ -142,7 +147,7 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
 ];
 
 /** The groups in reading order, each with its surfaces. */
-export const GROUPS: PractiseGroup[] = ["decide", "diagnose", "compute", "ground"];
+export const GROUPS: PractiseGroup[] = ["decide", "diagnose", "measure", "compute", "ground"];
 
 export const surfacesIn = (group: PractiseGroup): PractiseSurface[] =>
   PRACTISE_SURFACES.filter((surface) => surface.group === group);

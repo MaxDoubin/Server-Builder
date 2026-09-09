@@ -135,8 +135,23 @@ for (const group of GROUPS) {
     );
   }
 }
-if (surfacesIn("decide").length + surfacesIn("diagnose").length + surfacesIn("compute").length + surfacesIn("ground").length !== PRACTISE_SURFACES.length) {
-  problems.push("a surface is in no group, or in one the headings do not cover");
+/*
+  Every surface accounted for by some group in GROUPS.
+
+  This named the four groups by hand and therefore could not see a fifth: on
+  the day "measure" was added, seven surfaces moved into it and this line
+  reported them as belonging to nothing, because it was summing a list it had
+  been given rather than the list that exists. Derived from GROUPS now, so
+  adding a group is one edit rather than two.
+*/
+const grouped = GROUPS.reduce((total, group) => total + surfacesIn(group).length, 0);
+if (grouped !== PRACTISE_SURFACES.length) {
+  const homeless = PRACTISE_SURFACES.filter((surface) => !GROUPS.includes(surface.group));
+  problems.push(
+    `${PRACTISE_SURFACES.length - grouped} surfaces are in no group in GROUPS` +
+      (homeless.length ? `: ${homeless.map((s) => `${s.href} (${s.group})`).join(", ")}` : "") +
+      `. Either the group is missing from GROUPS or the surface names one that does not exist.`,
+  );
 }
 
 /**

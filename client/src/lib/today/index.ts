@@ -33,6 +33,7 @@ import { CASES as LOADS } from "@/lib/load/index";
 import { CASES as THROTTLES } from "@/lib/throttle/index";
 import { CASES as PORTS } from "@/lib/ports/index";
 import { CASES as LIMITS } from "@/lib/limits/index";
+import { CASES as FREES } from "@/lib/free/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -88,6 +89,7 @@ const OFFSET = {
   throttle: 109,
   ports: 113,
   limits: 127,
+  free: 131,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -330,6 +332,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Five places a descriptor limit can come from, and they are not a hierarchy. Work out which one was in scope.",
       href: "/limits",
       outOf: LIMITS.length,
+    });
+  }
+
+  const memory = pickFor(FREES, day, OFFSET.free);
+  if (memory) {
+    out.push({
+      surface: "free",
+      eyebrow: "Read",
+      title: memory.name,
+      blurb: "One line of /proc/meminfo and two subtractions. Work out what MemAvailable says and whether it is true here.",
+      href: "/free",
+      outOf: FREES.length,
     });
   }
 
