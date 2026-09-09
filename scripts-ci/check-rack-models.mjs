@@ -109,7 +109,7 @@ function slugOf(module) {
 /**
  * Vertical extent of every top level node group in a GLB.
  *
- * Positions are quantised to normalised shorts by the meshopt pass, so a
+ * Positions are quantised to normalized shorts by the meshopt pass, so a
  * node's world range is its translation plus its scale times the accessor
  * bounds. That is enough to place a group without decoding a single vertex,
  * which matters because these files are compressed.

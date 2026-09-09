@@ -39,7 +39,7 @@ interface Props {
    * This page opens with a full bleed image behind the navigation.
    *
    * The nav is transparent until scrolled, so on these pages its links sit
-   * on a photograph and need their own plate and a brighter colour. See the
+   * on a photograph and need their own plate and a brighter color. See the
    * note on CinematicNav.
    */
   overHero?: boolean;
@@ -86,7 +86,7 @@ export function CinematicLayout({
     try {
       sessionStorage.setItem(BOOTED_KEY, "1");
     } catch {
-      /* Then it plays again next navigation, which is the old behaviour. */
+      /* Then it plays again next navigation, which is the old behavior. */
     }
   };
 

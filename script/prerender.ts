@@ -106,7 +106,7 @@ marked.use(scrollableTables);
 /*
   Escapes, and tolerates a missing value.
 
-  Three entries in the vendor catalogue arrived with a null description and
+  Three entries in the vendor catalog arrived with a null description and
   a null SKU, and because this took a plain string it did not produce a page
   with a gap in it, it took the whole prerender down at the last step with a
   stack trace pointing at the escaper rather than at the data. A field that
@@ -246,7 +246,7 @@ const SITE_NAV = `
   On a phone that is not a flicker, it is a second or more of a page that
   looks broken.
 
-  Painting it in the site's own colours is the honest fix. Hiding it would
+  Painting it in the site's own colors is the honest fix. Hiding it would
   show crawlers something readers never see, and it would throw away the
   no-JavaScript fallback that the whole prerendering effort exists to
   provide. Styled, the same markup reads as the page arriving rather than
@@ -720,7 +720,7 @@ ${JSON.stringify({
   // Point each tag at its topic hub where one exists. Every tag on every
   // post used to link to /blog, so roughly 700 crawler-visible links pointed
   // at the index and the 26 hubs had almost no inbound links from the
-  // archive they summarise. Tags without a hub still go to the index.
+  // archive they summarize. Tags without a hub still go to the index.
   const tagLinks = post.tags
     .map((t) => {
       const href = getTagPage(t) ? `${SITE_URL}/topics/${t}` : `${SITE_URL}/blog`;
@@ -1063,7 +1063,7 @@ ${JSON.stringify({
       dir: "racks/wired",
       title: "The wired UniFi rack | Max Doubin",
       description:
-        "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fibre uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
+        "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fiber uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
       canonical: `${SITE_URL}/racks/wired`,
     },
     {
@@ -1189,7 +1189,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "noc",
       title: "NOC Overview | Max Doubin",
       description:
-        "The simulator's network operations dashboard: alert volume, uptime stability, and response cadence over the modelled datacenter floor.",
+        "The simulator's network operations dashboard: alert volume, uptime stability, and response cadence over the modeled datacenter floor.",
       canonical: `${SITE_URL}/noc`,
       noindex: true,
       // Game header, not CinematicLayout, so no preloader ever mounts here
@@ -1200,7 +1200,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "network",
       title: "Network Operations | Max Doubin",
       description:
-        "The simulator's network dashboard: topology overview, throughput trends, and link health across the modelled datacenter.",
+        "The simulator's network dashboard: topology overview, throughput trends, and link health across the modeled datacenter.",
       canonical: `${SITE_URL}/network`,
       noindex: true,
       // Game header, not CinematicLayout, so no preloader ever mounts here
@@ -1211,7 +1211,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "floor",
       title: "Floor Operations | Max Doubin",
       description:
-        "The simulator's floor dashboard: thermal zones, airflow balance, and how racks are distributed across the modelled datacenter floor.",
+        "The simulator's floor dashboard: thermal zones, airflow balance, and how racks are distributed across the modeled datacenter floor.",
       canonical: `${SITE_URL}/floor`,
       noindex: true,
       // Game header, not CinematicLayout, so no preloader ever mounts here
@@ -1222,7 +1222,7 @@ ${[...NCL_GUIDE_DATA]
       dir: "incidents",
       title: "Incident Command | Max Doubin",
       description:
-        "The simulator's incident dashboard: severity distribution, response speed, and tracking of open incidents on the modelled floor.",
+        "The simulator's incident dashboard: severity distribution, response speed, and tracking of open incidents on the modeled floor.",
       canonical: `${SITE_URL}/incidents`,
       noindex: true,
       // Game header, not CinematicLayout, so no preloader ever mounts here
@@ -1716,7 +1716,7 @@ ${JSON.stringify({
   Hand written rather than rendered, for the same reason the WebGL pages
   above are: these are charts and counters, so a React render would give a
   crawler a page of axis labels. Each says what the dashboard is, what it
-  reads, and that the numbers are modelled rather than measured, which is
+  reads, and that the numbers are modeled rather than measured, which is
   the one thing a reader arriving cold most needs to be told.
 
   Every block opens at h1. Three pages once shipped starting at h2 because
@@ -2567,7 +2567,7 @@ ${JSON.stringify({
     survive stays out, because that is the exercise.
   */
   const restoreDescription =
-    "Every organisation that lost data had backups. Six incidents, each with a backup posture " +
+    "Every organization that lost data had backups. Six incidents, each with a backup posture " +
     "that would pass an audit, and between zero and one copy that turns out to be worth anything.";
 
   await writePage("restore", base, {
@@ -3225,7 +3225,7 @@ ${JSON.stringify({
   learningResourceType: "Interactive exercise",
   educationalLevel: "Intermediate",
   teaches:
-    "What the Linux load average actually counts: that nr_uninterruptible is added to nr_running so a blocked task weighs the same as a running one, that the figure is not normalised by the core count, that it is an exponentially damped moving average sampled every 5*HZ+1 ticks so it reaches only 63 percent of a step after one time constant, that a burst shorter than the sample period is never counted at all, and how to take the sum apart again with vmstat, /proc/loadavg and pressure stall information",
+    "What the Linux load average actually counts: that nr_uninterruptible is added to nr_running so a blocked task weighs the same as a running one, that the figure is not normalized by the core count, that it is an exponentially damped moving average sampled every 5*HZ+1 ticks so it reaches only 63 percent of a step after one time constant, that a burst shorter than the sample period is never counted at all, and how to take the sum apart again with vmstat, /proc/loadavg and pressure stall information",
   isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
 })}
 </script>`,
@@ -4735,7 +4735,7 @@ ${ARRAY_CONFIGS.map((config) => `    <li>${esc(config.label)}: ${esc(config.note
   */
   const allocateIndexDescription =
     "Six blocks to divide between competing requirements, with a map drawn to scale. Overlaps, " +
-    "unaligned networks, summary routes and growth, marked on behaviour rather than on matching " +
+    "unaligned networks, summary routes and growth, marked on behavior rather than on matching " +
     "one answer.";
 
   await writePage("allocate", base, {
@@ -5200,7 +5200,7 @@ ${TRIAGE_MESSAGES.map(
   // ── capture the flag challenges ──
   /*
     The artefacts are printed into the static body deliberately: a hex dump
-    and a summarised auth.log are exactly the sort of thing someone searches
+    and a summarized auth.log are exactly the sort of thing someone searches
     for, and a crawler that can read them is a crawler that can rank them.
     What never goes in is the flag, and the walkthrough with it, because the
     static page has no button to hide them behind.
@@ -5663,7 +5663,7 @@ ${list}
   await writePage("topics", base, {
     title: "Topics | Max Doubin",
     description:
-      "Browse writing on networking, servers, security, Linux, storage, AI infrastructure and more, organised by subject rather than by date.",
+      "Browse writing on networking, servers, security, Linux, storage, AI infrastructure and more, organized by subject rather than by date.",
     canonical: `${SITE_URL}/topics`,
     rootContent: `
 <main>
@@ -5755,7 +5755,7 @@ ${JSON.stringify({
   "@context": "https://schema.org",
   "@type": "DataCatalog",
   name: "Max Doubin open rack data",
-  description: `Two openly licensed datasets: modelling figures for ${catalogCount} rack-mount devices, and ${rackDeviceCount} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
+  description: `Two openly licensed datasets: modeling figures for ${catalogCount} rack-mount devices, and ${rackDeviceCount} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
   url: `${SITE_URL}/data`,
   license: "https://creativecommons.org/licenses/by/4.0/",
   creator: dataCreator,
@@ -5763,7 +5763,7 @@ ${JSON.stringify({
     {
       "@type": "Dataset",
       name: "Rack hardware power and thermal catalog",
-      description: `Modelling figures for ${catalogCount} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
+      description: `Modeling figures for ${catalogCount} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
       license: "https://creativecommons.org/licenses/by/4.0/",
       creator: dataCreator,
       distribution: [
@@ -5798,7 +5798,7 @@ ${JSON.stringify({
   </ul>
   <h2>Rack library elevations</h2>
   <p>${rackDeviceCount} devices across ${RACKS.length} rack elevations, with vendor, model, rack units, position in the frame and published draw. ${rackSourcedCount} of them carry the datasheet page their figures came from.</p>
-  <p>These are the vendors' own published figures rather than modelling ones. watts is null wherever a vendor publishes a power supply rating or a PoE budget instead of the device's own consumption, which is most of the enterprise hardware here: a 715W supply is not a 715W switch. Port link state and drive bay occupancy on the rack pages are illustrative and are not in the file.</p>
+  <p>These are the vendors' own published figures rather than modeling ones. watts is null wherever a vendor publishes a power supply rating or a PoE budget instead of the device's own consumption, which is most of the enterprise hardware here: a 715W supply is not a 715W switch. Port link state and drive bay occupancy on the rack pages are illustrative and are not in the file.</p>
   <ul>
     <li><a href="${SITE_URL}/data/rack-library.json">rack-library.json</a></li>
     <li><a href="${SITE_URL}/data/rack-library.csv">rack-library.csv</a></li>
@@ -6156,7 +6156,7 @@ ${JSON.stringify({
   }
 
   /*
-    The hardware catalogue. Two hundred and fifty two vendor models with
+    The hardware catalog. Two hundred and fifty two vendor models with
     their measured dimensions, and until this page existed the only ones a
     crawler could see were the ones that mount in a rack. The list is
     read from the same JSON the page fetches, so the prerendered text cannot
@@ -6209,7 +6209,7 @@ ${JSON.stringify({
 </main>`;
 
   await writePage("gear", base, {
-    title: "Hardware Catalogue | Max Doubin",
+    title: "Hardware Catalog | Max Doubin",
     description:
       "Every UniFi model on this site, measured: switches, access points, cameras, gateways and door hardware, with real dimensions and triangle counts taken from the geometry itself.",
     canonical: `${SITE_URL}/gear`,
@@ -6218,7 +6218,7 @@ ${JSON.stringify({
 ${JSON.stringify({
   "@context": "https://schema.org",
   "@type": "ItemList",
-  name: "Hardware catalogue",
+  name: "Hardware catalog",
   description: "Vendor hardware models with measured dimensions.",
   url: `${SITE_URL}/gear`,
   numberOfItems: catalogue.devices.length,
@@ -6362,7 +6362,7 @@ async function writeSitemap(
     });
     // The revision sheet is the whole exam on one page, so it answers "what
     // is on this exam" in one fetch. Same priority as the exam page it
-    // summarises.
+    // summarizes.
     urls.push({
       loc: `${SITE_URL}/study/${exam.slug}/sheet`,
       lastmod: today,

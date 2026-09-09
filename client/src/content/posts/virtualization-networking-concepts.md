@@ -8,7 +8,7 @@ When you create a VM, it needs network access. The hypervisor provides this thro
 
 In Proxmox, the default virtual bridge is called vmbr0. In ESXi, it is a vSwitch or Distributed Switch. The concept is the same: a software-defined Layer 2 switch inside the hypervisor.
 
-There is one behavioural difference between the software switch and the physical one that catches people out. A Linux bridge learns MAC addresses the same way a physical switch does, but a hypervisor vSwitch generally does not need to: it already knows which MAC belongs to which virtual port because it handed the address out. That means unknown-unicast flooding, the thing that lets you snoop traffic on a hub, mostly does not happen, and it is why you cannot simply run a capture inside one VM and see another VM's traffic.
+There is one behavioral difference between the software switch and the physical one that catches people out. A Linux bridge learns MAC addresses the same way a physical switch does, but a hypervisor vSwitch generally does not need to: it already knows which MAC belongs to which virtual port because it handed the address out. That means unknown-unicast flooding, the thing that lets you snoop traffic on a hub, mostly does not happen, and it is why you cannot simply run a capture inside one VM and see another VM's traffic.
 
 ## Connecting to physical networks
 

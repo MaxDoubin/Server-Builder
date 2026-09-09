@@ -142,7 +142,7 @@ for (const path of PATHS) {
     if (fate.swallowedAt !== expected) {
       problems.push(
         `${path.slug}: blames hop ${fate.swallowedAt} (${path.hops[fate.swallowedAt]?.name}) for swallowing an ICMP ` +
-          `generated at hop ${fate.at}, and the first blocker it meets travelling back is hop ${expected} ` +
+          `generated at hop ${fate.at}, and the first blocker it meets traveling back is hop ${expected} ` +
           `(${path.hops[expected]?.name})`,
       );
     }

@@ -100,7 +100,7 @@ export function run(setup: Setup): Period[] {
     done += used;
     /*
       Unused quota carries forward, up to cfs_burst_us. With the default
-      burst of zero this is always zero, which is the traditional behaviour:
+      burst of zero this is always zero, which is the traditional behavior:
       a period that underruns simply loses the difference.
     */
     carried = Math.min(setup.burstMs, Math.max(0, available - used));

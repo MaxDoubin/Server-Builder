@@ -19,7 +19,7 @@ own arithmetic.
 
 ## What it was doing
 
-The fit is a straight line. Device centres go down the rack at one rack unit
+The fit is a straight line. Device centers go down the rack at one rack unit
 per unit, so the height of the nth device is a linear function of n, and
 recovering that line gives you both a check on the unit size and a residual
 per device. The rack's origin has to be recovered rather than assumed,
@@ -76,7 +76,7 @@ and then the intercept is the median of what is left over:
 
 Every pair of points votes on the gradient and the middle vote wins. A point
 that has moved is in some of those pairs and not in most of them, and it
-cannot move a median it is not near the centre of. The published breakdown
+cannot move a median it is not near the center of. The published breakdown
 point is:
 
 > 1 - 1/sqrt(2), approximately 29.3%
@@ -153,12 +153,12 @@ clothes.
 The models ship compressed. Every POSITION accessor in the file declares
 `componentType` 5122 and `normalized: true`, which is a signed 16 bit
 integer scaled across its full range, and its `min` and `max` are in those
-raw units rather than in metres: one reads `[-32767, -1384, -1472]`. The
+raw units rather than in meters: one reads `[-32767, -1384, -1472]`. The
 check reads node extents straight out of those bounds and divides by 32767,
 which is fast and correct against a compressed file and meaningless against
-an uncompressed one, where the same fields are already in metres. Point it
+an uncompressed one, where the same fields are already in meters. Point it
 at raw generator output and it reports a rack unit of 25mm and half the
-devices metres out of place.
+devices meters out of place.
 
 I did that, concluded the build was not reproducible, and wrote it down as a
 finding. It was not a finding. Regenerating the rack and compressing it with

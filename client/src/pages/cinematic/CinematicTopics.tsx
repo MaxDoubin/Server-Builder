@@ -27,7 +27,7 @@ export function CinematicTopics() {
   useSEO({
     title: "Topics | Max Doubin",
     description:
-      "Browse writing on networking, servers, security, Linux, storage, AI infrastructure and more, organised by subject rather than by date.",
+      "Browse writing on networking, servers, security, Linux, storage, AI infrastructure and more, organized by subject rather than by date.",
     canonical: `${SITE_URL}/topics`,
     schema: {
       "@context": "https://schema.org",

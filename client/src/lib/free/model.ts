@@ -2,7 +2,7 @@
  * si_mem_available(), transcribed.
  *
  * This is one of the few kernel functions short enough to model exactly, so
- * it is modelled exactly rather than approximated, and the approximation
+ * it is modeled exactly rather than approximated, and the approximation
  * everybody carries ("half the cache is available") turns out to be the
  * small-machine case of a min() that usually goes the other way.
  *

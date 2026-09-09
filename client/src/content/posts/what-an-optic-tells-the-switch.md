@@ -12,7 +12,7 @@ the size of a grain of rice inside the module, and the whole arrangement is
 described in one document: SFF-8472.
 
 The reason this is worth knowing is that the last figure in the list, how much
-light is arriving, is the single most useful number in a fibre plant, and
+light is arriving, is the single most useful number in a fiber plant, and
 almost nobody looks at it until something has already broken.
 
 ## Two addresses on one bus
@@ -21,7 +21,7 @@ The module hangs off a two-wire bus, and it answers at two addresses.
 
 The first, A0h, is the identity page. Vendor, part number, serial, date code,
 the transceiver's compliance codes, the nominal bit rate, the wavelength, the
-supported link lengths per fibre type. It is static, written at the factory,
+supported link lengths per fiber type. It is static, written at the factory,
 and it is what a switch reads to decide whether it likes the optic.
 
 The second is where the interesting part lives. SFF-8472 puts it at
@@ -60,7 +60,7 @@ conversion appears in every tool that prints it.
 ## Why receive power is the number that matters
 
 Every optical link has a budget. The transmitter puts out some amount of
-light, the fibre and every connector and splice in between takes some away,
+light, the fiber and every connector and splice in between takes some away,
 and the receiver needs a minimum amount left to recover the signal. The
 difference between what arrives and that minimum is your margin.
 

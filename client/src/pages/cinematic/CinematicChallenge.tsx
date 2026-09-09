@@ -80,7 +80,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
   const showMethod = state === "solved" || revealed;
 
   /*
-    Accent by category rather than one colour for all six, so a cryptography
+    Accent by category rather than one color for all six, so a cryptography
     puzzle and a log-analysis one do not arrive looking identical. The four
     values are the site's contrast-checked accents; a fifth would have to be
     legible on white as well as on obsidian and there is no fifth.

@@ -110,7 +110,7 @@ The second trap is blocking ICMPv6. On IPv4 you can filter most ICMP and get awa
 
 Most enterprise environments now operate dual-stack, running both IPv4 and IPv6 simultaneously. Start by enabling IPv6 on your homelab router, get a prefix delegation from your ISP if available, and experiment with connectivity. The best way to learn IPv6 is to use it.
 
-Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global address and a working default route. Write the firewall rules before you route the prefix, not after. Then break it on purpose, block ICMPv6 type 2 and watch large transfers hang, so that when it happens for real you recognise the symptom in thirty seconds instead of an afternoon.
+Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global address and a working default route. Write the firewall rules before you route the prefix, not after. Then break it on purpose, block ICMPv6 type 2 and watch large transfers hang, so that when it happens for real you recognize the symptom in thirty seconds instead of an afternoon.
 
 ## References
 

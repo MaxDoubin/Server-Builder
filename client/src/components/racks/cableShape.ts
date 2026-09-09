@@ -1,10 +1,10 @@
 /**
- * The shape a patch lead takes, and the colours it comes in.
+ * The shape a patch lead takes, and the colors it comes in.
  *
  * Pulled out of RackCables3D so a rack built from vendor geometry can wear
  * the same cabling as one built from our own chassis. The shape is the part
  * worth sharing: it took several attempts to get right and it is the same
- * physics either way, whoever modelled the switch the lead plugs into.
+ * physics either way, whoever modeled the switch the lead plugs into.
  *
  * The first pass let every lead find its own way from A to B, and the
  * result was a bowl of spaghetti across the front of the rack. That is not
@@ -39,11 +39,11 @@ export const CABLE_RADIUS = { plain: 0.0029, etherlighting: 0.0019 } as const;
  *
  * Not what the first pass assumed. Ubiquiti's own product photography shows
  * a bank of them plugged into a switch and every jacket is the same plain
- * white: the colour is not in the cable at all, it is in the plug, which is
+ * white: the color is not in the cable at all, it is in the plug, which is
  * a clear moulding lit from the port behind it. A bank runs a hue sweep
  * from red at one end through green to blue at the other, and that sweep is
- * the whole visual signature. Colouring the jackets instead, the way an
- * ordinary patch panel is colour coded, produces something that looks like
+ * the whole visual signature. Coloring the jackets instead, the way an
+ * ordinary patch panel is color coded, produces something that looks like
  * every other rack and nothing like a UniFi one.
  */
 export const ETHERLIGHT_JACKET = "#eceff4";
@@ -63,7 +63,7 @@ export const JACKET_HEX: Record<string, string> = {
   green: "#3f9f57",
   // Slightly off white, so a white lead still reads against a white panel.
   white: "#e6eaef",
-  // Fibre and DAC, which nobody sleeves in the copper colours.
+  // Fiber and DAC, which nobody sleeves in the copper colors.
   aqua: "#3fc9c1",
   violet: "#8f6fd6",
   orange: "#e08a3c",

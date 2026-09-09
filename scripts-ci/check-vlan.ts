@@ -157,7 +157,7 @@ if (!PATHS.some((path) => nativeMismatches(path).length > 0)) {
   problems.push("no path has a trunk whose two ends disagree about the native VLAN");
 }
 if (!PATHS.some((path) => nativeMismatches(path).length === 0 && carry(path).kind === "delivered")) {
-  problems.push("no path is correctly configured and delivers, so a reader has no control to recognise");
+  problems.push("no path is correctly configured and delivers, so a reader has no control to recognize");
 }
 /*
   The hopping attack, checked by what it achieves rather than by counting

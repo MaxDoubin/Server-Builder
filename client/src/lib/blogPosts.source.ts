@@ -10,16 +10,16 @@
 /**
  * Attribution for a cover image sourced from someone else.
  *
- * Every licence we accept for third-party covers (CC BY, CC BY-SA) requires
- * credit and a link to the licence, so this travels with the post and is
+ * Every license we accept for third-party covers (CC BY, CC BY-SA) requires
+ * credit and a link to the license, so this travels with the post and is
  * rendered next to the image. Posts using original artwork omit it.
  */
 export interface CoverCredit {
   /** Author as named by the source, plain text. */
   author: string;
-  /** Human-readable licence, e.g. "CC BY-SA 4.0". */
+  /** Human-readable license, e.g. "CC BY-SA 4.0". */
   license: string;
-  /** Canonical licence deed. */
+  /** Canonical license deed. */
   licenseUrl: string;
   /** The file's description page at the source. */
   sourceUrl: string;
@@ -395,7 +395,7 @@ Kernel panic - not syncing: System is deadlocked on memory
 \`\`\`
 
 A lost process became a lost machine, and the change that did it passed review
-as defence in depth. Reserve -1000 for what you need in order to log in and
+as defense in depth. Reserve -1000 for what you need in order to log in and
 diagnose, which is \`sshd\` and the monitoring agent, and let everything that can
 be restarted be killable, because a service that dies and comes back is the
 mechanism keeping the box up.
@@ -502,7 +502,7 @@ select:
 
 The skip is on strictly less. An equal score falls through to \`select\` and
 replaces the standing choice, so the last equal task scanned is the one that
-dies. I had asserted the wrong behaviour in a test, and the test passed,
+dies. I had asserted the wrong behavior in a test, and the test passed,
 because the same belief had written both the code and the assertion. Two things
 agreeing is not evidence when one of them wrote the other.
 
@@ -557,7 +557,7 @@ You can work through ten of these, including the one that panics, at
     content: `## The dashboard is alarming and the alert history is empty
 
 Somebody sends you a screenshot. The line is over the threshold for most of
-the day, in a colour chosen to be upsetting, and the alert on that exact
+the day, in a color chosen to be upsetting, and the alert on that exact
 expression has never fired. Not fired and resolved. Never fired.
 
 The rule is not broken and the threshold is not wrong. The alert and the graph
@@ -908,7 +908,7 @@ number supports.
 
 ## The one minute average has not had a minute
 
-Here is the part I did not know until I modelled it.
+Here is the part I did not know until I modeled it.
 
 \`LOAD_FREQ\` is \`5*HZ+1\`, not \`5*HZ\`. At HZ=250 that is 5.004 seconds, and the
 extra tick is deliberate: a sampling period that divides evenly into a second
@@ -1010,7 +1010,7 @@ some avg10=0.00 avg60=0.00 avg300=0.00 total=0
 
 Pressure stall information is the quantity people believe they are reading off
 the load average: the share of time runnable tasks spent waiting rather than
-the number of them. It is normalised, it is comparable between machines, and
+the number of them. It is normalized, it is comparable between machines, and
 it is zero on a box with eight tasks on eight cores and rises the moment the
 ninth arrives. If you are building alerting today and you have a kernel newer
 than 4.20, alert on this and use the load average for the thing it is good at,
@@ -1198,7 +1198,7 @@ at 200.
 
 The single threaded version has a better throttling metric and is 60 percent
 slower. Being throttled is not the same as being slow, and \`nr_throttled\` is a
-number to explain latency with, not a number to minimise.
+number to explain latency with, not a number to minimize.
 
 ## What burst actually buys
 
@@ -1980,7 +1980,7 @@ Six sites in a /16, sized to double     13%
 The 13% is not waste. That plan gives six sites a summarisable block each,
 sized for double their current population, and spends 8192 of 65536 addresses
 doing it. Filling the rest would mean either oversizing every site or handing
-the space to something that then cannot be summarised, and the first
+the space to something that then cannot be summarized, and the first
 acquisition after that lands on an unrelated block nobody can advertise as one
 route.
 
@@ -2037,12 +2037,12 @@ If a core switch advertises one route for a set of subnets, the block behind
 that route is spent the moment the advertisement exists, whether or not the
 subnets fill it.
 
-One of the exercises has three subnets summarised into a /22. They use about
+One of the exercises has three subnets summarized into a /22. They use about
 900 of its 1024 addresses. The remaining 124 are inside the advertisement and
 inside the firewall object written against it, and anything dropped there later
 inherits reachability and permissions that nobody granted it.
 
-That is not a reason to avoid summarising. It is a reason to record the
+That is not a reason to avoid summarizing. It is a reason to record the
 reservation somewhere a person will find it before they put a test VLAN in the
 gap, which is the actual failure and which happens about eighteen months later.
 
@@ -2059,7 +2059,7 @@ against the block, and again against each summary constraint separately. If the
 minimum exceeds the space, no arrangement fits and the problem is broken rather
 than hard.
 
-It caught one immediately: 600 hosts of wireless summarised into a /23 that
+It caught one immediately: 600 hosts of wireless summarized into a /23 that
 holds 510 usable. I had written it, failed to solve it, and quietly put
 placeholder /32s in the solution rather than noticing what that meant. The
 exercise now widens the reservation to a /22 and keeps the failed /23 as the
@@ -2148,7 +2148,7 @@ because all of those checks run against the zone.
 
 Two ways out. Add glue at the parent, which the registrar does, or put the
 nameservers on names outside the zone. That second option is why plenty of
-organisations run their nameservers under a completely separate domain.
+organizations run their nameservers under a completely separate domain.
 
 ## A delegation to nothing
 
@@ -2223,7 +2223,7 @@ what a real server does.
 The second: it tried only the first server in a delegation, which made a
 two-server zone with one dead server look broken. It fails over now, and that
 case is on the page as a control, because a redundancy that works is worth
-recognising as quickly as a fault.
+recognizing as quickly as a fault.
 
 ## References
 
@@ -2336,7 +2336,7 @@ moment a third rule is involved. With a DROP policy the negated rule is usually
 unnecessary anyway: anything the allow rules do not cover is already refused,
 and a rule that says so is a line that can be got wrong.
 
-## The exercises are marked on behaviour
+## The exercises are marked on behavior
 
 Each one is a set of packets and the verdicts they should get. Any chain that
 produces them is correct, including a shorter one than mine.
@@ -2730,7 +2730,7 @@ On the first, somebody was paged at four in the morning, found a 41G access
 log, deleted it, and went back to bed. The alert cleared for no time at all
 and came back. Unlinking a file removes the name and not the allocation, and
 the kernel will not release the blocks while any process holds a descriptor on
-it, which is exactly what a logging process that has not been signalled does.
+it, which is exactly what a logging process that has not been signaled does.
 
 So \`df\` still counts the 41G, and \`du\` and \`ls\` and every tidy-up script
 anybody writes cannot see it. Here is the number that makes the point:
@@ -3134,7 +3134,7 @@ checks](/clock).
     date: "2026-09-08",
     tags: ["networking", "security", "operations"],
     excerpt:
-      "A native VLAN mismatch is usually described as two VLANs getting bridged. I modelled 802.1Q and asked which VLANs actually reach which: each switch's own native VLAN leaks outbound and works inbound, so the echo request arrives and the reply lands somewhere else. Across every mismatched pair, a quarter of frames go to the wrong VLAN and none are dropped.",
+      "A native VLAN mismatch is usually described as two VLANs getting bridged. I modeled 802.1Q and asked which VLANs actually reach which: each switch's own native VLAN leaks outbound and works inbound, so the echo request arrives and the reply lands somewhere else. Across every mismatched pair, a quarter of frames go to the wrong VLAN and none are dropped.",
     coverImage: "/images/blog/the-request-arrived-the-reply-did-not.jpg",
     content: `## A ticket that makes no sense
 
@@ -3173,7 +3173,7 @@ the [VLANs](/blog/vlan-segmentation-guide) passed. Each configuration is defensi
 pass a review on its own.
 
 A trunk sends its native VLAN with no tag at all. That is not a bug or an
-optimisation, it is the entire purpose of having a native VLAN: a device on
+optimization, it is the entire purpose of having a native VLAN: a device on
 the other end that knows nothing about tagging still gets traffic. So a frame
 in VLAN 30 leaves acc-01 as plain Ethernet, and dist-01, receiving an untagged
 frame on a trunk, does the only thing it can and puts it in its own native
@@ -3412,7 +3412,7 @@ No timeout budget helps here, because the problem is not how long anybody
 waited. A timeout tells you that you stopped listening. It tells you nothing
 whatsoever about whether the work happened, and the two are constantly
 confused because in the common case they coincide. The fix is an idempotency
-key, so the second and third requests are recognisable as the same intent
+key, so the second and third requests are recognizable as the same intent
 rather than as three intentions that happen to look alike.
 
 ## Why every part passed review
@@ -3601,7 +3601,7 @@ still sorted by base score, everywhere, including in tools written by people
 who know all of the above.
 
 I think it is the decimal place. A number that resolves to one decimal reads
-as a measurement, and a judgement that resolves to four words reads as an
+as a measurement, and a judgment that resolves to four words reads as an
 opinion, and we trust measurements over opinions for good reasons that do not
 apply here. The measurement is measuring the vulnerability. The opinion is
 about your estate. Only one of those is the thing you have to make a decision
@@ -3868,7 +3868,7 @@ message trustworthy". They do not. They answer a narrower question that is
 worth stating exactly.
 
 SPF asks whether the host that connected is one the envelope sender's domain
-authorised to send for it. DKIM asks whether a signature over the message
+authorized to send for it. DKIM asks whether a signature over the message
 verifies against a key the signing domain publishes. DMARC asks whether either
 of those passed **and** was aligned with the domain in the From header, and it
 lets that domain's owner say what to do when the answer is no.
@@ -4299,7 +4299,7 @@ For the ransomware scenario, which has 23 scenes and 7 endings, that produces
 That shape is doing real work. The best available outcome is 6.9 percent of
 routes, which is about right for an outcome that requires killing the encryptor
 without powering the host off and then imaging memory before anyone reboots it.
-Paying is 23 percent, which is roughly how often organisations get talked into
+Paying is 23 percent, which is roughly how often organizations get talked into
 it. And the two catastrophes are about one percent each, because each needs a
 specific sequence of plausible-feeling wrong turns rather than one obvious
 blunder.
@@ -4343,7 +4343,7 @@ is to point it at a scene further along that covers the same ground, which
 usually makes the writing better anyway: the second visit should not read like
 the first.
 
-The check that catches this is one depth-first walk with three colours, and it
+The check that catches this is one depth-first walk with three colors, and it
 runs on every push alongside the rest:
 
 - every scene reachable from the start
@@ -4390,7 +4390,7 @@ That is enough to fix it without opening the file.
 ## References
 
 - [Directed acyclic graphs and topological ordering](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
-- [Depth-first search, and the three-colour cycle test](https://en.wikipedia.org/wiki/Depth-first_search)
+- [Depth-first search, and the three-color cycle test](https://en.wikipedia.org/wiki/Depth-first_search)
 - [Counting paths in a DAG with dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming)
 - [Memoization](https://en.wikipedia.org/wiki/Memoization)
 `,
@@ -4547,7 +4547,7 @@ $ answer it's the MTU on the tunnel
 lab shell: unterminated quote
 \`\`\`
 
-That is correct bash behaviour. It is also a hostile thing to do to somebody who
+That is correct bash behavior. It is also a hostile thing to do to somebody who
 has just spent ten minutes working out the answer and is typing it in English,
 and English is full of apostrophes.
 
@@ -4617,7 +4617,7 @@ The policy therefore had exactly one test environment: production.
 
 That is worth saying plainly, because it is not obvious from the inside. A
 static site feels like the simplest possible deployment, and the reasoning
-goes that if the files are identical then the behaviour is identical. The
+goes that if the files are identical then the behavior is identical. The
 files are identical. The response is not.
 
 So I wrote thirty lines of Node that serve \`dist/public\` and set one header:
@@ -5028,8 +5028,8 @@ any result row, and from anything added to the modal later. That last part is
 the real gain: the bug came back the moment somebody made a second thing
 focusable, and putting the key on the container means it cannot.
 
-The arrow keys and Enter stay on the input. Those are search-box behaviour.
-Escape is dialog behaviour. Sorting the keys by which thing they belong to,
+The arrow keys and Enter stay on the input. Those are search-box behavior.
+Escape is dialog behavior. Sorting the keys by which thing they belong to,
 rather than by which element happens to have focus when you test, is the
 lesson.
 
@@ -5121,17 +5121,17 @@ copies of a correct implementation sitting a few files away.
     date: "2026-09-06",
     tags: ["engineering", "tools", "operations"],
     excerpt:
-      "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no colour that does both.",
+      "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no color that does both.",
     coverImage: "/images/blog/one-blue-two-jobs.jpg",
     content: `
 ## Two numbers, both just under the line
 
-I was measuring contrast across this site and found the same colour failing
+I was measuring contrast across this site and found the same color failing
 twice, in two different places, by a small margin each time.
 
 The brand blue is one token, \`--primary\`. In the dark theme it was
 \`217 91% 55%\`, which is \`rgb(36, 116, 245)\`. It does two jobs. It is the fill
-behind a button, with a near-white label on top of it, and it is the colour of
+behind a button, with a near-white label on top of it, and it is the color of
 a link sitting on the page itself.
 
 As a button fill, the label on it measured 4.11:1. As link text on the page
@@ -5157,7 +5157,7 @@ They are the same knob turned in opposite directions.
 
 The button wants a dark fill, because the label on it is near-white and
 contrast is a ratio between two luminances: the darker the fill, the further
-apart they are. The link wants a light colour, because the page behind it is
+apart they are. The link wants a light color, because the page behind it is
 near-black and the same arithmetic applies in reverse. Every step that helps
 one hurts the other by about as much.
 
@@ -5184,14 +5184,14 @@ luminance too, so it is fair to ask whether some other blue does both jobs.
 
 I searched the space: hue 200 to 230 in steps of one, saturation 50 to 100 in
 steps of two, lightness 35 to 75 in steps of one. That is 31 by 26 by 41,
-about thirty three thousand colours. For each one, the contrast of near-white
+about thirty three thousand colors. For each one, the contrast of near-white
 on it, and its contrast on the page background.
 
 Nothing satisfied both. Not one.
 
 The best it can do in each direction is instructive. The best fill, taking the
 one that clears 4.5 with the label and then reads highest as text, manages
-4.09 as text. The best text colour, by the mirror of that, manages 4.09 under
+4.09 as text. The best text color, by the mirror of that, manages 4.09 under
 the label.
 
 Read that against the shipped 4.11 and 4.29 and it is worse than it looks.
@@ -5204,13 +5204,13 @@ The blue is not badly chosen. There is no well-chosen one.
 ## Why a token gets into this position
 
 The name is the tell. \`--primary\` names an identity, not a job. It says "the
-brand colour" and says nothing about whether it is behind text or is the text,
+brand color" and says nothing about whether it is behind text or is the text,
 and those two situations have contrast requirements that point in opposite
 directions.
 
 That is easy to miss because it is invisible in the light theme. There,
 \`--primary\` is \`217 91% 45%\` and measures 5.75:1 both as a fill under white
-and as text on the page ground. The page is light and the colour is dark, so
+and as text on the page ground. The page is light and the color is dark, so
 being dark enough for a white label and dark enough to read on white are the
 same requirement. The conflict only appears when the page goes dark and the
 two requirements separate.
@@ -5228,7 +5228,7 @@ Both are close to the value they replaced, which is worth saying: the fix is
 not a redesign, and neither the buttons nor the links look meaningfully
 different. They are five and seven points of lightness from where they were.
 
-Tailwind derives \`.text-primary\` and \`.bg-primary\` from a single colour key,
+Tailwind derives \`.text-primary\` and \`.bg-primary\` from a single color key,
 so splitting the token in the config would mean editing every call site. There
 were forty one. One rule does it instead, mapping \`text-primary\` onto the text
 value inside the dark theme, and the cinematic pages declare the same token so
@@ -5237,7 +5237,7 @@ the rule is a no-op where their palette already differs.
 ## What I would check in any palette
 
 **Find every token that is both a fill and a foreground.** That is where this
-lives. A colour used only as a fill, or only as text, cannot contradict
+lives. A color used only as a fill, or only as text, cannot contradict
 itself.
 
 **Check the dark theme separately, and check both jobs.** A single number per
@@ -5249,7 +5249,7 @@ together under one variable will meet in the middle and fail there. The
 search above took a few minutes to write and settled the question that an
 afternoon of nudging would not have.
 
-**Gate the pairing, not the colour.** The gate this site already had checked
+**Gate the pairing, not the color.** The gate this site already had checked
 brand foregrounds against brand surfaces and never looked at the shadcn
 palette, so the whole thing went unchecked. It now checks eight themed
 pairings by name: the label on a primary button, a primary link on the page,
@@ -5340,7 +5340,7 @@ accounted for.
 
 I do not think this happened because I do not know what a PDU is. It happened
 because a PDU is the least interesting object in a rack. It has no ports
-worth drawing, no model number anybody recognises, and no role in the story
+worth drawing, no model number anybody recognizes, and no role in the story
 the rack is telling. When you sit down to describe a service provider edge,
 you think about the MX240 and the leaf pair and the firewall, and the strip
 that feeds all of them is furniture.
@@ -5463,7 +5463,7 @@ own arithmetic.
 
 ## What it was doing
 
-The fit is a straight line. Device centres go down the rack at one rack unit
+The fit is a straight line. Device centers go down the rack at one rack unit
 per unit, so the height of the nth device is a linear function of n, and
 recovering that line gives you both a check on the unit size and a residual
 per device. The rack's origin has to be recovered rather than assumed,
@@ -5520,7 +5520,7 @@ and then the intercept is the median of what is left over:
 
 Every pair of points votes on the gradient and the middle vote wins. A point
 that has moved is in some of those pairs and not in most of them, and it
-cannot move a median it is not near the centre of. The published breakdown
+cannot move a median it is not near the center of. The published breakdown
 point is:
 
 > 1 - 1/sqrt(2), approximately 29.3%
@@ -5597,12 +5597,12 @@ clothes.
 The models ship compressed. Every POSITION accessor in the file declares
 \`componentType\` 5122 and \`normalized: true\`, which is a signed 16 bit
 integer scaled across its full range, and its \`min\` and \`max\` are in those
-raw units rather than in metres: one reads \`[-32767, -1384, -1472]\`. The
+raw units rather than in meters: one reads \`[-32767, -1384, -1472]\`. The
 check reads node extents straight out of those bounds and divides by 32767,
 which is fast and correct against a compressed file and meaningless against
-an uncompressed one, where the same fields are already in metres. Point it
+an uncompressed one, where the same fields are already in meters. Point it
 at raw generator output and it reports a rack unit of 25mm and half the
-devices metres out of place.
+devices meters out of place.
 
 I did that, concluded the build was not reproducible, and wrote it down as a
 finding. It was not a finding. Regenerating the rack and compressing it with
@@ -5648,12 +5648,12 @@ instrument is one you wrote and the subject is one you did not.
     date: "2026-09-06",
     tags: ["security", "cybersecurity", "operations"],
     excerpt:
-      "NIST SP 800-63B revision 4 is final, and most of the password policy your organisation runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
+      "NIST SP 800-63B revision 4 is final, and most of the password policy your organization runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
     coverImage: "/images/blog/nist-password-rules-changed.jpg",
     content: `
 ## Fifteen characters, and no complexity rules at all
 
-The password advice most organisations run on is a fossil. Eight characters,
+The password advice most organizations run on is a fossil. Eight characters,
 one uppercase, one number, one symbol, changed every ninety days. It has been
 wrong for years, and as of the fourth revision of NIST SP 800-63B it is not
 merely discouraged, most of it is forbidden in normative language.
@@ -5695,7 +5695,7 @@ a suggestion.
 > Verifiers and CSPs **SHALL NOT** impose other composition rules (e.g.,
 > requiring mixtures of different character types) for passwords.
 
-The reasoning is behavioural rather than mathematical. Demanding an uppercase
+The reasoning is behavioral rather than mathematical. Demanding an uppercase
 and a digit and a symbol does not produce high entropy passwords, it produces
 \`Password1!\`, because people satisfy the rule in the cheapest way available.
 The rule shrinks the search space an attacker has to cover rather than
@@ -5796,7 +5796,7 @@ manager, is still typed into whatever page asked for it. If that page is a
 proxy in front of the real one, the password is gone and so is the six digit
 code that followed it.
 
-Length requirements are a defence against guessing, and guessing is not how
+Length requirements are a defense against guessing, and guessing is not how
 accounts are taken any more. Phishing is. The only authenticator that
 survives a live phishing proxy is one that binds to the origin, and that means
 WebAuthn: the browser will not release a credential registered for your bank
@@ -5824,7 +5824,7 @@ you do.
     date: "2026-09-05",
     tags: ["networking", "hardware", "operations", "homelab"],
     excerpt:
-      "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fibre plant and almost nobody reads it until something breaks.",
+      "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fiber plant and almost nobody reads it until something breaks.",
     coverImage: "/images/blog/what-an-optic-tells-the-switch.jpg",
     content: `
 ## The switch is reading the optic's mind
@@ -5840,7 +5840,7 @@ the size of a grain of rice inside the module, and the whole arrangement is
 described in one document: SFF-8472.
 
 The reason this is worth knowing is that the last figure in the list, how much
-light is arriving, is the single most useful number in a fibre plant, and
+light is arriving, is the single most useful number in a fiber plant, and
 almost nobody looks at it until something has already broken.
 
 ## Two addresses on one bus
@@ -5849,7 +5849,7 @@ The module hangs off a two-wire bus, and it answers at two addresses.
 
 The first, A0h, is the identity page. Vendor, part number, serial, date code,
 the transceiver's compliance codes, the nominal bit rate, the wavelength, the
-supported link lengths per fibre type. It is static, written at the factory,
+supported link lengths per fiber type. It is static, written at the factory,
 and it is what a switch reads to decide whether it likes the optic.
 
 The second is where the interesting part lives. SFF-8472 puts it at
@@ -5888,7 +5888,7 @@ conversion appears in every tool that prints it.
 ## Why receive power is the number that matters
 
 Every optical link has a budget. The transmitter puts out some amount of
-light, the fibre and every connector and splice in between takes some away,
+light, the fiber and every connector and splice in between takes some away,
 and the receiver needs a minimum amount left to recover the signal. The
 difference between what arrives and that minimum is your margin.
 
@@ -6066,7 +6066,7 @@ with 398 in it, it stopped working in March.
 ## What changes about how you run things
 
 The validity number is the headline and it is not the interesting part. The
-interesting part is what a 47 day certificate does to an organisation's
+interesting part is what a 47 day certificate does to an organization's
 assumptions.
 
 **Renewal stops being an event.** At 398 days it is something a person does,
@@ -6086,7 +6086,7 @@ remembers to still be there. They do not survive eight cycles a year.
 **Certificate Transparency is your inventory.** This is the practical
 suggestion worth acting on today. Every publicly trusted certificate is logged,
 the logs are public, and you can query them for your own domains. A CT search
-for your organisation's names will find certificates you did not know existed,
+for your organization's names will find certificates you did not know existed,
 because it lists what was issued rather than what you remember deploying. It is
 the only inventory method that does not depend on already knowing.
 
@@ -6229,7 +6229,7 @@ are parsing these by hand, that ordering is the bug you are about to write.
 
 The obvious question is why a connection carries an elliptic curve share at
 all if the point is to survive a quantum computer. The answer is that ML-KEM is
-young. It was standardised in 2024 and the cryptanalysis that would find a
+young. It was standardized in 2024 and the cryptanalysis that would find a
 flaw in it, if there is one, has had about two years to run. X25519 has had
 twenty.
 
@@ -6803,7 +6803,7 @@ gnmic -a 10.20.0.2:57400 -u monitor --password "$GNMI_PASS" \\
 
 Three things follow from the inversion. Sub second sampling becomes practical because the device is serializing state it already has instead of servicing a query. On-change subscriptions become possible, so an interface going down is an event that arrives immediately rather than a difference you notice on the next poll. And the data is structured and self describing, so you get a path like \`/interfaces/interface[name=Ethernet1]/state/oper-status\` instead of a numeric OID you have to translate through a MIB file.
 
-The YANG modelling is the part people underestimate. OpenConfig models aim for vendor neutrality, but every vendor also ships native models, and the native ones usually carry the fields you actually want. You end up writing per platform path lists anyway. It is better than per platform MIB hunting, but it is not free.
+The YANG modeling is the part people underestimate. OpenConfig models aim for vendor neutrality, but every vendor also ships native models, and the native ones usually carry the fields you actually want. You end up writing per platform path lists anyway. It is better than per platform MIB hunting, but it is not free.
 
 ## Where SNMP still wins
 
@@ -6860,7 +6860,7 @@ Two facts follow immediately. A packet destined for a container or a VM behind t
 
 ## Priorities decide who goes first
 
-Multiple base chains can register on the same hook. nftables resolves the tie with a signed priority number, lower runs first. The named constants map to the classic behaviour:
+Multiple base chains can register on the same hook. nftables resolves the tie with a signed priority number, lower runs first. The named constants map to the classic behavior:
 
 | Name | Value | Typical use |
 | --- | --- | --- |
@@ -7337,7 +7337,7 @@ After enough acquisitions you learn that failures cluster in a predictable set o
 
 **Drives.** Always assume the drives are the oldest part. Enterprise drives are rated for continuous duty and often have very high power on hours, and the drive is the one component whose failure loses data rather than availability.
 
-**Thermal interface material.** Old paste turns to chalk. On a machine that will run under load, replacing it is an hour of work that changes the thermal behaviour completely.
+**Thermal interface material.** Old paste turns to chalk. On a machine that will run under load, replacing it is an hour of work that changes the thermal behavior completely.
 
 Notice what is not on that list: the parts most people worry about. Processors and memory rarely wear out. Motherboards mostly work or do not.
 
@@ -7463,7 +7463,7 @@ model.print_trainable_parameters()
 
 At inference you have two options, and the choice is an infrastructure decision.
 
-**Merged.** Fold \`(alpha / r) * B @ A\` into \`W\` once, save the result, and serve it as an ordinary model. There is zero runtime overhead because the arithmetic happened offline. The cost is that you are back to a full sized artifact per variant, and you lose the ability to switch behaviour without loading a different model.
+**Merged.** Fold \`(alpha / r) * B @ A\` into \`W\` once, save the result, and serve it as an ordinary model. There is zero runtime overhead because the arithmetic happened offline. The cost is that you are back to a full sized artifact per variant, and you lose the ability to switch behavior without loading a different model.
 
 **Unmerged.** Keep the adapter separate and apply it during the forward pass. Now one copy of the base model in memory can serve several adapters, and swapping which one applies is cheap. The cost is a small amount of extra computation per layer and more complexity in the serving path.
 
@@ -9517,7 +9517,7 @@ it, and this lag does not drain, it grows for as long as the load lasts.
 Conflicting queries. A long-running read on the replica needs rows that the
 replay wants to remove. The replica must either pause replay or cancel the
 query. Both are configurable and both are unpleasant: pausing means lag grows,
-cancelling means analytics jobs die at random. If you set a long grace period
+canceling means analytics jobs die at random. If you set a long grace period
 so reports finish, you have chosen unbounded lag.
 
 Storage. The replica is often cheaper hardware than the primary, on the theory
@@ -10047,7 +10047,7 @@ you. RFC 8981 adds temporary addresses that rotate on a timer and are used
 for outbound connections. Add the link local address and you legitimately
 have several addresses on one NIC.
 
-Linux exposes the behaviour per interface:
+Linux exposes the behavior per interface:
 
 \`\`\`bash
 sysctl net.ipv6.conf.eth0.addr_gen_mode     # 0 EUI64, 3 stable privacy
@@ -10530,7 +10530,7 @@ anything at all.
 
 A kernel that launches a single thread and loops for a second reports 100
 percent utilization on a card with tens of thousands of usable threads. A well
-optimised pipeline that finishes early and idles between requests reports
+optimized pipeline that finishes early and idles between requests reports
 something lower while doing vastly more work. Reading this counter as "the GPU
 is full" is the accelerator equivalent of reading load average as CPU percent.
 
@@ -10763,7 +10763,7 @@ A retrieval augmented generation demo takes an afternoon. You embed some documen
 
 Then you point it at real documents and quality falls apart. Not because the model is bad and not because the vector store is bad, but because everything around them is doing a poor job of deciding what text to hand the model.
 
-That surrounding work is the actual engineering, and almost none of it involves machine learning. It is parsing, data modelling, indexing, ranking, and measurement. If you are comfortable operating systems, you already have the instincts for it.
+That surrounding work is the actual engineering, and almost none of it involves machine learning. It is parsing, data modeling, indexing, ranking, and measurement. If you are comfortable operating systems, you already have the instincts for it.
 
 ## Ingestion: Parsing, Chunking, Metadata
 
@@ -10873,11 +10873,11 @@ Spend your time on ingestion and evaluation. Those two get the least attention a
     content: `
 ## Why Bother When It Is Just a Lab
 
-The objection I hear is that a home lab is not a target worth modelling. That is wrong in two ways.
+The objection I hear is that a home lab is not a target worth modeling. That is wrong in two ways.
 
 First, a lot of attacks are not targeted at all. Automated scanning finds an exposed service, tries known credentials, and moves on. Nobody chose you, and that makes no difference to the outcome.
 
-Second, and more importantly for me, the lab is where I practice the reasoning. Threat modelling is a skill you build by doing it repeatedly on systems you fully understand. Doing it on my own infrastructure, where I know every design decision because I made it, is far more instructive than doing it on a case study.
+Second, and more importantly for me, the lab is where I practice the reasoning. Threat modeling is a skill you build by doing it repeatedly on systems you fully understand. Doing it on my own infrastructure, where I know every design decision because I made it, is far more instructive than doing it on a case study.
 
 A threat model is really just four questions. What am I protecting. Who or what might come after it. What could go wrong. What am I going to do about it. Everything else is structure to keep you honest.
 
@@ -10889,7 +10889,7 @@ The boundaries are the interesting part. A boundary is any place where data or a
 
 Almost every real vulnerability lives on a boundary. Data that stays entirely inside one trust zone is rarely where the interesting failure is. So enumerate boundaries carefully, and for each one write down what is supposed to be allowed across it. That statement of intent becomes the thing you test against later.
 
-Two boundaries people consistently miss. The management plane, meaning out of band controllers, hypervisor consoles, and switch admin interfaces, is a trust boundary with enormous power behind it and it deserves to be modelled explicitly. And backups are a boundary in both directions: data leaves, and restore paths let data back in.
+Two boundaries people consistently miss. The management plane, meaning out of band controllers, hypervisor consoles, and switch admin interfaces, is a trust boundary with enormous power behind it and it deserves to be modeled explicitly. And backups are a boundary in both directions: data leaves, and restore paths let data back in.
 
 ## STRIDE as a Checklist, Not a Religion
 
@@ -10941,13 +10941,13 @@ asset: internal-services
       status: implemented
 \`\`\`
 
-The \`verification\` field is the one that makes this document worth maintaining. A control you have never tested is an assumption, and assumptions are what threat modelling exists to eliminate.
+The \`verification\` field is the one that makes this document worth maintaining. A control you have never tested is an assumption, and assumptions are what threat modeling exists to eliminate.
 
 ## Rank by Consequence, Not Cleverness
 
-The temptation is to prioritise the most interesting attacks. Resist it. Rank by likelihood times impact, and be honest about likelihood.
+The temptation is to prioritize the most interesting attacks. Resist it. Rank by likelihood times impact, and be honest about likelihood.
 
-A sophisticated attack requiring physical access and specialised equipment is fascinating and, for most labs, close to irrelevant. An exposed management interface with a default password is boring and is how systems actually get taken.
+A sophisticated attack requiring physical access and specialized equipment is fascinating and, for most labs, close to irrelevant. An exposed management interface with a default password is boring and is how systems actually get taken.
 
 Impact deserves the same honesty. In a lab, most compromises cost time. A few cost data that is genuinely hard to recreate, or provide a foothold into something that matters more. Those are the ones worth real investment, and identifying them means asking what a compromise of each asset would let someone reach next. Lateral movement potential is often a bigger deal than the value of the asset itself, which is the entire argument for segmentation.
 
@@ -10961,7 +10961,7 @@ Then revisit it when the system changes. Every new service, every new segment, e
 
 ## The Habit Worth Building
 
-Threat modelling has made me a better builder, not just a better defender. Once you have asked "what happens when this control fails" enough times, you start designing so that a single failure is survivable. Segmentation, least privilege, and defence in depth stop being vocabulary and become the obvious way to build.
+Threat modeling has made me a better builder, not just a better defender. Once you have asked "what happens when this control fails" enough times, you start designing so that a single failure is survivable. Segmentation, least privilege, and defense in depth stop being vocabulary and become the obvious way to build.
 
 ## References
 
@@ -11108,11 +11108,11 @@ cat /sys/fs/cgroup/batch.slice/io.pressure
 
 \`some\` is the share of time at least one task was stalled. \`full\` is the share where nothing could proceed. This is far more actionable than utilisation, because it measures the thing you actually care about, which is delay caused by contention, rather than a percentage that tells you a resource was busy without saying whether anyone was waiting.
 
-My practice is to set \`memory.high\` deliberately low at first and watch \`memory.events\` and \`memory.pressure\` for a week. That tells me the real working set instead of the number I guessed, and I can then set limits that reflect measured behaviour.
+My practice is to set \`memory.high\` deliberately low at first and watch \`memory.events\` and \`memory.pressure\` for a week. That tells me the real working set instead of the number I guessed, and I can then set limits that reflect measured behavior.
 
 ## Why This Is Worth Learning Directly
 
-Every container runtime and orchestrator is a wrapper over this. When a container gets killed and the platform reports an unhelpful reason, the truth is in \`memory.events\` and the kernel log. Knowing the layer underneath turns an opaque platform behaviour into a mechanism you can inspect.
+Every container runtime and orchestrator is a wrapper over this. When a container gets killed and the platform reports an unhelpful reason, the truth is in \`memory.events\` and the kernel log. Knowing the layer underneath turns an opaque platform behavior into a mechanism you can inspect.
 
 It is also immediately useful without any container platform at all. Putting a memory limit on the one service you know leaks is a ten minute change that converts a machine wide outage into a single service restart.
 
@@ -11385,7 +11385,7 @@ The credential mistake is the one I would flag hardest. A single key with full a
     content: `
 ## The Pitch and the Catch
 
-The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterised. A model that learns normal behaviour could flag the unusual without knowing in advance what unusual looks like.
+The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterised. A model that learns normal behavior could flag the unusual without knowing in advance what unusual looks like.
 
 The catch is arithmetic, and it is the first thing I would check on any such system. Everything else, the model architecture, the feature engineering, the training pipeline, is downstream of whether the numbers can work at all.
 
@@ -11471,7 +11471,7 @@ I would also insist on explainability. An alert that says "anomalous" with a sco
 
 ## The Honest Summary
 
-I think there is real value in this space, mostly in reducing noise and in ranking alerts rather than in generating new ones from nothing. Where I stay sceptical is any claim of catching novel attacks with a low enough false positive rate to be usable, because the base rate arithmetic is unforgiving and it does not care how good the model is.
+I think there is real value in this space, mostly in reducing noise and in ranking alerts rather than in generating new ones from nothing. Where I stay skeptical is any claim of catching novel attacks with a low enough false positive rate to be usable, because the base rate arithmetic is unforgiving and it does not care how good the model is.
 
 Run the numbers first. If the alert volume is not something a real team can work through every day, nothing else about the system matters.
 
@@ -11515,7 +11515,7 @@ This is why window scaling exists, and it is why long fat networks were a proble
 
 ## Loss Based Control and Bufferbloat
 
-Classical congestion control treats packet loss as the signal that the network is full. The sender increases its window until something drops, backs off sharply, and climbs again. That sawtooth is the behaviour underneath Reno and, with a different growth curve tuned for high bandwidth paths, CUBIC, which has been the Linux default for a long time.
+Classical congestion control treats packet loss as the signal that the network is full. The sender increases its window until something drops, backs off sharply, and climbs again. That sawtooth is the behavior underneath Reno and, with a different growth curve tuned for high bandwidth paths, CUBIC, which has been the Linux default for a long time.
 
 The assumption is that loss means congestion. That was reasonable when buffers were small. It causes two problems now.
 
@@ -11597,7 +11597,7 @@ Then check the obvious physical things, because congestion control is a poor exp
 
 TCP is a control loop. It is constantly estimating how much data the path can hold and adjusting. Almost every strange throughput problem is that control loop responding correctly to a signal you have not looked at yet: a round trip time that is larger than you assumed, a buffer that is deeper than you assumed, or loss that is not congestion.
 
-Once you think of it that way, the diagnostic path is obvious. Find out what signal the sender is seeing, and the behaviour stops being mysterious.
+Once you think of it that way, the diagnostic path is obvious. Find out what signal the sender is seeing, and the behavior stops being mysterious.
 
 ## References
 
@@ -11623,7 +11623,7 @@ Once you think of it that way, the diagnostic path is obvious. Find out what sig
       licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
       sourceUrl: "https://www.flickr.com/photos/28435100@N00/",
       // The individual photo page is gone from Flickr; the photographer's
-      // stream is not. CC BY 2.0 is irrevocable once granted, so the licence
+      // stream is not. CC BY 2.0 is irrevocable once granted, so the license
       // still holds, and crediting the author with a link that resolves beats
       // pointing at a 404.
     },
@@ -11673,7 +11673,7 @@ Average power draw is not the whole story. Accelerators produce brief, very shar
 
 A power supply sized exactly to the average can trip its overcurrent protection on those transients and shut the machine down under load, which presents as an inexplicable reboot during heavy work while every steady state measurement looks fine. It is a genuinely confusing failure because nothing in the monitoring shows a problem.
 
-The practical response is headroom. Sizing a supply meaningfully above the calculated steady state draw is not waste, it is tolerance for the transient behaviour of the load. It also keeps the supply operating in the load band where its efficiency curve is best, which is generally somewhere in the middle of its range rather than near its top.
+The practical response is headroom. Sizing a supply meaningfully above the calculated steady state draw is not waste, it is tolerance for the transient behavior of the load. It also keeps the supply operating in the load band where its efficiency curve is best, which is generally somewhere in the middle of its range rather than near its top.
 
 The same reasoning applies to uninterruptible supplies. A unit sized to the average draw may not ride through a spike, and the volt amp rating on the label is not the same as the watt rating you actually need to compare against. Size on watts, and leave room.
 
@@ -11718,7 +11718,7 @@ Then decide what to run. This ordering feels backwards to most people, who choos
 
 Measure rather than assume. A power meter at the plug and a couple of temperature probes cost very little and replace a lot of estimation. Nameplate ratings are worst case figures, and the only way to know your real number is to measure your own workload.
 
-Every serious infrastructure environment is constrained by power and cooling long before it is constrained by rack space or by compute budget, which is why data centre capacity is sold in kilowatts per rack. The formulas do not change between a closet and a facility, only the units in front of them.
+Every serious infrastructure environment is constrained by power and cooling long before it is constrained by rack space or by compute budget, which is why data center capacity is sold in kilowatts per rack. The formulas do not change between a closet and a facility, only the units in front of them.
 
 ## References
 
@@ -11893,13 +11893,13 @@ request.
 
 Every time I read about MLOps as a separate discipline, the parts that are actually novel turn out to be small. Deployment, versioning, rollback, monitoring, and reproducibility are the same problems that operations has always had.
 
-There is one genuine difference, and everything else follows from it. In ordinary software, behaviour is determined by code. Pin the commit and the container image and you can recreate what ran. In a machine learning system, behaviour is determined by code, data, and a training process that is often nondeterministic. Pinning the commit gets you a third of the way.
+There is one genuine difference, and everything else follows from it. In ordinary software, behavior is determined by code. Pin the commit and the container image and you can recreate what ran. In a machine learning system, behavior is determined by code, data, and a training process that is often nondeterministic. Pinning the commit gets you a third of the way.
 
 That is the whole difficulty, stated plainly: the artifact depends on inputs that are large, changing, and much harder to version than source code.
 
 ## Three Artifacts, Not One
 
-A deployed model is the product of three things that must be tracked together, because any one of them changing produces different behaviour.
+A deployed model is the product of three things that must be tracked together, because any one of them changing produces different behavior.
 
 **Code** is the easy one. Training scripts, preprocessing, and serving code all live in version control and you already know how to manage them.
 
@@ -11984,7 +11984,7 @@ Prediction distribution. Track the distribution of outputs over time. If a class
 
 Input distribution. Compare live input features against the training distribution. Drift here is the leading indicator, because it usually precedes the quality drop rather than following it.
 
-Ground truth, whenever you can get it. Sometimes labels arrive naturally with a delay: the ticket eventually gets categorised by a human, the flagged transaction is eventually confirmed or not. Capturing those delayed labels and computing real accuracy on a rolling window is the only direct measure of whether the model still works.
+Ground truth, whenever you can get it. Sometimes labels arrive naturally with a delay: the ticket eventually gets categorized by a human, the flagged transaction is eventually confirmed or not. Capturing those delayed labels and computing real accuracy on a rolling window is the only direct measure of whether the model still works.
 
 When no ground truth is available, proxy signals help: how often users override the model, how often they rephrase and retry, how often a downstream process rejects the output.
 
@@ -12363,7 +12363,7 @@ ip route get 10.20.30.40
 **1. Fix the actual MTU mismatch.** If two switch ports in the same path
 disagree, that is the bug. Jumbo frames are all or nothing across a broadcast
 domain: every host, every switch port, and every router interface on that
-segment needs the same value, or you get exactly this behaviour under load.
+segment needs the same value, or you get exactly this behavior under load.
 
 \`\`\`bash
 ip link set dev eno1 mtu 9000          # runtime, lost on reboot
@@ -12561,21 +12561,21 @@ bits per weight, 8k context" is.
     date: "2026-04-30",
     tags: ["networking", "security", "routing"],
     excerpt:
-      "Two tunnel stacks with opposite design philosophies. A comparison of their crypto models, routing behaviour, and the operational details that decide it.",
+      "Two tunnel stacks with opposite design philosophies. A comparison of their crypto models, routing behavior, and the operational details that decide it.",
     coverImage: "/images/blog/wireguard-vs-ipsec-tunnels.jpg",
     content: `
 ## Two different philosophies, not two versions of the same thing
 
 IPsec and WireGuard both give you an encrypted tunnel between networks, and
 that surface similarity hides how differently they are built. IPsec is a
-family of protocols standardised over decades, with a negotiation layer, a
+family of protocols standardized over decades, with a negotiation layer, a
 policy database, and enough options to interoperate with basically anything.
 WireGuard is a single protocol with a fixed cryptographic construction and
 deliberately few knobs.
 
 That difference drives every practical comparison below, so it is worth
-stating plainly: IPsec optimises for interoperability and policy expression,
-WireGuard optimises for a small implementation and a simple mental model.
+stating plainly: IPsec optimizes for interoperability and policy expression,
+WireGuard optimizes for a small implementation and a simple mental model.
 
 ## Cryptographic agility versus a fixed suite
 
@@ -12591,7 +12591,7 @@ Noise protocol framework, with a fixed set of primitives. There is no
 proposal list, so there is nothing to mismatch and no downgrade to negotiate
 into. The trade is that changing algorithms means changing the protocol
 version, not editing a config. For a small network that is a good trade. For
-an organisation that has to satisfy a specific cryptographic policy or talk
+an organization that has to satisfy a specific cryptographic policy or talk
 to equipment it does not control, agility is a feature, not a bug.
 
 ## The routing model is the real difference
@@ -12711,7 +12711,7 @@ The vectors themselves come from an embedding model that maps text, images,
 or whatever else into a fixed length array of floats, typically a few hundred
 to a couple of thousand dimensions, arranged so that similar inputs land near
 each other. Similarity is usually cosine similarity or inner product. If you
-normalise your vectors to unit length, those two become the same ranking, and
+normalize your vectors to unit length, those two become the same ranking, and
 a lot of implementation detail simplifies.
 
 ## Brute force is not always wrong
@@ -12802,7 +12802,7 @@ Things I check before putting a vector index into anything I care about:
 1. **Recall against ground truth.** Compute exact top-k for a few hundred
    sampled queries and measure overlap with what the index returns. Recall at
    10 below roughly 0.9 usually shows up as visibly worse answers downstream.
-2. **Filtered search behaviour.** Combining a metadata filter with a vector
+2. **Filtered search behavior.** Combining a metadata filter with a vector
    search is the classic sharp edge. Pre-filtering can leave the graph
    disconnected, post-filtering can return fewer results than requested. Know
    which one your system does.
@@ -12893,7 +12893,7 @@ the hypervisor scheduler will usually do the right thing on its own.
 
 So before adding resources to a slow VM, ask whether the addition crosses a
 node boundary. Going from a guest that fits in one node to one that spans two
-is a step change in memory behaviour, not a smooth increase in capacity. It
+is a step change in memory behavior, not a smooth increase in capacity. It
 is often better to run two right-sized guests than one oversized one,
 particularly for workloads that scale horizontally.
 
@@ -13084,7 +13084,7 @@ the argument is much stronger: fewer round trips to first byte, per stream loss
 recovery, and connection survival across network changes are exactly what those
 clients need.
 
-For an internal service inside one data centre, I would not bother. The
+For an internal service inside one data center, I would not bother. The
 failure modes it solves barely exist there, and the observability you give up
 matters more.
 
@@ -13334,7 +13334,7 @@ mount -o remount,commit=5 /data
 The commit interval is worth knowing. By default a journal transaction is
 flushed every few seconds, so the worst case for metadata is a few seconds of
 work. Raising it reduces write amplification on a busy filesystem and widens
-the window you lose in a crash. That is a real dial, not a micro optimisation.
+the window you lose in a crash. That is a real dial, not a micro optimization.
 
 ## What the journal does not do
 
@@ -13581,7 +13581,7 @@ Python's pickle format is not data. It is a small stack based program that the
 unpickler executes, and that includes constructing arbitrary objects and
 calling arbitrary callables. The standard library documentation says so in a
 warning at the top of the page. Any checkpoint format that wraps pickle
-inherits that behaviour, which means loading a checkpoint from an untrusted
+inherits that behavior, which means loading a checkpoint from an untrusted
 source is running code from an untrusted source, with whatever privileges the
 serving process has.
 
@@ -13630,7 +13630,7 @@ instead of a re-download.
 be traceable to a model identifier and artifact hash recorded in the request
 log. Without it, a quality regression after a model swap is unfalsifiable.
 
-## Storage behaviour is worth designing
+## Storage behavior is worth designing
 
 Weights files have an unusual access pattern: enormous sequential reads at
 startup, then almost nothing. That has practical consequences.
@@ -13656,7 +13656,7 @@ is a one line change.
 The end state I aim for looks like any other artifact pipeline. A download step
 runs as an unprivileged user with no access to the serving environment. It
 verifies signatures where the publisher provides them, records hashes and the
-exact upstream revision, captures the licence text next to the weights, and
+exact upstream revision, captures the license text next to the weights, and
 converts anything unsafe into a format that cannot execute. A promotion step
 moves an approved, hashed directory into the path the serving hosts read. The
 serving step verifies the hash before load, mounts the directory read only, and
@@ -14294,7 +14294,7 @@ Controllers, memory, cpu, io, pids, are enabled per subtree, and a child can
 never exceed its parent's limits. That last property is why a limit you did
 not set can still bite you: your service inherits its slice.
 
-Because systemd organises services into slices and scopes, most of what you
+Because systemd organizes services into slices and scopes, most of what you
 run on a normal Linux host is already in a cgroup whether you asked or not.
 
 ## Memory, and the kill you did not see
@@ -16862,7 +16862,7 @@ the SOA MINIMUM if you are about to create names that clients have already been
 asking for, which happens constantly during a rollout when monitoring probes a
 hostname before it exists.
 
-## Two Related Behaviours, And The Order I Check Things In
+## Two Related Behaviors, And The Order I Check Things In
 
 RFC 8020 says that an NXDOMAIN for a name implies that nothing exists beneath
 it. If the resolver has cached NXDOMAIN for example.com, a query for
@@ -16875,7 +16875,7 @@ RFC 8767 goes the other direction. It permits a resolver to serve expired data
 when it cannot reach the authoritative servers, which trades strict correctness
 for availability during an outage. If your resolver has stale answer serving
 enabled, "the TTL expired" stops being a guarantee that the next answer is
-fresh. That is usually the behaviour you want, but you should know it is on
+fresh. That is usually the behavior you want, but you should know it is on
 before you use TTL expiry as a reasoning tool.
 
 When a name resolves inconsistently, I do not start by clearing caches. I start
@@ -17422,7 +17422,7 @@ def cache_key(req: dict) -> str:
     return "infer:" + hashlib.sha256(blob).hexdigest()
 \`\`\`
 
-## Caching Changes Behaviour When Sampling Is On
+## Caching Changes Behavior When Sampling Is On
 
 At temperature zero you are approximating a deterministic function, and caching
 is a pure optimization. Above zero you are sampling, and a cache turns a
@@ -18135,7 +18135,7 @@ you can hand to somebody else.
     date: "2026-08-06",
     tags: ["ai", "tools", "automation"],
     excerpt:
-      "A prompt is configuration that silently changes behaviour with no type checker and no compiler error. Version it, test it, and gate it in CI like anything else.",
+      "A prompt is configuration that silently changes behavior with no type checker and no compiler error. Version it, test it, and gate it in CI like anything else.",
     coverImage: "/images/blog/prompts-as-versioned-code.jpg",
     content: `
 ## Configuration with no type checker
@@ -18937,7 +18937,7 @@ speedup. The dominant structure right now is HNSW, a hierarchical navigable
 small world graph. The idea is a layered proximity graph: each vector is a node
 connected to some number of near neighbours, upper layers are sparse and used
 for coarse navigation, and a search greedily walks downhill through the layers
-toward the query. You get logarithmic-ish behaviour instead of linear, at the
+toward the query. You get logarithmic-ish behavior instead of linear, at the
 cost of sometimes missing a true nearest neighbour.
 
 It works well. It is also not free, and the costs are not obvious from the API.
@@ -19053,7 +19053,7 @@ walk keeps landing on nodes that the filter rejects. Some engines handle this
 with filtered search modes, others degrade to scanning. Test with your actual
 filter selectivity before committing to an architecture.
 
-The general point: an ANN index is a specific optimisation with specific costs.
+The general point: an ANN index is a specific optimization with specific costs.
 Reach for it when the scan actually hurts, and know what you gave up when you
 do.
 
@@ -19477,7 +19477,7 @@ underperform most visibly, and it is the clearest case for a model based one.
 
 I leave it alone for short, clean paths. Inside a data center or a single site,
 round trip times are sub millisecond and loss is near zero. The congestion
-control algorithm is barely engaged and you are optimising something that is not
+control algorithm is barely engaged and you are optimizing something that is not
 the bottleneck.
 
 And I measure before and after with the same tool, on the same path, at the same
@@ -19574,7 +19574,7 @@ Writes, sends, deletes, payments, and permission changes should require a
 confirmation that shows the actual parameters. Not "the assistant wants to send
 an email," but the recipient and the body.
 
-**Enforce authorisation outside the model.** The model must never be the thing
+**Enforce authorization outside the model.** The model must never be the thing
 deciding what a user is allowed to see. Filter at the data layer before
 retrieval, with the user's identity, the same way you would for any other
 application.
@@ -19591,7 +19591,7 @@ def dispatch(call, user, confirm_fn):
     if spec is None:
         raise PermissionError(f"tool not allowed: {call.name}")
 
-    # authorisation is evaluated against the user, never the model's claim
+    # authorization is evaluated against the user, never the model's claim
     if not user.can(call.name, call.args):
         raise PermissionError("not permitted for this user")
 
@@ -19611,11 +19611,11 @@ You cannot make the model perfectly obey a boundary, but you can make the
 boundary explicit and consistent, which measurably helps.
 
 Wrap untrusted content in clear markers, state in the system prompt that
-anything inside them is data to be analysed rather than instructions to be
+anything inside them is data to be analyzed rather than instructions to be
 followed, and strip or escape any occurrence of your marker in the content
 itself so an attacker cannot close the block early. That last step is the one
 people forget, and it is exactly the escaping logic you would write for any
-other injection defence.
+other injection defense.
 
 Also keep tool output separate from user input in your own logs and traces. When
 something goes wrong you want to be able to say which channel the bad
@@ -19637,7 +19637,7 @@ review.
 ## What I would actually deploy
 
 For anything with real access, my baseline is: no autonomous state changing
-actions, tool credentials scoped tighter than the user's own, authorisation
+actions, tool credentials scoped tighter than the user's own, authorization
 enforced in the data layer, all tool calls logged with arguments, and outbound
 network access from the tool layer restricted to an allowlist of destinations.
 
@@ -19863,7 +19863,7 @@ the same weight read is amortised across many tokens. Intensity is high.
 Compute bound. This is why a long prompt and a long generation feel like
 completely different workloads on the same model.
 
-**Elementwise operations, normalisation, activation functions.** Almost no
+**Elementwise operations, normalization, activation functions.** Almost no
 arithmetic per byte. Bandwidth bound, always, which is why kernel fusion exists.
 
 \`\`\`python
@@ -19885,7 +19885,7 @@ print(roofline(1000, 300, 0.5))
 
 Run those two and the gap is enormous. The second case uses a tiny fraction of
 the chip's arithmetic capability no matter how good the chip is at arithmetic.
-That is not a software problem you can optimise away, it is the shape of the
+That is not a software problem you can optimize away, it is the shape of the
 computation.
 
 ## What this implies when comparing hardware
@@ -19989,7 +19989,7 @@ The per unit output lists every hardening setting, whether it is enabled, and an
 exposure weight. It is a checklist with the reasoning attached. Run it on a
 default unit and the output is long and unflattering, which is the point.
 
-Do not treat the numeric score as a target to optimise. Some settings do not
+Do not treat the numeric score as a target to optimize. Some settings do not
 apply to some services, and turning on something that breaks your application to
 improve a number is not security work. Use it as a list of things to consider.
 
@@ -20229,7 +20229,7 @@ access port on a switch. The guest cannot escape its VLAN by sending tagged
 frames, because the hardware enforces the tag. With \`spoofchk on\`, it cannot
 forge a source MAC either. Without those two settings you have handed a guest a
 trunk port, which is a segmentation failure dressed up as a performance
-optimisation.
+optimization.
 
 Then bind the function to the passthrough driver and hand it to the guest:
 
@@ -23394,7 +23394,7 @@ Used for what it is good at, it is one of the most useful services you can run o
       sourceUrl: "https://www.flickr.com/photos/29456680@N06/4902364107",
     },
     content: `
-## An opinion piece, clearly labelled
+## An opinion piece, clearly labeled
 
 Everything below is my analysis, not reporting. I am not describing any specific product or claiming what any vendor has shipped. I am writing down the framework I would use to judge a claim, because the marketing in this space runs well ahead of the evidence and I would rather have a checklist than a vibe.
 
@@ -23404,13 +23404,13 @@ Before evaluating a tool, be honest about where the hours go. In most security o
 
 Notice that very little of that is "detect the attack nobody has seen." Most of it is retrieval, correlation, and writing. That matters, because retrieval, correlation, and writing are exactly what language models are good at, and detection of novel attacks is exactly what they are not obviously good at.
 
-It is also worth remembering that machine learning has been in security tooling for a long time and the successes are unglamorous: spam classification, malware family clustering, anomaly detection on numeric telemetry, user behaviour baselines. Those work because they operate on large volumes of labelled or structured data with a clear signal.
+It is also worth remembering that machine learning has been in security tooling for a long time and the successes are unglamorous: spam classification, malware family clustering, anomaly detection on numeric telemetry, user behavior baselines. Those work because they operate on large volumes of labeled or structured data with a clear signal.
 
 If a problem can be solved with a threshold, a rule, or a well understood classifier, use that. It is cheaper, faster, deterministic, explainable, and testable. Reaching for a language model when a \`WHERE\` clause would do is a common and expensive mistake.
 
 ## Three jobs I would plausibly hand a model
 
-Context assembly. Given an alert, pull the asset owner, recent changes, the user's normal behaviour, related tickets, and relevant threat intel into one summary. This is retrieval and formatting, the output is checkable against sources, and being wrong is annoying rather than dangerous.
+Context assembly. Given an alert, pull the asset owner, recent changes, the user's normal behavior, related tickets, and relevant threat intel into one summary. This is retrieval and formatting, the output is checkable against sources, and being wrong is annoying rather than dangerous.
 
 Translation between representations. Turning a plain description into a query in your SIEM's language, converting a detection rule between formats, explaining a piece of obfuscated script, summarizing what a config change does. The analyst still reads and runs the result, so there is a human check built in.
 
@@ -23418,9 +23418,9 @@ First draft writing. Incident timelines, post incident reports, ticket summaries
 
 ## Three jobs I would not hand a model
 
-Autonomous response. Isolating a host, disabling an account, or blocking a range based on a model's judgement with nobody in the loop. The failure mode is a self inflicted outage, and prompt injection through attacker controlled log content makes it worse: an attacker who can write text into your logs can potentially influence a system that reads them.
+Autonomous response. Isolating a host, disabling an account, or blocking a range based on a model's judgment with nobody in the loop. The failure mode is a self inflicted outage, and prompt injection through attacker controlled log content makes it worse: an attacker who can write text into your logs can potentially influence a system that reads them.
 
-Being the detection itself. If the model decides what is malicious, you cannot explain a decision to an auditor, you cannot unit test it, its behaviour changes when the model changes, and you cannot reason about what it will miss. Deterministic detections with a model assisting the analyst is a much better division of labour.
+Being the detection itself. If the model decides what is malicious, you cannot explain a decision to an auditor, you cannot unit test it, its behavior changes when the model changes, and you cannot reason about what it will miss. Deterministic detections with a model assisting the analyst is a much better division of labour.
 
 Anything where a confident wrong answer is expensive and unverifiable. If a human cannot cheaply check the output, the output has no business being trusted.
 
@@ -23614,7 +23614,7 @@ An RFC is a numbered document published by the RFC Editor. The number is permane
 
 That last point is the single most important thing to check, and the thing beginners get wrong most often. You can easily land on a document from decades ago that has been fully replaced. The header block at the top of the page tells you: it will say "Obsoletes: 1234" or, on the old document, "Obsoleted by: 9999." Always look before you invest an hour.
 
-Also check the category. Standards Track documents are the ones defining what implementations should do. Informational documents describe something without standardizing it. Experimental means what it says. Best Current Practice describes recommended operational behaviour rather than protocol format. And not every RFC is serious, since the ones published on the first of April are jokes, some of them very good ones.
+Also check the category. Standards Track documents are the ones defining what implementations should do. Informational documents describe something without standardizing it. Experimental means what it says. Best Current Practice describes recommended operational behavior rather than protocol format. And not every RFC is serious, since the ones published on the first of April are jokes, some of them very good ones.
 
 ## The reading order I use
 
@@ -23885,7 +23885,7 @@ This ties directly into real datacenter concepts like hot aisle/cold aisle conta
 
 The model is a bulk energy balance: every watt drawn by IT equipment becomes a watt of heat, so a rack's heat output is its power draw. From there the airflow needed to carry that heat away at a given temperature rise falls out of the specific heat of air. Air is about 1.005 kJ per kg per kelvin at room temperature and about 1.2 kg per cubic meter at sea level, so roughly 1206 joules per cubic meter per kelvin. A 5 kW rack with an 11 K rise across it needs 5000 / (1206 * 11) = 0.38 cubic meters per second, which is about 800 CFM.
 
-The target range comes from the ASHRAE recommended envelope for datacenter inlet air, 18 to 27 degrees Celsius, so a rack whose modelled inlet climbs past 27 turns orange and one past 32 turns red.
+The target range comes from the ASHRAE recommended envelope for datacenter inlet air, 18 to 27 degrees Celsius, so a rack whose modeled inlet climbs past 27 turns orange and one past 32 turns red.
 
 Blanking panels earn their place in the model too. An empty U with no panel is a hole between the hot aisle and the cold aisle, and exhaust air recirculates straight back to the inlet of the device above it. In the simulation, unblanked slots add a recirculation term to the rack's inlet temperature, which is the fastest way I know to make the point that the cheapest cooling upgrade in most rooms costs about two dollars a slot.
 
@@ -24223,7 +24223,7 @@ Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the 
 
 The Mac Pro handles media-heavy workloads that my Dell servers would struggle with. Video transcoding, Xcode builds, and GPU-accelerated compute tasks all benefit from the hardware. If you are running Final Cut Pro pipelines or Compressor jobs in a production environment, the rack-mount Mac Pro makes a lot of sense.
 
-The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's licence permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
+The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's license permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
 
 For general server workloads like virtualization, storage, and networking, Dell wins every time. The PowerEdge line is designed for exactly that, and the price-to-performance ratio is not even close. But the Mac Pro fills a gap that Dell cannot, and having both in the same rack gives me flexibility.
 
@@ -24238,7 +24238,7 @@ sudo systemsetup -setusingnetworktime on
 sudo pmset -a sleep 0 disksleep 0 displaysleep 0 womp 1 autorestart 1
 \`\`\`
 
-\`autorestart 1\` is the important one. It tells the machine to power itself back on after a power failure, which is the default behaviour you get for free on every server and do not get here. \`womp 1\` enables wake on LAN. \`sleep 0\` stops macOS from suspending a machine that looks idle because nobody is typing on it.
+\`autorestart 1\` is the important one. It tells the machine to power itself back on after a power failure, which is the default behavior you get for free on every server and do not get here. \`womp 1\` enables wake on LAN. \`sleep 0\` stops macOS from suspending a machine that looks idle because nobody is typing on it.
 
 Verify:
 
@@ -24310,7 +24310,7 @@ You are also locked into Apple's hardware ecosystem for upgrades. But for specif
 
 **Treating Screen Sharing as out-of-band.** It is in-band. It dies with the OS, with the network stack, and with a kernel panic. Do not build a recovery plan on it.
 
-**Forgetting \`autorestart\`.** Default behaviour after a power cut is to stay off. The UPS does its job, the power comes back, the PowerEdges boot, and the Mac sits there dark. One \`pmset\` flag, easy to miss, very annoying to discover remotely.
+**Forgetting \`autorestart\`.** Default behavior after a power cut is to stay off. The UPS does its job, the power comes back, the PowerEdges boot, and the Mac sits there dark. One \`pmset\` flag, easy to miss, very annoying to discover remotely.
 
 **Unattended OS updates.** There is no \`unattended-upgrades\` equivalent that reliably survives a major macOS release. Updates want a reboot, sometimes want a click, and can leave a headless machine sitting at a setup or migration prompt. Schedule macOS patching as attended work.
 
@@ -24367,7 +24367,7 @@ One of the things that separates enterprise servers from consumer hardware is ou
 
 I cannot overstate how much this matters in a lab environment. When you are testing things and inevitably break an OS installation, being able to remotely access the console and reinstall without physically touching the machine saves hours.
 
-Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the licence is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
+Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the license is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
 
 Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use \`root\` / \`calvin\`; later ones have a unique default password printed on the pull-out service tag at the front of the chassis. Change it either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
 
@@ -24417,7 +24417,7 @@ The R740 is the right answer when you want many cores, a lot of ECC memory, real
 
 Used R740s are available from resellers and auction sites. Prices vary a lot based on configuration, but you can get a solid base system for a reasonable price and add memory and drives over time. Buy from reputable sellers, check the service tag for warranty status, and inspect the drive backplane before committing.
 
-The checklist I now run before buying, all of it from the sections above: how many CPUs, how many DIMMs and in what population, which iDRAC licence, which storage controller, which backplane, are the risers present, which PSUs and at what input voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, frequently missing, and cost more separately than you expect.
+The checklist I now run before buying, all of it from the sections above: how many CPUs, how many DIMMs and in what population, which iDRAC license, which storage controller, which backplane, are the risers present, which PSUs and at what input voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, frequently missing, and cost more separately than you expect.
 
 ## References
 
@@ -24471,7 +24471,7 @@ Servers also need PCIe lanes for network cards, storage controllers, and acceler
 
 This is the part that gets least attention and matters most operationally. A server is expected to be manageable when the operating system is dead.
 
-An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardised: [IPMI](/blog/ipmi-remote-management) over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
+An enterprise server gives you a baseboard management controller on its own network port with its own IP address and its own power domain. Through it you get remote console, remote power cycling, virtual media so you can mount an ISO from your desk, sensor readings, hardware event logs, and firmware updates. The interfaces are standardized: [IPMI](/blog/ipmi-remote-management) over UDP port 623 for the old way, and the DMTF Redfish REST API over HTTPS for the modern way.
 
 Apple Silicon has none of this. There is no BMC, no out-of-band port, no Redfish endpoint. Remote access means SSH on port 22 or Screen Sharing on TCP 5900, and both of those require macOS to be up and on the network. If the machine hangs at boot, somebody walks to the rack. Apple Silicon also does not implement UEFI or ACPI, and it does not conform to Arm's SystemReady specifications, which are the reason a Graviton or Ampere box boots a stock ARM64 Linux ISO the same way an x86 server boots one.
 
@@ -24481,11 +24481,11 @@ Even if Apple built the perfect server chip, the software ecosystem is not ready
 
 That said, the ARM64 argument itself is settled. Graviton has been in production at scale since 2018 and its current generation runs 96 Neoverse cores per socket. Ampere ships parts with well over a hundred cores. Debian, Ubuntu, RHEL, and Alpine all publish first-class arm64 builds, and the container registries carry arm64 images for essentially everything mainstream. The problem is not the instruction set. The problem is that Apple's implementation of it is a closed platform with a consumer operating system on top.
 
-Where Apple Silicon does run server-shaped work today, it runs it through Apple's own Virtualization framework. That gives you fast ARM64 Linux guests with paravirtualised devices, plus Rosetta available inside the Linux guest so an x86-64 binary can run in an ARM VM. It also lets you run macOS guests, but Apple's licence terms permit at most two additional macOS virtual instances per Mac. That limit is the whole business model of the macOS CI hosting industry, and it is why Apple hardware in datacenters is almost always a build farm rather than a general-purpose fleet.
+Where Apple Silicon does run server-shaped work today, it runs it through Apple's own Virtualization framework. That gives you fast ARM64 Linux guests with paravirtualised devices, plus Rosetta available inside the Linux guest so an x86-64 binary can run in an ARM VM. It also lets you run macOS guests, but Apple's license terms permit at most two additional macOS virtual instances per Mac. That limit is the whole business model of the macOS CI hosting industry, and it is why Apple hardware in datacenters is almost always a build farm rather than a general-purpose fleet.
 
 ## Where it actually shows up in racks
 
-Apple Silicon is in datacenters right now, just not doing general-purpose work. AWS rents Mac instances as dedicated hosts, with a minimum 24-hour allocation period because Apple's licence requires the hardware to be dedicated. MacStadium and similar providers rent Mac minis and Mac Studios by the month. In every case, the workload is the same: compiling and testing software that can only be built on macOS, or media pipelines that depend on Apple's codecs and hardware engines.
+Apple Silicon is in datacenters right now, just not doing general-purpose work. AWS rents Mac instances as dedicated hosts, with a minimum 24-hour allocation period because Apple's license requires the hardware to be dedicated. MacStadium and similar providers rent Mac minis and Mac Studios by the month. In every case, the workload is the same: compiling and testing software that can only be built on macOS, or media pipelines that depend on Apple's codecs and hardware engines.
 
 That is a real and valuable niche. It is not a replacement for x86.
 
@@ -24523,7 +24523,7 @@ For general-purpose server workloads, x86 (and increasingly ARM via Graviton and
 
 **Assuming an eGPU or a PCIe GPU will work.** It will not, on any Apple Silicon Mac, at any macOS version. There is no third-party GPU driver model. If your workload needs a discrete accelerator, this platform is the wrong answer and no amount of configuration changes that.
 
-**Hitting the two-VM macOS limit late.** People design a CI fleet around four or eight macOS runners per host, then discover the licence permits two. Plan the host count around two from the start.
+**Hitting the two-VM macOS limit late.** People design a CI fleet around four or eight macOS runners per host, then discover the license permits two. Plan the host count around two from the start.
 
 **Expecting a stock Linux ISO to boot.** Apple Silicon does not implement UEFI or ACPI, so the normal ARM64 server boot path does not exist. Asahi works by reverse engineering the boot chain and device tree, and it is a genuinely impressive project, but hardware support is partial and it is not something to put a production service on.
 
@@ -25001,7 +25001,7 @@ Two more physical limits are worth knowing. TIA-568 puts the minimum bend radius
 
 For Ethernet, I run all connections through a patch panel at the top of the rack. The servers connect to the rear of the patch panel with short cables, and the front of the patch panel connects to the switch with color-coded patch cables. This means I never need to reach behind a server to change a network connection.
 
-The budget governing the layout is the 100 metre channel from TIA-568, and it is not 100 metres of any cable you like. It is 90 metres of permanent link, the fixed horizontal run terminated at both ends, plus 10 metres total of patch cords across both ends combined. Stranded patch cable has higher attenuation per metre than the solid-core cable used in permanent links, which is why the allowance is small. Inside one rack you are nowhere near the limit, but the moment a run leaves the room, count it.
+The budget governing the layout is the 100 meter channel from TIA-568, and it is not 100 meters of any cable you like. It is 90 meters of permanent link, the fixed horizontal run terminated at both ends, plus 10 meters total of patch cords across both ends combined. Stranded patch cable has higher attenuation per meter than the solid-core cable used in permanent links, which is why the allowance is small. Inside one rack you are nowhere near the limit, but the moment a run leaves the room, count it.
 
 Termination is where patch panels actually go wrong, and there are two rules.
 
@@ -25015,7 +25015,7 @@ Which leads to the tool most people own and misunderstand. A cheap continuity te
 
 I leave a small service loop of excess cable at each connection point. This gives me enough slack to pull a server forward on its rails for maintenance without disconnecting anything. It also means I can reroute cables if I rearrange equipment.
 
-Size the loop to the rail travel, not by eye. A four-post rail kit pulls a server most of its own depth out of the rack, so roughly a metre of slack per cable is the working figure for a 2U chassis. Test it once with the server empty: extend the chassis to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, with the system running.
+Size the loop to the rail travel, not by eye. A four-post rail kit pulls a server most of its own depth out of the rack, so roughly a meter of slack per cable is the working figure for a 2U chassis. Test it once with the server empty: extend the chassis to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, with the system running.
 
 Cable management arms deserve an honest note. A CMA holds the slack neatly and lets the server slide out with everything connected, which is genuinely useful. It also sits in the rear exhaust path and adds resistance to the airflow the first section was about protecting. Plenty of people remove them for that reason and manage slack in the vertical channel instead. Either choice is defensible. Not deciding leaves you with a CMA blocking airflow and cables that still pull tight.
 
@@ -25066,7 +25066,7 @@ VMware ESXi has been the gold standard for enterprise virtualization for years. 
 
 ## What each one actually is
 
-ESXi is a type 1 hypervisor with its own purpose-built kernel, the VMkernel. There is no general purpose operating system underneath it. That is the source of both its strengths, a small attack surface and predictable behaviour, and its limits: you get exactly the features VMware ships, through the interfaces VMware provides.
+ESXi is a type 1 hypervisor with its own purpose-built kernel, the VMkernel. There is no general purpose operating system underneath it. That is the source of both its strengths, a small attack surface and predictable behavior, and its limits: you get exactly the features VMware ships, through the interfaces VMware provides.
 
 Proxmox VE is Debian with KVM and LXC on top. KVM turns the Linux kernel itself into the hypervisor, so this is also type 1 in the sense that matters for performance, with the guest running on hardware virtualization extensions rather than being emulated. What sits alongside it is a complete Linux system.
 
@@ -25084,11 +25084,11 @@ ESXi has no equivalent. Containers there mean a VM running a container runtime.
 
 ESXi is polished. The vSphere client is fast and well-organized. vMotion (live migration) works flawlessly. The ecosystem of third-party tools and integrations is massive. If you are studying for VMware certifications or want to match what most enterprises run, ESXi is the obvious choice.
 
-Worth being precise about what is free and what is not, because most of the good parts are not. Bare ESXi manages one host. vMotion, the distributed switch, DRS and the rest are vCenter features and require licences. A single free ESXi host is a hypervisor, not a cluster, and much of what people admire about VMware is the cluster.
+Worth being precise about what is free and what is not, because most of the good parts are not. Bare ESXi manages one host. vMotion, the distributed switch, DRS and the rest are vCenter features and require licenses. A single free ESXi host is a hypervisor, not a cluster, and much of what people admire about VMware is the cluster.
 
 The downside is licensing. VMware's free tier has become increasingly limited, and the paid licenses are expensive for a homelab. The acquisition by Broadcom has added uncertainty about future pricing and availability. For a lab where you are experimenting freely, licensing friction is a real concern.
 
-Be careful repeating any specific claim about VMware licensing, mine included. Since the Broadcom acquisition closed in late 2023 the terms have moved repeatedly: perpetual licences gave way to subscription, SKUs were consolidated into bundles, per-core minimums appeared, and the free hypervisor was discontinued and later partially reinstated. Check the current terms yourself. The stable takeaway is directional rather than numeric: VMware now designs for large enterprises, and a homelab is not a customer it targets.
+Be careful repeating any specific claim about VMware licensing, mine included. Since the Broadcom acquisition closed in late 2023 the terms have moved repeatedly: perpetual licenses gave way to subscription, SKUs were consolidated into bundles, per-core minimums appeared, and the free hypervisor was discontinued and later partially reinstated. Check the current terms yourself. The stable takeaway is directional rather than numeric: VMware now designs for large enterprises, and a homelab is not a customer it targets.
 
 There is a second friction that bites homelabs harder than it bites enterprises: the hardware compatibility list. ESXi ships drivers for hardware VMware supports, which is enterprise hardware. A consumer NIC or a desktop SATA controller may simply not be seen. Proxmox, being Debian, drives anything Linux drives, which is most things.
 
@@ -25104,7 +25104,7 @@ Proxmox also has native ZFS support, which is a big deal if you care about data 
 
 Native means the installer will build a root ZFS pool, and the web UI manages datasets and snapshots directly. Combined with KVM, that gives you snapshots that are genuinely cheap and replication between nodes that ships only changed blocks. ESXi's answer is VMFS or vSAN, and neither gives you end to end checksumming on commodity disks.
 
-Snapshot behaviour depends entirely on which storage type you picked, and this is where new users get stuck. On ZFS, Ceph and LVM-thin, snapshots are copy-on-write and effectively free. On plain thick LVM, on a raw iSCSI LUN, or on a directory holding raw images, the snapshot button is greyed out and there is no setting that enables it. Choose the storage type with snapshots in mind on day one, because changing it later means copying every disk.
+Snapshot behavior depends entirely on which storage type you picked, and this is where new users get stuck. On ZFS, Ceph and LVM-thin, snapshots are copy-on-write and effectively free. On plain thick LVM, on a raw iSCSI LUN, or on a directory holding raw images, the snapshot button is grayed out and there is no setting that enables it. Choose the storage type with snapshots in mind on day one, because changing it later means copying every disk.
 
 The contrast with VMware matters because people carry the habit across. An ESXi snapshot creates a delta file that every subsequent write lands in, so performance degrades the longer it lives and consolidation gets slower the bigger it grows. VMware's guidance is to treat snapshots as short-lived, a day or two, never as backups. A ZFS or Ceph snapshot has no such decay, which is why keeping one for a month is routine on Proxmox and a support case on VMware.
 
@@ -25114,13 +25114,13 @@ Proxmox clusters use Corosync for membership and quorum, and quorum is majority 
 
 Corosync wants a low latency network to itself, and sharing it with storage traffic is the usual cause of a cluster that fences nodes under load. A burst of backup or Ceph replication traffic delays Corosync tokens, the cluster concludes a node is gone, and the node reacts. Give it a dedicated NIC and VLAN carrying nothing else, and configure a second ring for redundancy.
 
-Understand what that reaction is before enabling HA. A node that loses quorum while running HA-managed guests hard reboots itself by watchdog after roughly a minute, so the cluster can safely start those guests elsewhere. That is correct behaviour, and it is alarming the first time you see it. The third vote that prevents it need not be a third server: a QDevice is a small daemon on any always-on Linux box, a Raspberry Pi included, holding a tie-breaking vote and running no workloads.
+Understand what that reaction is before enabling HA. A node that loses quorum while running HA-managed guests hard reboots itself by watchdog after roughly a minute, so the cluster can safely start those guests elsewhere. That is correct behavior, and it is alarming the first time you see it. The third vote that prevents it need not be a third server: a QDevice is a small daemon on any always-on Linux box, a Raspberry Pi included, holding a tie-breaking vote and running no workloads.
 
 ## My Experience
 
 I ran ESXi for a year before switching most of my lab to Proxmox. The switch was driven by three things: licensing costs, ZFS support, and the flexibility of having a full Linux system underneath.
 
-Proxmox handles my workloads just as well as ESXi did. VM performance is effectively identical (both use hardware virtualization). Live migration works, and it does not strictly require shared storage: Proxmox can migrate a running guest along with its local disks, copying the disk in the background before the final cutover. Shared or replicated storage is still much faster and is what you want for anything you migrate often, but the local-disk path is genuinely useful for evacuating a host before maintenance. The VMware equivalent, Storage vMotion, sits at a higher licence tier. Backups are straightforward with Proxmox Backup Server, which is another free tool from the same team.
+Proxmox handles my workloads just as well as ESXi did. VM performance is effectively identical (both use hardware virtualization). Live migration works, and it does not strictly require shared storage: Proxmox can migrate a running guest along with its local disks, copying the disk in the background before the final cutover. Shared or replicated storage is still much faster and is what you want for anything you migrate often, but the local-disk path is genuinely useful for evacuating a host before maintenance. The VMware equivalent, Storage vMotion, sits at a higher license tier. Backups are straightforward with Proxmox Backup Server, which is another free tool from the same team.
 
 "Effectively identical" is not hand-waving. Both run guests on the CPU's virtualization extensions, with second level address translation handling memory in hardware, so the hypervisor is not in the path for ordinary instructions. They differ in paravirtualized drivers, virtio on KVM against VMXNET3 and PVSCSI on VMware, and both are good. Use them. A guest left on emulated e1000 or IDE is slow on either platform, and that misconfiguration is behind most benchmark posts claiming one destroys the other.
 
@@ -25132,7 +25132,7 @@ The vSphere client is genuinely better than the Proxmox web UI. It is more respo
 
 Past the interface, there are capabilities Proxmox simply does not have. There is no DRS equivalent, so nothing rebalances guests across the cluster based on load and you place them yourself. There is no distributed virtual switch with the same feature set. Ceph is the answer to vSAN and it is more powerful, but it is also much harder to operate correctly and it wants at least three nodes with fast dedicated networking before it behaves. And the third party ecosystem for monitoring, backup and orchestration is far thinner.
 
-One more honest point, specifically for a student: VCP is a credential hiring managers recognise. Proxmox training exists and is good, and it does not carry the same weight on a resume yet. If the goal is a job in a VMware shop, keeping ESXi running somewhere in the lab is worth the friction, and nesting it as a VM on top of Proxmox is a perfectly reasonable way to have both.
+One more honest point, specifically for a student: VCP is a credential hiring managers recognize. Proxmox training exists and is good, and it does not carry the same weight on a resume yet. If the goal is a job in a VMware shop, keeping ESXi running somewhere in the lab is worth the friction, and nesting it as a VM on top of Proxmox is a perfectly reasonable way to have both.
 
 ## Bottom Line
 
@@ -25248,7 +25248,7 @@ The reason those DIMMs are slower per module is worth knowing, because it explai
 
 If you are running workloads where data integrity matters (databases, file servers, ZFS, virtualization), use ECC. ZFS in particular strongly recommends ECC RAM because it relies on the integrity of its in-memory data structures to maintain data consistency.
 
-Worth being precise about the ZFS case, because the internet has invented a monster around it. The folklore says a scrub on a machine with bad RAM will progressively destroy the whole pool. That specific escalating failure is not a documented behaviour of ZFS and the developers have said so. The real risk is duller and still bad: ZFS checksums data after it exists in memory, so if a bit flips before the checksum is computed, ZFS faithfully stores corrupt data with a perfectly valid checksum and will defend that corruption forever. ECC closes the window that no filesystem can close from software.
+Worth being precise about the ZFS case, because the internet has invented a monster around it. The folklore says a scrub on a machine with bad RAM will progressively destroy the whole pool. That specific escalating failure is not a documented behavior of ZFS and the developers have said so. The real risk is duller and still bad: ZFS checksums data after it exists in memory, so if a bit flips before the checksum is computed, ZFS faithfully stores corrupt data with a perfectly valid checksum and will defend that corruption forever. ECC closes the window that no filesystem can close from software.
 
 For a homelab, ECC is a strong recommendation but not an absolute requirement. If you are running ZFS or storing data you care about, get ECC. If you are just experimenting with VMs and do not mind the occasional crash, non-ECC will work, but you are accepting a risk that grows with the amount of RAM in the system.
 
@@ -25384,11 +25384,11 @@ On power, the R740 has two hot-swap supplies you can feed from separate circuits
 
 A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, the Mac Pro is the only option.
 
-That "only option" is a licence question, not a technical one. Apple's software licence permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
+That "only option" is a license question, not a technical one. Apple's software license permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
 
 ## What breaks
 
-**Buying a used R740 without iDRAC Enterprise.** The Express licence that ships on many secondhand servers gives you the web UI and sensors but locks virtual console and virtual media behind the Enterprise tier. People buy the server, discover they cannot get a remote screen, and assume iDRAC is broken. Check the licence level before you buy.
+**Buying a used R740 without iDRAC Enterprise.** The Express license that ships on many secondhand servers gives you the web UI and sensors but locks virtual console and virtual media behind the Enterprise tier. People buy the server, discover they cannot get a remote screen, and assume iDRAC is broken. Check the license level before you buy.
 
 **Leaving iDRAC on the flat network with its factory password.** Older units shipped \`root\` / \`calvin\`; newer ones ship a unique password printed on the pull-out service tag. Either way, a BMC is a full out-of-band computer with power control over your server. It belongs on an isolated management VLAN with its own firewall policy, never on the same subnet as user devices.
 
@@ -25396,7 +25396,7 @@ That "only option" is a licence question, not a technical one. Apple's software 
 
 **Calling two power supplies redundant when both are on one circuit.** Dual PSUs protect against a supply failing, not against a breaker tripping. If both cords go to the same PDU on the same circuit, you have bought half the redundancy you think you have.
 
-**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's licence terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
+**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's license terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
 
 ## My recommendation
 
@@ -25935,13 +25935,13 @@ Pick your CPU based on your actual workload:
 
 ## What breaks
 
-**Licensing costs more than the CPU.** Windows Server is licensed per core with a minimum of 8 cores per processor and 16 per server, and VMware moved vSphere to per-core licensing with a per-CPU minimum. Doubling your core count can double a recurring bill that dwarfs the hardware. Work out the licence cost before you pick the part.
+**Licensing costs more than the CPU.** Windows Server is licensed per core with a minimum of 8 cores per processor and 16 per server, and VMware moved vSphere to per-core licensing with a per-CPU minimum. Doubling your core count can double a recurring bill that dwarfs the hardware. Work out the license cost before you pick the part.
 
 **Unbalanced memory population.** Six channels per socket on Cascade Lake means DIMMs go in sixes. Install eight per socket because it seemed like a round number and two channels carry double load while others sit idle. You lose bandwidth silently, and nothing in the BIOS complains.
 
 **Ignoring NUMA when sizing VMs.** A VM with more vCPUs than one socket has cores, or more RAM than one node has, gets scheduled across both and pays the remote memory penalty on a large fraction of its accesses. Size guests to fit a node, or configure vNUMA so the guest OS at least knows the topology.
 
-**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behaviour, not a fault.
+**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behavior, not a fault.
 
 **Assuming TDP is power draw.** TDP is a thermal design figure for sizing a cooler, not a wattmeter reading. Real draw depends on the power limits configured in firmware and on the workload. Size your UPS and your circuit from measured wall power, not from adding up TDP numbers.
 
@@ -26325,7 +26325,7 @@ Add \`-E header=y -E separator=,\` when you want a real CSV with a header row ra
 
 ## Decrypting TLS
 
-Most traffic worth analysing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with [TLS 1.3](/blog/tls-modern-encryption) that would not help anyway because the key exchange is always ephemeral.
+Most traffic worth analyzing is encrypted, and Wireshark can read it if you have the session keys. You do not need the server's private key, and with [TLS 1.3](/blog/tls-modern-encryption) that would not help anyway because the key exchange is always ephemeral.
 
 Instead, have the client write out its session secrets:
 
@@ -26338,11 +26338,11 @@ Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Mas
 
 ## What breaks
 
-**Running the GUI as root.** Wireshark's dissectors parse hostile input from the network, and they have had memory-safety bugs. Capture with \`dumpcap\` or grant the capability with \`setcap cap_net_raw,cap_net_admin+eip\`, then analyse as a normal user. On Debian-family systems, adding yourself to the \`wireshark\` group and re-logging in is the supported path.
+**Running the GUI as root.** Wireshark's dissectors parse hostile input from the network, and they have had memory-safety bugs. Capture with \`dumpcap\` or grant the capability with \`setcap cap_net_raw,cap_net_admin+eip\`, then analyze as a normal user. On Debian-family systems, adding yourself to the \`wireshark\` group and re-logging in is the supported path.
 
 **"Incorrect checksum" everywhere on a host capture.** Checksum offload means the NIC fills these in after Wireshark sees the packet. It is not corruption. Turn off checksum validation in the TCP and IP protocol preferences before you chase it.
 
-**Trusting \`tcp.analysis\` flags on a partial capture.** Those flags are generated by Wireshark's own stream tracking, not read from the packets. If your capture started mid-conversation or dropped packets, perfectly normal traffic is labelled as retransmissions and out-of-order segments. Check the dropped-packet count in the file properties first.
+**Trusting \`tcp.analysis\` flags on a partial capture.** Those flags are generated by Wireshark's own stream tracking, not read from the packets. If your capture started mid-conversation or dropped packets, perfectly normal traffic is labeled as retransmissions and out-of-order segments. Check the dropped-packet count in the file properties first.
 
 **Name resolution changing what you see.** With network name resolution enabled, Wireshark issues its own DNS lookups, which appear in a live capture and pollute it. Keep it off unless you specifically want it.
 
@@ -26519,7 +26519,7 @@ You are looking at a 2019 Mac Pro and trying to work out whether it is a real wo
 
 The 2019 Mac Pro is the most repairable and upgradeable Mac ever made, which is ironic given Apple's reputation for sealed devices. Every component is user-accessible. RAM, storage, PCIe cards, and even the processor can be replaced or upgraded. The internal layout is clean, logical, and clearly designed by engineers who care about serviceability.
 
-The mechanical decision that makes this work is the removable housing. Twist the top latch and the entire aluminium shell lifts straight off, leaving the whole machine standing exposed on all four sides with nothing to unscrew and no cable to unplug first. Compare that to a 2U server, where you slide the lid off and then work in a shallow tray with airflow shrouds in the way. Every part in the Mac Pro is reachable from outside the frame rather than down inside a box.
+The mechanical decision that makes this work is the removable housing. Twist the top latch and the entire aluminum shell lifts straight off, leaving the whole machine standing exposed on all four sides with nothing to unscrew and no cable to unplug first. Compare that to a 2U server, where you slide the lid off and then work in a shallow tray with airflow shrouds in the way. Every part in the Mac Pro is reachable from outside the frame rather than down inside a box.
 
 The lattice pattern on the front and back is not decoration either. It is a machined array of hemispherical cavities drilled from both faces so the intersections form the through-holes. The shape gives a large surface area for airflow while keeping the panel structurally rigid, which is the whole reason it can be a load-bearing part of the chassis rather than a flimsy mesh grille.
 
@@ -26545,7 +26545,7 @@ Apple's MPX (Mac Pro Expansion) module system provides both PCIe and auxiliary p
 
 This is clever engineering. It means GPU cards can draw much more power than the standard PCIe specification allows, which enables Apple to use high-power professional GPUs without external power cables.
 
-The numbers make the point. A PCIe x16 slot supplies at most 75 W to the card by specification. A 6-pin auxiliary connector adds 75 W and an 8-pin adds 150 W, which is why every high-end GPU in a normal PC has a rat's nest of cables draped over it. The MPX connector carries the auxiliary power through the same blind-mate interface as the PCIe signalling, with each MPX bay provisioned for hundreds of watts. You slot the card in and you are finished. There is no cable to forget and nothing to catch in the airflow. The connector also carries DisplayPort back to the logic board so the GPU can drive the machine's Thunderbolt ports.
+The numbers make the point. A PCIe x16 slot supplies at most 75 W to the card by specification. A 6-pin auxiliary connector adds 75 W and an 8-pin adds 150 W, which is why every high-end GPU in a normal PC has a rat's nest of cables draped over it. The MPX connector carries the auxiliary power through the same blind-mate interface as the PCIe signaling, with each MPX bay provisioned for hundreds of watts. You slot the card in and you are finished. There is no cable to forget and nothing to catch in the airflow. The connector also carries DisplayPort back to the logic board so the GPU can drive the machine's Thunderbolt ports.
 
 For the standard slots that are not MPX bays, Apple did fit two 8-pin auxiliary connectors on the board so you can still power a conventional card. Combined they are rated for 300 W, which is the ceiling you have to design around if you fit a third-party GPU.
 
@@ -26646,7 +26646,7 @@ apt install unattended-upgrades
 dpkg-reconfigure -plow unattended-upgrades
 \`\`\`
 
-That last command writes \`/etc/apt/apt.conf.d/20auto-upgrades\` with the two settings that matter, one to refresh the package lists on a schedule and one to actually apply upgrades. Out of the box it applies the security pocket only, which is the behaviour you want on a server: security fixes land automatically, feature updates wait for you.
+That last command writes \`/etc/apt/apt.conf.d/20auto-upgrades\` with the two settings that matter, one to refresh the package lists on a schedule and one to actually apply upgrades. Out of the box it applies the security pocket only, which is the behavior you want on a server: security fixes land automatically, feature updates wait for you.
 
 Verify it rather than assuming. This runs the whole process without changing anything and prints what it would have done:
 
@@ -26935,7 +26935,7 @@ The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family
 
 ## Reading the part number
 
-Most of the information you need is encoded in the optic's designation, and it follows a consistent grammar. Take 10GBASE-SR: the 10G is the speed, BASE means baseband signalling, and the suffix is the medium and reach.
+Most of the information you need is encoded in the optic's designation, and it follows a consistent grammar. Take 10GBASE-SR: the 10G is the speed, BASE means baseband signaling, and the suffix is the medium and reach.
 
 - **SR (short reach)** uses 850 nm light on multimode fiber. At 10 Gbps that reaches 300 m on OM3 and 400 m on OM4, and much less on the older OM1 and OM2 grades.
 - **LR (long reach)** uses 1310 nm on single-mode fiber for 10 km.
@@ -27052,7 +27052,7 @@ In practice, this means your data exists on your primary storage, a local backup
 
 Each number in the rule kills a specific class of failure, and it helps to name them.
 
-**Three copies** protects against independent failure. Two copies sounds like enough until you realise that the moment one fails you are running with no redundancy at all, and you have to rebuild while exposed. Three copies means a single loss is annoying, not an emergency.
+**Three copies** protects against independent failure. Two copies sounds like enough until you realize that the moment one fails you are running with no redundancy at all, and you have to rebuild while exposed. Three copies means a single loss is annoying, not an emergency.
 
 **Two media types** protects against correlated failure. Eight drives from the same production batch, in the same chassis, on the same power supply, at the same temperature, are not eight independent things. They fail in the same way at around the same time. Different media, different controller, different chassis, and ideally a different vendor breaks that correlation.
 
@@ -27190,7 +27190,7 @@ The goal is not to collect every metric that exists. The goal is to be able to a
 
 Before installing anything, pick the handful of signals that actually tell you a machine is unhealthy. For hosts and infrastructure, the useful frame is utilisation, saturation, and errors: how busy a resource is, how much work is queued behind it, and how often it is failing. For services that answer requests, the frame is rate, errors, and duration.
 
-Concretely, in my lab that means CPU run queue and steal time rather than just CPU percent, memory available rather than memory free, disk latency rather than just disk space, and interface errors and discards rather than just interface throughput. A network link that is 40 percent utilised but discarding frames is a bigger problem than a link sitting at 90 percent with a clean error counter.
+Concretely, in my lab that means CPU run queue and steal time rather than just CPU percent, memory available rather than memory free, disk latency rather than just disk space, and interface errors and discards rather than just interface throughput. A network link that is 40 percent utilized but discarding frames is a bigger problem than a link sitting at 90 percent with a clean error counter.
 
 ## Prometheus and Grafana
 
@@ -27373,7 +27373,7 @@ The layout rule I follow is that the top row answers "is anything on fire right 
     content: `
 ## The problem
 
-You have two Macs a metre apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you plugged the cable in, macOS made something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that reaches nothing and may have broken your internet. Here is what Thunderbolt networking is underneath, how to prove it is carrying traffic, and where it stops being the right tool.
+You have two Macs a meter apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you plugged the cable in, macOS made something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that reaches nothing and may have broken your internet. Here is what Thunderbolt networking is underneath, how to prove it is carrying traffic, and where it stops being the right tool.
 
 ## What Thunderbolt networking is
 
@@ -27464,7 +27464,7 @@ Thunderbolt networking is point-to-point. You cannot build a network fabric with
 
 One partial exception, because \`bridge0\` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless [spanning tree](/blog/spanning-tree-protocol-deep-dive) is on.
 
-Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a metre, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
+Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a meter, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
 
 ## Apple-first, not quite Apple-only
 
@@ -27542,7 +27542,7 @@ The CLI is text-based and powerful. Once you learn the command structure, config
 
 The detail that surprises people coming from other systems is that there is no commit step. Every line takes effect the instant you press enter, on the live device, with no confirmation and no staging. That is why \`reload in 10\` before a risky change is not paranoia.
 
-Underneath all of it, a switch does one simple job: learn which MAC address lives behind which port and forward frames accordingly. Entries age out after 300 seconds of silence by default, which explains a class of "it works after I ping it" behaviour. \`show mac address-table\` is the first command to reach for when a host cannot be found.
+Underneath all of it, a switch does one simple job: learn which MAC address lives behind which port and forward frames accordingly. Entries age out after 300 seconds of silence by default, which explains a class of "it works after I ping it" behavior. \`show mac address-table\` is the first command to reach for when a host cannot be found.
 
 ## Spanning Tree Protocol
 
@@ -27554,7 +27554,7 @@ A loop is catastrophic rather than merely inefficient because Ethernet frames ha
 
 Root bridge election uses the bridge ID: a 4-bit priority field, a 12-bit VLAN identifier, then the switch's MAC address. The default priority is 32768 everywhere and is only configurable in multiples of 4096, so when every switch shares the default the tiebreaker becomes the lowest MAC address, which usually means the oldest switch in the building wins. That is how a wiring-closet access switch ends up as root for a network whose core is two floors away. Set \`spanning-tree vlan 1-4094 root primary\` on your core and \`root secondary\` on the backup, on day one.
 
-The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbour waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardised as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbour instead of waiting on timers. If you find a switch running plain PVST+, \`spanning-tree mode rapid-pvst\` is one of the highest-value single lines in the config.
+The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbour waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardized as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbour instead of waiting on timers. If you find a switch running plain PVST+, \`spanning-tree mode rapid-pvst\` is one of the highest-value single lines in the config.
 
 Path cost is the other half. In the default short mode the costs are 100 for 10 Mbps, 19 for 100 Mbps, 4 for 1 Gbps, and 2 for 10 Gbps. Notice how little separates 1 G from 10 G, and that anything faster has nowhere left to go. With 25 G or 40 G links, turn on \`spanning-tree pathcost method long\` so the 32-bit values apply and faster links actually win.
 
@@ -27638,7 +27638,7 @@ The mirror-image mistake is saving too early. Before any remote change touching 
 
 Most people use iDRAC for its virtual console and power controls. But iDRAC 9 has features that make server management significantly easier if you take the time to set them up.
 
-Before any of it: check your license tier, because it decides what you actually have. iDRAC9 ships in Basic, Express, and Enterprise, with a Datacenter tier above that. **Virtual Console and Virtual Media require Enterprise.** A used PowerEdge bought off eBay very often arrives with Express, which means the two features people assume are built in simply are not there, and the buttons in the web UI are greyed out with no explanation of why. Dell offers a 30 day Enterprise trial you can activate from the licensing page to confirm that is what you are looking at before you go buy a license.
+Before any of it: check your license tier, because it decides what you actually have. iDRAC9 ships in Basic, Express, and Enterprise, with a Datacenter tier above that. **Virtual Console and Virtual Media require Enterprise.** A used PowerEdge bought off eBay very often arrives with Express, which means the two features people assume are built in simply are not there, and the buttons in the web UI are grayed out with no explanation of why. Dell offers a 30 day Enterprise trial you can activate from the licensing page to confirm that is what you are looking at before you go buy a license.
 
 Two more things to get right on day one. Newer PowerEdge systems no longer ship with the old \`root\` / \`calvin\` default; they generate a unique password at the factory and print it on the pull-out information tag on the front of the chassis. And if the chassis has a dedicated iDRAC network port, use it rather than shared-LOM mode. In shared mode the iDRAC rides on a host NIC, so the day you reconfigure bonding or a VLAN on the host you lose out-of-band access to the machine you were trying to fix, which defeats the entire point of out-of-band management.
 
@@ -28843,9 +28843,9 @@ I planned my rack layout on paper before installing anything. The general rules:
 
 Two of those deserve expanding, because the reasoning matters more than the rule.
 
-The weight rule is about the centre of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
+The weight rule is about the center of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
 
-The blanking panel rule is not about organisation at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
+The blanking panel rule is not about organization at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
 
 ## My Layout (Top to Bottom)
 
@@ -28939,7 +28939,7 @@ The worst STP failure I experienced in my lab was a broadcast storm caused by a 
 
 The result was immediate. Every device on the VLAN became unreachable. CPU utilization on the switches spiked to 100%. The switches were spending all their resources forwarding broadcast frames in an infinite loop.
 
-## Recognising the symptoms
+## Recognizing the symptoms
 
 A layer 2 loop looks different from most outages, and learning the signature saves a lot of time:
 
@@ -28959,7 +28959,7 @@ That message says the switch is learning the same MAC address from two different
 
 ## Stop the bleeding first
 
-Diagnosis on a saturated network is close to impossible, because management traffic is competing with the storm. Break the loop before you analyse it.
+Diagnosis on a saturated network is close to impossible, because management traffic is competing with the storm. Break the loop before you analyze it.
 
 If you know what changed, unplug it. If you do not, shut ports administratively from the console, starting with the ones named in the flap messages:
 
@@ -29009,7 +29009,7 @@ Two more commands earn their place. \`show spanning-tree interface Gi1/0/2 detai
 
 ## Capturing BPDUs
 
-When the switch output does not explain the behaviour, look at the frames. BPDUs go to the well-known multicast address 01:80:c2:00:00:00, which makes them easy to filter for:
+When the switch output does not explain the behavior, look at the frames. BPDUs go to the well-known multicast address 01:80:c2:00:00:00, which makes them easy to filter for:
 
 \`\`\`bash
 sudo tcpdump -i eno1 -e -nn -v 'ether dst 01:80:c2:00:00:00'
@@ -29027,7 +29027,7 @@ A single BPDU decodes roughly like this:
 
 The two fields to read are \`root-id\` and \`bridge-id\`. If they are equal, the sender believes it is the root. Capture on two ports and compare: if two switches each claim to be root, they are not exchanging BPDUs and you have a segmented spanning tree, which is a loop waiting to happen.
 
-In [Wireshark](/blog/wireshark-packet-analysis), the display filter is simply \`stp\`. Two patterns are worth recognising in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
+In [Wireshark](/blog/wireshark-packet-analysis), the display filter is simply \`stp\`. Two patterns are worth recognizing in a capture taken during an incident. A storm shows the identical frame, same source MAC and same payload, repeating hundreds of times per second with microsecond gaps. And a topology change flood shows a burst of TCN BPDUs, which tells you something is flapping even after the network appears to have recovered.
 
 Capture from a mirrored port or a host attached to the affected VLAN, not from the switch console, since the console is the thing under load.
 
@@ -29047,7 +29047,7 @@ Set the backup as well, so a failure of the primary still gives you a topology y
 LabSwitch(config)# spanning-tree vlan 20 root secondary
 \`\`\`
 
-A root that moved on its own is worth investigating rather than just correcting. Compare the root MAC in \`show spanning-tree\` against the one you expect. If it belongs to a device you do not recognise, something was plugged into your network that should not have been, and that is a security finding as much as a networking one.
+A root that moved on its own is worth investigating rather than just correcting. Compare the root MAC in \`show spanning-tree\` against the one you expect. If it belongs to a device you do not recognize, something was plugged into your network that should not have been, and that is a security finding as much as a networking one.
 
 ## PortFast and BPDU Guard
 
@@ -29060,7 +29060,7 @@ LabSwitch(config-if)# spanning-tree bpduguard enable
 
 These two features together prevent most common STP issues on access ports.
 
-When BPDU Guard fires, the port goes to err-disabled and stays there until someone intervenes, which is correct behaviour but produces a dead port that nobody explains. Confirm it with:
+When BPDU Guard fires, the port goes to err-disabled and stays there until someone intervenes, which is correct behavior but produces a dead port that nobody explains. Confirm it with:
 
 \`\`\`
 LabSwitch# show interfaces status err-disabled
@@ -29081,7 +29081,7 @@ The default recovery interval is 300 seconds. Leave the cause disabled entirely 
 
 **A hypervisor bridging two physical NICs.** A virtual switch with two uplinks into the same VLAN and no loop prevention is a loop, and it is invisible from the physical switch's point of view because the host does not send BPDUs. The MAC flap message will name two switch ports that both lead to the same server, which is the tell.
 
-**Mismatched STP modes between vendors.** Cisco's per-VLAN modes and standard MSTP or RSTP interoperate in specific, limited ways, mostly across the native VLAN. A link between two vendors where each thinks it is managing the topology alone can leave a redundant path forwarding on both ends. When mixing vendors, standardise on MSTP and verify the region configuration matches on both sides.
+**Mismatched STP modes between vendors.** Cisco's per-VLAN modes and standard MSTP or RSTP interoperate in specific, limited ways, mostly across the native VLAN. A link between two vendors where each thinks it is managing the topology alone can leave a redundant path forwarding on both ends. When mixing vendors, standardize on MSTP and verify the region configuration matches on both sides.
 
 **BPDU Filter applied where BPDU Guard was intended.** Filter stops the port participating in spanning tree at all, so a switch plugged into that port creates a loop with nothing watching for it. Guard shuts the port down. The names are similar and the outcomes are opposites.
 
@@ -29121,7 +29121,7 @@ You are dropping 4K or 8K ProRes onto a timeline and playback stutters, the CPU 
 
 The Apple Afterburner card is a PCIe accelerator designed to decode ProRes and ProRes RAW video in hardware. It handles up to 6.3 billion pixels per second, which translates to 3 streams of 8K ProRes RAW or 12 streams of 4K ProRes RAW simultaneously. Without Afterburner, these decode operations happen on the CPU, which limits how many streams you can play back in real time.
 
-Note the word decode. Afterburner is a decoder, full stop. It does not accelerate encoding, it does not accelerate effects, and it does not accelerate colour grading. It makes getting pixels off disk and into memory cheap. Everything downstream of that is still the CPU and GPU's problem.
+Note the word decode. Afterburner is a decoder, full stop. It does not accelerate encoding, it does not accelerate effects, and it does not accelerate color grading. It makes getting pixels off disk and into memory cheap. Everything downstream of that is still the CPU and GPU's problem.
 
 ## Why ProRes is expensive to decode
 
@@ -29359,7 +29359,7 @@ When you create a VM, it needs network access. The hypervisor provides this thro
 
 In Proxmox, the default virtual bridge is called vmbr0. In ESXi, it is a vSwitch or Distributed Switch. The concept is the same: a software-defined Layer 2 switch inside the hypervisor.
 
-There is one behavioural difference between the software switch and the physical one that catches people out. A Linux bridge learns MAC addresses the same way a physical switch does, but a hypervisor vSwitch generally does not need to: it already knows which MAC belongs to which virtual port because it handed the address out. That means unknown-unicast flooding, the thing that lets you snoop traffic on a hub, mostly does not happen, and it is why you cannot simply run a capture inside one VM and see another VM's traffic.
+There is one behavioral difference between the software switch and the physical one that catches people out. A Linux bridge learns MAC addresses the same way a physical switch does, but a hypervisor vSwitch generally does not need to: it already knows which MAC belongs to which virtual port because it handed the address out. That means unknown-unicast flooding, the thing that lets you snoop traffic on a hub, mostly does not happen, and it is why you cannot simply run a capture inside one VM and see another VM's traffic.
 
 ## Connecting to physical networks
 
@@ -29650,7 +29650,7 @@ Also learn the difference between "connection refused" and "connection timed out
 
 Checking logs on individual servers is fine for a few machines. Once you have more than five, centralized logging is essential. I send all syslog data to a central server where I can search across all machines from one interface. This also means I have log copies even if the original server's logs are lost.
 
-Two rules make it useful rather than decorative. Ship over TCP, because UDP silently drops exactly when a burst of interesting events arrives. And synchronise clocks with NTP across everything that logs, because cross-machine correlation is the whole point and it is impossible if two hosts disagree about what time it is.
+Two rules make it useful rather than decorative. Ship over TCP, because UDP silently drops exactly when a burst of interesting events arrives. And synchronize clocks with NTP across everything that logs, because cross-machine correlation is the whole point and it is impossible if two hosts disagree about what time it is.
 
 ## The NCL connection
 
@@ -29747,7 +29747,7 @@ Controller:
       Boot UUID: 0F1C2D3E-4A5B-6C7D-8E9F-0A1B2C3D4E5F
 \`\`\`
 
-If that section is empty or the data type is not recognised, you are not on a T2 Mac. On Apple silicon these functions live in the main SoC and this profiler type does not apply.
+If that section is empty or the data type is not recognized, you are not on a T2 Mac. On Apple silicon these functions live in the main SoC and this profiler type does not apply.
 
 The second command tells you whether the volume key is bound to a passphrase:
 
@@ -30403,7 +30403,7 @@ X509v3 Subject Alternative Name:
 
 For any service exposed to the internet, I use Let's Encrypt certificates. They are free, automatically renewed, and trusted by all major browsers. Certbot handles the issuance and renewal process automatically.
 
-The protocol underneath is ACME, standardised as RFC 8555. The CA gives your client a challenge and the client proves control of the name by answering it. The three that matter: http-01 serves a token at a well-known path over port 80, tls-alpn-01 answers on port 443 using a special ALPN protocol, and dns-01 publishes a TXT record at \`_acme-challenge.<name>\`.
+The protocol underneath is ACME, standardized as RFC 8555. The CA gives your client a challenge and the client proves control of the name by answering it. The three that matter: http-01 serves a token at a well-known path over port 80, tls-alpn-01 answers on port 443 using a special ALPN protocol, and dns-01 publishes a TXT record at \`_acme-challenge.<name>\`.
 
 Only dns-01 can issue wildcards, and it is the only one that works for a host with no inbound internet access, which makes it the right choice for internal services that still want a publicly trusted certificate.
 
@@ -30524,7 +30524,7 @@ The container-level numbers are the ones that are actually true. Per-volume free
 
 ## Snapshots and clones, worked
 
-Here is the clone behaviour on a real volume. \`mkfile\` and \`cp -c\` both ship with macOS, and \`cp -c\` is the flag that calls \`clonefile(2)\` instead of copying blocks.
+Here is the clone behavior on a real volume. \`mkfile\` and \`cp -c\` both ship with macOS, and \`cp -c\` is the flag that calls \`clonefile(2)\` instead of copying blocks.
 
 \`\`\`bash
 cd /tmp
@@ -30616,7 +30616,7 @@ This hybrid approach uses each filesystem where it is strongest.
 
 **Expecting \`cp\` to clone.** Only \`cp -c\`, Finder's Duplicate, and a direct \`clonefile(2)\` call produce clones. A backup script using plain \`cp\` or \`rsync\` writes full copies, and a workflow that assumed cheap duplicates fills the volume overnight.
 
-**Case sensitivity mismatch.** macOS formats APFS case-insensitive by default. If you create a case-sensitive volume for a build tree, you get correct behaviour for source code but break applications that assume otherwise, and copying from case-sensitive to case-insensitive silently collides \`README\` with \`readme\`. Pick one per volume and know which one you picked.
+**Case sensitivity mismatch.** macOS formats APFS case-insensitive by default. If you create a case-sensitive volume for a build tree, you get correct behavior for source code but break applications that assume otherwise, and copying from case-sensitive to case-insensitive silently collides \`README\` with \`readme\`. Pick one per volume and know which one you picked.
 
 **Assuming encryption implies integrity.** FileVault stops someone reading the disk. It does nothing about a flipped bit, and because the data is enciphered in blocks, a single bit error damages the whole block rather than one byte. Encryption and integrity are separate properties and APFS only provides one of them.
 
@@ -30675,7 +30675,7 @@ Adding Dell PowerEdge servers was the next step. This required proper network in
 
 This is also when I started treating the network as infrastructure rather than an accessory. Documentation, change management, monitoring, and backups all became necessary.
 
-The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 metres, while Category 6A is rated for the full 100 metres because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than [SFP+](/blog/sfp-transceivers-explained) and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 metres, and beyond that you are buying active cable or optics.
+The 10GbE decision has more edges than it looks. If you go with 10GBASE-T over copper, Category 6 only carries 10 Gbps for 55 meters, while Category 6A is rated for the full 100 meters because of its improved alien crosstalk performance. Inside one rack that limit never bites, but "I already have Cat6 in the walls" is not the same as "I have 10GbE in the walls." 10GBASE-T also burns noticeably more power per port than [SFP+](/blog/sfp-transceivers-explained) and adds latency in the PHY, which is why storage and cluster interconnects tend to use SFP+ with direct attach copper. Passive DAC is good to about 5 meters, and beyond that you are buying active cable or optics.
 
 The used-gear trap here is transceiver vendor locking. Many switches check the vendor ID in an SFP+ module's EEPROM and refuse anything that is not their own brand, and server NICs sometimes do the same. A perfectly good Dell-coded transceiver will be rejected by a Cisco switch and vice versa. Most platforms have an unsupported-transceiver override command, but find out whether yours does before the parts arrive.
 
@@ -30835,7 +30835,7 @@ BGP (Border Gateway Protocol) is the routing protocol that connects autonomous s
 
 If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
 
-The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behaviour. First, it runs over TCP on port 179, so peers must already reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol: it builds no map of the network the way OSPF does. Each speaker advertises the paths it has chosen, along with the autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
+The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behavior. First, it runs over TCP on port 179, so peers must already reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol: it builds no map of the network the way OSPF does. Each speaker advertises the paths it has chosen, along with the autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
 
 ## Key Concepts
 
@@ -30859,7 +30859,7 @@ Those attributes are consulted in a fixed order, and knowing that order is the d
 
 Steering inbound traffic is much harder, and this is the honest limitation nobody mentions up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbour that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times so the path looks longer to everyone else running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look worse and hope.
 
-One more attribute matters in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as \`ASN:value\`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviours like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit.
+One more attribute matters in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as \`ASN:value\`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviors like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit.
 
 ## Basic Configuration
 
@@ -30884,7 +30884,7 @@ Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 
 
 **Somebody sends you the whole internet.** The global IPv4 table is now around a million prefixes. If a customer or a lab peer re-announces the full table to you, a software router runs out of memory and a hardware router runs out of FIB space, which is the worse failure because forwarding breaks while the control plane looks healthy. In 2014 the table crossed 512,000 routes and knocked over a generation of Cisco 6500 and 7600 platforms whose TCAM was partitioned for exactly that many. Set \`neighbor x maximum-prefix\` on every peer, sized to what that peer should legitimately send.
 
-**A route leak.** Taking routes from one provider and announcing them to another makes you a transit provider for traffic you cannot carry. RFC 7908 catalogues the shapes this takes, and the examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defence is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so routers can spot the leak themselves rather than trusting everyone's filters.
+**A route leak.** Taking routes from one provider and announcing them to another makes you a transit provider for traffic you cannot carry. RFC 7908 catalogs the shapes this takes, and the examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defense is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so routers can spot the leak themselves rather than trusting everyone's filters.
 
 **Origin hijacking.** BGP has no built-in way to know whether an AS is entitled to announce a prefix. RPKI route origin validation (RFC 6811) is the deployed partial answer: prefix holders publish signed objects, and your router marks routes Valid, Invalid, or NotFound so you can drop the Invalids. It validates the *origin* AS only and not the rest of the path, so an attacker who prepends the legitimate origin still passes. RFC 7454, published as BCP 194, is the practical checklist and the most useful thing to read after RFC 4271.
 
@@ -30894,13 +30894,13 @@ Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 
 
 Even if you work in enterprise networking rather than ISP networking, BGP comes up constantly. Cloud providers use it for connecting on-premises networks to AWS, Azure, or GCP via Direct Connect or ExpressRoute. SD-WAN solutions often use BGP internally. Understanding BGP makes you a much more effective network engineer.
 
-It has also moved inside the data centre. RFC 7938 describes using eBGP as the only routing protocol in a large Clos fabric, giving every switch its own private ASN, and that design is now common enough that plenty of engineers meet BGP on a top-of-rack switch before they ever meet it on a border router.
+It has also moved inside the data center. RFC 7938 describes using eBGP as the only routing protocol in a large Clos fabric, giving every switch its own private ASN, and that design is now common enough that plenty of engineers meet BGP on a top-of-rack switch before they ever meet it on a border router.
 
 ## Where BGP Is The Wrong Tool
 
 BGP knows about reachability and policy. It knows nothing about latency, bandwidth, jitter, or load. AS path length counts networks crossed, not distance or speed, so a two-AS path over a congested transatlantic link beats a three-AS path over an idle domestic one every time. If your problem is "pick the fastest path right now", the answer is SD-WAN or performance-based routing that measures paths and manipulates BGP from outside.
 
-Do not reach for it inside a small network either. In a campus, OSPF converges in seconds where BGP takes minutes and needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organisations, or a fabric large enough that link-state flooding becomes the problem.
+Do not reach for it inside a small network either. In a campus, OSPF converges in seconds where BGP takes minutes and needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organizations, or a fabric large enough that link-state flooding becomes the problem.
 
 ## Where to Practice
 
@@ -31118,7 +31118,7 @@ Quorum is the part that bites homelabs. A cluster needs more than half its votes
 
 If you also enable HA, know that fencing is real. A node that loses quorum with HA-managed guests on it self-fences by hard resetting through a watchdog, on the order of a minute after losing contact. That is correct behavior, it prevents two nodes writing the same disk, and it will still surprise you the first time a network mistake reboots a server.
 
-One storage detail that catches people: snapshots depend on the backing storage, not on Proxmox. ZFS, LVM-thin, Ceph RBD, and qcow2 files on a directory support snapshots. A raw volume on thick LVM does not, and the snapshot button is simply greyed out with no hint as to why. If you go with ZFS, cap the ARC. ZFS treats free RAM as cache by default, and a host that "has no memory left" for VMs is usually just ZFS doing its job.
+One storage detail that catches people: snapshots depend on the backing storage, not on Proxmox. ZFS, LVM-thin, Ceph RBD, and qcow2 files on a directory support snapshots. A raw volume on thick LVM does not, and the snapshot button is simply grayed out with no hint as to why. If you go with ZFS, cap the ARC. ZFS treats free RAM as cache by default, and a host that "has no memory left" for VMs is usually just ZFS doing its job.
 
 ## VMware ESXi
 
@@ -31359,7 +31359,7 @@ Prometheus \`rate()\` detects a counter reset by noticing the value went down, a
 
 The fix is in the same RFC. The \`ifXTable\` provides \`ifHCInOctets\` and \`ifHCOutOctets\` as Counter64, which will not wrap in any human timeframe. Counter64 does not exist in SNMPv1, so you must poll with v2c or v3 to get them, and the \`if_mib\` module in snmp_exporter already walks the high-capacity table. Verify with \`snmpwalk\` that your device actually populates it, because some low-end gear exposes the OIDs and leaves them at zero.
 
-The same RFC is also why your graphs sometimes swap ports after a reboot. \`ifIndex\` is not guaranteed stable across a reload or a module insertion on many platforms, so the series you labelled "uplink" can quietly become a different physical port. Label your metrics by \`ifName\` or \`ifAlias\` rather than index, and set a real description on every port so \`ifAlias\` is worth reading.
+The same RFC is also why your graphs sometimes swap ports after a reboot. \`ifIndex\` is not guaranteed stable across a reload or a module insertion on many platforms, so the series you labeled "uplink" can quietly become a different physical port. Label your metrics by \`ifName\` or \`ifAlias\` rather than index, and set a real description on every port so \`ifAlias\` is worth reading.
 
 ## Scrape Timeouts and Holes in Graphs
 
@@ -31447,7 +31447,7 @@ Related trap: do not mix wattages. A 750 W and a 1100 W unit in the same chassis
 
 ## The Efficiency Wrinkle
 
-Switching power supplies are not equally efficient at all loads. The 80 PLUS certification programme measures efficiency at 10, 20, 50, and 100 percent of rated load, and every tier peaks near the middle: an 80 PLUS Titanium unit in the internal redundant category is specified around 96 percent at half load but only around 90 percent at 10 percent load.
+Switching power supplies are not equally efficient at all loads. The 80 PLUS certification program measures efficiency at 10, 20, 50, and 100 percent of rated load, and every tier peaks near the middle: an 80 PLUS Titanium unit in the internal redundant category is specified around 96 percent at half load but only around 90 percent at 10 percent load.
 
 That has a direct consequence for redundant pairs. Two supplies each carrying 25 percent of their rating are running further down the efficiency curve than one supply carrying 50 percent, so a redundant server is measurably less efficient than a single-supply one at the same workload. Vendors solve this with a hot spare mode, which Dell exposes in iDRAC, that puts one PSU into a low-power standby state and runs the other at a more efficient load point, waking the standby unit in milliseconds if the active one falters. It is worth enabling on a fleet and worth understanding before you enable it, because it trades a tiny amount of transition risk for a real reduction in your power bill.
 
@@ -31461,7 +31461,7 @@ Here is the number that ruins A/B power designs: **in a true A/B rack, each side
 
 Layer the branch circuit derating on top. The National Electrical Code treats anything running for three hours or more as a continuous load and requires the circuit to be sized at 125 percent of it, which in practice means never loading a circuit past 80 percent of its rating. A 20 A circuit at 120 V gives you 16 A usable, or 1920 W. The same 20 A at 208 V gives 3328 W, which is a large part of why racks are fed at higher voltages. Combine the two rules and a pair of 20 A 208 V feeds supports about 3300 W of rack load with real A/B redundancy, not 6600 W.
 
-Two more physical details. Server cords use IEC 60320 C13 and C14 connectors up to 10 A and C19 and C20 for higher current, and none of them lock by default. Use cords with retention clips or the vendor's cord locks, because the most common cause of an outage in a dual-corded server is a cord that worked loose in a rail slide, not a supply that failed. And plan for inrush: every PSU draws a large surge at power-on, so a whole rack restarting simultaneously after an outage can trip an upstream breaker. Servers have a BIOS setting for AC recovery behaviour, and staggering it across a rack rather than setting everything to power on immediately is worth the ten minutes it takes.
+Two more physical details. Server cords use IEC 60320 C13 and C14 connectors up to 10 A and C19 and C20 for higher current, and none of them lock by default. Use cords with retention clips or the vendor's cord locks, because the most common cause of an outage in a dual-corded server is a cord that worked loose in a rail slide, not a supply that failed. And plan for inrush: every PSU draws a large surge at power-on, so a whole rack restarting simultaneously after an outage can trip an upstream breaker. Servers have a BIOS setting for AC recovery behavior, and staggering it across a rack rather than setting everything to power on immediately is worth the ten minutes it takes.
 
 ## Checking PSU Health
 
@@ -31627,7 +31627,7 @@ Two additions worth the time. Set the secondary root explicitly too, so a failur
 
 **PortFast on a port that is not an edge port.** PortFast skips listening and learning and goes straight to forwarding. On a port with a switch or a bridging hypervisor behind it, that means forwarding for 30 seconds before spanning tree gets around to blocking, which is 30 seconds of storm. Always pair PortFast with BPDU Guard.
 
-**MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behaviour rarely matches what anyone expected.
+**MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behavior rarely matches what anyone expected.
 
 **Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual [VLANs](/blog/vlan-segmentation-guide) you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
 
@@ -31763,7 +31763,7 @@ systemctl restart ssh.socket
 
 The empty \`ListenStream=\` matters. Without it you add a port rather than replacing the default. Confirm with \`ss -tlnp | grep sshd\` or, under socket activation, \`systemctl status ssh.socket\`.
 
-On SELinux systems, the policy only permits sshd to bind the ports labelled \`ssh_port_t\`. Add yours before restarting:
+On SELinux systems, the policy only permits sshd to bind the ports labeled \`ssh_port_t\`. Add yours before restarting:
 
 \`\`\`bash
 semanage port -a -t ssh_port_t -p tcp 2222
@@ -31813,7 +31813,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
 
 **Banning yourself.** Fat-finger a passphrase from the office a few times and your own address is in the ban list. Put your management network in \`ignoreip\`, and know that \`fail2ban-client set sshd unbanip 10.0.10.22\` exists before you need it from a phone.
 
-**Disabling password auth on a machine with no other way in.** If the key is wrong and the console is a data centre two hours away, this is your whole evening. Confirm key login works, confirm a second administrator's key works, and only then set \`PasswordAuthentication no\`.
+**Disabling password auth on a machine with no other way in.** If the key is wrong and the console is a data center two hours away, this is your whole evening. Confirm key login works, confirm a second administrator's key works, and only then set \`PasswordAuthentication no\`.
 
 ## References
 
@@ -31951,7 +31951,7 @@ The second trap is blocking ICMPv6. On IPv4 you can filter most ICMP and get awa
 
 Most enterprise environments now operate dual-stack, running both IPv4 and IPv6 simultaneously. Start by enabling IPv6 on your homelab router, get a prefix delegation from your ISP if available, and experiment with connectivity. The best way to learn IPv6 is to use it.
 
-Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global address and a working default route. Write the firewall rules before you route the prefix, not after. Then break it on purpose, block ICMPv6 type 2 and watch large transfers hang, so that when it happens for real you recognise the symptom in thirty seconds instead of an afternoon.
+Concretely: enable it on one VLAN, not all of them. Confirm hosts get a global address and a working default route. Write the firewall rules before you route the prefix, not after. Then break it on purpose, block ICMPv6 type 2 and watch large transfers hang, so that when it happens for real you recognize the symptom in thirty seconds instead of an afternoon.
 
 ## References
 
@@ -32033,7 +32033,7 @@ show log               # System log
 
 Remember that all of those counters are cumulative since boot or since the last \`clear counters\`. A device with 400 CRC errors and 300 days of uptime is fine. Run \`clear counters\`, wait five minutes, and look again if you want to know whether the problem is happening now.
 
-\`show cdp neighbors\` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run \`no cdp enable\` on ports facing users or untrusted networks. LLDP, standardised as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type \`lldp run\`.
+\`show cdp neighbors\` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run \`no cdp enable\` on ports facing users or untrusted networks. LLDP, standardized as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type \`lldp run\`.
 
 The output filters are the other half of the help system. \`show run | include ip address\` greps, \`show run | section interface\` prints whole configuration blocks, and \`show run | begin router bgp\` starts output at the first match. \`terminal length 0\` turns off the \`--More--\` paging so you can capture a full config into a terminal log.
 
@@ -32091,7 +32091,7 @@ reload in 10
 reload cancel
 \`\`\`
 
-If the change breaks your connectivity, you cannot type \`reload cancel\`, the device reboots in ten minutes, and it comes back on the last saved startup config. Nobody has to drive to the site. Do not save the config until you have cancelled the reload.
+If the change breaks your connectivity, you cannot type \`reload cancel\`, the device reboots in ten minutes, and it comes back on the last saved startup config. Nobody has to drive to the site. Do not save the config until you have canceled the reload.
 
 For a real rollback capability rather than a blunt reboot, \`archive\` with \`path\` configured plus \`configure replace\` lets you roll back to a stored configuration file, but it only works if you set it up before you needed it. Config register \`0x2102\` is the normal default and means boot from flash and load the startup config; \`0x2142\` tells the router to skip the startup config, which is the password recovery procedure and also a good way to accidentally boot a blank device.
 
@@ -32242,7 +32242,7 @@ For multipathing, put each path on its own subnet and its own physical NIC. Two 
 
 Enterprise storage connects servers via multiple independent paths to eliminate single points of failure. The OS uses multipath software (MPIO on Windows, multipathd on Linux) to manage these paths transparently. If one path fails, I/O continues over the surviving paths.
 
-Without it, two paths to one LUN appear to Linux as two separate block devices, \`sdb\` and \`sdc\`, both pointing at the same blocks. Multipath recognises them by their shared WWID and presents a single device under \`/dev/mapper/\`. Always build filesystems and LVM on the mapper device, never on the underlying \`sd\` device, or you have gone around the very layer that provides the failover.
+Without it, two paths to one LUN appear to Linux as two separate block devices, \`sdb\` and \`sdc\`, both pointing at the same blocks. Multipath recognizes them by their shared WWID and presents a single device under \`/dev/mapper/\`. Always build filesystems and LVM on the mapper device, never on the underlying \`sd\` device, or you have gone around the very layer that provides the failover.
 
 \`\`\`bash
 sudo multipath -ll
@@ -32538,7 +32538,7 @@ end
 \`set mode\` controls the selection strategy, and the default is \`manual\`, meaning it simply uses \`priority-members\` in the order listed. The options that matter:
 
 - \`manual\` uses the first listed member, period. No SLA awareness.
-- \`priority\` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behaviour.
+- \`priority\` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behavior.
 - \`sla\` uses any member meeting the SLA, load balancing across them, and falls back to the best available when none qualify.
 - \`load-balance\` distributes across members regardless of quality.
 - \`best-quality\` picks the single best member by whichever metric \`set quality-link\` or \`sla-compare-method\` names.
@@ -32730,7 +32730,7 @@ After power is up, negotiation can continue in software. LLDP, specifically the 
 
 **Passive PoE meets a standards-compliant device.** Consumer and older prosumer gear sometimes ships passive injectors that put 24 V on the spare pairs with no detection handshake at all. Plugging a compliant 802.3af device into one of those, or a 24 V passive device into a proper PoE switch, ranges from "does not work" to "releases smoke". Passive PoE and 802.3af are not the same technology and share only the connector.
 
-**Copper-clad aluminium cable.** CCA patch and bulk cable is sold cheaply and looks identical to the real thing. Its DC resistance is substantially higher than solid copper, so voltage drop over a long run is worse, more of the budget turns into heat inside the wall, and it is a genuine fire concern at Type 3 and Type 4 current levels. Buy solid copper, and be suspicious of any bulk cable priced well under the going rate.
+**Copper-clad aluminum cable.** CCA patch and bulk cable is sold cheaply and looks identical to the real thing. Its DC resistance is substantially higher than solid copper, so voltage drop over a long run is worse, more of the budget turns into heat inside the wall, and it is a genuine fire concern at Type 3 and Type 4 current levels. Buy solid copper, and be suspicious of any bulk cable priced well under the going rate.
 
 **Heat in cable bundles.** Current through copper makes heat, and a bundle of forty-eight cables all delivering 802.3bt power in a warm ceiling void gets hot enough to raise insertion loss and shorten cable life. TIA's TSB-184-A exists specifically to give derating guidance for bundle size and ambient temperature. Cat6A, with its larger conductors, runs cooler under the same load than Cat5e and is the sane choice for new high-power installs.
 
@@ -32797,7 +32797,7 @@ The single most common real-world mistake is buying a "64 GB" kit as four 16 GB 
 
 Two more placement failures worth knowing:
 
-**Populating the second CPU's slots with no second CPU installed.** Half the DIMM slots on a dual-socket board are wired to socket 2. With one CPU installed, memory in those slots is simply invisible. There is no error, the capacity is just lower than you paid for. Dell colour-codes and numbers the slots (A1 through A12 for CPU1, B1 through B12 for CPU2) precisely so you can check this at a glance.
+**Populating the second CPU's slots with no second CPU installed.** Half the DIMM slots on a dual-socket board are wired to socket 2. With one CPU installed, memory in those slots is simply invisible. There is no error, the capacity is just lower than you paid for. Dell color-codes and numbers the slots (A1 through A12 for CPU1, B1 through B12 for CPU2) precisely so you can check this at a glance.
 
 **Filling the second slot of a channel first.** Slots are populated white first, then black, and on most Dell boards the far slot of the pair is the one that must be filled first for signal integrity. Getting this backwards can produce a machine that either refuses to POST or trains the whole channel down a speed grade.
 
@@ -33328,7 +33328,7 @@ pcs resource group add web-group virtual-ip nginx
 
 \`IPaddr2\` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbours update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to \`pcs status\` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
 
-Three defaults cause most of the confusing behaviour after a first cluster is running:
+Three defaults cause most of the confusing behavior after a first cluster is running:
 
 - The default operation timeout is 20 seconds. An \`op monitor interval=30s\` on a service whose status check occasionally takes 25 seconds will be recorded as a monitor failure, and Pacemaker will restart a perfectly healthy service. Set the timeout explicitly: \`op monitor interval=30s timeout=60s\`.
 - \`resource-stickiness\` defaults to 0, so when a failed node comes back the cluster may move resources back to it immediately, causing a second outage you did not ask for. Set \`pcs resource defaults update resource-stickiness=100\` unless you have a reason to want automatic failback.
@@ -33469,7 +33469,7 @@ The real power of 802.1X is RADIUS-based VLAN assignment. Employees get the corp
 
 Configure RADIUS to return VLAN attributes in the Access-Accept response, and the switch automatically places the port in the correct VLAN.
 
-The attributes are standardised, and RFC 3580 spells out exactly which three you need together:
+The attributes are standardized, and RFC 3580 spells out exactly which three you need together:
 
 \`\`\`
 jsmith  Cleartext-Password := "password123"
@@ -33639,7 +33639,7 @@ The Kubernetes case is worth a specific note because the port numbers differ. Fl
 
 ## What breaks
 
-**The port number.** This is the first thing to check and the least obvious. IANA assigned 4789 to VXLAN, but the Linux kernel's VXLAN driver still defaults to 8472, the value Linux used before the number was standardised. Create an interface without \`dstport\` on one host and with \`dstport 4789\` on the other and you have two VTEPs shouting past each other. Always specify the port explicitly on both ends.
+**The port number.** This is the first thing to check and the least obvious. IANA assigned 4789 to VXLAN, but the Linux kernel's VXLAN driver still defaults to 8472, the value Linux used before the number was standardized. Create an interface without \`dstport\` on one host and with \`dstport 4789\` on the other and you have two VTEPs shouting past each other. Always specify the port explicitly on both ends.
 
 **MTU.** The 50 byte overhead means an inner packet of full 1500 bytes will not fit in a 1500 byte underlay. Because the tunnel is UDP and the outer packet usually has the do-not-fragment bit set, oversized packets are silently dropped rather than fragmented. The classic symptom is that ping works, DNS works, SSH connects, and then the first large transfer hangs forever. Test with \`ping -M do\` at the exact size, not with default pings.
 
@@ -33681,7 +33681,7 @@ Something on the network is slow, intermittent, or resetting, and the logs on bo
 
 Use packet captures when layer 2-4 problems are not obvious from interface statistics and logs. Common scenarios: unexplained TCP retransmissions, connection resets, intermittent connectivity, suspected firewall misconfigurations, and application performance issues where the application team blames the network.
 
-Before you capture, check the cheaper sources. \`ip -s link\` and the switch's interface counters will tell you about CRC errors, drops, and discards in one command. If an interface is showing input errors climbing, you have your answer and do not need a capture at all. Captures are for the problems where every counter is clean and the behaviour still makes no sense.
+Before you capture, check the cheaper sources. \`ip -s link\` and the switch's interface counters will tell you about CRC errors, drops, and discards in one command. If an interface is showing input errors climbing, you have your answer and do not need a capture at all. Captures are for the problems where every counter is clean and the behavior still makes no sense.
 
 ## Capturing in the right place
 
@@ -33697,7 +33697,7 @@ You have three ways to get the traffic. Capturing on the host itself is easiest 
 
 The limitation of SPAN worth knowing up front: the mirror destination has the same speed as any other port. Mirroring two saturated 1 Gb ports into one 1 Gb monitor port means the switch discards the excess, and those discards look exactly like network loss in your capture. If you are chasing loss, mirror one direction at a time or use a TAP.
 
-Also make sure the clocks agree. Two captures taken on machines whose time differs by 400 ms are almost useless for deciding which side was late. Check that both hosts are synchronised before you start, not after.
+Also make sure the clocks agree. Two captures taken on machines whose time differs by 400 ms are almost useless for deciding which side was late. Check that both hosts are synchronized before you start, not after.
 
 ## Capture filters and display filters are different languages
 
@@ -34178,7 +34178,7 @@ It watches hardware, and only hardware. iDRAC will tell you a DIMM took correcta
 
 Virtual media is also weaker than it looks over a slow link. Mounting a 5 GB ISO from your laptop over a home connection and running an OS install through it takes hours and fails partway through more often than it succeeds. Stage the image on something close to the server, or use PXE, and keep virtual media for rescue work and small drivers.
 
-Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell firmware and supports the sort of detect-and-recover behaviour described in NIST SP 800-193, but that only helps if you keep it updated. A BMC three years behind on firmware, reachable from a user VLAN, with IPMI enabled, is a worse security position than having no out-of-band management at all, because it is a permanent way into every server you own that nobody is watching.
+Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell firmware and supports the sort of detect-and-recover behavior described in NIST SP 800-193, but that only helps if you keep it updated. A BMC three years behind on firmware, reachable from a user VLAN, with IPMI enabled, is a worse security position than having no out-of-band management at all, because it is a permanent way into every server you own that nobody is watching.
 
 ## References
 
@@ -34451,9 +34451,9 @@ ssh-keygen -t rsa -b 4096 -C "admin@workstation" -f ~/.ssh/id_rsa
 
 Always set a passphrase. The passphrase encrypts the private key on disk, so even if someone steals your laptop, they cannot use the key without the passphrase.
 
-Ed25519 is EdDSA over Curve25519, standardised for SSH in RFC 8709. Its key size is fixed by the curve, so \`-b\` does nothing for that type; passing it is harmless but pointless. The public key is short enough to fit comfortably on one line, which matters more than it sounds like it should, for reasons in the failure section below.
+Ed25519 is EdDSA over Curve25519, standardized for SSH in RFC 8709. Its key size is fixed by the curve, so \`-b\` does nothing for that type; passing it is harmless but pointless. The public key is short enough to fit comfortably on one line, which matters more than it sounds like it should, for reasons in the failure section below.
 
-Two files come out. \`id_ed25519\` is the private key and never leaves the machine. \`id_ed25519.pub\` is the public key and is safe to paste anywhere. Learn to recognise which is which at a glance, because the mistake of installing the wrong one is common and confusing.
+Two files come out. \`id_ed25519\` is the private key and never leaves the machine. \`id_ed25519.pub\` is the public key and is safe to paste anywhere. Learn to recognize which is which at a glance, because the mistake of installing the wrong one is common and confusing.
 
 The fingerprint is how you refer to a key without pasting it:
 
@@ -35035,7 +35035,7 @@ Link aggregation does not actually bond the links into a single higher-speed pip
 
 A single TCP connection always flows over a single physical link. You cannot exceed the speed of one link for a single stream. The benefit is total throughput across many flows.
 
-Two properties of the hash surprise people. First, each end hashes independently, so traffic from A to B can ride a different physical link than the return traffic from B to A. That is normal behaviour, not a fault, and it means a one-sided packet capture on a member link often shows only half a conversation. Second, the hash result is reduced modulo the number of active members. With 2, 4, or 8 members the buckets divide evenly. With 3, 5, 6, or 7 members some links receive measurably more buckets than others, and a heavily loaded 3-member bundle can sit at 60 percent on one link and 20 percent on the others while the aggregate reports plenty of headroom.
+Two properties of the hash surprise people. First, each end hashes independently, so traffic from A to B can ride a different physical link than the return traffic from B to A. That is normal behavior, not a fault, and it means a one-sided packet capture on a member link often shows only half a conversation. Second, the hash result is reduced modulo the number of active members. With 2, 4, or 8 members the buckets divide evenly. With 3, 5, 6, or 7 members some links receive measurably more buckets than others, and a heavily loaded 3-member bundle can sit at 60 percent on one link and 20 percent on the others while the aggregate reports plenty of headroom.
 
 Layer 3+4 hashing has a caveat the Linux bonding documentation states directly: it is not fully 802.3ad compliant, because IP fragments after the first carry no port numbers. Those fragments hash differently from the head fragment and can arrive out of order. For normal TCP traffic that never happens, since TCP avoids fragmentation. For UDP applications that send large datagrams, it can.
 
@@ -35552,7 +35552,7 @@ The \`ge\` and \`le\` keywords are where most people go wrong, so be precise abo
 
 Entries are evaluated in sequence order with an implicit deny at the end, so the explicit \`deny 0.0.0.0/0 le 32\` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
 
-Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behaviour differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs \`clear ip bgp 10.0.0.2 soft in\`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
 
 ## The Filter That Saves You When the Others Fail
 
@@ -35680,7 +35680,7 @@ Second, baseboard management controllers deserve special paranoia. [IPMI](/blog/
 
 Design the network assuming an attacker will eventually get in. The question is not whether the perimeter will be breached, but what they can do once inside. Micro-segmentation, zero-trust access controls, and comprehensive logging all limit the damage from a successful intrusion.
 
-This is the core of the zero trust model described in NIST SP 800-207: network location is not an authentication factor. Being on the internal network should grant you nothing by itself. Every request gets authenticated and authorised on its own merits, and the network's job is to reduce the set of things a compromised identity can even attempt to reach.
+This is the core of the zero trust model described in NIST SP 800-207: network location is not an authentication factor. Being on the internal network should grant you nothing by itself. Every request gets authenticated and authorized on its own merits, and the network's job is to reduce the set of things a compromised identity can even attempt to reach.
 
 You do not need a product to start. Requiring authentication on internal services that currently have none, and putting a filter between zones that currently route freely, gets you most of the practical benefit.
 
@@ -35694,9 +35694,9 @@ You cannot defend what you cannot see. Every network should have:
 
 Security without visibility is guesswork. Build observability into the network from day one.
 
-Some specifics for building that out. Syslog as standardised in RFC 5424 traditionally rides UDP port 514, which is unauthenticated and can be dropped silently; use the TLS transport on port 6514 where the gear supports it. IPFIX, the IETF standard descended from NetFlow version 9, is registered on port 4739, while NetFlow v9 exporters conventionally use UDP 2055, a convention rather than a standard, so check what your collector expects.
+Some specifics for building that out. Syslog as standardized in RFC 5424 traditionally rides UDP port 514, which is unauthenticated and can be dropped silently; use the TLS transport on port 6514 where the gear supports it. IPFIX, the IETF standard descended from NetFlow version 9, is registered on port 4739, while NetFlow v9 exporters conventionally use UDP 2055, a convention rather than a standard, so check what your collector expects.
 
-Two things make logs usable rather than merely voluminous. Synchronise clocks with NTP on every device, because correlating events across systems whose timestamps disagree by minutes is nearly impossible. And ship logs off the device that generated them immediately, since the first thing a competent intruder does on a compromised host is edit its local logs.
+Two things make logs usable rather than merely voluminous. Synchronize clocks with NTP on every device, because correlating events across systems whose timestamps disagree by minutes is nearly impossible. And ship logs off the device that generated them immediately, since the first thing a competent intruder does on a compromised host is edit its local logs.
 
 Decide retention deliberately. Intrusions are frequently discovered weeks or months after they begin, and flow data from the week before you started looking is what tells you how far it spread.
 
@@ -35853,7 +35853,7 @@ Runtime is the other half. A UPS in a lab is not there to ride out a long outage
 
 Cable management that seems like excessive effort when you have three devices becomes essential when you have thirty. Spend time on it early. Label everything: patch cables, power cables, fiber. A label maker is one of the best investments in a growing lab.
 
-A few rules that pay for themselves. Label both ends of every cable with the same identifier, because a label you can only read from the back of the rack is not a label. Use colour to encode function, so management, storage, and uplinks are visually distinct before you read anything. Buy the length you need rather than coiling three metres of slack behind every server, since slack is what turns a rack into a nest.
+A few rules that pay for themselves. Label both ends of every cable with the same identifier, because a label you can only read from the back of the rack is not a label. Use color to encode function, so management, storage, and uplinks are visually distinct before you read anything. Buy the length you need rather than coiling three meters of slack behind every server, since slack is what turns a rack into a nest.
 
 Fiber has one extra rule: respect the minimum bend radius. Kinking a patch cable around a rack post will not snap it visibly, it will just raise the loss until the link flaps intermittently at 3 a.m. and you spend a weekend blaming the transceiver.
 
@@ -36013,7 +36013,7 @@ The cheapest way to build a baseline is to write down the answers to a few quest
 
 ## Getting the logs off the box intact
 
-Analysis is worthless if the transport loses records. Classic syslog runs over UDP port 514, described in RFC 3164 and standardised in RFC 5424. UDP has no retransmission and no flow control, so under a burst the collector silently drops messages, and the burst is the moment you care about. Use TCP where the device supports it, or TLS on port 6514 as defined in RFC 5425 if the logs cross an untrusted segment.
+Analysis is worthless if the transport loses records. Classic syslog runs over UDP port 514, described in RFC 3164 and standardized in RFC 5424. UDP has no retransmission and no flow control, so under a burst the collector silently drops messages, and the burst is the moment you care about. Use TCP where the device supports it, or TLS on port 6514 as defined in RFC 5425 if the logs cross an untrusted segment.
 
 Clock sync matters just as much. Correlating a firewall log against a server auth log is impossible if the two disagree about what time it is, and firewalls in particular love to log in local time with no offset while everything else logs UTC. Point every device at the same NTP source and configure timestamps with an explicit offset. The RFC 5424 format carries an RFC 3339 timestamp, which solves this; the older BSD format in RFC 3164 has no year and no timezone, which is a good reason to move off it.
 
@@ -36039,7 +36039,7 @@ Write each rule with an explicit threshold, an explicit time window, and an expl
 
 **Alerting on raw counts.** A threshold like "500 denies from one source" pages you every night for the backup job hitting a decommissioned target. Count distinct destinations or distinct ports instead, and always exclude the sources you have already explained.
 
-**Timestamps in local time with no offset.** Two devices, two timezones, one incident timeline that makes no sense. Normalise to UTC at ingest and verify by comparing a known event across two sources.
+**Timestamps in local time with no offset.** Two devices, two timezones, one incident timeline that makes no sense. Normalize to UTC at ingest and verify by comparing a known event across two sources.
 
 ## The follow-through
 
@@ -36082,7 +36082,7 @@ The main use cases: ensuring voice (VoIP) stays clear even when the network is b
 
 ## What QoS cannot do
 
-QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behaviour through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
+QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behavior through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
 
 QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honour your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
 
@@ -36094,7 +36094,7 @@ QoS also only applies where you control the queue. Marking a packet does nothing
 
 **Policing and shaping:** Limit the bandwidth available to specific traffic classes. Shaping buffers excess traffic and sends it later; policing drops it.
 
-The piece people skip is the trust boundary. Every host can set its own DSCP values, and an application that marks its own traffic as expedited forwarding will happily starve your phones. Decide which ports you trust (an IP phone, a known server) and rewrite the DSCP to zero on everything else at the access port. Classification you did not authorise is not classification, it is a request from an untrusted device.
+The piece people skip is the trust boundary. Every host can set its own DSCP values, and an application that marks its own traffic as expedited forwarding will happily starve your phones. Decide which ports you trust (an IP phone, a known server) and rewrite the DSCP to zero on everything else at the access port. Classification you did not authorize is not classification, it is a request from an untrusted device.
 
 ## Where the bits actually live
 
@@ -36517,7 +36517,7 @@ Save everything. \`-oA basename\` writes normal, greppable, and XML output at on
 
 **Exploitation:** Attempting to exploit discovered vulnerabilities. Metasploit is the standard framework for public exploits. Custom exploits require significantly more skill.
 
-The honest picture is less cinematic than the framework suggests. In real intrusions the dominant initial access techniques are valid accounts and exploitation of internet-facing applications, catalogued in MITRE ATT&CK as T1078 and T1190. Memory corruption exploits against hardened modern targets are rare and expensive. A reused password from a breach dump, an exposed management interface, and a service six months behind on patches will get you further than any exploit you write.
+The honest picture is less cinematic than the framework suggests. In real intrusions the dominant initial access techniques are valid accounts and exploitation of internet-facing applications, cataloged in MITRE ATT&CK as T1078 and T1190. Memory corruption exploits against hardened modern targets are rare and expensive. A reused password from a breach dump, an exposed management interface, and a service six months behind on patches will get you further than any exploit you write.
 
 **Post-exploitation:** What can you do once you have a foothold? Enumerate local system, dump credentials, escalate privileges, move laterally to other systems.
 
@@ -36607,7 +36607,7 @@ The client sends a \`ClientHello\` that already contains its key share, so it is
 
 Two details of that design surprise people reading captures.
 
-First, the version number on the record layer still says TLS 1.2. TLS 1.3 negotiates its version through the \`supported_versions\` extension, leaving the legacy version field at 0x0303, because middleboxes on the internet would drop anything that claimed a version they did not recognise. If you filter a capture for the literal version field you will conclude TLS 1.3 is not in use when it is.
+First, the version number on the record layer still says TLS 1.2. TLS 1.3 negotiates its version through the \`supported_versions\` extension, leaving the legacy version field at 0x0303, because middleboxes on the internet would drop anything that claimed a version they did not recognize. If you filter a capture for the literal version field you will conclude TLS 1.3 is not in use when it is.
 
 Second, TLS 1.3 has a downgrade protection mechanism built into the server random. If a TLS 1.3 capable server ends up negotiating a lower version, it writes a fixed sentinel value into the last eight bytes of the random field, and a TLS 1.3 client that sees it aborts the connection. This is what stops an attacker from stripping the handshake back to 1.2.
 
@@ -36664,7 +36664,7 @@ SSL-Session:
     Verify return code: 0 (ok)
 \`\`\`
 
-\`Protocol : TLSv1.3\` is the confirmation. \`Verify return code: 0 (ok)\` means the chain validated. "Secure Renegotiation IS NOT supported" looks alarming and is correct behaviour: renegotiation does not exist in TLS 1.3, so there is nothing to secure.
+\`Protocol : TLSv1.3\` is the confirmation. \`Verify return code: 0 (ok)\` means the chain validated. "Secure Renegotiation IS NOT supported" looks alarming and is correct behavior: renegotiation does not exist in TLS 1.3, so there is nothing to secure.
 
 Now prove the old versions are off:
 
@@ -36771,7 +36771,7 @@ P2V (physical-to-virtual) tools can automate the lift and shift conversion. VMwa
 
 Be clear about what each tool actually does. \`virt-v2v\`, part of the libguestfs project, is the actively maintained open-source path for converting a physical machine or a VMware guest into a KVM, Proxmox, or oVirt guest, and it does the important part: it inspects the guest operating system and injects the drivers the new virtual hardware needs. Clonezilla, by contrast, is a disk imaging tool. It will faithfully copy your disk into a virtual one and it will not touch the drivers, which means the copy may well be unbootable.
 
-That driver problem is the number one lift-and-shift failure and it has two recognisable faces. On Windows the VM boots to a bugcheck reading INACCESSIBLE_BOOT_DEVICE, because the image has drivers for a PERC or LSI controller and is now looking at a virtio or LSI Logic SAS device it has never heard of. On Linux the machine drops to an initramfs prompt because \`virtio_blk\` or \`virtio_scsi\` was never built into the initrd on a machine that had no use for it. Both are fixable afterwards and both are much easier to avoid: install the virtio drivers on the physical machine before you image it, or let \`virt-v2v\` do the injection.
+That driver problem is the number one lift-and-shift failure and it has two recognizable faces. On Windows the VM boots to a bugcheck reading INACCESSIBLE_BOOT_DEVICE, because the image has drivers for a PERC or LSI controller and is now looking at a virtio or LSI Logic SAS device it has never heard of. On Linux the machine drops to an initramfs prompt because \`virtio_blk\` or \`virtio_scsi\` was never built into the initrd on a machine that had no use for it. Both are fixable afterwards and both are much easier to avoid: install the virtio drivers on the physical machine before you image it, or let \`virt-v2v\` do the injection.
 
 Three smaller things reliably bite. The NIC gets a new MAC address, so anything licensed to a MAC stops working and any distribution that pins interface names to hardware comes up with no network. Vendor hardware agents such as OpenManage keep running, keep polling hardware that no longer exists, and fill logs with errors, so uninstall them as part of the cutover. And anything physically plugged into the old machine, a USB license dongle, a serial device, a fax card, either needs passthrough configured or needs a different plan, and passthrough will stop that VM from live migrating.
 
@@ -36787,9 +36787,9 @@ Network needs the same rethink. Ten servers with one gigabit each are not replac
 
 ## When Not To Consolidate
 
-Some workloads should stay on iron. Anything needing a physical device that cannot be passed through cleanly, anything with hard real-time or jitter requirements such as telephony media processing, and anything whose licence makes virtualization ruinous.
+Some workloads should stay on iron. Anything needing a physical device that cannot be passed through cleanly, anything with hard real-time or jitter requirements such as telephony media processing, and anything whose license makes virtualization ruinous.
 
-That last one is not a technical objection but it is a real one. Windows Server Standard entitles you to run two virtualized instances per licensed host while Datacenter entitles you to unlimited instances, so the crossover point is a specific number of VMs per host that you can calculate before you buy anything. Some database vendors have historically insisted that you license every core a VM could theoretically migrate to, not just the cores it runs on, which turns a four-host cluster into a four-host bill. Work out the licence cost before the hardware cost, because occasionally the answer is that the old physical box was the cheap option all along.
+That last one is not a technical objection but it is a real one. Windows Server Standard entitles you to run two virtualized instances per licensed host while Datacenter entitles you to unlimited instances, so the crossover point is a specific number of VMs per host that you can calculate before you buy anything. Some database vendors have historically insisted that you license every core a VM could theoretically migrate to, not just the cores it runs on, which turns a four-host cluster into a four-host bill. Work out the license cost before the hardware cost, because occasionally the answer is that the old physical box was the cheap option all along.
 
 ## References
 
@@ -37256,7 +37256,7 @@ devices get the same resolver and no internal zones.
 The unmanaged devices still win sometimes, and that is the accurate picture:
 this is not a control you enforce, it is a default you make good enough that
 nothing has a reason to route around it. What changed for me was diagnosis
-time. Once "dig works, the browser does not" is a shape you recognise, it is a
+time. Once "dig works, the browser does not" is a shape you recognize, it is a
 ninety second call instead of an evening spent restarting a DNS server that
 was answering correctly the entire time.
 
@@ -37600,14 +37600,14 @@ Wants=network-online.target
 After=network-online.target
 \`\`\`
 
-\`network.target\` deserves the same scepticism. It means the networking stack
+\`network.target\` deserves the same skepticism. It means the networking stack
 is being configured, not that an address exists. If the service binds to a
 specific address at startup, you need \`network-online.target\`, and that target
 is only meaningful if the matching wait service is enabled.
 
 ## Restart policy, and the state that outlives it
 
-\`respawn\` in \`/etc/inittab\` had one behaviour: bring it back, forever. That is
+\`respawn\` in \`/etc/inittab\` had one behavior: bring it back, forever. That is
 \`Restart=always\`, and on a service with a typo in its config it produces a
 crash loop that fills a disk with log lines about the same missing file.
 
@@ -37692,7 +37692,7 @@ systemd-analyze critical-chain inventory-api.service
 \`\`\`
 
 \`verify\` catches typos and missing referenced units before they become boot
-behaviour. \`daemon-reload\` is the answer to half of all "my change did
+behavior. \`daemon-reload\` is the answer to half of all "my change did
 nothing". \`list-dependencies\` shows the tree you actually built rather than
 the one you meant. \`critical-chain\` shows what your unit waited on and for how
 long, which is where you find out that the whole boot is held up by a network
@@ -38106,7 +38106,7 @@ for (let index = fate.at; index >= 0; index -= 1) {
 if (fate.swallowedAt !== expected) {
   problems.push(
     "blames hop " + fate.swallowedAt + " for a message generated at hop " +
-      fate.at + ", and the first blocker it meets travelling back is hop " +
+      fate.at + ", and the first blocker it meets traveling back is hop " +
       expected,
   );
 }
@@ -38171,7 +38171,7 @@ that this instrument detects the failures it was built for.
 
 Mutation testing automates a version of this, and it is worth running if
 your language has a decent tool. What it will not do is tell you that your
-*fixtures* cannot distinguish two behaviours, which was the harder half of
+*fixtures* cannot distinguish two behaviors, which was the harder half of
 the second failure. A mutation tool would have flipped the loop direction
 and reported the mutant as killed or survived, but only against the data I
 already had; the missing piece was a topology I had not thought to build.
@@ -38201,7 +38201,7 @@ to make it fire on purpose, at least once, before you start trusting it.
     date: "2026-09-08",
     tags: ["operations", "security", "storage"],
     excerpt:
-      "Every organisation that lost data had backups. 3-2-1 is a good rule stated in the least useful possible way, because the three numbers are proxies for the thing that matters and none of them is it.",
+      "Every organization that lost data had backups. 3-2-1 is a good rule stated in the least useful possible way, because the three numbers are proxies for the thing that matters and none of them is it.",
     coverImage: "/images/blog/three-copies-one-credential.jpg",
     content: `
 ## The sentence everybody says afterwards
@@ -38343,7 +38343,7 @@ catches people, and note the 1024:
 Add fourteen hours of archival retrieval before any of that, and three hours
 of rebuild after, and the cheap storage tier has turned a "few hours"
 conversation into two days. That trade gets made once, quietly, at design
-time, by whoever was optimising the storage bill. It gets paid once, loudly,
+time, by whoever was optimizing the storage bill. It gets paid once, loudly,
 at the worst possible moment.
 
 ## Two more that are just definitions

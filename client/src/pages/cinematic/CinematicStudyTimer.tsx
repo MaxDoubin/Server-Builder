@@ -48,7 +48,7 @@ const PHASE_META: Record<Phase, { label: string; announce: string }> = {
 
 const PHASE_ORDER: Phase[] = ["work", "short", "long"];
 
-/** Token names by phase, so the accent colour follows the phase. */
+/** Token names by phase, so the accent color follows the phase. */
 const TONE_CLASS: Record<Phase, { text: string; bg: string; border: string }> = {
   work: {
     text: "text-[hsl(var(--brand-signal))]",
@@ -532,7 +532,7 @@ export function CinematicStudyTimer() {
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
                     }`}
                   >
-                    {/* The glyph, not just the colour, marks which phase is
+                    {/* The glyph, not just the color, marks which phase is
                         selected. */}
                     <span aria-hidden>{active ? "◆" : "◇"}</span>
                     {PHASE_META[p].label}

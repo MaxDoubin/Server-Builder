@@ -70,7 +70,7 @@ Runtime is the other half. A UPS in a lab is not there to ride out a long outage
 
 Cable management that seems like excessive effort when you have three devices becomes essential when you have thirty. Spend time on it early. Label everything: patch cables, power cables, fiber. A label maker is one of the best investments in a growing lab.
 
-A few rules that pay for themselves. Label both ends of every cable with the same identifier, because a label you can only read from the back of the rack is not a label. Use colour to encode function, so management, storage, and uplinks are visually distinct before you read anything. Buy the length you need rather than coiling three metres of slack behind every server, since slack is what turns a rack into a nest.
+A few rules that pay for themselves. Label both ends of every cable with the same identifier, because a label you can only read from the back of the rack is not a label. Use color to encode function, so management, storage, and uplinks are visually distinct before you read anything. Buy the length you need rather than coiling three meters of slack behind every server, since slack is what turns a rack into a nest.
 
 Fiber has one extra rule: respect the minimum bend radius. Kinking a patch cable around a rack post will not snap it visibly, it will just raise the loss until the link flaps intermittently at 3 a.m. and you spend a weekend blaming the transceiver.
 

@@ -7,7 +7,7 @@
  * task: a block, a list of things that need space, and the constraints that
  * make it a puzzle rather than a division.
  *
- * Marked on behaviour, like the firewall exercises: any plan that satisfies
+ * Marked on behavior, like the firewall exercises: any plan that satisfies
  * every requirement without overlapping is correct, including a better one
  * than mine.
  */

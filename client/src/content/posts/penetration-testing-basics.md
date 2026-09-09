@@ -41,7 +41,7 @@ Save everything. `-oA basename` writes normal, greppable, and XML output at once
 
 **Exploitation:** Attempting to exploit discovered vulnerabilities. Metasploit is the standard framework for public exploits. Custom exploits require significantly more skill.
 
-The honest picture is less cinematic than the framework suggests. In real intrusions the dominant initial access techniques are valid accounts and exploitation of internet-facing applications, catalogued in MITRE ATT&CK as T1078 and T1190. Memory corruption exploits against hardened modern targets are rare and expensive. A reused password from a breach dump, an exposed management interface, and a service six months behind on patches will get you further than any exploit you write.
+The honest picture is less cinematic than the framework suggests. In real intrusions the dominant initial access techniques are valid accounts and exploitation of internet-facing applications, cataloged in MITRE ATT&CK as T1078 and T1190. Memory corruption exploits against hardened modern targets are rare and expensive. A reused password from a breach dump, an exposed management interface, and a service six months behind on patches will get you further than any exploit you write.
 
 **Post-exploitation:** What can you do once you have a foothold? Enumerate local system, dump credentials, escalate privileges, move laterally to other systems.
 

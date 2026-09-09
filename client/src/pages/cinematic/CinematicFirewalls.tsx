@@ -2,7 +2,7 @@
  * The firewall exercise index.
  *
  * Eight chains with something wrong with them. Each one is marked by
- * behaviour rather than by shape: the checklist is a set of packets and the
+ * behavior rather than by shape: the checklist is a set of packets and the
  * verdicts they should get, so any ruleset that produces them is correct and
  * the reader is never marked down for finding a better answer than mine.
  */

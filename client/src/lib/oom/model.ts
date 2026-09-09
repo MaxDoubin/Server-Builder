@@ -65,7 +65,7 @@ export const inCgroup = (task: Process, path: string): boolean =>
   task.cgroup === path || task.cgroup.startsWith(`${path}/`);
 
 /**
- * Who is in the running, and what the scores are normalised against.
+ * Who is in the running, and what the scores are normalized against.
  *
  * The second half is the part people miss. A system OOM normalises against
  * RAM plus swap; a cgroup OOM normalises against the cgroup's limit. An adj

@@ -5,7 +5,7 @@
  * is rendered to text and parsed back, and anything that does not survive
  * the round trip fails the build. Synthetic logs drift into shapes no real
  * daemon emits, and a log that does not look like a log teaches somebody to
- * recognise something they will never see.
+ * recognize something they will never see.
  */
 
 import type { Case, Line } from "./types";

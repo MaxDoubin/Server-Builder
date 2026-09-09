@@ -2,7 +2,7 @@
  * A studio to reflect.
  *
  * This is the fix for the single worst problem in the first 3D pass: metal
- * rendered as a flat dead grey no matter how many lights were aimed at it.
+ * rendered as a flat dead gray no matter how many lights were aimed at it.
  * That is not a lighting bug. A physically based metal surface has almost
  * no diffuse response; nearly everything you see on it is reflection, so a
  * metal object in a scene with nothing to reflect is correctly rendered as
@@ -11,7 +11,7 @@
  * three ships a small procedural room, and running it through PMREM gives
  * an environment map with the soft area sources a product photographer
  * would actually use. No network fetch, no HDR asset, about a millisecond
- * once per scene, and anodised aluminium finally looks anodised.
+ * once per scene, and anodised aluminum finally looks anodised.
  */
 
 import { useEffect } from "react";

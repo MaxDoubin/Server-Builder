@@ -1,7 +1,7 @@
 /**
  * What is on the little screen.
  *
- * UniFi's Pro switches and the UDM carry a small colour display on the
+ * UniFi's Pro switches and the UDM carry a small color display on the
  * left of the faceplate, and a UPS carries a monochrome one. Rendering
  * them as a dark rectangle was the same mistake as rendering a port as a
  * black rectangle: it is the one lit thing on an otherwise white panel, so

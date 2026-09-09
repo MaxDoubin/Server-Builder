@@ -1,7 +1,7 @@
 
 ## Fifteen characters, and no complexity rules at all
 
-The password advice most organisations run on is a fossil. Eight characters,
+The password advice most organizations run on is a fossil. Eight characters,
 one uppercase, one number, one symbol, changed every ninety days. It has been
 wrong for years, and as of the fourth revision of NIST SP 800-63B it is not
 merely discouraged, most of it is forbidden in normative language.
@@ -43,7 +43,7 @@ a suggestion.
 > Verifiers and CSPs **SHALL NOT** impose other composition rules (e.g.,
 > requiring mixtures of different character types) for passwords.
 
-The reasoning is behavioural rather than mathematical. Demanding an uppercase
+The reasoning is behavioral rather than mathematical. Demanding an uppercase
 and a digit and a symbol does not produce high entropy passwords, it produces
 `Password1!`, because people satisfy the rule in the cheapest way available.
 The rule shrinks the search space an attacker has to cover rather than
@@ -144,7 +144,7 @@ manager, is still typed into whatever page asked for it. If that page is a
 proxy in front of the real one, the password is gone and so is the six digit
 code that followed it.
 
-Length requirements are a defence against guessing, and guessing is not how
+Length requirements are a defense against guessing, and guessing is not how
 accounts are taken any more. Phishing is. The only authenticator that
 survives a live phishing proxy is one that binds to the origin, and that means
 WebAuthn: the browser will not release a credential registered for your bank

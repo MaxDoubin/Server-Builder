@@ -99,7 +99,7 @@ the argument is much stronger: fewer round trips to first byte, per stream loss
 recovery, and connection survival across network changes are exactly what those
 clients need.
 
-For an internal service inside one data centre, I would not bother. The
+For an internal service inside one data center, I would not bother. The
 failure modes it solves barely exist there, and the observability you give up
 matters more.
 

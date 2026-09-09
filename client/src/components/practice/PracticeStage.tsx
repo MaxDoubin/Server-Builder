@@ -10,7 +10,7 @@
  * with more than a line of text.
  *
  * The mood vocabulary stays the scenarios' one on purpose. Four words that
- * already have contrast-checked colours in both themes beat five words with a
+ * already have contrast-checked colors in both themes beat five words with a
  * new one that has to be legible on white as well as on obsidian. All of it is
  * CSS driven by data attributes; see the "Practice surfaces: the stage" block
  * in index.css for the layers themselves.
@@ -30,7 +30,7 @@ export type SceneMood = "calm" | "tense" | "critical" | "recovering";
  *
  * Four accents rather than one per category, because the site has four
  * accent tokens that are contrast-checked in both themes, and inventing a
- * fifth to give DNS its own colour would mean inventing a fifth that has to
+ * fifth to give DNS its own color would mean inventing a fifth that has to
  * be legible on white as well as on obsidian.
  */
 export const ACCENT_FOR_CATEGORY: Record<string, StageAccent> = {
@@ -55,7 +55,7 @@ export const accentFor = (category: string): StageAccent =>
 interface Props {
   accent: StageAccent;
   mood: SceneMood;
-  /** Set on an ending, which overrides the accent with the outcome's colour. */
+  /** Set on an ending, which overrides the accent with the outcome's color. */
   ending?: EndingGrade;
   /** Changes on every decision, to trigger one wash of the accent. */
   flashKey: number;

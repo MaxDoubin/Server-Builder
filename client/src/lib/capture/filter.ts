@@ -16,7 +16,7 @@
  * work anywhere else.
  *
  * `ip.addr == x` matching either source or destination is a real Wireshark
- * behaviour worth reproducing, and it is the one that surprises people: it is
+ * behavior worth reproducing, and it is the one that surprises people: it is
  * true when ANY ip.addr field on the packet matches, which is why
  * `ip.addr != x` does not mean what most people expect.
  */

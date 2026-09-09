@@ -15,7 +15,7 @@ Two facts follow immediately. A packet destined for a container or a VM behind t
 
 ## Priorities decide who goes first
 
-Multiple base chains can register on the same hook. nftables resolves the tie with a signed priority number, lower runs first. The named constants map to the classic behaviour:
+Multiple base chains can register on the same hook. nftables resolves the tie with a signed priority number, lower runs first. The named constants map to the classic behavior:
 
 | Name | Value | Typical use |
 | --- | --- | --- |

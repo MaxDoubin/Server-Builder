@@ -1,11 +1,11 @@
 
 ## Why Bother When It Is Just a Lab
 
-The objection I hear is that a home lab is not a target worth modelling. That is wrong in two ways.
+The objection I hear is that a home lab is not a target worth modeling. That is wrong in two ways.
 
 First, a lot of attacks are not targeted at all. Automated scanning finds an exposed service, tries known credentials, and moves on. Nobody chose you, and that makes no difference to the outcome.
 
-Second, and more importantly for me, the lab is where I practice the reasoning. Threat modelling is a skill you build by doing it repeatedly on systems you fully understand. Doing it on my own infrastructure, where I know every design decision because I made it, is far more instructive than doing it on a case study.
+Second, and more importantly for me, the lab is where I practice the reasoning. Threat modeling is a skill you build by doing it repeatedly on systems you fully understand. Doing it on my own infrastructure, where I know every design decision because I made it, is far more instructive than doing it on a case study.
 
 A threat model is really just four questions. What am I protecting. Who or what might come after it. What could go wrong. What am I going to do about it. Everything else is structure to keep you honest.
 
@@ -17,7 +17,7 @@ The boundaries are the interesting part. A boundary is any place where data or a
 
 Almost every real vulnerability lives on a boundary. Data that stays entirely inside one trust zone is rarely where the interesting failure is. So enumerate boundaries carefully, and for each one write down what is supposed to be allowed across it. That statement of intent becomes the thing you test against later.
 
-Two boundaries people consistently miss. The management plane, meaning out of band controllers, hypervisor consoles, and switch admin interfaces, is a trust boundary with enormous power behind it and it deserves to be modelled explicitly. And backups are a boundary in both directions: data leaves, and restore paths let data back in.
+Two boundaries people consistently miss. The management plane, meaning out of band controllers, hypervisor consoles, and switch admin interfaces, is a trust boundary with enormous power behind it and it deserves to be modeled explicitly. And backups are a boundary in both directions: data leaves, and restore paths let data back in.
 
 ## STRIDE as a Checklist, Not a Religion
 
@@ -69,13 +69,13 @@ asset: internal-services
       status: implemented
 ```
 
-The `verification` field is the one that makes this document worth maintaining. A control you have never tested is an assumption, and assumptions are what threat modelling exists to eliminate.
+The `verification` field is the one that makes this document worth maintaining. A control you have never tested is an assumption, and assumptions are what threat modeling exists to eliminate.
 
 ## Rank by Consequence, Not Cleverness
 
-The temptation is to prioritise the most interesting attacks. Resist it. Rank by likelihood times impact, and be honest about likelihood.
+The temptation is to prioritize the most interesting attacks. Resist it. Rank by likelihood times impact, and be honest about likelihood.
 
-A sophisticated attack requiring physical access and specialised equipment is fascinating and, for most labs, close to irrelevant. An exposed management interface with a default password is boring and is how systems actually get taken.
+A sophisticated attack requiring physical access and specialized equipment is fascinating and, for most labs, close to irrelevant. An exposed management interface with a default password is boring and is how systems actually get taken.
 
 Impact deserves the same honesty. In a lab, most compromises cost time. A few cost data that is genuinely hard to recreate, or provide a foothold into something that matters more. Those are the ones worth real investment, and identifying them means asking what a compromise of each asset would let someone reach next. Lateral movement potential is often a bigger deal than the value of the asset itself, which is the entire argument for segmentation.
 
@@ -89,7 +89,7 @@ Then revisit it when the system changes. Every new service, every new segment, e
 
 ## The Habit Worth Building
 
-Threat modelling has made me a better builder, not just a better defender. Once you have asked "what happens when this control fails" enough times, you start designing so that a single failure is survivable. Segmentation, least privilege, and defence in depth stop being vocabulary and become the obvious way to build.
+Threat modeling has made me a better builder, not just a better defender. Once you have asked "what happens when this control fails" enough times, you start designing so that a single failure is survivable. Segmentation, least privilege, and defense in depth stop being vocabulary and become the obvious way to build.
 
 ## References
 

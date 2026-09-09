@@ -70,7 +70,7 @@ for (const surface of PRACTICE_SURFACES.filter((item) => item.noRotation)) {
 
 /*
   The progress panel is the same rule. A surface with a progress store and no
-  line is invisible on the page that summarises how far you have got, which is
+  line is invisible on the page that summarizes how far you have got, which is
   the whole reason that page exists.
 */
 const panel = readFileSync("client/src/lib/today/progress.ts", "utf8");

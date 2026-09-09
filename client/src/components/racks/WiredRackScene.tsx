@@ -1,11 +1,11 @@
 /**
  * A UniFi rack built from Ubiquiti's own geometry, and patched.
  *
- * Everything the rack pages already do assumes a chassis we modelled, which
+ * Everything the rack pages already do assumes a chassis we modeled, which
  * means the code knows where every port is because it put them there. A
  * vendor model knows nothing: it is the real hardware and it is a closed
  * box. So the port positions come from the build definition instead, and
- * everything else, the frame, the lead shape, the jacket colours, is shared
+ * everything else, the frame, the lead shape, the jacket colors, is shared
  * with the rack pages rather than rewritten.
  *
  * The models are Draco compressed and their textures are KTX2, both of
@@ -55,7 +55,7 @@ const PANEL_W = 0.4424;
  */
 const FACE_Z = 0.303;
 
-/** Centre height of a device, given where it hangs in the rack. */
+/** Center height of a device, given where it hangs in the rack. */
 function deviceY(d: WiredDevice): number {
   const fromBottom = WIRED_RACK_UNITS - d.at - d.u;
   return FRAME_FOOT + fromBottom * U + (d.u * U) / 2;
@@ -149,7 +149,7 @@ function MountedDevice({
 
   /*
     These exports do not agree which horizontal axis carries the width. The
-    catalogue measured it per device and the build quotes the yaw, so a
+    catalog measured it per device and the build quotes the yaw, so a
     device whose panel runs along X gets no turn and one running along Z
     gets a quarter of one.
   */
@@ -207,17 +207,17 @@ function MountedDevice({
  * plugged into what, so a downloaded cable at a fixed length in a fixed pose
  * would have to be deformed along a curve computed here anyway.
  *
- * What took three attempts was the light. First the jackets were colour
+ * What took three attempts was the light. First the jackets were color
  * coded like an ordinary patch panel, which is not what Etherlighting is at
- * all: the jacket is plain white and the colour lives in the plug. Then the
+ * all: the jacket is plain white and the color lives in the plug. Then the
  * plug was a moulded boot with a tinted body, which is a cornered block
- * sitting where a light should be, and it read as a coloured object rather
+ * sitting where a light should be, and it read as a colored object rather
  * than as something emitting.
  *
  * Light is not an object. So there is no plug body here at all. There is a
  * small unlit core at the port, a soft halo around it that is additively
  * blended so it brightens whatever is behind it the way a real glow does,
- * and the jacket itself carries the colour a short way up its own length
+ * and the jacket itself carries the color a short way up its own length
  * before fading to white, because that is what a translucent jacket lit
  * from one end looks like. The fade is per vertex, which also means every
  * lead in the rack is one draw call.
@@ -253,7 +253,7 @@ function Leads() {
       /*
         TubeGeometry lays its vertices out ring by ring along the curve, so
         the ring a vertex belongs to gives its distance along the lead for
-        free. The colour runs from the port hue at each end to the jacket
+        free. The color runs from the port hue at each end to the jacket
         white in the middle, over about a fifth of the length, which is
         roughly how far the light actually carries.
       */
@@ -319,7 +319,7 @@ function Leads() {
           </instancedMesh>
           {/*
             Additive, so the halo adds light to the panel behind it instead
-            of painting a coloured ball on top of it. Depth write off for the
+            of painting a colored ball on top of it. Depth write off for the
             same reason: a glow does not occlude anything.
           */}
           <instancedMesh

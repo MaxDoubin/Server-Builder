@@ -112,7 +112,7 @@ export const readingPaths: ReadingPath[] = [
       },
       {
         slug: "bgp-for-network-engineers",
-        why: "Inside one organisation, OSPF. Between organisations, BGP. Same job, very different assumptions.",
+        why: "Inside one organization, OSPF. Between organizations, BGP. Same job, very different assumptions.",
       },
       {
         slug: "dns-fundamentals-infrastructure",
@@ -220,7 +220,7 @@ export const readingPaths: ReadingPath[] = [
       },
       {
         slug: "ai-in-security-operations",
-        why: "Close with the pitch from every vendor call: what models can genuinely do in a SOC, judged with the scepticism you have earned.",
+        why: "Close with the pitch from every vendor call: what models can genuinely do in a SOC, judged with the skepticism you have earned.",
       },
     ],
   },

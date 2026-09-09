@@ -2,15 +2,15 @@
  * A 24U MikroTik ISP rack.
  *
  * Half the height of the enterprise racks on purpose. A 42U cabinet is a
- * data centre object, and a great deal of MikroTik is deployed in a wall
+ * data center object, and a great deal of MikroTik is deployed in a wall
  * cabinet at the bottom of a tower or in the back of a shop. Drawing this
  * one at 42U would be the same mistake as drawing a UniFi studio frame as
- * a data centre cabinet.
+ * a data center cabinet.
  *
  * Three things in here exist nowhere else in the library, and they are
  * why it is worth drawing: a shelf with desktop units standing on it, a
  * tray with two half width devices side by side in one rack unit, and an
- * optical distribution frame where the fibre from outside terminates.
+ * optical distribution frame where the fiber from outside terminates.
  *
  * Port counts are MikroTik's published figures, cited per device. Unlike
  * the enterprise vendors MikroTik do publish maximum power consumption,
@@ -52,7 +52,7 @@ export const mikrotikIspRack: RackDefinition = {
   slug: "mikrotik-isp-24u",
   name: "MikroTik ISP 24U",
   blurb:
-    "What a wireless ISP actually runs, and half the height of a data centre cabinet because that is how it is deployed. Three things in here are in no other rack in this library: a shelf of desktop units that have no rack ears at all, a tray with two half width devices side by side in one unit, and an optical distribution frame where the fibre from outside lands. MikroTik also publish real power consumption figures rather than supply ratings, so the numbers on this page are draw rather than capacity.",
+    "What a wireless ISP actually runs, and half the height of a data center cabinet because that is how it is deployed. Three things in here are in no other rack in this library: a shelf of desktop units that have no rack ears at all, a tray with two half width devices side by side in one unit, and an optical distribution frame where the fiber from outside lands. MikroTik also publish real power consumption figures rather than supply ratings, so the numbers on this page are draw rather than capacity.",
   height: 24,
 
   devices: [
@@ -148,7 +148,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 1,
       vendor: "MikroTik",
       model: "CCR2216-1G-12XS-2XQ",
-      role: "The core router: one gigabit copper for management, twelve 25G SFP28 and two 100G QSFP28. Everything the ISP carries passes through this, and the single copper port is there only so you can reach it when the fibre side is broken.",
+      role: "The core router: one gigabit copper for management, twelve 25G SFP28 and two 100G QSFP28. Everything the ISP carries passes through this, and the single copper port is there only so you can reach it when the fiber side is broken.",
       family: "router",
       finish: "black",
       display: "unifi",
@@ -229,7 +229,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 2,
       vendor: "Generic",
       model: "24-position optical distribution frame",
-      role: "Where the fibre from outside terminates. Twenty four duplex LC couplers over a splice drawer: the cable from the street is spliced to pigtails inside the drawer, and everything downstream patches to the couplers rather than to the cable itself. Nobody patches to a buried cable twice.",
+      role: "Where the fiber from outside terminates. Twenty four duplex LC couplers over a splice drawer: the cable from the street is spliced to pigtails inside the drawer, and everything downstream patches to the couplers rather than to the cable itself. Nobody patches to a buried cable twice.",
       family: "patch",
       finish: "dark",
       ports: passive("sfp", 24, (n) => `LC${pad2(n)}`),
@@ -241,7 +241,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "The second manager, keeping the fibre patch leads off the power cabling below.",
+      role: "The second manager, keeping the fiber patch leads off the power cabling below.",
       family: "blank",
       look: "fingers",
       watts: null,
@@ -268,7 +268,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 1,
       vendor: "MikroTik",
       model: "CCR2004-16G-2S+",
-      role: "The customer aggregation router: sixteen copper handoffs in two rows and two fibre uplinks, with two power supplies behind them. Two of its four status lamps are power, one per supply, which is the tell for a box you can lose a feed on and keep.",
+      role: "The customer aggregation router: sixteen copper handoffs in two rows and two fiber uplinks, with two power supplies behind them. Two of its four status lamps are power, one per supply, which is the tell for a box you can lose a feed on and keep.",
       family: "router",
       finish: "light",
       ports: [
@@ -284,7 +284,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 1,
       vendor: "MikroTik",
       model: "CRS326-24S+2Q+RM",
-      role: "The densest fibre in the rack: twenty four 10G cages in two rows of twelve, grouped in fours the way MikroTik number them, with two 40G uplinks beside them.",
+      role: "The densest fiber in the rack: twenty four 10G cages in two rows of twelve, grouped in fours the way MikroTik number them, with two 40G uplinks beside them.",
       family: "switch",
       finish: "light",
       ports: [
@@ -316,7 +316,7 @@ export const mikrotikIspRack: RackDefinition = {
       u: 1,
       vendor: "MikroTik",
       model: "CRS312-4C+8XG-RM",
-      role: "The only 10G copper in the rack, which is the whole reason it is here: everything else at this speed is fibre, and a 10GBASE-T handoff is the one thing none of them can do. Four of its ports are combo, so each is either a copper port or a cage and never both at once.",
+      role: "The only 10G copper in the rack, which is the whole reason it is here: everything else at this speed is fiber, and a 10GBASE-T handoff is the one thing none of them can do. Four of its ports are combo, so each is either a copper port or a cage and never both at once.",
       family: "switch",
       finish: "dark",
       ports: [

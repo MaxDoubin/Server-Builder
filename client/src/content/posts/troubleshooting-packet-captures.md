@@ -6,7 +6,7 @@ Something on the network is slow, intermittent, or resetting, and the logs on bo
 
 Use packet captures when layer 2-4 problems are not obvious from interface statistics and logs. Common scenarios: unexplained TCP retransmissions, connection resets, intermittent connectivity, suspected firewall misconfigurations, and application performance issues where the application team blames the network.
 
-Before you capture, check the cheaper sources. `ip -s link` and the switch's interface counters will tell you about CRC errors, drops, and discards in one command. If an interface is showing input errors climbing, you have your answer and do not need a capture at all. Captures are for the problems where every counter is clean and the behaviour still makes no sense.
+Before you capture, check the cheaper sources. `ip -s link` and the switch's interface counters will tell you about CRC errors, drops, and discards in one command. If an interface is showing input errors climbing, you have your answer and do not need a capture at all. Captures are for the problems where every counter is clean and the behavior still makes no sense.
 
 ## Capturing in the right place
 
@@ -22,7 +22,7 @@ You have three ways to get the traffic. Capturing on the host itself is easiest 
 
 The limitation of SPAN worth knowing up front: the mirror destination has the same speed as any other port. Mirroring two saturated 1 Gb ports into one 1 Gb monitor port means the switch discards the excess, and those discards look exactly like network loss in your capture. If you are chasing loss, mirror one direction at a time or use a TAP.
 
-Also make sure the clocks agree. Two captures taken on machines whose time differs by 400 ms are almost useless for deciding which side was late. Check that both hosts are synchronised before you start, not after.
+Also make sure the clocks agree. Two captures taken on machines whose time differs by 400 ms are almost useless for deciding which side was late. Check that both hosts are synchronized before you start, not after.
 
 ## Capture filters and display filters are different languages
 

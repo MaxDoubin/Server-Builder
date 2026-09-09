@@ -92,7 +92,7 @@ moment a third rule is involved. With a DROP policy the negated rule is usually
 unnecessary anyway: anything the allow rules do not cover is already refused,
 and a rule that says so is a line that can be got wrong.
 
-## The exercises are marked on behaviour
+## The exercises are marked on behavior
 
 Each one is a set of packets and the verdicts they should get. Any chain that
 produces them is correct, including a shorter one than mine.

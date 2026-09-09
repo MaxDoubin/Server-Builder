@@ -3,7 +3,7 @@
  *
  * The failure this guards is a break whose stopsAt drifts past the end of the
  * sequence, or lands on a step the message could not have reached. The page
- * would still render: it would draw a diagram, grey out nothing, and describe
+ * would still render: it would draw a diagram, gray out nothing, and describe
  * a symptom that belongs to a step that does not exist.
  */
 

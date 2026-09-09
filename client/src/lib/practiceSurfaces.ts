@@ -83,7 +83,7 @@ export interface PracticeSurface {
    * Curated by hand rather than matched on keywords. I generated candidates
    * by keyword to find them, and the scoring put an article about memory
    * bandwidth at the top for the throughput surface and missed the one
-   * actually written for it, because relevance here is a judgement and not a
+   * actually written for it, because relevance here is a judgment and not a
    * word count. CI checks every slug resolves; it cannot check that the
    * article is worth reading next, and neither can a regex.
    */

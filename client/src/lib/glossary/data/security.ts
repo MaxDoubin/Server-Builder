@@ -16,7 +16,7 @@ export const SECURITY: Term[] = [
     expansion: "Certificate Authority",
     field: "security",
     definition:
-      "An organisation that signs certificates, and whose root is in clients' trust stores. Roots sign intermediates, intermediates sign leaves, and the root itself is trusted because it is in the store rather than because anything verified it.",
+      "An organization that signs certificates, and whose root is in clients' trust stores. Roots sign intermediates, intermediates sign leaves, and the root itself is trusted because it is in the store rather than because anything verified it.",
     confusion:
       "That last part matters: a root's own signature is never checked by anyone, so a scanner flagging SHA-1 on a self-signed root has found nothing. The same algorithm on an intermediate would be a real finding.",
     see: ["certificate", "chain of trust"],
@@ -46,7 +46,7 @@ export const SECURITY: Term[] = [
     definition:
       "The US standards body whose publications, particularly the SP 800 series, are the reference for a great deal of security practice.",
     confusion:
-      "Its password guidance changed years ago and the old version is still what most organisations enforce. SP 800-63B stopped recommending composition rules and mandatory rotation; length and a breached-password check replaced them.",
+      "Its password guidance changed years ago and the old version is still what most organizations enforce. SP 800-63B stopped recommending composition rules and mandatory rotation; length and a breached-password check replaced them.",
     see: ["MFA"],
   },
   {
@@ -85,7 +85,7 @@ export const SECURITY: Term[] = [
     definition:
       "Fraud conducted through legitimate-looking correspondence rather than malware: an invoice with changed bank details, a request to move a payroll deposit, a supplier whose domain is one character different.",
     confusion:
-      "There is often no malicious attachment and no link, so it passes every technical control. The defence is procedural: a change of payment destination is confirmed on a number held before the request arrived.",
+      "There is often no malicious attachment and no link, so it passes every technical control. The defense is procedural: a change of payment destination is confirmed on a number held before the request arrived.",
     see: ["phishing", "SPF"],
   },
   {
@@ -108,7 +108,7 @@ export const SECURITY: Term[] = [
     see: ["least privilege"],
   },
   {
-    term: "defence in depth",
+    term: "defense in depth",
     field: "security",
     definition:
       "Arranging controls so that no single failure is decisive, and so that a compromise of one layer meets another.",
@@ -159,7 +159,7 @@ export const SECURITY: Term[] = [
     term: "zero trust",
     field: "security",
     definition:
-      "Designing so that being on the network grants nothing: every request is authenticated and authorised on its own merits regardless of where it came from.",
+      "Designing so that being on the network grants nothing: every request is authenticated and authorized on its own merits regardless of where it came from.",
     confusion:
       "It is an architecture, not a product, and the hard part is not the gateway. It is having an inventory good enough to say what each identity should be allowed to reach.",
     see: ["least privilege", "802.1X"],
@@ -171,7 +171,7 @@ export const SECURITY: Term[] = [
       "A system with no network path to anything else, so that reaching it requires physical access.",
     confusion:
       "Almost nothing described as air-gapped is. A machine with a USB workflow for updates has a path with a human in it, and that path is the one that gets used.",
-    see: ["defence in depth"],
+    see: ["defense in depth"],
   },
   {
     term: "hash",

@@ -20,7 +20,7 @@ This is why window scaling exists, and it is why long fat networks were a proble
 
 ## Loss Based Control and Bufferbloat
 
-Classical congestion control treats packet loss as the signal that the network is full. The sender increases its window until something drops, backs off sharply, and climbs again. That sawtooth is the behaviour underneath Reno and, with a different growth curve tuned for high bandwidth paths, CUBIC, which has been the Linux default for a long time.
+Classical congestion control treats packet loss as the signal that the network is full. The sender increases its window until something drops, backs off sharply, and climbs again. That sawtooth is the behavior underneath Reno and, with a different growth curve tuned for high bandwidth paths, CUBIC, which has been the Linux default for a long time.
 
 The assumption is that loss means congestion. That was reasonable when buffers were small. It causes two problems now.
 
@@ -102,7 +102,7 @@ Then check the obvious physical things, because congestion control is a poor exp
 
 TCP is a control loop. It is constantly estimating how much data the path can hold and adjusting. Almost every strange throughput problem is that control loop responding correctly to a signal you have not looked at yet: a round trip time that is larger than you assumed, a buffer that is deeper than you assumed, or loss that is not congestion.
 
-Once you think of it that way, the diagnostic path is obvious. Find out what signal the sender is seeing, and the behaviour stops being mysterious.
+Once you think of it that way, the diagnostic path is obvious. Find out what signal the sender is seeing, and the behavior stops being mysterious.
 
 ## References
 

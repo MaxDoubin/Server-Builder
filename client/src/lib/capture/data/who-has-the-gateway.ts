@@ -209,7 +209,7 @@ export const whoHasTheGateway: Capture = {
       explain: [
         "The IP layer is unchanged: still 10.50.0.44 to 10.50.0.20. Only the Ethernet destination changed, from the gateway's real MAC to the attacker's.",
         "That is why this is invisible from the host. Every tool on the workstation reports the same source and destination addresses, the same route, and the same gateway IP. Only the frame's destination MAC and the ARP cache know, and nothing on a normal desktop looks at either.",
-        "The defences are switch features rather than host ones: dynamic ARP inspection, validating ARP against the DHCP snooping binding table.",
+        "The defenses are switch features rather than host ones: dynamic ARP inspection, validating ARP against the DHCP snooping binding table.",
       ],
     },
   ],

@@ -263,7 +263,7 @@ interface ScrollRevealProps {
  *
  * So measure the element and clamp the threshold to half of what is actually
  * achievable. When the element is short enough for the requested threshold,
- * `Math.min` leaves it untouched and behaviour is identical to before.
+ * `Math.min` leaves it untouched and behavior is identical to before.
  */
 export function useClampedInView(
   ref: RefObject<Element>,
@@ -1133,7 +1133,7 @@ interface ElasticButtonProps {
   href?: string;
   as?: "button" | "a";
   /**
-   * Button behaviour, when this is a button.
+   * Button behavior, when this is a button.
    *
    * Worth having rather than nesting a real button inside this one, which
    * is what the contact form did: a button inside a button is invalid HTML,

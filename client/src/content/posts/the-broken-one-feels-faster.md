@@ -118,7 +118,7 @@ No timeout budget helps here, because the problem is not how long anybody
 waited. A timeout tells you that you stopped listening. It tells you nothing
 whatsoever about whether the work happened, and the two are constantly
 confused because in the common case they coincide. The fix is an idempotency
-key, so the second and third requests are recognisable as the same intent
+key, so the second and third requests are recognizable as the same intent
 rather than as three intentions that happen to look alike.
 
 ## Why every part passed review

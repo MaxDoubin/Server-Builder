@@ -1,8 +1,8 @@
 /**
- * A colour that paints a UI surface has to come from a token.
+ * A color that paints a UI surface has to come from a token.
  *
  * The cinematic pages have two palettes now, dark and light, and both are
- * built by redefining thirteen --brand-* tokens. That only works for colours
+ * built by redefining thirteen --brand-* tokens. That only works for colors
  * that ask for a token. A literal written into a class is invisible to it,
  * and stays exactly as dark as it was while the text around it goes dark
  * with the light theme.
@@ -11,20 +11,20 @@
  * bg-[hsl(220_10%_6%)] rather than a token, so in the light theme they were
  * near-black cards holding near-black text: 115 of 174 text elements on that
  * page under the contrast floor, including a heading at 1.16:1. Nothing
- * caught it, because check-contrast reads the tokens and these colours were
+ * caught it, because check-contrast reads the tokens and these colors were
  * not tokens.
  *
  * NOT every literal is wrong, which is the whole difficulty. The same file
  * fills its rack elevations with literal HSL and is right to: a rack chassis
  * is dark in a light room, the same reason the 3D scene and the preloader
  * hardcode their materials. The distinction this gate draws is between a
- * colour describing an object and a colour describing a surface, and it
+ * color describing an object and a color describing a surface, and it
  * draws it structurally:
  *
  *   - fill- and stroke- are SVG, so they are drawing a thing, and are allowed.
  *   - rack3d/, Preloader and LoaderScene are three-dimensional materials and
  *     a loading screen that only ever appears over its own dark ground.
- *   - everything else naming a background, a text colour or a border must use
+ *   - everything else naming a background, a text color or a border must use
  *     hsl(var(--token)), or be listed below with a reason.
  */
 import { readdirSync, readFileSync, statSync } from "fs";
@@ -32,7 +32,7 @@ import path from "path";
 
 const ROOTS = ["client/src/pages/cinematic", "client/src/components/cinematic"];
 
-/** Directories and files whose colours describe an object, not a surface. */
+/** Directories and files whose colors describe an object, not a surface. */
 const OBJECT_COLOURS = [
   "rack3d/",              // three.js materials: chassis, rails, cables
   "Preloader.tsx",        // the boot screen, which paints its own dark ground
@@ -40,12 +40,12 @@ const OBJECT_COLOURS = [
 ];
 
 /**
- * Individually justified. Each is a colour that is deliberately the same in
+ * Individually justified. Each is a color that is deliberately the same in
  * both themes, and each was measured against its own background rather than
  * assumed: both clear the AA floor in light and dark.
  */
 const ALLOWED = [
-  // A "no preview" tile. A light chip with grey type on it, the same object
+  // A "no preview" tile. A light chip with gray type on it, the same object
   // in both themes, the way a printed swatch would be.
   { file: "client/src/pages/cinematic/CinematicRackDetail.tsx", text: "bg-[#eef0f3]" },
   { file: "client/src/pages/cinematic/CinematicRackDetail.tsx", text: "text-[#5c6472]" },
@@ -87,7 +87,7 @@ for (const root of ROOTS) {
 
 if (scanned < 20) {
   console.error(
-    `check-themed-colours: only scanned ${scanned} files, which is fewer than\n` +
+    `check-themed-colors: only scanned ${scanned} files, which is fewer than\n` +
       `  this site has. The scan is probably not reaching the source.`,
   );
   process.exit(1);
@@ -95,7 +95,7 @@ if (scanned < 20) {
 
 if (problems.length) {
   console.error(
-    `${problems.length} literal colour${problems.length === 1 ? "" : "s"} on a cinematic surface:\n`,
+    `${problems.length} literal color${problems.length === 1 ? "" : "s"} on a cinematic surface:\n`,
   );
   for (const p of problems) console.error(`    ${p}`);
   console.error(
@@ -108,5 +108,5 @@ if (problems.length) {
 }
 
 console.log(
-  `check-themed-colours: ${scanned} cinematic files, every surface colour comes from a token.`,
+  `check-themed-colors: ${scanned} cinematic files, every surface color comes from a token.`,
 );

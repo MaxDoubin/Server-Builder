@@ -147,7 +147,7 @@ export const ubiquitiRack: RackDefinition = {
         ...run("sfp-plus", 28, (n) => `SFP+ ${n}`, 11),
         // SFP28 has no kind of its own in the contract, and it is not a QSFP
         // cage. A 25G SFP28 is the same physical SFP housing as a 10G SFP+,
-        // so it is modelled as sfp-plus and the speed lives in the label
+        // so it is modeled as sfp-plus and the speed lives in the label
         // rather than being silently rounded down to 10G.
         ...run("sfp-plus", 4, (n) => `SFP28 25G ${n}`, 2, "blue"),
       ],
@@ -301,7 +301,7 @@ export const ubiquitiRack: RackDefinition = {
         { kind: "rj45", label: "Surge in", led: "off" },
         { kind: "rj45", label: "Surge out", led: "off" },
       ],
-      // One status LED, and Ubiquiti publishes what each colour means.
+      // One status LED, and Ubiquiti publishes what each color means.
       // Steady blue is "device adoption and working", which is the state a
       // healthy rack sits in.
       leds: ["blue"],
@@ -324,7 +324,7 @@ export const ubiquitiRack: RackDefinition = {
     These are the reason a UniFi rack looks the way it does in photographs.
     Cat6A, a 2.5mm white TPE jacket, and two translucent booted RJ45
     connectors that pipe the switch's own port LED out through the boot, so
-    every patched jack carries a point of colour. The colour is configurable
+    every patched jack carries a point of color. The color is configurable
     per port and is normally set to mean something: here green is the
     default access VLAN, blue is the voice VLAN, and amber marks the
     cameras, which is a real convention and the reason anyone pays extra for

@@ -110,7 +110,7 @@ number supports.
 
 ## The one minute average has not had a minute
 
-Here is the part I did not know until I modelled it.
+Here is the part I did not know until I modeled it.
 
 `LOAD_FREQ` is `5*HZ+1`, not `5*HZ`. At HZ=250 that is 5.004 seconds, and the
 extra tick is deliberate: a sampling period that divides evenly into a second
@@ -212,7 +212,7 @@ some avg10=0.00 avg60=0.00 avg300=0.00 total=0
 
 Pressure stall information is the quantity people believe they are reading off
 the load average: the share of time runnable tasks spent waiting rather than
-the number of them. It is normalised, it is comparable between machines, and
+the number of them. It is normalized, it is comparable between machines, and
 it is zero on a box with eight tasks on eight cores and rises the moment the
 ninth arrives. If you are building alerting today and you have a kernel newer
 than 4.20, alert on this and use the load average for the thing it is good at,

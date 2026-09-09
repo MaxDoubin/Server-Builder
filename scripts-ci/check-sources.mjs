@@ -55,7 +55,7 @@
  * that case but a restructure, and indistinguishable from one on the wire.
  * Either way the citation points somewhere that is no longer the document.
  *
- * HEAD is only ever an optimisation. A server is free to answer it however it
+ * HEAD is only ever an optimization. A server is free to answer it however it
  * likes, and several do so wrongly: nvlpubs.nist.gov answers HEAD on a PDF
  * that is plainly there with a 404, and answers GET on the same URL with a
  * 200. Two live citations were reported dead that way. So a HEAD is believed
@@ -147,7 +147,7 @@ async function status(url) {
  * document's address any more.
  *
  * One exclusion, because it would otherwise be the commonest false positive
- * here: /foo/index.html answering from /foo/ is trailing-slash normalisation
+ * here: /foo/index.html answering from /foo/ is trailing-slash normalization
  * and not a redirect away from anything. Those two are the same document by
  * a convention older than most of the sites cited on this site.
  */

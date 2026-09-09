@@ -76,9 +76,9 @@ out.push(`/**
 export interface CoverCredit {
   /** Author as named by the source, plain text. */
   author: string;
-  /** Human-readable licence, e.g. "CC BY-SA 4.0". */
+  /** Human-readable license, e.g. "CC BY-SA 4.0". */
   license: string;
-  /** Canonical licence deed. */
+  /** Canonical license deed. */
   licenseUrl: string;
   /** The file's description page at the source. */
   sourceUrl: string;
@@ -216,7 +216,7 @@ out.push(" * not making stale claims would be the worst possible place for one."
 out.push(" */");
 out.push(`export const CITATION_COUNT = ${allCitations.size};`);
 out.push("");
-out.push("/** Unique cover image attribution and licence URLs. */");
+out.push("/** Unique cover image attribution and license URLs. */");
 out.push(`export const ATTRIBUTION_URL_COUNT = ${attributionUrls.size};`);
 out.push("");
 out.push("/** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */");

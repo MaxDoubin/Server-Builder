@@ -76,7 +76,7 @@ function vigenere(text: string, key: string, decode: boolean): string {
       continue;
     }
     // The key only advances on letters, so punctuation and spaces do not
-    // consume a key character. That is the standard behaviour and the reason
+    // consume a key character. That is the standard behavior and the reason
     // stripping spaces from a ciphertext changes the answer.
     const by = letters.charCodeAt(k % letters.length) - A_UPPER;
     out += shiftLetter(code, decode ? -by : by);

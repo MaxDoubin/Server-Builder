@@ -5,15 +5,15 @@
  * a real rack is a tube that leaves its jack along the plug's own axis,
  * bows out in front of the panel because copper will not turn a sharp
  * corner, and comes back in at the same angle at the far end. That service
- * loop is the single most recognisable thing about a patched rack, and it
+ * loop is the single most recognizable thing about a patched rack, and it
  * is the reason a populated patch panel looks like hardware and an empty
  * one looks like a drawing.
  *
- * Everything is built once per rack and merged by jacket colour, because
+ * Everything is built once per rack and merged by jacket color, because
  * ninety-three separate tube meshes would be ninety-three draw calls for an
  * object that never moves. The boots are one instanced mesh over the lot,
  * tinted per instance, so an Etherlighting boot can carry its own port's
- * indicator colour without costing a material each.
+ * indicator color without costing a material each.
  */
 
 import { useMemo } from "react";
@@ -46,7 +46,7 @@ interface Ends {
 /*
   The lead shape and the jacket palette live in cableShape.ts, because a
   rack built from vendor geometry needs exactly the same cabling and the
-  physics does not care who modelled the switch it plugs into.
+  physics does not care who modeled the switch it plugs into.
 */
 
 export function RackCables3D({
@@ -56,7 +56,7 @@ export function RackCables3D({
   budget = 128,
 }: {
   rack: RackDefinition;
-  /** Centre height of each device, keyed by device id. */
+  /** Center height of each device, keyed by device id. */
   yOf: Map<string, number>;
   /** Front plane of this rack, where every jack sits. */
   faceZ: number;
@@ -89,10 +89,10 @@ export function RackCables3D({
       const led = patch.colour ?? source?.ports?.[patch.from.port]?.led ?? "off";
       /*
         An Etherlighting boot is translucent white plastic with the port's
-        LED piped into it, not a solid block of that LED's colour. Painting
-        it the raw indicator colour turned the panel into a row of flat
+        LED piped into it, not a solid block of that LED's color. Painting
+        it the raw indicator color turned the panel into a row of flat
         green and amber tiles, so the tint is mixed most of the way back to
-        white and the colour reads as a glow rather than as paint.
+        white and the color reads as a glow rather than as paint.
       */
       const boot =
         style === "etherlighting"
@@ -122,7 +122,7 @@ export function RackCables3D({
       Record which way each lead leaves its jack, so the plug body points
       along the cable instead of straight out of the panel. A plug that
       ignores the direction of its own cable is the tell that a render was
-      assembled rather than modelled.
+      assembled rather than modeled.
     */
     const reachOf = (e: Ends) => Math.abs(e.a.x - e.b.x) / widest;
     ends.forEach((e, i) => {
@@ -131,7 +131,7 @@ export function RackCables3D({
       e.outB = curve.getTangentAt(0.999).normalize().negate();
     });
 
-    // One merged tube geometry per jacket colour.
+    // One merged tube geometry per jacket color.
     const byJacket = new Map<string, THREE.BufferGeometry[]>();
     ends.forEach((e, i) => {
       const geom = new THREE.TubeGeometry(leadCurve(e.a, e.b, i, reachOf(e)), 40, RADIUS[e.style], 7, false);
@@ -160,7 +160,7 @@ export function RackCables3D({
     if (!built) return null;
     const count = built.ends.length * 2;
     const mesh = new THREE.InstancedMesh(
-      // Normalised to an 11.7mm plug body; the boot runs about 25mm back.
+      // Normalized to an 11.7mm plug body; the boot runs about 25mm back.
       plugBoot(),
       new THREE.MeshStandardMaterial({ metalness: 0.04, roughness: 0.38, envMapIntensity: 1 }),
       count,

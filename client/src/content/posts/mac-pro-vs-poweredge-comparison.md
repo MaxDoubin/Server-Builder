@@ -91,11 +91,11 @@ On power, the R740 has two hot-swap supplies you can feed from separate circuits
 
 A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, the Mac Pro is the only option.
 
-That "only option" is a licence question, not a technical one. Apple's software licence permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
+That "only option" is a license question, not a technical one. Apple's software license permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
 
 ## What breaks
 
-**Buying a used R740 without iDRAC Enterprise.** The Express licence that ships on many secondhand servers gives you the web UI and sensors but locks virtual console and virtual media behind the Enterprise tier. People buy the server, discover they cannot get a remote screen, and assume iDRAC is broken. Check the licence level before you buy.
+**Buying a used R740 without iDRAC Enterprise.** The Express license that ships on many secondhand servers gives you the web UI and sensors but locks virtual console and virtual media behind the Enterprise tier. People buy the server, discover they cannot get a remote screen, and assume iDRAC is broken. Check the license level before you buy.
 
 **Leaving iDRAC on the flat network with its factory password.** Older units shipped `root` / `calvin`; newer ones ship a unique password printed on the pull-out service tag. Either way, a BMC is a full out-of-band computer with power control over your server. It belongs on an isolated management VLAN with its own firewall policy, never on the same subnet as user devices.
 
@@ -103,7 +103,7 @@ That "only option" is a licence question, not a technical one. Apple's software 
 
 **Calling two power supplies redundant when both are on one circuit.** Dual PSUs protect against a supply failing, not against a breaker tripping. If both cords go to the same PDU on the same circuit, you have bought half the redundancy you think you have.
 
-**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's licence terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
+**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's license terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
 
 ## My recommendation
 

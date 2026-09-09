@@ -112,9 +112,9 @@ export const unsafeRetries = (chain: Chain): Caller[] =>
   chain.callers.filter((caller) => caller.attempts > 1 && !caller.idempotent);
 
 /**
- * Layers that back off without jitter, and so synchronise rather than spread.
+ * Layers that back off without jitter, and so synchronize rather than spread.
  *
- * A layer that does not retry cannot synchronise anything, so it is not
+ * A layer that does not retry cannot synchronize anything, so it is not
  * counted: the first version of this flagged every caller with jitter 0 and
  * reported a thundering herd on a chain where three of the four layers made
  * exactly one attempt each.

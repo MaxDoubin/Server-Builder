@@ -7,7 +7,7 @@ You are dropping 4K or 8K ProRes onto a timeline and playback stutters, the CPU 
 
 The Apple Afterburner card is a PCIe accelerator designed to decode ProRes and ProRes RAW video in hardware. It handles up to 6.3 billion pixels per second, which translates to 3 streams of 8K ProRes RAW or 12 streams of 4K ProRes RAW simultaneously. Without Afterburner, these decode operations happen on the CPU, which limits how many streams you can play back in real time.
 
-Note the word decode. Afterburner is a decoder, full stop. It does not accelerate encoding, it does not accelerate effects, and it does not accelerate colour grading. It makes getting pixels off disk and into memory cheap. Everything downstream of that is still the CPU and GPU's problem.
+Note the word decode. Afterburner is a decoder, full stop. It does not accelerate encoding, it does not accelerate effects, and it does not accelerate color grading. It makes getting pixels off disk and into memory cheap. Everything downstream of that is still the CPU and GPU's problem.
 
 ## Why ProRes is expensive to decode
 

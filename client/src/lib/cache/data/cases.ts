@@ -283,7 +283,7 @@ export const CASES: Case[] = [
           cacheControl: "max-age=120",
           vary: "Cookie",
           belongsTo: "acct-8812",
-          body: "the monthly report for acct-8812's organisation",
+          body: "the monthly report for acct-8812's organization",
         },
       },
       {
@@ -299,7 +299,7 @@ export const CASES: Case[] = [
           cacheControl: "max-age=120",
           vary: "Cookie",
           belongsTo: "acct-4471",
-          body: "the monthly report for acct-4471's organisation",
+          body: "the monthly report for acct-4471's organization",
         },
       },
       {
@@ -315,11 +315,11 @@ export const CASES: Case[] = [
           cacheControl: "max-age=120",
           vary: "Cookie",
           belongsTo: "acct-1290",
-          body: "the monthly report for acct-1290's organisation",
+          body: "the monthly report for acct-1290's organization",
         },
       },
     ],
-    question: "Which request receives another organisation's report?",
+    question: "Which request receives another organization's report?",
     options: [
       { id: "a", claim: "The first, because its response is the one sitting in storage.", leakAt: "r1" },
       { id: "b", claim: "None of them. Vary: Cookie puts the cookie in the key, which is precisely the mechanism for this.", leakAt: null },
@@ -329,7 +329,7 @@ export const CASES: Case[] = [
     why:
       "Vary: Cookie keys on the value of the Cookie header, all of it, as one opaque string. It does not key on a cookie, and there is no way in HTTP to say vary on the session and ignore everything else. So the mechanism works exactly as specified and protects nothing here, because these requests genuinely send the same Cookie header: the session is absent from all of them, the page being reached before signing in, and the only cookie present is the consent one everybody has the same value for. The third request is the other half of the same lesson: it misses, and gets its own report, because it happens to carry an unrelated theme cookie. Nothing protected it either. The bug arrived with the consent banner, in a change that touched no caching code and no reporting code.",
     fix:
-      "Do not use the cookie jar as a cache key. Mark the route private, or move the identity into the URL so the key carries it, or have the CDN normalise the Cookie header down to the one cookie that matters before computing the key. The last keeps the cache useful and has to be written down somewhere, because the next cookie somebody adds will not know about it.",
+      "Do not use the cookie jar as a cache key. Mark the route private, or move the identity into the URL so the key carries it, or have the CDN normalize the Cookie header down to the one cookie that matters before computing the key. The last keeps the cache useful and has to be written down somewhere, because the next cookie somebody adds will not know about it.",
     breaks: "that Vary: Cookie keys on the session rather than on every cookie at once",
   },
   {

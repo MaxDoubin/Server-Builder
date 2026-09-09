@@ -11,7 +11,7 @@
  * - Jacks group in blocks with a gap every 6, 8 or 12, which is how a
  *   technician counts to port 34 without reading a label.
  * - The link LED sits in the top corners of the RJ45 throat itself.
- * - Chassis colour identifies a vendor: UniFi silver, Catalyst pale grey
+ * - Chassis color identifies a vendor: UniFi silver, Catalyst pale gray
  *   with teal port throats, MikroTik black.
  *
  * Everything is shaded from the material library in RackDefs rather than
@@ -688,7 +688,7 @@ function DrawerFace(props: ContentProps) {
  * A wall of front fan modules, each a rotor behind a punched guard.
  *
  * Drawn as the concentric rings and radial blades you actually see through
- * a guard, because a fan drawn as a grey circle is a hole and a hole is
+ * a guard, because a fan drawn as a gray circle is a hole and a hole is
  * the one thing this is not.
  */
 function IntakeWall(props: ContentProps & { count: number }) {

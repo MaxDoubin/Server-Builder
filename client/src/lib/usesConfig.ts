@@ -137,7 +137,7 @@ export const usesConfig: { intro: string; groups: UsesGroup[] } = {
       items: [
         {
           name: "Proxmox VE",
-          why: "KVM and LXC under one interface, clustering without a licence server, and a config format I can read. For a lab that gets rebuilt often, that last part matters more than features.",
+          why: "KVM and LXC under one interface, clustering without a license server, and a config format I can read. For a lab that gets rebuilt often, that last part matters more than features.",
         },
         {
           name: "KVM and QEMU",

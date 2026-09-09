@@ -77,7 +77,7 @@ const osint: NclGuide = {
     { name: "Search operators", use: "site:, filetype:, intitle:, and inurl: narrow a search engine to exactly the pages that can carry the answer. This is often called Google dorking." },
     { name: "exiftool", use: "Reads EXIF and other embedded metadata from images and documents, including GPS coordinates, camera model, author, and software fields." },
     { name: "whois / dig", use: "WHOIS returns domain registration data (often redacted now); dig and nslookup return DNS records that map names to infrastructure." },
-    { name: "crt.sh", use: "Searches Certificate Transparency logs, which record every issued TLS certificate and so expose subdomains an organisation may not advertise." },
+    { name: "crt.sh", use: "Searches Certificate Transparency logs, which record every issued TLS certificate and so expose subdomains an organization may not advertise." },
     { name: "Wayback Machine", use: "archive.org keeps historical snapshots of pages, so information removed from the live site may still be readable." },
     { name: "Reverse image search", use: "Finds other places a photo appears, which can name a location, an event, or a person." },
   ],
@@ -88,7 +88,7 @@ const osint: NclGuide = {
       {
         label: "Read the metadata, not the picture",
         detail:
-          "The pixels may show nothing recognisable, but a camera or phone often writes GPS coordinates into the file's EXIF block. exiftool is the standard tool for reading it.",
+          "The pixels may show nothing recognizable, but a camera or phone often writes GPS coordinates into the file's EXIF block. exiftool is the standard tool for reading it.",
         code: "exiftool photo.jpg",
       },
       {
@@ -120,7 +120,7 @@ const osint: NclGuide = {
     "Straying outside the target scope into active probing, which is neither OSINT nor within the honour code of practice challenges.",
   ],
   resources: [
-    { label: "OSINT Framework", detail: "A categorised directory of OSINT tools and sources.", url: "https://osintframework.com/" },
+    { label: "OSINT Framework", detail: "A categorized directory of OSINT tools and sources.", url: "https://osintframework.com/" },
     { label: "ExifTool documentation", detail: "The full tag reference for Phil Harvey's exiftool.", url: "https://exiftool.org/" },
     { label: "crt.sh", detail: "Certificate Transparency log search for subdomain discovery.", url: "https://crt.sh/" },
     { label: "Wayback Machine", detail: "The Internet Archive's historical page snapshots.", url: "https://web.archive.org/" },
@@ -156,7 +156,7 @@ const osint: NclGuide = {
       ],
       correctIndex: 1,
       explanation:
-        "CT logs record every issued certificate, so the hostnames inside them expose subdomains an organisation may not otherwise publish.",
+        "CT logs record every issued certificate, so the hostnames inside them expose subdomains an organization may not otherwise publish.",
     },
   ],
 };
@@ -165,11 +165,11 @@ const cryptography: NclGuide = {
   slug: "cryptography",
   category: "Cryptography",
   order: 2,
-  tagline: "Recognise the scheme, peel the layers, recover the plaintext.",
+  tagline: "Recognize the scheme, peel the layers, recover the plaintext.",
   seoDescription:
     "How the NCL Cryptography category works: telling encodings from ciphers, classical cipher methods, RSA weaknesses, and a worked example.",
   whatItTests: [
-    "The Cryptography category tests whether you can recognise how a message has been transformed and then reverse it. That spans three quite different things that beginners often blur together: encodings such as Base64 and hex, which carry no secret and are trivially reversible; classical ciphers such as Caesar, Vigenere, and simple substitution, which do carry a key but leak the structure of the underlying language; and modern cryptography such as RSA, where the challenge is usually a weak parameter rather than breaking the algorithm itself.",
+    "The Cryptography category tests whether you can recognize how a message has been transformed and then reverse it. That spans three quite different things that beginners often blur together: encodings such as Base64 and hex, which carry no secret and are trivially reversible; classical ciphers such as Caesar, Vigenere, and simple substitution, which do carry a key but leak the structure of the underlying language; and modern cryptography such as RSA, where the challenge is usually a weak parameter rather than breaking the algorithm itself.",
     "Challenges are frequently layered. A token might be Base64 that decodes to a hex string that decodes to a rotated message. The skill is identifying each layer in turn and applying the right transformation, rather than guessing wildly.",
   ],
   mentalModel: [
@@ -178,7 +178,7 @@ const cryptography: NclGuide = {
   ],
   tools: [
     { name: "CyberChef", use: "GCHQ's browser tool for chaining operations. Build a recipe like From Base64 then ROT13 and watch the output update. Its Magic operation guesses likely encodings." },
-    { name: "dcode.fr", use: "Identifies and solves a large catalogue of classical ciphers and codes." },
+    { name: "dcode.fr", use: "Identifies and solves a large catalog of classical ciphers and codes." },
     { name: "Python + PyCryptodome", use: "For scripting attacks and RSA maths when a tool does not fit the exact case." },
     { name: "factordb.com", use: "A database of known integer factorisations, the first stop for a small or reused RSA modulus." },
     { name: "xortool", use: "Recovers the key length and key of a repeating-key XOR cipher." },
@@ -483,7 +483,7 @@ const trafficAnalysis: NclGuide = {
   seoDescription:
     "How the NCL Network Traffic Analysis category works: reading pcaps in Wireshark, display versus capture filters, following streams, and an example.",
   whatItTests: [
-    "Network Traffic Analysis tests whether you can read a packet capture and pull information out of it: credentials sent in cleartext, a file that was transferred, the names a host looked up in DNS, or the behaviour of a protocol. This is also where scanning and enumeration show up, because a port scan leaves an unmistakable pattern in a capture and recognising it is part of the skill.",
+    "Network Traffic Analysis tests whether you can read a packet capture and pull information out of it: credentials sent in cleartext, a file that was transferred, the names a host looked up in DNS, or the behavior of a protocol. This is also where scanning and enumeration show up, because a port scan leaves an unmistakable pattern in a capture and recognizing it is part of the skill.",
     "You are given pcap files and expected to navigate them efficiently. Captures can hold tens of thousands of packets, so the work is about narrowing quickly to the conversation that matters and then reassembling it into something readable.",
   ],
   mentalModel: [
@@ -495,7 +495,7 @@ const trafficAnalysis: NclGuide = {
     { name: "tshark", use: "Wireshark's command-line form, for scripting extractions and filtering large captures." },
     { name: "tcpdump", use: "Captures and reads traffic on the command line using BPF capture filters." },
     { name: "NetworkMiner", use: "Automatically carves files, credentials, and images out of a capture." },
-    { name: "nmap", use: "The scanner whose traffic you learn to recognise; -sV adds service and version detection to a scan." },
+    { name: "nmap", use: "The scanner whose traffic you learn to recognize; -sV adds service and version detection to a scan." },
     { name: "Zeek", use: "Turns raw traffic into structured connection and protocol logs for higher-level analysis." },
   ],
   walkthrough: {
@@ -585,7 +585,7 @@ const forensics: NclGuide = {
   seoDescription:
     "How the NCL Forensics category works: file signatures and magic bytes, strings and binwalk, steganography, metadata, memory analysis, and a worked example.",
   whatItTests: [
-    "Forensics tests whether you can examine a file or a disk or memory artifact and recover what is hidden in it. That includes identifying a file's real type when the extension lies, finding data appended or embedded inside another file, extracting metadata, pulling readable strings out of a binary, defeating simple steganography, and sometimes analysing a memory dump.",
+    "Forensics tests whether you can examine a file or a disk or memory artifact and recover what is hidden in it. That includes identifying a file's real type when the extension lies, finding data appended or embedded inside another file, extracting metadata, pulling readable strings out of a binary, defeating simple steganography, and sometimes analyzing a memory dump.",
     "The recurring theme is that appearances deceive. A file named image.png may not be a PNG, or it may be a valid PNG with a ZIP archive stapled onto the end. The category rewards a habit of checking what something actually is rather than what it claims to be.",
   ],
   mentalModel: [
@@ -672,7 +672,7 @@ const forensics: NclGuide = {
     },
     {
       id: "forensics-q3",
-      question: "Why run `file` on an artifact before analysing it?",
+      question: "Why run `file` on an artifact before analyzing it?",
       choices: [
         "To identify the true type from its content, since the extension can lie",
         "To securely delete it",
@@ -694,12 +694,12 @@ const webExploitation: NclGuide = {
   seoDescription:
     "How the NCL Web Application Exploitation category works: recon and enumeration, SQL injection, XSS, OWASP references, and a worked example.",
   whatItTests: [
-    "Web Application Exploitation tests whether you can find and exploit flaws in a web application. The common families are SQL injection, cross-site scripting, command injection, path traversal, insecure direct object references, and broken authentication or authorisation, along with information disclosure through exposed files. It also rewards thorough enumeration, because finding the vulnerable endpoint is often harder than exploiting it once found.",
+    "Web Application Exploitation tests whether you can find and exploit flaws in a web application. The common families are SQL injection, cross-site scripting, command injection, path traversal, insecure direct object references, and broken authentication or authorization, along with information disclosure through exposed files. It also rewards thorough enumeration, because finding the vulnerable endpoint is often harder than exploiting it once found.",
     "The unifying idea is the trust boundary. Everything that arrives from the client, form fields, URL parameters, headers, and cookies, is attacker-controlled and must be treated as hostile. Vulnerabilities are where the application forgets that.",
   ],
   mentalModel: [
     "Map before you attack. Read the page source, the linked JavaScript, and any HTML comments. Check robots.txt and common paths, since disallowed entries and files like a backup or an exposed .git directory are handed to you as leads. Enumerate directories and parameters with a fuzzer. Only once you know the app's shape do you know where its inputs are.",
-    "Then test each input against the OWASP Top 10 families, reasoning about how the server uses your data. For injection, picture the query or command your input becomes part of and craft input that changes its meaning. Use an intercepting proxy to read and modify the exact requests, because the browser hides much of what is really sent. The defence to keep in mind, because it tells you what the developer may have skipped, is that user data must be kept separate from code, through parameterised queries for SQL and output encoding for HTML.",
+    "Then test each input against the OWASP Top 10 families, reasoning about how the server uses your data. For injection, picture the query or command your input becomes part of and craft input that changes its meaning. Use an intercepting proxy to read and modify the exact requests, because the browser hides much of what is really sent. The defense to keep in mind, because it tells you what the developer may have skipped, is that user data must be kept separate from code, through parameterised queries for SQL and output encoding for HTML.",
   ],
   tools: [
     { name: "Burp Suite", use: "An intercepting proxy to read, modify, and replay every request between browser and server." },
@@ -773,7 +773,7 @@ const webExploitation: NclGuide = {
     },
     {
       id: "web-q2",
-      question: "The primary defence against SQL injection is:",
+      question: "The primary defense against SQL injection is:",
       choices: [
         "Parameterised (prepared) queries",
         "Hiding the login page",
@@ -1024,7 +1024,7 @@ const enumerationExploitation: NclGuide = {
       choices: [
         "The buffer was allocated on the heap",
         "The check compared a signed value, and a negative length became a huge unsigned size at the copy",
-        "The compiler optimised the check away",
+        "The compiler optimized the check away",
         "The string was not null terminated",
       ],
       correctIndex: 1,

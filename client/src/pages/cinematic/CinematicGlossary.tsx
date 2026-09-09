@@ -8,7 +8,7 @@
  * each entry leads with what the thing is, and where there is one, closes
  * with the thing people reliably get wrong about it.
  *
- * The filter drives the stage accent, so choosing a field changes the colour
+ * The filter drives the stage accent, so choosing a field changes the color
  * of the whole screen rather than just the list. Filtering is URL state, so a
  * filtered view is a link somebody can send.
  */
@@ -28,7 +28,7 @@ const SITE_URL = "https://maxdoubin.com";
  *
  * Four accents for seven fields, because the site has four accent tokens that
  * are contrast-checked in both themes. Inventing three more would mean three
- * more colours that have to be legible on white as well as on obsidian.
+ * more colors that have to be legible on white as well as on obsidian.
  */
 const ACCENT: Record<Field, StageAccent> = {
   networking: "signal",
@@ -67,7 +67,7 @@ export function CinematicGlossary() {
   const [field, setField] = useState<Field | null>(null);
   const [linked, setLinked] = useState<string | null>(null);
   /*
-    The stage flashes on a filter change, so the colour arrives as a wash
+    The stage flashes on a filter change, so the color arrives as a wash
     rather than a swap. It counts changes rather than keying on the field
     because PracticeStage skips zero, and "all" would otherwise never flash.
   */
@@ -112,7 +112,7 @@ export function CinematicGlossary() {
    * ARP sees 802.1X, which is filed under security, so from the networking
    * view the anchor would land on an element that is not rendered and the
    * page would appear to ignore the click. Clearing the filter first is the
-   * only behaviour that does what the reader asked for.
+   * only behavior that does what the reader asked for.
    */
   const follow = useCallback(
     (target: Term, event: { preventDefault: () => void }) => {

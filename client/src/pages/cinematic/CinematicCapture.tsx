@@ -51,7 +51,7 @@ function Workbench({ capture }: { capture: Capture }) {
   const shown = useMemo(() => {
     // A filter that does not compile shows everything rather than nothing: the
     // error message is already on screen, and emptying the list on a typo is
-    // the behaviour that makes people stop using a filter bar.
+    // the behavior that makes people stop using a filter bar.
     if (compiled.error !== undefined) return capture.packets;
     const test = compiled.test;
     return capture.packets.filter((row) => test(row));

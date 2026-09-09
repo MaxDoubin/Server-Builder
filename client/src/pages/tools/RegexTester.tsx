@@ -80,7 +80,7 @@ self.onmessage = function (e) {
 /**
  * Main thread fallback, for the case where the worker cannot be created.
  *
- * Nothing can abort a running match here, so the only defence is to not
+ * Nothing can abort a running match here, so the only defense is to not
  * start an expensive one: time the pattern against short samples and give up
  * before reaching a length that would cost real time. Both ends are sampled
  * because a prefix of a pathological input usually matches happily, the
@@ -180,7 +180,7 @@ const PRESETS: Preset[] = [
     flags: "gm",
     sample:
       '203.0.113.9 - - [24/Aug/2026:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326 "https://example.com/" "Mozilla/5.0 (X11; Linux x86_64)"\n198.51.100.4 - admin [24/Aug/2026:13:56:02 -0700] "POST /wp-login.php HTTP/1.1" 403 512 "-" "curl/8.4.0"',
-    note: "Named groups, so the captures come back labelled. Needs the m flag because the anchors are per line.",
+    note: "Named groups, so the captures come back labeled. Needs the m flag because the anchors are per line.",
   },
   {
     id: "uuid",
@@ -193,11 +193,11 @@ const PRESETS: Preset[] = [
   },
   {
     id: "hex-colour",
-    label: "Hex colour",
+    label: "Hex color",
     pattern: String.raw`#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b`,
     flags: "g",
     sample: "#fff #0a0b0d #CCFF00AA #abc4 #12345 #ghijkl",
-    note: "Longest form first, otherwise a 6 digit colour would match as a 3 digit one.",
+    note: "Longest form first, otherwise a 6 digit color would match as a 3 digit one.",
   },
   {
     id: "cve",

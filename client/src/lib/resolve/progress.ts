@@ -4,7 +4,7 @@
  * These pages had the right-answer mechanic and no memory of it: you got a
  * case right, reloaded, and the page had forgotten. /today's progress panel
  * could not show them either, so three scored surfaces were invisible on the
- * page that summarises how far you have got.
+ * page that summarizes how far you have got.
  *
  * Same shape and same caveats as every other progress store here. It is
  * localStorage in your own browser, it has never left the machine you are

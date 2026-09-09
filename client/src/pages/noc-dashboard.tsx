@@ -12,7 +12,7 @@ export function NocDashboard() {
   // rather than competing with the archive as a thin page.
   useSEO({
     title: "NOC | Max Doubin",
-    description: "Network operations centre view of the simulated facility: alert timeline, uptime and live status.",
+    description: "Network operations center view of the simulated facility: alert timeline, uptime and live status.",
     canonical: "https://maxdoubin.com/noc",
     noindex: true,
   });

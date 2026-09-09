@@ -125,7 +125,7 @@ export function ToolShell({ slug, children, notes }: Props) {
   );
 }
 
-/** A labelled block of controls. */
+/** A labeled block of controls. */
 export function ToolPanel({
   title,
   children,

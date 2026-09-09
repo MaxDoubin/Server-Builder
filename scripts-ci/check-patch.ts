@@ -4,7 +4,7 @@
  *
  * The tree is somebody else's work copied into this repository, which is the
  * most dangerous kind of data to hold: a single flipped cell produces a page
- * that teaches a wrong judgement with a citation attached to it. Diffing
+ * that teaches a wrong judgment with a citation attached to it. Diffing
  * against the source on every build is not an option, because a gate that
  * fails when certcc.github.io has a bad minute is a gate everyone learns to
  * ignore. So the transcription is checked against properties of the tree
@@ -209,7 +209,7 @@ for (const finding of FINDINGS) {
 
   /*
     And the prose must not give the answer away. A reason that says "so this
-    is immediate" turns a judgement into a reading comprehension exercise,
+    is immediate" turns a judgment into a reading comprehension exercise,
     which is the failure mode of every written scenario question.
   */
   const prose = [finding.summary, finding.trap, ...finding.estate, ...Object.values(finding.because)]

@@ -3,13 +3,13 @@
 
 Every time I read about MLOps as a separate discipline, the parts that are actually novel turn out to be small. Deployment, versioning, rollback, monitoring, and reproducibility are the same problems that operations has always had.
 
-There is one genuine difference, and everything else follows from it. In ordinary software, behaviour is determined by code. Pin the commit and the container image and you can recreate what ran. In a machine learning system, behaviour is determined by code, data, and a training process that is often nondeterministic. Pinning the commit gets you a third of the way.
+There is one genuine difference, and everything else follows from it. In ordinary software, behavior is determined by code. Pin the commit and the container image and you can recreate what ran. In a machine learning system, behavior is determined by code, data, and a training process that is often nondeterministic. Pinning the commit gets you a third of the way.
 
 That is the whole difficulty, stated plainly: the artifact depends on inputs that are large, changing, and much harder to version than source code.
 
 ## Three Artifacts, Not One
 
-A deployed model is the product of three things that must be tracked together, because any one of them changing produces different behaviour.
+A deployed model is the product of three things that must be tracked together, because any one of them changing produces different behavior.
 
 **Code** is the easy one. Training scripts, preprocessing, and serving code all live in version control and you already know how to manage them.
 
@@ -94,7 +94,7 @@ Prediction distribution. Track the distribution of outputs over time. If a class
 
 Input distribution. Compare live input features against the training distribution. Drift here is the leading indicator, because it usually precedes the quality drop rather than following it.
 
-Ground truth, whenever you can get it. Sometimes labels arrive naturally with a delay: the ticket eventually gets categorised by a human, the flagged transaction is eventually confirmed or not. Capturing those delayed labels and computing real accuracy on a rolling window is the only direct measure of whether the model still works.
+Ground truth, whenever you can get it. Sometimes labels arrive naturally with a delay: the ticket eventually gets categorized by a human, the flagged transaction is eventually confirmed or not. Capturing those delayed labels and computing real accuracy on a rolling window is the only direct measure of whether the model still works.
 
 When no ground truth is available, proxy signals help: how often users override the model, how often they rephrase and retry, how often a downstream process rejects the output.
 

@@ -15,7 +15,7 @@ apt install unattended-upgrades
 dpkg-reconfigure -plow unattended-upgrades
 ```
 
-That last command writes `/etc/apt/apt.conf.d/20auto-upgrades` with the two settings that matter, one to refresh the package lists on a schedule and one to actually apply upgrades. Out of the box it applies the security pocket only, which is the behaviour you want on a server: security fixes land automatically, feature updates wait for you.
+That last command writes `/etc/apt/apt.conf.d/20auto-upgrades` with the two settings that matter, one to refresh the package lists on a schedule and one to actually apply upgrades. Out of the box it applies the security pocket only, which is the behavior you want on a server: security fixes land automatically, feature updates wait for you.
 
 Verify it rather than assuming. This runs the whole process without changing anything and prints what it would have done:
 

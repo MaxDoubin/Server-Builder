@@ -10,16 +10,16 @@
  * So each device carries a port strip, which is where its jacks sit as
  * fractions of the panel. Those are read off the rendered front elevation
  * of each model rather than off a datasheet, and they are deliberately
- * approximate: a lead that leaves its jack two millimetres off centre is
+ * approximate: a lead that leaves its jack two millimetres off center is
  * indistinguishable from one that does not, and the service loop is what
  * the eye actually reads.
  *
  * The patching is a real design rather than a decoration. Access ports on
  * the two PoE switches come down to the surge panels, the switches uplink
- * to the aggregation switch on fibre, the aggregation switch feeds the
+ * to the aggregation switch on fiber, the aggregation switch feeds the
  * gateway, and the two storage boxes take a copper pair each. That is why
- * the fibre is aqua and the uplinks are the only leads crossing more than
- * two units: a rack where every cable is the same colour and the same
+ * the fiber is aqua and the uplinks are the only leads crossing more than
+ * two units: a rack where every cable is the same color and the same
  * length is a rack nobody has ever had to fault find in.
  */
 
@@ -27,14 +27,14 @@
 export interface PortStrip {
   /** Left and right edge of the port field, 0 at the panel's left. */
   x: [number, number];
-  /** Centre of each row, 0.5 at the panel's middle, measured downward. */
+  /** Center of each row, 0.5 at the panel's middle, measured downward. */
   rows: number[];
   /** Jacks per row. */
   cols: number;
 }
 
 export interface WiredDevice {
-  /** Catalogue slug, or `usp-pdu-pro` for the one built by hand. */
+  /** Catalog slug, or `usp-pdu-pro` for the one built by hand. */
   slug: string;
   /**
    * Ours rather than Ubiquiti's, which changes two things: where the file
@@ -49,7 +49,7 @@ export interface WiredDevice {
   label: string;
   /** Copper jacks. */
   ports?: PortStrip;
-  /** Cages, kept separate because fibre gets its own colour and radius. */
+  /** Cages, kept separate because fiber gets its own color and radius. */
   optics?: PortStrip;
   /** Where its power inlet sits, as a fraction of the panel width. */
   inlet?: number;
@@ -60,11 +60,11 @@ export interface WiredPatch {
   from: [number, number];
   to: [number, number];
   jacket: string;
-  /** Optics leads are thinner and take the fibre colours. */
+  /** Optics leads are thinner and take the fiber colors. */
   fibre?: boolean;
   /**
    * A UniFi Etherlighting lead, whose translucent jacket lights at the plug
-   * from the port's own indicator. It is the single most recognisable thing
+   * from the port's own indicator. It is the single most recognizable thing
    * about UniFi cabling and the reason to bother tinting boots at all.
    */
   el?: boolean;
@@ -172,7 +172,7 @@ export const PDU_INDEX = WIRED_DEVICES.findIndex((d) => d.slug === "usp-pdu-pro"
  * The patching.
  *
  * Access ports go down to a surge panel, which is where the leads to the
- * rest of the building terminate. The two switches uplink on fibre to the
+ * rest of the building terminate. The two switches uplink on fiber to the
  * aggregation switch, and the gateway hangs off that. Nothing is patched
  * for the sake of filling a port: an unused port on a real switch stays
  * unused, and a rack with every jack occupied looks staged.
@@ -211,7 +211,7 @@ function buildPatches(): WiredPatch[] {
   out.push({ from: [8, 0], to: [5, 20], jacket: "yellow" });
 
   // Uplinks. Aggregation is the only device everything else reaches, so
-  // these are the long leads, and they are fibre.
+  // these are the long leads, and they are fiber.
   out.push({ from: [3, 100], to: [1, 2], jacket: "aqua", fibre: true });
   out.push({ from: [3, 101], to: [1, 3], jacket: "aqua", fibre: true });
   out.push({ from: [5, 100], to: [1, 6], jacket: "aqua", fibre: true });

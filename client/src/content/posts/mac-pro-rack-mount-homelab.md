@@ -21,7 +21,7 @@ Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the 
 
 The Mac Pro handles media-heavy workloads that my Dell servers would struggle with. Video transcoding, Xcode builds, and GPU-accelerated compute tasks all benefit from the hardware. If you are running Final Cut Pro pipelines or Compressor jobs in a production environment, the rack-mount Mac Pro makes a lot of sense.
 
-The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's licence permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
+The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's license permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
 
 For general server workloads like virtualization, storage, and networking, Dell wins every time. The PowerEdge line is designed for exactly that, and the price-to-performance ratio is not even close. But the Mac Pro fills a gap that Dell cannot, and having both in the same rack gives me flexibility.
 
@@ -36,7 +36,7 @@ sudo systemsetup -setusingnetworktime on
 sudo pmset -a sleep 0 disksleep 0 displaysleep 0 womp 1 autorestart 1
 ```
 
-`autorestart 1` is the important one. It tells the machine to power itself back on after a power failure, which is the default behaviour you get for free on every server and do not get here. `womp 1` enables wake on LAN. `sleep 0` stops macOS from suspending a machine that looks idle because nobody is typing on it.
+`autorestart 1` is the important one. It tells the machine to power itself back on after a power failure, which is the default behavior you get for free on every server and do not get here. `womp 1` enables wake on LAN. `sleep 0` stops macOS from suspending a machine that looks idle because nobody is typing on it.
 
 Verify:
 
@@ -108,7 +108,7 @@ You are also locked into Apple's hardware ecosystem for upgrades. But for specif
 
 **Treating Screen Sharing as out-of-band.** It is in-band. It dies with the OS, with the network stack, and with a kernel panic. Do not build a recovery plan on it.
 
-**Forgetting `autorestart`.** Default behaviour after a power cut is to stay off. The UPS does its job, the power comes back, the PowerEdges boot, and the Mac sits there dark. One `pmset` flag, easy to miss, very annoying to discover remotely.
+**Forgetting `autorestart`.** Default behavior after a power cut is to stay off. The UPS does its job, the power comes back, the PowerEdges boot, and the Mac sits there dark. One `pmset` flag, easy to miss, very annoying to discover remotely.
 
 **Unattended OS updates.** There is no `unattended-upgrades` equivalent that reliably survives a major macOS release. Updates want a reboot, sometimes want a click, and can leave a headless machine sitting at a setup or migration prompt. Schedule macOS patching as attended work.
 

@@ -61,7 +61,7 @@ export const HERO_MODELS: Record<string, HeroModel> = {
   },
 
   /*
-    The four racks built only from hardware modelled here. Unlike the six
+    The four racks built only from hardware modeled here. Unlike the six
     above, whose models were authored as whole racks, these are assembled
     from the individual device generators, so every panel in them is the
     same geometry the rack builder loads for that product on its own.

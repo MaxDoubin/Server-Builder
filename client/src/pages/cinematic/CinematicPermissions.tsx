@@ -67,7 +67,7 @@ const OPERATION_LABEL: Record<Operation, string> = {
  * Operation to accent.
  *
  * Reads are calm and the things that change the tree are not, which is the
- * only distinction the colour is carrying. Four accents, because those are
+ * only distinction the color is carrying. Four accents, because those are
  * the four the site has contrast-checked in both themes.
  */
 const ACCENT: Record<Operation, StageAccent> = {

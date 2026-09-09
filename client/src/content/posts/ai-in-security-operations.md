@@ -1,5 +1,5 @@
 
-## An opinion piece, clearly labelled
+## An opinion piece, clearly labeled
 
 Everything below is my analysis, not reporting. I am not describing any specific product or claiming what any vendor has shipped. I am writing down the framework I would use to judge a claim, because the marketing in this space runs well ahead of the evidence and I would rather have a checklist than a vibe.
 
@@ -9,13 +9,13 @@ Before evaluating a tool, be honest about where the hours go. In most security o
 
 Notice that very little of that is "detect the attack nobody has seen." Most of it is retrieval, correlation, and writing. That matters, because retrieval, correlation, and writing are exactly what language models are good at, and detection of novel attacks is exactly what they are not obviously good at.
 
-It is also worth remembering that machine learning has been in security tooling for a long time and the successes are unglamorous: spam classification, malware family clustering, anomaly detection on numeric telemetry, user behaviour baselines. Those work because they operate on large volumes of labelled or structured data with a clear signal.
+It is also worth remembering that machine learning has been in security tooling for a long time and the successes are unglamorous: spam classification, malware family clustering, anomaly detection on numeric telemetry, user behavior baselines. Those work because they operate on large volumes of labeled or structured data with a clear signal.
 
 If a problem can be solved with a threshold, a rule, or a well understood classifier, use that. It is cheaper, faster, deterministic, explainable, and testable. Reaching for a language model when a `WHERE` clause would do is a common and expensive mistake.
 
 ## Three jobs I would plausibly hand a model
 
-Context assembly. Given an alert, pull the asset owner, recent changes, the user's normal behaviour, related tickets, and relevant threat intel into one summary. This is retrieval and formatting, the output is checkable against sources, and being wrong is annoying rather than dangerous.
+Context assembly. Given an alert, pull the asset owner, recent changes, the user's normal behavior, related tickets, and relevant threat intel into one summary. This is retrieval and formatting, the output is checkable against sources, and being wrong is annoying rather than dangerous.
 
 Translation between representations. Turning a plain description into a query in your SIEM's language, converting a detection rule between formats, explaining a piece of obfuscated script, summarizing what a config change does. The analyst still reads and runs the result, so there is a human check built in.
 
@@ -23,9 +23,9 @@ First draft writing. Incident timelines, post incident reports, ticket summaries
 
 ## Three jobs I would not hand a model
 
-Autonomous response. Isolating a host, disabling an account, or blocking a range based on a model's judgement with nobody in the loop. The failure mode is a self inflicted outage, and prompt injection through attacker controlled log content makes it worse: an attacker who can write text into your logs can potentially influence a system that reads them.
+Autonomous response. Isolating a host, disabling an account, or blocking a range based on a model's judgment with nobody in the loop. The failure mode is a self inflicted outage, and prompt injection through attacker controlled log content makes it worse: an attacker who can write text into your logs can potentially influence a system that reads them.
 
-Being the detection itself. If the model decides what is malicious, you cannot explain a decision to an auditor, you cannot unit test it, its behaviour changes when the model changes, and you cannot reason about what it will miss. Deterministic detections with a model assisting the analyst is a much better division of labour.
+Being the detection itself. If the model decides what is malicious, you cannot explain a decision to an auditor, you cannot unit test it, its behavior changes when the model changes, and you cannot reason about what it will miss. Deterministic detections with a model assisting the analyst is a much better division of labour.
 
 Anything where a confident wrong answer is expensive and unverifiable. If a human cannot cheaply check the output, the output has no business being trusted.
 

@@ -5,7 +5,7 @@
  * three states of exploitation, three of exposure, two of automatability and
  * four of human impact. Transcribed rather than reimplemented, because the
  * value of using somebody else's framework is entirely lost if you rewrite
- * its judgements as your own heuristics along the way.
+ * its judgments as your own heuristics along the way.
  *
  * Source: CERT/CC, SSVC deployer decision tree.
  * https://certcc.github.io/SSVC/howto/deployer_tree/

@@ -1,7 +1,7 @@
 /**
  * Turning four facts about your estate into a place in the queue.
  *
- * The decision itself is a table lookup, and that is the point: the judgement
+ * The decision itself is a table lookup, and that is the point: the judgment
  * was made once, by people who wrote down their reasoning, and applying it is
  * mechanical. What is not mechanical is reading an advisory and a description
  * of your own systems and coming out with the four facts. That is what the

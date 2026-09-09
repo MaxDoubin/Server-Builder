@@ -406,7 +406,7 @@ export const HANDSHAKES: Handshake[] = [
         symptom: "Everything that reconnects stops working. Anything already connected is fine.",
         owner: "server",
         explain: [
-          "The switch relays and gets no answer, so it cannot authorise anyone new. Existing sessions are already authorised and stay up until they reauthenticate.",
+          "The switch relays and gets no answer, so it cannot authorize anyone new. Existing sessions are already authorized and stay up until they reauthenticate.",
           "That gap is why this is reported hours after it starts, usually as a rush of failures the next morning when everyone plugs in at once.",
           "Critical VLAN or critical auth is the configuration that decides what happens here, and it is worth setting deliberately rather than discovering.",
         ],
@@ -419,7 +419,7 @@ export const HANDSHAKES: Handshake[] = [
         owner: "server",
         explain: [
           "The port opens because the answer was Accept, and the switch applies its configured default VLAN because it was told nothing else.",
-          "This is the failure that looks like a success everywhere you would look. The switch logs an authorised session, RADIUS logs an accept, and the user cannot reach anything.",
+          "This is the failure that looks like a success everywhere you would look. The switch logs an authorized session, RADIUS logs an accept, and the user cannot reach anything.",
           "Check the attributes on the accept, not the accept itself. Tunnel-Private-Group-ID is the one that carries the VLAN, and it has to arrive with two companion attributes to be honoured at all.",
         ],
       },

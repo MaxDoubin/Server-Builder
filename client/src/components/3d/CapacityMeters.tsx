@@ -1,8 +1,8 @@
 /**
  * Power and cooling headroom for the visible floor.
  *
- * Both bars state their condition in words as well as in colour. A bar that
- * only turns red tells a colour blind user nothing, and it tells nobody how
+ * Both bars state their condition in words as well as in color. A bar that
+ * only turns red tells a color blind user nothing, and it tells nobody how
  * far over the line they are.
  */
 

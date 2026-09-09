@@ -49,7 +49,7 @@ import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";
 
-/** What kind of trouble the chain is in, which is what the room takes its colour from. */
+/** What kind of trouble the chain is in, which is what the room takes its color from. */
 function severity(chain: Chain): StageAccent {
   if (unsafeRetries(chain).length > 0) return "danger";
   if (amplification(chain) >= 27) return "danger";

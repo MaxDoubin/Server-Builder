@@ -18,7 +18,7 @@ const TeardownViewer = lazy(() =>
  * A real PowerEdge R760, taken apart.
  *
  * Every other exploded server on this site is a drawing of one: a chassis
- * somebody modelled by hand, with the parts they thought to include. This
+ * somebody modeled by hand, with the parts they thought to include. This
  * one is Dell's, out of the service model behind their repair guides, so
  * the parts are the parts, in the positions they actually occupy, under the
  * names a technician would use on the phone to support.

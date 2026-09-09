@@ -389,8 +389,8 @@ export function CinematicBlogPost() {
 
                 The navigation has the same problem over this image and it
                 is not solved here, because it cannot be. Its inactive links
-                are --brand-ash, a mid grey, and no amount of scrim reaches
-                4.5:1 against a mid grey: the plate would have to be darker
+                are --brand-ash, a mid gray, and no amount of scrim reaches
+                4.5:1 against a mid gray: the plate would have to be darker
                 than 0.017 relative luminance, which is a solid black bar.
                 CinematicNav takes an overHero prop and changes the text
                 instead.
@@ -414,11 +414,11 @@ export function CinematicBlogPost() {
 
           {post.coverCredit && (
             /*
-              Wraps rather than truncates, because the licence is the end of
+              Wraps rather than truncates, because the license is the end of
               the string and truncation always ate it. "Photo nevil zaveri
               (thank you for 20+M views:) · CC BY 2.0" needed 408px in a
               263px box at 375px wide, so a phone showed the photographer and
-              no licence at all, on a CC BY image. Seventeen of the 145
+              no license at all, on a CC BY image. Seventeen of the 145
               credited posts were long enough to lose it.
 
               Three lines is the ceiling: the title block above reserves 64px
@@ -455,7 +455,7 @@ export function CinematicBlogPost() {
                 /*
                   --brand-bone rather than --brand-ash, for the reason the
                   nav links moved. This sits on the cover photo, and a mid
-                  grey cannot reach 4.5:1 against one at any scrim short of
+                  gray cannot reach 4.5:1 against one at any scrim short of
                   opaque. Measured at 1.60:1 in dark and 2.16:1 in light
                   before this.
                 */
@@ -523,7 +523,7 @@ export function CinematicBlogPost() {
         </div>
 
         {/* Body. The TOC column only exists at lg and up, so the prose stays
-            centred on everything narrower. */}
+            centered on everything narrower. */}
         <div className="relative px-6 md:px-10">
           <div className="mx-auto mt-16 flex max-w-[1180px] justify-center gap-12">
             <div className="w-full min-w-0 max-w-[760px]">

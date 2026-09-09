@@ -3,7 +3,7 @@
  *
  * Shared so the tools, the reference tables, and the code blocks in posts
  * all behave the same way. The confirmation is announced politely rather
- * than shown only as a colour change, since "it turned green" is invisible
+ * than shown only as a color change, since "it turned green" is invisible
  * to a screen reader and to anyone who cannot distinguish the two states.
  */
 

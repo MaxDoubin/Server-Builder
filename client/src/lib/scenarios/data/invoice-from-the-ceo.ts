@@ -362,7 +362,7 @@ export const invoiceFromTheCeo: Scenario = {
       grade: "bad",
       body: [
         "All three checks pass, and all three are telling the truth: the message really was sent by the domain it claims to be from. The domain is just not yours.",
-        "Fourteen thousand pounds goes to an account that is emptied within the hour. The bank recovers none of it, because you authorised the payment.",
+        "Fourteen thousand pounds goes to an account that is emptied within the hour. The bank recovers none of it, because you authorized the payment.",
       ],
       lesson: [
         "SPF, DKIM and DMARC prove that a message came from the domain in the From header. They say nothing whatever about whether that domain should be trusted.",

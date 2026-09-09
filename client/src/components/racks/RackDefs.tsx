@@ -2,9 +2,9 @@
  * The material library: every gradient and pattern the racks paint with.
  *
  * The first version of these elevations filled each shape with one flat
- * colour, which is why it read as a diagram rather than as hardware. Real
+ * color, which is why it read as a diagram rather than as hardware. Real
  * equipment is legible almost entirely through light: a faceplate is
- * extruded aluminium with a brushed grain and a bevel that catches a
+ * extruded aluminum with a brushed grain and a bevel that catches a
  * highlight along its top edge, a port is a hole with a shadow inside it,
  * and an LED is a bright point with a bloom around it.
  *
@@ -35,9 +35,9 @@ export interface Material {
 }
 
 export const MATERIALS: Record<string, Material> = {
-  // Anodised aluminium, as UniFi rack gear ships.
+  // Anodised aluminum, as UniFi rack gear ships.
   silver: { base: "#b9bdc1", hi: "#eceef0", lo: "#7f858b", ink: "#2f3439", sub: "#5c6268", pale: true },
-  // Catalyst pale grey, slightly warmer and lighter than UniFi.
+  // Catalyst pale gray, slightly warmer and lighter than UniFi.
   light: { base: "#c9ccce", hi: "#f2f3f4", lo: "#8d9297", ink: "#2b3035", sub: "#5a6066", pale: true },
   // MikroTik and PDU black: powder coated steel, low sheen.
   black: { base: "#1c1f23", hi: "#3d434a", lo: "#0b0d10", ink: "#c6cbd1", sub: "#7c838b", pale: false },
@@ -58,7 +58,7 @@ export const LED_COLOURS: Record<string, string> = {
  * upper surface and falls into shadow underneath, and that gradient across
  * the stroke width is what makes a line read as a cylinder rather than a
  * ribbon. White is the UniFi Etherlighting TPE; the rest are the standard
- * moulded colours every other closet colour-codes with.
+ * moulded colors every other closet color-codes with.
  */
 export const JACKETS: Record<string, { hi: string; base: string; lo: string; dk: string }> = {
   white: { hi: "#f7f9fa", base: "#dfe3e7", lo: "#a5abb2", dk: "#696f76" },
@@ -79,7 +79,7 @@ export function RackDefs({ uid }: { uid: string }) {
     <defs>
       {/*
         Brushed grain. One tile of fine horizontal lines at low opacity,
-        tiled across a faceplate. Aluminium is brushed along its long axis
+        tiled across a faceplate. Aluminum is brushed along its long axis
         during extrusion, so the grain runs left to right and catching it
         wrong is one of those details that reads as fake without anyone
         being able to say why.
@@ -97,7 +97,7 @@ export function RackDefs({ uid }: { uid: string }) {
 
       {/*
         Chassis shading. A faceplate is not evenly lit: the top bevel takes
-        the light, the middle is the true colour and the bottom rolls into
+        the light, the middle is the true color and the bottom rolls into
         shadow where it meets the unit below.
       */}
       {Object.entries(MATERIALS).map(([name, m]) => (

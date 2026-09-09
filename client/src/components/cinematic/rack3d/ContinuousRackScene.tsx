@@ -281,7 +281,7 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
 
     // Hand over from the solid chassis to the internals at the very start of
     // the explode, while the two still look identical. Swapping later (the
-    // old threshold was 0.05, by which point the lid had already travelled
+    // old threshold was 0.05, by which point the lid had already traveled
     // half its distance) made the closed chassis pop away mid-motion.
     const showInternals = explodeP >= 0.004;
     if (chassisGroup.current) {

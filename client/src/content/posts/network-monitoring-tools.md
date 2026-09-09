@@ -9,7 +9,7 @@ The goal is not to collect every metric that exists. The goal is to be able to a
 
 Before installing anything, pick the handful of signals that actually tell you a machine is unhealthy. For hosts and infrastructure, the useful frame is utilisation, saturation, and errors: how busy a resource is, how much work is queued behind it, and how often it is failing. For services that answer requests, the frame is rate, errors, and duration.
 
-Concretely, in my lab that means CPU run queue and steal time rather than just CPU percent, memory available rather than memory free, disk latency rather than just disk space, and interface errors and discards rather than just interface throughput. A network link that is 40 percent utilised but discarding frames is a bigger problem than a link sitting at 90 percent with a clean error counter.
+Concretely, in my lab that means CPU run queue and steal time rather than just CPU percent, memory available rather than memory free, disk latency rather than just disk space, and interface errors and discards rather than just interface throughput. A network link that is 40 percent utilized but discarding frames is a bigger problem than a link sitting at 90 percent with a clean error counter.
 
 ## Prometheus and Grafana
 

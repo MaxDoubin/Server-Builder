@@ -14,7 +14,7 @@
  * VLAN mismatch is exactly the case where it does not.
  *
  * The configuration is rendered as configuration rather than as a table,
- * because recognising this on a real switch means recognising it in eight
+ * because recognizing this on a real switch means recognizing it in eight
  * lines of text with the important one in the middle.
  */
 
@@ -45,7 +45,7 @@ import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";
 
-/** What kind of trouble this path is in, which is what the room takes its colour from. */
+/** What kind of trouble this path is in, which is what the room takes its color from. */
 function severity(path: Path): StageAccent {
   if (path.frame.tags.length > 1 || nativeCarriesHosts(path).length > 0) return "danger";
   if (changedVlan(path)) return "amber";

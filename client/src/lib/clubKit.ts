@@ -19,7 +19,7 @@ export const KIT_VERSION = "2026.1";
 export interface KitSession {
   week: number;
   title: string;
-  /** One sentence a student would recognise as the point of the meeting. */
+  /** One sentence a student would recognize as the point of the meeting. */
   goal: string;
   /** What the person running the meeting does beforehand. Be specific. */
   prep: string;
@@ -93,14 +93,14 @@ export const KIT_SESSIONS: KitSession[] = [
   {
     week: 3,
     title: "Open source intelligence, with rules",
-    goal: "Members learn what can be found about a person or an organisation from public sources, and where the line is.",
+    goal: "Members learn what can be found about a person or an organization from public sources, and where the line is.",
     prep: "Read the club's rules of engagement aloud before anything else. Choose targets that are institutions, never a student and never a staff member.",
     run: [
       "Read the rules of engagement out loud before anything is typed. The targets today are institutions the club chooses together, for example your school district's public domain or a well known company. Never a student, never a staff member, no exceptions.",
       "WHOIS: run whois example.com, or use who.is in a browser if the command is blocked, and read who registered the domain and when. Point out that many records now sit behind privacy services, and that the absence is itself a finding.",
       "Certificate transparency: open crt.sh, type the domain into the box, and read the list of subdomains that have had certificates issued. Explain that every HTTPS certificate is logged in public by design, so this is not a leak.",
-      "DNS: run dig example.com or nslookup example.com and read the A record, which is the address, and the MX record, which shows who handles the mail and often reveals the organisation's email provider.",
-      "Reverse image search: take a photo from the organisation's own public site, run it through a reverse image search, and see where else it appears. Explain that platforms usually strip location metadata from photos before you ever see them, so the image itself rarely gives a location.",
+      "DNS: run dig example.com or nslookup example.com and read the A record, which is the address, and the MX record, which shows who handles the mail and often reveals the organization's email provider.",
+      "Reverse image search: take a photo from the organization's own public site, run it through a reverse image search, and see where else it appears. Explain that platforms usually strip location metadata from photos before you ever see them, so the image itself rarely gives a location.",
       "Finish on a picoCTF or TryHackMe OSINT challenge, so the skills are used against a target built for practice.",
     ],
     evidence: "Ask a member to name a point where they chose not to look further and say why. Someone who can describe the stop has understood the session better than someone who only lists what they found. If nobody can point to a line they did not cross, reteach the rules before week four.",
@@ -173,7 +173,7 @@ export const KIT_SESSIONS: KitSession[] = [
       "Hand out the log with no hints and let the room read it for ten minutes. The point of the flounder is that scrolling does not scale, and they need to feel that before the tools mean anything.",
       "Introduce three commands as counting tools, not as syntax. grep 'Failed password' auth.log pulls the failures, piping that to sort then uniq -c counts how many times each line repeats, and awk pulls out one column, for example the source address.",
       "Chain them: grep the failures, awk out the source address, then sort, then uniq -c, then sort -rn. The attacker's address rises to the top because the signal is volume and timing, not the content of any one line. Say that out loud once they see it.",
-      "Discuss the defence: what rule would alert on this, for example more than twenty failures from one address in a minute, and then immediately ask what ordinary event would trip that same rule and raise a false alarm.",
+      "Discuss the defense: what rule would alert on this, for example more than twenty failures from one address in a minute, and then immediately ask what ordinary event would trip that same rule and raise a false alarm.",
     ],
     evidence: "One member proposes an alert rule and another finds a normal situation that would fire it wrongly, for example a whole school behind one shared address, or a user with a stale saved password. That back and forth is the actual skill; if it does not happen on its own, prompt it with the shared address example.",
     tools: ["grep", "awk", "sort", "uniq"],
@@ -215,7 +215,7 @@ export const KIT_SESSIONS: KitSession[] = [
     run: [
       "Run the longest block you can, ninety minutes if the schedule allows and one period if it does not, with a timer visible to the whole room from the start.",
       "The person running it gives no help of any kind, including hints. This is uncomfortable and it is the entire point; a competition has no advisor leaning over a shoulder.",
-      "Use the NCL Gym if the season is live, otherwise assemble a mixed set across every category covered so far, so nobody can specialise their way around their weak areas.",
+      "Use the NCL Gym if the season is live, otherwise assemble a mixed set across every category covered so far, so nobody can specialize their way around their weak areas.",
       "Debrief on time, not score. The scoreboard is not the lesson; the lesson is which category ate the most minutes for the fewest points, because that is what to train before it counts.",
       "Every member writes down the single thing they will look up before next week.",
     ],
@@ -332,7 +332,7 @@ export const KIT_RESOURCES: KitResource[] = [
   {
     name: "MITRE ATT&CK",
     url: "https://attack.mitre.org/",
-    what: "A public catalogue of how real attackers behave, step by step. The vocabulary a defender uses to describe what a log or a capture shows, useful for weeks five and eight.",
+    what: "A public catalog of how real attackers behave, step by step. The vocabulary a defender uses to describe what a log or a capture shows, useful for weeks five and eight.",
     cost: "free",
   },
   {
@@ -461,7 +461,7 @@ export const KIT_RULES: string[] = [
   "We do not test, scan, or probe the school network, school accounts, or school devices. Not to be helpful, not to prove a point, not once.",
   "We never search for information about a classmate or a staff member, in any exercise. Open source intelligence practice uses institutions and published targets only.",
   "We do not use real breach data. Practice hashes and practice accounts are generated by us for the session.",
-  "If a member finds a real vulnerability in something belonging to the school or a local organisation, they stop, tell the advisor, and let the advisor decide who to tell. They do not investigate further and they do not tell anyone else first.",
+  "If a member finds a real vulnerability in something belonging to the school or a local organization, they stop, tell the advisor, and let the advisor decide who to tell. They do not investigate further and they do not tell anyone else first.",
   "Anyone can stop an exercise by saying so, and the exercise stops while it is discussed. No one has to justify stopping in the moment.",
   "Everything here is offensive technique learned for defensive reasons. The same action is training in our lab and a crime against a system we were not given permission to touch. We teach the technique and where the line is in the same breath, never one without the other.",
   "Cracking, scanning, and exploitation tools stay on club machines and approved practice targets. We do not point them at home networks, a friend's device, an employer, or a public website, and we never carry them onto the school network to test an idea.",

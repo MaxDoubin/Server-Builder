@@ -46,7 +46,7 @@ export interface Rule {
   chain: string;
   action: Action;
   proto?: Protocol;
-  /** CIDR, always normalised to address/prefix. */
+  /** CIDR, always normalized to address/prefix. */
   src?: string;
   dst?: string;
   sport?: PortSpec;

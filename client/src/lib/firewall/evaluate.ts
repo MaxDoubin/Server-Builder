@@ -93,7 +93,7 @@ export function evaluate(ruleset: Ruleset, packet: Packet, chain = "INPUT"): Tra
       /*
         Everything below the match never runs, and that is the lesson: the
         rule someone added to fix the problem is usually sitting in this list.
-        The trace carries them so the page can show them greyed rather than
+        The trace carries them so the page can show them grayed rather than
         leaving the reader to work out that the chain ended early.
       */
       const notReached = ruleset.rules.filter(
@@ -106,7 +106,7 @@ export function evaluate(ruleset: Ruleset, packet: Packet, chain = "INPUT"): Tra
     Nothing matched, so the policy decides. A chain with no explicit policy
     is ACCEPT in iptables, which is worth reproducing rather than defaulting
     to DROP: a reader who forgets -P and finds everything allowed has learned
-    the actual behaviour of the tool.
+    the actual behavior of the tool.
   */
   const verdict: Action = ruleset.policy[chain] ?? "ACCEPT";
   return { chain, steps, decidedBy: null, verdict, notReached: [] };

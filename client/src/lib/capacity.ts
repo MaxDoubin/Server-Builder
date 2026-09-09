@@ -170,7 +170,7 @@ export function rackHeatW(rack: Rack, catalog: Map<string, Equipment>): number {
 /**
  * Rack heat as a 0 to 1 position on the heatmap scale, quantised to twelfths.
  *
- * Quantising matters: the colour feeds a pooled three.js material keyed on its
+ * Quantising matters: the color feeds a pooled three.js material keyed on its
  * parameters, so a continuous value would mint a new material per rack and
  * defeat the pool at 500 racks. Twelve steps is enough to read a gradient.
  */
@@ -209,7 +209,7 @@ export function heatLevelColor(level: number): string {
   return `#${toHex(channel(0))}${toHex(channel(1))}${toHex(channel(2))}`;
 }
 
-/** Plain words for a heat level, so the heatmap is not colour only. */
+/** Plain words for a heat level, so the heatmap is not color only. */
 export function heatLevelLabel(heatW: number): string {
   const kw = heatW / 1000;
   if (kw < 5) return "low density";
@@ -262,7 +262,7 @@ export function deriveCapacity(
       racksNearOwnCapacity += 1;
     }
     // Same rule the 3D rack uses for its status light, so the count and the
-    // colour on the floor cannot disagree.
+    // color on the floor cannot disagree.
     let isCritical =
       inlet > 32 || (rack.powerCapacity > 0 && rack.currentPowerDraw > rack.powerCapacity * 0.98);
     for (const installed of rack.installedEquipment) {

@@ -96,7 +96,7 @@ export const clubConfig = {
     {
       title: "Cryptography",
       detail:
-        "Classical ciphers first, then the modern primitives. Enough to recognise an encoding from its shape and know which attacks a scheme is not designed to resist.",
+        "Classical ciphers first, then the modern primitives. Enough to recognize an encoding from its shape and know which attacks a scheme is not designed to resist.",
     },
     {
       title: "Log analysis",
@@ -133,15 +133,15 @@ export const clubConfig = {
   parentFaq: [
     {
       q: "Does my student need any experience?",
-      a: "No. Most members start with none. The first session assumes no background, and the practice sets are organised so that a beginner has something to work on in the same room as someone preparing for a national competition.",
+      a: "No. Most members start with none. The first session assumes no background, and the practice sets are organized so that a beginner has something to work on in the same room as someone preparing for a national competition.",
     },
     {
       q: "What actually happens at a meeting?",
-      a: "Members work through cybersecurity challenges: finding information in public records, decoding a message, reading through log files for the entry that does not belong, or analysing a packet capture. It is closer to a problem set than to a lecture.",
+      a: "Members work through cybersecurity challenges: finding information in public records, decoding a message, reading through log files for the entry that does not belong, or analyzing a packet capture. It is closer to a problem set than to a lecture.",
     },
     {
       q: "Is this teaching students to hack?",
-      a: "It is teaching students to defend systems, and that requires understanding how systems are attacked. All of it happens inside a lab set up for exactly that purpose, or on organised competition platforms such as Cyber Skyline where the targets exist to be attacked. Scope and permission are part of the instruction, not an afterthought.",
+      a: "It is teaching students to defend systems, and that requires understanding how systems are attacked. All of it happens inside a lab set up for exactly that purpose, or on organized competition platforms such as Cyber Skyline where the targets exist to be attacked. Scope and permission are part of the instruction, not an afterthought.",
     },
     {
       q: "What is the National Cyber League?",

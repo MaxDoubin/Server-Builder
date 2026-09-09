@@ -153,7 +153,7 @@ function parseCron(input: string): Spec {
   if (shorthand) expression = shorthand;
   else if (trimmed.startsWith("@")) {
     throw new Error(
-      `"${trimmed}" is not a recognised shorthand. Cron understands @yearly, @annually, @monthly, @weekly, @daily, @midnight, @hourly and @reboot.`,
+      `"${trimmed}" is not a recognized shorthand. Cron understands @yearly, @annually, @monthly, @weekly, @daily, @midnight, @hourly and @reboot.`,
     );
   }
 

@@ -11,7 +11,7 @@ speedup. The dominant structure right now is HNSW, a hierarchical navigable
 small world graph. The idea is a layered proximity graph: each vector is a node
 connected to some number of near neighbours, upper layers are sparse and used
 for coarse navigation, and a search greedily walks downhill through the layers
-toward the query. You get logarithmic-ish behaviour instead of linear, at the
+toward the query. You get logarithmic-ish behavior instead of linear, at the
 cost of sometimes missing a true nearest neighbour.
 
 It works well. It is also not free, and the costs are not obvious from the API.
@@ -127,7 +127,7 @@ walk keeps landing on nodes that the filter rejects. Some engines handle this
 with filtered search modes, others degrade to scanning. Test with your actual
 filter selectivity before committing to an architecture.
 
-The general point: an ANN index is a specific optimisation with specific costs.
+The general point: an ANN index is a specific optimization with specific costs.
 Reach for it when the scan actually hurts, and know what you gave up when you
 do.
 

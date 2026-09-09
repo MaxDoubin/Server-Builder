@@ -5,10 +5,10 @@
  * fictional datacenter with plausible hardware. The library is the opposite
  * problem. A UniFi rack has to look like UniFi and a Catalyst closet has to
  * look like Cisco, because telling those two apart on sight is most of what
- * the page is teaching, and a rack of identical grey boxes teaches nothing.
+ * the page is teaching, and a rack of identical gray boxes teaches nothing.
  *
  * So this builds each device from the same RackDefinition the elevation
- * uses: the vendor's chassis finish, the port throat colour, the real port
+ * uses: the vendor's chassis finish, the port throat color, the real port
  * counts laid out in the real two-row arrangement, and emissive indicators
  * that inherit each port's actual link state. One source of truth, two
  * renderers, and they cannot drift.
@@ -17,7 +17,7 @@
  * holds up to ten devices and three.js materials are expensive to rebuild
  * every frame.
  *
- * The connectors themselves are not drawn here. They are modelled parts
+ * The connectors themselves are not drawn here. They are modeled parts
  * with shielded rims, latch slots and gold contacts, and there are hundreds
  * of them in a rack, so RackHardware instances the lot in one pass. What
  * stays here is the chassis: body, ears, screen, recess, vents, bays, and
@@ -53,10 +53,10 @@ function chassisMaterial(finish: string): THREE.MeshStandardMaterial {
     const spec = MATERIALS[finish] ?? MATERIALS.dark;
     m = new THREE.MeshStandardMaterial({
       color: bodyColour(finish),
-      // Anodised aluminium is far more reflective than powder coated steel,
+      // Anodised aluminum is far more reflective than powder coated steel,
       // and that difference is most of how the two read apart in a photo.
       // Both need the scene's environment map: a metal surface with nothing
-      // to reflect renders black, which is why the first pass came out grey
+      // to reflect renders black, which is why the first pass came out gray
       // and dead however much light was thrown at it.
       metalness: spec.pale ? 0.55 : 0.46,
       roughness: spec.pale ? 0.3 : 0.44,
@@ -99,7 +99,7 @@ const earMaterial = new THREE.MeshStandardMaterial({ color: "#2b3036", metalness
  *
  * On a real UniFi switch the jacks do not sit on the white face. They sit
  * in a dark inset panel that runs the height of the port block, and that
- * band is most of what makes the product recognisable at a glance. Drawn
+ * band is most of what makes the product recognizable at a glance. Drawn
  * as a pale milled pocket, which is what it was, the ports read as loose
  * holes punched in a blank plate and the whole face looked like a mockup.
  */
@@ -140,7 +140,7 @@ export function BrandedChassis({ device, faceZ, seed }: Props) {
   /*
     The silkscreen. Drawn to a canvas once per device and laid on the face
     as a thin plane, with the port block punched transparent so the
-    modelled jacks show through rather than being painted over.
+    modeled jacks show through rather than being painted over.
   */
   const silkscreen = useMemo(() => faceplateTexture(device), [device]);
   const silkMaterial = useMemo(() => {

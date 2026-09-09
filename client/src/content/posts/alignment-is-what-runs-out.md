@@ -42,7 +42,7 @@ Six sites in a /16, sized to double     13%
 The 13% is not waste. That plan gives six sites a summarisable block each,
 sized for double their current population, and spends 8192 of 65536 addresses
 doing it. Filling the rest would mean either oversizing every site or handing
-the space to something that then cannot be summarised, and the first
+the space to something that then cannot be summarized, and the first
 acquisition after that lands on an unrelated block nobody can advertise as one
 route.
 
@@ -99,12 +99,12 @@ If a core switch advertises one route for a set of subnets, the block behind
 that route is spent the moment the advertisement exists, whether or not the
 subnets fill it.
 
-One of the exercises has three subnets summarised into a /22. They use about
+One of the exercises has three subnets summarized into a /22. They use about
 900 of its 1024 addresses. The remaining 124 are inside the advertisement and
 inside the firewall object written against it, and anything dropped there later
 inherits reachability and permissions that nobody granted it.
 
-That is not a reason to avoid summarising. It is a reason to record the
+That is not a reason to avoid summarizing. It is a reason to record the
 reservation somewhere a person will find it before they put a test VLAN in the
 gap, which is the actual failure and which happens about eighteen months later.
 
@@ -121,7 +121,7 @@ against the block, and again against each summary constraint separately. If the
 minimum exceeds the space, no arrangement fits and the problem is broken rather
 than hard.
 
-It caught one immediately: 600 hosts of wireless summarised into a /23 that
+It caught one immediately: 600 hosts of wireless summarized into a /23 that
 holds 510 usable. I had written it, failed to solve it, and quietly put
 placeholder /32s in the solution rather than noticing what that meant. The
 exercise now widens the reservation to a /22 and keeps the failed /23 as the

@@ -1,7 +1,7 @@
 /**
  * Numbers written into page prose must match the data the page serves.
  *
- * The rack builder's palette is two catalogues merged and filtered to the
+ * The rack builder's palette is two catalogs merged and filtered to the
  * hardware that mounts in a frame. Both pages that advertise it wrote the
  * size of that palette into a sentence, and both said "fifty one rack
  * mountable UniFi devices" for as long as the palette was fifty one
@@ -18,7 +18,7 @@
  * drifted.
  *
  * Deriving these two at runtime would mean the gallery fetching two
- * catalogues to print one number, and the builder's own paragraph changing
+ * catalogs to print one number, and the builder's own paragraph changing
  * shape under the reader while the fetch lands. So the numbers stay
  * written out, where they read properly, and this fails the build if they
  * stop being true.
@@ -35,7 +35,7 @@ const own = read("dist/public/data/own-catalogue.json");
 
 /*
   The same filter the builder applies: `mount === "rack"` over both
-  catalogues merged. Anything else in them is a desk or a ceiling device and
+  catalogs merged. Anything else in them is a desk or a ceiling device and
   the palette never shows it.
 */
 const mountable = [...ubiquiti.devices, ...own.devices].filter((d) => d.mount === "rack");
@@ -107,14 +107,14 @@ for (const claim of claims) {
   const src = readFileSync(path.resolve(claim.file), "utf8");
   if (!src.includes(claim.text)) {
     fail(
-      `${path.basename(claim.file)}: ${claim.what} does not match the catalogue.` +
+      `${path.basename(claim.file)}: ${claim.what} does not match the catalog.` +
         ` Expected to find ${JSON.stringify(claim.text.replace(/\n\s+/g, " "))}.`,
     );
   }
 }
 
 if (problems.length) {
-  console.error("\nPage prose disagrees with the published catalogue:\n");
+  console.error("\nPage prose disagrees with the published catalog:\n");
   for (const p of problems) console.error(`  ${p}`);
   console.error(
     `\nThe palette is currently ${mountable.length} rack mountable devices from` +

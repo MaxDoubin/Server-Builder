@@ -104,7 +104,7 @@ X509v3 Subject Alternative Name:
 
 For any service exposed to the internet, I use Let's Encrypt certificates. They are free, automatically renewed, and trusted by all major browsers. Certbot handles the issuance and renewal process automatically.
 
-The protocol underneath is ACME, standardised as RFC 8555. The CA gives your client a challenge and the client proves control of the name by answering it. The three that matter: http-01 serves a token at a well-known path over port 80, tls-alpn-01 answers on port 443 using a special ALPN protocol, and dns-01 publishes a TXT record at `_acme-challenge.<name>`.
+The protocol underneath is ACME, standardized as RFC 8555. The CA gives your client a challenge and the client proves control of the name by answering it. The three that matter: http-01 serves a token at a well-known path over port 80, tls-alpn-01 answers on port 443 using a special ALPN protocol, and dns-01 publishes a TXT record at `_acme-challenge.<name>`.
 
 Only dns-01 can issue wildcards, and it is the only one that works for a host with no inbound internet access, which makes it the right choice for internal services that still want a publicly trusted certificate.
 

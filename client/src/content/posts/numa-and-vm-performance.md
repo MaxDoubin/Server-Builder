@@ -52,7 +52,7 @@ the hypervisor scheduler will usually do the right thing on its own.
 
 So before adding resources to a slow VM, ask whether the addition crosses a
 node boundary. Going from a guest that fits in one node to one that spans two
-is a step change in memory behaviour, not a smooth increase in capacity. It
+is a step change in memory behavior, not a smooth increase in capacity. It
 is often better to run two right-sized guests than one oversized one,
 particularly for workloads that scale horizontally.
 

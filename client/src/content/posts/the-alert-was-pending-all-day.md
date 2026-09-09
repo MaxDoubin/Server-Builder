@@ -1,7 +1,7 @@
 ## The dashboard is alarming and the alert history is empty
 
 Somebody sends you a screenshot. The line is over the threshold for most of
-the day, in a colour chosen to be upsetting, and the alert on that exact
+the day, in a color chosen to be upsetting, and the alert on that exact
 expression has never fired. Not fired and resolved. Never fired.
 
 The rule is not broken and the threshold is not wrong. The alert and the graph

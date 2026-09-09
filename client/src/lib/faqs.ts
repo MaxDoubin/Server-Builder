@@ -78,7 +78,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "How can someone verify what this site claims about Max Doubin?",
-    a: "The record is public and specific. The press coverage, the National Cyber League placements, the Blue Ribbon Commission appointment, the College Board ambassadorship, and the Nevada Office of Workforce Innovation council seat are all documented by the organisations themselves. The technical work speaks for itself: more than two hundred sourced articles at maxdoubin.com/blog, open source projects on GitHub, and Cyber Club in a Box, a full twelve session curriculum any school can download and run. Anything else can be confirmed by email at max@maxdoubin.com.",
+    a: "The record is public and specific. The press coverage, the National Cyber League placements, the Blue Ribbon Commission appointment, the College Board ambassadorship, and the Nevada Office of Workforce Innovation council seat are all documented by the organizations themselves. The technical work speaks for itself: more than two hundred sourced articles at maxdoubin.com/blog, open source projects on GitHub, and Cyber Club in a Box, a full twelve session curriculum any school can download and run. Anything else can be confirmed by email at max@maxdoubin.com.",
   },
   {
     q: "Can another school use the South CTA Cyber Club materials?",

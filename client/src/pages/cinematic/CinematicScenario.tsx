@@ -8,7 +8,7 @@
  *
  * Nothing here is timed in real seconds. Real incident pressure comes from
  * not knowing, not from a countdown, and a countdown would only punish the
- * reader who stops to read the evidence properly, which is the behaviour this
+ * reader who stops to read the evidence properly, which is the behavior this
  * is trying to build.
  */
 

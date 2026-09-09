@@ -1,7 +1,7 @@
 /**
  * One device, on its own, in 3D.
  *
- * The catalogue lists two hundred and forty nine models and until this
+ * The catalog lists two hundred and forty nine models and until this
  * existed you could look at a thumbnail of any of them and the actual model
  * of none of them, which is a strange thing for a page whose entire claim is
  * that these are real geometry with real measurements. A thumbnail is a
@@ -10,13 +10,13 @@
  * It is deliberately not the rack renderer. A rack has a frame, a floor, a
  * sweep, cabling and a dozen devices whose positions matter. One device has
  * none of that and needs none of it: a studio, the model, and a camera that
- * frames whatever it turns out to be, which for this catalogue ranges from a
+ * frames whatever it turns out to be, which for this catalog ranges from a
  * 24mm door sensor to a 5U storage shelf.
  *
  * WHAT IT COSTS. Nothing until asked. The page mounts this only when a reader
- * opens a device, and the module is loaded lazily, so browsing the catalogue
+ * opens a device, and the module is loaded lazily, so browsing the catalog
  * downloads thumbnails and no geometry at all. That matters here more than
- * usual: the catalogue is 112MB of models and a page that eagerly loaded even
+ * usual: the catalog is 112MB of models and a page that eagerly loaded even
  * a fraction of them would be unusable.
  */
 
@@ -36,7 +36,7 @@ const AZIMUTH = (24 * Math.PI) / 180;
 /**
  * How far above the object to stand.
  *
- * A fixed elevation cannot serve this catalogue. At fourteen degrees a 44mm
+ * A fixed elevation cannot serve this catalog. At fourteen degrees a 44mm
  * tall switch is nearly all lid, and its forty eight ports, which are the
  * only reason anybody opened it, are a sliver along the front edge. The same
  * fourteen degrees on a 130mm cube of a camera is too flat to read as an
@@ -45,7 +45,7 @@ const AZIMUTH = (24 * Math.PI) / 180;
  * Geometry alone cannot settle it. A ceiling access point is a 206mm disc
  * 46mm thick and a 3U network recorder is 482mm across and 132mm tall, and
  * by the ratios that is 0.22 against 0.24: indistinguishable, and they want
- * opposite treatments. So the mount decides, which is a fact the catalogue
+ * opposite treatments. So the mount decides, which is a fact the catalog
  * already records rather than something inferred from a bounding box:
  *
  *   rack     stand low and look at the front, because it has one
@@ -72,12 +72,12 @@ function Model({ url, up, mount }: { url: string; up?: "y" | "z"; mount?: string
   });
 
   /* Cloned, so opening the same device twice does not hand back a scene the
-     previous viewer has already re-parented and re-centred. */
+     previous viewer has already re-parented and re-centered. */
   const scene = useMemo(() => gltf.scene.clone(true), [gltf]);
 
   useEffect(() => {
     /*
-      Two conventions in one catalogue. Ubiquiti export Y up, which is what
+      Two conventions in one catalog. Ubiquiti export Y up, which is what
       glTF says; the generators here work in Z up, which is what CAD says,
       and trimesh writes the vertices as authored without inserting the
       correction. Rotating has to happen before the bounds are measured or
@@ -96,7 +96,7 @@ function Model({ url, up, mount }: { url: string; up?: "y" | "z"; mount?: string
       The U7 Pro is a 206mm disc 46mm thick, and in the file that 46mm runs
       along X: the disc is standing on its edge like a wheel. Looking down on
       it from above then shows the rim, which is the least informative
-      surface it has. Every ceiling mounted product in this catalogue lies
+      surface it has. Every ceiling mounted product in this catalog lies
       flat against a ceiling in real life, so rotating the thin axis to
       vertical is not a presentation trick, it is putting the thing the way
       up it is actually installed.
@@ -119,8 +119,8 @@ function Model({ url, up, mount }: { url: string; up?: "y" | "z"; mount?: string
     scene.updateMatrixWorld(true);
 
     /*
-      Fit the bounding sphere rather than one axis. The catalogue runs from a
-      24mm door sensor to a 5U shelf nearly a metre deep, and any rule that
+      Fit the bounding sphere rather than one axis. The catalog runs from a
+      24mm door sensor to a 5U shelf nearly a meter deep, and any rule that
       picks an axis in advance will crop one end of that range: a sphere is
       the only thing that is the same shape from every angle the reader can
       orbit to, so the object stays in frame all the way round.

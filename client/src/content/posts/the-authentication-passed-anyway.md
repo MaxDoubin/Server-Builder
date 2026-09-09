@@ -28,7 +28,7 @@ message trustworthy". They do not. They answer a narrower question that is
 worth stating exactly.
 
 SPF asks whether the host that connected is one the envelope sender's domain
-authorised to send for it. DKIM asks whether a signature over the message
+authorized to send for it. DKIM asks whether a signature over the message
 verifies against a key the signing domain publishes. DMARC asks whether either
 of those passed **and** was aligned with the domain in the From header, and it
 lets that domain's owner say what to do when the answer is no.

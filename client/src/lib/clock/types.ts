@@ -72,8 +72,8 @@ export interface Check {
   /**
    * The error as it actually appears, which is the whole problem.
    *
-   * Written verbatim in the register the tool uses, because recognising this
-   * means recognising these strings and not a description of them.
+   * Written verbatim in the register the tool uses, because recognizing this
+   * means recognizing these strings and not a description of them.
    */
   message: string;
 }

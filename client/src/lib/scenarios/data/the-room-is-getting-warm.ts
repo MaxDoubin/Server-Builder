@@ -190,7 +190,7 @@ export const theRoomIsGettingWarm: Scenario = {
       grade: "best",
       body: [
         "Peak inlet 41.2 degrees, no customer-facing outage, two throttled arrays and one clean chassis shutdown, all recovered. Temporary cooling connected the same evening; full load restored before Monday.",
-        "The fan bank is replaced on Tuesday, and the overdue maintenance programme that let a known-degrading VFD run into July is escalated with dates.",
+        "The fan bank is replaced on Tuesday, and the overdue maintenance program that let a known-degrading VFD run into July is escalated with dates.",
       ],
       lesson: [
         "Two identical units failing in the same second is one failure upstream, not two failures. Three minutes spent looking at the chiller was worth more than any amount of resetting the CRACs.",
@@ -215,7 +215,7 @@ export const theRoomIsGettingWarm: Scenario = {
       grade: "good",
       body: [
         "Temporary cooling carries the site for eleven days until the fan bank is replaced. No further incident.",
-        "The maintenance programme that let a VFD run three months past its service date is unchanged, and the other fan bank is on the same schedule.",
+        "The maintenance program that let a VFD run three months past its service date is unchanged, and the other fan bank is on the same schedule.",
       ],
       lesson: [
         "Restoring capacity ends the emergency. The overdue service that caused it is still overdue on the redundant half.",

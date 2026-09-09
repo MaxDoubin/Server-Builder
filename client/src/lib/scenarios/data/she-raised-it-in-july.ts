@@ -1,6 +1,6 @@
 import type { Scenario } from "../types";
 
-/** The failure was organisational. Somebody said so, in writing, in July. */
+/** The failure was organizational. Somebody said so, in writing, in July. */
 export const sheRaisedItInJuly: Scenario = {
   slug: "she-raised-it-in-july",
   title: "She Raised It in July",
@@ -146,7 +146,7 @@ export const sheRaisedItInJuly: Scenario = {
       mood: "calm",
       where: "Looking for the same shape elsewhere",
       body: [
-        "A countdown is anything with a finite budget that depletes and is not a resource graph. You find five: transaction ID age, the sequence on the events table (a 32 bit integer, 71 percent consumed), certificate expiry on the internal CA, the licence on the load balancer, and inode usage on the log volume.",
+        "A countdown is anything with a finite budget that depletes and is not a resource graph. You find five: transaction ID age, the sequence on the events table (a 32 bit integer, 71 percent consumed), certificate expiry on the internal CA, the license on the load balancer, and inode usage on the log volume.",
         "None of the five appeared on any dashboard. All five are now alerted at a percentage of the budget rather than a threshold on a rate.",
       ],
       evidence: [
@@ -158,7 +158,7 @@ export const sheRaisedItInJuly: Scenario = {
             "txid age vs wraparound             8%        50%",
             "events.id vs int4 max             71%        60%   <-- FIRING",
             "internal CA expiry                            90 days",
-            "load balancer licence                         90 days",
+            "load balancer license                         90 days",
             "inodes on /var/log                34%        70%",
           ],
         },
@@ -188,14 +188,14 @@ export const sheRaisedItInJuly: Scenario = {
       title: "The ticket, the metric, and the four others like it",
       grade: "best",
       body: [
-        "The postmortem says plainly that the outage was predicted eight weeks in advance, in writing, with a working query, and that the organisation closed the ticket without running it.",
+        "The postmortem says plainly that the outage was predicted eight weeks in advance, in writing, with a working query, and that the organization closed the ticket without running it.",
         "Five countdowns are now measured and alerted on percentage of budget. The events sequence, which was 71 percent through a 32 bit integer, is migrated to bigint before it becomes the same story with a different table.",
         "The graduate presents the postmortem. That is not a gesture; she did the analysis in July.",
       ],
       lesson: [
         "Resource graphs measure how hard something is working. Countdowns measure how much of a finite budget is left, and they look completely normal until the moment they do not. Almost no default dashboard has any.",
         "'Dashboards show nominal' is a statement about your instrumentation, not about your system. It is the sentence to ban.",
-        "The technical fix is one metric. The organisational fix is that a ticket with a reproduction is closed by running it, and that is the one that catches the next thing, which will not be transaction IDs.",
+        "The technical fix is one metric. The organizational fix is that a ticket with a reproduction is closed by running it, and that is the one that catches the next thing, which will not be transaction IDs.",
       ],
     },
     {
@@ -244,7 +244,7 @@ export const sheRaisedItInJuly: Scenario = {
       ],
       lesson: [
         "If your control against a nine hour outage is that a graduate argues harder with a principal, you do not have a control.",
-        "The organisation has to make being right cheap. Assertiveness training makes it expensive and puts the cost on the person who was already right.",
+        "The organization has to make being right cheap. Assertiveness training makes it expensive and puts the cost on the person who was already right.",
       ],
     },
     {
@@ -252,7 +252,7 @@ export const sheRaisedItInJuly: Scenario = {
       title: "Root cause: the ticket was closed",
       grade: "catastrophic",
       body: [
-        "The postmortem names him. He is a good engineer who made an ordinary judgement with the information his dashboards gave him, and he is now the reason for a nine hour outage in a document the whole company reads.",
+        "The postmortem names him. He is a good engineer who made an ordinary judgment with the information his dashboards gave him, and he is now the reason for a nine hour outage in a document the whole company reads.",
         "The next four postmortems contain no useful detail at all, because everyone has learned what happens when you write down what you did.",
       ],
       lesson: [

@@ -82,7 +82,7 @@ export function storable(exchange: Exchange): { ok: boolean; refusal?: Refusal }
     Something has to say how long. A response with no freshness information
     at all is heuristically cacheable, and a CDN with a default TTL will
     cache it, which is exactly how a personal page with no headers on it
-    ends up stored. Modelled as storable, because that is what happens, and
+    ends up stored. Modeled as storable, because that is what happens, and
     reported as no-freshness so the page can say the origin never asked for
     this.
   */

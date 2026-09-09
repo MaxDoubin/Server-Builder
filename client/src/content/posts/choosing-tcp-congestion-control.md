@@ -107,7 +107,7 @@ underperform most visibly, and it is the clearest case for a model based one.
 
 I leave it alone for short, clean paths. Inside a data center or a single site,
 round trip times are sub millisecond and loss is near zero. The congestion
-control algorithm is barely engaged and you are optimising something that is not
+control algorithm is barely engaged and you are optimizing something that is not
 the bottleneck.
 
 And I measure before and after with the same tool, on the same path, at the same

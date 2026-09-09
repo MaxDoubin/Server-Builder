@@ -35,7 +35,7 @@ the [VLANs](/blog/vlan-segmentation-guide) passed. Each configuration is defensi
 pass a review on its own.
 
 A trunk sends its native VLAN with no tag at all. That is not a bug or an
-optimisation, it is the entire purpose of having a native VLAN: a device on
+optimization, it is the entire purpose of having a native VLAN: a device on
 the other end that knows nothing about tagging still gets traffic. So a frame
 in VLAN 30 leaves acc-01 as plain Ethernet, and dist-01, receiving an untagged
 frame on a trunk, does the only thing it can and puts it in its own native

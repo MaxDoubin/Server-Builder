@@ -94,7 +94,7 @@ Kernel panic - not syncing: System is deadlocked on memory
 ```
 
 A lost process became a lost machine, and the change that did it passed review
-as defence in depth. Reserve -1000 for what you need in order to log in and
+as defense in depth. Reserve -1000 for what you need in order to log in and
 diagnose, which is `sshd` and the monitoring agent, and let everything that can
 be restarted be killable, because a service that dies and comes back is the
 mechanism keeping the box up.
@@ -201,7 +201,7 @@ select:
 
 The skip is on strictly less. An equal score falls through to `select` and
 replaces the standing choice, so the last equal task scanned is the one that
-dies. I had asserted the wrong behaviour in a test, and the test passed,
+dies. I had asserted the wrong behavior in a test, and the test passed,
 because the same belief had written both the code and the assertion. Two things
 agreeing is not evidence when one of them wrote the other.
 

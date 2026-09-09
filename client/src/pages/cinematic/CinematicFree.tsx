@@ -12,7 +12,7 @@
  * starts with somebody reading one column of that output.
  *
  * Where the estimate overstates, the bar shows the overstatement in a
- * different colour rather than a smaller number, because the point is that
+ * different color rather than a smaller number, because the point is that
  * the kernel is reporting the larger figure honestly and it is still wrong
  * for the question being asked.
  *

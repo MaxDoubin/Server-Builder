@@ -21,9 +21,9 @@ ssh-keygen -t rsa -b 4096 -C "admin@workstation" -f ~/.ssh/id_rsa
 
 Always set a passphrase. The passphrase encrypts the private key on disk, so even if someone steals your laptop, they cannot use the key without the passphrase.
 
-Ed25519 is EdDSA over Curve25519, standardised for SSH in RFC 8709. Its key size is fixed by the curve, so `-b` does nothing for that type; passing it is harmless but pointless. The public key is short enough to fit comfortably on one line, which matters more than it sounds like it should, for reasons in the failure section below.
+Ed25519 is EdDSA over Curve25519, standardized for SSH in RFC 8709. Its key size is fixed by the curve, so `-b` does nothing for that type; passing it is harmless but pointless. The public key is short enough to fit comfortably on one line, which matters more than it sounds like it should, for reasons in the failure section below.
 
-Two files come out. `id_ed25519` is the private key and never leaves the machine. `id_ed25519.pub` is the public key and is safe to paste anywhere. Learn to recognise which is which at a glance, because the mistake of installing the wrong one is common and confusing.
+Two files come out. `id_ed25519` is the private key and never leaves the machine. `id_ed25519.pub` is the public key and is safe to paste anywhere. Learn to recognize which is which at a glance, because the mistake of installing the wrong one is common and confusing.
 
 The fingerprint is how you refer to a key without pasting it:
 

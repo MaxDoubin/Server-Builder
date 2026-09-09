@@ -9,9 +9,9 @@
 export interface CoverCredit {
   /** Author as named by the source, plain text. */
   author: string;
-  /** Human-readable licence, e.g. "CC BY-SA 4.0". */
+  /** Human-readable license, e.g. "CC BY-SA 4.0". */
   license: string;
-  /** Canonical licence deed. */
+  /** Canonical license deed. */
   licenseUrl: string;
   /** The file's description page at the source. */
   sourceUrl: string;
@@ -171,7 +171,7 @@ export const postIndex: PostMeta[] = [
     title: "The Request Arrived, the Reply Did Not",
     date: "2026-09-08",
     tags: ["networking","security","operations"],
-    excerpt: "A native VLAN mismatch is usually described as two VLANs getting bridged. I modelled 802.1Q and asked which VLANs actually reach which: each switch's own native VLAN leaks outbound and works inbound, so the echo request arrives and the reply lands somewhere else. Across every mismatched pair, a quarter of frames go to the wrong VLAN and none are dropped.",
+    excerpt: "A native VLAN mismatch is usually described as two VLANs getting bridged. I modeled 802.1Q and asked which VLANs actually reach which: each switch's own native VLAN leaks outbound and works inbound, so the echo request arrives and the reply lands somewhere else. Across every mismatched pair, a quarter of frames go to the wrong VLAN and none are dropped.",
     coverImage: "/images/blog/the-request-arrived-the-reply-did-not.jpg",
     wordCount: 1150,
   },
@@ -270,7 +270,7 @@ export const postIndex: PostMeta[] = [
     title: "One Blue Cannot Be Both a Button and a Link",
     date: "2026-09-06",
     tags: ["engineering","tools","operations"],
-    excerpt: "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no colour that does both.",
+    excerpt: "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no color that does both.",
     coverImage: "/images/blog/one-blue-two-jobs.jpg",
     wordCount: 1141,
   },
@@ -297,7 +297,7 @@ export const postIndex: PostMeta[] = [
     title: "Fifteen Characters, And No Complexity Rules At All",
     date: "2026-09-06",
     tags: ["security","cybersecurity","operations"],
-    excerpt: "NIST SP 800-63B revision 4 is final, and most of the password policy your organisation runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
+    excerpt: "NIST SP 800-63B revision 4 is final, and most of the password policy your organization runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
     coverImage: "/images/blog/nist-password-rules-changed.jpg",
     wordCount: 1255,
   },
@@ -306,7 +306,7 @@ export const postIndex: PostMeta[] = [
     title: "What An Optic Tells The Switch About Itself",
     date: "2026-09-05",
     tags: ["networking","hardware","operations","homelab"],
-    excerpt: "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fibre plant and almost nobody reads it until something breaks.",
+    excerpt: "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fiber plant and almost nobody reads it until something breaks.",
     coverImage: "/images/blog/what-an-optic-tells-the-switch.jpg",
     wordCount: 1381,
   },
@@ -785,7 +785,7 @@ export const postIndex: PostMeta[] = [
     title: "WireGuard Or IPsec: Picking A Tunnel",
     date: "2026-04-30",
     tags: ["networking","security","routing"],
-    excerpt: "Two tunnel stacks with opposite design philosophies. A comparison of their crypto models, routing behaviour, and the operational details that decide it.",
+    excerpt: "Two tunnel stacks with opposite design philosophies. A comparison of their crypto models, routing behavior, and the operational details that decide it.",
     coverImage: "/images/blog/wireguard-vs-ipsec-tunnels.jpg",
     wordCount: 947,
   },
@@ -1171,7 +1171,7 @@ export const postIndex: PostMeta[] = [
     title: "Treating Prompts Like Code",
     date: "2026-08-06",
     tags: ["ai","tools","automation"],
-    excerpt: "A prompt is configuration that silently changes behaviour with no type checker and no compiler error. Version it, test it, and gate it in CI like anything else.",
+    excerpt: "A prompt is configuration that silently changes behavior with no type checker and no compiler error. Version it, test it, and gate it in CI like anything else.",
     coverImage: "/images/blog/prompts-as-versioned-code.jpg",
     wordCount: 922,
   },
@@ -2701,7 +2701,7 @@ export const postIndex: PostMeta[] = [
     title: "Three Copies, One Credential",
     date: "2026-09-08",
     tags: ["operations","security","storage"],
-    excerpt: "Every organisation that lost data had backups. 3-2-1 is a good rule stated in the least useful possible way, because the three numbers are proxies for the thing that matters and none of them is it.",
+    excerpt: "Every organization that lost data had backups. 3-2-1 is a good rule stated in the least useful possible way, because the three numbers are proxies for the thing that matters and none of them is it.",
     coverImage: "/images/blog/three-copies-one-credential.jpg",
     wordCount: 1561,
   },
@@ -2722,7 +2722,7 @@ export const POST_COUNT_SPELLED = "two hundred and seventy five";
  */
 export const CITATION_COUNT = 1037;
 
-/** Unique cover image attribution and licence URLs. */
+/** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */

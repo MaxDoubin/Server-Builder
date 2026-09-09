@@ -243,7 +243,7 @@ export function CinematicPractice() {
       stats: [
         `${PLANS.length} plans`,
         `${PLANS.reduce((sum, p) => sum + p.requirements.length, 0)} subnets`,
-        "marked on behaviour",
+        "marked on behavior",
       ],
       progress: { done: solvedPlans, total: PLANS.length, noun: "plans finished" },
     },

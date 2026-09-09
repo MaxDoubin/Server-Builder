@@ -264,7 +264,7 @@ export const CASES: Case[] = [
       " 100ms of each period and finishes at 200ms, never throttled at all. Being throttled is not" +
       " the same as being slow, and cutting threads to make nr_throttled go down made this slower.",
     fix:
-      "reach for the throttling metric to explain latency, not to minimise. A group throttled once" +
+      "reach for the throttling metric to explain latency, not to minimize. A group throttled once" +
       " that finished in 125ms is doing better than one never throttled that took 200ms. The number" +
       " to reduce is the stall a request actually waits through, which means raising the quota or" +
       " shortening the period, not removing the parallelism that is spending it.",

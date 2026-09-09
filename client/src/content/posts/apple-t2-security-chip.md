@@ -62,7 +62,7 @@ Controller:
       Boot UUID: 0F1C2D3E-4A5B-6C7D-8E9F-0A1B2C3D4E5F
 ```
 
-If that section is empty or the data type is not recognised, you are not on a T2 Mac. On Apple silicon these functions live in the main SoC and this profiler type does not apply.
+If that section is empty or the data type is not recognized, you are not on a T2 Mac. On Apple silicon these functions live in the main SoC and this profiler type does not apply.
 
 The second command tells you whether the volume key is bound to a passphrase:
 

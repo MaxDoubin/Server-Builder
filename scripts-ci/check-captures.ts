@@ -178,7 +178,7 @@ for (const [name, build] of [
     if (found?.value !== value) problems.push(`${name}() put ${found?.value} in ${key}`);
     /* The label is the name without its protocol prefix, underscores spaced. */
     const want = key.split(".").slice(1).join(" ").replace(/_/g, " ");
-    if (found?.label !== want) problems.push(`${name}() labelled ${key} "${found?.label}" rather than "${want}"`);
+    if (found?.label !== want) problems.push(`${name}() labeled ${key} "${found?.label}" rather than "${want}"`);
   }
   if (build({}).fields.length !== 0) problems.push(`${name}({}) invented a field`);
 }

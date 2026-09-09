@@ -84,7 +84,7 @@ The real power of 802.1X is RADIUS-based VLAN assignment. Employees get the corp
 
 Configure RADIUS to return VLAN attributes in the Access-Accept response, and the switch automatically places the port in the correct VLAN.
 
-The attributes are standardised, and RFC 3580 spells out exactly which three you need together:
+The attributes are standardized, and RFC 3580 spells out exactly which three you need together:
 
 ```
 jsmith  Cleartext-Password := "password123"

@@ -12,8 +12,8 @@
  * error: it is space that exists and that this user may not have. A reader
  * who sees a full bar with a sliver still in it has the answer.
  *
- * The commands are quoted as a terminal would print them, because recognising
- * this in the wild means recognising that output. Every figure in it is
+ * The commands are quoted as a terminal would print them, because recognizing
+ * this in the wild means recognizing that output. Every figure in it is
  * computed by the model.
  */
 

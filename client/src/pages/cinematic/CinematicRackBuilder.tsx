@@ -59,9 +59,9 @@ export function CinematicRackBuilder() {
   const [copied, setCopied] = useState(false);
 
   /*
-    Two catalogues, because there are two kinds of hardware here and the
+    Two catalogs, because there are two kinds of hardware here and the
     difference is worth keeping: Ubiquiti's own exports, and the devices
-    modelled here from photographs and dimensioned drawings. They are merged
+    modeled here from photographs and dimensioned drawings. They are merged
     into one palette because nobody building a rack cares which of us drew
     the switch, but the entries stay tagged so the page can say.
 
@@ -86,7 +86,7 @@ export function CinematicRackBuilder() {
         });
       })
       .catch(() => {
-        if (live) setMessage("The catalogue did not load. Reload the page to try again.");
+        if (live) setMessage("The catalog did not load. Reload the page to try again.");
       });
     return () => {
       live = false;
@@ -115,9 +115,9 @@ export function CinematicRackBuilder() {
   }, [rackDevices]);
 
   /*
-    Restore in one pass once the catalogue is in, because both sources need
-    it: a link has to be checked against the real catalogue, and a saved build
-    has to be too, since the catalogue can be regenerated between visits.
+    Restore in one pass once the catalog is in, because both sources need
+    it: a link has to be checked against the real catalog, and a saved build
+    has to be too, since the catalog can be regenerated between visits.
     decodeBuild takes the whole device map rather than a set of slugs because
     checking a placement means knowing how tall the device is.
   */
@@ -354,8 +354,8 @@ export function CinematicRackBuilder() {
                       {/*
                         A missing thumbnail hides the image rather than
                         showing a broken one. Renders are generated per model
-                        and a device can land in the catalogue before its
-                        thumbnail does; a grey box in that gap is fine, a
+                        and a device can land in the catalog before its
+                        thumbnail does; a gray box in that gap is fine, a
                         broken image icon is not.
                       */}
                       <img

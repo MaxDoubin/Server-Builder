@@ -112,7 +112,7 @@ systemctl restart ssh.socket
 
 The empty `ListenStream=` matters. Without it you add a port rather than replacing the default. Confirm with `ss -tlnp | grep sshd` or, under socket activation, `systemctl status ssh.socket`.
 
-On SELinux systems, the policy only permits sshd to bind the ports labelled `ssh_port_t`. Add yours before restarting:
+On SELinux systems, the policy only permits sshd to bind the ports labeled `ssh_port_t`. Add yours before restarting:
 
 ```bash
 semanage port -a -t ssh_port_t -p tcp 2222
@@ -162,7 +162,7 @@ With key-based auth, a changed port, and fail2ban in place, your SSH attack surf
 
 **Banning yourself.** Fat-finger a passphrase from the office a few times and your own address is in the ban list. Put your management network in `ignoreip`, and know that `fail2ban-client set sshd unbanip 10.0.10.22` exists before you need it from a phone.
 
-**Disabling password auth on a machine with no other way in.** If the key is wrong and the console is a data centre two hours away, this is your whole evening. Confirm key login works, confirm a second administrator's key works, and only then set `PasswordAuthentication no`.
+**Disabling password auth on a machine with no other way in.** If the key is wrong and the console is a data center two hours away, this is your whole evening. Confirm key login works, confirm a second administrator's key works, and only then set `PasswordAuthentication no`.
 
 ## References
 

@@ -72,7 +72,7 @@ export const PATHS: Path[] = [
     /*
       Two firewalls block ICMP and only one of them is responsible.
 
-      The tunnel that drops the packet terminates inside the data centre, so
+      The tunnel that drops the packet terminates inside the data center, so
       the ICMP it generates meets fw.dc first and dies there. fw.branch also
       blocks ICMP and is completely irrelevant to this symptom: it is behind
       the message on the return path and never sees it. Blaming it, which is
@@ -87,7 +87,7 @@ export const PATHS: Path[] = [
       { name: "fw.branch", mtu: 1500, blocksIcmp: true, note: "Denies all ICMP in both directions, added in 2019" },
       { name: "carrier", mtu: 1500 },
       { name: "fw.dc", mtu: 1500, blocksIcmp: true, note: "The other end, same policy" },
-      { name: "tun0", mtu: 1400, note: "GRE over IPsec, terminating inside the data centre" },
+      { name: "tun0", mtu: 1400, note: "GRE over IPsec, terminating inside the data center" },
       { name: "app.dc", mtu: 1500 },
     ],
   },

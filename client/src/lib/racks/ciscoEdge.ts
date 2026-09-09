@@ -1,9 +1,9 @@
 /**
- * A Cisco enterprise edge, built entirely from hardware modelled here.
+ * A Cisco enterprise edge, built entirely from hardware modeled here.
  *
  * Every other rack in this library was authored from datasheets and drawn
  * as an elevation. This one is the same discipline pointed at a different
- * question: what can be built out of the products that have been modelled
+ * question: what can be built out of the products that have been modeled
  * one at a time from photographs, and does the set actually make a rack?
  *
  * It does, and this is the shape it makes. A WAN edge is a real position in
@@ -64,7 +64,7 @@ export const ciscoEdgeRack: RackDefinition = {
   slug: "cisco-edge-16u",
   name: "Cisco enterprise edge 16U",
   blurb:
-    "A WAN edge and campus distribution stack: an ASR 1001-X on the circuit, an ISR 4451-X behind it, an ISR 4331 beside that, a Firepower 2140 between them and the campus, a Nexus 9336C-FX2 spine, and two Catalyst access switches. Every one of those seven is modelled here from photographs of that product. The patch panels, cable manager, console server and PDU around them are not: they are frame furniture, drawn by the frame, which is what they are in a real rack too.",
+    "A WAN edge and campus distribution stack: an ASR 1001-X on the circuit, an ISR 4451-X behind it, an ISR 4331 beside that, a Firepower 2140 between them and the campus, a Nexus 9336C-FX2 spine, and two Catalyst access switches. Every one of those seven is modeled here from photographs of that product. The patch panels, cable manager, console server and PDU around them are not: they are frame furniture, drawn by the frame, which is what they are in a real rack too.",
   height: 16,
 
   devices: [

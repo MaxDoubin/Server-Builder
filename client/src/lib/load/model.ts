@@ -2,11 +2,11 @@
  * The fold the kernel actually does, in the fixed point it actually uses.
  *
  * This could be written in floating point with `Math.exp(-5/60)` and it would
- * be close. It is not written that way, because the interesting behaviour is
+ * be close. It is not written that way, because the interesting behavior is
  * in the parts that a clean exponential does not have: eleven bits of
  * fraction, a rounding term that only applies while the load is rising, and
  * a sample period that is five seconds plus one tick rather than five
- * seconds. Modelling the idea instead of the code gives you a curve that is
+ * seconds. Modeling the idea instead of the code gives you a curve that is
  * right to about a percent and wrong about everything this page is for.
  *
  * From include/linux/sched/loadavg.h and kernel/sched/loadavg.c.

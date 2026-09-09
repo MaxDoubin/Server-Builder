@@ -17,7 +17,7 @@ After enough acquisitions you learn that failures cluster in a predictable set o
 
 **Drives.** Always assume the drives are the oldest part. Enterprise drives are rated for continuous duty and often have very high power on hours, and the drive is the one component whose failure loses data rather than availability.
 
-**Thermal interface material.** Old paste turns to chalk. On a machine that will run under load, replacing it is an hour of work that changes the thermal behaviour completely.
+**Thermal interface material.** Old paste turns to chalk. On a machine that will run under load, replacing it is an hour of work that changes the thermal behavior completely.
 
 Notice what is not on that list: the parts most people worry about. Processors and memory rarely wear out. Motherboards mostly work or do not.
 

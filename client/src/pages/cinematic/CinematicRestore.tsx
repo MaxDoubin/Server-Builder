@@ -53,7 +53,7 @@ export function CinematicRestore() {
   useSEO({
     title: "You Have Backups, Not Restores | Max Doubin",
     description:
-      "Every organisation that lost data had backups. Six incidents, each with a backup posture that would pass an audit, and between zero and one copy that turns out to be worth anything.",
+      "Every organization that lost data had backups. Six incidents, each with a backup posture that would pass an audit, and between zero and one copy that turns out to be worth anything.",
     canonical: `${SITE_URL}/restore`,
   });
 

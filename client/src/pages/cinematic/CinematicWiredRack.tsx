@@ -12,7 +12,7 @@ const WiredRackScene = lazy(() =>
 /**
  * A UniFi rack, fully patched, built out of Ubiquiti's own geometry.
  *
- * Every other rack on this site is hardware we modelled. This one is the
+ * Every other rack on this site is hardware we modeled. This one is the
  * hardware, from the models Ubiquiti serve to their own store pages, which
  * means the ports are where the ports are and the sheet metal is the sheet
  * metal. What is ours is the build: what goes in it, where, and how it is
@@ -22,7 +22,7 @@ export function CinematicWiredRack() {
   useSEO({
     title: "The wired UniFi rack | Max Doubin",
     description:
-      "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fibre uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
+      "A fourteen unit UniFi rack in real 3D, built from Ubiquiti's own product models and fully patched: two PoE switches down to surge panels, fiber uplinks to the aggregation switch, and every power lead landing in the distribution unit.",
     canonical: "https://maxdoubin.com/racks/wired",
   });
 
@@ -57,7 +57,7 @@ export function CinematicWiredRack() {
               [`${used} of ${WIRED_RACK_UNITS}U`, "occupied"],
               [`${WIRED_DEVICES.length}`, "devices"],
               [`${copper}`, "copper leads"],
-              [`${fibre}`, "fibre uplinks"],
+              [`${fibre}`, "fiber uplinks"],
             ].map(([value, label]) => (
               <div key={label} className="bg-[hsl(var(--brand-void))] px-4 py-3">
                 <dt className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">

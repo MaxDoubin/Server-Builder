@@ -7,7 +7,7 @@
  * time rather than wall clock time does what that picture does in a second.
  *
  * The bars are wall clock, left to right, one per enforcement period. Green
- * is the group running, red is every thread in it stopped, and the grey at
+ * is the group running, red is every thread in it stopped, and the gray at
  * the end of a bar is the group having finished its work with quota to
  * spare, which is idle rather than throttled and is a completely different
  * diagnosis.

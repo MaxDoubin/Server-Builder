@@ -39,7 +39,7 @@ Two more physical limits are worth knowing. TIA-568 puts the minimum bend radius
 
 For Ethernet, I run all connections through a patch panel at the top of the rack. The servers connect to the rear of the patch panel with short cables, and the front of the patch panel connects to the switch with color-coded patch cables. This means I never need to reach behind a server to change a network connection.
 
-The budget governing the layout is the 100 metre channel from TIA-568, and it is not 100 metres of any cable you like. It is 90 metres of permanent link, the fixed horizontal run terminated at both ends, plus 10 metres total of patch cords across both ends combined. Stranded patch cable has higher attenuation per metre than the solid-core cable used in permanent links, which is why the allowance is small. Inside one rack you are nowhere near the limit, but the moment a run leaves the room, count it.
+The budget governing the layout is the 100 meter channel from TIA-568, and it is not 100 meters of any cable you like. It is 90 meters of permanent link, the fixed horizontal run terminated at both ends, plus 10 meters total of patch cords across both ends combined. Stranded patch cable has higher attenuation per meter than the solid-core cable used in permanent links, which is why the allowance is small. Inside one rack you are nowhere near the limit, but the moment a run leaves the room, count it.
 
 Termination is where patch panels actually go wrong, and there are two rules.
 
@@ -53,7 +53,7 @@ Which leads to the tool most people own and misunderstand. A cheap continuity te
 
 I leave a small service loop of excess cable at each connection point. This gives me enough slack to pull a server forward on its rails for maintenance without disconnecting anything. It also means I can reroute cables if I rearrange equipment.
 
-Size the loop to the rail travel, not by eye. A four-post rail kit pulls a server most of its own depth out of the rack, so roughly a metre of slack per cable is the working figure for a 2U chassis. Test it once with the server empty: extend the chassis to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, with the system running.
+Size the loop to the rail travel, not by eye. A four-post rail kit pulls a server most of its own depth out of the rack, so roughly a meter of slack per cable is the working figure for a 2U chassis. Test it once with the server empty: extend the chassis to its stop and see what goes taut. Whatever pulls tight is the cable that will unplug itself the first time you do this for real, with the system running.
 
 Cable management arms deserve an honest note. A CMA holds the slack neatly and lets the server slide out with everything connected, which is genuinely useful. It also sits in the rear exhaust path and adds resistance to the airflow the first section was about protecting. Plenty of people remove them for that reason and manage slack in the vertical channel instead. Either choice is defensible. Not deciding leaves you with a CMA blocking airflow and cables that still pull tight.
 

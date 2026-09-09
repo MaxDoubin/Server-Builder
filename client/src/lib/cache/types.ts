@@ -45,7 +45,7 @@ export interface Request {
   method: "GET" | "POST";
   path: string;
   /**
-   * Headers as sent. Only the ones a cache might key on are modelled, plus
+   * Headers as sent. Only the ones a cache might key on are modeled, plus
    * Authorization, which changes whether a shared cache may store at all.
    */
   headers: Record<string, string>;

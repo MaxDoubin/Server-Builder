@@ -88,7 +88,7 @@ export function ContinueReading() {
                 </div>
                 {/*
                   Decorative. The bar draws the same number the line above
-                  already states in words, and as a labelled progressbar
+                  already states in words, and as a labeled progressbar
                   inside the link its own name was appended to the link's,
                   which came out as "Title, 62% - 4 min left, Progress
                   through Title, link".

@@ -195,7 +195,7 @@ export function CinematicRacks() {
       stats: [
         `${WIRED_DEVICES.length} devices`,
         `${WIRED_PATCHES.length - fibre} copper`,
-        `${fibre} fibre`,
+        `${fibre} fiber`,
         `${WIRED_RACK_UNITS}U frame`,
       ],
       art: <WiredMini />,

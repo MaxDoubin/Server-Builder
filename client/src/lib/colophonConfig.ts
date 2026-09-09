@@ -30,7 +30,7 @@ export const STACK = [
     name: "Framer Motion",
     role: "Component motion",
     detail:
-      "Enter and exit transitions, staggered reveals, and the interactive card behaviour. Declarative, and it respects a reduced motion preference.",
+      "Enter and exit transitions, staggered reveals, and the interactive card behavior. Declarative, and it respects a reduced motion preference.",
   },
   {
     name: "GSAP and Lenis",

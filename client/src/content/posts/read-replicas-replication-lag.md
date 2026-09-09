@@ -27,7 +27,7 @@ it, and this lag does not drain, it grows for as long as the load lasts.
 Conflicting queries. A long-running read on the replica needs rows that the
 replay wants to remove. The replica must either pause replay or cancel the
 query. Both are configurable and both are unpleasant: pausing means lag grows,
-cancelling means analytics jobs die at random. If you set a long grace period
+canceling means analytics jobs die at random. If you set a long grace period
 so reports finish, you have chosen unbounded lag.
 
 Storage. The replica is often cheaper hardware than the primary, on the theory

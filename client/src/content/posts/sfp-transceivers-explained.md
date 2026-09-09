@@ -21,7 +21,7 @@ The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family
 
 ## Reading the part number
 
-Most of the information you need is encoded in the optic's designation, and it follows a consistent grammar. Take 10GBASE-SR: the 10G is the speed, BASE means baseband signalling, and the suffix is the medium and reach.
+Most of the information you need is encoded in the optic's designation, and it follows a consistent grammar. Take 10GBASE-SR: the 10G is the speed, BASE means baseband signaling, and the suffix is the medium and reach.
 
 - **SR (short reach)** uses 850 nm light on multimode fiber. At 10 Gbps that reaches 300 m on OM3 and 400 m on OM4, and much less on the older OM1 and OM2 grades.
 - **LR (long reach)** uses 1310 nm on single-mode fiber for 10 km.

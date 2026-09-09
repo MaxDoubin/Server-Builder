@@ -302,7 +302,7 @@ const SURFACES: Surface[] = [
     eyebrow: "Recover",
     title: "You have backups, not restores",
     blurb:
-      "Every organisation that lost data had backups. Read the posture, then run the incident and see how many copies were copies.",
+      "Every organization that lost data had backups. Read the posture, then run the incident and see how many copies were copies.",
     count: `${RESTORES.length} incidents, ${RESTORES.reduce((sum, s) => sum + s.copies.length, 0)} copies`,
   },
   {

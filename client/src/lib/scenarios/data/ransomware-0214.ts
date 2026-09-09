@@ -3,7 +3,7 @@ import type { Scenario } from "../types";
 /**
  * Ransomware, from the on-call pager.
  *
- * The traps in here are the ones that cost real organisations real money:
+ * The traps in here are the ones that cost real organizations real money:
  * pulling power on an encrypting host (which destroys the keys in memory and
  * can trip a boot locker), restoring from backups nobody checked was offline,
  * treating encryption as the whole incident when exfiltration happened first,
@@ -82,7 +82,7 @@ export const ransomware0214: Scenario = {
       mood: "critical",
       where: "RDP session on FS01",
       body: [
-        "Task Manager sorted by disk. One process, running as a service account you recognise from the print server migration, is writing at more than a gigabyte a second.",
+        "Task Manager sorted by disk. One process, running as a service account you recognize from the print server migration, is writing at more than a gigabyte a second.",
         "You open the directory it is working in. Every file has picked up a new extension, and there is a text file in each folder that was not there yesterday.",
       ],
       evidence: [
@@ -451,7 +451,7 @@ export const ransomware0214: Scenario = {
       where: "At the rack with the incident kit",
       body: [
         "You take a memory image off FS01 with a USB tool from the incident kit that you are quietly amazed is where the runbook says it is.",
-        "It takes eleven minutes and produces a 32 GB file that you will not be able to analyse tonight, and that a specialist will be very glad of on Thursday.",
+        "It takes eleven minutes and produces a 32 GB file that you will not be able to analyze tonight, and that a specialist will be very glad of on Thursday.",
         "Then you image the disks. Then, and only then, you wake the director.",
       ],
       choices: [
@@ -599,7 +599,7 @@ export const ransomware0214: Scenario = {
         },
         {
           label: "Stall, and check the wallet against sanctions listings first",
-          detail: "Paying a sanctioned entity is a separate offence from being robbed.",
+          detail: "Paying a sanctioned entity is a separate offense from being robbed.",
           to: "sanctions-check",
           cost: 240,
         },
@@ -706,7 +706,7 @@ export const ransomware0214: Scenario = {
       title: "A clean recovery and a refused claim",
       grade: "bad",
       body: [
-        "Technically this went well. Commercially it did not: the insurance claim is refused for late notification, and the regulator's response to a three-day delay by an organisation whose own monitoring timestamped the event is not sympathetic.",
+        "Technically this went well. Commercially it did not: the insurance claim is refused for late notification, and the regulator's response to a three-day delay by an organization whose own monitoring timestamped the event is not sympathetic.",
         "The recovery cost is now entirely the company's, and it is larger than the ransom was.",
       ],
       lesson: [

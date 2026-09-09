@@ -2,15 +2,15 @@
  * Read the log, say what happened, point at the line.
  *
  * Two answers per case, and the second is the one that separates reading a
- * log from recognising a shape. A thousand identical failures are a bot that
+ * log from recognizing a shape. A thousand identical failures are a bot that
  * got nowhere; the line that matters is quiet, usually a success, and rarely
  * near anything somebody would grep for. Picking the right conclusion and
  * then citing a line that does not support it is the common failure, and the
  * page marks the two separately so it shows up.
  *
- * The room takes the colour of what the log turns out to be, and the log
+ * The room takes the color of what the log turns out to be, and the log
  * itself dims its noise once the answer is in: the wall of rejections goes
- * grey and the one line that settles it does not. Watching that happen is
+ * gray and the one line that settles it does not. Watching that happen is
  * the lesson, more than the text underneath it is.
  */
 
@@ -47,7 +47,7 @@ const FACILITY_LABEL: Record<Facility, string> = {
  *
  * Four accents for seven facilities, because the site has four accent tokens
  * that are contrast-checked in both themes. An auth log and a firewall log
- * share a colour and nothing is lost: what the colour carries is the mood of
+ * share a color and nothing is lost: what the color carries is the mood of
  * the answer, not a taxonomy.
  */
 const ACCENT: Record<Facility, StageAccent> = {

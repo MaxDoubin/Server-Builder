@@ -2,7 +2,7 @@
  * Ordering and requirement, drawn as two different things.
  *
  * Before you answer you get the unit files, in unit file syntax, because
- * recognising this in the wild means recognising these four lines in a
+ * recognizing this in the wild means recognizing these four lines in a
  * drop-in on somebody else's server. Nothing on screen is a graph, because
  * building the graph in your head is the exercise.
  *
@@ -13,7 +13,7 @@
  * looks like, and it looks like nothing at all in the unit file.
  *
  * A unit nothing pulled in gets no column. It sits below the timeline,
- * greyed, because "it is not in the transaction" is a different answer from
+ * grayed, because "it is not in the transaction" is a different answer from
  * "it failed" and the page should not blur them: one is a missing directive
  * and the other is a broken service.
  */

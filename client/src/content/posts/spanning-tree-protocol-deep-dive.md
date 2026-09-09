@@ -103,7 +103,7 @@ Two additions worth the time. Set the secondary root explicitly too, so a failur
 
 **PortFast on a port that is not an edge port.** PortFast skips listening and learning and goes straight to forwarding. On a port with a switch or a bridging hypervisor behind it, that means forwarding for 30 seconds before spanning tree gets around to blocking, which is 30 seconds of storm. Always pair PortFast with BPDU Guard.
 
-**MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behaviour rarely matches what anyone expected.
+**MST region mismatch.** MSTP switches share a region only when their configuration name, revision number, and complete VLAN-to-instance mapping match exactly. One typo in the region name and the switch becomes its own region, its internal topology is hidden, and the boundary behavior rarely matches what anyone expected.
 
 **Adding a VLAN and forgetting it has its own tree.** With per-VLAN spanning tree, every new VLAN is a new election. Configure priorities across the VLAN range, not on the individual [VLANs](/blog/vlan-segmentation-guide) you happen to remember, or the new one elects a root by MAC address and its traffic takes a completely different physical path than the rest.
 

@@ -326,7 +326,7 @@ export function runLine(line: string, machine: Machine, registry: Registry): Out
 
     Its argument is a sentence of English, and English contains apostrophes.
     Under ordinary shell rules `answer it's the MTU` is an unterminated quote,
-    which is correct behaviour and a hostile thing to do to somebody typing a
+    which is correct behavior and a hostile thing to do to somebody typing a
     diagnosis. Every other command here follows the real rules; this one is a
     lab builtin and its argument is prose, so it is exempt.
   */

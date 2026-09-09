@@ -48,7 +48,7 @@ for (const message of MESSAGES) {
   /*
     The verdict has to follow from the tells, or the exercise is unmarkable.
     A message with a hard signal is hostile and a message with none is not:
-    if a message needed a judgement call the detectors cannot make, the page
+    if a message needed a judgment call the detectors cannot make, the page
     would be scoring the reader against an opinion.
   */
   if (message.verdict === "phish" && tells.length === 0) {
@@ -134,7 +134,7 @@ if (oneTell < 2) {
   editDistance, lookalikeOf and detectSignals were exported and named by
   nothing in this file until a check over every logic file found them. The
   first is what decides whether a domain is a lookalike, which is the single
-  most consequential judgement this surface makes: too loose and it teaches
+  most consequential judgment this surface makes: too loose and it teaches
   people to distrust their own suppliers, too tight and it teaches them to
   trust a typosquat.
 */

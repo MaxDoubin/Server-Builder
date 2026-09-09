@@ -21,7 +21,7 @@ Python's pickle format is not data. It is a small stack based program that the
 unpickler executes, and that includes constructing arbitrary objects and
 calling arbitrary callables. The standard library documentation says so in a
 warning at the top of the page. Any checkpoint format that wraps pickle
-inherits that behaviour, which means loading a checkpoint from an untrusted
+inherits that behavior, which means loading a checkpoint from an untrusted
 source is running code from an untrusted source, with whatever privileges the
 serving process has.
 
@@ -70,7 +70,7 @@ instead of a re-download.
 be traceable to a model identifier and artifact hash recorded in the request
 log. Without it, a quality regression after a model swap is unfalsifiable.
 
-## Storage behaviour is worth designing
+## Storage behavior is worth designing
 
 Weights files have an unusual access pattern: enormous sequential reads at
 startup, then almost nothing. That has practical consequences.
@@ -96,7 +96,7 @@ is a one line change.
 The end state I aim for looks like any other artifact pipeline. A download step
 runs as an unprivileged user with no access to the serving environment. It
 verifies signatures where the publisher provides them, records hashes and the
-exact upstream revision, captures the licence text next to the weights, and
+exact upstream revision, captures the license text next to the weights, and
 converts anything unsafe into a format that cannot execute. A promotion step
 moves an approved, hashed directory into the path the serving hosts read. The
 serving step verifies the hash before load, mounts the directory read only, and

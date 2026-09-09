@@ -150,7 +150,7 @@ if (!CHAINS.some((chain) => truncatingCaller(chain))) {
   problems.push("no chain has a caller whose budget is smaller than its callee's");
 }
 if (!CHAINS.some((chain) => !truncatingCaller(chain) && orphaned(chain) === 0)) {
-  problems.push("no chain is correctly configured, so a reader has no control to recognise");
+  problems.push("no chain is correctly configured, so a reader has no control to recognize");
 }
 if (!CHAINS.some((chain) => orphaned(chain) > 0)) problems.push("no chain orphans any work");
 if (!CHAINS.some((chain) => unsafeRetries(chain).length > 0)) {
@@ -357,7 +357,7 @@ if (amplified < ROUNDS / 10) problems.push(`only ${amplified} of ${ROUNDS} gener
   ms() renders a duration, and a reader believes what it renders.
 
   Table-driven at the boundary rather than by property, because the boundary
-  is the whole behaviour: under a second it reads in milliseconds, at or over
+  is the whole behavior: under a second it reads in milliseconds, at or over
   it reads in seconds, and a whole number of seconds drops the decimal. A
   formatter that lies still lies to a reader.
 */

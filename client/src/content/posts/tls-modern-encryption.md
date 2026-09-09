@@ -30,7 +30,7 @@ The client sends a `ClientHello` that already contains its key share, so it is g
 
 Two details of that design surprise people reading captures.
 
-First, the version number on the record layer still says TLS 1.2. TLS 1.3 negotiates its version through the `supported_versions` extension, leaving the legacy version field at 0x0303, because middleboxes on the internet would drop anything that claimed a version they did not recognise. If you filter a capture for the literal version field you will conclude TLS 1.3 is not in use when it is.
+First, the version number on the record layer still says TLS 1.2. TLS 1.3 negotiates its version through the `supported_versions` extension, leaving the legacy version field at 0x0303, because middleboxes on the internet would drop anything that claimed a version they did not recognize. If you filter a capture for the literal version field you will conclude TLS 1.3 is not in use when it is.
 
 Second, TLS 1.3 has a downgrade protection mechanism built into the server random. If a TLS 1.3 capable server ends up negotiating a lower version, it writes a fixed sentinel value into the last eight bytes of the random field, and a TLS 1.3 client that sees it aborts the connection. This is what stops an attacker from stripping the handshake back to 1.2.
 
@@ -87,7 +87,7 @@ SSL-Session:
     Verify return code: 0 (ok)
 ```
 
-`Protocol : TLSv1.3` is the confirmation. `Verify return code: 0 (ok)` means the chain validated. "Secure Renegotiation IS NOT supported" looks alarming and is correct behaviour: renegotiation does not exist in TLS 1.3, so there is nothing to secure.
+`Protocol : TLSv1.3` is the confirmation. `Verify return code: 0 (ok)` means the chain validated. "Secure Renegotiation IS NOT supported" looks alarming and is correct behavior: renegotiation does not exist in TLS 1.3, so there is nothing to secure.
 
 Now prove the old versions are off:
 

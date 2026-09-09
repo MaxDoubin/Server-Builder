@@ -9,9 +9,9 @@
  * are drawn over it, and on the first case not one of them lands inside the
  * spike.
  *
- * Underneath, one segment per evaluation, coloured by state. A single
+ * Underneath, one segment per evaluation, colored by state. A single
  * inactive segment in the middle of a pending run is what a for clause being
- * cleared rather than paused looks like, and it is one pixel of grey that
+ * cleared rather than paused looks like, and it is one pixel of gray that
  * costs five minutes.
  *
  * Nothing is drawn before an answer. Working out where the ticks fall is the

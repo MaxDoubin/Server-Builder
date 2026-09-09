@@ -184,7 +184,7 @@ export const storageDenseRack: RackDefinition = {
       u: 2,
       vendor: "Dell",
       model: "PowerStore 500T",
-      role: "The flash tier the shelves cannot be. Everything else here is SAS capacity reached over a fabric; this is twenty five NVMe in a two unit enclosure with two active nodes, and the one array in the rack where the drives cost more than the box around them. Drawn with the bezel off, next to a DD3300 that keeps its, because one of each shows more than two grey fronts.",
+      role: "The flash tier the shelves cannot be. Everything else here is SAS capacity reached over a fabric; this is twenty five NVMe in a two unit enclosure with two active nodes, and the one array in the rack where the drives cost more than the box around them. Drawn with the bezel off, next to a DD3300 that keeps its, because one of each shows more than two gray fronts.",
       family: "storage",
       finish: "dark",
       bays: { count: 25, occupied: 25, label: "NVMe bays" },

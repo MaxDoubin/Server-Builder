@@ -14,7 +14,7 @@ Controllers, memory, cpu, io, pids, are enabled per subtree, and a child can
 never exceed its parent's limits. That last property is why a limit you did
 not set can still bite you: your service inherits its slice.
 
-Because systemd organises services into slices and scopes, most of what you
+Because systemd organizes services into slices and scopes, most of what you
 run on a normal Linux host is already in a cgroup whether you asked or not.
 
 ## Memory, and the kill you did not see

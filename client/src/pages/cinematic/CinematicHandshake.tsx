@@ -7,7 +7,7 @@
  * and a SYN with a RST are the same experience to a user and opposite facts
  * about the firewall.
  *
- * The motion is decoration and the colour is information. Under reduced motion
+ * The motion is decoration and the color is information. Under reduced motion
  * the steps appear rather than sliding, and the greying of everything after a
  * break stays, because that is the content.
  */

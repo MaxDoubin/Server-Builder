@@ -46,7 +46,7 @@ export interface Challenge {
   /** What you are being asked for, in the second person. */
   brief: string[];
   artefacts: Artefact[];
-  /** Lowercase SHA-256 hex of the flag, which is compared after normalising. */
+  /** Lowercase SHA-256 hex of the flag, which is compared after normalizing. */
   flagHash: string;
   /** Shown next to the answer box: "acme{...}" or "an IPv4 address". */
   flagShape: string;

@@ -10,7 +10,7 @@ The vectors themselves come from an embedding model that maps text, images,
 or whatever else into a fixed length array of floats, typically a few hundred
 to a couple of thousand dimensions, arranged so that similar inputs land near
 each other. Similarity is usually cosine similarity or inner product. If you
-normalise your vectors to unit length, those two become the same ranking, and
+normalize your vectors to unit length, those two become the same ranking, and
 a lot of implementation detail simplifies.
 
 ## Brute force is not always wrong
@@ -101,7 +101,7 @@ Things I check before putting a vector index into anything I care about:
 1. **Recall against ground truth.** Compute exact top-k for a few hundred
    sampled queries and measure overlap with what the index returns. Recall at
    10 below roughly 0.9 usually shows up as visibly worse answers downstream.
-2. **Filtered search behaviour.** Combining a metadata filter with a vector
+2. **Filtered search behavior.** Combining a metadata filter with a vector
    search is the classic sharp edge. Pre-filtering can leave the graph
    disconnected, post-filtering can return fewer results than requested. Know
    which one your system does.

@@ -44,7 +44,7 @@ Average power draw is not the whole story. Accelerators produce brief, very shar
 
 A power supply sized exactly to the average can trip its overcurrent protection on those transients and shut the machine down under load, which presents as an inexplicable reboot during heavy work while every steady state measurement looks fine. It is a genuinely confusing failure because nothing in the monitoring shows a problem.
 
-The practical response is headroom. Sizing a supply meaningfully above the calculated steady state draw is not waste, it is tolerance for the transient behaviour of the load. It also keeps the supply operating in the load band where its efficiency curve is best, which is generally somewhere in the middle of its range rather than near its top.
+The practical response is headroom. Sizing a supply meaningfully above the calculated steady state draw is not waste, it is tolerance for the transient behavior of the load. It also keeps the supply operating in the load band where its efficiency curve is best, which is generally somewhere in the middle of its range rather than near its top.
 
 The same reasoning applies to uninterruptible supplies. A unit sized to the average draw may not ride through a spike, and the volt amp rating on the label is not the same as the watt rating you actually need to compare against. Size on watts, and leave room.
 
@@ -89,7 +89,7 @@ Then decide what to run. This ordering feels backwards to most people, who choos
 
 Measure rather than assume. A power meter at the plug and a couple of temperature probes cost very little and replace a lot of estimation. Nameplate ratings are worst case figures, and the only way to know your real number is to measure your own workload.
 
-Every serious infrastructure environment is constrained by power and cooling long before it is constrained by rack space or by compute budget, which is why data centre capacity is sold in kilowatts per rack. The formulas do not change between a closet and a facility, only the units in front of them.
+Every serious infrastructure environment is constrained by power and cooling long before it is constrained by rack space or by compute budget, which is why data center capacity is sold in kilowatts per rack. The formulas do not change between a closet and a facility, only the units in front of them.
 
 ## References
 

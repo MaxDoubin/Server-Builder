@@ -10,11 +10,11 @@
  *
  * The axis is symmetric log, because the cases span thirty seconds to
  * thirteen days and a linear axis makes one of those two invisible. Zero sits
- * in the middle, and the ticks are labelled in the units a person thinks in,
+ * in the middle, and the ticks are labeled in the units a person thinks in,
  * so the compression is legible rather than hidden.
  *
  * The error messages are quoted verbatim and given more room than they
- * deserve, because recognising this fault in the wild means recognising those
+ * deserve, because recognizing this fault in the wild means recognizing those
  * exact strings. Three of the four never mention time.
  */
 
@@ -47,7 +47,7 @@ const SITE_URL = "https://maxdoubin.com";
 /* Read off the cases, so the sentence about them cannot drift from them. */
 const SPREAD = tolerances(CASES);
 
-/** How wrong the clock turns out to be, which is what the room takes its colour from. */
+/** How wrong the clock turns out to be, which is what the room takes its color from. */
 function severity(item: Case): StageAccent {
   const span = narrowed(item.checks);
   if (!span) return "signal";
@@ -57,7 +57,7 @@ function severity(item: Case): StageAccent {
   return "cyan";
 }
 
-/** The ticks worth labelling, in seconds either side of correct. */
+/** The ticks worth labeling, in seconds either side of correct. */
 const TICKS = [-86400, -3600, -300, -60, 0, 60, 300, 3600, 86400];
 
 const TICK_LABEL: Record<number, string> = {

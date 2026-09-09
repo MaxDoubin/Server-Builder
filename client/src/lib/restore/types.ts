@@ -1,7 +1,7 @@
 /**
  * You do not have backups. You have restores, and you have not tested them.
  *
- * Every organisation that lost data had backups. That is not a paradox and
+ * Every organization that lost data had backups. That is not a paradox and
  * it is not carelessness: a backup is a job that reports success, and a
  * restore is a thing nobody does until the worst day of the year. The gap
  * between the two is where the losses live.

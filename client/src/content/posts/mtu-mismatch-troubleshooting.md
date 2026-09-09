@@ -81,7 +81,7 @@ ip route get 10.20.30.40
 **1. Fix the actual MTU mismatch.** If two switch ports in the same path
 disagree, that is the bug. Jumbo frames are all or nothing across a broadcast
 domain: every host, every switch port, and every router interface on that
-segment needs the same value, or you get exactly this behaviour under load.
+segment needs the same value, or you get exactly this behavior under load.
 
 ```bash
 ip link set dev eno1 mtu 9000          # runtime, lost on reboot

@@ -130,14 +130,14 @@ Wants=network-online.target
 After=network-online.target
 ```
 
-`network.target` deserves the same scepticism. It means the networking stack
+`network.target` deserves the same skepticism. It means the networking stack
 is being configured, not that an address exists. If the service binds to a
 specific address at startup, you need `network-online.target`, and that target
 is only meaningful if the matching wait service is enabled.
 
 ## Restart policy, and the state that outlives it
 
-`respawn` in `/etc/inittab` had one behaviour: bring it back, forever. That is
+`respawn` in `/etc/inittab` had one behavior: bring it back, forever. That is
 `Restart=always`, and on a service with a typo in its config it produces a
 crash loop that fills a disk with log lines about the same missing file.
 
@@ -222,7 +222,7 @@ systemd-analyze critical-chain inventory-api.service
 ```
 
 `verify` catches typos and missing referenced units before they become boot
-behaviour. `daemon-reload` is the answer to half of all "my change did
+behavior. `daemon-reload` is the answer to half of all "my change did
 nothing". `list-dependencies` shows the tree you actually built rather than
 the one you meant. `critical-chain` shows what your unit waited on and for how
 long, which is where you find out that the whole boot is held up by a network

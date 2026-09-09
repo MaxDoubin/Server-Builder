@@ -6,7 +6,7 @@
  * licensed anywhere, which makes publishing it the single most linkable
  * thing here.
  *
- * The page leads with what the numbers are and are not. Publishing modelling
+ * The page leads with what the numbers are and are not. Publishing modeling
  * figures under a manufacturer's name without saying so would create exactly
  * the kind of authoritative-looking fabrication the rest of this site has
  * been busy removing.
@@ -34,7 +34,7 @@ export function CinematicData() {
       "@context": "https://schema.org",
       "@type": "DataCatalog",
       name: "Max Doubin open rack data",
-      description: `Two openly licensed datasets: modelling figures for ${count} rack-mount devices, and ${rackDevices} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
+      description: `Two openly licensed datasets: modeling figures for ${count} rack-mount devices, and ${rackDevices} devices across ${RACKS.length} rack elevations with their vendor published figures.`,
       url: `${SITE_URL}/data`,
       license: "https://creativecommons.org/licenses/by/4.0/",
       creator: creator,
@@ -42,7 +42,7 @@ export function CinematicData() {
         {
           "@type": "Dataset",
           name: "Rack hardware power and thermal catalog",
-          description: `Modelling figures for ${count} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
+          description: `Modeling figures for ${count} rack-mount devices: power draw in watts, derived heat output in BTU per hour, rack units, port count and indicative cost. Representative values for a class of hardware, not vendor specifications and not measurements.`,
           license: "https://creativecommons.org/licenses/by/4.0/",
           creator,
           distribution: [

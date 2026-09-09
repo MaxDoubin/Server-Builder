@@ -81,7 +81,7 @@ access port on a switch. The guest cannot escape its VLAN by sending tagged
 frames, because the hardware enforces the tag. With `spoofchk on`, it cannot
 forge a source MAC either. Without those two settings you have handed a guest a
 trunk port, which is a segmentation failure dressed up as a performance
-optimisation.
+optimization.
 
 Then bind the function to the passthrough driver and hand it to the guest:
 

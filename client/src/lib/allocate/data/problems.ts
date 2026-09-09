@@ -49,7 +49,7 @@ export const PROBLEMS: Problem[] = [
     difficulty: "medium",
     tagline: "The core advertises one route for the wireless VLANs, so they have to be contiguous.",
     brief: [
-      "The core switch summarises all wireless VLANs into a single advertisement. That means the wireless subnets cannot be scattered: they have to sit inside one aligned block, or the summary covers addresses that belong to something else.",
+      "The core switch summarizes all wireless VLANs into a single advertisement. That means the wireless subnets cannot be scattered: they have to sit inside one aligned block, or the summary covers addresses that belong to something else.",
       "The first attempt at this plan reserved a /23 for the summary and it did not fit, which is worth working out for yourself before you start. The reservation is now a /22.",
       "Everything else can go anywhere in the /21.",
     ],
@@ -59,14 +59,14 @@ export const PROBLEMS: Problem[] = [
         id: "wifi-guest",
         label: "Wireless: guest",
         hosts: 400,
-        note: "Summarised into one advertisement.",
+        note: "Summarized into one advertisement.",
         within: "10.40.0.0/22",
       },
       {
         id: "wifi-staff",
         label: "Wireless: staff",
         hosts: 200,
-        note: "Summarised into one advertisement.",
+        note: "Summarized into one advertisement.",
         within: "10.40.0.0/22",
       },
       { id: "wired", label: "Wired clients", hosts: 300 },
@@ -87,8 +87,8 @@ export const PROBLEMS: Problem[] = [
     },
     debrief: [
       "The original /23 was the whole problem. Guest needs 400 hosts and staff needs 200, which is 600, and a /23 holds 510 usable. No amount of careful subnetting fixes that: the requirements do not fit the reservation, and the reservation is the thing that has to move.",
-      "Recognising an infeasible constraint is a real skill and it is worth doing before the addresses are deployed rather than after. The tell is arithmetic, not intuition: add the host counts, compare against the usable count of the block, and stop if it does not fit.",
-      "Inside the widened /22 there is still 10.40.3.0/24 spare, and the summary advertises it. That is the cost of summarising and it is fine as long as it is written down: anything dropped in there later is inside the wireless advertisement whether it is wireless or not.",
+      "Recognizing an infeasible constraint is a real skill and it is worth doing before the addresses are deployed rather than after. The tell is arithmetic, not intuition: add the host counts, compare against the usable count of the block, and stop if it does not fit.",
+      "Inside the widened /22 there is still 10.40.3.0/24 spare, and the summary advertises it. That is the cost of summarizing and it is fine as long as it is written down: anything dropped in there later is inside the wireless advertisement whether it is wireless or not.",
       "The subnets outside the summary start at 10.40.4.0 rather than 10.40.3.0, because the reservation occupies the whole /22 regardless of how much of it is allocated. A block reserved for a summary is spent the moment the summary exists.",
     ],
   },
@@ -141,7 +141,7 @@ export const PROBLEMS: Problem[] = [
     brief: [
       "Six sites share a /16. Each is sized for what it has now, and the brief is to allocate for what it will have: assume every site doubles.",
       "Allocate on the doubled numbers. The requirement listed for each site is already the doubled figure.",
-      "Keep each site's allocation aligned so it can be summarised as one route, which is the whole reason for giving a site a block rather than a list of subnets.",
+      "Keep each site's allocation aligned so it can be summarized as one route, which is the whole reason for giving a site a block rather than a list of subnets.",
     ],
     block: "10.80.0.0/16",
     requirements: [
@@ -168,7 +168,7 @@ export const PROBLEMS: Problem[] = [
     debrief: [
       "Descending order of size, each block starting where the last one ended, and every allocation lands on its own boundary without any arithmetic beyond addition. That is not luck: a block whose size is a power of two, placed immediately after another whose size is a larger power of two, is always aligned.",
       "Place them in any other order and you have to leave holes to reach the next boundary. Try it: put the annex at 10.80.0.0/24 and the headquarters /20 cannot start until 10.80.16.0, wasting fifteen /24s that nothing can use.",
-      "The whole /16 is 65536 addresses and this plan spends 8192 of them. That is the correct amount of restraint. Sizing to fill the space available is how the next acquisition ends up on a second, unrelated block that nobody can summarise.",
+      "The whole /16 is 65536 addresses and this plan spends 8192 of them. That is the correct amount of restraint. Sizing to fill the space available is how the next acquisition ends up on a second, unrelated block that nobody can summarize.",
     ],
   },
   {
@@ -208,7 +208,7 @@ export const PROBLEMS: Problem[] = [
     slug: "the-firewall-object",
     title: "The Firewall Object",
     difficulty: "hard",
-    tagline: "One rule covers everything that may reach the payment segment, so those subnets must summarise.",
+    tagline: "One rule covers everything that may reach the payment segment, so those subnets must summarize.",
     brief: [
       "The firewall has one rule permitting a set of subnets to reach the payment segment, written as a single object. That object has to be one aligned block, and it must not cover anything that is not permitted.",
       "The three permitted subnets must therefore be contiguous and aligned as a group. The two that are not permitted must sit outside that block.",
@@ -235,7 +235,7 @@ export const PROBLEMS: Problem[] = [
     },
     debrief: [
       "A firewall object written as a CIDR permits the whole range, including the parts nobody has allocated. The three permitted subnets use about 900 of the /22's 1024 addresses, so roughly 124 addresses are permitted to reach the payment segment and belong to nothing.",
-      "That is not a bug in this plan, it is the cost of summarising, and it is the thing to be explicit about. Anything later dropped into the spare space inherits the permission silently, which is how a test VLAN ends up with access nobody granted it.",
+      "That is not a bug in this plan, it is the cost of summarizing, and it is the thing to be explicit about. Anything later dropped into the spare space inherits the permission silently, which is how a test VLAN ends up with access nobody granted it.",
       "The alternatives are worse in their own ways. Three separate firewall objects means three rules to keep in step, and a rule per subnet means the object list grows with the network. Most places choose the summary and write down, somewhere findable, that the block is reserved.",
     ],
   },

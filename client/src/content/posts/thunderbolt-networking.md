@@ -1,7 +1,7 @@
 
 ## The problem
 
-You have two Macs a metre apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you plugged the cable in, macOS made something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that reaches nothing and may have broken your internet. Here is what Thunderbolt networking is underneath, how to prove it is carrying traffic, and where it stops being the right tool.
+You have two Macs a meter apart, each with a port rated at 40 Gbps, and moving a project folder between them is crawling over Wi-Fi or a gigabit switch. Or you plugged the cable in, macOS made something called Thunderbolt Bridge, and now you have an interface with a 169.254 address that reaches nothing and may have broken your internet. Here is what Thunderbolt networking is underneath, how to prove it is carrying traffic, and where it stops being the right tool.
 
 ## What Thunderbolt networking is
 
@@ -92,7 +92,7 @@ Thunderbolt networking is point-to-point. You cannot build a network fabric with
 
 One partial exception, because `bridge0` really is a bridge: a Mac with two Thunderbolt ports connected to two other Macs forwards frames between them at layer 2, so a three-node chain is technically possible. I do not build on it. The middle machine is a single point of failure, it burns CPU forwarding traffic that is none of its business, and closing the loop gives you a broadcast storm unless [spanning tree](/blog/spanning-tree-protocol-deep-dive) is on.
 
-Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a metre, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
+Distance is the other hard limit. Passive Thunderbolt 3 cables carry the full 40 Gbps only up to about half a meter, and longer passive cables drop to 20 Gbps; Thunderbolt 4 tightened this by requiring 40 Gbps on cables up to 2 m. Optical Thunderbolt cables go much further but cost real money and carry no bus power. Ethernet over copper does 100 m for the price of a sandwich.
 
 ## Apple-first, not quite Apple-only
 

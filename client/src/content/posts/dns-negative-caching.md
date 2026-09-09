@@ -88,7 +88,7 @@ the SOA MINIMUM if you are about to create names that clients have already been
 asking for, which happens constantly during a rollout when monitoring probes a
 hostname before it exists.
 
-## Two Related Behaviours, And The Order I Check Things In
+## Two Related Behaviors, And The Order I Check Things In
 
 RFC 8020 says that an NXDOMAIN for a name implies that nothing exists beneath
 it. If the resolver has cached NXDOMAIN for example.com, a query for
@@ -101,7 +101,7 @@ RFC 8767 goes the other direction. It permits a resolver to serve expired data
 when it cannot reach the authoritative servers, which trades strict correctness
 for availability during an outage. If your resolver has stale answer serving
 enabled, "the TTL expired" stops being a guarantee that the next answer is
-fresh. That is usually the behaviour you want, but you should know it is on
+fresh. That is usually the behavior you want, but you should know it is on
 before you use TTL expiry as a reasoning tool.
 
 When a name resolves inconsistently, I do not start by clearing caches. I start

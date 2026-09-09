@@ -9,10 +9,10 @@
  * what is left does not look like a switch with the labels removed, it
  * looks like a placeholder.
  *
- * Modelling it as geometry is not an option, since a 48 port switch has
+ * Modeling it as geometry is not an option, since a 48 port switch has
  * over a hundred separate marks on it. So it is drawn once per device into
  * a canvas and mapped onto the face, with the port block punched out as
- * transparent so the modelled jacks show through the hole rather than being
+ * transparent so the modeled jacks show through the hole rather than being
  * painted over.
  *
  * Everything is positioned from the same chassisLayout the jacks use, so a
@@ -32,7 +32,7 @@ const PX_PER_M = TEX_W / CHASSIS_WIDTH;
 
 const cache = new Map<string, THREE.CanvasTexture | null>();
 
-/** Ink colour: dark print on a pale chassis, pale print on a dark one. */
+/** Ink color: dark print on a pale chassis, pale print on a dark one. */
 function inkFor(finish: string): string {
   const spec = MATERIALS[finish] ?? MATERIALS.dark;
   return spec.pale ? "rgba(58,64,72,0.92)" : "rgba(198,204,212,0.86)";
@@ -62,7 +62,7 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   const ink = inkFor(finish);
   const pale = spec.pale;
 
-  /** Metres to texture pixels. x from the chassis centre, y from its top. */
+  /** Meters to texture pixels. x from the chassis center, y from its top. */
   const px = (x: number) => (x + CHASSIS_WIDTH / 2) * PX_PER_M;
   const py = (y: number) => (h / 2 - y) * PX_PER_M;
   const mm = (n: number) => (n / 1000) * PX_PER_M;
@@ -71,9 +71,9 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   ctx.fillRect(0, 0, TEX_W, TEX_H);
 
   /*
-    Brushed grain. Extruded aluminium is drawn along its length, so the
+    Brushed grain. Extruded aluminum is drawn along its length, so the
     grain runs the width of a rack panel, and it is the reason a real face
-    has a direction to its highlight instead of being flat colour.
+    has a direction to its highlight instead of being flat color.
   */
   ctx.save();
   ctx.globalAlpha = pale ? 0.05 : 0.07;
@@ -131,7 +131,7 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   ctx.fillRect(0, TEX_H - Math.max(1, mm(0.5)), TEX_W, Math.max(1, mm(0.5)));
 
   /*
-    Vent slots, drawn rather than modelled.
+    Vent slots, drawn rather than modeled.
     
     They were geometry sitting a couple of millimetres behind the face,
     which the silkscreen plane then covered completely, because a blanking
@@ -355,7 +355,7 @@ export function faceplateTexture(device: RackDevice): THREE.CanvasTexture | null
   ctx.globalAlpha = 1;
 
   /*
-    Punch the port block out. The jacks are modelled geometry sitting in a
+    Punch the port block out. The jacks are modeled geometry sitting in a
     milled recess behind this plane, so painting over them would bury a few
     hundred parts under a picture of a panel.
   */

@@ -173,7 +173,7 @@ devices get the same resolver and no internal zones.
 The unmanaged devices still win sometimes, and that is the accurate picture:
 this is not a control you enforce, it is a default you make good enough that
 nothing has a reason to route around it. What changed for me was diagnosis
-time. Once "dig works, the browser does not" is a shape you recognise, it is a
+time. Once "dig works, the browser does not" is a shape you recognize, it is a
 ninety second call instead of an evening spent restarting a DNS server that
 was answering correctly the entire time.
 

@@ -33,7 +33,7 @@ export function ModeSwitcher() {
           /*
             aria-current: which mode is current was carried only by the filled
             button variant, so it did not exist for a screen reader or under
-            forced colours.
+            forced colors.
           */
           <Button
             key={mode.id}

@@ -1,12 +1,12 @@
 /**
  * Patch cables, drawn between the ports they actually connect.
  *
- * Modelled on the UniFi Etherlighting Patch Cable (UACC-Cable-Patch-EL),
+ * Modeled on the UniFi Etherlighting Patch Cable (UACC-Cable-Patch-EL),
  * which is the reason this layer is worth drawing at all: it is a Cat6A
  * cable with a 2.5mm white TPE jacket and two translucent booted RJ45
  * connectors, and the boot pipes the switch's own port LED out through the
- * connector. So a rack patched with these has a glowing point of colour at
- * every jack, and the colour means something: link state, VLAN, or
+ * connector. So a rack patched with these has a glowing point of color at
+ * every jack, and the color means something: link state, VLAN, or
  * negotiated speed, depending on how the switch is configured.
  *
  * That detail is why the boots glow here and the jacket does not. A cable
@@ -173,7 +173,7 @@ function Boot({
   const shape = `M ${x - w / 2} ${top} L ${x + w / 2} ${top} L ${x + w * 0.3} ${top + h} L ${x - w * 0.3} ${top + h} Z`;
 
   if (style === "plain") {
-    // An ordinary moulded strain relief: opaque, the jacket's own colour,
+    // An ordinary moulded strain relief: opaque, the jacket's own color,
     // with a highlight down one side and the latch tab on top.
     return (
       <g>

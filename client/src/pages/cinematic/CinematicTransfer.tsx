@@ -3,7 +3,7 @@
  *
  * Two halves that share one instrument. The top is a live model of a path:
  * move the bandwidth, the round trip, the loss or the window, and the three
- * ceilings redraw and the binding one takes over the colour of the screen.
+ * ceilings redraw and the binding one takes over the color of the screen.
  * The bottom is ten complaints, each with one answer, that load their numbers
  * into that same instrument.
  *
@@ -41,11 +41,11 @@ const MiB = 1024 * 1024;
 const GiB = 1024 * 1024 * 1024;
 
 /**
- * The diagnosis owns the colour of the room.
+ * The diagnosis owns the color of the room.
  *
  * Not decoration: a reader who has looked at four of these should be able to
  * tell a loss problem from a window problem before reading a word, because
- * the two have never once been the same colour.
+ * the two have never once been the same color.
  */
 const ACCENT: Record<Limit, StageAccent> = {
   link: "signal",
@@ -223,8 +223,8 @@ export function CinematicTransfer() {
 
   const right = active !== null && answer === active.binding;
   /*
-    Colour follows the reader's own answer while one is on screen and the
-    truth otherwise, so a wrong call turns the room the colour of the thing
+    Color follows the reader's own answer while one is on screen and the
+    truth otherwise, so a wrong call turns the room the color of the thing
     they picked before the correction arrives.
   */
   const accent = ACCENT[answer ?? binding];

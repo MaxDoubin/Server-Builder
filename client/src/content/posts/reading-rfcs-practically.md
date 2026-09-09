@@ -11,7 +11,7 @@ An RFC is a numbered document published by the RFC Editor. The number is permane
 
 That last point is the single most important thing to check, and the thing beginners get wrong most often. You can easily land on a document from decades ago that has been fully replaced. The header block at the top of the page tells you: it will say "Obsoletes: 1234" or, on the old document, "Obsoleted by: 9999." Always look before you invest an hour.
 
-Also check the category. Standards Track documents are the ones defining what implementations should do. Informational documents describe something without standardizing it. Experimental means what it says. Best Current Practice describes recommended operational behaviour rather than protocol format. And not every RFC is serious, since the ones published on the first of April are jokes, some of them very good ones.
+Also check the category. Standards Track documents are the ones defining what implementations should do. Informational documents describe something without standardizing it. Experimental means what it says. Best Current Practice describes recommended operational behavior rather than protocol format. And not every RFC is serious, since the ones published on the first of April are jokes, some of them very good ones.
 
 ## The reading order I use
 

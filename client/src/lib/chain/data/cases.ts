@@ -361,7 +361,7 @@ export const CHAIN_CASES: ChainCase[] = [
     explain: [
       "The chain is complete and correct and ends at Northbay Root CA X1, which is a private CA. Managed laptops have it because a management tool put it there; a contractor's machine has no reason to.",
       "It is not a self-signed certificate, and the distinction matters when someone asks. A self-signed certificate is its own issuer and vouches for nothing. This is a properly issued certificate under a root that this particular client does not happen to trust, which is a fact about the audience, not about the certificate.",
-      "The right answer depends on who the service is for. Internal-only means distributing the root to whoever needs it. Anyone outside the organisation means a publicly trusted certificate, because you cannot ask a contractor to install your CA and you should not want them to.",
+      "The right answer depends on who the service is for. Internal-only means distributing the root to whoever needs it. Anyone outside the organization means a publicly trusted certificate, because you cannot ask a contractor to install your CA and you should not want them to.",
     ],
   },
   {

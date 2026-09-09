@@ -2,7 +2,7 @@
  * A 42U Juniper service provider edge rack.
  *
  * Juniper's range splits differently from Cisco's, and this rack is drawn
- * to show that rather than restating it in a different grey. Two five
+ * to show that rather than restating it in a different gray. Two five
  * rack unit modular chassis sit in the middle and are the reason it
  * exists: an EX9204 switching and an MX240 routing. Everything above them
  * is access and leaf switching that feeds them; everything below is
@@ -203,7 +203,7 @@ export const juniperCoreRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "The second manager, keeping fibre runs off the copper ones. Fibre has a real minimum bend radius and a manager is how you respect it.",
+      role: "The second manager, keeping fiber runs off the copper ones. Fiber has a real minimum bend radius and a manager is how you respect it.",
       family: "blank",
       look: "fingers",
       watts: null,

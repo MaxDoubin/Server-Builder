@@ -108,7 +108,7 @@ export const CASES: Case[] = [
       "quarry.example is served by ns1.quarry.example and ns2.quarry.example, which are inside quarry.example. To find their addresses a resolver needs to ask the servers for quarry.example, which are the things it is trying to find.",
       "Glue is what breaks the circle: A records for those hostnames, held at the parent, handed out with the referral. They are the parent's copy of the child's data, which is why they go stale when the child renumbers and nobody tells the registrar.",
       "The zone file really is correct. Every record inside quarry.example is right, including the A records for its own nameservers, and none of it can be reached. This is why the fault survives every check the zone's owner knows how to run.",
-      "Two ways out. Add glue at the parent, which the registrar does, or move the nameservers to names outside the zone, which is why plenty of organisations run ns1.example-dns.net rather than ns1.their-own-domain.",
+      "Two ways out. Add glue at the parent, which the registrar does, or move the nameservers to names outside the zone, which is why plenty of organizations run ns1.example-dns.net rather than ns1.their-own-domain.",
     ],
   },
   {
@@ -163,7 +163,7 @@ export const CASES: Case[] = [
     explain: [
       "NOERROR with zero answers is not NXDOMAIN. The name exists; it has no AAAA. The application asked for an address family the host does not have.",
       "The distinction matters operationally. NXDOMAIN is a fact about a name across every record type, and a resolver caches it that way. NODATA is a fact about one type, and the same name may answer perfectly for A a microsecond later.",
-      "It also explains behaviour people read as a bug. A dual-stack client asking AAAA then A is not misbehaving, it is doing the only correct thing, and the AAAA NODATA in your logs is the normal case rather than the error.",
+      "It also explains behavior people read as a bug. A dual-stack client asking AAAA then A is not misbehaving, it is doing the only correct thing, and the AAAA NODATA in your logs is the normal case rather than the error.",
     ],
   },
   {
