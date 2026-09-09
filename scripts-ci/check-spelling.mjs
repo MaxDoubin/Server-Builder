@@ -109,11 +109,26 @@ function proseOf(line, inBlockComment) {
   return runs.join(" ");
 }
 
+/**
+ * This file is the one thing it cannot check.
+ *
+ * The word list is the British spellings, and the header quotes more of them
+ * to show the drift that made the gate necessary. check-em-dashes has the same
+ * problem and writes the character it bans as an escape so its source never
+ * contains one; ninety escaped words would be unreadable, so this is an
+ * exemption instead, kept to the single path.
+ *
+ * It only became visible after the first commit. `git ls-files` lists tracked
+ * files, and while this one was new and untracked it was invisible to its own
+ * scan: green locally, red on CI, from a gate correctly reporting itself.
+ */
+const SELF = "scripts-ci/check-spelling.mjs";
+
 const files = execSync(
   "git ls-files 'client/src/**/*.md' 'client/src/**/*.ts' 'client/src/**/*.tsx' " +
     "'scripts-ci/*.ts' 'scripts-ci/*.mjs' 'script/*.ts'",
   { encoding: "utf8" },
-).trim().split("\n").filter(Boolean);
+).trim().split("\n").filter(Boolean).filter((f) => f !== SELF);
 
 const found = [];
 let scanned = 0;
