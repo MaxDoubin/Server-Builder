@@ -30,6 +30,7 @@ import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as LOADS } from "@/lib/load/index";
+import { CASES as THROTTLES } from "@/lib/throttle/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -82,6 +83,7 @@ const OFFSET = {
   nat: 101,
   alerts: 103,
   load: 107,
+  throttle: 109,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -288,6 +290,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Two task counts and a core count. Work out what the load average reads before you look at the curves.",
       href: "/load",
       outOf: LOADS.length,
+    });
+  }
+
+  const capped = pickFor(THROTTLES, day, OFFSET.throttle);
+  if (capped) {
+    out.push({
+      surface: "throttle",
+      eyebrow: "Predict",
+      title: capped.name,
+      blurb: "A quota, a period and a thread count. Work out when in the period the group stops running.",
+      href: "/throttle",
+      outOf: THROTTLES.length,
     });
   }
 

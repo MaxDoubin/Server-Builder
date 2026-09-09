@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as THROTTLE_CASES, asCpuMax as thrMax, asCpuStat as thrStat, everThrottled as thrEver, exhaustsAt as thrExhausts, finishesAt as thrFinishes, limitCpus as thrLimit, ms as thrMs, rate as thrRate, run as thrRun, stat as thrStatOf, correctOption as thrCorrect } from "../client/src/lib/throttle/index";
 import { CASES as LOAD_CASES, LOAD_FREQ as loadFreq, blame as loadBlame, clock as loadClock, correctOption as loadCorrect, countsAt as loadCounts, peak as loadPeak, perCore as loadPerCore, procLine as loadProc, readAt as loadReadAt, run as loadRun, windowOf as loadWindow } from "../client/src/lib/load/index";
 import { CASES as ALERT_CASES, asYaml as alertYaml, clock as alertClock, correctOption as alertCorrect, evaluationTimes as alertTicks, firesAt as alertFires, run as alertRun, staleFrom as alertStale } from "../client/src/lib/alerts/index";
 import { CASES as NAT_CASES, OUTCOME_LABEL as NAT_OUTCOME, correctOption as natCorrect, isPrivate as natIsPrivate, trace as natTrace, wanRoutable as natRoutable } from "../client/src/lib/nat/index";
@@ -869,6 +870,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/nat">It works from outside</a>, ten port forwards and the paths their replies take.</li>
     <li><a href="${SITE_URL}/alerts">The graph crossed the line</a>, ten runs of one alerting rule and what each one actually does.</li>
     <li><a href="${SITE_URL}/load">Forty, and idle</a>, ten readings of the load average and what the number is actually counting.</li>
+    <li><a href="${SITE_URL}/throttle">Thirty percent, and stalling</a>, ten containers under a CPU limit and when the quota runs out.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2163,6 +2165,7 @@ ${JSON.stringify({
     ["It works from outside", "/nat"],
     ["The graph crossed the line", "/alerts"],
     ["Forty, and idle", "/load"],
+    ["Thirty percent, and stalling", "/throttle"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3289,6 +3292,121 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     figure means something different on every machine it is copied to.</li>
   </ol>
   ${backLinks([["/practise", "All practise material"], ["/blog/forty-and-nothing-was-running", "Forty, and nothing was running"], ["/oom", "Something has to die"], ["/alerts", "The graph crossed the line"]])}
+</main>`,
+  });
+
+  // ── cpu quota ──
+  /*
+    The period bars are the argument, and a static page cannot draw them, so
+    the body carries the same information as a table: how far into each
+    period the quota went and how long the group was stopped. Somebody
+    searching "container throttled but cpu usage low" lands here, and the row
+    they need reads 30 percent utilisation next to two throttled periods.
+  */
+  const thrStalled = THROTTLE_CASES.filter((item) => thrEver(item.setup)).length;
+  const thrWorst = [...THROTTLE_CASES]
+    .filter((item) => thrExhausts(item.setup) !== null)
+    .sort((a, b) => (thrExhausts(a.setup) as number) - (thrExhausts(b.setup) as number))[0];
+  const throttleDescription =
+    "CFS bandwidth control is a quota per period rather than a rate. Quota is CPU time and a " +
+    "period is wall clock time, and threads convert between them, so a container with four " +
+    "runnable threads and one CPU of limit spends its whole quota in a quarter of the period and " +
+    `is stopped for the rest. ${THROTTLE_CASES.length} cgroups here, ${thrStalled} of which are ` +
+    "stopped by the quota, including one that reads 30 percent of its limit on every graph and is " +
+    "still throttled.";
+
+  await writePage("throttle", base, {
+    title: "The Container Is at Thirty Percent and It Is Stalling | Max Doubin",
+    description: throttleDescription,
+    canonical: `${SITE_URL}/throttle`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Thirty percent, and stalling",
+  description: throttleDescription,
+  url: `${SITE_URL}/throttle`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "How CFS bandwidth control actually enforces a CPU limit: that quota is CPU time spent in parallel by every runnable thread, so the thread count decides how far into the period the quota lasts; that average utilisation over any window longer than the period cannot show throttling; that the period matters as much as the ratio; that threads beyond the host's core count do not drain quota faster; what cpu.max.burst changes; and why nr_throttled rather than utilisation is the metric to alert on",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The container is at thirty percent and it is stalling</h1>
+  <p>
+    ${THROTTLE_CASES.length} containers under a CPU limit, and the question every time is when in
+    the period the quota runs out. ${thrStalled} of them are stopped by it, one as early as
+    ${esc(thrMs(thrExhausts(thrWorst.setup) as number))} into every 100.
+  </p>
+  <p>
+    CFS bandwidth control is a quota per period, not a rate. Within each period a cgroup may use
+    <code>quota</code> microseconds of CPU time, and once that is spent every thread in it stops
+    until the next period. Quota is CPU time and a period is wall clock time, and threads convert
+    between them: four runnable threads spend a full CPU's worth of quota in a quarter of the
+    period. Which is why a container can read a third of its limit on every graph you have and
+    still be stopped for most of every second.
+  </p>
+  <h2>What each one does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Container</th><th>Limit</th><th>Threads</th><th>Cores</th><th>Quota gone at</th><th>Periods throttled</th><th>Utilisation</th></tr>
+    </thead>
+    <tbody>
+${THROTTLE_CASES.map((item) => {
+  const st = thrStatOf(item.setup);
+  const at = thrExhausts(item.setup);
+  return `      <tr><td>${esc(item.name)}</td><td>${thrLimit(item.setup)}</td>` +
+    `<td>${item.setup.threads}</td><td>${item.setup.cores}</td>` +
+    `<td>${at === null ? "never" : esc(thrMs(at))}</td>` +
+    `<td>${st.nrThrottled} of ${st.nrPeriods}</td>` +
+    `<td>${Math.round(st.utilisation * 100)}%</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${THROTTLE_CASES.map((item) => {
+  const right = thrCorrect(item);
+  const at = thrExhausts(item.setup);
+  const done = thrFinishes(item.setup);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>$ cat /sys/fs/cgroup/.../cpu.max
+${esc(thrMax(item.setup))}
+# ${item.setup.threads} runnable threads on ${item.setup.cores} cores, so ${thrRate(item.setup)} run at once
+
+$ cat /sys/fs/cgroup/.../cpu.stat
+${esc(thrStat(item.setup))}</code></pre>
+    <p>The quota runs out ${at === null ? "at no point in any period" : esc(thrMs(at)) + " into a period"}, and the work ${done === null ? "never finishes: there is always more of it" : "is done at " + esc(thrMs(done))}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real cluster</h2>
+  <ol>
+    <li><code>cat /sys/fs/cgroup/&lt;path&gt;/cpu.stat</code>. <code>nr_throttled</code> against
+    <code>nr_periods</code> is the ratio that matters, and <code>throttled_usec</code> is the wall
+    clock time the group spent stopped. Neither appears on a CPU utilisation graph.</li>
+    <li>Compare the thread count against the limit. A runtime that sized its pool from the node
+    rather than from the cgroup is the usual cause, so GOMAXPROCS, -XX:ActiveProcessorCount, and
+    anything reading nproc directly.</li>
+    <li>Compare the p99 against the period. Throttling puts a shoulder in the latency distribution
+    at roughly the period length, which is 100ms unless somebody changed it.</li>
+    <li><code>cpu.max.burst</code> for workloads whose average is well under the limit and whose
+    load is spiky. In the kernel since 5.14.</li>
+    <li>Do not reach for utilisation. Averaged over any window longer than the period it cannot
+    show throttling at all, and the period is 100 milliseconds.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
 </main>`,
   });
 
@@ -5850,6 +5968,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/nat`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/alerts`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/load`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/throttle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

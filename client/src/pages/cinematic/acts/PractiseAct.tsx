@@ -38,6 +38,7 @@ import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index
 import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
 import { CASES as LOAD_CASES, blame as loadBlame } from "@/lib/load/index";
+import { CASES as THROTTLE_CASES, everThrottled as thrEver } from "@/lib/throttle/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -156,6 +157,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/throttle",
+    eyebrow: "Predict",
+    title: "Thirty percent, and stalling",
+    blurb:
+      "A CPU limit is a quota per period, and threads spend it in parallel. Four of them empty a whole CPU's worth in a quarter of the period and stop for the rest.",
+    count: `${THROTTLE_CASES.length} cgroups, ${THROTTLE_CASES.filter((item) => thrEver(item.setup)).length} being stopped`,
   },
   {
     href: "/load",

@@ -65,8 +65,18 @@ const INDEX = path.join(DIST, "index.html");
  * keystroke on any page. So the cost is real, small, and the right shape, and
  * the number to watch is roughly a third of a kilobyte per surface rather
  * than anything alarming.
+ *
+ * 696 KB, raised from 694 by /load and /throttle together. Measured the same
+ * way rather than assumed, because the last raise here was written up from a
+ * guess: grepping the entry for a throttle case slug, for GOMAXPROCS and for
+ * cfs_period_us finds nothing at all, so no case data or prose has leaked in.
+ * What is there is the registration surface, which is the route, the lazy
+ * import identifier, four references to the path, and the palette entry at
+ * 361 source bytes. Two surfaces cost 1.8 KB between them, which is the
+ * third of a kilobyte each the note above predicts plus the second one's
+ * longer term list.
  */
-const BUDGET_BYTES = 694 * 1024;
+const BUDGET_BYTES = 696 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
