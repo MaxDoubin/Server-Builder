@@ -119,6 +119,7 @@ export const PRACTISE_SURFACES: PractiseSurface[] = [
   { href: "/alerts", eyebrow: "Predict", title: "The graph crossed the line", group: "diagnose" , reading: ["the-alert-was-pending-all-day", "prometheus-server-monitoring", "network-monitoring-system-build"] },
   { href: "/load", eyebrow: "Predict", title: "Forty, and idle", group: "diagnose" , reading: ["forty-and-nothing-was-running", "linux-disk-io-troubleshooting", "linux-page-cache-and-io"] },
   { href: "/throttle", eyebrow: "Predict", title: "Thirty percent, and stalling", group: "diagnose" , reading: ["stopped-not-slow", "cgroups-v2-resource-limits", "container-orchestration-basics"] },
+  { href: "/ports", eyebrow: "Predict", title: "Out of ports", group: "diagnose" , reading: ["tcp-congestion-control-basics", "linux-network-tuning-without-cargo-cult", "load-balancing-l4-vs-l7"] },
   { href: "/resolve", eyebrow: "Trace", title: "DNS resolution", group: "diagnose"  , reading: ["four-faults-one-sentence", "recursive-resolver-internals", "dns-negative-caching"] },
   { href: "/chain", eyebrow: "Attribute", title: "Certificate chains", group: "diagnose"  , reading: ["ssl-tls-certificates-explained", "certificate-rotation-automation", "certificate-lifetimes-are-200-days-now"] },
   { href: "/mtu", eyebrow: "Trace", title: "Ping works and the transfer hangs", group: "diagnose" , noProgress: "a model to explore rather than a set of exercises with answers" , reading: ["mtu-mismatch-troubleshooting", "mtu-black-hole-troubleshooting", "jumbo-frames-path-mtu"] },

@@ -39,6 +39,7 @@ import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
 import { CASES as LOAD_CASES, blame as loadBlame } from "@/lib/load/index";
 import { CASES as THROTTLE_CASES, everThrottled as thrEver } from "@/lib/throttle/index";
+import { CASES as PORT_CASES, exhausts as portExhausts } from "@/lib/ports/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -157,6 +158,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Every instinct says session handling, and the session code is fine, because the application never ran. A cache answered from storage, correctly.",
     count: `${CACHE_CASES.length} sequences, ${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} leaking`,
+  },
+  {
+    href: "/ports",
+    eyebrow: "Predict",
+    title: "Out of ports",
+    blurb:
+      "A socket is four values, not one, so the ephemeral range is not a pool being shared out. Work out which connection fails and which is fine.",
+    count: `${PORT_CASES.length} hosts, ${PORT_CASES.filter((item) => portExhausts(item.setup)).length} running out`,
   },
   {
     href: "/throttle",

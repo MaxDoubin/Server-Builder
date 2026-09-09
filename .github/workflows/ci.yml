@@ -600,6 +600,17 @@ jobs:
       - name: CPU quotas stop where the kernel would stop them
         run: npx tsx scripts-ci/check-throttle.ts
 
+      # The port surface. Its own additions to the usual shape are a check
+      # that a destination's occupancy and headroom are independent of the
+      # other destinations, which is the four tuple and the whole point, and
+      # a check that tcp_fin_timeout changes nothing anywhere, which one case
+      # asserts in prose and would otherwise be trusted rather than tested.
+      # A blinding of the range arithmetic passed at first because the sed
+      # that was meant to break it matched nothing, which is worth the note:
+      # a blinding that does not apply looks exactly like a gate that works.
+      - name: Ports run out where the kernel would run out
+        run: npx tsx scripts-ci/check-ports.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

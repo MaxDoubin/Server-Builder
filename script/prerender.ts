@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as PORT_CASES, TIME_WAIT_SECONDS as portTw, asSysctl as portSysctl, count as portCount, exhausts as portExhausts, heldBy as portHeldBy, loads as portLoads, maxRate as portMaxRate, portsHeld, rangeSize as portRangeSize, correctOption as portCorrect } from "../client/src/lib/ports/index";
 import { CASES as THROTTLE_CASES, asCpuMax as thrMax, asCpuStat as thrStat, everThrottled as thrEver, exhaustsAt as thrExhausts, finishesAt as thrFinishes, limitCpus as thrLimit, ms as thrMs, rate as thrRate, run as thrRun, stat as thrStatOf, correctOption as thrCorrect } from "../client/src/lib/throttle/index";
 import { CASES as LOAD_CASES, LOAD_FREQ as loadFreq, blame as loadBlame, clock as loadClock, correctOption as loadCorrect, countsAt as loadCounts, peak as loadPeak, perCore as loadPerCore, procLine as loadProc, readAt as loadReadAt, run as loadRun, windowOf as loadWindow } from "../client/src/lib/load/index";
 import { CASES as ALERT_CASES, asYaml as alertYaml, clock as alertClock, correctOption as alertCorrect, evaluationTimes as alertTicks, firesAt as alertFires, run as alertRun, staleFrom as alertStale } from "../client/src/lib/alerts/index";
@@ -871,6 +872,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/alerts">The graph crossed the line</a>, ten runs of one alerting rule and what each one actually does.</li>
     <li><a href="${SITE_URL}/load">Forty, and idle</a>, ten readings of the load average and what the number is actually counting.</li>
     <li><a href="${SITE_URL}/throttle">Thirty percent, and stalling</a>, ten containers under a CPU limit and when the quota runs out.</li>
+    <li><a href="${SITE_URL}/ports">Out of ports</a>, ten hosts against one ephemeral range and which connection fails first.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2166,6 +2168,7 @@ ${JSON.stringify({
     ["The graph crossed the line", "/alerts"],
     ["Forty, and idle", "/load"],
     ["Thirty percent, and stalling", "/throttle"],
+    ["Out of ports", "/ports"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3407,6 +3410,120 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     show throttling at all, and the period is 100 milliseconds.</li>
   </ol>
   ${backLinks([["/practise", "All practise material"], ["/blog/stopped-not-slow", "Stopped, not slow"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── ephemeral ports ──
+  /*
+    The per-destination split is the argument, so the static body carries it
+    as a table with one row per destination rather than a total. Somebody
+    searching "cannot assign requested address" lands here and the row they
+    need shows one destination over its range while the host's total is
+    larger than the range and irrelevant.
+  */
+  const portsFailing = PORT_CASES.filter((item) => portExhausts(item.setup)).length;
+  const portsDefaultCeiling = Math.floor(28232 / portTw);
+  const portsDescription =
+    "A socket is identified by (saddr, sport, daddr, dport), so the ephemeral port range is not a " +
+    "pool shared between destinations: each one gets the whole range. TIME_WAIT is " +
+    `${portTw} seconds, a compile time constant with no sysctl behind it, so a client closing its ` +
+    `own connections tops out at ${portsDefaultCeiling} a second to one destination on the default ` +
+    `range. ${PORT_CASES.length} hosts here, ${portsFailing} of which run out, and tcp_fin_timeout ` +
+    "changes none of them because it controls FIN_WAIT2.";
+
+  await writePage("ports", base, {
+    title: "It Ran Out of Ports and There Are Sixty Thousand of Them | Max Doubin",
+    description: portsDescription,
+    canonical: `${SITE_URL}/ports`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Out of ports",
+  description: portsDescription,
+  url: `${SITE_URL}/ports`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Why ephemeral port exhaustion is per destination rather than per host, because the kernel's socket lookup is on the four tuple; that TIME_WAIT is TCP_TIMEWAIT_LEN, a compile time 60 seconds with no sysctl, so the ceiling is the range divided by sixty; that tcp_fin_timeout controls FIN_WAIT2 and changes nothing here; that a server holding TIME_WAIT on its listening port consumes none of its own range; what tcp_tw_reuse does and does not cover; and why a connection pool removes the mechanism rather than reducing the number",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>It ran out of ports and there are sixty thousand of them</h1>
+  <p>
+    ${PORT_CASES.length} hosts against one ephemeral port range, and the question every time is
+    whether it runs out and which connection fails. ${portsFailing} of them do run out, one of them
+    at two hundred connections a second.
+  </p>
+  <p>
+    Three things decide this and the one everybody reaches for is not among them. A socket is
+    identified by <code>(saddr, sport, daddr, dport)</code>, so the same local port is free for a
+    different destination and the range is not a pool being shared out. TIME_WAIT is ${portTw}
+    seconds, a compile time constant in <code>include/net/tcp.h</code> with no sysctl behind it, so
+    the occupancy is simply the rate times sixty. And <code>tcp_fin_timeout</code> is a different
+    state, FIN_WAIT2, which defaults to the same sixty and is exactly why the two get confused.
+  </p>
+  <h2>What each host is doing</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Destination</th><th>Rate</th><th>Ports held</th><th>Range</th><th>Over?</th></tr>
+    </thead>
+    <tbody>
+${PORT_CASES.flatMap((item) =>
+  portLoads(item.setup).map(
+    (load, index) =>
+      `      <tr><td>${index === 0 ? esc(item.name) : ""}</td>` +
+      `<td>${esc(load.destination.label)}</td>` +
+      `<td>${load.destination.rate}/s</td>` +
+      `<td>${esc(portCount(load.held))}</td>` +
+      `<td>${esc(portCount(load.available))}</td>` +
+      `<td>${load.exhausted ? "yes" : "no"}</td></tr>`,
+  ),
+).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${PORT_CASES.map((item) => {
+  const right = portCorrect(item);
+  const ceiling = portMaxRate(item.setup);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>$ sysctl net.ipv4.ip_local_port_range net.ipv4.tcp_tw_reuse net.ipv4.tcp_fin_timeout
+${esc(portSysctl(item.setup))}
+# ${esc(portCount(portRangeSize(item.setup)))} ports, closed by the ${esc(portHeldBy(item.setup))}
+
+$ ss -tan state time-wait | wc -l
+${portsHeld(item.setup)}</code></pre>
+    <p>The ceiling to one destination here is ${esc(portCount(ceiling))}${ceiling === Infinity ? "" : " connections a second"}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>The fix: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real host</h2>
+  <ol>
+    <li><code>ss -tan state time-wait | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -rn</code>.
+    The split by destination, which is the only view that means anything. A large total across many
+    destinations is normal and a moderate total against one is the failure.</li>
+    <li><code>sysctl net.ipv4.ip_local_port_range</code>, then divide by ${portTw}. That is the
+    ceiling per destination, and on the default range it is ${portsDefaultCeiling} connections a
+    second, which is much lower than the size of the range suggests.</li>
+    <li>Work out which end closes. Whoever sends the first FIN holds TIME_WAIT, and a server
+    holding it on its listening port is consuming none of its own ephemeral range.</li>
+    <li><code>dmesg</code> and the application's own errors, for <code>EADDRNOTAVAIL</code>, which
+    is what a client sees when the range is full and reads as "cannot assign requested address".</li>
+    <li>Do not reach for <code>tcp_fin_timeout</code>. It is FIN_WAIT2, TIME_WAIT has no sysctl, and
+    the two default to the same number, which is the whole reason for the confusion.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/nat", "It works from outside"], ["/transfer", "Why the transfer is slow"]])}
 </main>`,
   });
 
@@ -5969,6 +6086,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/alerts`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/load`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/throttle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/ports`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },
