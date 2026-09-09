@@ -3523,7 +3523,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <li>Do not reach for <code>tcp_fin_timeout</code>. It is FIN_WAIT2, TIME_WAIT has no sysctl, and
     the two default to the same number, which is the whole reason for the confusion.</li>
   </ol>
-  ${backLinks([["/practise", "All practise material"], ["/nat", "It works from outside"], ["/transfer", "Why the transfer is slow"]])}
+  ${backLinks([["/practise", "All practise material"], ["/blog/it-ran-out-at-four-hundred-and-seventy", "It ran out at four hundred and seventy"], ["/nat", "It works from outside"], ["/transfer", "Why the transfer is slow"]])}
 </main>`,
   });
 
