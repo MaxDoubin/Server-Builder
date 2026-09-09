@@ -95,7 +95,7 @@ function MountedDevice({
         if (!s) continue;
         s.transparent = dimmed;
         s.opacity = dimmed ? 0.2 : 1;
-        // A selected device lifts rather than tints, so its real colour is
+        // A selected device lifts rather than tints, so its real color is
         // still readable while it is the one being moved.
         s.emissive = new THREE.Color(selected ? 0x2a3a1e : 0x000000);
         s.emissiveIntensity = selected ? 1 : 0;
@@ -112,7 +112,7 @@ function MountedDevice({
   /*
     The vendor exports do not agree which horizontal axis carries the width:
     35 of the 51 rack devices put it on Z and 16 on X. Measuring the box
-    beats trusting a catalogue field, because a measurement cannot go stale.
+    beats trusting a catalog field, because a measurement cannot go stale.
     Our own models are drawn width on X by construction, so they need no turn.
   */
   const yaw = useMemo(() => {
@@ -241,7 +241,7 @@ export function BuilderScene({
 }) {
   /*
     Frame on the rack's own height rather than a fixed distance, so a 6U
-    shelf and a 42U cabinet both fill the viewport. The frame is centred on
+    shelf and a 42U cabinet both fill the viewport. The frame is centered on
     the world origin by lifting it half its own height, which is also what
     the orbit target then points at.
   */

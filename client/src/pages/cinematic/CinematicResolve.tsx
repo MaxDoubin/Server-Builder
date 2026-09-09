@@ -13,9 +13,9 @@ import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { CASES, WORLD, correctOption, resolve, type Case, type RRType } from "@/lib/resolve/index";
 import { pluralise } from "@/lib/plural";
-import { PractiseStage } from "@/components/practise/PractiseStage";
+import { PracticeStage } from "@/components/practice/PracticeStage";
 import { recordSolvedResolves } from "@/lib/resolve/progress";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -78,12 +78,12 @@ export function CinematicResolve() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={accent} mood={mood} flashKey={result.queries.length} />
+      <PracticeStage accent={accent} mood={mood} flashKey={result.queries.length} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Start at the root
+              · Practice · Start at the root
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Resolve.

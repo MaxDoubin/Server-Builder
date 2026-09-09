@@ -114,13 +114,13 @@ Pick your CPU based on your actual workload:
 
 ## What breaks
 
-**Licensing costs more than the CPU.** Windows Server is licensed per core with a minimum of 8 cores per processor and 16 per server, and VMware moved vSphere to per-core licensing with a per-CPU minimum. Doubling your core count can double a recurring bill that dwarfs the hardware. Work out the licence cost before you pick the part.
+**Licensing costs more than the CPU.** Windows Server is licensed per core with a minimum of 8 cores per processor and 16 per server, and VMware moved vSphere to per-core licensing with a per-CPU minimum. Doubling your core count can double a recurring bill that dwarfs the hardware. Work out the license cost before you pick the part.
 
 **Unbalanced memory population.** Six channels per socket on Cascade Lake means DIMMs go in sixes. Install eight per socket because it seemed like a round number and two channels carry double load while others sit idle. You lose bandwidth silently, and nothing in the BIOS complains.
 
 **Ignoring NUMA when sizing VMs.** A VM with more vCPUs than one socket has cores, or more RAM than one node has, gets scheduled across both and pays the remote memory penalty on a large fraction of its accesses. Size guests to fit a node, or configure vNUMA so the guest OS at least knows the topology.
 
-**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behaviour, not a fault.
+**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behavior, not a fault.
 
 **Assuming TDP is power draw.** TDP is a thermal design figure for sizing a cooler, not a wattmeter reading. Real draw depends on the power limits configured in firmware and on the workload. Size your UPS and your circuit from measured wall power, not from adding up TDP numbers.
 

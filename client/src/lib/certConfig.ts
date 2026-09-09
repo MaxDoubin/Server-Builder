@@ -72,7 +72,7 @@ const securityPlus: Cert = {
   covers:
     "The baseline of practical security: core concepts, threats and mitigations, secure architecture, day-to-day operations, and governance. It is broad and vendor-neutral, aimed at validating hands-on security fundamentals.",
   worth:
-    "A widely recognised entry point into security roles. Security+ is accredited to the ISO/IEC 17024 standard and is approved for several U.S. Department of Defense baseline roles under DoD 8570 / 8140, which is why it appears so often in job requirements.",
+    "A widely recognized entry point into security roles. Security+ is accredited to the ISO/IEC 17024 standard and is approved for several U.S. Department of Defense baseline roles under DoD 8570 / 8140, which is why it appears so often in job requirements.",
   officialUrl: "https://www.comptia.org/certifications/security",
   domains: [
     {
@@ -169,7 +169,7 @@ const networkPlus: Cert = {
     {
       name: "Network Security",
       weight: "14%",
-      summary: "Segmentation, hardening, common attacks, and defence at the network layer.",
+      summary: "Segmentation, hardening, common attacks, and defense at the network layer.",
       resources: [
         { label: "NIST Cybersecurity Framework", url: "https://www.nist.gov/cyberframework" },
         onSite.ncl,
@@ -200,7 +200,7 @@ const ccna: Cert = {
   covers:
     "A broad associate-level foundation in networking: fundamentals, switching and wireless access, IP connectivity and routing, IP services, security fundamentals, and an introduction to automation and programmability.",
   worth:
-    "Cisco's flagship associate credential and one of the most recognised networking certifications in the industry. It goes deeper on routing and switching than the vendor-neutral exams and is a common gateway to network engineering roles.",
+    "Cisco's flagship associate credential and one of the most recognized networking certifications in the industry. It goes deeper on routing and switching than the vendor-neutral exams and is a common gateway to network engineering roles.",
   officialUrl: "https://www.cisco.com/site/us/en/learn/training-certifications/certifications/enterprise/ccna/index.html",
   domains: [
     {
@@ -273,7 +273,7 @@ const techPlus: Cert = {
   covers:
     "Foundational IT literacy: basic hardware and software concepts, data fundamentals, programming logic, databases, and security basics.",
   worth:
-    "An entry point that establishes core IT vocabulary and concepts before the more specialised networking and security certifications.",
+    "An entry point that establishes core IT vocabulary and concepts before the more specialized networking and security certifications.",
   officialUrl: "https://www.comptia.org/certifications/tech",
   domains: [],
 };

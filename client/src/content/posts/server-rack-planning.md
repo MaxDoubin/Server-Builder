@@ -34,9 +34,9 @@ I planned my rack layout on paper before installing anything. The general rules:
 
 Two of those deserve expanding, because the reasoning matters more than the rule.
 
-The weight rule is about the centre of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
+The weight rule is about the center of gravity, and it is a safety rule rather than a tidiness one. A UPS is the densest object in the rack, often 60 to 100 pounds in 2U, and putting it at the top of a four-post frame on castors makes a genuinely dangerous object. Batteries at the bottom, always.
 
-The blanking panel rule is not about organisation at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
+The blanking panel rule is not about organization at all, despite how I wrote it originally. An open U in a populated rack is a short circuit for air: exhaust from the back is at lower pressure than the cold front, so hot air flows through the gap and straight back into the intake of whatever is above it. Blanking panels are cheap and they measurably drop intake temperatures. Fill every gap in front of running equipment, not just the ones that look untidy.
 
 ## My Layout (Top to Bottom)
 

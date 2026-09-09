@@ -41,7 +41,7 @@ import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
 import { HANDSHAKES } from "@/lib/handshake/index";
 import { CONFIGS as ARRAY_CONFIGS, LEVEL_LABEL } from "@/lib/array/index";
-import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTISE_SURFACES } from "@/lib/practiseSurfaces";
+import { GROUPS, GROUP_BLURB, GROUP_HEADING, PRACTICE_SURFACES } from "@/lib/practiceSurfaces";
 import { SCENARIOS } from "@/lib/scenarios/index";
 import { loadFound } from "@/lib/scenarios/progress";
 import { LABS } from "@/lib/labs/labs";
@@ -76,12 +76,12 @@ interface Pillar {
   progress: { done: number; total: number; noun: string } | null;
 }
 
-export function CinematicPractise() {
+export function CinematicPractice() {
   useSEO({
-    title: "Practise | Max Doubin",
+    title: "Practice | Max Doubin",
     description:
       "Everything on this site you do rather than read: branching incident scenarios with many endings, a simulated Linux host with a fault in it, packet captures with a real display filter bar, spaced-repetition flashcards and exam objective sheets.",
-    canonical: `${SITE_URL}/practise`,
+    canonical: `${SITE_URL}/practice`,
   });
 
   const [mounted, setMounted] = useState(false);
@@ -131,7 +131,7 @@ export function CinematicPractise() {
       title: "Incident scenarios",
       blurb:
         "The first fifteen minutes of an incident, made repeatable. Multiple choice, many endings, and every ending says what separated it from the best one.",
-      reachFor: "you want to practise deciding under pressure with incomplete information",
+      reachFor: "you want to practice deciding under pressure with incomplete information",
       stats: [
         `${SCENARIOS.length} scenarios`,
         `${totals.scenes} scenes`,
@@ -243,7 +243,7 @@ export function CinematicPractise() {
       stats: [
         `${PLANS.length} plans`,
         `${PLANS.reduce((sum, p) => sum + p.requirements.length, 0)} subnets`,
-        "marked on behaviour",
+        "marked on behavior",
       ],
       progress: { done: solvedPlans, total: PLANS.length, noun: "plans finished" },
     },
@@ -588,7 +588,7 @@ export function CinematicPractise() {
               · Everything you do rather than read
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
-              Practise.
+              Practice.
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Reading about an incident and being in one are different skills, and only one of them
@@ -632,14 +632,14 @@ export function CinematicPractise() {
               >
                 {GROUP_HEADING[group]}{" "}
                 <span className="text-[hsl(var(--brand-signal))]">
-                  {PRACTISE_SURFACES.filter((surface) => surface.group === group).length}
+                  {PRACTICE_SURFACES.filter((surface) => surface.group === group).length}
                 </span>
               </a>
             ))}
           </nav>
 
           {/*
-            Grouped by the reader's situation, from the practise registry.
+            Grouped by the reader's situation, from the practice registry.
 
             This was one flat list of eighteen cards, which on a phone was
             twelve screens of scrolling with nothing to navigate by. Somebody
@@ -648,7 +648,7 @@ export function CinematicPractise() {
             knowing which of eighteen subjects that maps to.
           */}
           {GROUPS.map((group) => {
-            const inGroup = PRACTISE_SURFACES.filter((surface) => surface.group === group);
+            const inGroup = PRACTICE_SURFACES.filter((surface) => surface.group === group);
             const cards = inGroup
               .map((surface) => pillars.find((pillar) => pillar.href === surface.href))
               .filter((pillar): pillar is Pillar => pillar !== undefined);

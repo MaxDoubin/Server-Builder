@@ -63,7 +63,7 @@ mount -o remount,commit=5 /data
 The commit interval is worth knowing. By default a journal transaction is
 flushed every few seconds, so the worst case for metadata is a few seconds of
 work. Raising it reduces write amplification on a busy filesystem and widens
-the window you lose in a crash. That is a real dial, not a micro optimisation.
+the window you lose in a crash. That is a real dial, not a micro optimization.
 
 ## What the journal does not do
 

@@ -4,7 +4,7 @@
  * The site ships as static files, so game-context runs with useStaticData
  * and generates its racks locally. Everything else the API would have
  * supplied stayed empty, which left the ops dashboards reporting a data
- * centre with 500 racks, no network, no alerts and no incidents. These
+ * center with 500 racks, no network, no alerts and no incidents. These
  * builders fill that in from the racks that actually exist.
  *
  * Everything here is deterministic: the same rack count always produces the

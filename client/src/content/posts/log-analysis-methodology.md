@@ -139,7 +139,7 @@ Also learn the difference between "connection refused" and "connection timed out
 
 Checking logs on individual servers is fine for a few machines. Once you have more than five, centralized logging is essential. I send all syslog data to a central server where I can search across all machines from one interface. This also means I have log copies even if the original server's logs are lost.
 
-Two rules make it useful rather than decorative. Ship over TCP, because UDP silently drops exactly when a burst of interesting events arrives. And synchronise clocks with NTP across everything that logs, because cross-machine correlation is the whole point and it is impossible if two hosts disagree about what time it is.
+Two rules make it useful rather than decorative. Ship over TCP, because UDP silently drops exactly when a burst of interesting events arrives. And synchronize clocks with NTP across everything that logs, because cross-machine correlation is the whole point and it is impossible if two hosts disagree about what time it is.
 
 ## The NCL connection
 

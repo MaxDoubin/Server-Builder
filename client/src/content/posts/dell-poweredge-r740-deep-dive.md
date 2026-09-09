@@ -25,7 +25,7 @@ One of the things that separates enterprise servers from consumer hardware is ou
 
 I cannot overstate how much this matters in a lab environment. When you are testing things and inevitably break an OS installation, being able to remotely access the console and reinstall without physically touching the machine saves hours.
 
-Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the licence is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
+Now the honest part, and it is the thing to check before you buy: the two features I just praised are license-gated. iDRAC9 comes in Express, Enterprise, and Datacenter tiers. **Virtual Console and Virtual Media require Enterprise.** An Express-licensed R740 gives you health monitoring, power readings, and a web UI, and no remote screen. A used server listed without mentioning the license usually has Express, and the license is a real cost added after the fact. If the listing says "iDRAC Enterprise", that is worth actual money.
 
 Practical access notes. iDRAC defaults to DHCP on the dedicated management port, with 192.168.0.120 as the static fallback. Older units use `root` / `calvin`; later ones have a unique default password printed on the pull-out service tag at the front of the chassis. Change it either way, and put the iDRAC on a management VLAN with no route to the internet. It is a full computer with its own network stack and power control over your server, and it runs whether or not the host is powered on. A BMC exposed to the internet is the classic way an otherwise well run lab gets owned.
 
@@ -75,7 +75,7 @@ The R740 is the right answer when you want many cores, a lot of ECC memory, real
 
 Used R740s are available from resellers and auction sites. Prices vary a lot based on configuration, but you can get a solid base system for a reasonable price and add memory and drives over time. Buy from reputable sellers, check the service tag for warranty status, and inspect the drive backplane before committing.
 
-The checklist I now run before buying, all of it from the sections above: how many CPUs, how many DIMMs and in what population, which iDRAC licence, which storage controller, which backplane, are the risers present, which PSUs and at what input voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, frequently missing, and cost more separately than you expect.
+The checklist I now run before buying, all of it from the sections above: how many CPUs, how many DIMMs and in what population, which iDRAC license, which storage controller, which backplane, are the risers present, which PSUs and at what input voltage, and are rails included. Rails are the sneaky one. They are chassis-specific, frequently missing, and cost more separately than you expect.
 
 ## References
 

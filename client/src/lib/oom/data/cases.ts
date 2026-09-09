@@ -271,7 +271,7 @@ export const CASES: Case[] = [
     slug: "nothing-left-to-kill",
     name: "Out of memory and no killable processes",
     brief:
-      "A 2 GiB appliance. Every service was hardened at build time with oom_score_adj -1000, which passed review as defence in depth. Memory runs out.",
+      "A 2 GiB appliance. Every service was hardened at build time with oom_score_adj -1000, which passed review as defense in depth. Memory runs out.",
     machine: {
       ram: 2048,
       swap: 0,

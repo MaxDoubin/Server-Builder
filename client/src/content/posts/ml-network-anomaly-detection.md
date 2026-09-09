@@ -1,7 +1,7 @@
 
 ## The Pitch and the Catch
 
-The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterised. A model that learns normal behaviour could flag the unusual without knowing in advance what unusual looks like.
+The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterised. A model that learns normal behavior could flag the unusual without knowing in advance what unusual looks like.
 
 The catch is arithmetic, and it is the first thing I would check on any such system. Everything else, the model architecture, the feature engineering, the training pipeline, is downstream of whether the numbers can work at all.
 
@@ -87,7 +87,7 @@ I would also insist on explainability. An alert that says "anomalous" with a sco
 
 ## The Honest Summary
 
-I think there is real value in this space, mostly in reducing noise and in ranking alerts rather than in generating new ones from nothing. Where I stay sceptical is any claim of catching novel attacks with a low enough false positive rate to be usable, because the base rate arithmetic is unforgiving and it does not care how good the model is.
+I think there is real value in this space, mostly in reducing noise and in ranking alerts rather than in generating new ones from nothing. Where I stay skeptical is any claim of catching novel attacks with a low enough false positive rate to be usable, because the base rate arithmetic is unforgiving and it does not care how good the model is.
 
 Run the numbers first. If the alert volume is not something a real team can work through every day, nothing else about the system matters.
 

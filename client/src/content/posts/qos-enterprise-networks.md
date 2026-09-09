@@ -9,7 +9,7 @@ The main use cases: ensuring voice (VoIP) stays clear even when the network is b
 
 ## What QoS cannot do
 
-QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behaviour through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
+QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behavior through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
 
 QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honour your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
 
@@ -21,7 +21,7 @@ QoS also only applies where you control the queue. Marking a packet does nothing
 
 **Policing and shaping:** Limit the bandwidth available to specific traffic classes. Shaping buffers excess traffic and sends it later; policing drops it.
 
-The piece people skip is the trust boundary. Every host can set its own DSCP values, and an application that marks its own traffic as expedited forwarding will happily starve your phones. Decide which ports you trust (an IP phone, a known server) and rewrite the DSCP to zero on everything else at the access port. Classification you did not authorise is not classification, it is a request from an untrusted device.
+The piece people skip is the trust boundary. Every host can set its own DSCP values, and an application that marks its own traffic as expedited forwarding will happily starve your phones. Decide which ports you trust (an IP phone, a known server) and rewrite the DSCP to zero on everything else at the access port. Classification you did not authorize is not classification, it is a request from an untrusted device.
 
 ## Where the bits actually live
 

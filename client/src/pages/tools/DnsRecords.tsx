@@ -226,7 +226,7 @@ function CommandLine({ command }: { command: string }) {
  *
  * Somebody arriving here rarely knows they want a CAA record. They know they
  * want "the one that says which CA may issue", or they have a zone file in
- * front of them with a token they do not recognise. So the purpose text, the
+ * front of them with a token they do not recognize. So the purpose text, the
  * example zone line and the gotcha are all searched, and every term has to
  * match somewhere, which makes two words narrow rather than widen.
  */

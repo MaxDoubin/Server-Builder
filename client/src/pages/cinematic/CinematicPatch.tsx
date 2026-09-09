@@ -21,8 +21,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   FINDINGS,
@@ -138,7 +138,7 @@ export function CinematicPatch() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={answered ? ACCENT[truth] : "signal"} mood={mood} flashKey={0} />
+      <PracticeStage accent={answered ? ACCENT[truth] : "signal"} mood={mood} flashKey={0} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
@@ -408,10 +408,10 @@ export function CinematicPatch() {
             </Link>
             , and the rest is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

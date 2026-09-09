@@ -4,7 +4,7 @@
  * The distinguishing feature of a hard lab here is not more commands, it is
  * that the obvious measurement says everything is fine. Each of these has a
  * signal that looks healthy and a second measurement that does not, and the
- * skill being practised is knowing the second one exists.
+ * skill being practiced is knowing the second one exists.
  */
 
 import { baseMachine, type Machine } from "./machine";

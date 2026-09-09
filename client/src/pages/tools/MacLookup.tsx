@@ -2,7 +2,7 @@
  * MAC address normaliser, OUI lookup, and first-octet bit decoder.
  *
  * The vendor table is a curated subset of the IEEE registry, not a copy of
- * it: roughly ninety prefixes that are worth recognising on sight, weighted
+ * it: roughly ninety prefixes that are worth recognizing on sight, weighted
  * towards hypervisors and network gear. The page says so, because a partial
  * table that pretends to be complete is worse than no table.
  */

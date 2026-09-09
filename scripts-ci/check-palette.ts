@@ -7,7 +7,7 @@
  * nothing is findable. That only holds while the palette knows about every
  * page, and nothing tells you when it stops.
  *
- * It had stopped. Sixteen practise surfaces and reference pages had been
+ * It had stopped. Sixteen practice surfaces and reference pages had been
  * built, shipped, linked from the footer and the front door, and none of
  * them was in the palette. Typing "firewall" returned articles that mention
  * firewalls, and not the firewall exercise. Nothing was broken, no gate

@@ -1,7 +1,7 @@
 /**
  * Well-known and commonly-encountered TCP and UDP ports.
  *
- * Curated rather than scraped: every entry is a port worth recognising on
+ * Curated rather than scraped: every entry is a port worth recognizing on
  * sight during a scan, a packet capture, or a firewall review. Ports whose
  * assignment is by convention rather than by IANA registration say so in the
  * description, because "9000 is PHP-FPM" is a habit, not a standard.
@@ -88,7 +88,7 @@ const PORTS: PortEntry[] = [
     port: 49,
     proto: "TCP",
     service: "TACACS+",
-    description: "Cisco AAA for device administration, with per-command authorisation.",
+    description: "Cisco AAA for device administration, with per-command authorization.",
     note: "Encrypts the whole payload, unlike RADIUS which only protects the password.",
   },
   {
@@ -676,7 +676,7 @@ const PORTS: PortEntry[] = [
     port: 5061,
     proto: "TCP",
     service: "SIP over TLS",
-    description: "SIP signalling protected by TLS. Media still needs SRTP separately.",
+    description: "SIP signaling protected by TLS. Media still needs SRTP separately.",
   },
   {
     port: 5222,

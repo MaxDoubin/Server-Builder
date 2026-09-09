@@ -25,7 +25,7 @@ The per unit output lists every hardening setting, whether it is enabled, and an
 exposure weight. It is a checklist with the reasoning attached. Run it on a
 default unit and the output is long and unflattering, which is the point.
 
-Do not treat the numeric score as a target to optimise. Some settings do not
+Do not treat the numeric score as a target to optimize. Some settings do not
 apply to some services, and turning on something that breaks your application to
 improve a number is not security work. Use it as a list of things to consider.
 

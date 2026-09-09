@@ -22,8 +22,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   CHAINS,
@@ -49,7 +49,7 @@ import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";
 
-/** What kind of trouble the chain is in, which is what the room takes its colour from. */
+/** What kind of trouble the chain is in, which is what the room takes its color from. */
 function severity(chain: Chain): StageAccent {
   if (unsafeRetries(chain).length > 0) return "danger";
   if (amplification(chain) >= 27) return "danger";
@@ -113,7 +113,7 @@ export function CinematicRetry() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -506,10 +506,10 @@ export function CinematicRetry() {
             </Link>
             , and the rest is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

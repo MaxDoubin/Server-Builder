@@ -14,15 +14,15 @@
  * VLAN mismatch is exactly the case where it does not.
  *
  * The configuration is rendered as configuration rather than as a table,
- * because recognising this on a real switch means recognising it in eight
+ * because recognizing this on a real switch means recognizing it in eight
  * lines of text with the important one in the middle.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   PATHS,
@@ -45,7 +45,7 @@ import { pluralise } from "@/lib/plural";
 
 const SITE_URL = "https://maxdoubin.com";
 
-/** What kind of trouble this path is in, which is what the room takes its colour from. */
+/** What kind of trouble this path is in, which is what the room takes its color from. */
 function severity(path: Path): StageAccent {
   if (path.frame.tags.length > 1 || nativeCarriesHosts(path).length > 0) return "danger";
   if (changedVlan(path)) return "amber";
@@ -113,7 +113,7 @@ export function CinematicVlan() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -429,10 +429,10 @@ export function CinematicVlan() {
             </Link>
             , and the rest is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

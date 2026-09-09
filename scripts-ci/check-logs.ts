@@ -6,7 +6,7 @@
  *
  * Every line survives a round trip through a strict syslog parser. Synthetic
  * logs drift into shapes no daemon emits, and a log that does not look like
- * a log teaches somebody to recognise something they will never see. The
+ * a log teaches somebody to recognize something they will never see. The
  * parser is deliberately unforgiving, because a permissive one would accept
  * exactly the malformed lines this exists to catch.
  *

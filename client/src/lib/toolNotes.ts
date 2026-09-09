@@ -10,8 +10,8 @@
  *
  * A paragraph is a list of spans so that inline code and emphasis survive
  * without either side needing dangerouslySetInnerHTML. Numbers that also
- * govern behaviour are interpolated from the constants themselves rather than
- * retyped, so prose and behaviour cannot disagree.
+ * govern behavior are interpolated from the constants themselves rather than
+ * retyped, so prose and behavior cannot disagree.
  */
 import { BTU_PER_WATT, IN_ROOM_LOSS_FACTOR } from "./capacity";
 import {
@@ -102,7 +102,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       " for three centuries. It is not indecipherable. Kasiski examination finds repeated ciphertext sequences and takes the distances between them, whose common factors reveal the key length. Once you know the length, the message splits into that many independent Caesar ciphers, one for every key position, and each falls to frequency analysis on its own.",
     ],
     [
-      "None of this is security, and it is worth being precise about why. A cipher whose keyspace is 25 is broken by counting, and a repeating key is broken by finding the period. The one classical scheme that is genuinely unbreakable is the one time pad, which is Vigenere with a key as long as the message, used once, and truly random. Break any one of those three conditions and it collapses back into something analysable. These ciphers remain useful for one thing: they show up constantly in capture the flag puzzles, in the National Cyber League, and in beginner forensics challenges, usually stacked on top of Base64 or hex. Recognising them quickly is a real skill even though the ciphers themselves are museum pieces.",
+      "None of this is security, and it is worth being precise about why. A cipher whose keyspace is 25 is broken by counting, and a repeating key is broken by finding the period. The one classical scheme that is genuinely unbreakable is the one time pad, which is Vigenere with a key as long as the message, used once, and truly random. Break any one of those three conditions and it collapses back into something analysable. These ciphers remain useful for one thing: they show up constantly in capture the flag puzzles, in the National Cyber League, and in beginner forensics challenges, usually stacked on top of Base64 or hex. Recognizing them quickly is a real skill even though the ciphers themselves are museum pieces.",
     ],
   ],
   "cron-explainer": [
@@ -214,7 +214,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "A status code is the only part of a response that every piece of infrastructure between the server and the client understands without parsing anything. Caches decide what to store from it, proxies decide what to retry, load balancers decide whether a backend is healthy, and monitoring decides whether to wake somebody up. That is why choosing one carelessly costs more than it looks like it should: an error hidden inside a 200 body is invisible to all of them, and a 500 returned for a client's malformed input sends an engineer to investigate a server that is working perfectly.",
     ],
     [
-      "The class digit carries most of the meaning, and it is what a client should fall back to when it meets a code it does not recognise. RFC 9110 is explicit about this: an unknown 4xx must be treated as a generic 400, an unknown 5xx as a generic 500. That is what makes it safe to introduce a new code. The classes also encode the retry decision. A 4xx will fail the same way if you repeat it unchanged, so retrying is pointless. A 5xx might succeed later, so retrying with exponential backoff and jitter is correct. 429 and 503 are the two that tell you explicitly when to come back, via Retry-After, and honouring that header is the difference between a well behaved client and a participant in an outage.",
+      "The class digit carries most of the meaning, and it is what a client should fall back to when it meets a code it does not recognize. RFC 9110 is explicit about this: an unknown 4xx must be treated as a generic 400, an unknown 5xx as a generic 500. That is what makes it safe to introduce a new code. The classes also encode the retry decision. A 4xx will fail the same way if you repeat it unchanged, so retrying is pointless. A 5xx might succeed later, so retrying with exponential backoff and jitter is correct. 429 and 503 are the two that tell you explicitly when to come back, via Retry-After, and honouring that header is the difference between a well behaved client and a participant in an outage.",
     ],
     [
       "Every code on this page is in the IANA HTTP Status Code Registry. Codes you will meet in the wild that are not include nginx's 499, which it logs when the client closes the connection before a response, and Cloudflare's 520 through 530 range for its own edge conditions. AWS load balancers add 460 and 463. These are useful in a log file and wrong in an API: an unregistered code means every client library falls back to guessing from the class digit, and you have gained nothing over the standard code that already describes the situation.",
@@ -260,7 +260,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       { code: "localStorage" },
       " is worth exactly as much to a cross-site scripting bug as the password would be, and an ",
       { code: "HttpOnly" },
-      " cookie with a CSRF defence is usually the better trade. Because the payload is readable, nothing sensitive belongs in it: internal identifiers, email addresses and role names all travel to the browser in clear text. And because every claim is signed, every claim is also sent on every request, so a token that accumulates group memberships grows until it meets an 8KB header limit on some proxy and fails in a way nobody enjoys debugging.",
+      " cookie with a CSRF defense is usually the better trade. Because the payload is readable, nothing sensitive belongs in it: internal identifiers, email addresses and role names all travel to the browser in clear text. And because every claim is signed, every claim is also sent on every request, so a token that accumulates group memberships grows until it meets an 8KB header limit on some proxy and fails in a way nobody enjoys debugging.",
     ],
   ],
   "mac-lookup": [
@@ -342,7 +342,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       " to cover in-room losses rather than against IT load alone, which is the mistake that leaves a room short on a hot day.",
     ],
     [
-      "PUE is modelled, not measured. A small floor spreads fixed plant losses over less IT load, so it starts at 1.12 and worsens with scale up to a 1.40 cap. Real facilities vary widely; treat it as a planning figure and measure your own once there is something to meter.",
+      "PUE is modeled, not measured. A small floor spreads fixed plant losses over less IT load, so it starts at 1.12 and worsens with scale up to a 1.40 cap. Real facilities vary widely; treat it as a planning figure and measure your own once there is something to meter.",
     ],
     [
       "The N+1 column adds one spare air handler so a single unit failing is not an outage. That is the minimum most designs assume, and it is why the unit count is usually one higher than the arithmetic alone suggests.",
@@ -373,12 +373,12 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       { code: "(a+)+$" },
       " or ",
       { code: "(\\d+|\\s)*$" },
-      ", the engine has an exponential number of ways to divide the input between the inner and outer repetition. On a string that nearly matches but fails at the end it will try all of them. Twenty characters is instant, thirty characters takes seconds, forty takes longer than you will wait. A JavaScript regex cannot be interrupted once it starts, so the only real defence on a web page is to run it somewhere you can kill, and terminating the worker is exactly that. If a pattern here times out at  ",
+      ", the engine has an exponential number of ways to divide the input between the inner and outer repetition. On a string that nearly matches but fails at the end it will try all of them. Twenty characters is instant, thirty characters takes seconds, forty takes longer than you will wait. A JavaScript regex cannot be interrupted once it starts, so the only real defense on a web page is to run it somewhere you can kill, and terminating the worker is exactly that. If a pattern here times out at  ",
       String(TIME_BUDGET_MS),
       " ms, that is not a bug in the tool, it is the tool telling you the pattern is dangerous.",
     ],
     [
-      "The same problem is a real denial of service class, ReDoS, and it is worth recognising in code review: a user supplied string fed to a regex with nested quantifiers, or an innocent looking validation pattern in a dependency, can take a whole request thread down. The fixes are boring and effective. Anchor the pattern, replace nested quantifiers with a possessive or atomic equivalent where the engine supports it, bound repetition with an explicit maximum such as  ",
+      "The same problem is a real denial of service class, ReDoS, and it is worth recognizing in code review: a user supplied string fed to a regex with nested quantifiers, or an innocent looking validation pattern in a dependency, can take a whole request thread down. The fixes are boring and effective. Anchor the pattern, replace nested quantifiers with a possessive or atomic equivalent where the engine supports it, bound repetition with an explicit maximum such as  ",
       { code: "{1,64}" },
       ", and validate length before you validate shape. Go's RE2 and Rust's regex crate avoid the problem entirely by refusing backreferences and lookaround in exchange for a linear time guarantee.",
     ],
@@ -397,7 +397,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "Two prefixes are special. A /31 has only two addresses, and RFC 3021 says both of them are usable on a point-to-point link, because a link with exactly two ends has no use for a broadcast address. A /32 is a single host: a loopback on a router, a host route, or one line in a firewall rule. Subtracting two for network and broadcast is correct for /30 and shorter, and wrong for both of these.",
     ],
     [
-      "The class letter shown here is historical. Classful addressing was replaced by CIDR in 1993 (RFC 1518 and RFC 1519), and no modern router looks at the first octet to guess a mask. It is still worth recognising, because exam questions and older documentation lean on it, and because the class boundaries explain why the RFC 1918 private ranges are the sizes they are.",
+      "The class letter shown here is historical. Classful addressing was replaced by CIDR in 1993 (RFC 1518 and RFC 1519), and no modern router looks at the first octet to guess a mask. It is still worth recognizing, because exam questions and older documentation lean on it, and because the class boundaries explain why the RFC 1918 private ranges are the sizes they are.",
     ],
   ],
   "timestamp-converter": [
@@ -460,7 +460,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       { code: "dns" },
       " or ",
       { code: "tls" },
-      ", matches any packet the dissector recognised as that protocol. Naming a field on its own, ",
+      ", matches any packet the dissector recognized as that protocol. Naming a field on its own, ",
       { code: "http.cookie" },
       ", matches any packet where that field exists at all. Comparing a field to a value narrows it further, and ",
       { code: "&amp;&amp;" },

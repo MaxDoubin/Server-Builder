@@ -68,9 +68,9 @@ export const TAG_PAGES: TagPage[] = [
     tag: "linux",
     title: "Linux",
     description:
-      "Linux internals and administration: cgroups, systemd, filesystems, networking stack behaviour, and debugging things from a shell.",
+      "Linux internals and administration: cgroups, systemd, filesystems, networking stack behavior, and debugging things from a shell.",
     intro:
-      "The parts of Linux you end up needing when something is broken. Process and resource control, systemd units and their hardening options, filesystem behaviour under pressure, and the tools for finding out what a machine is really doing.",
+      "The parts of Linux you end up needing when something is broken. Process and resource control, systemd units and their hardening options, filesystem behavior under pressure, and the tools for finding out what a machine is really doing.",
   },
   {
     tag: "storage",
@@ -94,7 +94,7 @@ export const TAG_PAGES: TagPage[] = [
     description:
       "How computing hardware works and how to reason about it: power, cooling, interconnects, expansion, and the physical constraints behind every design.",
     intro:
-      "The physical layer of everything else. Power delivery, thermal behaviour, interconnect bandwidth, and the constraints that explain why systems are shaped the way they are.",
+      "The physical layer of everything else. Power delivery, thermal behavior, interconnect bandwidth, and the constraints that explain why systems are shaped the way they are.",
   },
   {
     tag: "cybersecurity",
@@ -102,7 +102,7 @@ export const TAG_PAGES: TagPage[] = [
     description:
       "Competitive cybersecurity and the fundamentals behind it: analysis technique, tooling, and how to prepare for events like the National Cyber League.",
     intro:
-      "Security as a skill you practise. Competition technique, the tools worth being fluent in, and the fundamentals that make the difference between guessing and knowing. Related: the National Cyber League preparation guides.",
+      "Security as a skill you practice. Competition technique, the tools worth being fluent in, and the fundamentals that make the difference between guessing and knowing. Related: the National Cyber League preparation guides.",
   },
   {
     tag: "monitoring",
@@ -222,9 +222,9 @@ export const TAG_PAGES: TagPage[] = [
     tag: "dell",
     title: "Dell platforms",
     description:
-      "Dell server platforms: out-of-band management, firmware handling, and platform-specific behaviour worth knowing.",
+      "Dell server platforms: out-of-band management, firmware handling, and platform-specific behavior worth knowing.",
     intro:
-      "Platform-specific notes from working with Dell servers: out-of-band management, firmware handling, and the behaviour that is not in the general server literature.",
+      "Platform-specific notes from working with Dell servers: out-of-band management, firmware handling, and the behavior that is not in the general server literature.",
   },
   {
     tag: "fortinet",

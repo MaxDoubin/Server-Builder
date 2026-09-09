@@ -98,7 +98,7 @@ export const CHAINS: Chain[] = [
     ask: { kind: "orphaned" },
     question: "How many queries are still running after every caller above them has given up?",
     options: [
-      { id: "a", claim: "0. When the caller disconnects, the query is cancelled, which is what closing a connection is for.", value: "0" },
+      { id: "a", claim: "0. When the caller disconnects, the query is canceled, which is what closing a connection is for.", value: "0" },
       { id: "b", claim: "27. Only the queries below the layer whose budget was too small are abandoned.", value: "27" },
       { id: "c", claim: "81. Nothing propagates the cancellation, so every query issued runs to completion whether or not anybody is reading.", value: "81" },
       { id: "d", claim: "1. The one query in flight at the moment the timeout fired.", value: "1" },
@@ -156,7 +156,7 @@ export const CHAINS: Chain[] = [
     slug: "budgeted-properly",
     name: "The stack that degrades cleanly",
     brief:
-      "The same shape, rebuilt by somebody who divided one budget from the top instead of choosing four timeouts from the bottom. A control case: it is worth being able to recognise a correct configuration as quickly as a broken one.",
+      "The same shape, rebuilt by somebody who divided one budget from the top instead of choosing four timeouts from the bottom. A control case: it is worth being able to recognize a correct configuration as quickly as a broken one.",
     callers: [
       { name: "browser", attempts: 2, timeout: 25000, backoff: 2000, factor: 2, jitter: 0.3, idempotent: true, note: "the only layer that retries, and it jitters" },
       { name: "edge", attempts: 1, timeout: 9000, backoff: 0, factor: 1, jitter: 0, idempotent: true },
@@ -192,7 +192,7 @@ export const CHAINS: Chain[] = [
       { id: "c", claim: "0. Every attempt timed out, so nothing was committed.", value: "0" },
       { id: "d", claim: "2. The first is abandoned before it commits and the last two land.", value: "2" },
     ],
-    why: "A timeout tells you nothing about whether the work happened. It tells you that you stopped listening. Three attempts against a non-idempotent endpoint with no idempotency key are three charges, all of which succeed, none of which is reported as a success to the caller, and the customer sees the total on a statement three days later. This is the only case here that a retry budget does not fix: the fix is an idempotency key, so that the second and third requests are recognised as the same intent.",
+    why: "A timeout tells you nothing about whether the work happened. It tells you that you stopped listening. Three attempts against a non-idempotent endpoint with no idempotency key are three charges, all of which succeed, none of which is reported as a success to the caller, and the customer sees the total on a statement three days later. This is the only case here that a retry budget does not fix: the fix is an idempotency key, so that the second and third requests are recognized as the same intent.",
     breaks: "that a request which timed out did not happen, when a timeout says only that you stopped listening",
   },
 ];

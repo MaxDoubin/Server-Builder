@@ -1,7 +1,7 @@
 /**
  * Subnetting drill.
  *
- * Questions are generated, not stored, so the same shape can be practised
+ * Questions are generated, not stored, so the same shape can be practiced
  * indefinitely. Every answer is computed with the same unsigned 32-bit
  * arithmetic a router would use, and the worked solution is derived from the
  * same numbers rather than written by hand, so the explanation cannot drift

@@ -7,7 +7,7 @@
  * time rather than wall clock time does what that picture does in a second.
  *
  * The bars are wall clock, left to right, one per enforcement period. Green
- * is the group running, red is every thread in it stopped, and the grey at
+ * is the group running, red is every thread in it stopped, and the gray at
  * the end of a bar is the group having finished its work with quota to
  * spare, which is idle rather than throttled and is a completely different
  * diagnosis.
@@ -23,8 +23,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -99,7 +99,7 @@ export function CinematicThrottle() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -388,8 +388,8 @@ ${asCpuStat(setup)}`}
           <ReadAboutThis href="/throttle" />
 
           <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
-            <Link href="/practise" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
-              All practise material
+            <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
+              All practice material
             </Link>
           </p>
         </div>

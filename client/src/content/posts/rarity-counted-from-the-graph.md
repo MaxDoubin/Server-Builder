@@ -64,7 +64,7 @@ For the ransomware scenario, which has 23 scenes and 7 endings, that produces
 That shape is doing real work. The best available outcome is 6.9 percent of
 routes, which is about right for an outcome that requires killing the encryptor
 without powering the host off and then imaging memory before anyone reboots it.
-Paying is 23 percent, which is roughly how often organisations get talked into
+Paying is 23 percent, which is roughly how often organizations get talked into
 it. And the two catastrophes are about one percent each, because each needs a
 specific sequence of plausible-feeling wrong turns rather than one obvious
 blunder.
@@ -108,7 +108,7 @@ is to point it at a scene further along that covers the same ground, which
 usually makes the writing better anyway: the second visit should not read like
 the first.
 
-The check that catches this is one depth-first walk with three colours, and it
+The check that catches this is one depth-first walk with three colors, and it
 runs on every push alongside the rest:
 
 - every scene reachable from the start
@@ -155,6 +155,6 @@ That is enough to fix it without opening the file.
 ## References
 
 - [Directed acyclic graphs and topological ordering](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
-- [Depth-first search, and the three-colour cycle test](https://en.wikipedia.org/wiki/Depth-first_search)
+- [Depth-first search, and the three-color cycle test](https://en.wikipedia.org/wiki/Depth-first_search)
 - [Counting paths in a DAG with dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming)
 - [Memoization](https://en.wikipedia.org/wiki/Memoization)

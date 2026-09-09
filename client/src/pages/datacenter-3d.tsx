@@ -595,12 +595,12 @@ export function DataCenter3D({
         bg-black/85 down, because it floats over a black 3D canvas and there
         is no light version of it. The one exception was GameHeader, which
         asks for bg-card and text-muted-foreground: in the light theme that
-        gave a pale bar with dark grey text sitting on top of the scene, at
+        gave a pale bar with dark gray text sitting on top of the scene, at
         1.1:1. Pinning the token set here means the shadcn components inside
         resolve to the same dark palette everything else already assumes.
 
         text-foreground has to be restated here rather than left to inherit.
-        `color` inherits as a resolved colour, not as the var reference that
+        `color` inherits as a resolved color, not as the var reference that
         produced it, so the page above this one having set text-foreground
         from the light palette hands down a near-black that redefining the
         token underneath cannot undo. Setting it again inside the `dark`
@@ -682,7 +682,7 @@ export function DataCenter3D({
                 {/*
                   The shared Slider puts its props on the Radix root rather
                   than the thumb, so an aria-label on it would not reach the
-                  control. A labelled group is what is available without
+                  control. A labeled group is what is available without
                   changing a component the whole site uses.
                 */}
                 <div role="group" aria-label={`Rack density, ${sliderValue} racks`}>

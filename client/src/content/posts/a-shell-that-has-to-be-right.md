@@ -142,7 +142,7 @@ $ answer it's the MTU on the tunnel
 lab shell: unterminated quote
 ```
 
-That is correct bash behaviour. It is also a hostile thing to do to somebody who
+That is correct bash behavior. It is also a hostile thing to do to somebody who
 has just spent ten minutes working out the answer and is typing it in English,
 and English is full of apostrophes.
 

@@ -63,7 +63,7 @@ function contrast(a, b) {
 }
 
 /**
- * Surfaces text actually lands on. Iron is the border colour, not a fill, so
+ * Surfaces text actually lands on. Iron is the border color, not a fill, so
  * it is deliberately absent: requiring AA against it would force the whole
  * palette lighter for a pairing that never renders.
  */
@@ -110,7 +110,7 @@ for (const [fg, role] of FOREGROUNDS) {
  * The shadcn palette, which the brand block above does not cover.
  *
  * That gap shipped. --primary is both the fill under a button's label and the
- * colour of a link on the page, and in the dark theme it was 4.11:1 under the
+ * color of a link on the page, and in the dark theme it was 4.11:1 under the
  * label and 4.29:1 as text: every primary button and every primary link on
  * the site sat just under AA in the theme the site opens in. Nothing here
  * noticed, because this gate only ever looked at the brand tokens.
@@ -145,15 +145,15 @@ const THEMED = [
   // Light theme. --primary serves as both fill and text here and clears the
   // floor doing both, which is why there is no --primary-text in :root.
   [":root", "primary-foreground", "primary", "the label on a primary button, light theme"],
-  [":root", "primary", "background", "a primary-coloured link on the page, light theme"],
-  [":root", "primary", "card", "a primary-coloured link inside a card, light theme"],
+  [":root", "primary", "background", "a primary-colored link on the page, light theme"],
+  [":root", "primary", "card", "a primary-colored link inside a card, light theme"],
   [":root", "console-accent", "card", "the simulator header's brand line, light theme"],
 
   // Dark theme. The two jobs need two values; see the note beside
   // --primary-text in index.css.
   [".dark", "primary-foreground", "primary", "the label on a primary button, dark theme"],
-  [".dark", "primary-text", "background", "a primary-coloured link on the page, dark theme"],
-  [".dark", "primary-text", "card", "a primary-coloured link inside a card, dark theme"],
+  [".dark", "primary-text", "background", "a primary-colored link on the page, dark theme"],
+  [".dark", "primary-text", "card", "a primary-colored link inside a card, dark theme"],
   [".dark", "console-accent", "card", "the simulator header's brand line, dark theme"],
 
   /*
@@ -209,7 +209,7 @@ for (const [selector, fg, bg, role] of THEMED) {
 }
 
 if (failures.length) {
-  console.error("Colours below the WCAG AA contrast floor:\n");
+  console.error("Colors below the WCAG AA contrast floor:\n");
   for (const f of failures) console.error(`  ${f}\n`);
   process.exit(1);
 }

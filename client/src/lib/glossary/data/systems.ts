@@ -165,7 +165,7 @@ export const SYSTEMS: Term[] = [
     definition:
       "The modular transceiver cage on switches and NICs. SFP+ carries 10G, SFP28 25G, QSFP+ 40G and QSFP28 100G, with the optic or copper module chosen to match the medium and distance.",
     confusion:
-      "Many switches only accept modules they recognise as their own vendor's. A third-party optic that is electrically identical is refused on a code in its EEPROM, which is a commercial decision presented as a compatibility one.",
+      "Many switches only accept modules they recognize as their own vendor's. A third-party optic that is electrically identical is refused on a code in its EEPROM, which is a commercial decision presented as a compatibility one.",
     see: ["NIC"],
   },
   {

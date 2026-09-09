@@ -20,7 +20,7 @@ import { compileFilter } from "@/lib/capture/filter";
 import { isCorrect, type Capture, type Packet } from "@/lib/capture/types";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
 import { recordSolvedCaptures } from "@/lib/capture/progress";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -51,7 +51,7 @@ function Workbench({ capture }: { capture: Capture }) {
   const shown = useMemo(() => {
     // A filter that does not compile shows everything rather than nothing: the
     // error message is already on screen, and emptying the list on a typo is
-    // the behaviour that makes people stop using a filter bar.
+    // the behavior that makes people stop using a filter bar.
     if (compiled.error !== undefined) return capture.packets;
     const test = compiled.test;
     return capture.packets.filter((row) => test(row));

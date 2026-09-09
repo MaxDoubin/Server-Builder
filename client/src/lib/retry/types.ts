@@ -16,7 +16,7 @@
  * The second failure is the timeouts, and it is worse because it is invisible.
  * When a caller's timeout is shorter than the time the layer below it needs to
  * exhaust its own retries, the caller hangs up and retries while the first
- * request is still running. The work is not cancelled. It completes, into a
+ * request is still running. The work is not canceled. It completes, into a
  * socket nobody is reading, and it was competing with the retry the whole
  * time. Every layer that does this multiplies the load again and none of them
  * logs anything except a timeout.

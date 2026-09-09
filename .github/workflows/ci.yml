@@ -158,7 +158,7 @@ jobs:
       # because it reads tokens and these were not tokens. SVG fills and the
       # 3D materials are exempt, since a rack chassis is dark in a light room.
       - name: Cinematic surfaces use tokens
-        run: node scripts-ci/check-themed-colours.mjs
+        run: node scripts-ci/check-themed-colors.mjs
 
       # vite build, then the prerenderer over 200+ posts, then the server
       # bundle. The heap bump is for the prerender pass, which holds the whole
@@ -463,11 +463,11 @@ jobs:
       # six surfaces added in one day were never checked and the array
       # calculator, which had never been in the list, sat reachable only from
       # the footer while the gate reported OK. The list is derived from the
-      # practise registry now, and this checks both directions: every surface
+      # practice registry now, and this checks both directions: every surface
       # is linked from the act, the hub, the palette and the footer, and
-      # every practise-looking link in those places is a registered surface.
-      - name: Every practise surface is findable
-        run: npx tsx scripts-ci/check-practise-surfaces.ts
+      # every practice-looking link in those places is a registered surface.
+      - name: Every practice surface is findable
+        run: npx tsx scripts-ci/check-practice-surfaces.ts
 
       # Nine mode bits, and the two thirds of them the kernel never consults.
       # The cases carry no answer key: each declares its four decision points
@@ -684,3 +684,8 @@ jobs:
       # Last because it reads both the source trees and the built HTML.
       - name: Em dashes
         run: node scripts-ci/check-em-dashes.mjs
+
+      # One spelling convention. The archive had drifted both ways for 275
+      # posts because nothing was watching.
+      - name: Spelling
+        run: node scripts-ci/check-spelling.mjs

@@ -15,7 +15,7 @@ import type { Analysis, Ceiling, Limit, Link, Transfer } from "./types";
  * sqrt(3/2), from the steady-state sawtooth: a window that halves on loss and
  * grows by one segment per round trip averages this much of its peak. It is
  * often quoted as 1.22 and occasionally as 0.93 or 1.31 depending on which
- * paper and which ACK behaviour. The exact figure matters far less than the
+ * paper and which ACK behavior. The exact figure matters far less than the
  * 1/sqrt(p), which is the shape of the whole result: cutting loss by a factor
  * of a hundred only doubles throughput ten times over, not a hundred.
  */

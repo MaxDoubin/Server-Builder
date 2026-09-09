@@ -138,7 +138,7 @@ catches people, and note the 1024:
 Add fourteen hours of archival retrieval before any of that, and three hours
 of rebuild after, and the cheap storage tier has turned a "few hours"
 conversation into two days. That trade gets made once, quietly, at design
-time, by whoever was optimising the storage bill. It gets paid once, loudly,
+time, by whoever was optimizing the storage bill. It gets paid once, loudly,
 at the worst possible moment.
 
 ## Two more that are just definitions

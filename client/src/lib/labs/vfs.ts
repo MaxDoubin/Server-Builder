@@ -70,7 +70,7 @@ export function segments(path: string): string[] {
   return path.split("/").filter((part) => part !== "" && part !== ".");
 }
 
-/** Join and normalise, resolving ".." textually. Always absolute. */
+/** Join and normalize, resolving ".." textually. Always absolute. */
 export function resolvePath(cwd: string, path: string): string {
   const base = path.startsWith("/") ? [] : segments(cwd);
   for (const part of segments(path)) {

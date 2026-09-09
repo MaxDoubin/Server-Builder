@@ -2,7 +2,7 @@
  * The derived difficulty label as a badge.
  *
  * The word is always present, and the dot glyph repeats the same
- * information, so the badge never depends on its colour to be read.
+ * information, so the badge never depends on its color to be read.
  */
 
 import {

@@ -81,7 +81,7 @@ for (const row of HAND) {
   }
 }
 
-/* ------------------------------------------------------- model behaviour */
+/* ------------------------------------------------------- model behavior */
 
 /* No loss is not the same as unimaginably small loss, and the page says so. */
 if (lossLimit({ bandwidth: 1e9, rtt: 50, loss: 0, window: 0, mss: 1460 }) !== null) {
@@ -250,7 +250,7 @@ for (const item of CASES) {
 /*
   duration() and size() are what a reader actually sees, and a formatter that
   lies still lies. Both are pinned at their unit boundaries, because the
-  boundary is the whole behaviour, and then checked for monotonicity, because
+  boundary is the whole behavior, and then checked for monotonicity, because
   a longer transfer that prints as a shorter one is worse than a wrong unit.
 
   Both were exported and named by nothing in this file until a check over the

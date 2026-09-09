@@ -74,7 +74,7 @@ export const NETWORKING: Term[] = [
     definition:
       "How a host finds the MAC address for an IP address on its own segment: it broadcasts a request asking who has that address, and the owner answers.",
     confusion:
-      "There is no authentication in it at all. Anything on the segment can answer for any address, which is the whole of ARP spoofing, and the defence is at the switch rather than in the protocol.",
+      "There is no authentication in it at all. Anything on the segment can answer for any address, which is the whole of ARP spoofing, and the defense is at the switch rather than in the protocol.",
     see: ["MAC address", "broadcast domain"],
   },
   {
@@ -196,7 +196,7 @@ export const NETWORKING: Term[] = [
     expansion: "Connection tracking",
     field: "networking",
     definition:
-      "The kernel's table of connections in flight, which lets a firewall recognise a packet as part of a conversation already permitted rather than judging it on its headers alone.",
+      "The kernel's table of connections in flight, which lets a firewall recognize a packet as part of a conversation already permitted rather than judging it on its headers alone.",
     confusion:
       "It is what makes a default-drop inbound policy usable at all. Without a rule accepting ESTABLISHED and RELATED, replies to connections the host opened itself arrive as inbound packets and are dropped, and the host appears to have no internet.",
     see: ["firewall", "NAT"],
@@ -227,7 +227,7 @@ export const NETWORKING: Term[] = [
     definition:
       "A set of signed records saying which autonomous system is allowed to announce which prefix, so a router can check a BGP announcement against something other than the announcer's word. Networks that validate drop announcements the records contradict.",
     confusion:
-      "It only proves the origin is authorised, not that the path is real. An announcement can be RPKI-valid and still be a hijack if the attacker prepends the legitimate origin, so validation raises the cost of a hijack rather than ending it.",
+      "It only proves the origin is authorized, not that the path is real. An announcement can be RPKI-valid and still be a hijack if the attacker prepends the legitimate origin, so validation raises the cost of a hijack rather than ending it.",
     see: ["BGP", "prefix", "certificate"],
   },
 ];

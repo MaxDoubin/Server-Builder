@@ -169,7 +169,7 @@ export const PROTOCOLS: Term[] = [
     definition:
       "The protocol network devices use to ask a central server whether to admit a user or device, and what to apply if so: a VLAN, a filter, a session timeout.",
     confusion:
-      "An Access-Accept with no attributes is a success that lands the device on the switch's default VLAN. It logs as authorised at both ends and the user cannot reach anything, which is a failure that looks like a success everywhere you would look.",
+      "An Access-Accept with no attributes is a success that lands the device on the switch's default VLAN. It logs as authorized at both ends and the user cannot reach anything, which is a failure that looks like a success everywhere you would look.",
     see: ["802.1X", "VLAN"],
   },
   {

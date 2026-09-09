@@ -129,7 +129,7 @@ export const storageRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "Fibre patch leads bend badly and break quietly. This is where the SFP+ jumpers turn without exceeding their bend radius.",
+      role: "Fiber patch leads bend badly and break quietly. This is where the SFP+ jumpers turn without exceeding their bend radius.",
       family: "blank",
       look: "fingers",
       watts: null,

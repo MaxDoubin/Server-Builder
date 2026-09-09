@@ -8,7 +8,7 @@
  * each entry leads with what the thing is, and where there is one, closes
  * with the thing people reliably get wrong about it.
  *
- * The filter drives the stage accent, so choosing a field changes the colour
+ * The filter drives the stage accent, so choosing a field changes the color
  * of the whole screen rather than just the list. Filtering is URL state, so a
  * filtered view is a link somebody can send.
  */
@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import { FIELD_LABEL, TERMS, slugFor, type Field, type Term } from "@/lib/glossary/index";
 import { pluralise } from "@/lib/plural";
@@ -28,7 +28,7 @@ const SITE_URL = "https://maxdoubin.com";
  *
  * Four accents for seven fields, because the site has four accent tokens that
  * are contrast-checked in both themes. Inventing three more would mean three
- * more colours that have to be legible on white as well as on obsidian.
+ * more colors that have to be legible on white as well as on obsidian.
  */
 const ACCENT: Record<Field, StageAccent> = {
   networking: "signal",
@@ -67,9 +67,9 @@ export function CinematicGlossary() {
   const [field, setField] = useState<Field | null>(null);
   const [linked, setLinked] = useState<string | null>(null);
   /*
-    The stage flashes on a filter change, so the colour arrives as a wash
+    The stage flashes on a filter change, so the color arrives as a wash
     rather than a swap. It counts changes rather than keying on the field
-    because PractiseStage skips zero, and "all" would otherwise never flash.
+    because PracticeStage skips zero, and "all" would otherwise never flash.
   */
   const [flash, setFlash] = useState(0);
 
@@ -112,7 +112,7 @@ export function CinematicGlossary() {
    * ARP sees 802.1X, which is filed under security, so from the networking
    * view the anchor would land on an element that is not rendered and the
    * page would appear to ignore the click. Clearing the filter first is the
-   * only behaviour that does what the reader asked for.
+   * only behavior that does what the reader asked for.
    */
   const follow = useCallback(
     (target: Term, event: { preventDefault: () => void }) => {
@@ -162,7 +162,7 @@ export function CinematicGlossary() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={accent} mood="calm" flashKey={flash} />
+      <PracticeStage accent={accent} mood="calm" flashKey={flash} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
@@ -336,10 +336,10 @@ export function CinematicGlossary() {
           <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             To use any of this rather than read it, the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>{" "}
             has the exercises these terms come out of, and{" "}
             <Link

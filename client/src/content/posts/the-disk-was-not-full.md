@@ -108,7 +108,7 @@ On the first, somebody was paged at four in the morning, found a 41G access
 log, deleted it, and went back to bed. The alert cleared for no time at all
 and came back. Unlinking a file removes the name and not the allocation, and
 the kernel will not release the blocks while any process holds a descriptor on
-it, which is exactly what a logging process that has not been signalled does.
+it, which is exactly what a logging process that has not been signaled does.
 
 So `df` still counts the 41G, and `du` and `ls` and every tidy-up script
 anybody writes cannot see it. Here is the number that makes the point:

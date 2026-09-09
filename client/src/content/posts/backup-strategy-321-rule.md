@@ -11,7 +11,7 @@ In practice, this means your data exists on your primary storage, a local backup
 
 Each number in the rule kills a specific class of failure, and it helps to name them.
 
-**Three copies** protects against independent failure. Two copies sounds like enough until you realise that the moment one fails you are running with no redundancy at all, and you have to rebuild while exposed. Three copies means a single loss is annoying, not an emergency.
+**Three copies** protects against independent failure. Two copies sounds like enough until you realize that the moment one fails you are running with no redundancy at all, and you have to rebuild while exposed. Three copies means a single loss is annoying, not an emergency.
 
 **Two media types** protects against correlated failure. Eight drives from the same production batch, in the same chassis, on the same power supply, at the same temperature, are not eight independent things. They fail in the same way at around the same time. Different media, different controller, different chassis, and ideally a different vendor breaks that correlation.
 

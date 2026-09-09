@@ -231,7 +231,7 @@ export const CASES: Case[] = [
       { id: "inactive", claim: "The alert is inactive at 480s", says: { about: "state-at", at: 480, state: "inactive" } },
     ],
     why:
-      "A series stops abruptly when its target stops exporting it, and fades out over the lookback period when the exporter set the timestamps itself, because in that case Prometheus never writes a stale marker. So the same failure produces a resolved alert on one kind of target and a firing alert on the other, for five more minutes, on a number nobody has measured since. Both are correct behaviour and the difference is invisible in the rule.",
+      "A series stops abruptly when its target stops exporting it, and fades out over the lookback period when the exporter set the timestamps itself, because in that case Prometheus never writes a stale marker. So the same failure produces a resolved alert on one kind of target and a firing alert on the other, for five more minutes, on a number nobody has measured since. Both are correct behavior and the difference is invisible in the rule.",
     fix:
       "Know which of your targets set their own timestamps, because it is a small list and it changes what every alert on them means. Where it matters, add a rule on the sample's age rather than on its value: time() minus the timestamp of the last sample, over the threshold you actually care about.",
     breaks: "a series that stops being exported disappears at the same moment whatever produced it",

@@ -1,5 +1,5 @@
 /**
- * The room a practise surface happens in.
+ * The room a practice surface happens in.
  *
  * A fixed layer behind the whole viewport carrying an accent and a mood, so a
  * page is not a column of text about a problem, it is a screen that is having
@@ -10,9 +10,9 @@
  * with more than a line of text.
  *
  * The mood vocabulary stays the scenarios' one on purpose. Four words that
- * already have contrast-checked colours in both themes beat five words with a
+ * already have contrast-checked colors in both themes beat five words with a
  * new one that has to be legible on white as well as on obsidian. All of it is
- * CSS driven by data attributes; see the "Practise surfaces: the stage" block
+ * CSS driven by data attributes; see the "Practice surfaces: the stage" block
  * in index.css for the layers themselves.
  *
  * pointer-events: none and aria-hidden, because it is atmosphere: it must
@@ -30,7 +30,7 @@ export type SceneMood = "calm" | "tense" | "critical" | "recovering";
  *
  * Four accents rather than one per category, because the site has four
  * accent tokens that are contrast-checked in both themes, and inventing a
- * fifth to give DNS its own colour would mean inventing a fifth that has to
+ * fifth to give DNS its own color would mean inventing a fifth that has to
  * be legible on white as well as on obsidian.
  */
 export const ACCENT_FOR_CATEGORY: Record<string, StageAccent> = {
@@ -55,13 +55,13 @@ export const accentFor = (category: string): StageAccent =>
 interface Props {
   accent: StageAccent;
   mood: SceneMood;
-  /** Set on an ending, which overrides the accent with the outcome's colour. */
+  /** Set on an ending, which overrides the accent with the outcome's color. */
   ending?: EndingGrade;
   /** Changes on every decision, to trigger one wash of the accent. */
   flashKey: number;
 }
 
-export function PractiseStage({ accent, mood, ending, flashKey }: Props) {
+export function PracticeStage({ accent, mood, ending, flashKey }: Props) {
   /*
     The flash is keyed on the decision count rather than mounted and
     unmounted, so React restarts the animation by replacing the element. It
@@ -79,16 +79,16 @@ export function PractiseStage({ accent, mood, ending, flashKey }: Props) {
   return (
     <>
       <div
-        className="practise-stage"
+        className="practice-stage"
         data-accent={accent}
         data-mood={mood}
         data-ending={ending}
         aria-hidden
       >
-        <div className="practise-grid" />
+        <div className="practice-grid" />
       </div>
-      <div className="practise-rule" aria-hidden />
-      {flashing ? <div key={flashKey} className="practise-flash" aria-hidden /> : null}
+      <div className="practice-rule" aria-hidden />
+      {flashing ? <div key={flashKey} className="practice-flash" aria-hidden /> : null}
     </>
   );
 }

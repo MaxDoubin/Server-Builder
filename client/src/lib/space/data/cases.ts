@@ -39,7 +39,7 @@ export const CASES: Case[] = [
       { id: "d", claim: "The 5% reserve is all that is left, and the application does not run as root.", cause: "reserve" },
     ],
     why:
-      "df counts blocks allocated to files. du walks names. Unlinking a file removes the name and not the allocation, and the kernel will not release the blocks while any process holds a descriptor on it, which is exactly what a logging process that has not been signalled does. So the 40G is still spent, still counted by df, and invisible to du and to ls and to every tidy-up script anybody writes. The gap between the two numbers is the entire diagnosis and it takes one command to see.",
+      "df counts blocks allocated to files. du walks names. Unlinking a file removes the name and not the allocation, and the kernel will not release the blocks while any process holds a descriptor on it, which is exactly what a logging process that has not been signaled does. So the 40G is still spent, still counted by df, and invisible to du and to ls and to every tidy-up script anybody writes. The gap between the two numbers is the entire diagnosis and it takes one command to see.",
     fix:
       "Find the holder with lsof +L1 or ls -l /proc/*/fd | grep deleted, then signal it to reopen: logrotate's copytruncate or a SIGHUP the process actually handles. Restarting works and is the version people reach for. Truncating through the descriptor with : > /proc/PID/fd/N frees the blocks without dropping the file, which is the trick worth knowing when the process cannot be restarted.",
     breaks: "that deleting a file frees its space",

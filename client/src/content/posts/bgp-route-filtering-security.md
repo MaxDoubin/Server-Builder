@@ -27,7 +27,7 @@ The `ge` and `le` keywords are where most people go wrong, so be precise about t
 
 Entries are evaluated in sequence order with an implicit deny at the end, so the explicit `deny 0.0.0.0/0 le 32` above is documentation rather than function. Keep it anyway; the person reading the config at 2am benefits.
 
-Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs `clear ip bgp 10.0.0.2 soft in`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behaviour differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
+Two operational notes. On IOS the filter does not apply to routes already in the table, so a policy change needs `clear ip bgp 10.0.0.2 soft in`, which uses the route refresh capability from RFC 2918 rather than tearing the session down. And default behavior differs by vendor in a way that has caused real incidents: IOS with no export policy advertises everything it knows, while Junos with no export policy advertises nothing. Never assume the safe default is the one you are used to.
 
 ## The Filter That Saves You When the Others Fail
 

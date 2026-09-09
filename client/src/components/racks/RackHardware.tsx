@@ -4,7 +4,7 @@
  * The parts themselves live in parts.ts. This is the thing that decides
  * where they go: it walks the whole rack once, works out a matrix for each
  * instance, and hands one InstancedMesh per part to the scene. A rack with
- * ten switches has upwards of five hundred fully modelled jacks in it, and
+ * ten switches has upwards of five hundred fully modeled jacks in it, and
  * as separate meshes that would be five hundred draw calls for a picture
  * that never moves. Instanced, it is about a dozen.
  *
@@ -77,7 +77,7 @@ const MATS = {
   outletFace: new THREE.MeshStandardMaterial({ color: "#e9ebee", metalness: 0.05, roughness: 0.55 }),
 };
 
-/** One cavity material per throat colour, so Cisco's teal survives instancing. */
+/** One cavity material per throat color, so Cisco's teal survives instancing. */
 const cavityMaterials = new Map<string, THREE.MeshStandardMaterial>();
 function cavityMaterial(tint: string): THREE.MeshStandardMaterial {
   let m = cavityMaterials.get(tint);
@@ -95,7 +95,7 @@ function cavityMaterial(tint: string): THREE.MeshStandardMaterial {
  * calls for three hundred one millimetre squares, and positioned inboard
  * enough that a patched port hid its own LED behind the plug. Now they sit
  * in the top corner of the bezel where the real ones are, they are one
- * draw call for the rack, and the blink is a per-instance colour written
+ * draw call for the rack, and the blink is a per-instance color written
  * on the frame loop rather than a visibility toggle per object.
  *
  * They flicker out of step. A switch across a room does not pulse in

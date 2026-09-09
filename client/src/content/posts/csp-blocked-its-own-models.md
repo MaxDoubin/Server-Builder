@@ -23,7 +23,7 @@ The policy therefore had exactly one test environment: production.
 
 That is worth saying plainly, because it is not obvious from the inside. A
 static site feels like the simplest possible deployment, and the reasoning
-goes that if the files are identical then the behaviour is identical. The
+goes that if the files are identical then the behavior is identical. The
 files are identical. The response is not.
 
 So I wrote thirty lines of Node that serve `dist/public` and set one header:

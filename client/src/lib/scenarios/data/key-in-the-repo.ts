@@ -169,7 +169,7 @@ export const keyInTheRepo: Scenario = {
       mood: "critical",
       where: "CloudTrail and the bucket inventory",
       body: [
-        "Thirty-seven seconds after the push, someone in a hosting range you do not recognise used the key. They tried to list users and describe instances, were refused both, and then listed and downloaded fourteen objects from the deployment artifacts bucket.",
+        "Thirty-seven seconds after the push, someone in a hosting range you do not recognize used the key. They tried to list users and describe instances, were refused both, and then listed and downloaded fourteen objects from the deployment artifacts bucket.",
         "The fourteen objects are build tarballs. Two of them contain a .env file that was baked in by a Dockerfile step nobody reviewed.",
       ],
       evidence: [

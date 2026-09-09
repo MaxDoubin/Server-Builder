@@ -86,7 +86,7 @@ export const certificateSunday: Scenario = {
       where: "certbot on the gateway host",
       body: [
         "The renewal fails. The HTTP-01 challenge cannot complete because the load balancer in front of this host was reconfigured in August to redirect everything on port 80 straight to HTTPS, including /.well-known/acme-challenge.",
-        "That is also, you now realise, why the automatic renewal has been failing silently since 14 August.",
+        "That is also, you now realize, why the automatic renewal has been failing silently since 14 August.",
       ],
       evidence: [
         {

@@ -10,7 +10,7 @@ export const fourHundredAndThreeDays: Scenario = {
   role: "You are the head of security at an engineering firm that designs components for other people's aircraft. Two hundred staff, one of you, and a great deal of somebody else's intellectual property.",
   clockStart: "Tuesday 09:15",
   brief: [
-    "The call is polite and specific. During an unrelated operation they recovered infrastructure containing data that appears to be yours, including drawings dated last September and a directory listing of a share you recognise.",
+    "The call is polite and specific. During an unrelated operation they recovered infrastructure containing data that appears to be yours, including drawings dated last September and a directory listing of a share you recognize.",
     "The earliest artefact they can date is 2 August last year. That is 403 days ago.",
   ],
   start: "the-call",
@@ -254,7 +254,7 @@ export const fourHundredAndThreeDays: Scenario = {
         "The customers whose designs left the building are not told. Eighteen months later a competitor's product is close enough that one of them asks, and the answer has to be that you knew.",
       ],
       lesson: [
-        "When the stolen material belongs to somebody else, the disclosure decision is not yours to optimise.",
+        "When the stolen material belongs to somebody else, the disclosure decision is not yours to optimize.",
       ],
     },
     {

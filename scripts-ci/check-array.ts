@@ -49,10 +49,10 @@ for (const row of ROWS) {
     problems.push(`${row.level} ${row.disks} disks parity should be ${row.parity}, got ${a.parityDisks}`);
   }
   if (parityDisksFor(row.level, row.disks) !== a.parityDisks) {
-    problems.push(`${row.level}: parityDisksFor disagrees with analyse`);
+    problems.push(`${row.level}: parityDisksFor disagrees with analyze`);
   }
   if (toleranceFor(row.level, row.disks) !== a.tolerance) {
-    problems.push(`${row.level}: toleranceFor disagrees with analyse`);
+    problems.push(`${row.level}: toleranceFor disagrees with analyze`);
   }
 }
 

@@ -39,7 +39,7 @@ gnmic -a 10.20.0.2:57400 -u monitor --password "$GNMI_PASS" \
 
 Three things follow from the inversion. Sub second sampling becomes practical because the device is serializing state it already has instead of servicing a query. On-change subscriptions become possible, so an interface going down is an event that arrives immediately rather than a difference you notice on the next poll. And the data is structured and self describing, so you get a path like `/interfaces/interface[name=Ethernet1]/state/oper-status` instead of a numeric OID you have to translate through a MIB file.
 
-The YANG modelling is the part people underestimate. OpenConfig models aim for vendor neutrality, but every vendor also ships native models, and the native ones usually carry the fields you actually want. You end up writing per platform path lists anyway. It is better than per platform MIB hunting, but it is not free.
+The YANG modeling is the part people underestimate. OpenConfig models aim for vendor neutrality, but every vendor also ships native models, and the native ones usually carry the fields you actually want. You end up writing per platform path lists anyway. It is better than per platform MIB hunting, but it is not free.
 
 ## Where SNMP still wins
 

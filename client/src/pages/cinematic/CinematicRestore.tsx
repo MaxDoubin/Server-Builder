@@ -15,7 +15,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import {
   SCENARIOS,
@@ -29,7 +29,7 @@ import {
   type Scenario,
 } from "@/lib/restore/index";
 import { pluralise } from "@/lib/plural";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -53,7 +53,7 @@ export function CinematicRestore() {
   useSEO({
     title: "You Have Backups, Not Restores | Max Doubin",
     description:
-      "Every organisation that lost data had backups. Six incidents, each with a backup posture that would pass an audit, and between zero and one copy that turns out to be worth anything.",
+      "Every organization that lost data had backups. Six incidents, each with a backup posture that would pass an audit, and between zero and one copy that turns out to be worth anything.",
     canonical: `${SITE_URL}/restore`,
   });
 
@@ -74,7 +74,7 @@ export function CinematicRestore() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={accent}
         mood={!revealed ? "calm" : chosen === null ? "critical" : "recovering"}
         flashKey={0}
@@ -289,10 +289,10 @@ export function CinematicRestore() {
             </Link>
             , and the rest is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

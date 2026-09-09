@@ -208,7 +208,7 @@ export const mikrotikRack: RackDefinition = {
 
   /*
     Plain moulded leads. A budget ISP stack is cabled in whatever the reel
-    was, which in practice means grey, with blue kept for the handful of
+    was, which in practice means gray, with blue kept for the handful of
     runs someone wanted to be able to find again.
   */
   patches: [

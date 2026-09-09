@@ -86,7 +86,7 @@ function AdvancedLights({
   const isLight = theme === "light";
   /*
     Day is not just "brighter". A hall on day shift has the overheads on, so
-    the fill lifts a long way and the colour temperature comes up towards
+    the fill lifts a long way and the color temperature comes up towards
     daylight, while at night the room is lit by equipment LEDs and the aisle
     strips, which is cooler and much dimmer. Both multipliers are applied to
     the existing per-theme values so the light and dark site themes keep
@@ -397,7 +397,7 @@ function RackGrid({
   /*
     Real thermal load per rack, computed once per rack rather than per frame
     and only while the heatmap is on. rackHeatLevel quantises to twelfths so
-    the colours resolve to a dozen pooled materials instead of one per rack.
+    the colors resolve to a dozen pooled materials instead of one per rack.
   */
   const heatLevels = useMemo(() => {
     if (!heatmapMode) return null;
@@ -1105,7 +1105,7 @@ export function DatacenterScene({
           )}
 
           {/*
-            Sits low and off to one side. At y=10 dead centre it landed
+            Sits low and off to one side. At y=10 dead center it landed
             right where the build toolbar floats, so the two read as one
             cluttered strip at the default camera.
           */}

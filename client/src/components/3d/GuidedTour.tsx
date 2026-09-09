@@ -188,7 +188,7 @@ export function GuidedTour({
     if (!targetRect || width === 0) {
       return { top: Math.max(GAP, height / 2 - 90), left: Math.max(GAP, width / 2 - CARD_WIDTH / 2) };
     }
-    // A target that fills most of the box (the scene itself) gets a centred
+    // A target that fills most of the box (the scene itself) gets a centered
     // card. Anything smaller gets the card beside or below it.
     const isLarge = targetRect.width > width * 0.7 && targetRect.height > height * 0.7;
     if (isLarge) {

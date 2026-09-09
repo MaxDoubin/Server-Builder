@@ -1604,7 +1604,7 @@ html.lenis-smooth {
 }
 
 /* ===========================================================================
-   Practise surfaces: the stage.
+   Practice surfaces: the stage.
 
    A scenario is meant to feel like being in the room, so the room changes.
    The whole viewport carries the scenario's accent and the current scene's
@@ -1623,7 +1623,7 @@ html.lenis-smooth {
    never intercept a click or trap focus.
    =========================================================================== */
 
-.practise-stage {
+.practice-stage {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -1634,19 +1634,19 @@ html.lenis-smooth {
   transition: opacity 700ms ease;
 }
 
-.practise-stage[data-accent="danger"] { --stage: var(--brand-danger); }
-.practise-stage[data-accent="amber"]  { --stage: var(--brand-amber); }
-.practise-stage[data-accent="cyan"]   { --stage: var(--brand-cyan); }
-.practise-stage[data-accent="signal"] { --stage: var(--brand-signal); }
+.practice-stage[data-accent="danger"] { --stage: var(--brand-danger); }
+.practice-stage[data-accent="amber"]  { --stage: var(--brand-amber); }
+.practice-stage[data-accent="cyan"]   { --stage: var(--brand-cyan); }
+.practice-stage[data-accent="signal"] { --stage: var(--brand-signal); }
 
 /* Mood drives how much of the room the incident has taken over. */
-.practise-stage[data-mood="calm"]       { --stage-lift: 0.07; --stage-close: 94%; }
-.practise-stage[data-mood="tense"]      { --stage-lift: 0.16; --stage-close: 76%; }
-.practise-stage[data-mood="critical"]   { --stage-lift: 0.30; --stage-close: 54%; }
-.practise-stage[data-mood="recovering"] { --stage-lift: 0.13; --stage-close: 84%; }
+.practice-stage[data-mood="calm"]       { --stage-lift: 0.07; --stage-close: 94%; }
+.practice-stage[data-mood="tense"]      { --stage-lift: 0.16; --stage-close: 76%; }
+.practice-stage[data-mood="critical"]   { --stage-lift: 0.30; --stage-close: 54%; }
+.practice-stage[data-mood="recovering"] { --stage-lift: 0.13; --stage-close: 84%; }
 
 /* Two corner washes in the accent, and a vignette that closes in on you. */
-.practise-stage::before {
+.practice-stage::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1674,12 +1674,12 @@ html.lenis-smooth {
   worse. It reads as instrumentation rather than decoration, and at calm it
   is genuinely not there.
 */
-.practise-stage[data-mood="tense"] > .practise-grid,
-.practise-stage[data-mood="critical"] > .practise-grid {
+.practice-stage[data-mood="tense"] > .practice-grid,
+.practice-stage[data-mood="critical"] > .practice-grid {
   opacity: 1;
 }
 
-.practise-grid {
+.practice-grid {
   position: absolute;
   inset: 0;
   opacity: 0;
@@ -1691,13 +1691,13 @@ html.lenis-smooth {
   mask-image: radial-gradient(120% 90% at 50% 30%, #000 20%, transparent 78%);
 }
 
-.practise-stage[data-mood="critical"] > .practise-grid {
+.practice-stage[data-mood="critical"] > .practice-grid {
   background-image:
     linear-gradient(hsl(var(--stage) / 0.1) 1px, transparent 1px),
     linear-gradient(90deg, hsl(var(--stage) / 0.1) 1px, transparent 1px);
 }
 
-.practise-stage::after {
+.practice-stage::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1713,7 +1713,7 @@ html.lenis-smooth {
   A hairline of the accent across the very top, which is the one element that
   is always in view and always the current mood's colour.
 */
-.practise-rule {
+.practice-rule {
   position: fixed;
   top: 0;
   left: 0;
@@ -1737,7 +1737,7 @@ html.lenis-smooth {
   critical, which is the only motion on the page and the only thing that says
   "this is still running" without a countdown.
 */
-.practise-stage[data-mood="critical"] ~ .practise-rule::after {
+.practice-stage[data-mood="critical"] ~ .practice-rule::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -1748,10 +1748,10 @@ html.lenis-smooth {
     transparent
   );
   width: 22%;
-  animation: practise-sweep 3.2s linear infinite;
+  animation: practice-sweep 3.2s linear infinite;
 }
 
-@keyframes practise-sweep {
+@keyframes practice-sweep {
   from { transform: translateX(-120%); }
   to   { transform: translateX(560%); }
 }
@@ -1760,18 +1760,18 @@ html.lenis-smooth {
   An ending takes the whole room. The wash is stronger than any scene's and
   it does not move, because the incident is over one way or the other.
 */
-.practise-stage[data-ending="best"],
-.practise-stage[data-ending="good"] { --stage: var(--brand-signal); --stage-lift: 0.22; --stage-close: 88%; }
-.practise-stage[data-ending="mixed"] { --stage: var(--brand-amber); --stage-lift: 0.2; --stage-close: 80%; }
-.practise-stage[data-ending="bad"] { --stage: var(--brand-amber); --stage-lift: 0.3; --stage-close: 66%; }
-.practise-stage[data-ending="catastrophic"] { --stage: var(--brand-danger); --stage-lift: 0.42; --stage-close: 46%; }
-.practise-stage[data-ending] > .practise-grid { opacity: 0; }
+.practice-stage[data-ending="best"],
+.practice-stage[data-ending="good"] { --stage: var(--brand-signal); --stage-lift: 0.22; --stage-close: 88%; }
+.practice-stage[data-ending="mixed"] { --stage: var(--brand-amber); --stage-lift: 0.2; --stage-close: 80%; }
+.practice-stage[data-ending="bad"] { --stage: var(--brand-amber); --stage-lift: 0.3; --stage-close: 66%; }
+.practice-stage[data-ending="catastrophic"] { --stage: var(--brand-danger); --stage-lift: 0.42; --stage-close: 46%; }
+.practice-stage[data-ending] > .practice-grid { opacity: 0; }
 
 /*
   Choosing is the moment the page should acknowledge. A single 420ms wash of
   the accent over the whole viewport, then it is gone.
 */
-.practise-flash {
+.practice-flash {
   position: fixed;
   inset: 0;
   z-index: 2;
@@ -1781,10 +1781,10 @@ html.lenis-smooth {
     hsl(var(--stage, var(--brand-signal)) / 0.16),
     transparent 70%
   );
-  animation: practise-flash 420ms ease-out forwards;
+  animation: practice-flash 420ms ease-out forwards;
 }
 
-@keyframes practise-flash {
+@keyframes practice-flash {
   from { opacity: 1; }
   to   { opacity: 0; }
 }
@@ -1875,21 +1875,21 @@ html.lenis-smooth {
   are decoration, so they go.
 */
 @media (prefers-reduced-motion: reduce) {
-  .practise-stage[data-mood="critical"] ~ .practise-rule::after { display: none; }
-  .practise-flash { display: none; }
+  .practice-stage[data-mood="critical"] ~ .practice-rule::after { display: none; }
+  .practice-flash { display: none; }
   .scenario-scene { animation: none; }
   .permission-row[data-state] { animation: none; }
-  .practise-stage,
-  .practise-stage::before,
-  .practise-stage::after,
-  .practise-rule { transition: none; }
+  .practice-stage,
+  .practice-stage::before,
+  .practice-stage::after,
+  .practice-rule { transition: none; }
 }
 
 /* Printing an incident write-up should not print the room. */
 @media print {
-  .practise-stage,
-  .practise-rule,
-  .practise-flash { display: none !important; }
+  .practice-stage,
+  .practice-rule,
+  .practice-flash { display: none !important; }
 }
 
 /*

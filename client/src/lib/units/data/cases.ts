@@ -6,8 +6,8 @@
  * here is exotic: all ten are shapes you find in production unit files, and
  * four of them are shapes that look correct and are not.
  *
- * The names are the real ones, because recognising this in the wild means
- * recognising postgresql.service rather than db.service.
+ * The names are the real ones, because recognizing this in the wild means
+ * recognizing postgresql.service rather than db.service.
  */
 
 import type { Case } from "../types";
@@ -66,7 +66,7 @@ export const CASES: Case[] = [
     why:
       "systemd.unit(5) puts a condition in the middle of the sentence: if one of the other units fails to activate, and an ordering dependency After= on the failing unit is set, this unit will not be started. Without After= the two are started at the same moment, so the API is already up by the time redis fails, and nothing goes back to reconsider it. The requirement was real and it was evaluated against a unit that had not failed yet.",
     fix:
-      "Write both, always: Requires=redis.service and After=redis.service. Requires= alone is not a weaker version of the pair, it is a different behaviour, and the difference only shows up on the day the dependency breaks.",
+      "Write both, always: Requires=redis.service and After=redis.service. Requires= alone is not a weaker version of the pair, it is a different behavior, and the difference only shows up on the day the dependency breaks.",
     breaks: "Requires= stops this unit when the required unit fails",
   },
   {

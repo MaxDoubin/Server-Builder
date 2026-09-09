@@ -62,7 +62,7 @@ because all of those checks run against the zone.
 
 Two ways out. Add glue at the parent, which the registrar does, or put the
 nameservers on names outside the zone. That second option is why plenty of
-organisations run their nameservers under a completely separate domain.
+organizations run their nameservers under a completely separate domain.
 
 ## A delegation to nothing
 
@@ -137,7 +137,7 @@ what a real server does.
 The second: it tried only the first server in a delegation, which made a
 two-server zone with one dead server look broken. It fails over now, and that
 case is on the page as a control, because a redundancy that works is worth
-recognising as quickly as a fault.
+recognizing as quickly as a fault.
 
 ## References
 

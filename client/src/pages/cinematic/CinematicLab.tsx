@@ -4,7 +4,7 @@
  * The check is a button rather than something that fires on every command,
  * because a lab that congratulates you the instant a predicate happens to go
  * true takes away the moment where you decide you have finished. It also
- * makes the predicate's behaviour legible: you asked, it answered.
+ * makes the predicate's behavior legible: you asked, it answered.
  *
  * Hints are opened one at a time and stay open. Nothing is scored, so there
  * is no reason to make taking a hint feel expensive, and a hint the reader

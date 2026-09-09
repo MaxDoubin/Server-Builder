@@ -1,5 +1,5 @@
 /**
- * A Dell compute and storage row, built entirely from hardware modelled here.
+ * A Dell compute and storage row, built entirely from hardware modeled here.
  *
  * The interesting thing about drawing these four together is that their
  * faces are all storage and no two are alike, which is exactly the trap the
@@ -58,7 +58,7 @@ export const dellRowRack: RackDefinition = {
   slug: "dell-row-24u",
   name: "Dell compute and storage 24U",
   blurb:
-    "An eighty four bay PowerVault under three generations of PowerEdge, with a pair of S5248F-ON leaves on top of the rack. Every Dell box here is modelled from Dell's own service documentation, and their five fronts are five different mouldings: a 1U cannot stand a 2.5 inch drive on edge, so the R660 carries two rows of five while the R760 carries twenty four upright and the R760xd2 lays twelve large ones flat in a grid.",
+    "An eighty four bay PowerVault under three generations of PowerEdge, with a pair of S5248F-ON leaves on top of the rack. Every Dell box here is modeled from Dell's own service documentation, and their five fronts are five different mouldings: a 1U cannot stand a 2.5 inch drive on edge, so the R660 carries two rows of five while the R760 carries twenty four upright and the R760xd2 lays twelve large ones flat in a grid.",
   height: 24,
 
   devices: [
@@ -105,7 +105,7 @@ export const dellRowRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "Fingers and a cover under the leaf pair, where every server's two uplinks converge. In a row rack the cabling is short and dense and there is no patch panel to organise it, so this is the only thing keeping the front of the switches readable.",
+      role: "Fingers and a cover under the leaf pair, where every server's two uplinks converge. In a row rack the cabling is short and dense and there is no patch panel to organize it, so this is the only thing keeping the front of the switches readable.",
       family: "blank",
       finish: "dark",
       watts: null,

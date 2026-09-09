@@ -3,7 +3,7 @@
  *
  * The Catalyst closet elsewhere in this library is a wiring closet: one
  * router, two switches and a UPS. This is the other end of the same
- * catalogue, and the point of drawing it is that Cisco's range is not one
+ * catalog, and the point of drawing it is that Cisco's range is not one
  * shape repeated. In here there is a six rack unit modular chassis whose
  * line cards slide in horizontally, a six rack unit blade chassis with no
  * ports on its face at all, switches with no copper on them anywhere, and
@@ -182,7 +182,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 1,
       vendor: "Cisco",
       model: "Catalyst 9500-48Y4C",
-      role: "The core, and there is no copper on it anywhere: 48 SFP28 cages at 25G and four QSFP28 at 100G. Everything in this rack that matters converges here over fibre, and the absence of a single RJ45 is the fastest way to tell a core switch from an access switch at a glance.",
+      role: "The core, and there is no copper on it anywhere: 48 SFP28 cages at 25G and four QSFP28 at 100G. Everything in this rack that matters converges here over fiber, and the absence of a single RJ45 is the fastest way to tell a core switch from an access switch at a glance.",
       family: "switch",
       finish: "light",
       portTint: "#1c6f6a",
@@ -199,7 +199,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 1,
       vendor: "Cisco",
       model: "Nexus 9336C-FX2",
-      role: "The spine: 36 QSFP28 cages, every one of them 100G, in a black chassis rather than Catalyst grey. Nexus is the data centre line and it is meant to look like a different company's product, which is a real thing to learn from a rack.",
+      role: "The spine: 36 QSFP28 cages, every one of them 100G, in a black chassis rather than Catalyst gray. Nexus is the data center line and it is meant to look like a different company's product, which is a real thing to learn from a rack.",
       family: "switch",
       finish: "black",
       ports: run("qsfp", 36, (n) => `E1/${n}`, 22, "blue"),
@@ -212,7 +212,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "The second manager, below the spine, keeping the fibre runs off the copper ones. Fibre has a real minimum bend radius and a manager is how you respect it.",
+      role: "The second manager, below the spine, keeping the fiber runs off the copper ones. Fiber has a real minimum bend radius and a manager is how you respect it.",
       family: "blank",
       look: "fingers",
       watts: null,
@@ -275,7 +275,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 1,
       vendor: "Cisco",
       model: "Firepower 2140",
-      role: "The firewall, between the routers and everything else. Twelve copper interfaces and four SFP+, in the same near-black as the Nexus rather than Catalyst grey.",
+      role: "The firewall, between the routers and everything else. Twelve copper interfaces and four SFP+, in the same near-black as the Nexus rather than Catalyst gray.",
       family: "firewall",
       finish: "black",
       ports: [...run("rj45", 12, (n) => `E1/${n}`, 6), ...run("sfp-plus", 4, (n) => `E1/${n + 12}`, 2, "blue")],

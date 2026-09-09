@@ -83,7 +83,7 @@ It watches hardware, and only hardware. iDRAC will tell you a DIMM took correcta
 
 Virtual media is also weaker than it looks over a slow link. Mounting a 5 GB ISO from your laptop over a home connection and running an OS install through it takes hours and fails partway through more often than it succeeds. Stage the image on something close to the server, or use PXE, and keep virtual media for rescue work and small drivers.
 
-Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell firmware and supports the sort of detect-and-recover behaviour described in NIST SP 800-193, but that only helps if you keep it updated. A BMC three years behind on firmware, reachable from a user VLAN, with IPMI enabled, is a worse security position than having no out-of-band management at all, because it is a permanent way into every server you own that nobody is watching.
+Finally, this is not a firmware integrity guarantee. The BMC runs signed Dell firmware and supports the sort of detect-and-recover behavior described in NIST SP 800-193, but that only helps if you keep it updated. A BMC three years behind on firmware, reachable from a user VLAN, with IPMI enabled, is a worse security position than having no out-of-band management at all, because it is a permanent way into every server you own that nobody is watching.
 
 ## References
 

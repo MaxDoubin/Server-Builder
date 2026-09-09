@@ -51,7 +51,7 @@ The container-level numbers are the ones that are actually true. Per-volume free
 
 ## Snapshots and clones, worked
 
-Here is the clone behaviour on a real volume. `mkfile` and `cp -c` both ship with macOS, and `cp -c` is the flag that calls `clonefile(2)` instead of copying blocks.
+Here is the clone behavior on a real volume. `mkfile` and `cp -c` both ship with macOS, and `cp -c` is the flag that calls `clonefile(2)` instead of copying blocks.
 
 ```bash
 cd /tmp
@@ -143,7 +143,7 @@ This hybrid approach uses each filesystem where it is strongest.
 
 **Expecting `cp` to clone.** Only `cp -c`, Finder's Duplicate, and a direct `clonefile(2)` call produce clones. A backup script using plain `cp` or `rsync` writes full copies, and a workflow that assumed cheap duplicates fills the volume overnight.
 
-**Case sensitivity mismatch.** macOS formats APFS case-insensitive by default. If you create a case-sensitive volume for a build tree, you get correct behaviour for source code but break applications that assume otherwise, and copying from case-sensitive to case-insensitive silently collides `README` with `readme`. Pick one per volume and know which one you picked.
+**Case sensitivity mismatch.** macOS formats APFS case-insensitive by default. If you create a case-sensitive volume for a build tree, you get correct behavior for source code but break applications that assume otherwise, and copying from case-sensitive to case-insensitive silently collides `README` with `readme`. Pick one per volume and know which one you picked.
 
 **Assuming encryption implies integrity.** FileVault stops someone reading the disk. It does nothing about a flipped bit, and because the data is enciphered in blocks, a single bit error damages the whole block rather than one byte. Encryption and integrity are separate properties and APFS only provides one of them.
 

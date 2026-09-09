@@ -1,8 +1,8 @@
 /**
  * A MikroTik Cloud Router Switch stack, built entirely from hardware
- * modelled here.
+ * modeled here.
  *
- * Five CRS switches in a row is a good test of whether the modelling was
+ * Five CRS switches in a row is a good test of whether the modeling was
  * done honestly, because MikroTik's whole product line looks alike from a
  * distance: the same black anodised extrusion, the same white silkscreen,
  * the same one rack unit. Drawn carelessly they come out as one switch
@@ -68,7 +68,7 @@ export const mikrotikCrsRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "24-port keystone patch panel",
-      role: "Where the copper lands before it reaches a switch. The stack below is nearly all fibre, so the one panel here is the whole copper footprint of the rack, which is itself the point of a MikroTik stack built this way.",
+      role: "Where the copper lands before it reaches a switch. The stack below is nearly all fiber, so the one panel here is the whole copper footprint of the rack, which is itself the point of a MikroTik stack built this way.",
       family: "patch",
       ports: run("rj45", 24, (n) => `A${pad2(n)}`, 15),
       finish: "dark",
@@ -115,7 +115,7 @@ export const mikrotikCrsRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "Fingers and a cover between the copper switches and the fibre ones. Fibre has a real minimum bend radius and a manager is how you respect it, which matters more here than in a copper rack because a kinked patch lead fails quietly rather than not at all.",
+      role: "Fingers and a cover between the copper switches and the fiber ones. Fiber has a real minimum bend radius and a manager is how you respect it, which matters more here than in a copper rack because a kinked patch lead fails quietly rather than not at all.",
       family: "blank",
       finish: "dark",
       watts: null,
@@ -143,7 +143,7 @@ export const mikrotikCrsRack: RackDefinition = {
       u: 1,
       vendor: "MikroTik",
       model: "CRS326-24S+2Q+RM",
-      role: "The mirror image: twenty four SFP+ cages in two rows and not one copper port on the face, with two QSFP+ for the uplink. An aggregation switch that assumes everything arriving is already fibre or DAC.",
+      role: "The mirror image: twenty four SFP+ cages in two rows and not one copper port on the face, with two QSFP+ for the uplink. An aggregation switch that assumes everything arriving is already fiber or DAC.",
       family: "switch",
       finish: "black",
       accent: ACCENT.optics,

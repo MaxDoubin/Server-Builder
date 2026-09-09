@@ -1,5 +1,5 @@
 /**
- * The tools catalogue.
+ * The tools catalog.
  *
  * One entry per interactive utility. The registry is plain data with no
  * component imports, so the tools index page can list every tool, and the

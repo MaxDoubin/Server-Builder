@@ -3,14 +3,14 @@
 
 IPsec and WireGuard both give you an encrypted tunnel between networks, and
 that surface similarity hides how differently they are built. IPsec is a
-family of protocols standardised over decades, with a negotiation layer, a
+family of protocols standardized over decades, with a negotiation layer, a
 policy database, and enough options to interoperate with basically anything.
 WireGuard is a single protocol with a fixed cryptographic construction and
 deliberately few knobs.
 
 That difference drives every practical comparison below, so it is worth
-stating plainly: IPsec optimises for interoperability and policy expression,
-WireGuard optimises for a small implementation and a simple mental model.
+stating plainly: IPsec optimizes for interoperability and policy expression,
+WireGuard optimizes for a small implementation and a simple mental model.
 
 ## Cryptographic agility versus a fixed suite
 
@@ -26,7 +26,7 @@ Noise protocol framework, with a fixed set of primitives. There is no
 proposal list, so there is nothing to mismatch and no downgrade to negotiate
 into. The trade is that changing algorithms means changing the protocol
 version, not editing a config. For a small network that is a good trade. For
-an organisation that has to satisfy a specific cryptographic policy or talk
+an organization that has to satisfy a specific cryptographic policy or talk
 to equipment it does not control, agility is a feature, not a bug.
 
 ## The routing model is the real difference

@@ -30,7 +30,7 @@ import {
   The values come from the provider, which snaps a stored scale to one of
   them, so the menu cannot offer a size the provider would refuse. The names
   are copy and live here. A size added to FONT_SCALES appears immediately,
-  labelled by percentage until somebody names it.
+  labeled by percentage until somebody names it.
 */
 const SCALE_NAMES: Record<string, string> = {
   "1": "Normal",

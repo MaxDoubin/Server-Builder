@@ -5,7 +5,7 @@ A retrieval augmented generation demo takes an afternoon. You embed some documen
 
 Then you point it at real documents and quality falls apart. Not because the model is bad and not because the vector store is bad, but because everything around them is doing a poor job of deciding what text to hand the model.
 
-That surrounding work is the actual engineering, and almost none of it involves machine learning. It is parsing, data modelling, indexing, ranking, and measurement. If you are comfortable operating systems, you already have the instincts for it.
+That surrounding work is the actual engineering, and almost none of it involves machine learning. It is parsing, data modeling, indexing, ranking, and measurement. If you are comfortable operating systems, you already have the instincts for it.
 
 ## Ingestion: Parsing, Chunking, Metadata
 

@@ -3,7 +3,7 @@
  *
  * These are study aids, so every answer has to be correct: a wrong card
  * teaches a wrong fact. Port numbers follow the IANA Service Name and
- * Transport Protocol Port Number Registry; protocol behaviour follows the
+ * Transport Protocol Port Number Registry; protocol behavior follows the
  * relevant RFCs; the security and crypto cards state only durable,
  * uncontested facts. Where a value has a common misconception attached
  * (AES block size versus key size, MD5 digest length), the card states the
@@ -98,7 +98,7 @@ const ports: Deck = {
     { id: "port-vnc", front: "VNC default display :0 port?", back: "TCP 5900. Each additional display increments by one (5901, 5902, ...)." },
     { id: "port-http-alt", front: "What commonly runs on TCP 8080?", back: "An alternate HTTP port, often a proxy or an application server behind a reverse proxy." },
     { id: "port-ftps", front: "FTPS (implicit TLS) ports?", back: "TCP 990 for control and 989 for data. Distinct from SFTP, which is SSH on 22." },
-    { id: "port-sip", front: "SIP ports?", back: "5060 for cleartext signalling and 5061 for SIP over TLS." },
+    { id: "port-sip", front: "SIP ports?", back: "5060 for cleartext signaling and 5061 for SIP over TLS." },
     { id: "port-http3", front: "What transport does HTTP/3 use, and on what port?", back: "QUIC over UDP, typically UDP 443." },
     { id: "port-whois", front: "WHOIS port?", back: "TCP 43." },
     { id: "port-smtps", front: "What is TCP 465 used for today?", back: "SMTP submission over implicit TLS (per RFC 8314). Once deprecated, it was reinstated for this purpose." },
@@ -112,12 +112,12 @@ const security: Deck = {
   description: "Core vocabulary for defenders and competitors.",
   cards: [
     { id: "sec-cia", front: "What is the CIA triad?", back: "Confidentiality, Integrity, Availability. The three goals most security controls serve." },
-    { id: "sec-confidentiality", front: "Define confidentiality.", back: "Ensuring information is accessible only to those authorised to see it. Encryption and access control support it." },
-    { id: "sec-integrity", front: "Define integrity.", back: "Ensuring data is not altered without authorisation. Hashes and digital signatures detect tampering." },
+    { id: "sec-confidentiality", front: "Define confidentiality.", back: "Ensuring information is accessible only to those authorized to see it. Encryption and access control support it." },
+    { id: "sec-integrity", front: "Define integrity.", back: "Ensuring data is not altered without authorization. Hashes and digital signatures detect tampering." },
     { id: "sec-availability", front: "Define availability.", back: "Ensuring systems and data are accessible when needed. Redundancy and DDoS mitigation support it." },
     { id: "sec-aaa", front: "What does AAA stand for?", back: "Authentication (who are you), Authorization (what may you do), Accounting (what did you do)." },
     { id: "sec-nonrepudiation", front: "What is non-repudiation?", back: "Assurance that an actor cannot deny having performed an action. Digital signatures provide it." },
-    { id: "sec-auth-factors", front: "Name the main authentication factor categories.", back: "Something you know (password), something you have (token), something you are (biometric). Location and behaviour are sometimes added." },
+    { id: "sec-auth-factors", front: "Name the main authentication factor categories.", back: "Something you know (password), something you have (token), something you are (biometric). Location and behavior are sometimes added." },
     { id: "sec-mfa", front: "What is multi-factor authentication?", back: "Requiring two or more factors from different categories. A password plus a code from your phone qualifies; two passwords do not." },
     { id: "sec-symm-asym", front: "Symmetric versus asymmetric encryption?", back: "Symmetric uses one shared key for both directions. Asymmetric uses a public/private key pair." },
     { id: "sec-hash-vs-enc", front: "How does hashing differ from encryption?", back: "Encryption is reversible with a key. Hashing is a one-way function producing a fixed-length digest with no key to reverse it." },
@@ -164,7 +164,7 @@ const linux: Deck = {
     { id: "lin-top", front: "top", back: "Show a live, sorted view of running processes and system resource use. htop is a friendlier alternative." },
     { id: "lin-kill-9", front: "kill -9 PID", back: "Send SIGKILL to a process, forcing immediate termination. Prefer the default SIGTERM (kill PID) first." },
     { id: "lin-df-h", front: "df -h", back: "Report filesystem disk space usage in human-readable units." },
-    { id: "lin-du-sh", front: "du -sh dir", back: "Show the total size of a directory in human-readable form (-s summarises, -h humanises)." },
+    { id: "lin-du-sh", front: "du -sh dir", back: "Show the total size of a directory in human-readable form (-s summarizes, -h humanises)." },
     { id: "lin-tar-x", front: "tar -xzvf archive.tar.gz", back: "Extract (x) a gzip-compressed (z) tar archive verbosely (v) from the given file (f)." },
     { id: "lin-tar-c", front: "tar -czvf archive.tar.gz dir/", back: "Create (c) a gzip-compressed tar archive of dir/." },
     { id: "lin-lns", front: "ln -s target linkname", back: "Create a symbolic (soft) link named linkname pointing at target." },

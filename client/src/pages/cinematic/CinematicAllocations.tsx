@@ -3,7 +3,7 @@
  *
  * Deliberately not the subnetting drill in /tools, and the page says so. That
  * one generates a question and grades the arithmetic, which is worth
- * practising and is not what anyone is doing when they lay out a network.
+ * practicing and is not what anyone is doing when they lay out a network.
  * This is the planning task: one block, several things that want space, and
  * the constraints that make it a puzzle rather than a division.
  */
@@ -23,7 +23,7 @@ export function CinematicAllocations() {
   useSEO({
     title: "Address plans | Max Doubin",
     description:
-      "Six blocks to divide between competing requirements, with a map drawn to scale. Overlaps, unaligned networks, summary routes and growth, marked on behaviour rather than on matching one answer.",
+      "Six blocks to divide between competing requirements, with a map drawn to scale. Overlaps, unaligned networks, summary routes and growth, marked on behavior rather than on matching one answer.",
     canonical: `${SITE_URL}/allocate`,
   });
 
@@ -45,7 +45,7 @@ export function CinematicAllocations() {
         <div className="mx-auto max-w-[900px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Spend the block
+              · Practice · Spend the block
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Address plans.
@@ -69,7 +69,7 @@ export function CinematicAllocations() {
               >
                 subnetting drill
               </Link>
-              , which generates a question and grades the arithmetic. Worth practising, and not
+              , which generates a question and grades the arithmetic. Worth practicing, and not
               what anyone is doing when they lay out a network. Here the arithmetic is the easy
               part and alignment is what runs out.
             </p>

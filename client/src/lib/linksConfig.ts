@@ -14,7 +14,7 @@ export interface Resource {
    */
   url: string;
   why: string;
-  /** Shown as a text tag, because colour alone must never carry meaning. */
+  /** Shown as a text tag, because color alone must never carry meaning. */
   access: "Free" | "Free, paid extras";
 }
 
@@ -136,7 +136,7 @@ export const LINK_GROUPS: ResourceGroup[] = [
       {
         name: "NIST Computer Security Resource Center",
         url: "https://csrc.nist.gov/",
-        why: "Where the special publications live, including the password guidance that most organisations still have not caught up with. Dry, authoritative, and free.",
+        why: "Where the special publications live, including the password guidance that most organizations still have not caught up with. Dry, authoritative, and free.",
         access: "Free",
       },
     ],
@@ -151,7 +151,7 @@ export const LINK_GROUPS: ResourceGroup[] = [
       {
         name: "Professor Messer",
         url: "https://www.professormesser.com/",
-        why: "Complete video courses for A+, Network+, and Security+, free to watch, organised objective by objective. Notes and practice exams are the paid part.",
+        why: "Complete video courses for A+, Network+, and Security+, free to watch, organized objective by objective. Notes and practice exams are the paid part.",
         access: "Free, paid extras",
       },
       {

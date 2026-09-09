@@ -29,8 +29,8 @@ import {
   type Judgements,
 } from "@/lib/triage/progress";
 import { pluralise } from "@/lib/plural";
-import { PractiseStage } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -109,7 +109,7 @@ export function CinematicTriage() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={stageAccent}
         mood={stageMood}
         ending={score.judged === MESSAGES.length && score.right === MESSAGES.length ? "best" : undefined}
@@ -119,7 +119,7 @@ export function CinematicTriage() {
         <div className="mx-auto max-w-[1080px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Read the headers
+              · Practice · Read the headers
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Triage.
@@ -263,9 +263,9 @@ export function CinematicTriage() {
             looking broken.
           </p>
           <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
-            For the rest of the practise material, the{" "}
+            For the rest of the practice material, the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
               hub

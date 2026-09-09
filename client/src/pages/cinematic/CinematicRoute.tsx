@@ -17,7 +17,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import {
   TABLES,
@@ -30,7 +30,7 @@ import {
   type Protocol,
   type Table,
 } from "@/lib/route/index";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -79,7 +79,7 @@ export function CinematicRoute() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={accent} mood={disagree ? "tense" : "calm"} flashKey={0} />
+      <PracticeStage accent={accent} mood={disagree ? "tense" : "calm"} flashKey={0} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>

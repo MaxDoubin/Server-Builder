@@ -60,7 +60,7 @@ export const dellComputeRack: RackDefinition = {
       u: 1,
       vendor: "Dell",
       model: "PowerSwitch S5248F-ON (top of rack A)",
-      role: "Top of rack, and all fibre: 48 SFP28 at 25G to the servers below, four 100G QSFP28 to the spine. In a compute rack the switch is the first thing installed and the last thing anyone thinks about until it fails.",
+      role: "Top of rack, and all fiber: 48 SFP28 at 25G to the servers below, four 100G QSFP28 to the spine. In a compute rack the switch is the first thing installed and the last thing anyone thinks about until it fails.",
       family: "switch",
       finish: "dark",
       ports: [...run("sfp28", 48, (n) => `Eth1/1/${n}`, 34, "blue"), ...run("qsfp", 4, (n) => `Eth1/1/${n + 48}`, 2, "blue")],
@@ -226,7 +226,7 @@ export const dellComputeRack: RackDefinition = {
       u: 1,
       vendor: "Dell",
       model: "PowerSwitch N3248TE-ON",
-      role: "The management switch, which this rack had no equivalent of. Two S5248F leaves at the top carry data and nothing carried management, but eight servers and an MX7000 all present an iDRAC or an OME port and those have to land somewhere. Forty eight gigabit copper is what that somewhere looks like, and it is a different shape from the all fibre leaves because management is still copper almost everywhere.",
+      role: "The management switch, which this rack had no equivalent of. Two S5248F leaves at the top carry data and nothing carried management, but eight servers and an MX7000 all present an iDRAC or an OME port and those have to land somewhere. Forty eight gigabit copper is what that somewhere looks like, and it is a different shape from the all fiber leaves because management is still copper almost everywhere.",
       family: "switch",
       finish: "dark",
       ports: [

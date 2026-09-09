@@ -34,9 +34,9 @@ export function parseAddress(text: string): number | null {
 }
 
 /**
- * Parse `a.b.c.d/n`, WITHOUT normalising the address to its network.
+ * Parse `a.b.c.d/n`, WITHOUT normalizing the address to its network.
  *
- * Not normalising is the point. 10.40.3.0/23 is not a network, it is a host
+ * Not normalizing is the point. 10.40.3.0/23 is not a network, it is a host
  * address inside 10.40.2.0/23, and a parser that quietly rounds it down would
  * accept the single most common mistake in this exercise and teach that it is
  * fine. The caller checks alignment and says so.

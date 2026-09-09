@@ -1,7 +1,7 @@
 /**
- * One thing from every practise surface, chosen by the date.
+ * One thing from every practice surface, chosen by the date.
  *
- * The site has more than a dozen places to practise and a reader arriving at
+ * The site has more than a dozen places to practice and a reader arriving at
  * the hub has to choose between them before they have done anything. This
  * removes that choice for anyone who does not want it: one item from each,
  * picked by the day, the same set for everybody, gone tomorrow.
@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage } from "@/components/practise/PractiseStage";
+import { PracticeStage } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import { cycleDays, dayNumber, picksFor } from "@/lib/today/index";
 import { readProgress, recordVisit, type Line } from "@/lib/today/progress";
@@ -29,7 +29,7 @@ export function CinematicToday() {
   useSEO({
     title: "Today | Max Doubin",
     description:
-      "One thing from every practise surface, chosen by the date and the same for everybody: an incident to decide, a host to diagnose, a capture to read, a flag to find, a message to judge, a chain to reorder, a name to resolve, a certificate to attribute, a block to divide and a slow transfer to explain.",
+      "One thing from every practice surface, chosen by the date and the same for everybody: an incident to decide, a host to diagnose, a capture to read, a flag to find, a message to judge, a chain to reorder, a name to resolve, a certificate to attribute, a block to divide and a slow transfer to explain.",
     canonical: `${SITE_URL}/today`,
   });
 
@@ -51,7 +51,7 @@ export function CinematicToday() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent="signal" mood="calm" flashKey={0} />
+      <PracticeStage accent="signal" mood="calm" flashKey={0} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
@@ -62,7 +62,7 @@ export function CinematicToday() {
               Today.
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              One thing from each of the {picks.length} practise surfaces, chosen by the date. The
+              One thing from each of the {picks.length} practice surfaces, chosen by the date. The
               same {picks.length} for everybody, and different tomorrow.
             </p>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-ash))]">
@@ -163,10 +163,10 @@ export function CinematicToday() {
           <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
             To choose for yourself instead, the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>{" "}
             has all of it with what each one is for.
           </p>

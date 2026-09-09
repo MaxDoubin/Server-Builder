@@ -55,7 +55,7 @@ show log               # System log
 
 Remember that all of those counters are cumulative since boot or since the last `clear counters`. A device with 400 CRC errors and 300 days of uptime is fine. Run `clear counters`, wait five minutes, and look again if you want to know whether the problem is happening now.
 
-`show cdp neighbors` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run `no cdp enable` on ports facing users or untrusted networks. LLDP, standardised as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type `lldp run`.
+`show cdp neighbors` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run `no cdp enable` on ports facing users or untrusted networks. LLDP, standardized as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type `lldp run`.
 
 The output filters are the other half of the help system. `show run | include ip address` greps, `show run | section interface` prints whole configuration blocks, and `show run | begin router bgp` starts output at the first match. `terminal length 0` turns off the `--More--` paging so you can capture a full config into a terminal log.
 
@@ -113,7 +113,7 @@ reload in 10
 reload cancel
 ```
 
-If the change breaks your connectivity, you cannot type `reload cancel`, the device reboots in ten minutes, and it comes back on the last saved startup config. Nobody has to drive to the site. Do not save the config until you have cancelled the reload.
+If the change breaks your connectivity, you cannot type `reload cancel`, the device reboots in ten minutes, and it comes back on the last saved startup config. Nobody has to drive to the site. Do not save the config until you have canceled the reload.
 
 For a real rollback capability rather than a blunt reboot, `archive` with `path` configured plus `configure replace` lets you roll back to a stored configuration file, but it only works if you set it up before you needed it. Config register `0x2102` is the normal default and means boot from flash and load the startup config; `0x2142` tells the router to skip the startup config, which is the password recovery procedure and also a good way to accidentally boot a blank device.
 

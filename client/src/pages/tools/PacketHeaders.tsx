@@ -276,7 +276,7 @@ const TCP: Protocol = {
       offset: 110,
       width: 1,
       detail:
-        "Synchronise sequence numbers. Set only on the first segment each side sends, so exactly two segments in a healthy connection carry it.",
+        "Synchronize sequence numbers. Set only on the first segment each side sends, so exactly two segments in a healthy connection carry it.",
     },
     {
       id: "fin",

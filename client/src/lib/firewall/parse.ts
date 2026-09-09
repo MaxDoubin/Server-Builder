@@ -33,7 +33,7 @@ export function parseIPv4(text: string): number | null {
 }
 
 /**
- * Normalise an address or CIDR to `address/prefix`.
+ * Normalize an address or CIDR to `address/prefix`.
  *
  * A bare address is /32, which is what iptables does, and the reason a rule
  * written `-s 10.0.0.0` matches exactly one host rather than the network the

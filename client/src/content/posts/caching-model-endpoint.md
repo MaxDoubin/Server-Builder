@@ -56,7 +56,7 @@ def cache_key(req: dict) -> str:
     return "infer:" + hashlib.sha256(blob).hexdigest()
 ```
 
-## Caching Changes Behaviour When Sampling Is On
+## Caching Changes Behavior When Sampling Is On
 
 At temperature zero you are approximating a deterministic function, and caching
 is a pure optimization. Above zero you are sampling, and a cache turns a

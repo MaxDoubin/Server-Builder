@@ -29,7 +29,7 @@ const problems: string[] = [];
  *
  * The first version of this check read client/src/content/posts and nothing
  * else, and it failed four entries that the site plainly uses: air gap, MFA
- * and glue record all appear in the practise exercises rather than in a post.
+ * and glue record all appear in the practice exercises rather than in a post.
  * A term the DNS resolver exercise puts in front of a reader is a term the
  * site uses. Reading only the articles would have had me delete those three
  * definitions to satisfy a check that was measuring the wrong thing.

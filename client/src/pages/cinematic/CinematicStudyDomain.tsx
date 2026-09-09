@@ -118,7 +118,7 @@ export function CinematicStudyDomain() {
           {tools.length > 0 && (
             <section className="mt-12">
               <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">
-                Practise it
+                Practice it
               </h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {tools.map((t) => (

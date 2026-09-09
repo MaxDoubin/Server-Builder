@@ -10,19 +10,19 @@
  *
  * The axis is symmetric log, because the cases span thirty seconds to
  * thirteen days and a linear axis makes one of those two invisible. Zero sits
- * in the middle, and the ticks are labelled in the units a person thinks in,
+ * in the middle, and the ticks are labeled in the units a person thinks in,
  * so the compression is legible rather than hidden.
  *
  * The error messages are quoted verbatim and given more room than they
- * deserve, because recognising this fault in the wild means recognising those
+ * deserve, because recognizing this fault in the wild means recognizing those
  * exact strings. Three of the four never mention time.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -47,7 +47,7 @@ const SITE_URL = "https://maxdoubin.com";
 /* Read off the cases, so the sentence about them cannot drift from them. */
 const SPREAD = tolerances(CASES);
 
-/** How wrong the clock turns out to be, which is what the room takes its colour from. */
+/** How wrong the clock turns out to be, which is what the room takes its color from. */
 function severity(item: Case): StageAccent {
   const span = narrowed(item.checks);
   if (!span) return "signal";
@@ -57,7 +57,7 @@ function severity(item: Case): StageAccent {
   return "cyan";
 }
 
-/** The ticks worth labelling, in seconds either side of correct. */
+/** The ticks worth labeling, in seconds either side of correct. */
 const TICKS = [-86400, -3600, -300, -60, 0, 60, 300, 3600, 86400];
 
 const TICK_LABEL: Record<number, string> = {
@@ -150,7 +150,7 @@ export function CinematicClock() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -445,10 +445,10 @@ export function CinematicClock() {
             </Link>
             , and the rest is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

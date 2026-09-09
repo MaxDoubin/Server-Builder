@@ -41,7 +41,7 @@ Second, baseboard management controllers deserve special paranoia. [IPMI](/blog/
 
 Design the network assuming an attacker will eventually get in. The question is not whether the perimeter will be breached, but what they can do once inside. Micro-segmentation, zero-trust access controls, and comprehensive logging all limit the damage from a successful intrusion.
 
-This is the core of the zero trust model described in NIST SP 800-207: network location is not an authentication factor. Being on the internal network should grant you nothing by itself. Every request gets authenticated and authorised on its own merits, and the network's job is to reduce the set of things a compromised identity can even attempt to reach.
+This is the core of the zero trust model described in NIST SP 800-207: network location is not an authentication factor. Being on the internal network should grant you nothing by itself. Every request gets authenticated and authorized on its own merits, and the network's job is to reduce the set of things a compromised identity can even attempt to reach.
 
 You do not need a product to start. Requiring authentication on internal services that currently have none, and putting a filter between zones that currently route freely, gets you most of the practical benefit.
 
@@ -55,9 +55,9 @@ You cannot defend what you cannot see. Every network should have:
 
 Security without visibility is guesswork. Build observability into the network from day one.
 
-Some specifics for building that out. Syslog as standardised in RFC 5424 traditionally rides UDP port 514, which is unauthenticated and can be dropped silently; use the TLS transport on port 6514 where the gear supports it. IPFIX, the IETF standard descended from NetFlow version 9, is registered on port 4739, while NetFlow v9 exporters conventionally use UDP 2055, a convention rather than a standard, so check what your collector expects.
+Some specifics for building that out. Syslog as standardized in RFC 5424 traditionally rides UDP port 514, which is unauthenticated and can be dropped silently; use the TLS transport on port 6514 where the gear supports it. IPFIX, the IETF standard descended from NetFlow version 9, is registered on port 4739, while NetFlow v9 exporters conventionally use UDP 2055, a convention rather than a standard, so check what your collector expects.
 
-Two things make logs usable rather than merely voluminous. Synchronise clocks with NTP on every device, because correlating events across systems whose timestamps disagree by minutes is nearly impossible. And ship logs off the device that generated them immediately, since the first thing a competent intruder does on a compromised host is edit its local logs.
+Two things make logs usable rather than merely voluminous. Synchronize clocks with NTP on every device, because correlating events across systems whose timestamps disagree by minutes is nearly impossible. And ship logs off the device that generated them immediately, since the first thing a competent intruder does on a compromised host is edit its local logs.
 
 Decide retention deliberately. Intrusions are frequently discovered weeks or months after they begin, and flow data from the week before you started looking is what tells you how far it spread.
 

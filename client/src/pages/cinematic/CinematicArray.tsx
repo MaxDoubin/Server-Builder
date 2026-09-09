@@ -10,7 +10,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage } from "@/components/practise/PractiseStage";
+import { PracticeStage } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import {
   CONFIGS,
@@ -22,7 +22,7 @@ import {
   tbToTib,
   type Level,
 } from "@/lib/array/index";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -51,7 +51,7 @@ export function CinematicArray() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={result.tolerance === 0 ? "danger" : days > 7 ? "amber" : "signal"}
         mood={mood}
         flashKey={disks + diskTb}

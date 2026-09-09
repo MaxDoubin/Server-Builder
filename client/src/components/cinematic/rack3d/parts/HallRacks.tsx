@@ -203,7 +203,7 @@ export function HallRacks({
     lastLocal.current = new Float32Array(rackCount).fill(-1);
     // A changed rack count changes every <instancedMesh args>, so R3F builds
     // new meshes and the instanceColor buffers we seeded go with the old
-    // ones. Seed again or the whole hall renders in the bare material colour.
+    // ones. Seed again or the whole hall renders in the bare material color.
     seeded.current = false;
   }
 
@@ -238,7 +238,7 @@ export function HallRacks({
     }
     if (!visible) return;
 
-    // ---- one-time per-instance colouring -------------------------------
+    // ---- one-time per-instance coloring -------------------------------
     if (!seeded.current) {
       seeded.current = true;
       for (let r = 0; r < rackCount; r++) {
@@ -343,7 +343,7 @@ export function HallRacks({
     }
 
     // ---- live status LEDs ----------------------------------------------
-    // The hall should look like it is running, not parked. One colour
+    // The hall should look like it is running, not parked. One color
     // buffer upload per frame covers every LED in every rack.
     const time = clock.elapsedTime;
     for (let r = 0; r < rackCount; r++) {
@@ -372,7 +372,7 @@ export function HallRacks({
 
         // The lit face holds a steadier, dimmer glow than the blinking
         // indicators, pulled well off full accent so a row of them reads
-        // as running hardware rather than coloured tape.
+        // as running hardware rather than colored tape.
         scratch.accent.set(spec.accent).lerp(FACE_WASH, 0.55);
         scratch.dim.copy(scratch.accent).multiplyScalar(0.04);
         scratch.color
@@ -428,8 +428,8 @@ export function HallRacks({
       </instancedMesh>
 
       {/* Equipment bezels at unit height, scaled per slot.
-          Colour comes from instanceColor, which multiplies the material
-          colour, so the material must stay white or the two darks square
+          Color comes from instanceColor, which multiplies the material
+          color, so the material must stay white or the two darks square
           together into black. */}
       <instancedMesh ref={bezelRef} args={[undefined, undefined, ns]} frustumCulled={false} visible={false}>
         <boxGeometry args={[RACK_INNER_WIDTH, 1, BEZEL_DEPTH]} />

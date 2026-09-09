@@ -2,7 +2,7 @@
  * The firewall exercise index.
  *
  * Eight chains with something wrong with them. Each one is marked by
- * behaviour rather than by shape: the checklist is a set of packets and the
+ * behavior rather than by shape: the checklist is a set of packets and the
  * verdicts they should get, so any ruleset that produces them is correct and
  * the reader is never marked down for finding a better answer than mine.
  */
@@ -44,7 +44,7 @@ export function CinematicFirewalls() {
         <div className="mx-auto max-w-[900px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · First match wins
+              · Practice · First match wins
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Firewall.

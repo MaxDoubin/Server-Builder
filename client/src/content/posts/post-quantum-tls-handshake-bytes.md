@@ -48,7 +48,7 @@ are parsing these by hand, that ordering is the bug you are about to write.
 
 The obvious question is why a connection carries an elliptic curve share at
 all if the point is to survive a quantum computer. The answer is that ML-KEM is
-young. It was standardised in 2024 and the cryptanalysis that would find a
+young. It was standardized in 2024 and the cryptanalysis that would find a
 flaw in it, if there is one, has had about two years to run. X25519 has had
 twenty.
 

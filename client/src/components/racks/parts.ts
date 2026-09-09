@@ -9,12 +9,12 @@
  * rescue it.
  *
  * The catch is that a 48 port switch has 48 of them and a rack has ten
- * switches, so every part here is built once in normalised space, cached at
+ * switches, so every part here is built once in normalized space, cached at
  * module scope, and drawn through a single InstancedMesh per part with a
- * per-instance matrix. Five hundred fully modelled jacks cost one draw call
+ * per-instance matrix. Five hundred fully modeled jacks cost one draw call
  * and one geometry.
  *
- * Normalised space: the part fills x and y in -0.5 to 0.5, its front face
+ * Normalized space: the part fills x and y in -0.5 to 0.5, its front face
  * sits on z = 0, and it extends backwards into negative z. Callers scale by
  * the real port size, so the same geometry serves an 11.7mm jack on a dense
  * switch and a wider one on a four port face.
@@ -238,12 +238,12 @@ export function plugBoot(): THREE.BufferGeometry {
  * A chassis shell with chamfered edges.
  *
  * A box in three.js has perfectly sharp arrises, and nothing manufactured
- * does: a folded steel or extruded aluminium case has a radius on every
+ * does: a folded steel or extruded aluminum case has a radius on every
  * edge, and that radius is what catches the key light and draws the bright
  * line down the front of the box. Without it a rack of equipment reads as a
  * stack of untextured cubes no matter how good the lighting is.
  *
- * Built per size rather than normalised, because a chamfer that scales with
+ * Built per size rather than normalized, because a chamfer that scales with
  * the box is not a chamfer.
  */
 export function chassisShell(w: number, h: number, d: number): THREE.BufferGeometry {
@@ -285,7 +285,7 @@ export function chassisShell(w: number, h: number, d: number): THREE.BufferGeome
  * uplink has a module in it, and the module is unmistakable: a body that
  * stands proud of the panel by most of its own length, the bail latch
  * folded down along its underside, and the duplex bore at the front where
- * the fibre goes. Any switch in this library with a lit optic gets one.
+ * the fiber goes. Any switch in this library with a lit optic gets one.
  */
 export function sfpModule(): THREE.BufferGeometry {
   return cached("sfpmod", () => {

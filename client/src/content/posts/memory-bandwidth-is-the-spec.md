@@ -43,7 +43,7 @@ the same weight read is amortised across many tokens. Intensity is high.
 Compute bound. This is why a long prompt and a long generation feel like
 completely different workloads on the same model.
 
-**Elementwise operations, normalisation, activation functions.** Almost no
+**Elementwise operations, normalization, activation functions.** Almost no
 arithmetic per byte. Bandwidth bound, always, which is why kernel fusion exists.
 
 ```python
@@ -65,7 +65,7 @@ print(roofline(1000, 300, 0.5))
 
 Run those two and the gap is enormous. The second case uses a tiny fraction of
 the chip's arithmetic capability no matter how good the chip is at arithmetic.
-That is not a software problem you can optimise away, it is the shape of the
+That is not a software problem you can optimize away, it is the shape of the
 computation.
 
 ## What this implies when comparing hardware

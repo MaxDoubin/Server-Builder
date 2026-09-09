@@ -6,7 +6,7 @@
  * is kept and shown at the end, with a retry that reshuffles nothing but
  * simply clears the answers so the same set can be redrilled.
  *
- * Feedback never relies on colour alone: correctness is stated in words and
+ * Feedback never relies on color alone: correctness is stated in words and
  * marked with a glyph, and the live region announces it for screen readers.
  */
 

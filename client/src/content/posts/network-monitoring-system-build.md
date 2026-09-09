@@ -53,7 +53,7 @@ Prometheus `rate()` detects a counter reset by noticing the value went down, and
 
 The fix is in the same RFC. The `ifXTable` provides `ifHCInOctets` and `ifHCOutOctets` as Counter64, which will not wrap in any human timeframe. Counter64 does not exist in SNMPv1, so you must poll with v2c or v3 to get them, and the `if_mib` module in snmp_exporter already walks the high-capacity table. Verify with `snmpwalk` that your device actually populates it, because some low-end gear exposes the OIDs and leaves them at zero.
 
-The same RFC is also why your graphs sometimes swap ports after a reboot. `ifIndex` is not guaranteed stable across a reload or a module insertion on many platforms, so the series you labelled "uplink" can quietly become a different physical port. Label your metrics by `ifName` or `ifAlias` rather than index, and set a real description on every port so `ifAlias` is worth reading.
+The same RFC is also why your graphs sometimes swap ports after a reboot. `ifIndex` is not guaranteed stable across a reload or a module insertion on many platforms, so the series you labeled "uplink" can quietly become a different physical port. Label your metrics by `ifName` or `ifAlias` rather than index, and set a real description on every port so `ifAlias` is worth reading.
 
 ## Scrape Timeouts and Holes in Graphs
 

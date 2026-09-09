@@ -28,7 +28,7 @@ import {
  * as: Fabric · Thermal · Power · Availability.
  *
  * The values are generated, not measured. They used to be badged LIVE and
- * labelled against Max's own lab, which read as real-time instrumentation
+ * labeled against Max's own lab, which read as real-time instrumentation
  * from a facility he runs. The site is static and there is no telemetry
  * pipeline behind it, so the badge says SIMULATED and the copy says so too.
  * Under a heading that reads "If it isn't measured, it doesn't exist", the

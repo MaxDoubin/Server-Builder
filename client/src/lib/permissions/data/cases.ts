@@ -289,7 +289,7 @@ export const CASES: Case[] = [
     slug: "the-owner-gets-less-than-everybody",
     title: "Everyone can read it except the person who owns it",
     brief:
-      "A hardening script walked a tree and set every file it did not recognise to 004. You own this one. You are now the only account on the machine that cannot read it.",
+      "A hardening script walked a tree and set every file it did not recognize to 004. You own this one. You are now the only account on the machine that cannot read it.",
     command: "cat /home/alina/keys/recovery.txt",
     actor: { user: "alina", groups: ["alina", "staff"] },
     path: [

@@ -150,7 +150,7 @@ for (let index = fate.at; index >= 0; index -= 1) {
 if (fate.swallowedAt !== expected) {
   problems.push(
     "blames hop " + fate.swallowedAt + " for a message generated at hop " +
-      fate.at + ", and the first blocker it meets travelling back is hop " +
+      fate.at + ", and the first blocker it meets traveling back is hop " +
       expected,
   );
 }
@@ -215,7 +215,7 @@ that this instrument detects the failures it was built for.
 
 Mutation testing automates a version of this, and it is worth running if
 your language has a decent tool. What it will not do is tell you that your
-*fixtures* cannot distinguish two behaviours, which was the harder half of
+*fixtures* cannot distinguish two behaviors, which was the harder half of
 the second failure. A mutation tool would have flipped the loop direction
 and reported the mutant as killed or survived, but only against the data I
 already had; the missing piece was a topology I had not thought to build.

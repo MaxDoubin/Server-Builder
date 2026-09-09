@@ -2,22 +2,22 @@
  * Read the log, say what happened, point at the line.
  *
  * Two answers per case, and the second is the one that separates reading a
- * log from recognising a shape. A thousand identical failures are a bot that
+ * log from recognizing a shape. A thousand identical failures are a bot that
  * got nowhere; the line that matters is quiet, usually a success, and rarely
  * near anything somebody would grep for. Picking the right conclusion and
  * then citing a line that does not support it is the common failure, and the
  * page marks the two separately so it shows up.
  *
- * The room takes the colour of what the log turns out to be, and the log
+ * The room takes the color of what the log turns out to be, and the log
  * itself dims its noise once the answer is in: the wall of rejections goes
- * grey and the one line that settles it does not. Watching that happen is
+ * gray and the one line that settles it does not. Watching that happen is
  * the lesson, more than the text underneath it is.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -28,7 +28,7 @@ import {
   type Facility,
 } from "@/lib/logs/index";
 import { pluralise } from "@/lib/plural";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -47,7 +47,7 @@ const FACILITY_LABEL: Record<Facility, string> = {
  *
  * Four accents for seven facilities, because the site has four accent tokens
  * that are contrast-checked in both themes. An auth log and a firewall log
- * share a colour and nothing is lost: what the colour carries is the mood of
+ * share a color and nothing is lost: what the color carries is the mood of
  * the answer, not a taxonomy.
  */
 const ACCENT: Record<Facility, StageAccent> = {
@@ -123,7 +123,7 @@ export function CinematicLogs() {
 
   return (
     <CinematicLayout>
-      <PractiseStage accent={accent} mood={mood} flashKey={0} />
+      <PracticeStage accent={accent} mood={mood} flashKey={0} />
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
@@ -366,10 +366,10 @@ export function CinematicLogs() {
             </Link>
             , and the rest is at the{" "}
             <Link
-              href="/practise"
+              href="/practice"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
-              practise hub
+              practice hub
             </Link>
             .
           </p>

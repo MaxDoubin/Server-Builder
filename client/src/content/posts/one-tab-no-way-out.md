@@ -61,8 +61,8 @@ any result row, and from anything added to the modal later. That last part is
 the real gain: the bug came back the moment somebody made a second thing
 focusable, and putting the key on the container means it cannot.
 
-The arrow keys and Enter stay on the input. Those are search-box behaviour.
-Escape is dialog behaviour. Sorting the keys by which thing they belong to,
+The arrow keys and Enter stay on the input. Those are search-box behavior.
+Escape is dialog behavior. Sorting the keys by which thing they belong to,
 rather than by which element happens to have focus when you test, is the
 lesson.
 

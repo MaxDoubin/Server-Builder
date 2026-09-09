@@ -116,7 +116,7 @@ export const countTheFailures: Challenge = {
   artefacts: [
     {
       kind: "table",
-      title: "auth.log, summarised",
+      title: "auth.log, summarized",
       lines: [
         "SOURCE            FAILED   ACCEPTED   USERS TRIED         METHOD",
         "203.0.113.7           41          0   root                password",
@@ -316,7 +316,7 @@ export const aHashWithAName: Challenge = {
     "One of the four has no salt at all, which you can tell because there is nowhere in its format to put one.",
   ],
   walkthrough: [
-    "A is NTLM: 32 hex characters, MD4 of the UTF-16LE password, no salt, no iteration count, nowhere in the format to put either. 8846f7eaee8fb117ad06bdd830b7586c is the NTLM hash of the password 'password', which is why you may recognise it.",
+    "A is NTLM: 32 hex characters, MD4 of the UTF-16LE password, no salt, no iteration count, nowhere in the format to put either. 8846f7eaee8fb117ad06bdd830b7586c is the NTLM hash of the password 'password', which is why you may recognize it.",
     "B is bcrypt. The $2b$ prefix names it and the 12 is the cost factor, so the salt and the work factor are both carried in the digest.",
     "C is a bare SHA-256, and this particular value is the digest of the empty string, which is worth memorising because it turns up constantly in logs where something hashed nothing by mistake.",
     "D is sha512crypt, $6$, with an explicit rounds parameter.",

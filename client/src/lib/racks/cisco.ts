@@ -228,7 +228,7 @@ export const ciscoRack: RackDefinition = {
   ],
 
   /*
-    Patch leads, colour coded the way an enterprise closet actually is:
+    Patch leads, color coded the way an enterprise closet actually is:
     blue for ordinary data drops, yellow for the voice VLAN, red for the
     carrier handoff so nobody unplugs the WAN while chasing a desk port.
     Ordinary moulded boots, not Etherlighting, which is a UniFi part.

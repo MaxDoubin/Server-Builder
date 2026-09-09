@@ -43,7 +43,7 @@ with 398 in it, it stopped working in March.
 ## What changes about how you run things
 
 The validity number is the headline and it is not the interesting part. The
-interesting part is what a 47 day certificate does to an organisation's
+interesting part is what a 47 day certificate does to an organization's
 assumptions.
 
 **Renewal stops being an event.** At 398 days it is something a person does,
@@ -63,7 +63,7 @@ remembers to still be there. They do not survive eight cycles a year.
 **Certificate Transparency is your inventory.** This is the practical
 suggestion worth acting on today. Every publicly trusted certificate is logged,
 the logs are public, and you can query them for your own domains. A CT search
-for your organisation's names will find certificates you did not know existed,
+for your organization's names will find certificates you did not know existed,
 because it lists what was issued rather than what you remember deploying. It is
 the only inventory method that does not depend on already knowing.
 

@@ -9,7 +9,7 @@
  *
  * Objectives come in two kinds. A goal is the thing you are asked to achieve.
  * A guard is a constraint you must not break on the way there, which is what
- * stops "delete the data centre" from being the answer to every incident. A
+ * stops "delete the data center" from being the answer to every incident. A
  * scenario completes when all of both hold at the same moment.
  *
  * The starting conditions and thresholds are tuned against the procedural
@@ -287,7 +287,7 @@ export const SCENARIOS: Scenario[] = [
         id: "heatmap-on",
         kind: "goal",
         label: "Turn the heatmap on",
-        detail: "You cannot fix a hot spot you are guessing at. Colour the floor by real rack heat.",
+        detail: "You cannot fix a hot spot you are guessing at. Color the floor by real rack heat.",
         check: (ctx) => ctx.heatmapOn,
         progress: (ctx) => ({
           value: ctx.heatmapOn ? 1 : 0,

@@ -81,7 +81,7 @@ The cheapest way to build a baseline is to write down the answers to a few quest
 
 ## Getting the logs off the box intact
 
-Analysis is worthless if the transport loses records. Classic syslog runs over UDP port 514, described in RFC 3164 and standardised in RFC 5424. UDP has no retransmission and no flow control, so under a burst the collector silently drops messages, and the burst is the moment you care about. Use TCP where the device supports it, or TLS on port 6514 as defined in RFC 5425 if the logs cross an untrusted segment.
+Analysis is worthless if the transport loses records. Classic syslog runs over UDP port 514, described in RFC 3164 and standardized in RFC 5424. UDP has no retransmission and no flow control, so under a burst the collector silently drops messages, and the burst is the moment you care about. Use TCP where the device supports it, or TLS on port 6514 as defined in RFC 5425 if the logs cross an untrusted segment.
 
 Clock sync matters just as much. Correlating a firewall log against a server auth log is impossible if the two disagree about what time it is, and firewalls in particular love to log in local time with no offset while everything else logs UTC. Point every device at the same NTP source and configure timestamps with an explicit offset. The RFC 5424 format carries an RFC 3339 timestamp, which solves this; the older BSD format in RFC 3164 has no year and no timezone, which is a good reason to move off it.
 
@@ -107,7 +107,7 @@ Write each rule with an explicit threshold, an explicit time window, and an expl
 
 **Alerting on raw counts.** A threshold like "500 denies from one source" pages you every night for the backup job hitting a decommissioned target. Count distinct destinations or distinct ports instead, and always exclude the sources you have already explained.
 
-**Timestamps in local time with no offset.** Two devices, two timezones, one incident timeline that makes no sense. Normalise to UTC at ingest and verify by comparing a known event across two sources.
+**Timestamps in local time with no offset.** Two devices, two timezones, one incident timeline that makes no sense. Normalize to UTC at ingest and verify by comparing a known event across two sources.
 
 ## The follow-through
 

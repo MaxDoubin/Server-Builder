@@ -125,7 +125,7 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "Student of the Month",
         when: "October",
         description:
-          "Recognised as Student of the Month at South Career Technical Academy. The year is not recorded here.",
+          "Recognized as Student of the Month at South Career Technical Academy. The year is not recorded here.",
       },
       {
         title: "Former President, NJHS at Pinecrest Inspirada",

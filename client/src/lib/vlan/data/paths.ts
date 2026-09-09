@@ -81,7 +81,7 @@ export const PATHS: Path[] = [
       { id: "c", claim: "Dropped. VLAN 30 is not the native VLAN on either end, so it cannot cross.", value: "dropped" },
       { id: "d", claim: "VLAN 1. Every trunk falls back to VLAN 1 for traffic it cannot classify.", value: "1" },
     ],
-    why: "This is the control, and it is worth being able to recognise as fast as the fault. VLAN 30 is not native on this trunk, so it crosses carrying a tag, and a tagged frame tells the far end exactly which VLAN it belongs to. The mismatch is gone not because the natives now agree, though they do, but because the native VLAN has been made a VLAN that nothing uses: even if somebody changed one end tomorrow, the only traffic that would land in the wrong place is traffic that does not exist.",
+    why: "This is the control, and it is worth being able to recognize as fast as the fault. VLAN 30 is not native on this trunk, so it crosses carrying a tag, and a tagged frame tells the far end exactly which VLAN it belongs to. The mismatch is gone not because the natives now agree, though they do, but because the native VLAN has been made a VLAN that nothing uses: even if somebody changed one end tomorrow, the only traffic that would land in the wrong place is traffic that does not exist.",
     breaks: "that matching the native VLANs is the fix, when the durable fix is a native VLAN that carries nothing",
   },
   {

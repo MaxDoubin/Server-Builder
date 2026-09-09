@@ -120,11 +120,11 @@ cat /sys/fs/cgroup/batch.slice/io.pressure
 
 `some` is the share of time at least one task was stalled. `full` is the share where nothing could proceed. This is far more actionable than utilisation, because it measures the thing you actually care about, which is delay caused by contention, rather than a percentage that tells you a resource was busy without saying whether anyone was waiting.
 
-My practice is to set `memory.high` deliberately low at first and watch `memory.events` and `memory.pressure` for a week. That tells me the real working set instead of the number I guessed, and I can then set limits that reflect measured behaviour.
+My practice is to set `memory.high` deliberately low at first and watch `memory.events` and `memory.pressure` for a week. That tells me the real working set instead of the number I guessed, and I can then set limits that reflect measured behavior.
 
 ## Why This Is Worth Learning Directly
 
-Every container runtime and orchestrator is a wrapper over this. When a container gets killed and the platform reports an unhelpful reason, the truth is in `memory.events` and the kernel log. Knowing the layer underneath turns an opaque platform behaviour into a mechanism you can inspect.
+Every container runtime and orchestrator is a wrapper over this. When a container gets killed and the platform reports an unhelpful reason, the truth is in `memory.events` and the kernel log. Knowing the layer underneath turns an opaque platform behavior into a mechanism you can inspect.
 
 It is also immediately useful without any container platform at all. Putting a memory limit on the one service you know leaks is a ten minute change that converts a machine wide outage into a single service restart.
 

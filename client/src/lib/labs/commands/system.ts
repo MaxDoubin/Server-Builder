@@ -1,7 +1,7 @@
 /**
  * Process, service and host commands.
  *
- * Mostly formatters over the machine model. The one with real behaviour is
+ * Mostly formatters over the machine model. The one with real behavior is
  * journalctl, because half the labs end with somebody needing to find the
  * line that says why, and a journalctl that cannot filter is not journalctl.
  */

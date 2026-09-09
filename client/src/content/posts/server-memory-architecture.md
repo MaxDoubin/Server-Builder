@@ -19,7 +19,7 @@ The single most common real-world mistake is buying a "64 GB" kit as four 16 GB 
 
 Two more placement failures worth knowing:
 
-**Populating the second CPU's slots with no second CPU installed.** Half the DIMM slots on a dual-socket board are wired to socket 2. With one CPU installed, memory in those slots is simply invisible. There is no error, the capacity is just lower than you paid for. Dell colour-codes and numbers the slots (A1 through A12 for CPU1, B1 through B12 for CPU2) precisely so you can check this at a glance.
+**Populating the second CPU's slots with no second CPU installed.** Half the DIMM slots on a dual-socket board are wired to socket 2. With one CPU installed, memory in those slots is simply invisible. There is no error, the capacity is just lower than you paid for. Dell color-codes and numbers the slots (A1 through A12 for CPU1, B1 through B12 for CPU2) precisely so you can check this at a glance.
 
 **Filling the second slot of a channel first.** Slots are populated white first, then black, and on most Dell boards the far slot of the pair is the one that must be filled first for signal integrity. Getting this backwards can produce a machine that either refuses to POST or trains the whole channel down a speed grade.
 

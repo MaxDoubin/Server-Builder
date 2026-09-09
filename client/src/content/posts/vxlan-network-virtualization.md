@@ -119,7 +119,7 @@ The Kubernetes case is worth a specific note because the port numbers differ. Fl
 
 ## What breaks
 
-**The port number.** This is the first thing to check and the least obvious. IANA assigned 4789 to VXLAN, but the Linux kernel's VXLAN driver still defaults to 8472, the value Linux used before the number was standardised. Create an interface without `dstport` on one host and with `dstport 4789` on the other and you have two VTEPs shouting past each other. Always specify the port explicitly on both ends.
+**The port number.** This is the first thing to check and the least obvious. IANA assigned 4789 to VXLAN, but the Linux kernel's VXLAN driver still defaults to 8472, the value Linux used before the number was standardized. Create an interface without `dstport` on one host and with `dstport 4789` on the other and you have two VTEPs shouting past each other. Always specify the port explicitly on both ends.
 
 **MTU.** The 50 byte overhead means an inner packet of full 1500 bytes will not fit in a 1500 byte underlay. Because the tunnel is UDP and the outer packet usually has the do-not-fragment bit set, oversized packets are silently dropped rather than fragmented. The classic symptom is that ping works, DNS works, SSH connects, and then the first large transfer hangs forever. Test with `ping -M do` at the exact size, not with default pings.
 

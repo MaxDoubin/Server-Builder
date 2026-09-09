@@ -127,7 +127,7 @@ export const TABLES: Table[] = [
       {
         destination: "10.66.90.3",
         trap: 0,
-        why: "The /16 to null0 wins on length and the traffic is discarded. Nothing logs it, nothing sends an unreachable, and the symptom at the far end is a timeout rather than a rejection: this is the intended behaviour and it is also why a forgotten null route is so unpleasant to find.",
+        why: "The /16 to null0 wins on length and the traffic is discarded. Nothing logs it, nothing sends an unreachable, and the symptom at the far end is a timeout rather than a rejection: this is the intended behavior and it is also why a forgotten null route is so unpleasant to find.",
       },
       {
         destination: "10.66.4.12",

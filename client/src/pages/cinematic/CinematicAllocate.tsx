@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage } from "@/components/practise/PractiseStage";
+import { PracticeStage } from "@/components/practice/PracticeStage";
 import { useSEO } from "@/lib/useSEO";
 import { getProblem, review } from "@/lib/allocate/index";
 import {
@@ -26,7 +26,7 @@ import {
 import type { Plan, Problem } from "@/lib/allocate/types";
 import { clearPlan, loadPlan, recordSolvedPlan, savePlan } from "@/lib/allocate/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -92,7 +92,7 @@ function PlanView({ problem }: { problem: Problem }) {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent="cyan"
         mood={mood}
         ending={result.solved ? "best" : undefined}

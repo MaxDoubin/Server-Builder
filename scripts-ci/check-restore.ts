@@ -93,7 +93,7 @@ for (const scenario of SCENARIOS) {
     if (item.retentionDays < 0) problems.push(`${scenario.slug}: ${item.name} has negative retention`);
     /*
       Cold and tape are cheap because they are slow to reach. A cold copy
-      that is instantly available is not modelling anything real, and a
+      that is instantly available is not modeling anything real, and a
       reader would take the wrong lesson about the trade.
     */
     if ((item.medium === "cold" || item.medium === "tape") && item.retrievalHours < 1) {

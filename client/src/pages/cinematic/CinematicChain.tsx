@@ -12,9 +12,9 @@ import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
 import { useSEO } from "@/lib/useSEO";
 import { CHAIN_CASES, correctOption, validate, type ChainCase } from "@/lib/chain/index";
-import { PractiseStage } from "@/components/practise/PractiseStage";
+import { PracticeStage } from "@/components/practice/PracticeStage";
 import { recordSolvedChains } from "@/lib/chain/progress";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -58,7 +58,7 @@ export function CinematicChain() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={lastRight === false ? "amber" : "cyan"}
         mood={lastRight === null ? "tense" : lastRight ? "recovering" : "critical"}
         flashKey={lastRight === null ? 0 : 1}
@@ -67,7 +67,7 @@ export function CinematicChain() {
         <div className="mx-auto max-w-[940px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Which of us fixes it
+              · Practice · Which of us fixes it
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Chain.

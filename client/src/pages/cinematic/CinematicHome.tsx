@@ -10,8 +10,8 @@ const BiographyAct = lazy(() =>
 const TelemetryAct = lazy(() =>
   import("./acts/TelemetryAct").then((m) => ({ default: m.TelemetryAct })),
 );
-const PractiseAct = lazy(() =>
-  import("./acts/PractiseAct").then((m) => ({ default: m.PractiseAct })),
+const PracticeAct = lazy(() =>
+  import("./acts/PracticeAct").then((m) => ({ default: m.PracticeAct })),
 );
 const CTAAct = lazy(() =>
   import("./acts/CTAAct").then((m) => ({ default: m.CTAAct })),
@@ -127,7 +127,7 @@ export function CinematicHome() {
       The hero here is a rack in a dark room, drawn full bleed, with the
       page's own type composited over it. There is no light version of that
       short of a different hero, so the theme control applies from the next
-      page on rather than turning this one grey on grey.
+      page on rather than turning this one gray on gray.
     */
     <CinematicLayout pinDark>
       <div ref={shellRef}>
@@ -139,7 +139,7 @@ export function CinematicHome() {
           <TelemetryAct />
         </Suspense>
         <Suspense fallback={<ActFallback minHeight="90vh" />}>
-          <PractiseAct />
+          <PracticeAct />
         </Suspense>
         <Suspense fallback={<ActFallback minHeight="60vh" />}>
           <CTAAct />

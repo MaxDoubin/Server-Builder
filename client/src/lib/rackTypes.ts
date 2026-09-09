@@ -115,16 +115,16 @@ export interface RackDevice {
    * power it only passes through. Null where the vendor publishes none.
    */
   watts: number | null;
-  /** Accent colour for this device's row. */
+  /** Accent color for this device's row. */
   accent?: string;
   /**
    * Chassis finish, taken from the vendor's product photography. This is
    * not decoration: a UniFi rack is visibly silver, a Catalyst 9300 is pale
-   * grey with teal port throats, and MikroTik ships black. Drawing them all
-   * the same dark grey was the single biggest inaccuracy in the first pass.
+   * gray with teal port throats, and MikroTik ships black. Drawing them all
+   * the same dark gray was the single biggest inaccuracy in the first pass.
    */
   finish?: "silver" | "light" | "black" | "dark";
-  /** Colour inside the port throat. Cisco's 9000 series is famously teal. */
+  /** Color inside the port throat. Cisco's 9000 series is famously teal. */
   portTint?: string;
   /**
    * Ports per visual block. Real switch faceplates group their jacks with a
@@ -169,8 +169,8 @@ export interface RackPatch {
   from: { device: string; port: number };
   to: { device: string; port: number };
   /**
-   * Boot colour, for an Etherlighting lead. UniFi's leads pipe the switch's
-   * port LED out through a translucent boot, and the colour is configurable
+   * Boot color, for an Etherlighting lead. UniFi's leads pipe the switch's
+   * port LED out through a translucent boot, and the color is configurable
    * per port to mean link state, VLAN or negotiated speed. Defaults to the
    * source port's own indicator.
    */
@@ -185,8 +185,8 @@ export interface RackPatch {
    */
   style?: "etherlighting" | "plain";
   /**
-   * Jacket colour for a plain lead. Real closets colour-code by purpose,
-   * which is the whole reason patch leads come in six colours.
+   * Jacket color for a plain lead. Real closets color-code by purpose,
+   * which is the whole reason patch leads come in six colors.
    */
   jacket?: "blue" | "grey" | "yellow" | "red" | "green" | "white";
 }

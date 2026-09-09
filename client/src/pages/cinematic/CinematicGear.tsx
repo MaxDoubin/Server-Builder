@@ -1,10 +1,10 @@
 /**
- * The hardware catalogue: every vendor model on this site, browsable.
+ * The hardware catalog: every vendor model on this site, browsable.
  *
  * This page exists because the models were already here and nothing showed
  * them. The rack builder uses the fifty one devices that mount in a rack and
  * ignores the other two hundred and one, which is correct for a rack builder
- * and leaves most of the catalogue invisible: access points that go on a
+ * and leaves most of the catalog invisible: access points that go on a
  * ceiling, cameras that go on a wall, door readers, handhelds, the little
  * desk gateways. Every one of them is a real model with real measurements
  * and nothing was linking to any of it.
@@ -12,7 +12,7 @@
  * WHAT IS TRUE HERE. Dimensions are read out of the model's own bounding
  * box, not out of a datasheet, so they are the size of the geometry the page
  * will actually load. Triangle counts and file sizes are the real ones. The
- * group and the mounting position come from the vendor's own catalogue,
+ * group and the mounting position come from the vendor's own catalog,
  * because a store knows better than a bounding box whether a thing is meant
  * for a ceiling or a desk. Nothing here is an estimate, and where a model
  * has no thumbnail the card says so rather than showing an empty rectangle.
@@ -31,7 +31,7 @@ import { useSEO } from "@/lib/useSEO";
 import type { Catalogue, CatalogueDevice } from "@/lib/rackBuilder";
 
 /*
-  Loaded only when somebody opens a device. The catalogue is 112MB of
+  Loaded only when somebody opens a device. The catalog is 112MB of
   geometry and three.js is most of a megabyte on its own, so browsing the
   grid should cost thumbnails and nothing else.
 */
@@ -64,7 +64,7 @@ function dimensions(d: CatalogueDevice): string {
   /*
     Ubiquiti export Y up and our own generators emit Z up, so which axis is
     the height depends on the file. Printing them in the stored order would
-    describe half the catalogue standing on its side.
+    describe half the catalog standing on its side.
   */
   const [w, depth, h] = d.up === "z" ? [x, y, z] : [x, z, y];
   return `${mm(w)} × ${mm(depth)} × ${mm(h)} mm`;
@@ -104,7 +104,7 @@ export function CinematicGear() {
   const [open, setOpen] = useState<string | null>(null);
 
   useSEO({
-    title: "Hardware catalogue | Max Doubin",
+    title: "Hardware catalog | Max Doubin",
     description:
       "Every UniFi model on this site, measured: switches, access points, cameras, gateways and door hardware, with real dimensions, triangle counts and file sizes taken from the geometry itself.",
     canonical: `${SITE_URL}/gear`,
@@ -227,7 +227,7 @@ export function CinematicGear() {
               {/*
                 The search box and the mount/group chips are controls, and a
                 printed page has nothing to click. Left in, they put a dead
-                search field and twenty dead chips ahead of the catalogue.
+                search field and twenty dead chips ahead of the catalog.
                 The "N of M models" line below survives, so a reader who
                 printed a filtered view can still see it is a filtered view.
               */}
@@ -485,7 +485,7 @@ export function CinematicGear() {
             </>
           ) : failed ? null : (
             /*
-              Hold the page's height open while the catalogue is in flight.
+              Hold the page's height open while the catalog is in flight.
 
               The list arrives by fetch, so the first paint was a header and
               one line of text, which put the footer squarely in the viewport.

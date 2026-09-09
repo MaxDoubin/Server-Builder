@@ -22,7 +22,7 @@ const NAV_LINKS = [
   { label: "Dossier", href: "/#dossier" },
   { label: "Projects", href: "/projects" },
   { label: "Field Notes", href: "/blog" },
-  { label: "Practise", href: "/practise" },
+  { label: "Practice", href: "/practice" },
   { label: "Tools", href: "/tools" },
   { label: "Racks", href: "/racks" },
   { label: "Gear", href: "/gear" },
@@ -95,7 +95,7 @@ const mobileItemVariants = {
  *   photograph. Measured by masking the glyphs and reading the plate behind
  *   them: 1.20:1 in dark and 1.41:1 in light, on fifteen of sixteen heroes.
  *
- *   A darker scrim cannot fix it. Ash is a mid grey at about 0.25 relative
+ *   A darker scrim cannot fix it. Ash is a mid gray at about 0.25 relative
  *   luminance, so 4.5:1 needs a plate below 0.017, which is a solid black
  *   bar and the opposite of the design. The text has to move instead, so on
  *   a hero the inactive links take --brand-bone and the bar takes a gradient
@@ -104,7 +104,7 @@ const mobileItemVariants = {
  *   The plate holds almost to the bottom of the bar rather than fading from
  *   the middle. The wordmark's box is 30px tall against the links' 16, so it
  *   reached into the faded part and measured 2.16:1 while the links beside
- *   it measured 9.19:1. Same bar, same colour, different height.
+ *   it measured 9.19:1. Same bar, same color, different height.
  *
  *   Scoped rather than global because it is a real change in appearance and
  *   only two pages need it: a post and /projects. Everywhere else the nav

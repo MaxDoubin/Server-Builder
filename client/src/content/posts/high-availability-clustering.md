@@ -57,7 +57,7 @@ pcs resource group add web-group virtual-ip nginx
 
 `IPaddr2` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbours update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to `pcs status` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
 
-Three defaults cause most of the confusing behaviour after a first cluster is running:
+Three defaults cause most of the confusing behavior after a first cluster is running:
 
 - The default operation timeout is 20 seconds. An `op monitor interval=30s` on a service whose status check occasionally takes 25 seconds will be recorded as a monitor failure, and Pacemaker will restart a perfectly healthy service. Set the timeout explicitly: `op monitor interval=30s timeout=60s`.
 - `resource-stickiness` defaults to 0, so when a failed node comes back the cluster may move resources back to it immediately, causing a second outage you did not ask for. Set `pcs resource defaults update resource-stickiness=100` unless you have a reason to want automatic failback.

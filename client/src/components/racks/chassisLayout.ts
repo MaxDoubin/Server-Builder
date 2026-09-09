@@ -148,7 +148,7 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
     The rule was "eight or more ports stack", which is what a Catalyst
     does and not what a UniFi switch does: a Pro 24 puts all twenty four
     jacks in a single row across the panel, and that single row is one of
-    the most recognisable things about the product. Twenty four jacks at
+    the most recognizable things about the product. Twenty four jacks at
     the 0.6 inch pitch is 366mm, which fits inside a 442mm chassis; forty
     eight is 731mm, which does not, so a 48 port face stacks and a 24 port
     face does not. Physics decides, not a threshold.
@@ -175,7 +175,7 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
   const copperSpan = cols * cw;
   const cagePitch = Math.min(pitch * CAGE_RATIO, CAGE_W / 0.88);
   /*
-    Centre the whole block. On a dense 48 port face the jacks fill the panel
+    Center the whole block. On a dense 48 port face the jacks fill the panel
     and this changes nothing, but a 24 port switch does not need the full
     19 inches, and left-aligning its ports parked a third of the faceplate
     empty against the right hand rail, which no vendor ships.

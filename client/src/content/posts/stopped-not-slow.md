@@ -146,7 +146,7 @@ at 200.
 
 The single threaded version has a better throttling metric and is 60 percent
 slower. Being throttled is not the same as being slow, and `nr_throttled` is a
-number to explain latency with, not a number to minimise.
+number to explain latency with, not a number to minimize.
 
 ## What burst actually buys
 

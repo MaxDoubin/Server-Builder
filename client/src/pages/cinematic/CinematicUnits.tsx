@@ -2,7 +2,7 @@
  * Ordering and requirement, drawn as two different things.
  *
  * Before you answer you get the unit files, in unit file syntax, because
- * recognising this in the wild means recognising these four lines in a
+ * recognizing this in the wild means recognizing these four lines in a
  * drop-in on somebody else's server. Nothing on screen is a graph, because
  * building the graph in your head is the exercise.
  *
@@ -13,7 +13,7 @@
  * looks like, and it looks like nothing at all in the unit file.
  *
  * A unit nothing pulled in gets no column. It sits below the timeline,
- * greyed, because "it is not in the transaction" is a different answer from
+ * grayed, because "it is not in the transaction" is a different answer from
  * "it failed" and the page should not blur them: one is a missing directive
  * and the other is a broken service.
  */
@@ -21,8 +21,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -102,7 +102,7 @@ export function CinematicUnits() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -384,8 +384,8 @@ export function CinematicUnits() {
           <ReadAboutThis href="/units" />
 
           <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
-            <Link href="/practise" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
-              All practise material
+            <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
+              All practice material
             </Link>
           </p>
         </div>

@@ -35,7 +35,7 @@ the [VLANs](/blog/vlan-segmentation-guide) passed. Each configuration is defensi
 pass a review on its own.
 
 A trunk sends its native VLAN with no tag at all. That is not a bug or an
-optimisation, it is the entire purpose of having a native VLAN: a device on
+optimization, it is the entire purpose of having a native VLAN: a device on
 the other end that knows nothing about tagging still gets traffic. So a frame
 in VLAN 30 leaves acc-01 as plain Ethernet, and dist-01, receiving an untagged
 frame on a trunk, does the only thing it can and puts it in its own native
@@ -45,7 +45,7 @@ VLAN, which is 1.
 
 I expected this to be described accurately everywhere as "two VLANs get
 bridged", and to be able to move on. Then I built a model of 802.1Q for the
-practise page and asked it which VLANs actually reach which, in each
+practice page and asked it which VLANs actually reach which, in each
 direction. The answer is stranger than the summary.
 
 ```

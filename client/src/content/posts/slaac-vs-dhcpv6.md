@@ -84,7 +84,7 @@ you. RFC 8981 adds temporary addresses that rotate on a timer and are used
 for outbound connections. Add the link local address and you legitimately
 have several addresses on one NIC.
 
-Linux exposes the behaviour per interface:
+Linux exposes the behavior per interface:
 
 ```bash
 sysctl net.ipv6.conf.eth0.addr_gen_mode     # 0 EUI64, 3 stable privacy

@@ -145,7 +145,7 @@ export const CASES: Case[] = [
       },
     ],
     why:
-      "The load average is not normalised by the core count and never has been. Eight runnable" +
+      "The load average is not normalized by the core count and never has been. Eight runnable" +
       " tasks on thirty two cores is eight, the same number a two core laptop would print with" +
       " eight tasks queued, and on the laptop that is four deep and here it is a quarter busy." +
       " The threshold that fires at 5 is a threshold on the wrong quantity: it means something" +
@@ -153,7 +153,7 @@ export const CASES: Case[] = [
     fix:
       "divide by nproc before comparing to anything, or alert on a saturation metric instead:" +
       " pressure stall information in /proc/pressure/cpu measures the time tasks spent waiting" +
-      " rather than the number of them, and it is already normalised.",
+      " rather than the number of them, and it is already normalized.",
     breaks: "that a load average can be compared between machines",
   },
   {

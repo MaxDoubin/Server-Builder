@@ -3,7 +3,7 @@
  *
  * Shaped after the National Cyber League's categories, because that is what
  * the readers most likely to use this are preparing for, and because those
- * categories are a genuinely good taxonomy of "things you can practise on
+ * categories are a genuinely good taxonomy of "things you can practice on
  * your own with no infrastructure".
  *
  * HOW THE FLAG IS CHECKED, AND WHAT THAT IS WORTH. The flag itself is not in
@@ -46,7 +46,7 @@ export interface Challenge {
   /** What you are being asked for, in the second person. */
   brief: string[];
   artefacts: Artefact[];
-  /** Lowercase SHA-256 hex of the flag, which is compared after normalising. */
+  /** Lowercase SHA-256 hex of the flag, which is compared after normalizing. */
   flagHash: string;
   /** Shown next to the answer box: "acme{...}" or "an IPv4 address". */
   flagShape: string;

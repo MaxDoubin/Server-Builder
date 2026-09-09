@@ -6,7 +6,7 @@
  * one because the simulator needs it to model a floor.
  *
  * HONESTY, which is the whole reason this file has a long comment. These are
- * MODELLING figures, not vendor spec sheets and not measurements:
+ * MODELING figures, not vendor spec sheets and not measurements:
  *   - manufacturer and model name a real product
  *   - powerDraw is a representative steady-state figure for that class of
  *     hardware, not a nameplate rating and not something anyone metered
@@ -32,7 +32,7 @@ const PROVENANCE = {
   licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
   attribution: "Max Doubin, maxdoubin.com",
   disclaimer:
-    "Modelling figures, not vendor specifications and not measurements. powerDraw is a representative steady-state value for the class of hardware named, not a nameplate rating. heatOutput is derived as watts multiplied by 3.412 (the W to BTU/hr identity) rather than independently sourced. PDUs and UPSs report powerDraw 0 because they distribute load rather than consume it, and carry a small standing heat figure for conversion loss. price is order of magnitude, intended for capacity planning exercises, not a quotation. Do not cite these as manufacturer data.",
+    "Modeling figures, not vendor specifications and not measurements. powerDraw is a representative steady-state value for the class of hardware named, not a nameplate rating. heatOutput is derived as watts multiplied by 3.412 (the W to BTU/hr identity) rather than independently sourced. PDUs and UPSs report powerDraw 0 because they distribute load rather than consume it, and carry a small standing heat figure for conversion loss. price is order of magnitude, intended for capacity planning exercises, not a quotation. Do not cite these as manufacturer data.",
   fields: {
     id: "stable identifier within this dataset",
     name: "product name",
@@ -52,7 +52,7 @@ const PROVENANCE = {
  *
  * A different kind of dataset from the equipment catalog above, and the
  * distinction matters enough to keep the two provenance blocks apart. The
- * catalog is modelling figures for a simulator. This is the rack library,
+ * catalog is modeling figures for a simulator. This is the rack library,
  * where every rack unit height and port count was read off a vendor
  * datasheet and every device carries the page it came from, and where a
  * device that publishes no consumption figure says so rather than

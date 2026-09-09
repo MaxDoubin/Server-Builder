@@ -113,7 +113,7 @@ For multipathing, put each path on its own subnet and its own physical NIC. Two 
 
 Enterprise storage connects servers via multiple independent paths to eliminate single points of failure. The OS uses multipath software (MPIO on Windows, multipathd on Linux) to manage these paths transparently. If one path fails, I/O continues over the surviving paths.
 
-Without it, two paths to one LUN appear to Linux as two separate block devices, `sdb` and `sdc`, both pointing at the same blocks. Multipath recognises them by their shared WWID and presents a single device under `/dev/mapper/`. Always build filesystems and LVM on the mapper device, never on the underlying `sd` device, or you have gone around the very layer that provides the failover.
+Without it, two paths to one LUN appear to Linux as two separate block devices, `sdb` and `sdc`, both pointing at the same blocks. Multipath recognizes them by their shared WWID and presents a single device under `/dev/mapper/`. Always build filesystems and LVM on the mapper device, never on the underlying `sd` device, or you have gone around the very layer that provides the failover.
 
 ```bash
 sudo multipath -ll

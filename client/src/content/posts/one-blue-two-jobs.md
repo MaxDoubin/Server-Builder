@@ -1,12 +1,12 @@
 
 ## Two numbers, both just under the line
 
-I was measuring contrast across this site and found the same colour failing
+I was measuring contrast across this site and found the same color failing
 twice, in two different places, by a small margin each time.
 
 The brand blue is one token, `--primary`. In the dark theme it was
 `217 91% 55%`, which is `rgb(36, 116, 245)`. It does two jobs. It is the fill
-behind a button, with a near-white label on top of it, and it is the colour of
+behind a button, with a near-white label on top of it, and it is the color of
 a link sitting on the page itself.
 
 As a button fill, the label on it measured 4.11:1. As link text on the page
@@ -32,7 +32,7 @@ They are the same knob turned in opposite directions.
 
 The button wants a dark fill, because the label on it is near-white and
 contrast is a ratio between two luminances: the darker the fill, the further
-apart they are. The link wants a light colour, because the page behind it is
+apart they are. The link wants a light color, because the page behind it is
 near-black and the same arithmetic applies in reverse. Every step that helps
 one hurts the other by about as much.
 
@@ -59,14 +59,14 @@ luminance too, so it is fair to ask whether some other blue does both jobs.
 
 I searched the space: hue 200 to 230 in steps of one, saturation 50 to 100 in
 steps of two, lightness 35 to 75 in steps of one. That is 31 by 26 by 41,
-about thirty three thousand colours. For each one, the contrast of near-white
+about thirty three thousand colors. For each one, the contrast of near-white
 on it, and its contrast on the page background.
 
 Nothing satisfied both. Not one.
 
 The best it can do in each direction is instructive. The best fill, taking the
 one that clears 4.5 with the label and then reads highest as text, manages
-4.09 as text. The best text colour, by the mirror of that, manages 4.09 under
+4.09 as text. The best text color, by the mirror of that, manages 4.09 under
 the label.
 
 Read that against the shipped 4.11 and 4.29 and it is worse than it looks.
@@ -79,13 +79,13 @@ The blue is not badly chosen. There is no well-chosen one.
 ## Why a token gets into this position
 
 The name is the tell. `--primary` names an identity, not a job. It says "the
-brand colour" and says nothing about whether it is behind text or is the text,
+brand color" and says nothing about whether it is behind text or is the text,
 and those two situations have contrast requirements that point in opposite
 directions.
 
 That is easy to miss because it is invisible in the light theme. There,
 `--primary` is `217 91% 45%` and measures 5.75:1 both as a fill under white
-and as text on the page ground. The page is light and the colour is dark, so
+and as text on the page ground. The page is light and the color is dark, so
 being dark enough for a white label and dark enough to read on white are the
 same requirement. The conflict only appears when the page goes dark and the
 two requirements separate.
@@ -103,7 +103,7 @@ Both are close to the value they replaced, which is worth saying: the fix is
 not a redesign, and neither the buttons nor the links look meaningfully
 different. They are five and seven points of lightness from where they were.
 
-Tailwind derives `.text-primary` and `.bg-primary` from a single colour key,
+Tailwind derives `.text-primary` and `.bg-primary` from a single color key,
 so splitting the token in the config would mean editing every call site. There
 were forty one. One rule does it instead, mapping `text-primary` onto the text
 value inside the dark theme, and the cinematic pages declare the same token so
@@ -112,7 +112,7 @@ the rule is a no-op where their palette already differs.
 ## What I would check in any palette
 
 **Find every token that is both a fill and a foreground.** That is where this
-lives. A colour used only as a fill, or only as text, cannot contradict
+lives. A color used only as a fill, or only as text, cannot contradict
 itself.
 
 **Check the dark theme separately, and check both jobs.** A single number per
@@ -124,7 +124,7 @@ together under one variable will meet in the middle and fail there. The
 search above took a few minutes to write and settled the question that an
 afternoon of nudging would not have.
 
-**Gate the pairing, not the colour.** The gate this site already had checked
+**Gate the pairing, not the color.** The gate this site already had checked
 brand foregrounds against brand surfaces and never looked at the shadcn
 palette, so the whole thing went unchecked. It now checks eight themed
 pairings by name: the label on a primary button, a primary link on the page,

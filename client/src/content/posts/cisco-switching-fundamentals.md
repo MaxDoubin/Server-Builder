@@ -20,7 +20,7 @@ The CLI is text-based and powerful. Once you learn the command structure, config
 
 The detail that surprises people coming from other systems is that there is no commit step. Every line takes effect the instant you press enter, on the live device, with no confirmation and no staging. That is why `reload in 10` before a risky change is not paranoia.
 
-Underneath all of it, a switch does one simple job: learn which MAC address lives behind which port and forward frames accordingly. Entries age out after 300 seconds of silence by default, which explains a class of "it works after I ping it" behaviour. `show mac address-table` is the first command to reach for when a host cannot be found.
+Underneath all of it, a switch does one simple job: learn which MAC address lives behind which port and forward frames accordingly. Entries age out after 300 seconds of silence by default, which explains a class of "it works after I ping it" behavior. `show mac address-table` is the first command to reach for when a host cannot be found.
 
 ## Spanning Tree Protocol
 
@@ -32,7 +32,7 @@ A loop is catastrophic rather than merely inefficient because Ethernet frames ha
 
 Root bridge election uses the bridge ID: a 4-bit priority field, a 12-bit VLAN identifier, then the switch's MAC address. The default priority is 32768 everywhere and is only configurable in multiples of 4096, so when every switch shares the default the tiebreaker becomes the lowest MAC address, which usually means the oldest switch in the building wins. That is how a wiring-closet access switch ends up as root for a network whose core is two floors away. Set `spanning-tree vlan 1-4094 root primary` on your core and `root secondary` on the backup, on day one.
 
-The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbour waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardised as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbour instead of waiting on timers. If you find a switch running plain PVST+, `spanning-tree mode rapid-pvst` is one of the highest-value single lines in the config.
+The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbour waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardized as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbour instead of waiting on timers. If you find a switch running plain PVST+, `spanning-tree mode rapid-pvst` is one of the highest-value single lines in the config.
 
 Path cost is the other half. In the default short mode the costs are 100 for 10 Mbps, 19 for 100 Mbps, 4 for 1 Gbps, and 2 for 10 Gbps. Notice how little separates 1 G from 10 G, and that anything faster has nowhere left to go. With 25 G or 40 G links, turn on `spanning-tree pathcost method long` so the 32-bit values apply and faster links actually win.
 

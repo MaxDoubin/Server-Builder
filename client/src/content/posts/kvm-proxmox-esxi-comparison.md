@@ -44,7 +44,7 @@ Quorum is the part that bites homelabs. A cluster needs more than half its votes
 
 If you also enable HA, know that fencing is real. A node that loses quorum with HA-managed guests on it self-fences by hard resetting through a watchdog, on the order of a minute after losing contact. That is correct behavior, it prevents two nodes writing the same disk, and it will still surprise you the first time a network mistake reboots a server.
 
-One storage detail that catches people: snapshots depend on the backing storage, not on Proxmox. ZFS, LVM-thin, Ceph RBD, and qcow2 files on a directory support snapshots. A raw volume on thick LVM does not, and the snapshot button is simply greyed out with no hint as to why. If you go with ZFS, cap the ARC. ZFS treats free RAM as cache by default, and a host that "has no memory left" for VMs is usually just ZFS doing its job.
+One storage detail that catches people: snapshots depend on the backing storage, not on Proxmox. ZFS, LVM-thin, Ceph RBD, and qcow2 files on a directory support snapshots. A raw volume on thick LVM does not, and the snapshot button is simply grayed out with no hint as to why. If you go with ZFS, cap the ARC. ZFS treats free RAM as cache by default, and a host that "has no memory left" for VMs is usually just ZFS doing its job.
 
 ## VMware ESXi
 

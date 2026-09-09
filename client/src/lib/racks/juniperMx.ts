@@ -1,12 +1,12 @@
 /**
- * A Juniper provider edge, built entirely from hardware modelled here.
+ * A Juniper provider edge, built entirely from hardware modeled here.
  *
  * The MX240 is the reason this rack exists and the reason it is 24U. It is
  * not a large switch, it is a card cage: five rack units of slots, and what
  * it does depends entirely on what is in them. Everything else here is
  * arranged around that, the way a real provider edge is.
  *
- * One correction worth carrying from the modelling work into the data. The
+ * One correction worth carrying from the modeling work into the data. The
  * SRX1500 is widely described as having sixteen gigabit ports, and it has
  * twelve. The specification counts the four SFP cages alongside the twelve
  * RJ45, which is a fair way to count interfaces and a misleading way to
@@ -55,7 +55,7 @@ export const juniperMxRack: RackDefinition = {
   slug: "juniper-mx-24u",
   name: "Juniper provider edge 24U",
   blurb:
-    "An MX240 card chassis with the rest of the Juniper line arranged around it: an MX204 for compact edge, a QFX5120 leaf pair, EX4400 and a two member EX4300 virtual chassis for access, and an SRX1500 cluster on the boundary. Everything here that carries a Juniper badge is modelled from Juniper's own photographs and hardware guides, and the SRX is drawn with the twelve copper ports it actually has rather than the sixteen interfaces its specification counts.",
+    "An MX240 card chassis with the rest of the Juniper line arranged around it: an MX204 for compact edge, a QFX5120 leaf pair, EX4400 and a two member EX4300 virtual chassis for access, and an SRX1500 cluster on the boundary. Everything here that carries a Juniper badge is modeled from Juniper's own photographs and hardware guides, and the SRX is drawn with the twelve copper ports it actually has rather than the sixteen interfaces its specification counts.",
   height: 24,
 
   devices: [
@@ -185,7 +185,7 @@ export const juniperMxRack: RackDefinition = {
       u: 1,
       vendor: "Generic",
       model: "Horizontal cable manager",
-      role: "The second manager, keeping the fibre off the copper above it. Fibre has a real minimum bend radius and a manager is how you respect it.",
+      role: "The second manager, keeping the fiber off the copper above it. Fiber has a real minimum bend radius and a manager is how you respect it.",
       family: "blank",
       finish: "dark",
       watts: null,

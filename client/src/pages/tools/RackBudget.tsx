@@ -89,7 +89,7 @@ export function RackBudget() {
 
   const results: Array<[string, string, string]> = [
     ["IT load", `${fmt(r.itLoadW / 1000, 1)} kW`, "What the equipment itself draws."],
-    ["PUE", fmt(r.pue, 3), "Modelled from floor size: 1.12 plus racks over 400, capped at 1.40."],
+    ["PUE", fmt(r.pue, 3), "Modeled from floor size: 1.12 plus racks over 400, capped at 1.40."],
     ["Facility power", `${fmt(r.facilityW / 1000, 1)} kW`, "IT load times PUE. What the meter turns."],
     ["Support overhead", `${fmt(r.overheadW / 1000, 1)} kW`, "Cooling, distribution and losses."],
     ["Heat to remove", `${fmt(r.btuPerHour)} BTU/hr`, `IT load times ${IN_ROOM_LOSS_FACTOR} for in-room losses, converted at ${BTU_PER_WATT} BTU per watt.`],

@@ -143,7 +143,7 @@ export function postDifficulty(post: Pick<PostMeta, "tags" | "wordCount">): Diff
 /**
  * One line explaining what the label means, for the badge's title attribute
  * and for the filter row. Deliberately phrased as assumed background rather
- * than as a judgement about the reader.
+ * than as a judgment about the reader.
  */
 export const DIFFICULTY_BLURB: Record<Difficulty, string> = {
   beginner: "Assumes little background. Derived from tags and length.",
@@ -151,7 +151,7 @@ export const DIFFICULTY_BLURB: Record<Difficulty, string> = {
   advanced: "Assumes working knowledge of the subject. Derived from tags and length.",
 };
 
-/** Short glyph so the badge never depends on colour alone. */
+/** Short glyph so the badge never depends on color alone. */
 export const DIFFICULTY_MARK: Record<Difficulty, string> = {
   beginner: "•",
   intermediate: "••",

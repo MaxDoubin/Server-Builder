@@ -1,7 +1,7 @@
 /**
  * A page must ask the model which option is right, never carry the answer.
  *
- * This is the property every practise surface here is built on. The data
+ * This is the property every practice surface here is built on. The data
  * carries a situation and some claims about it; the model works out what the
  * situation implies; the page marks the claim that matches. Nothing declares
  * an answer, so prose that has drifted from its own arithmetic cannot pass,

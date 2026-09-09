@@ -531,7 +531,7 @@ export function Rack3D({
                   </div>
                   {/*
                     The shared Progress has no indicatorClassName, so the prop
-                    that was here never coloured anything and React forwarded
+                    that was here never colored anything and React forwarded
                     it to the DOM as an unknown attribute. The bar is two divs;
                     it does not need a component.
                   */}

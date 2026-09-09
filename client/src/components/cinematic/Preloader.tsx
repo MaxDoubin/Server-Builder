@@ -150,7 +150,7 @@ function Rack3D({ progress, reduceMotion }: { progress: number; reduceMotion: bo
         >
           {/*
             A patch panel that is always present. Without it the rack starts
-            as an empty rectangle and only becomes recognisable once enough
+            as an empty rectangle and only becomes recognizable once enough
             units have seated, which wastes the first half second.
           */}
           <div

@@ -52,8 +52,8 @@ function StatusBadge({ status }: { status: RoadmapStatus }) {
     <span
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[9px] uppercase tracking-[0.2em] ${style.className}`}
     >
-      {/* The glyph carries the state alongside the colour, so the status is
-          still readable if the colours are indistinguishable. */}
+      {/* The glyph carries the state alongside the color, so the status is
+          still readable if the colors are indistinguishable. */}
       <span aria-hidden>{style.mark}</span>
       {style.label}
     </span>

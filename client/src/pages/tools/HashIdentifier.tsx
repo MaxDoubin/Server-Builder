@@ -272,7 +272,7 @@ function classify(raw: string): { candidates: Candidate[]; reason: string } {
     }
   }
 
-  // A dollar-delimited string we did not recognise is still clearly a
+  // A dollar-delimited string we did not recognize is still clearly a
   // modular crypt format, which is worth saying rather than falling
   // through to a length guess that cannot apply.
   if (value.startsWith("$")) {

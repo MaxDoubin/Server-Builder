@@ -36,8 +36,8 @@ import { RackHardware } from "./RackHardware";
 import { StudioEnvironment } from "./StudioEnvironment";
 
 /**
- * Frame colour follows the rack's own vendor. Ubiquiti's open frames are
- * the white ones everybody recognises; every other vendor in the library
+ * Frame color follows the rack's own vendor. Ubiquiti's open frames are
+ * the white ones everybody recognizes; every other vendor in the library
  * ships black powder coat, and painting a Catalyst closet white would be
  * a nice picture of a rack that is not for sale.
  */
@@ -55,7 +55,7 @@ function frameStyleFor(rack: RackDefinition): "white" | "black" {
   return top === "Ubiquiti" ? "white" : "black";
 }
 
-/** Each device's centre height, counting U up from the frame's bottom rail. */
+/** Each device's center height, counting U up from the frame's bottom rail. */
 function placements(rack: RackDefinition) {
   const out: Array<{ id: string; y: number; index: number }> = [];
   let fromTop = 0;
@@ -72,7 +72,7 @@ function placements(rack: RackDefinition) {
  *
  * drei's ContactShadows was the obvious tool and it was the wrong one here:
  * it renders a depth pass over a plane, and with a rack this shallow the
- * pass saturated and painted the whole floor a flat grey slab. A shadow is
+ * pass saturated and painted the whole floor a flat gray slab. A shadow is
  * two soft ellipses under a rack on casters, which is a thing we can simply
  * draw, so this bakes both the cyclorama falloff and the contact shadow
  * into one canvas texture. No extra render target, and it looks like what
@@ -159,7 +159,7 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
     The first version of this fitted the rack to the vertical field and left
     it at that, in a fixed 4:3 box. That works for a 9U and fails badly for a
     42U, and the reason is not the camera, it is the box: a 42U frame is two
-    metres tall and just over half a metre wide, so once its height fills a
+    meters tall and just over half a meter wide, so once its height fills a
     landscape canvas its width covers about a third of it. Three quarters of
     the picture is empty floor, and the devices, which are the entire point,
     end up too small to read.
@@ -175,8 +175,8 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
     const fov = 34;
     /*
       Round far enough to read as a solid object, not so far that the side
-      competes with the front. A rack is about half a metre wide and most of
-      a metre deep, so at the thirty four degrees this started on the side
+      competes with the front. A rack is about half a meter wide and most of
+      a meter deep, so at the thirty four degrees this started on the side
       projects exactly as wide as the face does, and the ports, which are
       the reason anybody is looking, end up on the narrower half of the
       picture. Twenty two degrees puts the face about two to one ahead and
@@ -222,7 +222,7 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
         {/*
           Three-point studio lighting: a large key from the front left, a
           softer fill opposite it to keep the shadow side from going flat
-          grey, and a rim from behind that separates a white frame from a
+          gray, and a rim from behind that separates a white frame from a
           white backdrop. This is the entire reason the reference renders
           read as photographs.
         */}

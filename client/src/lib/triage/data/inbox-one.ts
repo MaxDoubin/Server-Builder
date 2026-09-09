@@ -73,8 +73,8 @@ export const INBOX_ONE: Message[] = [
     redHerrings: ["external-sender"],
     analysis: [
       "docusign.net.secure-esign.com is the whole trick in one string. Hostnames are read right to left, so the registrable domain here is secure-esign.com and everything to its left is labels that domain's owner can invent freely. They invented docusign.net.",
-      "This works because people read left to right and stop at the first thing they recognise. There is no character substitution to spot and no misspelling to catch: every letter of docusign.net is correct, and it is still not DocuSign.",
-      "Note what is absent. There is no urgency beyond a standard expiry, no attachment, no mismatched link, and the sender's own name is one a technician at this district would recognise. Strip out the domain and there is nothing to find, which is why the domain is the only thing you can rely on.",
+      "This works because people read left to right and stop at the first thing they recognize. There is no character substitution to spot and no misspelling to catch: every letter of docusign.net is correct, and it is still not DocuSign.",
+      "Note what is absent. There is no urgency beyond a standard expiry, no attachment, no mismatched link, and the sender's own name is one a technician at this district would recognize. Strip out the domain and there is nothing to find, which is why the domain is the only thing you can rely on.",
     ],
   },
   {
@@ -142,7 +142,7 @@ export const INBOX_ONE: Message[] = [
   },
   {
     id: "mfa-reset",
-    subject: "Your Okta multifactor enrolment was reset",
+    subject: "Your Okta multifactor enrollment was reset",
     displayName: "Okta",
     fromAddress: "noreply@okta.com",
     returnPath: "bounce@mail-relay-77.example.net",
@@ -156,8 +156,8 @@ export const INBOX_ONE: Message[] = [
       "from mail-relay-77.example.net (198.51.100.203) by mx01.northbay.edu; Tue, 08:44:08 -0700",
     ],
     body: [
-      "An administrator reset the multifactor enrolment on your account. If you did not request this, secure your account now.",
-      "Re-enrol your authenticator at the link below within 24 hours or access will be revoked.",
+      "An administrator reset the multifactor enrollment on your account. If you did not request this, secure your account now.",
+      "Re-enroll your authenticator at the link below within 24 hours or access will be revoked.",
     ],
     links: [{ text: "okta.northbay.edu", href: "https://okta-verify.example.net/reset" }],
     attachments: [],
@@ -167,7 +167,7 @@ export const INBOX_ONE: Message[] = [
     analysis: [
       "The From address is genuinely noreply@okta.com, which is the point. The From header is not authenticated by anything on its own; it is a line of text the sender typed. What is authenticated is whether the domain in it stands behind the message, and here okta.com does not: SPF fails, DKIM fails, and DMARC, which is the domain owner's published instruction about exactly this situation, fails too.",
       "This is the one message in the inbox where the authentication results decide it, and it is worth noticing how rare that is. Eight of the nine hostile messages here authenticate perfectly. A triage habit built on reading the green ticks will catch this one and wave through the rest.",
-      "The envelope sender pointing at a relay nobody recognises is consistent with all of that, but it is not independent evidence: plenty of legitimate mail has a mismatched Return-Path. Elsewhere in this inbox it appears on two messages that are completely fine.",
+      "The envelope sender pointing at a relay nobody recognizes is consistent with all of that, but it is not independent evidence: plenty of legitimate mail has a mismatched Return-Path. Elsewhere in this inbox it appears on two messages that are completely fine.",
       "The link claiming to be okta.northbay.edu is the ordinary trick, and it is the one thing here a user would actually see.",
     ],
   },
@@ -264,7 +264,7 @@ export const INBOX_ONE: Message[] = [
     redHerrings: ["external-sender", "urgency-language"],
     analysis: [
       "The digit one where the letter l belongs. In most interface fonts those two glyphs are close enough that reading will not catch it, which is why the substitution is chosen rather than a misspelling anyone would notice.",
-      "The defence is not sharper eyes. It is not reading the domain at all: reach a service by a bookmark or by typing the address, and the question of whether this one is spelled correctly never comes up.",
+      "The defense is not sharper eyes. It is not reading the domain at all: reach a service by a bookmark or by typing the address, and the question of whether this one is spelled correctly never comes up.",
       "The link text says www.paypal.com and points at the imitation, which is the usual arrangement. And this is a school district technician's work address, which has no reason to hold a payment account in the first place.",
     ],
   },
@@ -295,12 +295,12 @@ export const INBOX_ONE: Message[] = [
     analysis: [
       "adobe.com.docs-share.example. The registrable domain is the last two labels, and everything before them is free text belonging to whoever owns those two. There is no misspelling here and nothing to squint at: adobe.com is present, correct, and a subdomain of somebody else's estate.",
       "Sign in with your work account is the request, and it is the only thing this message actually wants. There is no document.",
-      "This one is worth practising because it survives the advice people are usually given. Check the sender's domain, and a reader who checks by scanning for a familiar name finds one.",
+      "This one is worth practicing because it survives the advice people are usually given. Check the sender's domain, and a reader who checks by scanning for a familiar name finds one.",
     ],
   },
   {
     id: "payroll-bulletin",
-    subject: "Open enrolment closes Friday: what you need to do",
+    subject: "Open enrollment closes Friday: what you need to do",
     displayName: "Northbay Payroll",
     fromAddress: "payroll@northbay.edu",
     returnPath: "bounces+7712-k.mercer=northbay.edu@mailer.payroll-vendor.example",
@@ -315,7 +315,7 @@ export const INBOX_ONE: Message[] = [
       "from mailer.payroll-vendor.example (198.51.100.240) by mx01.northbay.edu; Tue, 07:05:00 -0700",
     ],
     body: [
-      "Open enrolment for the 2026 plan year closes on Friday at 5pm.",
+      "Open enrollment for the 2026 plan year closes on Friday at 5pm.",
       "If you are adding a dependent or changing your direct deposit, both forms live in the payroll portal and both need a routing number on file before the cutoff.",
       "No action is needed if you are keeping your current elections.",
     ],

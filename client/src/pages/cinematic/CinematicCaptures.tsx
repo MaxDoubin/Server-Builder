@@ -21,7 +21,7 @@ export function CinematicCaptures() {
         <div className="mx-auto max-w-[900px]">
           <header>
             <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
-              · Practise · Packet analysis
+              · Practice · Packet analysis
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               Captures.

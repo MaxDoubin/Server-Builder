@@ -53,7 +53,7 @@ export interface Setup {
   /**
    * cpu.cfs_burst_us, in milliseconds. Unused quota that may be carried
    * forward, capped at this. Zero is the default and the traditional
-   * behaviour.
+   * behavior.
    */
   burstMs: number;
   arrivals: Arrival[];

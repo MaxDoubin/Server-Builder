@@ -57,7 +57,7 @@ export interface Port {
  * A frame on the wire.
  *
  * Tags outermost first, so an empty array is an untagged frame and two
- * entries is the double tagged frame an attacker sends. Modelled as a stack
+ * entries is the double tagged frame an attacker sends. Modeled as a stack
  * because that is what it is: each switch pushes or pops at most one.
  */
 export interface Frame {

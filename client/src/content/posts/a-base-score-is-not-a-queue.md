@@ -120,7 +120,7 @@ and one.
 
 ## What actually changes
 
-I built a page for practising this: ten advisories from one week, each with a
+I built a page for practicing this: ten advisories from one week, each with a
 description of the estate they landed in, and the exercise is to say what you
 do about each. The two orderings, base score and decision tree, come out
 noticeably different on that set. Eleven of the forty-five pairs are the other
@@ -143,7 +143,7 @@ still sorted by base score, everywhere, including in tools written by people
 who know all of the above.
 
 I think it is the decimal place. A number that resolves to one decimal reads
-as a measurement, and a judgement that resolves to four words reads as an
+as a measurement, and a judgment that resolves to four words reads as an
 opinion, and we trust measurements over opinions for good reasons that do not
 apply here. The measurement is measuring the vulnerability. The opinion is
 about your estate. Only one of those is the thing you have to make a decision

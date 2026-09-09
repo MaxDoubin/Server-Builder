@@ -64,7 +64,7 @@ accounted for.
 
 I do not think this happened because I do not know what a PDU is. It happened
 because a PDU is the least interesting object in a rack. It has no ports
-worth drawing, no model number anybody recognises, and no role in the story
+worth drawing, no model number anybody recognizes, and no role in the story
 the rack is telling. When you sit down to describe a service provider edge,
 you think about the MX240 and the leaf pair and the firewall, and the strip
 that feeds all of them is furniture.

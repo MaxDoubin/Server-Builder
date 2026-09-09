@@ -60,7 +60,7 @@ Writes, sends, deletes, payments, and permission changes should require a
 confirmation that shows the actual parameters. Not "the assistant wants to send
 an email," but the recipient and the body.
 
-**Enforce authorisation outside the model.** The model must never be the thing
+**Enforce authorization outside the model.** The model must never be the thing
 deciding what a user is allowed to see. Filter at the data layer before
 retrieval, with the user's identity, the same way you would for any other
 application.
@@ -77,7 +77,7 @@ def dispatch(call, user, confirm_fn):
     if spec is None:
         raise PermissionError(f"tool not allowed: {call.name}")
 
-    # authorisation is evaluated against the user, never the model's claim
+    # authorization is evaluated against the user, never the model's claim
     if not user.can(call.name, call.args):
         raise PermissionError("not permitted for this user")
 
@@ -97,11 +97,11 @@ You cannot make the model perfectly obey a boundary, but you can make the
 boundary explicit and consistent, which measurably helps.
 
 Wrap untrusted content in clear markers, state in the system prompt that
-anything inside them is data to be analysed rather than instructions to be
+anything inside them is data to be analyzed rather than instructions to be
 followed, and strip or escape any occurrence of your marker in the content
 itself so an attacker cannot close the block early. That last step is the one
 people forget, and it is exactly the escaping logic you would write for any
-other injection defence.
+other injection defense.
 
 Also keep tool output separate from user input in your own logs and traces. When
 something goes wrong you want to be able to say which channel the bad
@@ -123,7 +123,7 @@ review.
 ## What I would actually deploy
 
 For anything with real access, my baseline is: no autonomous state changing
-actions, tool credentials scoped tighter than the user's own, authorisation
+actions, tool credentials scoped tighter than the user's own, authorization
 enforced in the data layer, all tool calls logged with arguments, and outbound
 network access from the tool layer restricted to an allowlist of destinations.
 

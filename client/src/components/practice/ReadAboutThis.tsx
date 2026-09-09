@@ -1,25 +1,25 @@
 /**
- * The articles behind a practise surface, and the surface behind an article.
+ * The articles behind a practice surface, and the surface behind an article.
  *
- * Two of two hundred and sixty articles linked to a practise surface, and one
+ * Two of two hundred and sixty articles linked to a practice surface, and one
  * surface of twenty linked back. A reader finishing an article on path MTU
  * had no idea there was a page that walks a packet down one; a reader on that
  * page had no idea there were three articles about it. The two halves of the
  * site were built by the same person on the same subjects and did not know
  * about each other.
  *
- * Both directions come from one curated map in the practise registry, so the
+ * Both directions come from one curated map in the practice registry, so the
  * link a reader follows one way is the same relationship read the other way,
  * and neither can drift from the other.
  */
 
 import { Link } from "wouter";
-import { PRACTISE_SURFACES } from "@/lib/practiseSurfaces";
+import { PRACTICE_SURFACES } from "@/lib/practiceSurfaces";
 import { postIndex } from "@/lib/postIndex";
 
 /** The articles for a surface, in the order they were curated. */
 export function ReadAboutThis({ href }: { href: string }) {
-  const surface = PRACTISE_SURFACES.find((item) => item.href === href);
+  const surface = PRACTICE_SURFACES.find((item) => item.href === href);
   const slugs = surface?.reading ?? [];
   if (slugs.length === 0) return null;
 
@@ -60,30 +60,30 @@ export function ReadAboutThis({ href }: { href: string }) {
 }
 
 /**
- * The surface an article's subject is practised on, if there is one.
+ * The surface an article's subject is practiced on, if there is one.
  *
  * An article can belong to two: first-match-wins is cited by the firewall
  * exercises and by the routing tables, because it is the same rule and its
  * opposite. Both are shown, because that pair is the point.
  */
-export function PractiseThis({ slug }: { slug: string }) {
-  const surfaces = PRACTISE_SURFACES.filter((item) => (item.reading ?? []).includes(slug));
+export function PracticeThis({ slug }: { slug: string }) {
+  const surfaces = PRACTICE_SURFACES.filter((item) => (item.reading ?? []).includes(slug));
   if (surfaces.length === 0) return null;
 
   return (
     <aside
       className="mt-10 rounded-2xl border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.05)] p-5"
-      data-testid="practise-this"
+      data-testid="practice-this"
     >
       <h2 className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
-        · {surfaces.length === 1 ? "Practise this" : "Practise this, two ways"}
+        · {surfaces.length === 1 ? "Practice this" : "Practice this, two ways"}
       </h2>
       <ul className="mt-3 space-y-2">
         {surfaces.map((surface) => (
           <li key={surface.href}>
             <Link
               href={surface.href}
-              data-testid={`practise-${surface.href.slice(1)}`}
+              data-testid={`practice-${surface.href.slice(1)}`}
               className="font-mono-tight text-[13.5px] text-[hsl(var(--brand-bone))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
             >
               {surface.title}

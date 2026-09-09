@@ -213,7 +213,7 @@ for (const [first, second, want] of OVERLAPS) {
   if (got !== want) problems.push(`${format(a)} against ${format(b)} should be ${want}, got ${got}`);
 }
 
-/* Malformed input must be refused with a message, not silently normalised. */
+/* Malformed input must be refused with a message, not silently normalized. */
 const REFUSALS: [string, RegExp][] = [
   ["192.168.1.0", /needs a prefix/],
   ["192.168.1.0/33", /above 32/],

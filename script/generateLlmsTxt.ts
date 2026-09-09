@@ -22,7 +22,7 @@ const SITE = "https://maxdoubin.com";
 /** Hubs worth naming individually, in the order a stranger should read them. */
 const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/blog", label: "Field Notes", note: "the archive, newest first, with full text search over every article body" },
-  { path: "/topics", label: "Topic hubs", note: "the archive grouped by subject, each hub summarising what its posts cover" },
+  { path: "/topics", label: "Topic hubs", note: "the archive grouped by subject, each hub summarizing what its posts cover" },
   { path: "/study", label: "Certification study pages", note: "one page per published exam domain for Security+ SY0-701, Network+ N10-009 and CCNA 200-301, each listing the archive posts that cover it" },
   { path: "/tools", label: "Browser tools", note: "17 utilities that run entirely client side: subnetting, CIDR, packet headers, hashing, encoding, cron, regex, rack power budgeting" },
   { path: "/data", label: "Open rack hardware dataset", note: "power draw, heat output, rack units, port count and indicative cost for rack-mount equipment, CC BY 4.0, as JSON and CSV" },
@@ -80,10 +80,10 @@ export async function generateLlmsTxt(): Promise<void> {
   push();
   push(
     "Two cautions worth carrying into any summary of this site. The figures " +
-      "in the rack hardware dataset are modelling values, not manufacturer " +
+      "in the rack hardware dataset are modeling values, not manufacturer " +
       "specifications and not measurements, and the dataset says so in its " +
       "own header. The telemetry panel on the home page is simulated and " +
-      "labelled as such; it is not a feed from a live facility.",
+      "labeled as such; it is not a feed from a live facility.",
   );
   push();
 
@@ -113,7 +113,7 @@ export async function generateLlmsTxt(): Promise<void> {
   }
   push();
 
-  push("## Licence and attribution");
+  push("## License and attribution");
   push();
   push(
     "The datasets at /data and the club plan at /cyber-club/kit are CC BY " +

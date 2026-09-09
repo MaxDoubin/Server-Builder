@@ -127,7 +127,7 @@ const STATUSES: Status[] = [
     code: 302,
     name: "Found",
     meaning: "The resource is temporarily somewhere else.",
-    when: "Rarely on purpose now. Historically every client rewrote POST to GET on a 302 even though the spec did not permit it, so 303 and 307 exist to say which behaviour you meant.",
+    when: "Rarely on purpose now. Historically every client rewrote POST to GET on a 302 even though the spec did not permit it, so 303 and 307 exist to say which behavior you meant.",
   },
   {
     code: 303,
@@ -151,7 +151,7 @@ const STATUSES: Status[] = [
   {
     code: 306,
     name: "(Unused)",
-    meaning: "Reserved. It briefly meant Switch Proxy in a draft and was never standardised.",
+    meaning: "Reserved. It briefly meant Switch Proxy in a draft and was never standardized.",
     when: "Never. The number is reserved so it cannot be reused.",
     tag: "Reserved",
   },
@@ -357,7 +357,7 @@ const STATUSES: Status[] = [
   {
     code: 501,
     name: "Not Implemented",
-    meaning: "The server does not support the functionality required to fulfil this method at all.",
+    meaning: "The server does not support the functionality required to fulfill this method at all.",
     when: "An unrecognised HTTP method. Not for an endpoint you have not written yet: that is a 404 or a 405.",
   },
   {
@@ -454,7 +454,7 @@ const CONFUSED: { title: string; body: string }[] = [
   },
   {
     title: "301 vs 302 vs 307 vs 308",
-    body: "Two questions decide this. Is the move permanent, and must the method survive? 301 is permanent, 302 is temporary, and both were historically rewritten to GET by every browser regardless of what the spec said. 307 and 308 exist to remove that ambiguity: they are the temporary and permanent forms that require the method and body to be preserved. So a POST redirected with 307 arrives as a POST, and the same POST redirected with 302 usually arrives as a GET with the body dropped. If you want that GET behaviour on purpose, say so with 303. And be careful with 301 and 308: browsers cache them aggressively, sometimes indefinitely, so a permanent redirect published by mistake is very hard to take back.",
+    body: "Two questions decide this. Is the move permanent, and must the method survive? 301 is permanent, 302 is temporary, and both were historically rewritten to GET by every browser regardless of what the spec said. 307 and 308 exist to remove that ambiguity: they are the temporary and permanent forms that require the method and body to be preserved. So a POST redirected with 307 arrives as a POST, and the same POST redirected with 302 usually arrives as a GET with the body dropped. If you want that GET behavior on purpose, say so with 303. And be careful with 301 and 308: browsers cache them aggressively, sometimes indefinitely, so a permanent redirect published by mistake is very hard to take back.",
   },
   {
     title: "200 with an error in the body",

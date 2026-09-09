@@ -47,7 +47,7 @@ import {
   type Placement,
 } from "../client/src/lib/rackBuilder.ts";
 
-/* The catalogues the page itself fetches. Real slugs and real heights, so a
+/* The catalogs the page itself fetches. Real slugs and real heights, so a
    device that stops being 2U cannot quietly make this gate vacuous. */
 const devices: CatalogueDevice[] = ["ubiquiti-catalogue", "own-catalogue"]
   .flatMap((name) => {
@@ -63,7 +63,7 @@ const tall = devices.filter((d) => unitsOf(d) > 1);
 if (devices.length < 20 || tall.length < 2) {
   console.error(
     `check-rack-decode: found ${devices.length} rack devices, ${tall.length} of them\n` +
-      `  taller than 1U. That is too few to test overlap with, so the catalogue\n` +
+      `  taller than 1U. That is too few to test overlap with, so the catalog\n` +
       `  files have probably moved or changed shape.`,
   );
   process.exit(1);

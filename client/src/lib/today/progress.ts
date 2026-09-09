@@ -4,7 +4,7 @@
  * This deliberately does not introduce a store of its own. Every surface
  * already records what it records, and a second copy would be a second thing
  * to keep in step and a second thing to be wrong. Reading theirs means this
- * page cannot disagree with the page it is summarising.
+ * page cannot disagree with the page it is summarizing.
  */
 
 import { SCENARIOS } from "@/lib/scenarios/index";

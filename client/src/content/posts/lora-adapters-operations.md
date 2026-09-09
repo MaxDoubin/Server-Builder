@@ -51,7 +51,7 @@ model.print_trainable_parameters()
 
 At inference you have two options, and the choice is an infrastructure decision.
 
-**Merged.** Fold `(alpha / r) * B @ A` into `W` once, save the result, and serve it as an ordinary model. There is zero runtime overhead because the arithmetic happened offline. The cost is that you are back to a full sized artifact per variant, and you lose the ability to switch behaviour without loading a different model.
+**Merged.** Fold `(alpha / r) * B @ A` into `W` once, save the result, and serve it as an ordinary model. There is zero runtime overhead because the arithmetic happened offline. The cost is that you are back to a full sized artifact per variant, and you lose the ability to switch behavior without loading a different model.
 
 **Unmerged.** Keep the adapter separate and apply it during the forward pass. Now one copy of the base model in memory can serve several adapters, and swapping which one applies is cheap. The cost is a small amount of extra computation per layer and more complexity in the serving path.
 

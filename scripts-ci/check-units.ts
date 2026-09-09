@@ -184,7 +184,7 @@ for (const item of CASES) {
       }
     }
   }
-  /* And a type whose behaviour is the answer has to be named. */
+  /* And a type whose behavior is the answer has to be named. */
   if (item.units.some((unit) => unit.execWorks === false && !noticesABrokenExec(unit.type))) {
     if (!prose.includes("Type=simple")) {
       problems.push(`${item.slug}: turns on Type=simple not noticing a broken binary and never says Type=simple`);

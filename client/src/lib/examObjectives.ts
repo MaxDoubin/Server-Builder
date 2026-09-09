@@ -37,7 +37,7 @@ export interface ExamDomain {
   summary: string;
   /** Matched against post titles and tags, lowercased. */
   keywords: string[];
-  /** Tool slugs under /tools that practise this domain directly. */
+  /** Tool slugs under /tools that practice this domain directly. */
   tools?: string[];
 }
 
@@ -63,7 +63,7 @@ export const EXAMS: Exam[] = [
     officialUrl: "https://www.comptia.org/certifications/security",
     status: "In progress. Tech+ is done; this is the next one.",
     intro:
-      "Security+ is the broadest of the three: it asks you to recognise a control type, a threat, an architecture pattern and an operational process, mostly without configuring anything. The weightings matter when you plan study time. Security Operations alone is 28 percent of the exam.",
+      "Security+ is the broadest of the three: it asks you to recognize a control type, a threat, an architecture pattern and an operational process, mostly without configuring anything. The weightings matter when you plan study time. Security Operations alone is 28 percent of the exam.",
     domains: [
       {
         slug: "general-security-concepts",
@@ -92,7 +92,7 @@ export const EXAMS: Exam[] = [
         name: "Threats, Vulnerabilities, and Mitigations",
         weight: 22,
         summary:
-          "Name the threat actor from motive and behaviour, then follow every road in: phishing and its variants, business email compromise, removable media, unsecured networks, open service ports, supply chain. Classify vulnerabilities from injection and buffer overflows to zero-days, recognise the indicators of malware, DDoS, on-path and password attacks inside a scenario, and pick the mitigation that actually applies: segmentation, access control, patching, least privilege, hardening.",
+          "Name the threat actor from motive and behavior, then follow every road in: phishing and its variants, business email compromise, removable media, unsecured networks, open service ports, supply chain. Classify vulnerabilities from injection and buffer overflows to zero-days, recognize the indicators of malware, DDoS, on-path and password attacks inside a scenario, and pick the mitigation that actually applies: segmentation, access control, patching, least privilege, hardening.",
         keywords: [
           "threat",
           "attack",
@@ -146,7 +146,7 @@ export const EXAMS: Exam[] = [
         name: "Security Operations",
         weight: 28,
         summary:
-          "The largest domain by a distance, and the closest to a day job. Establish secure baselines and harden what runs, track assets from acquisition to sanitised disposal, run vulnerability management with scans, CVSS and remediation, and monitor through log aggregation, SIEM and alert tuning. Expect to adjust defences: firewall rules, IDS signatures, DNS and web filtering, email authentication with SPF, DKIM and DMARC. Identity from provisioning to MFA and privileged access, then incident response and the forensics that follows it.",
+          "The largest domain by a distance, and the closest to a day job. Establish secure baselines and harden what runs, track assets from acquisition to sanitised disposal, run vulnerability management with scans, CVSS and remediation, and monitor through log aggregation, SIEM and alert tuning. Expect to adjust defenses: firewall rules, IDS signatures, DNS and web filtering, email authentication with SPF, DKIM and DMARC. Identity from provisioning to MFA and privileged access, then incident response and the forensics that follows it.",
         keywords: [
           "hardening",
           "log",
@@ -177,7 +177,7 @@ export const EXAMS: Exam[] = [
         name: "Security Program Management and Oversight",
         weight: 20,
         summary:
-          "Governance and the evidence it generates. Policies, standards and procedures people can actually follow, risk assessment with the arithmetic attached (SLE, ALE, ARO, RTO, RPO), third-party and supply chain risk handled through due diligence, SLAs and right-to-audit clauses, compliance and privacy obligations, internal and external audits, penetration test engagement types, and awareness training measured by behaviour rather than completion rates.",
+          "Governance and the evidence it generates. Policies, standards and procedures people can actually follow, risk assessment with the arithmetic attached (SLE, ALE, ARO, RTO, RPO), third-party and supply chain risk handled through due diligence, SLAs and right-to-audit clauses, compliance and privacy obligations, internal and external audits, penetration test engagement types, and awareness training measured by behavior rather than completion rates.",
         keywords: [
           "governance",
           "risk",
@@ -321,7 +321,7 @@ export const EXAMS: Exam[] = [
         name: "Network Security",
         weight: 14,
         summary:
-          "Security at network scope rather than a security exam in miniature. The logical controls: encryption in transit and at rest, certificates and PKI, identity from MFA and SSO to RADIUS, LDAP, SAML and TACACS+, plus honeypots and segmentation for IoT, OT and guest traffic. Know the attacks by their symptoms: VLAN hopping, MAC flooding, ARP and DNS poisoning, rogue DHCP, evil twins, denial of service. Then the defences you configure: hardened devices with defaults disabled, ACLs, port security and 802.1X, content filtering, and trusted, untrusted and screened zones placed correctly.",
+          "Security at network scope rather than a security exam in miniature. The logical controls: encryption in transit and at rest, certificates and PKI, identity from MFA and SSO to RADIUS, LDAP, SAML and TACACS+, plus honeypots and segmentation for IoT, OT and guest traffic. Know the attacks by their symptoms: VLAN hopping, MAC flooding, ARP and DNS poisoning, rogue DHCP, evil twins, denial of service. Then the defenses you configure: hardened devices with defaults disabled, ACLs, port security and 802.1X, content filtering, and trusted, untrusted and screened zones placed correctly.",
         keywords: [
           "firewall",
           "fortigate",
@@ -397,7 +397,7 @@ export const EXAMS: Exam[] = [
     officialUrl: "https://www.cisco.com/site/us/en/learn/training-certifications/certifications/enterprise/ccna/index.html",
     status: "Planned after Network+.",
     intro:
-      "CCNA goes deeper on routing and switching than Network+ and expects you to configure, not just recognise. The weightings shown are Cisco's published figures from the 200-301 v1.1 exam topics: IP Connectivity alone is 25 percent, and the 2024 v1.1 refresh added AI and machine learning to the automation domain. Exam versions change, so check the official exam topics before planning study time around any figure.",
+      "CCNA goes deeper on routing and switching than Network+ and expects you to configure, not just recognize. The weightings shown are Cisco's published figures from the 200-301 v1.1 exam topics: IP Connectivity alone is 25 percent, and the 2024 v1.1 refresh added AI and machine learning to the automation domain. Exam versions change, so check the official exam topics before planning study time around any figure.",
     domains: [
       {
         slug: "network-fundamentals",
@@ -490,7 +490,7 @@ export const EXAMS: Exam[] = [
         name: "IP Services",
         weight: 10,
         summary:
-          "The services a router or switch provides beyond forwarding, configured and verified: inside source NAT with statics and pools, NTP in client and server mode, DHCP relay and client setups, the roles DNS and DHCP play in the network, SNMP in operations, and syslog facilities and severity levels. Add QoS per-hop behaviour (classification, marking, queuing, congestion, policing, shaping), SSH for remote device access, and where TFTP and FTP still move configs and images.",
+          "The services a router or switch provides beyond forwarding, configured and verified: inside source NAT with statics and pools, NTP in client and server mode, DHCP relay and client setups, the roles DNS and DHCP play in the network, SNMP in operations, and syslog facilities and severity levels. Add QoS per-hop behavior (classification, marking, queuing, congestion, policing, shaping), SSH for remote device access, and where TFTP and FTP still move configs and images.",
         keywords: [
           "ntp",
           "dhcp",
@@ -539,7 +539,7 @@ export const EXAMS: Exam[] = [
         name: "Automation and Programmability",
         weight: 10,
         summary:
-          "The controller-based future Cisco is steering toward. Explain what automation changes about network management, compare traditional and controller-based networking, and describe software-defined architecture: overlay, underlay, fabric, the control and data plane split, northbound and southbound APIs. Work with REST APIs (CRUD, HTTP verbs, authentication types, data encoding), recognise Ansible and Terraform as configuration management, read JSON-encoded data accurately, and, new in v1.1, explain where generative and predictive AI fit in network operations.",
+          "The controller-based future Cisco is steering toward. Explain what automation changes about network management, compare traditional and controller-based networking, and describe software-defined architecture: overlay, underlay, fabric, the control and data plane split, northbound and southbound APIs. Work with REST APIs (CRUD, HTTP verbs, authentication types, data encoding), recognize Ansible and Terraform as configuration management, read JSON-encoded data accurately, and, new in v1.1, explain where generative and predictive AI fit in network operations.",
         keywords: [
           "automation",
           "python",

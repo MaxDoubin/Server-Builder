@@ -99,7 +99,7 @@ function Model({
     return map;
   }, [scene, model]);
 
-  // Highlight by lifting emissive rather than by swapping colour: the
+  // Highlight by lifting emissive rather than by swapping color: the
   // selected part should look lit from within, not repainted.
   useEffect(() => {
     byGroup.forEach((meshes, group) => {

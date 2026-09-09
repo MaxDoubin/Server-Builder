@@ -97,7 +97,7 @@ export const TELL_LABEL: Record<TellId, string> = {
 
 export const TELL_NOTE: Record<TellId, string> = {
   "spf-fail":
-    "The envelope sender's domain does not authorise the host that sent this. On its own that is sometimes a forwarding artefact, which is why DMARC exists to say what to do about it.",
+    "The envelope sender's domain does not authorize the host that sent this. On its own that is sometimes a forwarding artefact, which is why DMARC exists to say what to do about it.",
   "dkim-fail":
     "The signature does not verify against the domain's published key. Either the message was altered after signing or it was never signed by that domain.",
   "dmarc-fail":
@@ -117,7 +117,7 @@ export const HERRING_LABEL: Record<RedHerringId, string> = {
   "reply-to-elsewhere": "Reply-To points at a different domain",
   "payment-change-language": "Asks to change payment details",
   "urgency-language": "Presses for speed",
-  "external-sender": "Arrived from outside the organisation",
+  "external-sender": "Arrived from outside the organization",
   "shortened-link": "Uses a link shortener",
   "auth-partial": "One authentication check failed, DMARC still passed",
 };

@@ -16,7 +16,7 @@ import { getChallenge } from "@/lib/challenges/index";
 import { checkFlag, type Artefact, type Challenge } from "@/lib/challenges/types";
 import { loadSolvedChallenges, recordSolvedChallenge } from "@/lib/challenges/progress";
 import { CinematicNotFound } from "@/pages/cinematic/CinematicNotFound";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
 
 const SITE_URL = "https://maxdoubin.com";
 
@@ -80,7 +80,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
   const showMethod = state === "solved" || revealed;
 
   /*
-    Accent by category rather than one colour for all six, so a cryptography
+    Accent by category rather than one color for all six, so a cryptography
     puzzle and a log-analysis one do not arrive looking identical. The four
     values are the site's contrast-checked accents; a fifth would have to be
     legible on white as well as on obsidian and there is no fifth.
@@ -97,7 +97,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={ACCENT[challenge.category] ?? "signal"}
         mood={state === "solved" ? "recovering" : hintsOpen > 0 ? "tense" : "calm"}
         ending={state === "solved" ? "best" : undefined}

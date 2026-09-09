@@ -12,16 +12,16 @@
  * error: it is space that exists and that this user may not have. A reader
  * who sees a full bar with a sliver still in it has the answer.
  *
- * The commands are quoted as a terminal would print them, because recognising
- * this in the wild means recognising that output. Every figure in it is
+ * The commands are quoted as a terminal would print them, because recognizing
+ * this in the wild means recognizing that output. Every figure in it is
  * computed by the model.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { CinematicLayout } from "@/components/cinematic/CinematicLayout";
-import { PractiseStage, type StageAccent } from "@/components/practise/PractiseStage";
-import { ReadAboutThis } from "@/components/practise/ReadAboutThis";
+import { PracticeStage, type StageAccent } from "@/components/practice/PracticeStage";
+import { ReadAboutThis } from "@/components/practice/ReadAboutThis";
 import { useSEO } from "@/lib/useSEO";
 import {
   CASES,
@@ -106,7 +106,7 @@ export function CinematicSpace() {
 
   return (
     <CinematicLayout>
-      <PractiseStage
+      <PracticeStage
         accent={answered ? severity(active) : "signal"}
         mood={!answered ? "calm" : correct ? "recovering" : "tense"}
         flashKey={0}
@@ -377,8 +377,8 @@ export function CinematicSpace() {
           <ReadAboutThis href="/space" />
 
           <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
-            <Link href="/practise" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
-              All practise material
+            <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
+              All practice material
             </Link>
           </p>
         </div>

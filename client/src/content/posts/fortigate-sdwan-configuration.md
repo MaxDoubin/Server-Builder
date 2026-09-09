@@ -105,7 +105,7 @@ end
 `set mode` controls the selection strategy, and the default is `manual`, meaning it simply uses `priority-members` in the order listed. The options that matter:
 
 - `manual` uses the first listed member, period. No SLA awareness.
-- `priority` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behaviour.
+- `priority` uses the first member that meets the SLA, falling to the next when it does not. This is the classic active/backup behavior.
 - `sla` uses any member meeting the SLA, load balancing across them, and falls back to the best available when none qualify.
 - `load-balance` distributes across members regardless of quality.
 - `best-quality` picks the single best member by whichever metric `set quality-link` or `sla-compare-method` names.

@@ -5,7 +5,7 @@ BGP (Border Gateway Protocol) is the routing protocol that connects autonomous s
 
 If you have ever wondered how traffic flows between your ISP and the rest of the internet, the answer is BGP.
 
-The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behaviour. First, it runs over TCP on port 179, so peers must already reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol: it builds no map of the network the way OSPF does. Each speaker advertises the paths it has chosen, along with the autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
+The current version is BGP-4, specified in RFC 4271. Two structural facts explain most of its behavior. First, it runs over TCP on port 179, so peers must already reach each other at layer 3 before BGP can start, and a session that will not come up is very often a firewall or an ACL rather than a BGP problem. Second, it is a path-vector protocol: it builds no map of the network the way OSPF does. Each speaker advertises the paths it has chosen, along with the autonomous systems those paths cross, and loop prevention is nothing cleverer than a router refusing a route that already contains its own AS number.
 
 ## Key Concepts
 
@@ -29,7 +29,7 @@ Those attributes are consulted in a fixed order, and knowing that order is the d
 
 Steering inbound traffic is much harder, and this is the honest limitation nobody mentions up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbour that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times so the path looks longer to everyone else running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look worse and hope.
 
-One more attribute matters in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as `ASN:value`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviours like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit.
+One more attribute matters in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as `ASN:value`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviors like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit.
 
 ## Basic Configuration
 
@@ -54,7 +54,7 @@ Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 
 
 **Somebody sends you the whole internet.** The global IPv4 table is now around a million prefixes. If a customer or a lab peer re-announces the full table to you, a software router runs out of memory and a hardware router runs out of FIB space, which is the worse failure because forwarding breaks while the control plane looks healthy. In 2014 the table crossed 512,000 routes and knocked over a generation of Cisco 6500 and 7600 platforms whose TCAM was partitioned for exactly that many. Set `neighbor x maximum-prefix` on every peer, sized to what that peer should legitimately send.
 
-**A route leak.** Taking routes from one provider and announcing them to another makes you a transit provider for traffic you cannot carry. RFC 7908 catalogues the shapes this takes, and the examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defence is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so routers can spot the leak themselves rather than trusting everyone's filters.
+**A route leak.** Taking routes from one provider and announcing them to another makes you a transit provider for traffic you cannot carry. RFC 7908 catalogs the shapes this takes, and the examples are famous: Pakistan Telecom taking YouTube off the internet in 2008, and AS7007 in 1997. The defense is filtering in both directions with prefix lists and AS path filters. RFC 9234 adds BGP roles and the Only-To-Customer attribute so routers can spot the leak themselves rather than trusting everyone's filters.
 
 **Origin hijacking.** BGP has no built-in way to know whether an AS is entitled to announce a prefix. RPKI route origin validation (RFC 6811) is the deployed partial answer: prefix holders publish signed objects, and your router marks routes Valid, Invalid, or NotFound so you can drop the Invalids. It validates the *origin* AS only and not the rest of the path, so an attacker who prepends the legitimate origin still passes. RFC 7454, published as BCP 194, is the practical checklist and the most useful thing to read after RFC 4271.
 
@@ -64,13 +64,13 @@ Once established, the session is kept alive by KEEPALIVE messages. The RFC 4271 
 
 Even if you work in enterprise networking rather than ISP networking, BGP comes up constantly. Cloud providers use it for connecting on-premises networks to AWS, Azure, or GCP via Direct Connect or ExpressRoute. SD-WAN solutions often use BGP internally. Understanding BGP makes you a much more effective network engineer.
 
-It has also moved inside the data centre. RFC 7938 describes using eBGP as the only routing protocol in a large Clos fabric, giving every switch its own private ASN, and that design is now common enough that plenty of engineers meet BGP on a top-of-rack switch before they ever meet it on a border router.
+It has also moved inside the data center. RFC 7938 describes using eBGP as the only routing protocol in a large Clos fabric, giving every switch its own private ASN, and that design is now common enough that plenty of engineers meet BGP on a top-of-rack switch before they ever meet it on a border router.
 
 ## Where BGP Is The Wrong Tool
 
 BGP knows about reachability and policy. It knows nothing about latency, bandwidth, jitter, or load. AS path length counts networks crossed, not distance or speed, so a two-AS path over a congested transatlantic link beats a three-AS path over an idle domestic one every time. If your problem is "pick the fastest path right now", the answer is SD-WAN or performance-based routing that measures paths and manipulates BGP from outside.
 
-Do not reach for it inside a small network either. In a campus, OSPF converges in seconds where BGP takes minutes and needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organisations, or a fabric large enough that link-state flooding becomes the problem.
+Do not reach for it inside a small network either. In a campus, OSPF converges in seconds where BGP takes minutes and needs far less configuration to do the right thing. BGP earns its complexity when you have policy to express between organizations, or a fabric large enough that link-state flooding becomes the problem.
 
 ## Where to Practice
 

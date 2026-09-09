@@ -130,7 +130,7 @@ export function LedStrip({
  * Equivalent to scattering individual `<Led>` components, but a patch
  * panel carries 48 of them and the layout repeats down the rack. As
  * separate meshes that is 48 draw calls *and* 48 `useFrame` callbacks per
- * panel; here it is one of each, with the per-instance colour buffer
+ * panel; here it is one of each, with the per-instance color buffer
  * uploaded once per frame.
  */
 export function LedField({

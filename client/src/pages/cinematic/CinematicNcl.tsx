@@ -196,7 +196,7 @@ export function CinematicNcl() {
                 results are the honest summary of where I have gotten to so far.
               </p>
               <p>
-                My strongest categories have been the ones I practised most
+                My strongest categories have been the ones I practiced most
                 deliberately: OSINT, log analysis, and the crypto and encoding
                 puzzles. The guides on this page are the notes I wish I had when I
                 started.

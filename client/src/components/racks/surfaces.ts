@@ -4,11 +4,11 @@
  * Everything in the rack was rendering with one uniform roughness, and a
  * perfectly uniform surface is the last thing that reads as computer
  * generated after the shapes are right. Real powder coat has an orange
- * peel to it, real anodised aluminium has a directional grain from the
+ * peel to it, real anodised aluminum has a directional grain from the
  * extrusion, and both break up a highlight into something that moves as
  * you orbit rather than sitting still as a flat patch.
  *
- * This is a roughness map, not a colour map, so it costs nothing in
+ * This is a roughness map, not a color map, so it costs nothing in
  * saturation or contrast and cannot make a white frame look dirty. One
  * small tiled texture is shared by every material in the scene.
  */
@@ -48,7 +48,7 @@ export function surfaceGrain(): THREE.Texture | null {
       /*
         A narrow band around one roughness value. The first pass swung it
         from 130 to 206 over a 73mm tile, which on black powder coat came
-        out looking like woven carbon fibre rather than like paint.
+        out looking like woven carbon fiber rather than like paint.
       */
       const v = 182 + fine * 5 + broad * 9;
       const i = (y * size + x) * 4;
@@ -70,12 +70,12 @@ export function surfaceGrain(): THREE.Texture | null {
 }
 
 /**
- * Body colour in 3D, which is not the same number the elevation uses.
+ * Body color in 3D, which is not the same number the elevation uses.
  *
  * The SVG paints a gradient from `hi` down to `lo`, so its `base` is a
  * midtone that already has the highlight drawn on top of it. In 3D the
  * lighting supplies that highlight, so reusing the midtone as the surface
- * colour renders everything a stop and a half too dark.
+ * color renders everything a stop and a half too dark.
  *
  * It lives here rather than in the chassis because the faceplate texture
  * needs the same number. It did not have it: the silkscreen filled with
@@ -87,10 +87,10 @@ export const BODY_3D: Record<string, string> = {
   silver: "#dfe2e5",
   light: "#e4e6e7",
   // Black powder coat does not photograph black. Under a studio key it
-  // sits around a quarter grey with a hard specular along every edge.
+  // sits around a quarter gray with a hard specular along every edge.
   black: "#33373d",
   dark: "#383d44",
 };
 
-/** The 3D surface colour for a finish, falling back to the dark chassis. */
+/** The 3D surface color for a finish, falling back to the dark chassis. */
 export const bodyColour = (finish: string): string => BODY_3D[finish] ?? BODY_3D.dark;

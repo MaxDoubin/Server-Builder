@@ -17,7 +17,7 @@
  * And then the replay is checked against a second implementation that keeps
  * no state at all: for each request, scan every earlier request, take the
  * most recent one with the same key whose response was storable, and that is
- * what should come back. The map in replay() is an optimisation of exactly
+ * what should come back. The map in replay() is an optimization of exactly
  * that sentence, and a map is the sort of thing that is nearly right.
  *
  * One check reads prose. Every case states a fix, and the fix has to be a
@@ -130,7 +130,7 @@ const REPAIRS: { name: string; words: RegExp; apply: (exchange: Exchange) => Exc
     apply: (e) => ({ ...e, response: { ...e.response, setCookie: undefined, belongsTo: SHARED } }),
   },
   {
-    name: "normalising the Cookie header down to the session",
+    name: "normalizing the Cookie header down to the session",
     words: /normalis\w*|normaliz\w*|identity into the URL|in the URL/i,
     apply: (e) => ({
       ...e,

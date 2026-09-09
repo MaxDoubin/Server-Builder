@@ -86,7 +86,7 @@ This ties directly into real datacenter concepts like hot aisle/cold aisle conta
 
 The model is a bulk energy balance: every watt drawn by IT equipment becomes a watt of heat, so a rack's heat output is its power draw. From there the airflow needed to carry that heat away at a given temperature rise falls out of the specific heat of air. Air is about 1.005 kJ per kg per kelvin at room temperature and about 1.2 kg per cubic meter at sea level, so roughly 1206 joules per cubic meter per kelvin. A 5 kW rack with an 11 K rise across it needs 5000 / (1206 * 11) = 0.38 cubic meters per second, which is about 800 CFM.
 
-The target range comes from the ASHRAE recommended envelope for datacenter inlet air, 18 to 27 degrees Celsius, so a rack whose modelled inlet climbs past 27 turns orange and one past 32 turns red.
+The target range comes from the ASHRAE recommended envelope for datacenter inlet air, 18 to 27 degrees Celsius, so a rack whose modeled inlet climbs past 27 turns orange and one past 32 turns red.
 
 Blanking panels earn their place in the model too. An empty U with no panel is a hole between the hot aisle and the cold aisle, and exhaust air recirculates straight back to the inlet of the device above it. In the simulation, unblanked slots add a recirculation term to the rack's inlet temperature, which is the fastest way I know to make the point that the cheapest cooling upgrade in most rooms costs about two dollars a slot.
 

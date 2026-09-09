@@ -10,7 +10,7 @@ anything at all.
 
 A kernel that launches a single thread and loops for a second reports 100
 percent utilization on a card with tens of thousands of usable threads. A well
-optimised pipeline that finishes early and idles between requests reports
+optimized pipeline that finishes early and idles between requests reports
 something lower while doing vastly more work. Reading this counter as "the GPU
 is full" is the accelerator equivalent of reading load average as CPU percent.
 

@@ -5,7 +5,7 @@
  * scheme: a exercise is solved when every listed packet gets the verdict it
  * should. That shape is deliberate. A predicate that checks "did they add a
  * rule containing --dport 22" marks the shape of an answer rather than its
- * effect, and it fails the reader who found a better one. Checking behaviour
+ * effect, and it fails the reader who found a better one. Checking behavior
  * accepts any ruleset that works, which is the only fair thing to check.
  *
  * Each carries a solution CI replays, and CI also asserts the starting

@@ -200,7 +200,7 @@ export const theMigrationThatSucceeded: Scenario = {
       grade: "good",
       body: [
         "Full recovery and a review checklist item about regular expressions in migrations.",
-        "CI still validates migrations against forty tidy rows, so the next migration whose behaviour depends on the shape of real data passes exactly the same way.",
+        "CI still validates migrations against forty tidy rows, so the next migration whose behavior depends on the shape of real data passes exactly the same way.",
       ],
       lesson: [
         "Checklists catch what people remember to look for. The test data was the actual gap, and it is the one thing that would have failed the build automatically.",

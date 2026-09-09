@@ -32,7 +32,7 @@ export interface TeardownPart {
   label: string;
   /** Unit vector the piece travels along, in model space. */
   dir: [number, number, number];
-  /** How far it travels at full explode, in metres. */
+  /** How far it travels at full explode, in meters. */
   distance: number;
   /**
    * Which wave it leaves in. Waves run in order and overlap slightly, so

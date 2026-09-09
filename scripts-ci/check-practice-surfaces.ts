@@ -1,5 +1,5 @@
 /**
- * Every practise surface has to be findable from the front page, from the
+ * Every practice surface has to be findable from the front page, from the
  * hub, and from the palette.
  *
  * WHY THIS EXISTS. Before the act that added them, the home page linked to
@@ -16,22 +16,22 @@
  * prevent exactly that reported OK every time it ran.
  *
  * A gate against stale hand-maintained lists, with a stale hand-maintained
- * list in it. The list is derived now, from client/src/lib/practiseSurfaces,
+ * list in it. The list is derived now, from client/src/lib/practiceSurfaces,
  * and this file checks in both directions: every surface in the registry
- * appears in each place a reader would look, and every practise-looking link
+ * appears in each place a reader would look, and every practice-looking link
  * in those places is a surface in the registry. One direction catches a
  * surface nobody can find. The other catches a link to something that no
  * longer exists.
  */
 
 import { readFileSync } from "node:fs";
-import { GROUPS, PRACTISE_SURFACES, surfacesIn } from "../client/src/lib/practiseSurfaces";
+import { GROUPS, PRACTICE_SURFACES, surfacesIn } from "../client/src/lib/practiceSurfaces";
 import { postIndex } from "../client/src/lib/postIndex";
 
 const problems: string[] = [];
 
-const ACT = "client/src/pages/cinematic/acts/PractiseAct.tsx";
-const HUB = "client/src/pages/cinematic/CinematicPractise.tsx";
+const ACT = "client/src/pages/cinematic/acts/PracticeAct.tsx";
+const HUB = "client/src/pages/cinematic/CinematicPractice.tsx";
 const PALETTE = "client/src/components/cinematic/CommandPalette.tsx";
 const FOOTER = "client/src/components/cinematic/CinematicFooter.tsx";
 
@@ -39,8 +39,8 @@ const read = (path: string) => readFileSync(path, "utf8");
 const links = (text: string, href: string) =>
   text.includes(`href: "${href}"`) || text.includes(`href="${href}"`);
 
-if (PRACTISE_SURFACES.length < 10) {
-  console.error(`FAIL  the registry holds ${PRACTISE_SURFACES.length} surfaces, which is too few to be right.`);
+if (PRACTICE_SURFACES.length < 10) {
+  console.error(`FAIL  the registry holds ${PRACTICE_SURFACES.length} surfaces, which is too few to be right.`);
   process.exit(1);
 }
 
@@ -57,13 +57,13 @@ if (PRACTISE_SURFACES.length < 10) {
  * away in the nav, the footer, the palette and the hub, and the act links
  * the hub. Everything you actually sit down and do is on the front page.
  */
-const actRequires = PRACTISE_SURFACES.filter((surface) => surface.group !== "ground");
+const actRequires = PRACTICE_SURFACES.filter((surface) => surface.group !== "ground");
 
-const places: [string, string, typeof PRACTISE_SURFACES][] = [
-  [ACT, "the home page's practise act", actRequires],
-  [HUB, "the practise hub", PRACTISE_SURFACES],
-  [PALETTE, "the command palette", PRACTISE_SURFACES],
-  [FOOTER, "the footer", PRACTISE_SURFACES],
+const places: [string, string, typeof PRACTICE_SURFACES][] = [
+  [ACT, "the home page's practice act", actRequires],
+  [HUB, "the practice hub", PRACTICE_SURFACES],
+  [PALETTE, "the command palette", PRACTICE_SURFACES],
+  [FOOTER, "the footer", PRACTICE_SURFACES],
 ];
 
 for (const [path, label, required] of places) {
@@ -87,9 +87,9 @@ for (const surface of actRequires) {
     problems.push(`the prerendered home page does not link to ${surface.href}`);
   }
 }
-for (const button of ["/today", "/practise"]) {
+for (const button of ["/today", "/practice"]) {
   if (!read(ACT).includes(`href="${button}"`)) {
-    problems.push(`the practise act is missing its ${button} button`);
+    problems.push(`the practice act is missing its ${button} button`);
   }
 }
 
@@ -98,15 +98,15 @@ for (const button of ["/today", "/practise"]) {
   registry does not know about is either a surface somebody forgot to
   register or a page that no longer exists, and both are worth failing over.
 */
-const known = new Set(PRACTISE_SURFACES.map((surface) => surface.href));
-const ALLOWED_EXTRAS = new Set(["/today", "/practise", "/blog", "/racks", "/game", "/ncl", "/paths", "/verify", "/"]);
+const known = new Set(PRACTICE_SURFACES.map((surface) => surface.href));
+const ALLOWED_EXTRAS = new Set(["/today", "/practice", "/blog", "/racks", "/game", "/ncl", "/paths", "/verify", "/"]);
 for (const [path, label] of [[ACT, "the act"], [HUB, "the hub"]] as [string, string][]) {
   const text = read(path);
   for (const match of text.matchAll(/href[:=]\s*"(\/[a-z0-9-]*)"/g)) {
     const href = match[1];
     if (known.has(href) || ALLOWED_EXTRAS.has(href)) continue;
     problems.push(
-      `${label} links to ${href}, which is not in the practise registry. Register it, or add it to ALLOWED_EXTRAS.`,
+      `${label} links to ${href}, which is not in the practice registry. Register it, or add it to ALLOWED_EXTRAS.`,
     );
   }
 }
@@ -114,7 +114,7 @@ for (const [path, label] of [[ACT, "the act"], [HUB, "the hub"]] as [string, str
 /* ------------------------------------------------- the registry itself */
 
 const seen = new Set<string>();
-for (const surface of PRACTISE_SURFACES) {
+for (const surface of PRACTICE_SURFACES) {
   if (seen.has(surface.href)) problems.push(`${surface.href} is registered twice`);
   seen.add(surface.href);
   if (!surface.title || surface.title.length < 6) problems.push(`${surface.href} has no usable title`);
@@ -129,9 +129,9 @@ for (const surface of PRACTISE_SURFACES) {
 for (const group of GROUPS) {
   const members = surfacesIn(group);
   if (members.length === 0) problems.push(`the "${group}" group is empty`);
-  if (members.length > PRACTISE_SURFACES.length * 0.55) {
+  if (members.length > PRACTICE_SURFACES.length * 0.55) {
     problems.push(
-      `the "${group}" group holds ${members.length} of ${PRACTISE_SURFACES.length} surfaces, which is a flat list with a heading on it`,
+      `the "${group}" group holds ${members.length} of ${PRACTICE_SURFACES.length} surfaces, which is a flat list with a heading on it`,
     );
   }
 }
@@ -145,10 +145,10 @@ for (const group of GROUPS) {
   adding a group is one edit rather than two.
 */
 const grouped = GROUPS.reduce((total, group) => total + surfacesIn(group).length, 0);
-if (grouped !== PRACTISE_SURFACES.length) {
-  const homeless = PRACTISE_SURFACES.filter((surface) => !GROUPS.includes(surface.group));
+if (grouped !== PRACTICE_SURFACES.length) {
+  const homeless = PRACTICE_SURFACES.filter((surface) => !GROUPS.includes(surface.group));
   problems.push(
-    `${PRACTISE_SURFACES.length - grouped} surfaces are in no group in GROUPS` +
+    `${PRACTICE_SURFACES.length - grouped} surfaces are in no group in GROUPS` +
       (homeless.length ? `: ${homeless.map((s) => `${s.href} (${s.group})`).join(", ")}` : "") +
       `. Either the group is missing from GROUPS or the surface names one that does not exist.`,
   );
@@ -187,7 +187,7 @@ for (const group of GROUPS) {
 /* ------------------------------------ the articles behind each surface */
 
 /*
-  Two of two hundred and sixty articles linked to a practise surface, and one
+  Two of two hundred and sixty articles linked to a practice surface, and one
   surface of twenty linked back. The curated map fixes that in both
   directions at once, which means a slug pointing at a deleted or renamed
   article breaks a reader's path silently and in two places.
@@ -195,7 +195,7 @@ for (const group of GROUPS) {
 const published = new Map(postIndex.filter((post) => !post.draft).map((post) => [post.slug, post]));
 let curated = 0;
 
-for (const surface of PRACTISE_SURFACES) {
+for (const surface of PRACTICE_SURFACES) {
   const reading = surface.reading ?? [];
   if (reading.length === 0) {
     /* A surface with nothing to read is allowed; a doing surface with nothing is suspicious. */
@@ -225,18 +225,18 @@ for (const surface of PRACTISE_SURFACES) {
   data nobody sees. Both directions, because they are separate components and
   wiring one and forgetting the other is the exact failure this replaces.
 */
-const component = "client/src/components/practise/ReadAboutThis.tsx";
+const component = "client/src/components/practice/ReadAboutThis.tsx";
 const readerSide = read(component);
-for (const exported of ["ReadAboutThis", "PractiseThis"]) {
+for (const exported of ["ReadAboutThis", "PracticeThis"]) {
   if (!readerSide.includes(`export function ${exported}`)) {
     problems.push(`${component} does not export ${exported}`);
   }
 }
-if (!/<PractiseThis\s/.test(read("client/src/pages/cinematic/CinematicBlogPost.tsx"))) {
-  problems.push("blog posts do not render PractiseThis, so no article offers the surface that practises it");
+if (!/<PracticeThis\s/.test(read("client/src/pages/cinematic/CinematicBlogPost.tsx"))) {
+  problems.push("blog posts do not render PracticeThis, so no article offers the surface that practices it");
 }
 {
-  const rendering = PRACTISE_SURFACES.filter((surface) => (surface.reading ?? []).length > 0)
+  const rendering = PRACTICE_SURFACES.filter((surface) => (surface.reading ?? []).length > 0)
     .map((surface) => surface.href)
     .filter((href) => {
       const name = "Cinematic" + href.slice(1, 2).toUpperCase() + href.slice(2);
@@ -255,22 +255,22 @@ if (!/<PractiseThis\s/.test(read("client/src/pages/cinematic/CinematicBlogPost.t
 /* No hand-typed count of the surfaces, anywhere. That number goes stale by tomorrow. */
 for (const [path, label] of places) {
   const text = read(path);
-  for (const match of text.matchAll(/\b(\d{1,3})\s+(?:practise |interactive )?surfaces?\b/g)) {
+  for (const match of text.matchAll(/\b(\d{1,3})\s+(?:practice |interactive )?surfaces?\b/g)) {
     problems.push(
-      `${label} writes "${match[0]}". Interpolate PRACTISE_SURFACES.length: that number was wrong six times today.`,
+      `${label} writes "${match[0]}". Interpolate PRACTICE_SURFACES.length: that number was wrong six times today.`,
     );
   }
 }
 
 if (problems.length) {
-  console.error(`\ncheck-practise-surfaces: ${problems.length} problem${problems.length === 1 ? "" : "s"}\n`);
+  console.error(`\ncheck-practice-surfaces: ${problems.length} problem${problems.length === 1 ? "" : "s"}\n`);
   for (const problem of problems) console.error(`  ${problem}`);
   console.error("");
   process.exit(1);
 }
 
 console.log(
-  `OK  all ${PRACTISE_SURFACES.length} practise surfaces are linked from the hub, the palette and the footer, ` +
+  `OK  all ${PRACTICE_SURFACES.length} practice surfaces are linked from the hub, the palette and the footer, ` +
     `the ${actRequires.length} you sit down and do are on the front page and in its prerendered body, ` +
     `the ${GROUPS.length} groups hold ${GROUPS.map((g) => surfacesIn(g).length).join(", ")}, ` +
     `and ${curated} curated article links resolve in both directions.`,

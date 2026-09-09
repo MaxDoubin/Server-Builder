@@ -1,5 +1,5 @@
 /**
- * A packet capture, modelled as fields rather than bytes.
+ * A packet capture, modeled as fields rather than bytes.
  *
  * The alternative was to synthesise real pcap bytes and dissect them, which
  * is more honest and is the wrong trade here: it would mean writing a

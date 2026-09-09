@@ -14,21 +14,21 @@
  * theirs. The 3D scene converts to a height from the floor, once.
  */
 
-/** One device as the catalogue describes it. Only what a build needs. */
+/** One device as the catalog describes it. Only what a build needs. */
 export interface CatalogueDevice {
   slug: string;
   /**
    * Which frame the geometry is drawn in.
    *
-   * Ubiquiti export Y up in metres; our own generators emit raw Z up,
+   * Ubiquiti export Y up in meters; our own generators emit raw Z up,
    * because that is the frame the rack builders draw in. A device laid on
    * its back in a rack is unmistakable, so this is carried per device rather
    * than guessed from a bounding box.
    */
   up?: "y" | "z";
-  /** True for hardware modelled here rather than published by its vendor. */
+  /** True for hardware modeled here rather than published by its vendor. */
   own?: boolean;
-  /** Who makes it. Only our own catalogue records this; Ubiquiti's is all one. */
+  /** Who makes it. Only our own catalog records this; Ubiquiti's is all one. */
   vendor?: string;
   name: string;
   sku: string;
@@ -52,7 +52,7 @@ export interface Catalogue {
   source: string;
   retrieved: string;
   credit: string;
-  /** How the catalogue was assembled and what it does and does not include. */
+  /** How the catalog was assembled and what it does and does not include. */
   note?: string;
   count: number;
   devices: CatalogueDevice[];
@@ -170,7 +170,7 @@ export function buildWeight(
  * would be shorter to write and impossible to read, and the point of a
  * shareable build is that somebody can look at the link and see what is in
  * it. Slugs are already URL safe, which is why they are used rather than
- * catalogue indices: an index would break the moment the catalogue is
+ * catalog indices: an index would break the moment the catalog is
  * regenerated in a different order, and a stale link that silently loads
  * the wrong hardware is worse than one that drops a device.
  */
@@ -199,7 +199,7 @@ export function encodeBuild(frame: number, placements: Placement[]): string {
  *
  * Anything that fails is dropped and the rest of the build still loads, which
  * is how an unknown slug is already treated: a build missing one device is
- * worth more than an error page, and the catalogue does change between the
+ * worth more than an error page, and the catalog does change between the
  * writing of a link and the following of it. Where two placements contend for
  * a unit the earlier one keeps it. That is arbitrary, but a real link is
  * written by `encodeBuild` in top-down order, so it only ever decides between

@@ -151,7 +151,7 @@ export const theResignationLetter: Scenario = {
         "You have not got either yet. Thursday's capture shows nothing new; Tuesday's 1.1GB had already gone.",
       ],
       choices: [
-        { label: "Get it authorised properly and look at Tuesday instead", to: "egress", cost: 40 },
+        { label: "Get it authorized properly and look at Tuesday instead", to: "egress", cost: 40 },
         { label: "Keep watching for the rest of her notice period", to: "end-watched-nothing", cost: 480 },
       ],
     },
@@ -173,7 +173,7 @@ export const theResignationLetter: Scenario = {
       mood: "recovering",
       where: "A room with HR and the general counsel",
       body: [
-        "The selective wipe of corporate data on the enrolled personal device is authorised and executed. It removes the OneDrive container and nothing personal, which is exactly why the device was enrolled that way in 2023.",
+        "The selective wipe of corporate data on the enrolled personal device is authorized and executed. It removes the OneDrive container and nothing personal, which is exactly why the device was enrolled that way in 2023.",
         "Legal ask the only question that matters commercially: can you say what was in the seven archives, and can you say it in a way that stands up.",
       ],
       choices: [
@@ -262,11 +262,11 @@ export const theResignationLetter: Scenario = {
       title: "Two weeks of covert monitoring",
       grade: "catastrophic",
       body: [
-        "Eight days of full endpoint capture on a named employee, without HR or legal authorisation, producing nothing because the event had already happened.",
+        "Eight days of full endpoint capture on a named employee, without HR or legal authorization, producing nothing because the event had already happened.",
         "It surfaces at her employment tribunal. The monitoring, not the download, is what the company has to answer for.",
       ],
       lesson: [
-        "Covert monitoring of an individual is a legal act with legal requirements, and doing it without authorisation converts your investigation into their case.",
+        "Covert monitoring of an individual is a legal act with legal requirements, and doing it without authorization converts your investigation into their case.",
         "It also looked forwards while the evidence was behind you.",
       ],
     },

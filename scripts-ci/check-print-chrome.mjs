@@ -92,7 +92,7 @@ for (const file of FILES) {
 }
 
 if (problems.length > 0) {
-  console.error(`check-print-chrome: ${problems.length} fixed element(s) with no print behaviour declared\n`);
+  console.error(`check-print-chrome: ${problems.length} fixed element(s) with no print behavior declared\n`);
   for (const p of problems) console.error(`  ${p}`);
   console.error(
     "\nA fixed element prints onto page one and stays there. Add data-print-hide,\n" +
