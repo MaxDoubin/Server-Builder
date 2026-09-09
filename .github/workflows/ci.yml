@@ -619,6 +619,16 @@ jobs:
       - name: Descriptor limits come from the mechanism that was in scope
         run: npx tsx scripts-ci/check-limits.ts
 
+      # One rule, every surface. An option carries its claim twice, as prose a
+      # reader acts on and as a structure the model is compared against, and
+      # nothing holds the two together. Four surfaces grew their own copy of
+      # this check within a day of each other, each with its own regex, which
+      # is exactly how check-answer-keys came about. Doing it once also gave
+      # it to /nat and /alerts, which had thirteen and three options quoting a
+      # figure that nothing compared.
+      - name: An option's prose says what its claim is checked against
+        run: npx tsx scripts-ci/check-option-prose.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

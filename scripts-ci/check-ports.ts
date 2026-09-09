@@ -61,26 +61,14 @@ for (const item of CASES) {
   }
 }
 
-/* ── 2. the prose figure and the checked figure ─────────────────────────── */
+/* ── the prose figure and the checked figure ────────────────────────────── */
 
-for (const item of CASES) {
-  for (const option of item.options) {
-    const says = option.says;
-    const want =
-      says.about === "ports-held" ? says.count : says.about === "max-rate" ? says.perSecond : null;
-    if (want === null) continue;
-    /* Figures are written with thousands separators, as the page shows them. */
-    const lead = /^(?:None|no)\b|^(\d[\d,]*)/i.exec(option.claim.trim());
-    if (!lead) continue;
-    const shown = lead[1] === undefined ? 0 : Number(lead[1].replace(/,/g, ""));
-    if (shown !== want) {
-      problems.push(
-        `${item.slug}/${option.id}: the claim opens with ${shown} and is checked against ${want}.` +
-          ` A reader believes the prose.`,
-      );
-    }
-  }
-}
+/*
+  Checked by scripts-ci/check-option-prose.ts, generically, for every surface
+  that offers options rather than for this one. Four surfaces grew their own
+  copy of this within a day of each other, each with its own regex, which is
+  how the answer-key check came about too.
+*/
 
 /* ── 3. occupancy, recomputed by allocating and expiring ────────────────── */
 

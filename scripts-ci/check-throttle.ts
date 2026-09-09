@@ -54,31 +54,14 @@ for (const item of CASES) {
   }
 }
 
-/* ── 2. the prose figure and the checked figure ─────────────────────────── */
+/* ── the prose figure and the checked figure ────────────────────────────── */
 
-for (const item of CASES) {
-  for (const option of item.options) {
-    const says = option.says;
-    const lead = /^(\d+(?:\.\d+)?)\s*(ms|percent|%)?/.exec(option.claim.trim());
-    if (!lead) continue;
-    const shown = Number(lead[1]);
-    const want =
-      says.about === "exhausts-at" || says.about === "finishes-at"
-        ? says.ms
-        : says.about === "periods-throttled"
-          ? says.count
-          : says.about === "utilisation"
-            ? says.percent
-            : null;
-    if (want === null) continue;
-    if (shown !== want) {
-      problems.push(
-        `${item.slug}/${option.id}: the claim opens with ${shown} and is checked against ${want}.` +
-          ` A reader believes the prose.`,
-      );
-    }
-  }
-}
+/*
+  Checked by scripts-ci/check-option-prose.ts, generically, for every surface
+  that offers options rather than for this one. Four surfaces grew their own
+  copy of this within a day of each other, each with its own regex, which is
+  how the answer-key check came about too.
+*/
 
 /* ── 3. the enforcement loop, recomputed differently ────────────────────── */
 
