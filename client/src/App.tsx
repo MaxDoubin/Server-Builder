@@ -186,6 +186,9 @@ const CinematicNat = lazyWithRetry(() =>
 const CinematicAlerts = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicAlerts").then((m) => ({ default: m.CinematicAlerts })),
 );
+const CinematicLoad = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLoad").then((m) => ({ default: m.CinematicLoad })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -892,6 +895,11 @@ function AnimatedRoutes() {
           <Route path="/alerts">
             <Suspense fallback={<RouteLoading />}>
               <CinematicAlerts />
+            </Suspense>
+          </Route>
+          <Route path="/load">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLoad />
             </Suspense>
           </Route>
           <Route path="/cache">

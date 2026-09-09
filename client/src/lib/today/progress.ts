@@ -25,6 +25,7 @@ import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as ALERTS } from "@/lib/alerts/index";
+import { CASES as LOADS } from "@/lib/load/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -47,6 +48,7 @@ import { loadSolvedOoms } from "@/lib/oom/progress";
 import { loadSolvedUnits } from "@/lib/units/progress";
 import { loadSolvedNats } from "@/lib/nat/progress";
 import { loadSolvedAlerts } from "@/lib/alerts/progress";
+import { loadSolvedLoads } from "@/lib/load/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -128,6 +130,13 @@ export function readProgress(): Line[] {
       href: "/alerts",
       done: loadSolvedAlerts().filter((slug) => ALERTS.some((item) => item.slug === slug)).length,
       total: ALERTS.length,
+      noun: "called right",
+    },
+    {
+      label: "Load average",
+      href: "/load",
+      done: loadSolvedLoads().filter((slug) => LOADS.some((item) => item.slug === slug)).length,
+      total: LOADS.length,
       noun: "called right",
     },
     {

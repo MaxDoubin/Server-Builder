@@ -28,6 +28,7 @@ import { CHAINS as RETRY_CHAINS, amplification, elapsed as retryElapsed, ms as r
 import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nativeMismatches, nativeVlanOf, onWire } from "../client/src/lib/vlan/index";
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
+import { CASES as LOAD_CASES, LOAD_FREQ as loadFreq, blame as loadBlame, clock as loadClock, correctOption as loadCorrect, countsAt as loadCounts, peak as loadPeak, perCore as loadPerCore, procLine as loadProc, readAt as loadReadAt, run as loadRun, windowOf as loadWindow } from "../client/src/lib/load/index";
 import { CASES as ALERT_CASES, asYaml as alertYaml, clock as alertClock, correctOption as alertCorrect, evaluationTimes as alertTicks, firesAt as alertFires, run as alertRun, staleFrom as alertStale } from "../client/src/lib/alerts/index";
 import { CASES as NAT_CASES, OUTCOME_LABEL as NAT_OUTCOME, correctOption as natCorrect, isPrivate as natIsPrivate, trace as natTrace, wanRoutable as natRoutable } from "../client/src/lib/nat/index";
 import { CASES as UNIT_CASES, correctOption as unitCorrect, directivesOf as unitDirectives, levels as unitLevels, meansStarted as unitMeansStarted, outcomeOf as unitOutcome } from "../client/src/lib/units/index";
@@ -867,6 +868,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/units">It started before the thing it needs</a>, ten sets of systemd unit files where After= and Requires= mean different things.</li>
     <li><a href="${SITE_URL}/nat">It works from outside</a>, ten port forwards and the paths their replies take.</li>
     <li><a href="${SITE_URL}/alerts">The graph crossed the line</a>, ten runs of one alerting rule and what each one actually does.</li>
+    <li><a href="${SITE_URL}/load">Forty, and idle</a>, ten readings of the load average and what the number is actually counting.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2160,6 +2162,7 @@ ${JSON.stringify({
     ["It started before the thing it needs", "/units"],
     ["It works from outside", "/nat"],
     ["The graph crossed the line", "/alerts"],
+    ["Forty, and idle", "/load"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3062,6 +3065,16 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}</li>`).join("\n")
     whole time.
   */
   const alertsSilent = ALERT_CASES.filter((item) => alertFires(item.setup) === null).length;
+  /*
+    The flapping case's own numbers, from the model rather than typed. They
+    were typed, as "twelve of fifteen evaluations", and the run is thirteen
+    of sixteen. Nothing could have disagreed with the sentence, because the
+    sentence was the only place the figure appeared.
+  */
+  const alertsFlap = ALERT_CASES.map((item) => alertRun(item.setup))
+    .filter((entries) => !entries.some((entry) => entry.state === "firing"))
+    .map((entries) => ({ over: entries.filter((entry) => entry.active).length, of: entries.length }))
+    .sort((a, b) => b.over - a.over)[0] ?? { over: 0, of: 0 };
   const alertsDescription =
     "An alerting rule is a question asked at a fixed cadence, of whatever value the query engine " +
     "can find at that instant, and every surprise comes from one of those two words. A spike " +
@@ -3094,7 +3107,7 @@ ${JSON.stringify({
   <p>
     ${ALERT_CASES.length} runs of one alerting rule, and the question every time is what the alert
     does. ${alertsSilent} of them never fire at all, and in one of those the metric is over the
-    threshold in twelve of fifteen evaluations.
+    threshold at ${alertsFlap.over} of ${alertsFlap.of} evaluations.
   </p>
   <p>
     An alerting rule is not a question asked of a graph. It is a question asked at a fixed cadence,
@@ -3162,6 +3175,120 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option === right
     a value that changed from a target that stopped answering.</li>
   </ol>
   ${backLinks([["/practise", "All practise material"], ["/blog/the-alert-was-pending-all-day", "The alert was pending all day"], ["/blog/prometheus-server-monitoring", "Prometheus server monitoring"], ["/logs", "Read the log"]])}
+</main>`,
+  });
+
+  // ── load average ──
+  /*
+    The counts go into the static body as a table, because the argument of
+    the surface is that one number is a sum of two unlike things and a
+    paragraph saying so is weaker than the two columns side by side.
+    Somebody searching "load average high but cpu idle" lands here, and what
+    they need is a row reading 0 runnable, 40 blocked, load 41.
+  */
+  const loadIdle = LOAD_CASES.filter((item) => loadBlame(item.setup) === "io").length;
+  const loadWorst = [...LOAD_CASES].sort(
+    (a, b) => loadPeak(b.setup, "one") - loadPeak(a.setup, "one"),
+  )[0];
+  const loadDescription =
+    "The load average is a count of tasks and not a percentage of anything, so it has no ceiling " +
+    "at 1.0 and none at the core count. It adds nr_uninterruptible to nr_running, so a host with " +
+    "a mount that has stopped answering reads " +
+    `${loadPeak(loadWorst.setup, "one").toFixed(0)} while the processors do nothing. And it is ` +
+    "exponentially damped over one, five and fifteen minutes, so it reaches 63 percent of a " +
+    `change after one time constant and is never reporting now. ${LOAD_CASES.length} readings ` +
+    `here, ${loadIdle} of which are an idle machine, folded with the kernel's own fixed point.`;
+
+  await writePage("load", base, {
+    title: "The Load Average Is Forty and the CPU Is Idle | Max Doubin",
+    description: loadDescription,
+    canonical: `${SITE_URL}/load`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Forty, and idle",
+  description: loadDescription,
+  url: `${SITE_URL}/load`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "What the Linux load average actually counts: that nr_uninterruptible is added to nr_running so a blocked task weighs the same as a running one, that the figure is not normalised by the core count, that it is an exponentially damped moving average sampled every 5*HZ+1 ticks so it reaches only 63 percent of a step after one time constant, that a burst shorter than the sample period is never counted at all, and how to take the sum apart again with vmstat, /proc/loadavg and pressure stall information",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The load average is forty and the CPU is idle</h1>
+  <p>
+    ${LOAD_CASES.length} readings of one number, and the question every time is what it says and
+    what it means. ${loadIdle} of them are machines doing no work at all.
+  </p>
+  <p>
+    Three things go wrong with this number and none of them is arithmetic. It is a count of tasks
+    and not a percentage, so there is no ceiling at 1.0 and none at the core count either. It adds
+    <code>nr_uninterruptible</code> to <code>nr_running</code> before folding, so a task blocked on
+    a device that will never answer weighs exactly as much as a task burning a core. And it is an
+    exponentially damped moving average sampled every ${loadFreq.toFixed(3)} seconds, which is
+    5*HZ+1 ticks rather than 5*HZ, so the one minute figure has folded eleven samples at the one
+    minute mark and not twelve.
+  </p>
+  <h2>What each machine was doing, and what it printed</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Machine</th><th>Cores</th><th>Runnable</th><th>Blocked</th><th>1 min peak</th><th>Per core</th><th>What it means</th></tr>
+    </thead>
+    <tbody>
+${LOAD_CASES.map((item) => {
+  const end = loadWindow(item.setup);
+  const counts = loadCounts(item.setup, Math.max(0, end - 1));
+  const busiest = [...item.setup.phases].sort(
+    (a, b) => b.running + b.blocked - (a.running + a.blocked),
+  )[0];
+  return `      <tr><td>${esc(item.name)}</td><td>${item.setup.cores}</td>` +
+    `<td>${busiest ? busiest.running : counts.running}</td>` +
+    `<td>${busiest ? busiest.blocked : counts.blocked}</td>` +
+    `<td>${loadPeak(item.setup, "one").toFixed(2)}</td>` +
+    `<td>${loadPerCore(item.setup, end).toFixed(2)}</td>` +
+    `<td>${esc(loadBlame(item.setup))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${LOAD_CASES.map((item) => {
+  const end = loadWindow(item.setup);
+  const right = loadCorrect(item);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>$ cat /proc/loadavg
+${esc(loadProc(item.setup, end))}</code></pre>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>What to read instead: ${esc(item.fix)}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  <h2>Reading it on a real machine</h2>
+  <ol>
+    <li><code>cat /proc/loadavg</code>. The fourth field is running/total, and a load of
+    ${loadPeak(loadWorst.setup, "one").toFixed(0)} beside a running count of 2 is the whole
+    diagnosis without opening anything else.</li>
+    <li><code>vmstat 1</code> prints <code>r</code> and <code>b</code> as separate columns, which
+    is the sum taken apart: runnable in one, uninterruptible in the other.</li>
+    <li><code>ps -eo pid,state,wchan:32,cmd | awk '$2 == "D"'</code> names the tasks in
+    uninterruptible sleep and the kernel function each is stuck in.</li>
+    <li><code>/proc/pressure/cpu</code> measures the share of time runnable tasks spent waiting,
+    which is the quantity people believe they are reading off the load average, and it is already
+    normalised.</li>
+    <li>Divide by <code>nproc</code> before comparing anything to anything. A threshold on the raw
+    figure means something different on every machine it is copied to.</li>
+  </ol>
+  ${backLinks([["/practise", "All practise material"], ["/oom", "Something has to die"], ["/alerts", "The graph crossed the line"]])}
 </main>`,
   });
 
@@ -5722,6 +5849,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/units`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/nat`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/alerts`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/load`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

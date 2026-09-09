@@ -575,6 +575,18 @@ jobs:
       - name: Alerting rules fire when they say
         run: npx tsx scripts-ci/check-alerts.ts
 
+      # The load surface. Two of its checks exist because the other two have
+      # no power: four options naming four values of one quantity means a
+      # wrong answer still leaves exactly one holding, so there are direct
+      # properties on the runs themselves, and the number a reader sees in an
+      # option's prose is compared against the number the claim is checked
+      # against, since those are two fields written by hand at one moment and
+      # the reader believes the prose. Every fold is also recomputed by
+      # walking the window a tick at a time rather than multiplying out the
+      # sample times, which is where an off-by-one in sample placement lives.
+      - name: Load averages read what the kernel would print
+        run: npx tsx scripts-ci/check-load.ts
+
       # And the gate one level below check-ci-coverage. That one finds a gate
       # the workflow never runs; this one finds a model function no gate ever
       # names. Three of those turned up in one day, each found by breaking the

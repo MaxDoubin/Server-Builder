@@ -31,6 +31,7 @@ import { CASES as OOM_CASES, fattestSurvives as oomFattestSurvives } from "@/lib
 import { CASES as UNIT_CASES, outcomeOf as unitOutcome } from "@/lib/units/index";
 import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
+import { CASES as LOAD_CASES, blame as loadBlame, peak as loadPeak } from "@/lib/load/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -317,6 +318,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/load",
+      eyebrow: "Predict",
+      title: "Forty, and idle",
+      blurb:
+        "The load average is a count and not a percentage, it adds uninterruptible sleep to runnable tasks, and it is damped over one, five and fifteen minutes. Work out what it reads and what it means.",
+      reachFor: "the load average is alarming and nothing looks busy",
+      stats: [
+        `${LOAD_CASES.length} readings`,
+        `${LOAD_CASES.filter((item) => loadBlame(item.setup) === "io").length} on idle machines`,
+        `peaks at ${Math.max(...LOAD_CASES.map((item) => loadPeak(item.setup, "one"))).toFixed(0)}`,
       ],
       progress: null,
     },

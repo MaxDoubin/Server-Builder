@@ -29,6 +29,7 @@ import { CASES as OOMS } from "@/lib/oom/index";
 import { CASES as UNITS } from "@/lib/units/index";
 import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as ALERTS } from "@/lib/alerts/index";
+import { CASES as LOADS } from "@/lib/load/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -80,6 +81,7 @@ const OFFSET = {
   units: 97,
   nat: 101,
   alerts: 103,
+  load: 107,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -274,6 +276,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "One rule, one metric, two intervals. Work out what the alert does before you look at the state band.",
       href: "/alerts",
       outOf: ALERTS.length,
+    });
+  }
+
+  const loaded = pickFor(LOADS, day, OFFSET.load);
+  if (loaded) {
+    out.push({
+      surface: "load",
+      eyebrow: "Predict",
+      title: loaded.name,
+      blurb: "Two task counts and a core count. Work out what the load average reads before you look at the curves.",
+      href: "/load",
+      outOf: LOADS.length,
     });
   }
 
