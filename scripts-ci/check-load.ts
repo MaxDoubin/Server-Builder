@@ -61,33 +61,17 @@ for (const item of CASES) {
   }
 }
 
-/* ── 2. the prose number and the checked number ─────────────────────────── */
+/* ── 2. the prose figure and the checked figure ─────────────────────────── */
 
 /*
-  An option carries the claim twice: once as prose a reader acts on and once
-  as a structure the model is compared against. Nothing keeps them together,
-  and a claim reading "41.00, because the kernel counts uninterruptible
-  sleep" against a says of 4.1 is a page that marks the right button and
-  displays the wrong number on it.
+  Checked by scripts-ci/check-option-prose.ts, generically, for every surface
+  that offers options rather than for this one.
 
-  Only the leading figure is checked. The rest of the sentence is allowed to
-  mention other quantities, and several deliberately do.
+  Four surfaces grew their own copy of this within a day of each other, each
+  with its own regex, which is how the answer-key check came about too.
+  Writing it once also gave it to /nat and /alerts, which had thirteen and
+  three options quoting a figure that nothing compared.
 */
-for (const item of CASES) {
-  for (const option of item.options) {
-    const says = option.says;
-    if (says.about !== "reads" && says.about !== "peaks" && says.about !== "per-core") continue;
-    const lead = /^(\d+(?:\.\d+)?)/.exec(option.claim.trim());
-    if (!lead) continue;
-    const shown = Number(lead[1]);
-    if (shown !== says.value) {
-      problems.push(
-        `${item.slug}/${option.id}: the claim opens with ${shown} and is checked against` +
-          ` ${says.value}. A reader believes the prose.`,
-      );
-    }
-  }
-}
 
 /* ── 3. the fold, recomputed differently ────────────────────────────────── */
 
