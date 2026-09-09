@@ -27,6 +27,7 @@ import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as LOADS } from "@/lib/load/index";
 import { CASES as THROTTLES } from "@/lib/throttle/index";
+import { CASES as PORTS } from "@/lib/ports/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -51,6 +52,7 @@ import { loadSolvedNats } from "@/lib/nat/progress";
 import { loadSolvedAlerts } from "@/lib/alerts/progress";
 import { loadSolvedLoads } from "@/lib/load/progress";
 import { loadSolvedThrottles } from "@/lib/throttle/progress";
+import { loadSolvedPorts } from "@/lib/ports/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -146,6 +148,13 @@ export function readProgress(): Line[] {
       href: "/throttle",
       done: loadSolvedThrottles().filter((slug) => THROTTLES.some((item) => item.slug === slug)).length,
       total: THROTTLES.length,
+      noun: "called right",
+    },
+    {
+      label: "Port exhaustion",
+      href: "/ports",
+      done: loadSolvedPorts().filter((slug) => PORTS.some((item) => item.slug === slug)).length,
+      total: PORTS.length,
       noun: "called right",
     },
     {

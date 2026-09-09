@@ -31,6 +31,7 @@ import { CASES as NATS } from "@/lib/nat/index";
 import { CASES as ALERTS } from "@/lib/alerts/index";
 import { CASES as LOADS } from "@/lib/load/index";
 import { CASES as THROTTLES } from "@/lib/throttle/index";
+import { CASES as PORTS } from "@/lib/ports/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -84,6 +85,7 @@ const OFFSET = {
   alerts: 103,
   load: 107,
   throttle: 109,
+  ports: 113,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -302,6 +304,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A quota, a period and a thread count. Work out when in the period the group stops running.",
       href: "/throttle",
       outOf: THROTTLES.length,
+    });
+  }
+
+  const ranOut = pickFor(PORTS, day, OFFSET.ports);
+  if (ranOut) {
+    out.push({
+      surface: "ports",
+      eyebrow: "Predict",
+      title: ranOut.name,
+      blurb: "A port range, a rate and a destination or several. Work out whether it runs out, and which connection fails.",
+      href: "/ports",
+      outOf: PORTS.length,
     });
   }
 

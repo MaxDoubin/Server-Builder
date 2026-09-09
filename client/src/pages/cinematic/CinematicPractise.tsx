@@ -33,6 +33,7 @@ import { CASES as NAT_CASES, trace as natTrace } from "@/lib/nat/index";
 import { CASES as ALERT_CASES, firesAt as alertFires } from "@/lib/alerts/index";
 import { CASES as LOAD_CASES, blame as loadBlame, peak as loadPeak } from "@/lib/load/index";
 import { CASES as THROTTLE_CASES, everThrottled as thrEver, exhaustsAt as thrExhausts } from "@/lib/throttle/index";
+import { CASES as PORT_CASES, exhausts as portExhausts, TIME_WAIT_SECONDS as portTw } from "@/lib/ports/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -319,6 +320,20 @@ export function CinematicPractise() {
         `${CACHE_CASES.length} sequences`,
         `${CACHE_CASES.filter((item) => cacheLeakAt(item.exchanges) !== null).length} that leak`,
         "live RFC 9111",
+      ],
+      progress: null,
+    },
+    {
+      href: "/ports",
+      eyebrow: "Predict",
+      title: "Out of ports",
+      blurb:
+        "TIME_WAIT is sixty seconds and has no sysctl, and a socket is a four tuple, so exhaustion is per destination. Work out which connection fails.",
+      reachFor: "cannot assign requested address, on a host with sixty thousand ports",
+      stats: [
+        `${PORT_CASES.length} hosts`,
+        `${PORT_CASES.filter((item) => portExhausts(item.setup)).length} running out`,
+        `${portTw}s TIME_WAIT`,
       ],
       progress: null,
     },
