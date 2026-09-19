@@ -102,8 +102,15 @@ const INDEX = path.join(DIST, "index.html");
  * surface before its route has loaded. Checked by printing the surrounding
  * 400 bytes rather than by assuming: it is one string literal in the palette
  * array. No case slug and no line of case prose is in there.
+ *
+ * 702 KB, raised from 701 by /keepalive, measured at 701.7. Same check, same
+ * answer: tcp_keepalive_time and conntrack are in the entry, both inside that
+ * route's palette terms, and its case slugs are not. This surface's palette
+ * entry is longer than most because the thing a reader types is a sysctl
+ * name, and there are a dozen of them that should all find it. 0.7 KB is what
+ * that costs, and it is the right place to spend it.
  */
-const BUDGET_BYTES = 701 * 1024;
+const BUDGET_BYTES = 702 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

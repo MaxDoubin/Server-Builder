@@ -638,6 +638,9 @@ jobs:
       - name: Accept queue surface
         run: npx tsx scripts-ci/check-backlog.ts
 
+      - name: Idle connection surface
+        run: npx tsx scripts-ci/check-keepalive.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

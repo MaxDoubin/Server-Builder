@@ -39,6 +39,7 @@ import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/
 import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/index";
 import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/index";
 import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/backlog/index";
+import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/keepalive/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -339,6 +340,20 @@ export function CinematicPractice() {
         `${FREE_CASES.length} machines`,
         `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
         "si_mem_available",
+      ],
+      progress: null,
+    },
+    {
+      href: "/keepalive",
+      eyebrow: "Predict",
+      title: "Six minutes of silence",
+      blurb:
+        "TCP has no idle timeout and the path does. Keepalive is off per socket, and at its default the first probe is due two hours after every middlebox in the path has forgotten the flow.",
+      reachFor: "a pooled connection works all day and fails after lunch",
+      stats: [
+        `${KEEPALIVE_CASES.length} connections`,
+        `${KEEPALIVE_CASES.filter((item) => !keepaliveSurvives(item.setup)).length} the path forgets`,
+        "tcp_keepalive_time",
       ],
       progress: null,
     },
