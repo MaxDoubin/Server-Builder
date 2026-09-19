@@ -48,6 +48,7 @@ import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/b
 import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/keepalive/index";
 import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
 import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
+import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -174,6 +175,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The free column is small on every healthy server, by design. MemAvailable is the number that answers the question, and it is an estimate with an arm that flips.",
     count: `${FREE_CASES.length} machines, ${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where the estimate overstates`,
+  },
+  {
+    href: "/shm",
+    eyebrow: "Predict",
+    title: "Bus error",
+    blurb:
+      "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
+    count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
   },
   {
     href: "/neigh",

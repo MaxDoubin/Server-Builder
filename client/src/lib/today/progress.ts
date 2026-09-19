@@ -36,6 +36,7 @@ import { CASES as BACKLOGS } from "@/lib/backlog/index";
 import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
 import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
 import { CASES as NEIGHS } from "@/lib/neigh/index";
+import { CASES as SHMS } from "@/lib/shm/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -69,6 +70,7 @@ import { loadSolvedBacklog } from "@/lib/backlog/progress";
 import { loadSolvedKeepalive } from "@/lib/keepalive/progress";
 import { loadSolvedStartlimit } from "@/lib/startlimit/progress";
 import { loadSolvedNeigh } from "@/lib/neigh/progress";
+import { loadSolvedShm } from "@/lib/shm/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -192,6 +194,13 @@ export function readProgress(): Line[] {
       href: "/ndots",
       done: loadSolvedNdots().filter((slug) => NDOTS.some((item) => item.slug === slug)).length,
       total: NDOTS.length,
+      noun: "called right",
+    },
+    {
+      label: "Shared memory",
+      href: "/shm",
+      done: loadSolvedShm().filter((slug) => SHMS.some((item) => item.slug === slug)).length,
+      total: SHMS.length,
       noun: "called right",
     },
     {

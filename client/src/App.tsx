@@ -219,6 +219,9 @@ const CinematicStartlimit = lazyWithRetry(() =>
 const CinematicNeigh = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNeigh").then((m) => ({ default: m.CinematicNeigh })),
 );
+const CinematicShm = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicShm").then((m) => ({ default: m.CinematicShm })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -980,6 +983,11 @@ function AnimatedRoutes() {
           <Route path="/neigh">
             <Suspense fallback={<RouteLoading />}>
               <CinematicNeigh />
+            </Suspense>
+          </Route>
+          <Route path="/shm">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicShm />
             </Suspense>
           </Route>
           <Route path="/cache">

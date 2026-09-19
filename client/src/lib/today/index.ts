@@ -40,6 +40,7 @@ import { CASES as BACKLOGS } from "@/lib/backlog/index";
 import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
 import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
 import { CASES as NEIGHS } from "@/lib/neigh/index";
+import { CASES as SHMS } from "@/lib/shm/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -102,6 +103,7 @@ const OFFSET = {
   keepalive: 151,
   startlimit: 157,
   neigh: 163,
+  shm: 167,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -428,6 +430,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A flat segment and the three thresholds on its neighbor table. Work out how many entries it holds and whether a new neighbor can be added at all.",
       href: "/neigh",
       outOf: NEIGHS.length,
+    });
+  }
+
+  const shared = pickFor(SHMS, day, OFFSET.shm);
+  if (shared) {
+    out.push({
+      surface: "shm",
+      eyebrow: "Predict",
+      title: shared.name,
+      blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
+      href: "/shm",
+      outOf: SHMS.length,
     });
   }
 
