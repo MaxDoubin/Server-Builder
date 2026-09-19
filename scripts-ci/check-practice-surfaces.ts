@@ -59,11 +59,30 @@ if (PRACTICE_SURFACES.length < 10) {
  */
 const actRequires = PRACTICE_SURFACES.filter((surface) => surface.group !== "ground");
 
+/**
+ * The footer carries the reference surfaces, and not the exercises.
+ *
+ * It used to carry all of them, because this gate said so, and that rule
+ * outlived the size it was written for. At ten surfaces a footer listing
+ * every one is a helpful index. At forty-three it is a sitemap printed
+ * under every page: the Navigate column measured 1933px of a 3181px footer
+ * on a 390px screen, three and a half phone screens of links below every
+ * article on the site, and 2159px on a desktop.
+ *
+ * So the requirement is inverted rather than dropped. The footer must link
+ * the hub, and the reference surfaces you reach for while doing something
+ * else, and the count of surfaces it links may not grow: FOOTER_SURFACE_CAP
+ * below is the rule that replaces this one. Every surface is still required
+ * in the act, the hub and the palette, which are three places and were
+ * always the three that mattered.
+ */
+const footerRequires = PRACTICE_SURFACES.filter((surface) => surface.group === "ground");
+
 const places: [string, string, typeof PRACTICE_SURFACES][] = [
   [ACT, "the home page's practice act", actRequires],
   [HUB, "the practice hub", PRACTICE_SURFACES],
   [PALETTE, "the command palette", PRACTICE_SURFACES],
-  [FOOTER, "the footer", PRACTICE_SURFACES],
+  [FOOTER, "the footer", footerRequires],
 ];
 
 for (const [path, label, required] of places) {
@@ -109,6 +128,45 @@ for (const [path, label] of [[ACT, "the act"], [HUB, "the hub"]] as [string, str
       `${label} links to ${href}, which is not in the practice registry. Register it, or add it to ALLOWED_EXTRAS.`,
     );
   }
+}
+
+/* ------------------------------------------------ the footer does not grow */
+
+/**
+ * A cap, because the failure was growth and not any single link.
+ *
+ * Nothing was wrong with the footer on the day any one surface was added to
+ * it. It went wrong over about forty days of adding one row at a time to a
+ * list nobody re-read, which is the shape a gate is for. The cap is the
+ * number of surfaces that are also places on this site rather than single
+ * exercises: the four reference ones, plus scenarios, labs and challenges,
+ * each of which is a section with pages of its own. One spare, and the
+ * forty-fourth surface cannot be quietly added to the bottom of every page.
+ *
+ * Raising it is allowed. Raising it without saying here why the footer
+ * should be longer is the thing this exists to interrupt.
+ */
+const FOOTER_SURFACE_CAP = 8;
+
+const footerText = read(FOOTER);
+const footerSurfaces = [
+  ...new Set(
+    [...footerText.matchAll(/href[:=]\s*"(\/[a-z0-9-]*)"/g)]
+      .map((match) => match[1])
+      .filter((href) => known.has(href)),
+  ),
+];
+
+if (footerSurfaces.length > FOOTER_SURFACE_CAP) {
+  problems.push(
+    `the footer links ${footerSurfaces.length} practice surfaces, over the cap of ${FOOTER_SURFACE_CAP}: ` +
+      `${footerSurfaces.join(", ")}. The footer is on every page; the hub is one click away and groups them.`,
+  );
+}
+if (!links(footerText, "/practice")) {
+  problems.push(
+    "the footer does not link /practice, which is the only route it still offers to most of the surfaces",
+  );
 }
 
 /* ------------------------------------------------- the registry itself */
@@ -270,7 +328,8 @@ if (problems.length) {
 }
 
 console.log(
-  `OK  all ${PRACTICE_SURFACES.length} practice surfaces are linked from the hub, the palette and the footer, ` +
+  `OK  all ${PRACTICE_SURFACES.length} practice surfaces are linked from the hub and the palette, ` +
+    `the footer carries ${footerSurfaces.length} of them and the hub, under a cap of ${FOOTER_SURFACE_CAP}, ` +
     `the ${actRequires.length} you sit down and do are on the front page and in its prerendered body, ` +
     `the ${GROUPS.length} groups hold ${GROUPS.map((g) => surfacesIn(g).length).join(", ")}, ` +
     `and ${curated} curated article links resolve in both directions.`,

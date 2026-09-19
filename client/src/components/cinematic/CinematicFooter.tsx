@@ -42,9 +42,9 @@ export function CinematicFooter() {
 
       <div
         data-nosnippet
-        className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-6 py-20 md:grid-cols-12 md:px-10"
+        className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-6 gap-y-10 px-6 py-14 md:grid-cols-12 md:gap-12 md:px-10 md:py-20"
       >
-        <div className="md:col-span-5">
+        <div className="col-span-2 md:col-span-5">
           <ScrollReveal variants={fadeLeft} delay={0.1}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Max Doubin · Las Vegas, NV
@@ -92,6 +92,25 @@ export function CinematicFooter() {
           </ScrollReveal>
           <StaggerGroup className="mt-4 space-y-2 font-mono-tight text-sm" staggerDelay={0.06} delayChildren={0.3}>
             {[
+              /*
+                Sections, and not the exercises inside them.
+
+                This list used to hold every practice surface, one row each.
+                It was written that way when there were ten of them and it
+                was never revisited, so it grew with the registry: at
+                forty-three surfaces the column measured 1933px of a 3181px
+                footer on a 390px screen, which is three and a half phone
+                screens of links under every page on the site, and the same
+                footer was 2159px on a desktop. The home page was 28.7 phone
+                screens and an eighth of it was this.
+
+                A footer that grows with the site is a sitemap that happens
+                to be on every page. The exercises are one click away at
+                /practice, which groups them and is what the nav, the home
+                page and the command palette all point at; check-practice-
+                surfaces enforces all three of those and now enforces that
+                this list does not grow again.
+              */
               { href: "/#dossier", label: "Dossier", testId: "link-footer-dossier" },
               { href: "/projects", label: "Projects", testId: "link-footer-projects" },
               { href: "/blog", label: "Field Notes", testId: "link-footer-blog" },
@@ -107,42 +126,6 @@ export function CinematicFooter() {
               { href: "/scenarios", label: "Scenarios", testId: "link-footer-scenarios" },
               { href: "/labs", label: "Labs", testId: "link-footer-labs" },
               { href: "/challenges", label: "Challenges", testId: "link-footer-challenges" },
-              { href: "/triage", label: "Triage", testId: "link-footer-triage" },
-              { href: "/firewall", label: "Firewall", testId: "link-footer-firewall" },
-              { href: "/resolve", label: "Resolve", testId: "link-footer-resolve" },
-              { href: "/chain", label: "Chain", testId: "link-footer-chain" },
-              { href: "/allocate", label: "Address plans", testId: "link-footer-allocate" },
-              { href: "/array", label: "Array calculator", testId: "link-footer-array" },
-              { href: "/handshake", label: "Handshakes", testId: "link-footer-handshake" },
-              { href: "/transfer", label: "Throughput", testId: "link-footer-transfer" },
-              { href: "/logs", label: "Read the log", testId: "link-footer-logs" },
-              { href: "/mtu", label: "Path MTU", testId: "link-footer-mtu" },
-              { href: "/permissions", label: "File permissions", testId: "link-footer-permissions" },
-              { href: "/patch", label: "Patch priority", testId: "link-footer-patch" },
-              { href: "/retry", label: "Retry amplification", testId: "link-footer-retry" },
-              { href: "/vlan", label: "VLAN tagging", testId: "link-footer-vlan" },
-              { href: "/clock", label: "Clock skew", testId: "link-footer-clock" },
-              { href: "/space", label: "Disk full", testId: "link-footer-space" },
-              { href: "/oom", label: "OOM killer", testId: "link-footer-oom" },
-              { href: "/units", label: "Unit ordering", testId: "link-footer-units" },
-              { href: "/nat", label: "Port forwards", testId: "link-footer-nat" },
-              { href: "/alerts", label: "Alerting rules", testId: "link-footer-alerts" },
-              { href: "/load", label: "Load average", testId: "link-footer-load" },
-              { href: "/throttle", label: "CPU quota", testId: "link-footer-throttle" },
-              { href: "/ports", label: "Port exhaustion", testId: "link-footer-ports" },
-              { href: "/limits", label: "Descriptor limits", testId: "link-footer-limits" },
-              { href: "/free", label: "Memory available", testId: "link-footer-free" },
-              { href: "/ndots", label: "Search list", testId: "link-footer-ndots" },
-              { href: "/leases", label: "DHCP leases", testId: "link-footer-leases" },
-              { href: "/backlog", label: "Accept queue", testId: "link-footer-backlog" },
-              { href: "/keepalive", label: "Idle connections", testId: "link-footer-keepalive" },
-              { href: "/startlimit", label: "Restart limits", testId: "link-footer-startlimit" },
-              { href: "/neigh", label: "Neighbor tables", testId: "link-footer-neigh" },
-              { href: "/shm", label: "Shared memory", testId: "link-footer-shm" },
-              { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
-              { href: "/route", label: "Routing tables", testId: "link-footer-route" },
-              { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },
-              { href: "/capture", label: "Captures", testId: "link-footer-capture" },
               { href: "/game", label: "Build Simulator", testId: "link-footer-game" },
               { href: "/contact", label: "Contact", testId: "link-footer-contact-2" },
             ].map((item) => (
@@ -199,7 +182,7 @@ export function CinematicFooter() {
           </StaggerGroup>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="col-span-2 md:col-span-2">
           <ScrollReveal variants={fadeRight} delay={0.3}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Elsewhere
