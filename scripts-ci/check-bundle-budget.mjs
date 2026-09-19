@@ -84,8 +84,26 @@ const INDEX = path.join(DIST, "index.html");
  * of its case prose finds nothing, so the cost is the palette entry and the
  * route registration and nothing else. One surface, half a kilobyte, which
  * is the rate the two raises above predicted.
+ *
+ * 700 KB, raised from 699 by /leases, measured at 699.4, and the same grep
+ * run again: no case slug, no line of case prose, no lease figure from the
+ * model is anywhere in the entry. 0.4 KB for the palette entry and the route,
+ * which is the third consecutive surface to land within a rounding error of
+ * the third-of-a-kilobyte figure written down two raises ago. That
+ * consistency is the useful part: a surface that ever costs several KB here
+ * has leaked something, and this budget will say so.
+ *
+ * 701 KB, raised from 700 by /backlog, measured at 700.5. This one is worth
+ * recording because the grep came back non-empty for the first time:
+ * "somaxconn", "ListenOverflows" and "sk_acceptq_is_full" all appear in the
+ * entry chunk. They are not case data. They are inside the command palette
+ * entry's search terms, which is exactly where they belong, because somebody
+ * typing "listen overflow" into the palette on any page has to match this
+ * surface before its route has loaded. Checked by printing the surrounding
+ * 400 bytes rather than by assuming: it is one string literal in the palette
+ * array. No case slug and no line of case prose is in there.
  */
-const BUDGET_BYTES = 699 * 1024;
+const BUDGET_BYTES = 701 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -204,6 +204,12 @@ const CinematicFree = lazyWithRetry(() =>
 const CinematicNdots = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNdots").then((m) => ({ default: m.CinematicNdots })),
 );
+const CinematicLeases = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicLeases").then((m) => ({ default: m.CinematicLeases })),
+);
+const CinematicBacklog = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicBacklog").then((m) => ({ default: m.CinematicBacklog })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -940,6 +946,16 @@ function AnimatedRoutes() {
           <Route path="/ndots">
             <Suspense fallback={<RouteLoading />}>
               <CinematicNdots />
+            </Suspense>
+          </Route>
+          <Route path="/leases">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicLeases />
+            </Suspense>
+          </Route>
+          <Route path="/backlog">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicBacklog />
             </Suspense>
           </Route>
           <Route path="/cache">

@@ -37,6 +37,8 @@ import { CASES as PORT_CASES, exhausts as portExhausts, TIME_WAIT_SECONDS as por
 import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
 import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/index";
+import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/index";
+import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/backlog/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -337,6 +339,34 @@ export function CinematicPractice() {
         `${FREE_CASES.length} machines`,
         `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
         "si_mem_available",
+      ],
+      progress: null,
+    },
+    {
+      href: "/backlog",
+      eyebrow: "Trace",
+      title: "The server is idle and the connections are timing out",
+      blurb:
+        "listen() does not install the backlog you passed, and a full accept queue does not refuse the connection. It drops the final ACK and lets the client believe it is connected.",
+      reachFor: "connections hang for seconds and the CPU graph is flat",
+      stats: [
+        `${BACKLOG_CASES.length} listeners`,
+        `${BACKLOG_CASES.filter((item) => backlogOverflowed(item.setup) > 0).length} that overflow`,
+        "listen(2)",
+      ],
+      progress: null,
+    },
+    {
+      href: "/leases",
+      eyebrow: "Predict",
+      title: "Forty minutes dark",
+      blurb:
+        "A DHCP outage does not take the network down. It takes down the clients whose leases happen to expire while the server is away, and two timers inside every lease decide how many that is.",
+      reachFor: "the DHCP server is being patched and somebody asks whether it matters",
+      stats: [
+        `${LEASES_CASES.length} networks`,
+        `${LEASES_CASES.filter((item) => leasesLost(item.setup) > 0).length} that lose clients`,
+        "RFC 2131",
       ],
       progress: null,
     },

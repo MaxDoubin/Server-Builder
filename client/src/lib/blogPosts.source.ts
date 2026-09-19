@@ -50,6 +50,500 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "the-connection-opened-and-then-nothing-happened",
+    title: "The Connection Opened And Then Nothing Happened",
+    date: "2026-09-19",
+    tags: ["networking", "linux", "operations", "troubleshooting"],
+    excerpt:
+      "listen() does not install the backlog you passed: it is min(backlog, somaxconn), clamped silently, and the queue then holds one more than that because the kernel's test is greater-than rather than greater-or-equal. When it fills, the kernel does not refuse the connection. It drops the final ACK and sends nothing back, so connect() has already returned and the client's first request goes into silence until a retransmission finds room. That is how a box at six percent CPU produces seconds of dead air and no error anywhere.",
+    coverImage: "/images/blog/the-connection-opened-and-then-nothing-happened.jpg",
+    content: `## Four seconds of nothing, on a box at six percent
+
+An nginx instance in front of an application server, 32 cores, and this is the
+CPU graph for the window everyone is arguing about:
+
+\`\`\`
+$ mpstat 1 3
+Average:  all  5.91  0.00  0.72  0.04  0.00  0.11  0.00  0.00  0.00  93.22
+\`\`\`
+
+Load average under two, no disk wait, no 5xx in the access log, nothing in
+dmesg. What the clients report is connections that open and then sit there for
+three or four seconds, in clumps.
+
+The number that explains it is here:
+
+\`\`\`
+$ ss -ltn 'sport = :443'
+State    Recv-Q   Send-Q       Local Address:Port    Peer Address:Port
+LISTEN   512      511                 0.0.0.0:443            0.0.0.0:*
+
+$ nstat -az TcpExtListenOverflows TcpExtListenDrops
+#kernel
+TcpExtListenOverflows           500                0.0
+TcpExtListenDrops               500                0.0
+\`\`\`
+
+Two things in that output are surprising, and one of them is the whole
+incident. Send-Q says 511 on a host where \`net.core.somaxconn\` is 4096, and
+Recv-Q says 512, one more than the limit it is measured against.
+
+## listen() does not install the backlog you passed
+
+\`__sys_listen_socket()\` in \`net/socket.c\` clamps the argument before the
+protocol ever sees it:
+
+\`\`\`c
+somaxconn = READ_ONCE(sock_net(sock->sk)->core.sysctl_somaxconn);
+if ((unsigned int)backlog > somaxconn)
+        backlog = somaxconn;
+\`\`\`
+
+The man page says the same thing in words, and the adverb is the important
+part: "If the backlog argument is greater than the value in
+\`/proc/sys/net/core/somaxconn\`, then it is silently capped to that value."
+Silently. No error from \`listen()\`, no log line, and no API to read back what
+you asked for.
+
+Which way the clamp bites depends entirely on the software. systemd is so
+resigned to it that \`systemd.socket(5)\` documents \`Backlog=\` as defaulting to
+4294967295 and then adds: "Note that this value is silently capped by the
+\`net.core.somaxconn\` sysctl, which typically defaults to 4096, so typically the
+sysctl is the setting that actually matters." nginx does the opposite. Its
+\`listen\` directive documents \`backlog\` as defaulting to 511 on Linux, which is
+below any modern somaxconn, so on nginx the sysctl is the setting that does not
+matter at all.
+
+This is why the standard advice keeps getting repeated and keeps not working.
+Raising \`net.core.somaxconn\` fixes the systemd host and does nothing for the
+nginx one: the cap is \`min(backlog, somaxconn)\`, and a \`min\` only moves when the
+smaller side moves.
+
+Then the second surprise. \`sk_acceptq_is_full()\` in \`include/net/sock.h\` carries
+a note above it for people who are sure it is wrong:
+
+\`\`\`c
+/* Note: If you think the test should be:
+ *	return READ_ONCE(sk->sk_ack_backlog) >= READ_ONCE(sk->sk_max_ack_backlog);
+ * Then please take a look at commit 64a146513f8f ("[NET]: Revert incorrect
+ * accept queue backlog changes.")
+ */
+static inline bool sk_acceptq_is_full(const struct sock *sk)
+{
+	return READ_ONCE(sk->sk_ack_backlog) > READ_ONCE(sk->sk_max_ack_backlog);
+}
+\`\`\`
+
+Greater than. So a listener whose Send-Q reads 511 holds 512 completed
+connections, and a Recv-Q one above Send-Q is the definition rather than a bug.
+
+For a listening socket those two columns come from the accept queue and nothing
+else. \`tcp_diag_get_info()\` is explicit:
+
+\`\`\`c
+if (inet_sk_state_load(sk) == TCP_LISTEN) {
+        r->idiag_rqueue = READ_ONCE(sk->sk_ack_backlog);
+        r->idiag_wqueue = READ_ONCE(sk->sk_max_ack_backlog);
+}
+\`\`\`
+
+Worth knowing because \`ss(8)\` itself does not document what those columns mean
+on a LISTEN row, and the folklore answer, that they are the SYN queue, is wrong.
+
+## A full queue does not refuse the connection
+
+This is the part that makes it invisible.
+
+When the client's final ACK arrives and the accept queue is full,
+\`tcp_check_req()\` in \`net/ipv4/tcp_minisocks.c\` does this:
+
+\`\`\`c
+listen_overflow:
+	if (!READ_ONCE(sock_net(sk)->ipv4.sysctl_tcp_abort_on_overflow)) {
+		inet_rsk(req)->acked = 1;
+		return NULL;
+	}
+\`\`\`
+
+\`tcp_abort_on_overflow\` defaults to 0, so the ACK is dropped and nothing is
+sent back. No RST. No ICMP. Nothing.
+
+The client has already seen the SYN-ACK, so its \`connect()\` returned
+successfully some time ago. It believes it is connected, and it writes its
+request into a socket the server has none to match. That segment is dropped too.
+
+Now two timers are running and neither of them belongs to your application.
+
+The server retransmits the SYN-ACK on the request timer, which is
+\`req->timeout << req->num_timeout\` capped at \`TCP_RTO_MAX\`, starting from
+\`TCP_TIMEOUT_INIT\` of one second. So retransmissions land at 1, 3, 7, 15 and 31
+seconds. ip-sysctl confirms the arithmetic from the other end:
+\`tcp_synack_retries\` "Default value is 5, which corresponds to 31seconds till
+the last retransmission with the current initial RTO of 1second."
+
+The client retransmits its data on its own RTO. It measured an RTT during the
+handshake, so this is not the one second initial value: Linux floors a computed
+RTO at \`TCP_RTO_MIN\`, which is \`HZ/5\`, so on a datacenter network it is 200 ms
+and then doubles. 200, 600, 1400, 3000, 6200, 12600 milliseconds after the send.
+
+The connection completes on whichever of those fires first after the
+application has called \`accept()\` enough times to leave a slot. Both work:
+retransmitted data carries an ACK, and a retransmitted SYN-ACK provokes a
+duplicate ACK.
+
+## So where did four seconds come from?
+
+Take the burst from the top of this piece. 1612 handshakes complete in two
+seconds, which is 806 a second, against an accept loop getting through 300 a
+second. Over the window, 600 are accepted and the queue fills to the 512 it
+holds. That leaves 500 connections that finished a handshake and were dropped.
+
+The last of them is behind 500 others waiting for a slot, and the application
+frees one every 3.33 ms, so a slot for it exists 1667 ms after the burst.
+
+Nothing tells the client that. Its next chance is the first tick of either
+schedule at or after 1667 ms, and the schedules are 200, 600, 1400, 3000 from
+the client and 1000, 3000, 7000 from the server. The answer is 3000 ms.
+
+A shortfall of 1.7 seconds in the accept loop cost that client 3 seconds of
+dead air, and the difference is the granularity of an exponential backoff
+nobody configured. The clumping people report is the same effect: everything
+that got dropped lands on the same tick.
+
+## The misconception
+
+The belief is that a server with idle CPU cannot be the reason connections are
+timing out, so this must be the network or the client.
+
+The accept queue is not sized by the CPU and it is not drained by the CPU. It
+is drained by an application returning from \`accept()\`. The worst version of
+this is a single acceptor thread that blocks: hand the socket to a pool, take a
+lock, wait on something that has stopped answering. 400 connections arrive over
+five seconds against a framework backlog of 128, so 129 sit in the queue and
+271 are dropped, and there is not one accept in the window.
+
+Those 271 do not get in at all. \`syn_ack_recalc()\` expires the request once
+\`num_timeout\` reaches \`tcp_synack_retries\`, which is 63 seconds after the SYN:
+five retransmissions and one more interval. After that the request is gone, and
+the client's next data retransmit at 102.2 seconds reaches a listening socket
+with nothing to match, so the listener resets it. Not that anyone sees that:
+\`tcp_retries2\` at its default of 15 buys the client "a hypothetical timeout of
+924.6 seconds", per ip-sysctl, and every application timeout in the path fires
+long before either number.
+
+Meanwhile: 3 percent CPU, one parked thread in the dump, no errors anywhere.
+
+## The counters, and the one that proves it
+
+\`TcpExtListenOverflows\` is the proof. It increments only when the accept queue
+was full, so it is zero on a healthy listener and it is the shortest path from
+symptom to cause on this whole page.
+
+\`TcpExtListenDrops\` is not that. The overflow path increments both, naming
+\`LINUX_MIB_LISTENOVERFLOWS\` directly and then falling through to
+\`tcp_listendrop()\`. But \`tcp_listendrop()\` also runs on every other way
+\`tcp_conn_request()\` can give up: a request allocation that fails, a SYN cookie
+in an ACK that no longer validates, a route lookup that fails. On the host
+above, with a scanner sending it junk all day, ListenOverflows read 500 and
+ListenDrops read 618. Alert on the first. Graph the difference separately,
+because a jump in it with overflows flat is a different problem entirely.
+
+Two more things to rule out. The SYN queue is a different
+queue: \`tcp_max_syn_backlog\` bounds connections that have not finished
+handshaking, and with \`tcp_syncookies\` at its default of 1, listen(2) notes
+that "when syncookies are enabled there is no logical maximum length and this
+setting is ignored". Raising it cannot move a number that \`min(backlog,
+somaxconn)\` decides. And check your kernel, because listen(2) also says "Since
+Linux 5.4, the default in this file is 4096; in earlier kernels, the default
+value is 128." A long-lived 4.19 host is running a cap of 128 no matter what
+the application asked for, and every tuning guide written after 2019 quietly
+assumes otherwise.
+
+## What to do
+
+\`\`\`
+$ ss -ltn                       # Send-Q is the real cap, Recv-Q the depth
+$ nstat -az TcpExtListenOverflows TcpExtListenDrops
+$ sysctl net.core.somaxconn net.ipv4.tcp_abort_on_overflow
+\`\`\`
+
+Raise both numbers, in an order that makes the check meaningful: somaxconn
+first, then the application's own backlog, then \`ss -ltn\` to confirm Send-Q
+actually moved. On nginx that is \`listen 443 ssl backlog=4096\`. A listener
+created before a sysctl was applied keeps its old cap for life, so restart the
+service, not just the sysctl.
+
+Then fix the drain, because a deeper queue only buys time. The accept loop
+should accept and hand off, and the hand off must not be able to block: a
+bounded queue with a rejection policy, not a lock.
+
+Resist \`net.ipv4.tcp_abort_on_overflow=1\`. It does what it says, and ip-sysctl
+describes it in one flat line: "If listening service is too slow to accept new
+connections, reset them. Default state is FALSE." What it trades is a
+connection that would have completed three seconds late for one that fails now,
+which the client library will retry into the same full queue. Turn it on for an
+afternoon of diagnosis and off in the same change, because the symptom it
+produces looks exactly like a crash, a firewall, or a load balancer draining.
+
+Then three questions:
+
+1. Is \`ListenOverflows\` moving? If yes, the queue is the cause and the CPU
+   graph is not evidence of anything.
+2. Is \`Send-Q\` the number you configured? If not, find out which of the two
+   clamps is binding before changing either.
+3. Is it moving at all? If \`ListenOverflows\` is flat, the queue is exonerated
+   and the time is being spent after \`accept()\` returns.
+
+You can work through ten of these, including the listener whose Recv-Q reads one
+above its own limit and the one where raising somaxconn changes nothing, at
+[the server is idle and the connections are timing out](/backlog).
+
+For the other number on a box like this that stays flat while something is
+badly wrong, [forty, and nothing was
+running](/blog/forty-and-nothing-was-running). For why the arrival rate and the
+service rate are the only two numbers that matter here, [queueing theory for
+operators](/blog/queueing-theory-for-operators). And for where nginx's 511 comes
+from in the first place, [nginx as a reverse
+proxy](/blog/nginx-reverse-proxy-setup).
+
+## References
+
+- [listen(2), on the somaxconn cap and the 5.4 default](https://man7.org/linux/man-pages/man2/listen.2.html)
+- [ip-sysctl, on tcp_abort_on_overflow, tcp_synack_retries and tcp_retries2](https://docs.kernel.org/networking/ip-sysctl.html)
+- [sk_acceptq_is_full and the note above it, include/net/sock.h](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/net/sock.h)
+- [tcp_check_req and the listen_overflow label, net/ipv4/tcp_minisocks.c](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/ipv4/tcp_minisocks.c)
+- [__sys_listen_socket, net/socket.c](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/net/socket.c)
+- [systemd.socket(5), on Backlog= and why the sysctl is what matters](https://www.freedesktop.org/software/systemd/man/latest/systemd.socket.html)
+- [nginx listen directive, on the backlog default of 511](https://nginx.org/en/docs/http/ngx_http_core_module.html#listen)
+- [RFC 6298, on the initial RTO and backing off the timer](https://www.rfc-editor.org/rfc/rfc6298)`,
+  },
+  {
+    slug: "forty-minutes-dark",
+    title: "Forty Minutes Dark, And A Third Of The Office Fell Off",
+    date: "2026-09-19",
+    tags: ["networking", "operations", "troubleshooting"],
+    excerpt:
+      "A DHCP server is rebooted for forty minutes and exactly a third of a 300 machine office loses its address, while the other two hundred never notice. The number follows from two timers RFC 2131 puts in every lease, and the one that decides outage tolerance is the lease less T1, not the lease. The same two numbers decide how large a pool has to be, which is arrivals per hour times lease hours and has nothing to do with how many devices are in the room.",
+    coverImage: "/images/blog/forty-minutes-dark.jpg",
+    content: `## A third of the office, and nobody could say why
+
+The DHCP server is a small virtual machine that nobody thinks about. It gets
+patched on a Saturday morning, reboots, waits on a storage array that is
+slower than usual, and comes back forty minutes later. By Monday there is a
+helpdesk ticket saying the network went down during the patch window, and
+another one, from a different floor, saying it did not.
+
+Both are true. Of three hundred machines, almost exactly one hundred lost
+their address and two hundred never noticed. Not a random hundred either. The
+number is a third because the lease was an hour and the outage was forty
+minutes, and if the outage had been thirty minutes it would have been zero,
+and if it had been an hour it would have been all three hundred.
+
+That is worth knowing before the maintenance window rather than after, and it
+takes two numbers out of the lease to work out.
+
+## What a lease actually promises
+
+RFC 2131 gives a client three moments, all counted from the instant the server
+said yes.
+
+The lease time, option 51, is the promise: until this many seconds have
+passed, the address is yours. A client holds it whether or not the server is
+still there. This is the part everyone knows, and it is why a DHCP outage
+does not take a network down.
+
+The T1 renewal timer, option 58, is when the client starts trying to extend
+the promise. It sends a DHCPREQUEST by unicast to the server that granted the lease, and if
+the server answers, the whole clock resets: a fresh lease of the full length,
+starting now. The default is half the lease.
+
+The T2 rebinding timer, option 59, is when the client gives up on that
+particular server and broadcasts a DHCPREQUEST to any server that will listen. The default is seven
+eighths of the lease. If a second DHCP server serves the same pool, the window
+between T2 and expiry is the time it has to notice and answer.
+
+At the end of the lease the client, in the specification's words, must stop
+using the address. It goes back to INIT and starts discovering from nothing.
+
+## Why the answer is a third
+
+Put the three hundred machines on one axis and the time remaining in their
+current lease on the other.
+
+A machine that renewed a moment ago has a full hour in hand. A machine that
+is about to renew has half an hour, because T1 is thirty minutes and it
+renews there. No renewing machine ever has less than thirty minutes, and none
+ever has more than sixty. Since machines came online at whatever times people
+walked into the building, the room is spread evenly across that band.
+
+Now take the server away for forty minutes. A machine with fifty minutes in
+hand is fine. A machine with thirty-five is not: it will pass T1, get no
+answer, keep retrying, pass T2, broadcast, get no answer, and hit expiry five
+minutes before the server comes back. The ones that are lost are the ones
+holding less than forty minutes, and in a band that runs from thirty to
+sixty, that is the slice from thirty to forty. Ten minutes of a thirty minute
+band. One third.
+
+The arithmetic generalizes to one line. Call the lease \`L\` and the renewal
+timer \`T1\`. A renewing client's remaining time is uniform on the band from
+\`L - T1\` up to \`L\`, and an outage of \`D\` seconds takes the fraction
+
+\`\`\`
+(D - (L - T1)) / T1
+\`\`\`
+
+clamped to zero below and one above. With the defaults, \`T1\` is \`L/2\` and
+that collapses to \`(2D - L) / L\`: nobody until the outage passes half the
+lease, everybody when it reaches the whole lease, and a straight line in
+between. Forty minutes on an hour lease is \`(80 - 60) / 60\`, a third.
+
+## The number that matters is not the lease length
+
+Read that formula again and notice which quantity decides whether anybody is
+lost at all. It is \`L - T1\`, the gap between the renewal timer and the
+expiry. That is the shortest remaining time any renewing client can have, and
+an outage shorter than it costs nothing.
+
+With the defaults, \`L - T1\` is half the lease, so people reach for the lease
+length as the dial: double the lease, double the tolerance. It works, and it
+is the expensive way to do it, because the lease is also what the pool pays
+for every address.
+
+The cheap way is option 58. Set the lease to an hour and T1 to five minutes
+and clients renew twelve times an hour, which is nothing on the wire, and the
+guaranteed remainder becomes fifty-five minutes. The same forty minute outage
+now costs nobody. The lease did not change at all. A lease is a promise to
+the client; T1 is how often the client asks for that promise to be renewed,
+and those are separate knobs that the defaults happen to tie together.
+
+There is a limit to it. Renewals are unicast to one server, so twelve
+thousand clients renewing every five minutes is forty requests a second,
+which a modern server does not notice but an appliance from 2011 might.
+Measure before choosing five minutes for a campus.
+
+## The other half of the lease: the pool
+
+Everything above is about an outage. The far more common lease problem is a
+pool that runs out, and it has the same root: the server has no idea when a
+device leaves.
+
+A phone joins the guest network at nine in the morning, gets an address on a
+twenty-four hour lease, drinks a coffee, and leaves at nine fifteen. The
+address is unavailable until nine the next morning. There is no goodbye
+packet. DHCPRELEASE exists in the specification, and in practice almost
+nothing sends it: phones sleep, laptops close their lids, and the only device
+in most buildings that reliably releases is one somebody shut down properly.
+
+So the number of addresses in use is not the number of devices present. It is
+the arrival rate times the lease length. That is Little's law, the plainest
+result in queueing theory, doing a shift in a wiring closet: things in the
+system equal arrivals per unit time multiplied by time in the system, and the
+time in the system is the whole lease whether the device stays or not.
+
+A coffee shop with forty new devices an hour and a twenty-four hour lease
+wants 960 addresses. It has 254, if it has a /24, and 200 of them in the
+dynamic range. The pool drains at forty an hour with nothing coming back for
+a day, so it is empty five hours after opening, every day, and by mid
+afternoon new customers cannot get on. The staff's theory is that the
+Wi-Fi is weak at the back.
+
+Buying a bigger pool is the wrong fix and an expensive one: 960 addresses is
+four /24s for a room that never holds more than forty phones. Cutting the
+lease to two hours brings steady-state demand to eighty, which fits inside
+the 200 with more than half free at all times, and every address comes back
+within two hours of its device leaving. The dial is the lease, and pointing
+it at the length of an actual visit is the whole technique.
+
+## Where the two halves pull against each other
+
+Short leases recycle addresses quickly and shrink the pool you need. Short
+leases also shrink the outage you survive, because the guaranteed remainder
+is a fraction of the lease.
+
+A lab that set its lease to ten minutes for fast recycling gets an eight
+minute container restart and loses three fifths of the room: T1 is five
+minutes, the band runs from five to ten, and eight catches everything under
+eight. The same restart on a one hour lease costs nobody.
+
+Those two pressures are what option 58 exists to separate. A long lease with
+a short T1 gives fast failure detection and a long guaranteed remainder, and
+costs only renewal traffic. It does not help the pool: the pool is charged
+for the lease length, not the renewal interval, because an address is out on
+loan until the lease ends regardless of how often the borrower checks in. For
+the pool the only dial is the lease.
+
+So: guest networks get short leases because the population turns over and
+nobody minds a brief outage. Office networks get long leases with a short T1
+because the population is stable, the pool is oversized for it, and the
+server is the thing you expect to lose. They can be the same server; the
+lease is a property of the pool.
+
+## The device that came back to a different address
+
+One more consequence, because it produces the most confusing ticket of the
+three.
+
+A printer is unplugged on Friday for a desk move and plugged back in on
+Monday. It comes up with a different address, and every desktop that had its
+old address in a print queue now prints to something else, or to nothing.
+
+A DHCP server does try to give a returning client the address it had. It
+keeps the binding, it prefers it, and on a quiet network the printer would
+have got its old address back. This network is not quiet: twelve new or
+returning devices an hour on a day lease is 288 addresses wanted from a pool
+of 254, so the pool is under pressure and expired bindings get handed out
+again within hours. Three days away on a one day lease is two days expired,
+and the address went to a laptop on Saturday.
+
+The lesson is not about DHCP. It is that a lease is a promise to the client
+and to nobody else. Anything that other systems reach by IP address, rather
+than by name, needs a reservation or a static address, because those systems
+were never party to the promise.
+
+## The infinite lease is not the fix
+
+The tempting response to the printer is to set the lease time to infinite.
+RFC 2131 reserves 0xffffffff, all ones, for exactly that, and it does what it
+says: no T1, no T2, no expiry, nothing ever renews and nothing is ever
+returned.
+
+Every device that has ever appeared on that network holds its address until
+somebody deletes the binding by hand. At twelve arrivals an hour, a /24 is
+gone in about twenty-one hours and stays gone, and the thing that finally
+fails is a laptop that cannot get an address at all. The printer problem was
+that one lease expired. The infinite lease solves it by making every device a
+printer.
+
+Infinite leases belong on networks where the set of devices genuinely never
+changes, which in practice means point-to-point links and a handful of
+appliances. Everywhere else, the pair of tools is a reservation for the
+things that need a fixed address and a finite lease for everything else.
+
+## The questions, in order
+
+1. What is the lease, and what is T1? If the server does not set option 58,
+   T1 is half the lease and the guaranteed remainder is the other half.
+2. How long is the longest outage you intend to survive? If it is longer than
+   the lease less T1, size one of the two against it, and prefer T1.
+3. How many new devices arrive per hour, and how long is the lease in hours?
+   Their product is the addresses you need, and it has nothing to do with how
+   many devices are in the room.
+4. Is the pool bigger than that product? If not, the lease is too long for
+   the population, and a bigger pool is the expensive way to fix it.
+5. Does anything address this device by IP? Then it needs a reservation, and
+   a lease is not a promise to the things that talk to it.
+
+## References
+
+- [RFC 2131, Dynamic Host Configuration Protocol](https://www.rfc-editor.org/rfc/rfc2131), for the client state machine, T1 and T2 in section 4.4.5, and the infinite lease in section 3.3
+- [RFC 2132, DHCP Options and BOOTP Vendor Extensions](https://www.rfc-editor.org/rfc/rfc2132), for options 51, 58 and 59 and their encoding
+- [ISC dhcpd.conf(5)](https://kb.isc.org/docs/isc-dhcp-44-manual-pages-dhcpdconf), for default-lease-time, max-lease-time and how a server sets the renewal timers
+- [ISC dhclient.leases(5)](https://kb.isc.org/docs/isc-dhcp-44-manual-pages-dhclientleases), for the lease database a client keeps and the fields quoted above
+- [RFC 4361, Node-specific Client Identifiers for DHCPv4](https://www.rfc-editor.org/rfc/rfc4361), for what a server actually keys a binding on, which is not always the MAC address
+- [Little's law](https://www.jstor.org/stable/167570), the 1961 proof that things in the system equal arrival rate times time in the system, which is the pool calculation
+- [RFC 8415, DHCP for IPv6](https://www.rfc-editor.org/rfc/rfc8415), for the same two timers under the names T1 and T2 on identity associations, with the same defaults`,
+  },
+  {
     slug: "ten-queries-for-one-name",
     title: "Ten Queries for One Name",
     date: "2026-09-19",

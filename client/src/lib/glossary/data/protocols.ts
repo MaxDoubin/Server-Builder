@@ -98,6 +98,35 @@ export const PROTOCOLS: Term[] = [
     see: ["broadcast domain", "DHCP snooping"],
   },
   {
+    term: "T1 renewal timer",
+    expansion: "DHCP option 58",
+    field: "protocols",
+    definition:
+      "The moment inside a DHCP lease, counted from when it was granted, at which the client starts trying to extend it, by unicast to the server that issued it. A successful renewal resets the lease to its full length from that instant. RFC 2131 defaults it to half the lease, and a server can set it explicitly with option 58.",
+    confusion:
+      "It, not the lease length, decides what a DHCP outage costs. A renewing client never holds less than the lease minus T1, so that gap is the longest server outage a population survives intact. Leaving T1 at the default ties the two together and makes a longer lease look like the only dial, when moving T1 alone buys the same tolerance and costs nothing but renewal traffic.",
+    see: ["DHCP", "T2 rebinding timer", "lease"],
+  },
+  {
+    term: "T2 rebinding timer",
+    expansion: "DHCP option 59",
+    field: "protocols",
+    definition:
+      "The moment in a DHCP lease at which the client stops unicasting the server that granted it and broadcasts a request for the same address to any server that will answer. RFC 2131 defaults it to seven eighths of the lease, and option 59 sets it.",
+    confusion:
+      "The window between T2 and expiry is the only time a second DHCP server has to take over a client, and at the defaults that is one eighth of the lease. A redundant server that is slower to answer than that window is not redundancy.",
+    see: ["DHCP", "T1 renewal timer", "lease"],
+  },
+  {
+    term: "lease",
+    field: "protocols",
+    definition:
+      "A DHCP server's promise that an address belongs to a client for a stated number of seconds. The client keeps using it for that long whether or not the server is still reachable, and the server keeps the address out of the pool for that long whether or not the client is still there.",
+    confusion:
+      "Both halves of that sentence surprise people. A DHCP server going down does not take the network down, because leases outlive it. And an address pool is sized by arrivals per hour times lease hours rather than by how many devices are in the room, because nothing tells the server a device has left.",
+    see: ["DHCP", "T1 renewal timer", "T2 rebinding timer"],
+  },
+  {
     term: "DHCP snooping",
     field: "security",
     definition:
