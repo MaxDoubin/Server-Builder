@@ -15,7 +15,7 @@
   /*
     A surface that reads as recessed against the page. Four cinematic pages
     already asked for it in seven places and it was never defined, so
-    `hsl(var(--brand-void))` was an invalid colour and those backgrounds
+    `hsl(var(--brand-void))` was an invalid color and those backgrounds
     silently did not paint: the stat grids on /racks/wired and /racks/build
     showed their divider wash through transparent cells, and the rack
     builder's name field had no field. CSS drops an invalid declaration
@@ -76,7 +76,7 @@
  
   What makes the accent tractable here is the thing that made it impossible
   in the dark theme. --brand-signal does two jobs, the fill under a button
-  label and the colour of a link on the page, and in the dark theme those
+  label and the color of a link on the page, and in the dark theme those
   wanted opposite directions, which is why --primary-text exists. On a light
   ground both jobs want the same thing: dark. So one value serves both, and
   moving it darker improves both at once. It lands at 21% lightness, which
@@ -725,7 +725,7 @@ html.lenis-smooth {
     The simulator header's brand line. It was cyan-300 at 70%, which is 1.24:1
     on the light page ground: the words were there and could not be read. The
     accent is worth keeping, so it is a token with a value per surface rather
-    than one colour used on three different backgrounds. 4.91:1 here, and
+    than one color used on three different backgrounds. 4.91:1 here, and
     12.5:1 on the dark bar, where the .dark and .cinematic blocks override it.
   */
   --console-accent: 193 82% 31%;
@@ -1398,8 +1398,8 @@ html.lenis-smooth {
   /*
     Scoped to .cinematic to begin with, which left the legacy pages out. In
     the dark theme /legacy/blog printed 154 elements still painting a dark
-    background and 225 still writing light grey text, and Chrome does not
-    print background colours unless the reader turns them on, so the usual
+    background and 225 still writing light gray text, and Chrome does not
+    print background colors unless the reader turns them on, so the usual
     result was not a black page: it was hsl(210 5% 72%) text on white paper.
 
     The reset is on everything now. Nothing on this site depends on a printed
@@ -1409,7 +1409,7 @@ html.lenis-smooth {
   :root,
   body {
     /*
-      body as well as :root. The dark colour is painted on body, and the
+      body as well as :root. The dark color is painted on body, and the
       `body *` reset below covers body's descendants, not body itself, so
       the printed page kept a rgb(20, 20, 21) background. Chrome does not
       print backgrounds by default, which hid this, but a reader who ticks
@@ -1586,7 +1586,7 @@ html.lenis-smooth {
 /*
   Route text-primary to the text value in the dark theme.
 
-  Tailwind derives .text-primary and .bg-primary from one colour key, so a
+  Tailwind derives .text-primary and .bg-primary from one color key, so a
   component asking for the brand blue as text and one asking for it as a fill
   get the same value. On a near-black page those two want opposite lightnesses
   and no single value satisfies both (see the note beside --primary-text), so
@@ -1711,7 +1711,7 @@ html.lenis-smooth {
 
 /*
   A hairline of the accent across the very top, which is the one element that
-  is always in view and always the current mood's colour.
+  is always in view and always the current mood's color.
 */
 .practice-rule {
   position: fixed;
@@ -1793,7 +1793,7 @@ html.lenis-smooth {
   Choices.
 
   A left rule in the accent that lights along its whole height on hover or
-  focus. Border colour alone is too quiet against a washed background, and a
+  focus. Border color alone is too quiet against a washed background, and a
   fill is too loud next to three siblings.
 */
 .scenario-choice {
@@ -1834,8 +1834,8 @@ html.lenis-smooth {
   Each row is staggered by its depth, so the marking arrives in the order the
   kernel consults the path: root, then each directory, then the file. The
   point of the animation is the order, which is the part people get wrong.
-  Under reduced motion the rows arrive together and every colour stays,
-  because the colours are the answer and the timing is the flourish.
+  Under reduced motion the rows arrive together and every color stays,
+  because the colors are the answer and the timing is the flourish.
 */
 .permission-row[data-state="passed"],
 .permission-row[data-state="halted"] {
@@ -1868,7 +1868,7 @@ html.lenis-smooth {
 }
 
 /*
-  Reduced motion keeps every colour and drops every movement.
+  Reduced motion keeps every color and drops every movement.
 
   The mood washes are information, not decoration: they say how bad this is.
   Removing them would remove content. The sweep, the flash and the entrance
@@ -1966,7 +1966,7 @@ html.lenis-smooth {
   appearance: none;
   width: 16px;
   height: 16px;
-  /* Centre the thumb on the track: half the thumb, less half the track. */
+  /* Center the thumb on the track: half the thumb, less half the track. */
   margin-top: -5px;
   border-radius: 9999px;
   background: hsl(var(--brand-signal));

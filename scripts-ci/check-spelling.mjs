@@ -139,10 +139,21 @@ function proseOf(line, inBlockComment) {
  * files, and while this one was new and untracked it was invisible to its own
  * scan: green locally, red on CI, from a gate correctly reporting itself.
  */
+/*
+ * Stylesheets are scanned too, and were not for a long time.
+ *
+ * CI caught "recognise" in a gate's own comment and was blind to the same
+ * word two files away in index.css, along with nine more in comments that
+ * predate it. The block comment syntax is the same one proseOf already
+ * reads, so this is a line in the glob rather than a parser: the two paths
+ * are spelled separately because client/src/**\/*.css does not match a file
+ * sitting directly in client/src.
+ */
 const SELF = "scripts-ci/check-spelling.mjs";
 
 const files = execSync(
   "git ls-files 'client/src/**/*.md' 'client/src/**/*.ts' 'client/src/**/*.tsx' " +
+    "'client/src/*.css' 'client/src/**/*.css' " +
     "'scripts-ci/*.ts' 'scripts-ci/*.mjs' 'script/*.ts'",
   { encoding: "utf8" },
 ).trim().split("\n").filter(Boolean).filter((f) => f !== SELF);
