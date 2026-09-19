@@ -42,6 +42,7 @@ import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
 import { CASES as NEIGHS } from "@/lib/neigh/index";
 import { CASES as SHMS } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS } from "@/lib/maxstartups/index";
+import { CASES as RETRANS } from "@/lib/retrans/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -106,6 +107,7 @@ const OFFSET = {
   neigh: 163,
   shm: 167,
   maxstartups: 173,
+  retrans: 179,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -444,6 +446,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
       href: "/shm",
       outOf: SHMS.length,
+    });
+  }
+
+  const stuck = pickFor(RETRANS, day, OFFSET.retrans);
+  if (stuck) {
+    out.push({
+      surface: "retrans",
+      eyebrow: "Predict",
+      title: stuck.name,
+      blurb: "A peer that stopped answering, a sysctl documented as a count, and a kernel that never counts it. Work out when the socket gives up and how many attempts it got.",
+      href: "/retrans",
+      outOf: RETRANS.length,
     });
   }
 

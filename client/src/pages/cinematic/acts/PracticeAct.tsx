@@ -50,6 +50,7 @@ import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/l
 import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
 import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
+import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -184,6 +185,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/retrans",
+    eyebrow: "Predict",
+    title: "Fifteen, and there were four",
+    blurb:
+      "The manual page calls tcp_retries2 a number of retransmissions. The kernel turns it into a length of time, models that time from a constant, and never counts a retransmission at all.",
+    count: `${RETRANS_CASES.length} connections, ${RETRANS_CASES.filter((item) => !retransMatches(item.setup)).length} where the count is not the sysctl`,
   },
   {
     href: "/maxstartups",

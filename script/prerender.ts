@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as RETRANS_CASES, asSysctl as retransSysctl, asTrace as retransTrace, budgetSeconds as retransBudget, correctOption as retransCorrect, countMatchesSysctl as retransMatches, ending as retransEnding, human as retransHuman, retransmissions as retransCount } from "../client/src/lib/retrans/index";
 import { CASES as MAXSTARTUPS_CASES, asConfig as maxConfig, asLog as maxLog, certainty as maxCertainty, correctOption as maxCorrect, dropPercent as maxDrop, inFlight as maxInFlight, safeBegin as maxSafeBegin } from "../client/src/lib/maxstartups/index";
 import { CASES as SHM_CASES, asInvocation as shmInvocation, asSymptom as shmSymptom, chargedMiB as shmCharged, correctOption as shmCorrect, demandMiB as shmDemand, diesAtUnit as shmDies, failure as shmFailure, fits as shmFits, human as shmHuman, needsShmMiB as shmNeeds, shmKnob } from "../client/src/lib/shm/index";
 import { CASES as NEIGH_CASES, asCounts as neighCounts, asDmesg as neighDmesg, asSysctl as neighSysctl, canReclaim as neighCanReclaim, correctOption as neighCorrect, entries as neighEntries, headroom as neighHeadroom, overflows as neighOverflows, state as neighState, tableId as neighTableId, thresh3Needed as neighNeeded } from "../client/src/lib/neigh/index";
@@ -893,6 +894,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/neigh">Neighbor table overflow</a>, how many entries a flat segment needs and why IPv6 needs twice as many.</li>
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
+    <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -1742,7 +1744,7 @@ ${JSON.stringify({
 const nocDashContent = `
   <h1>NOC Overview</h1>
   <p>The network operations view of the datacenter simulator. It watches the
-  modelled floor the way a real NOC watches a real one: what is alarming right
+  modeled floor the way a real NOC watches a real one: what is alarming right
   now, how many of those are critical, whether the site is holding its uptime
   target, and how quickly alerts are being answered.</p>
   <h2>What it shows</h2>
@@ -1771,7 +1773,7 @@ const networkDashContent = `
     <li>Node and link counts, overall utilisation, and the number of edge
     servers.</li>
   </ul>
-  <p>The topology and the traffic are both modelled. They are shaped to behave
+  <p>The topology and the traffic are both modeled. They are shaped to behave
   plausibly, not copied from a real network.</p>
 `;
 
@@ -1788,7 +1790,7 @@ const floorDashContent = `
     <li>Zone utilisation, which is what decides where the next rack can go.</li>
     <li>Total racks, average temperature, airflow balance and active zones.</li>
   </ul>
-  <p>The thermal figures come from the simulation. They are modelled to be
+  <p>The thermal figures come from the simulation. They are modeled to be
   reasonable for the hardware drawn on the floor, not measured from it.</p>
 `;
 
@@ -1823,7 +1825,7 @@ const buildDashContent = `
     figure.</li>
   </ul>
   <p>The rack count and the power figures are the simulation's own. They
-  describe the modelled floor on this site and nothing outside it.</p>
+  describe the modeled floor on this site and nothing outside it.</p>
 `;
 
 const wiredRackContent = `
@@ -2199,6 +2201,7 @@ ${JSON.stringify({
     ["Neighbor table overflow", "/neigh"],
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
+    ["Fifteen, and there were four", "/retrans"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3971,6 +3974,109 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
 </main>`,
   });
 
+  // ── the retransmission budget ──
+  /*
+    The static body carries the budget table, because the search that brings
+    people here is a socket that hung for a quarter of an hour and what they
+    need is the number for their own tcp_retries2. The table puts the sysctl
+    beside the seconds and beside the count, which is the comparison the whole
+    surface turns on.
+  */
+  const retransDiverging = RETRANS_CASES.filter((item) => !retransMatches(item.setup)).length;
+  const retransDescription =
+    "tcp(7) calls tcp_retries2 the maximum number of times a TCP packet is retransmitted before " +
+    "giving up, default 15, and the kernel never counts a retransmission. retransmits_timed_out " +
+    "turns the number into a length of time with tcp_model_timeout and compares the elapsed clock " +
+    "against it, and it builds that model from TCP_RTO_MIN rather than from the connection's own " +
+    "retransmit timeout. The threshold is ilog2 of 120 seconds over 200 milliseconds, which is 9, " +
+    "so the default budget is 1023 times 200ms plus six intervals of two minutes: 924.6 seconds, " +
+    "the same on every Linux host whatever the path. The number of attempts that fit inside it is " +
+    `different on every path. ${RETRANS_CASES.length} connections here, ${retransDiverging} where the count that goes ` +
+    "out is not the number in the sysctl.";
+
+  await writePage("retrans", base, {
+    title: "The Connection Gave Up After Fifteen Retransmissions, and There Were Four | Max Doubin",
+    description: retransDescription,
+    canonical: `${SITE_URL}/retrans`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Fifteen, and there were four",
+  description: retransDescription,
+  url: `${SITE_URL}/retrans`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a TCP socket waits a quarter of an hour after the far end dies: that tcp_retries2 is documented as a count and implemented as a time budget, that retransmits_timed_out models that budget from TCP_RTO_MIN rather than the connection's own RTO so it is 924.6 seconds on every host, that the number of retransmissions that actually go out is one more than the sysctl on a fast path and fewer on a slow one, that the budget is exponential in the sysctl below a threshold of nine and linear at two minutes a step above it, and that TCP_USER_TIMEOUT is the only setting in the mechanism whose value is the deadline rather than an input to a model",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Fifteen, and there were four</h1>
+  <p>
+    ${RETRANS_CASES.length} connections into a hole, and one question each.
+    ${retransDiverging} of them retransmit a different number of times than the sysctl names, and
+    the one that agrees agrees by coincidence of its round trip time.
+  </p>
+  <p>
+    The manual page is plain, and wrong in a way that matters:
+    "<em>tcp_retries2</em>: The maximum number of times a TCP packet is retransmitted in
+    established state before giving up. The default value is 15, which corresponds to a duration of
+    approximately between 13 to 30 minutes, depending on the retransmission timeout."
+    The kernel does not count retransmissions. <code>retransmits_timed_out</code> converts the
+    number into a length of time and compares the elapsed wall clock against it, and the model it
+    builds runs on <code>TCP_RTO_MIN</code>, not on this connection's retransmit timeout. The
+    duration does not depend on the retransmission timeout at all: it is 924.6 seconds, everywhere.
+  </p>
+  <p>
+    Measured rather than derived, on a kernel whose <code>/proc/net/snmp</code> reports
+    <code>RtoMin 200</code> and <code>RtoMax 120000</code>: with <code>tcp_retries2</code> at 5 and
+    the peer black holed, a socket returned ETIMEDOUT after 13.25 seconds having retransmitted 6
+    segments; at 6, after 26.39 seconds having retransmitted 7. The model says 12.6 seconds and 6,
+    and 25.4 seconds and 7. One more retransmission than the sysctl names, both times.
+  </p>
+  <h2>What each connection is given</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Peer</th><th>tcp_retries2</th><th>Path RTO</th><th>TCP_USER_TIMEOUT</th><th>Budget</th><th>Retransmissions</th><th>Matches the sysctl</th><th>Ending</th></tr>
+    </thead>
+    <tbody>
+${RETRANS_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.peer)}</td><td>${s.retries2}</td><td>${esc(retransHuman(s.rtoMs))}</td>` +
+    `<td>${s.userTimeoutMs === 0 ? "unset" : esc(retransHuman(s.userTimeoutMs))}</td>` +
+    `<td>${retransBudget(s)}s</td><td>${retransCount(s)}</td>` +
+    `<td>${retransMatches(s) ? "yes" : "no"}</td><td>${esc(retransEnding(s))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${RETRANS_CASES.map((item) => {
+  const right = retransCorrect(item);
+  const s = item.setup;
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(retransSysctl(s))}
+
+${esc(retransTrace(s))}</code></pre>
+    <p>A budget of ${retransBudget(s)} seconds, ${retransCount(s)} retransmissions inside it, against the ${s.retries2} in the sysctl.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/tcp-retries2-is-not-a-count", "tcp_retries2 is not a count"], ["/keepalive", "Six minutes of silence"], ["/backlog", "Idle, and the connections time out"]])}
+</main>`,
+  });
+
   // ── the SSH startup ramp ──
   /*
     The static body carries the three numbers, the occupancy arithmetic per
@@ -5588,7 +5694,7 @@ ${ARRAY_CONFIGS.map((config) => `    <li>${esc(config.label)}: ${esc(config.note
   <h2>What it cannot compute</h2>
   <p>
     None of this is a backup. Every level protects against a disk failing and
-    against nothing else. The failure that is not modelled is correlated
+    against nothing else. The failure that is not modeled is correlated
     failure: disks bought together, run at the same temperature for the same
     years, do not fail independently, and a rebuild puts every survivor under
     sustained full read load at exactly the moment you need them to behave.
@@ -6662,7 +6768,7 @@ ${JSON.stringify({
   <p>Two openly licensed datasets, CC BY 4.0, and they are honest about different things.</p>
   <h2>Rack hardware power and thermal catalog</h2>
   <p>${catalogCount} rack-mount devices with power draw, heat output, rack units, port count and indicative cost. It is the table the datacenter simulator on this site runs on.</p>
-  <p>These are modelling figures, not vendor specifications and not measurements. powerDraw is representative for the class of hardware named. heatOutput is derived as watts multiplied by 3.412142. price is order of magnitude. Do not cite them as manufacturer data.</p>
+  <p>These are modeling figures, not vendor specifications and not measurements. powerDraw is representative for the class of hardware named. heatOutput is derived as watts multiplied by 3.412142. price is order of magnitude. Do not cite them as manufacturer data.</p>
   <ul>
     <li><a href="${SITE_URL}/data/equipment-catalog.json">equipment-catalog.json</a></li>
     <li><a href="${SITE_URL}/data/equipment-catalog.csv">equipment-catalog.csv</a></li>
@@ -7192,6 +7298,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/neigh`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

@@ -656,6 +656,12 @@ jobs:
       - name: SSH startup ramp
         run: npx tsx scripts-ci/check-maxstartups.ts
 
+      # tcp_retries2 is documented as a count and implemented as a time budget.
+      # Both halves are recomputed here, and two measurements taken on a real
+      # kernel are asserted so the model cannot drift away from one.
+      - name: TCP retransmission budget
+        run: npx tsx scripts-ci/check-retrans.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

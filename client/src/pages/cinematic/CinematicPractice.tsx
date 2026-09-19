@@ -44,6 +44,7 @@ import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/l
 import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
 import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
+import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -358,6 +359,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/retrans",
+      eyebrow: "Predict",
+      title: "Fifteen, and there were four",
+      blurb:
+        "tcp_retries2 is documented as a count of retransmissions and the kernel never counts them. It turns the number into a length of time, modeled from a constant rather than from the path.",
+      reachFor: "a socket sat there for a quarter of an hour after the far end died",
+      stats: [
+        `${RETRANS_CASES.length} connections`,
+        `${RETRANS_CASES.filter((item) => !retransMatches(item.setup)).length} where the count is not the sysctl`,
+        "924.6s",
       ],
       progress: null,
     },
