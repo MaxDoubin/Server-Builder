@@ -38,7 +38,7 @@ export interface Route {
   src?: string;
 }
 
-export interface Neighbour {
+export interface Neighbor {
   ip: string;
   dev: string;
   mac?: string;
@@ -145,7 +145,7 @@ export interface Machine {
   disks: { filesystem: string; sizeMb: number; usedMb: number; mount: string }[];
   interfaces: Interface[];
   routes: Route[];
-  neighbours: Neighbour[];
+  neighbors: Neighbor[];
   sockets: Socket[];
   processes: Process[];
   services: Service[];
@@ -198,7 +198,7 @@ export function baseMachine(overrides: Partial<Machine> = {}): Machine {
     ],
     interfaces: [],
     routes: [],
-    neighbours: [],
+    neighbors: [],
     sockets: [],
     processes: [],
     services: [],
@@ -223,7 +223,7 @@ export function cloneMachine(machine: Machine): Machine {
     disks: machine.disks.map((d) => ({ ...d })),
     interfaces: machine.interfaces.map((i) => ({ ...i })),
     routes: machine.routes.map((r) => ({ ...r })),
-    neighbours: machine.neighbours.map((n) => ({ ...n })),
+    neighbors: machine.neighbors.map((n) => ({ ...n })),
     sockets: machine.sockets.map((s) => ({ ...s })),
     processes: machine.processes.map((p) => ({ ...p })),
     services: machine.services.map((s) => ({ ...s, detail: [...s.detail] })),

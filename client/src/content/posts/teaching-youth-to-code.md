@@ -107,7 +107,7 @@ The questions that expose gaps are almost never the advanced ones. They are thin
 
 **Letting setup consume the session.** Twenty students installing anything at once will not finish together. Pre-install, pre-image, or use a browser, and have a fallback ready for the three machines that will fail anyway.
 
-**No plan for the student who finishes first.** They will get bored in ten minutes and then they will help their neighbour in the least helpful way possible, by taking the keyboard. Write two extension tasks per activity in advance and hand them out without ceremony.
+**No plan for the student who finishes first.** They will get bored in ten minutes and then they will help their neighbor in the least helpful way possible, by taking the keyboard. Write two extension tasks per activity in advance and hand them out without ceremony.
 
 **Making students copy code off a projector.** Every typo becomes a debugging session about the typo instead of the concept, and the slow typists fall a full activity behind. Give them a file that already runs and have them modify it.
 

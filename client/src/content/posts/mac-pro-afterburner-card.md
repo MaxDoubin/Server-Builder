@@ -11,7 +11,7 @@ Note the word decode. Afterburner is a decoder, full stop. It does not accelerat
 
 ## Why ProRes is expensive to decode
 
-ProRes is an intra-frame codec. Every frame is compressed on its own, with no reference to the frames around it, using a discrete cosine transform on blocks within each frame much like JPEG does. Delivery codecs such as H.264 and HEVC instead encode most frames as differences from neighbours, which is why an H.264 file is small and why seeking in one is awkward.
+ProRes is an intra-frame codec. Every frame is compressed on its own, with no reference to the frames around it, using a discrete cosine transform on blocks within each frame much like JPEG does. Delivery codecs such as H.264 and HEVC instead encode most frames as differences from neighbors, which is why an H.264 file is small and why seeking in one is awkward.
 
 Intra-frame coding is the right choice for production. You can cut on any frame, you can scrub backwards as cheaply as forwards, and dropping a frame does not poison the ones after it. The cost is bitrate. Apple's published target data rates at 1920x1080 and 29.97 fps give you roughly 45 Mb/s for 422 Proxy, 102 Mb/s for 422 LT, 147 Mb/s for 422, 220 Mb/s for 422 HQ, 330 Mb/s for 4444, and 500 Mb/s for 4444 XQ. Those scale roughly with pixel count, so 4K is about four times those figures and 8K about sixteen.
 

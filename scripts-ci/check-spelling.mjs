@@ -18,6 +18,14 @@
  * The one hard exception is Fibre Channel, which is the protocol's own name.
  * "Correcting" it makes the page wrong rather than American.
  *
+ * The second exception is narrower and worth stating precisely. The kernel
+ * spells the neighbor table's C file, its iproute2 command and its pre-2013
+ * log line the British way: net/core/neighbour.c, ip-neighbour(8) and
+ * "Neighbour table overflow.". Its current log line spells it the American
+ * way, "neighbor table overflow!", which is exactly the sort of detail a
+ * blanket rewrite would flatten and a reader greps for. So the word is on the
+ * list, and those three forms are protected by name.
+ *
  * Scanning is per line, on purpose. The sweep that introduced this gate first
  * scanned each file as a stream, and three separate things opened a string
  * literal that never closed where it looked like it should: an apostrophe in
@@ -67,6 +75,7 @@ const BRITISH = {
   judgement: "judgment", judgements: "judgments",
   whilst: "while", learnt: "learned",
   practise: "practice", practised: "practiced", practising: "practicing",
+  neighbour: "neighbor", neighbours: "neighbors", neighbouring: "neighboring",
 };
 
 /**
@@ -86,11 +95,19 @@ const MATCH = new RegExp(`\\b(${Object.keys(BRITISH).join("|")})\\b`, "gi");
  *
  * Fibre Channel is a proper noun, and the one spelling here that is correct
  * because the protocol says so rather than because a dialect does.
+ *
+ * The neighbour forms are the kernel's own: a source path, a man page name,
+ * and the log line older kernels printed, which is the string most search
+ * results for this failure still show. Quoting them accurately is the point
+ * of writing about them.
  */
 const blankProtected = (line) =>
   line
     .replace(/\$\{[^{}]*\}/g, (m) => "#".repeat(m.length))
-    .replace(/fibre channel/gi, "############# ");
+    .replace(/fibre channel/gi, "############# ")
+    .replace(/neighbour\.c/gi, (m) => "#".repeat(m.length))
+    .replace(/ip-neighbour/gi, (m) => "#".repeat(m.length))
+    .replace(/Neighbour table overflow/gi, (m) => "#".repeat(m.length));
 
 const isProse = (inner) => inner.includes(" ");
 

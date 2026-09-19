@@ -21,7 +21,7 @@ export const HISTORY_LIMIT = 50;
  * Progress at which a post counts as read.
  *
  * Not 1.0: the last stretch of an article is the closing paragraph, the
- * neighbour links and the related list, and a reader who has reached that
+ * neighbor links and the related list, and a reader who has reached that
  * point does not need to be told to come back.
  */
 export const FINISHED_AT = 0.92;

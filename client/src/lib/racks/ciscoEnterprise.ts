@@ -150,7 +150,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 1,
       vendor: "Cisco",
       model: "Catalyst 9300-24P with C9300-NM-4G uplink module",
-      role: "The overflow switch: 24 PoE+ ports in a single row, with four gigabit SFP uplinks in the module bay. Half the port count of its neighbour and the same everything else, which is how a rack grows without a forklift.",
+      role: "The overflow switch: 24 PoE+ ports in a single row, with four gigabit SFP uplinks in the module bay. Half the port count of its neighbor and the same everything else, which is how a rack grows without a forklift.",
       family: "switch",
       finish: "light",
       portTint: "#1c6f6a",

@@ -190,7 +190,7 @@ export const juniperCoreRack: RackDefinition = {
       u: 1,
       vendor: "Juniper",
       model: "QFX5220-32CD",
-      role: "The spine: 32 QSFP28-DD cages and nothing else on the face. Every leaf connects to every spine and nothing connects to a leaf's neighbour, which is what keeps the hop count flat however wide the fabric grows.",
+      role: "The spine: 32 QSFP28-DD cages and nothing else on the face. Every leaf connects to every spine and nothing connects to a leaf's neighbor, which is what keeps the hop count flat however wide the fabric grows.",
       family: "switch",
       finish: "black",
       ports: run("qsfp", 32, (n) => `et-0/0/${n - 1}`, 18, "blue"),

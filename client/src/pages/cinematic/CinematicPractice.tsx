@@ -41,6 +41,7 @@ import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/i
 import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/backlog/index";
 import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/keepalive/index";
 import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
+import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -341,6 +342,20 @@ export function CinematicPractice() {
         `${FREE_CASES.length} machines`,
         `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
         "si_mem_available",
+      ],
+      progress: null,
+    },
+    {
+      href: "/neigh",
+      eyebrow: "Count",
+      title: "Neighbor table overflow",
+      blurb:
+        "The ARP cache holds 1024 entries and an IPv6 host costs at least two, so a flat /22 with 900 dual stack machines is over the limit before anybody has done anything unusual.",
+      reachFor: "a flat segment where some machines cannot reach some others",
+      stats: [
+        `${NEIGH_CASES.length} segments`,
+        `${NEIGH_CASES.filter((item) => neighOverflows(item.setup)).length} that refuse new neighbors`,
+        "gc_thresh3",
       ],
       progress: null,
     },

@@ -118,8 +118,12 @@ const INDEX = path.join(DIST, "index.html");
  * between 0.4 and 0.7 KB. If a surface ever costs materially more than that,
  * something has leaked and the right response is to find it rather than to
  * raise this number again.
+ *
+ * 704 KB, raised from 703 by /neigh, measured at 703.7, and the rule above
+ * held for the fifth time: gc_thresh3 and ndisc_cache appear in the entry,
+ * both inside the palette terms, and no case slug does.
  */
-const BUDGET_BYTES = 703 * 1024;
+const BUDGET_BYTES = 704 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -17,7 +17,7 @@ A transceiver is a small computer in its own right. It contains the laser or the
 
 Two more you will meet. **SFP28** is the same physical cage as SFP+ running a single 25 Gbps lane, and it is the building block that QSFP28 breaks out into. **QSFP+** is the 40 Gbps generation, four lanes of 10 Gbps, which breaks out to 4x10 Gbps the same way.
 
-The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighbouring port numbers, so check the platform's documentation before buying the cable.
+The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighboring port numbers, so check the platform's documentation before buying the cable.
 
 ## Reading the part number
 

@@ -644,6 +644,9 @@ jobs:
       - name: Start rate limit surface
         run: npx tsx scripts-ci/check-startlimit.ts
 
+      - name: Neighbor table surface
+        run: npx tsx scripts-ci/check-neigh.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

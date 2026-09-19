@@ -39,6 +39,7 @@ import { CASES as LEASES } from "@/lib/leases/index";
 import { CASES as BACKLOGS } from "@/lib/backlog/index";
 import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
 import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
+import { CASES as NEIGHS } from "@/lib/neigh/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -100,6 +101,7 @@ const OFFSET = {
   backlog: 149,
   keepalive: 151,
   startlimit: 157,
+  neigh: 163,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -414,6 +416,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A unit in a crash loop and systemd's start rate limit. Work out whether it is stopped for good, restarting forever, or never restarted at all.",
       href: "/startlimit",
       outOf: STARTLIMITS.length,
+    });
+  }
+
+  const cached = pickFor(NEIGHS, day, OFFSET.neigh);
+  if (cached) {
+    out.push({
+      surface: "neigh",
+      eyebrow: "Count",
+      title: cached.name,
+      blurb: "A flat segment and the three thresholds on its neighbor table. Work out how many entries it holds and whether a new neighbor can be added at all.",
+      href: "/neigh",
+      outOf: NEIGHS.length,
     });
   }
 

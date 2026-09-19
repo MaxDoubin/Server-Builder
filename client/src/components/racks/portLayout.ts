@@ -192,7 +192,7 @@ export function layoutPorts(device: RackDevice, width: number, unitH: number, de
   const vSpace = (H - inset * 2) * (detail ? 0.62 : 0.68);
   const scale = Math.min(fieldW / denom, vSpace / maxRows / 0.95);
   // Jacks on a dense panel very nearly touch; the visible separation comes
-  // from the group gaps, not from space between neighbours.
+  // from the group gaps, not from space between neighbors.
   const gapX = scale * 0.03;
   const gapY = scale * 0.03;
   const midY = H / 2 + (detail ? unitH * 0.03 : 0);

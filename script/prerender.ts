@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as NEIGH_CASES, asCounts as neighCounts, asDmesg as neighDmesg, asSysctl as neighSysctl, canReclaim as neighCanReclaim, correctOption as neighCorrect, entries as neighEntries, headroom as neighHeadroom, overflows as neighOverflows, state as neighState, tableId as neighTableId, thresh3Needed as neighNeeded } from "../client/src/lib/neigh/index";
 import { CASES as STARTLIMIT_CASES, asJournal as startlimitJournal, asStatus as startlimitStatus, asUnit as startlimitUnit, correctOption as startlimitCorrect, cycleMs as startlimitCycle, ending as startlimitEnding, givesUpAtMs as startlimitGivesUp, human as startlimitHuman, rateLimited as startlimitStopped, safeRestartSecMs as startlimitSafe, startsBeforeFailing as startlimitStarts } from "../client/src/lib/startlimit/index";
 import { CASES as KEEPALIVE_CASES, asMiddlebox as keepaliveMiddlebox, asSs as keepaliveSs, asSysctl as keepaliveSysctl, correctOption as keepaliveCorrect, firstProbe as keepaliveFirstProbe, forgottenAt as keepaliveForgotten, noticedAt as keepaliveNoticed, outcome as keepaliveOutcome, ssTimer as keepaliveTimer, survives as keepaliveSurvives } from "../client/src/lib/keepalive/index";
 import { CASES as BACKLOG_CASES, accepted as backlogAccepted, asNstat as backlogNstat, asSs as backlogSs, asSysctl as backlogSysctl, correctOption as backlogCorrect, effectiveCap as backlogCap, fate as backlogFate, humanMs as backlogHuman, overflowed as backlogOverflowed, peakDepth as backlogPeak, queueCapacity as backlogQueueCap } from "../client/src/lib/backlog/index";
@@ -736,7 +737,7 @@ ${JSON.stringify({
   /*
     Onward links in the static HTML.
 
-    The React page renders neighbours and related posts, but a crawler that
+    The React page renders neighbors and related posts, but a crawler that
     does not execute JavaScript only ever saw a link back to the index, so
     every one of 236 posts was a dead end on the first pass. These mirror
     what the page shows.
@@ -887,6 +888,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/backlog">Idle, and the connections time out</a>, what listen() installed as the accept queue and what a full one does.</li>
     <li><a href="${SITE_URL}/keepalive">Six minutes of silence</a>, which timer forgets an idle connection first and what the next write gets.</li>
     <li><a href="${SITE_URL}/startlimit">The service gave up</a>, why systemd stopped restarting a unit and why the slower crash never stops.</li>
+    <li><a href="${SITE_URL}/neigh">Neighbor table overflow</a>, how many entries a flat segment needs and why IPv6 needs twice as many.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2190,6 +2192,7 @@ ${JSON.stringify({
     ["Idle, and the connections time out", "/backlog"],
     ["Six minutes of silence", "/keepalive"],
     ["The service gave up", "/startlimit"],
+    ["Neighbor table overflow", "/neigh"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3858,6 +3861,112 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <p>It breaks the belief ${esc(item.breaks)}.</p>
   </article>`;
 }).join("\n")}
+</main>`,
+  });
+
+  // ── the neighbor table ──
+  /*
+    The static body carries the sysctl block and the entry arithmetic per
+    segment, because the search that brings people here is the dmesg line, and
+    what they need next is the count for a segment shaped like theirs. The
+    table also makes the IPv4 and IPv6 columns sit next to each other, which
+    is the comparison the whole surface turns on.
+  */
+  const neighOverflowing = NEIGH_CASES.filter((item) => neighOverflows(item.setup)).length;
+  const neighForced = NEIGH_CASES.filter((item) => neighState(item.setup) === "forced-collection").length;
+  const neighDescription =
+    "The ARP cache is not unbounded. net/ipv4/arp.c ships gc_thresh1 at 128, gc_thresh2 at 512 " +
+    "and gc_thresh3 at 1024, and net/ipv6/ndisc.c ships exactly the same three, so a flat /22 " +
+    "with 900 dual stack hosts is over the IPv6 hard limit before anybody has done anything " +
+    "unusual, because each host costs a link local entry and a global one. Overflow also takes a " +
+    "failed garbage collection rather than a full table alone: neigh_alloc tries a forced " +
+    "collection first, and that may only take entries untouched for five seconds, so the same " +
+    "table fails after a power cut and runs fine all afternoon. " +
+    `${NEIGH_CASES.length} segments here, ${neighOverflowing} refusing new neighbors and ${neighForced} running ` +
+    "permanently in forced collection with nothing logged anywhere.";
+
+  await writePage("neigh", base, {
+    title: "Neighbor Table Overflow, on a Network With Nothing Wrong | Max Doubin",
+    description: neighDescription,
+    canonical: `${SITE_URL}/neigh`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Neighbor table overflow",
+  description: neighDescription,
+  url: `${SITE_URL}/neigh`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "What the three neighbor table thresholds actually do: gc_thresh1 as a floor below which the periodic collector never runs, gc_thresh2 as the target of a forced collection rather than a limit, and gc_thresh3 as an exact hard limit read before the allocation's own increment; why an IPv6 host costs at least two entries against a table with the same defaults as IPv4; why overflow needs both a full table and a forced collection that frees nothing, so arrival speed decides the outcome; why NUD_PERMANENT entries are exempt from the counter and do not relieve pressure; and why raising gc_thresh3 alone converts a logged failure into an unlogged cost",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Neighbor table overflow</h1>
+  <p>
+    ${NEIGH_CASES.length} segments and one neighbor table each. ${neighOverflowing} of them refuse
+    new neighbors outright, and ${neighForced} run permanently in forced collection, which costs
+    latency on every new neighbor and is logged nowhere.
+  </p>
+  <p>
+    The shipped thresholds are gc_thresh1 128, gc_thresh2 512 and gc_thresh3 1024, the same in
+    <code>net/ipv4/arp.c</code> and <code>net/ipv6/ndisc.c</code>. An IPv4 host costs one entry and
+    an IPv6 host costs at least two, a link local address and a global one, so a dual stack
+    segment reaches its IPv6 limit at about half the host count. And <code>neigh_alloc</code>
+    refuses only when the table is at gc_thresh3 <em>and</em> a forced collection frees nothing,
+    where that collection may only take entries untouched for five seconds. The count is not the
+    whole story; the age distribution is the rest of it.
+  </p>
+  <h2>What each segment holds</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Table</th><th>Hosts</th><th>Per host</th><th>Entries</th><th>gc_thresh3</th><th>Arrived</th><th>State</th><th>Needs</th></tr>
+    </thead>
+    <tbody>
+${NEIGH_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(neighTableId(s.family))}</td><td>${s.hosts}</td><td>${s.addressesPerHost}</td>` +
+    `<td>${neighEntries(s)}${s.permanent > 0 ? ` (+${s.permanent} permanent)` : ""}</td><td>${s.thresh3}</td>` +
+    `<td>${s.arrivedInABurst ? "all at once" : "gradually"}</td><td>${esc(neighState(s))}</td>` +
+    `<td>${neighNeeded(s)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${NEIGH_CASES.map((item) => {
+  const right = neighCorrect(item);
+  const s = item.setup;
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>$ sysctl -a | grep neigh.default.gc_thresh
+${esc(neighSysctl(s))}
+
+${esc(neighCounts(s))}
+
+$ dmesg | tail
+${esc(neighDmesg(s))}</code></pre>
+    <p>${neighEntries(s)} counted entries against a hard limit of ${s.thresh3}, ${neighHeadroom(s)} of headroom, ${esc(neighState(s))}.${
+      neighOverflows(s)
+        ? " A new neighbor cannot be created and the packet is dropped."
+        : neighCanReclaim(s)
+          ? " It survives its own size because a forced collection has entries old enough to take."
+          : ""
+    }</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-arp-cache-holds-a-thousand-and-twenty-four", "The ARP cache holds a thousand and twenty four"], ["/allocate", "The plan that has to grow"], ["/leases", "Forty minutes dark"]])}
 </main>`,
   });
 
@@ -6865,6 +6974,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/backlog`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/keepalive`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/startlimit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/neigh`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

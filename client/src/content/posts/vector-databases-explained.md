@@ -3,7 +3,7 @@
 
 An embedding model turns a piece of text into a fixed length list of numbers. A few hundred to a few thousand floats, always the same length for a given model. That list is a point in a high dimensional space, and the model is trained so that things with similar meaning land near each other.
 
-That is the whole trick. Once text is coordinates, "find related documents" becomes "find nearby points," which is a geometry problem with decades of prior work behind it. A vector database is a system for storing those points and answering nearest neighbour queries quickly.
+That is the whole trick. Once text is coordinates, "find related documents" becomes "find nearby points," which is a geometry problem with decades of prior work behind it. A vector database is a system for storing those points and answering nearest neighbor queries quickly.
 
 Two things worth internalizing early. The coordinates are only meaningful within one model: vectors from two different embedding models are not comparable, ever. And re embedding your corpus is the cost you pay whenever you change models, so pick deliberately.
 
@@ -39,9 +39,9 @@ At a million vectors it is still workable if you batch it. Somewhere past that, 
 
 ## Approximate indexes in plain terms
 
-Approximate nearest neighbour indexes trade a small amount of recall for a large amount of speed. Two families dominate.
+Approximate nearest neighbor indexes trade a small amount of recall for a large amount of speed. Two families dominate.
 
-HNSW builds a layered graph. Every vector is a node connected to its near neighbours, with sparse long range links in upper layers. A search starts at the top, greedily walks toward the query, drops a layer, and repeats. It is fast, gives high recall, and supports incremental inserts. The costs are memory, because you store the graph as well as the vectors, and build time.
+HNSW builds a layered graph. Every vector is a node connected to its near neighbors, with sparse long range links in upper layers. A search starts at the top, greedily walks toward the query, drops a layer, and repeats. It is fast, gives high recall, and supports incremental inserts. The costs are memory, because you store the graph as well as the vectors, and build time.
 
 IVF partitions the space into clusters, usually with k means, and stores which vectors belong to which cluster. A query finds the nearest few cluster centroids and only searches inside those. It is cheaper on memory and faster to build, but recall depends on how many clusters you probe, and vectors near a cluster boundary can be missed.
 

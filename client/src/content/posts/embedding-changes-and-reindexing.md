@@ -10,7 +10,7 @@ when the vectors are the same length.
 That means you cannot mix embeddings from two models in one index. Not "you
 should not." The distance function will happily compute a number for any two
 vectors of matching dimension, and the number will be meaningless. The system
-does not error. It just quietly returns bad neighbours, which is the worst
+does not error. It just quietly returns bad neighbors, which is the worst
 failure mode there is, because nothing alerts and quality degrades in a way
 that only shows up as users complaining that search got worse.
 

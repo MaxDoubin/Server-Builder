@@ -88,7 +88,7 @@ fast and the code is generated three seconds before a boundary, the phone is
 already in step N+1 while the server is still in step N. The code is correct
 and it does not validate.
 
-RFC 6238 handles this by letting the validator try neighbouring steps. One step
+RFC 6238 handles this by letting the validator try neighboring steps. One step
 back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 

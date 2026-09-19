@@ -55,7 +55,7 @@ pcs resource create nginx systemd:nginx   op monitor interval=30s
 pcs resource group add web-group virtual-ip nginx
 ```
 
-`IPaddr2` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbours update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to `pcs status` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
+`IPaddr2` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbors update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to `pcs status` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
 
 Three defaults cause most of the confusing behavior after a first cluster is running:
 

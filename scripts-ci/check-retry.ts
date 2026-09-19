@@ -14,7 +14,7 @@
  *
  * Then the model is checked against the rules rather than against the chains,
  * over generated inputs, with the generated corpus measured first. That
- * discipline came from finding a property test on a neighbouring surface that
+ * discipline came from finding a property test on a neighboring surface that
  * had been passing for an hour against four thousand degenerate inputs.
  */
 

@@ -131,7 +131,7 @@ The change log is the part people skip and the part that pays off most. When som
 
 **Address space collides with something you did not choose.** ISP routers commonly hand out 192.168.0.0/24 or 192.168.1.0/24, Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs route all of 10.0.0.0/8. Pick lab subnets that are unlikely to be chosen by anything else, and check before you commit, because a VPN that swallows your whole range makes remote access to the lab impossible in a way that is very hard to diagnose from a coffee shop.
 
-**Enterprise hardware is loud, hot, and hungry.** Rack servers are designed for a datacenter with cold aisles and no neighbours. Fans that are inaudible in a server room are not inaudible in a bedroom, and the power draw shows up on a bill somebody pays. Work out where the machine lives and what it costs to run before it arrives, not after.
+**Enterprise hardware is loud, hot, and hungry.** Rack servers are designed for a datacenter with cold aisles and no neighbors. Fans that are inaudible in a server room are not inaudible in a bedroom, and the power draw shows up on a bill somebody pays. Work out where the machine lives and what it costs to run before it arrives, not after.
 
 **Nothing is backed up, including the configuration.** People back up the VMs and lose the switch config, the firewall rules, and the hypervisor's network setup, which is the part that took the longest. Export configs on a schedule and keep them in version control somewhere that is not the lab.
 
