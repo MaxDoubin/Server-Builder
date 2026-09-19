@@ -21,7 +21,7 @@ ip -6 neigh show dev eth0      # everything that answered
 ```
 
 That single fact makes IPv6 easier to troubleshoot than IPv4 on a dead
-network, because you can talk to neighbours before addressing works.
+network, because you can talk to neighbors before addressing works.
 
 ## Reading the flags
 
@@ -114,11 +114,11 @@ platforms have never implemented DHCPv6 address assignment. Android is the
 well known example. A segment advertising M with A cleared leaves those
 devices with a link local address and nothing else. If you need auditable
 addressing and you also need phones to work, run SLAAC with the O flag and
-get your auditability from neighbour table logging instead.
+get your auditability from neighbor table logging instead.
 
 ## Where lab networks actually break
 
-Filtering ICMPv6 like it is ICMPv4. Neighbour Discovery, Router Discovery,
+Filtering ICMPv6 like it is ICMPv4. Neighbor Discovery, Router Discovery,
 Path MTU Discovery, and DAD all ride on ICMPv6. Blanket dropping it breaks
 the protocol, and RFC 4890 exists specifically to tell you which types you
 can safely filter.

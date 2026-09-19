@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 286 of them. Regenerate with script/generatePostIndex.ts.
+ * 287 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-arp-cache-holds-a-thousand-and-twenty-four",
+    title: "The ARP Cache Holds A Thousand And Twenty Four",
+    date: "2026-09-19",
+    tags: ["networking","linux","troubleshooting"],
+    excerpt: "gc_thresh3 is 1024 and an IPv6 host costs at least two entries, so a flat /22 with 900 dual stack machines is over the hard limit before anybody has done anything unusual. But being at the limit is not enough to fail: the kernel tries a forced collection first, and that may only take entries untouched for five seconds, so the same table breaks after a power cut and runs fine all afternoon. Static entries do not help, because NUD_PERMANENT never reaches the counter, and raising gc_thresh3 alone turns a logged failure into an unlogged cost.",
+    coverImage: "/images/blog/the-arp-cache-holds-a-thousand-and-twenty-four.jpg",
+    wordCount: 1361,
+  },
   {
     slug: "the-service-that-crashed-faster-is-the-one-that-stopped",
     title: "The Service That Crashed Faster Is The One That Stopped",
@@ -1317,7 +1326,7 @@ export const postIndex: PostMeta[] = [
     title: "What An HNSW Vector Index Actually Costs You",
     date: "2026-08-11",
     tags: ["ai","ml","storage","servers"],
-    excerpt: "Approximate nearest neighbour search feels like magic until you size the box. Here is where the memory goes, what the tuning knobs trade against each other, and when a flat scan wins.",
+    excerpt: "Approximate nearest neighbor search feels like magic until you size the box. Here is where the memory goes, what the tuning knobs trade against each other, and when a flat scan wins.",
     coverImage: "/images/blog/hnsw-index-real-costs.jpg",
     coverCredit: {"author":"blakespot","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/35448539@N00/2378337709"},
     wordCount: 901,
@@ -1609,7 +1618,7 @@ export const postIndex: PostMeta[] = [
     title: "How Vector Databases Actually Work",
     date: "2026-06-05",
     tags: ["ai","ml","storage"],
-    excerpt: "Embeddings, distance metrics, and approximate nearest neighbour indexes, explained without the hand waving. Plus the honest answer to whether you need a dedicated database.",
+    excerpt: "Embeddings, distance metrics, and approximate nearest neighbor indexes, explained without the hand waving. Plus the honest answer to whether you need a dedicated database.",
     coverImage: "/images/blog/vector-databases-explained.jpg",
     coverCredit: {"author":"Eric Fischer","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/24431382@N03/6276642489"},
     wordCount: 915,
@@ -2807,10 +2816,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 286;
+export const POST_COUNT = 287;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty six";
+export const POST_COUNT_SPELLED = "two hundred and eighty seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2819,10 +2828,10 @@ export const POST_COUNT_SPELLED = "two hundred and eighty six";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1121;
+export const CITATION_COUNT = 1125;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1280;
+export const CHECKED_URL_COUNT = 1284;

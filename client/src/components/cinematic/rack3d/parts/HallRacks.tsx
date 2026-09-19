@@ -19,7 +19,7 @@ import {
  * The rows of racks that fill the hall at the end of the scroll story.
  *
  * These used to be full `RackFrame` + per-slot `ServerChassis` trees. A
- * single chassis is ~110 meshes, so seventeen neighbours cost roughly
+ * single chassis is ~110 meshes, so seventeen neighbors cost roughly
  * 30,000 draw calls per frame and hard-stalled the scene the moment the
  * hall revealed.
  *

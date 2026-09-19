@@ -44,7 +44,7 @@ export interface Port {
    *
    * The default is VLAN 1 on essentially every switch, which is why the
    * mismatch is usually between somebody's carefully chosen native and a
-   * neighbour nobody changed.
+   * neighbor nobody changed.
    */
   nativeVlan?: number;
   /** Trunk ports: the VLANs permitted to cross. Anything else is dropped. */

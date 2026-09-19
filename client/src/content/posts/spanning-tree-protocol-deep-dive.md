@@ -31,19 +31,19 @@ Classic STP has five port states: disabled, blocking (receives BPDUs, forwards n
 
 That arithmetic is where the convergence figures come from. A port coming up goes 15 seconds in listening plus 15 in learning, so 30 seconds before it forwards. A failure that a switch learns about only by BPDU timeout adds max age first: 20 plus 15 plus 15 gives the 50 second worst case.
 
-RSTP rebuilt this around explicit port roles and a proposal/agreement handshake instead of timers. It keeps root and designated, adds alternate (a backup path to the root, the RSTP equivalent of a blocked port) and backup (a redundant link to the same segment), and collapses the states to discarding, learning, and forwarding. Because a switch negotiates directly with its neighbour rather than waiting out max age, convergence on a point-to-point link is typically under a second.
+RSTP rebuilt this around explicit port roles and a proposal/agreement handshake instead of timers. It keeps root and designated, adds alternate (a backup path to the root, the RSTP equivalent of a blocked port) and backup (a redundant link to the same segment), and collapses the states to discarding, learning, and forwarding. Because a switch negotiates directly with its neighbor rather than waiting out max age, convergence on a point-to-point link is typically under a second.
 
 ## Path cost, and the two cost tables
 
 Root port selection is by lowest cumulative path cost to the root, and cost is derived from link speed. There are two tables, and mixing them is a real source of bad topologies.
 
-The original short (16-bit) costs from 802.1D-1998: 10 Mbit is 100, 100 Mbit is 19, 1 Gbit is 4, 10 Gbit is 2. The problem is obvious at the top end, where anything faster compresses toward 1 and the protocol loses the ability to tell links apart. The long (32-bit) costs from 802.1t give plenty of resolution: 100 Mbit is 200,000, 1 Gbit is 20,000, 10 Gbit is 2,000. Both ends of a network must agree on which table is in use, because a switch computing in the short table and a neighbour computing in the long table will disagree about which path is cheaper.
+The original short (16-bit) costs from 802.1D-1998: 10 Mbit is 100, 100 Mbit is 19, 1 Gbit is 4, 10 Gbit is 2. The problem is obvious at the top end, where anything faster compresses toward 1 and the protocol loses the ability to tell links apart. The long (32-bit) costs from 802.1t give plenty of resolution: 100 Mbit is 200,000, 1 Gbit is 20,000, 10 Gbit is 2,000. Both ends of a network must agree on which table is in use, because a switch computing in the short table and a neighbor computing in the long table will disagree about which path is cheaper.
 
 If costs tie, the tiebreakers run in order: lowest sender bridge ID, then lowest sender port ID, then lowest receiving port ID.
 
 ## What a BPDU actually is
 
-Bridge Protocol Data Units go to the multicast destination MAC 01:80:C2:00:00:00 inside an 802.3 LLC frame. They carry the root bridge ID, the sender's bridge ID, the sender's cost to the root, the port ID, and the three timers. In classic STP only the root originates configuration BPDUs and other switches relay them; in RSTP every switch generates its own each hello interval, which is what lets a neighbour detect a dead link after three missed hellos instead of waiting out max age.
+Bridge Protocol Data Units go to the multicast destination MAC 01:80:C2:00:00:00 inside an 802.3 LLC frame. They carry the root bridge ID, the sender's bridge ID, the sender's cost to the root, the port ID, and the three timers. In classic STP only the root originates configuration BPDUs and other switches relay them; in RSTP every switch generates its own each hello interval, which is what lets a neighbor detect a dead link after three missed hellos instead of waiting out max age.
 
 Topology Change Notifications are a separate, smaller BPDU that travels toward the root when a port changes state. The root then flags everyone to age out their MAC tables quickly. That flush is the point, and it is also why unnecessary topology changes hurt: an emptied MAC table means unknown-unicast flooding until it refills.
 
@@ -73,7 +73,7 @@ If this bridge is the root, `bridge_id` and `root_id` are identical. Port states
 4: enp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br0 state blocking priority 32 cost 4
 ```
 
-One forwarding and one blocking on a pair of ports facing the same neighbour is exactly right: the loop is broken logically while the cable stays in place. Pull the forwarding link and the blocking port should transition to forwarding on its own. The timer files in that sysfs directory (`forward_delay`, `max_age`, `hello_time`) are in hundredths of a second, so 1500 means 15 seconds.
+One forwarding and one blocking on a pair of ports facing the same neighbor is exactly right: the loop is broken logically while the cable stays in place. Pull the forwarding link and the blocking port should transition to forwarding on its own. The timer files in that sysfs directory (`forward_delay`, `max_age`, `hello_time`) are in hundredths of a second, so 1500 means 15 seconds.
 
 ## Common STP problems
 

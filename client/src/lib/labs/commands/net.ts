@@ -53,10 +53,10 @@ export function resolve(machine: Machine, name: string): Resolved {
 function remoteFor(machine: Machine, ip: string): RemoteHost | undefined {
   const known = machine.remotes[ip];
   if (known) return known;
-  // An address on a connected subnet with a neighbour entry is reachable even
+  // An address on a connected subnet with a neighbor entry is reachable even
   // if no scenario bothered to describe it.
-  const neighbour = machine.neighbours.find((n) => n.ip === ip);
-  if (neighbour && neighbour.state !== "FAILED" && neighbour.state !== "INCOMPLETE") {
+  const neighbor = machine.neighbors.find((n) => n.ip === ip);
+  if (neighbor && neighbor.state !== "FAILED" && neighbor.state !== "INCOMPLETE") {
     return { ip, pingable: true, rtt: 0.4 };
   }
   return undefined;
@@ -72,7 +72,7 @@ function onLocalSubnet(machine: Machine, ip: string): boolean {
 
 export const ip: Command = {
   name: "ip",
-  summary: "show addresses, links, routes and neighbours",
+  summary: "show addresses, links, routes and neighbors",
   usage: [
     "ip addr            addresses on every interface",
     "ip -br addr        one line per interface",
@@ -88,7 +88,7 @@ export const ip: Command = {
 
     if (object.startsWith("a")) return brief ? briefAddr(machine) : fullAddr(machine);
     if (object.startsWith("l")) return links(machine, brief);
-    if (object.startsWith("n")) return neighbours(machine);
+    if (object.startsWith("n")) return neighbors(machine);
     if (object.startsWith("r")) {
       if (words[1] === "get" && words[2]) return routeGet(machine, words[2]);
       return routes(machine);
@@ -176,9 +176,9 @@ function routeGet(machine: Machine, target: string): Output {
   return ok([out(`${target} ${via}dev ${route.dev} src ${src} uid ${machine.uid}`), out("    cache")]);
 }
 
-function neighbours(machine: Machine): Output {
+function neighbors(machine: Machine): Output {
   return ok(
-    machine.neighbours.map((n) =>
+    machine.neighbors.map((n) =>
       out(`${n.ip} dev ${n.dev}${n.mac ? ` lladdr ${n.mac}` : ""} ${n.state}`),
     ),
   );

@@ -65,7 +65,7 @@ native VLAN, so it leaves untagged and lands wherever dist-01 keeps untagged
 frames. A frame in VLAN 30 on dist-01 is not in dist-01's native VLAN, so it
 leaves with a tag saying 30, and a tag is unambiguous.
 
-So the echo request from the file server's neighbour on dist-01 crosses
+So the echo request from the file server's neighbor on dist-01 crosses
 correctly, tagged 30, and arrives. The echo reply leaves acc-01 untagged and
 lands in VLAN 1. The request arrives and the reply does not. tcpdump on the
 target is telling the truth, the person reading it is drawing the only

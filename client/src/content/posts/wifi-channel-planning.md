@@ -31,8 +31,8 @@ at the receiver drops. Lower SNR means the link negotiates a less aggressive
 modulation, which partly cancels the gain from the extra width.
 
 There is also a practical asymmetry: the access point may support a wide
-channel, but if a neighbouring network occupies part of it, the channel is busy
-whenever that neighbour transmits. A narrow clean channel beats a wide dirty
+channel, but if a neighboring network occupies part of it, the channel is busy
+whenever that neighbor transmits. A narrow clean channel beats a wide dirty
 one nearly every time.
 
 My default is 20 MHz on 2.4 GHz, 40 MHz on 5 GHz in a dense environment and 80
@@ -83,7 +83,7 @@ sudo iw dev wlan0 survey dump | grep -A5 "in use"
 # Busy above roughly 40 percent means contention, whoever is causing it.
 ```
 
-The scan tells you who your neighbours are. The survey tells you how much of the
+The scan tells you who your neighbors are. The survey tells you how much of the
 channel is already spoken for, including energy from sources that are not Wi-Fi
 at all and therefore never show up in a scan list.
 

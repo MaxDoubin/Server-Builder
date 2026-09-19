@@ -50,6 +50,195 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "the-arp-cache-holds-a-thousand-and-twenty-four",
+    title: "The ARP Cache Holds A Thousand And Twenty Four",
+    date: "2026-09-19",
+    tags: ["networking", "linux", "troubleshooting"],
+    excerpt:
+      "gc_thresh3 is 1024 and an IPv6 host costs at least two entries, so a flat /22 with 900 dual stack machines is over the hard limit before anybody has done anything unusual. But being at the limit is not enough to fail: the kernel tries a forced collection first, and that may only take entries untouched for five seconds, so the same table breaks after a power cut and runs fine all afternoon. Static entries do not help, because NUD_PERMANENT never reaches the counter, and raising gc_thresh3 alone turns a logged failure into an unlogged cost.",
+    coverImage: "/images/blog/the-arp-cache-holds-a-thousand-and-twenty-four.jpg",
+    content: `## A segment that worked for two years, until everything rebooted at once
+
+One flat 10.20.0.0/22 on a campus floor. About 900 devices, dual stack, in
+production for two years with no complaints. A switch stack is replaced on a
+Saturday, everything reboots, and on Monday some machines cannot reach some
+other machines. Not all of them, and not the same ones twice.
+
+The switches are fine. Nothing is saturated. The thing that broke is a kernel
+table nobody sized, because almost nobody knows it has a size:
+
+\`\`\`
+$ sysctl -a | grep neigh.default.gc_thresh
+net.ipv4.neigh.default.gc_thresh1 = 128
+net.ipv4.neigh.default.gc_thresh2 = 512
+net.ipv4.neigh.default.gc_thresh3 = 1024
+net.ipv6.neigh.default.gc_thresh1 = 128
+net.ipv6.neigh.default.gc_thresh2 = 512
+net.ipv6.neigh.default.gc_thresh3 = 1024
+\`\`\`
+
+Those are the shipped defaults, in \`net/ipv4/arp.c\` and \`net/ipv6/ndisc.c\`,
+and they have not moved in a very long time. 900 hosts on IPv4 is 900 entries,
+which fits. The same 900 hosts on IPv6 is at least 1800, which does not.
+
+## Three thresholds, three different jobs
+
+The usual mental model is that \`gc_thresh3\` is the size of the table and the
+other two are warnings on the way there. That is wrong about all three.
+
+**\`gc_thresh1\` is a floor on the collector, not a floor on the table.** In
+\`neigh_periodic_work()\`:
+
+\`\`\`c
+if (atomic_read(&tbl->entries) < READ_ONCE(tbl->gc_thresh1))
+        goto out;
+\`\`\`
+
+Below 128 entries the periodic collector returns without walking anything, so
+a small segment's stale entries simply sit there. That is harmless on a small
+segment and it matters on a large one, because leaving \`gc_thresh1\` at 128
+while raising \`gc_thresh3\` to 16384 tells the collector to keep working on a
+table it can barely dent.
+
+**\`gc_thresh2\` is the target of a forced collection, not a limit.** In
+\`neigh_forced_gc()\`:
+
+\`\`\`c
+int max_clean = atomic_read(&tbl->gc_entries) -
+                READ_ONCE(tbl->gc_thresh2);
+u64 tmax = ktime_get_ns() + NSEC_PER_MSEC;
+unsigned long tref = jiffies - 5 * HZ;
+\`\`\`
+
+It tries to get back down to \`gc_thresh2\`, it has one millisecond to do it,
+and it may only take entries untouched for five seconds. Nothing about
+crossing this threshold is an error and nothing is logged, so a table that
+lives permanently above it is doing extra work on every new neighbor with no
+indication anywhere.
+
+**\`gc_thresh3\` is the hard limit, and it is exact.** In \`neigh_alloc()\`:
+
+\`\`\`c
+entries = atomic_inc_return(&tbl->gc_entries) - 1;
+gc_thresh3 = READ_ONCE(tbl->gc_thresh3);
+if (entries >= gc_thresh3 ||
+    (entries >= READ_ONCE(tbl->gc_thresh2) &&
+     time_after(now, READ_ONCE(tbl->last_flush) + 5 * HZ))) {
+        if (!neigh_forced_gc(tbl) && entries >= gc_thresh3) {
+                net_info_ratelimited("%s: neighbor table overflow!\\n",
+                                     tbl->id);
+\`\`\`
+
+\`entries\` is read before this allocation's own increment, so a table holding
+exactly 1024 refuses the 1025th.
+
+## The condition that is actually two conditions
+
+Read that inner \`if\` again, because it is the part that decides which networks
+break and which ones merely creak.
+
+Being at the hard limit is not sufficient. The kernel first calls
+\`neigh_forced_gc()\`, and only when that returns false, meaning it freed
+nothing, does the allocation fail. And a forced collection may only take
+entries that have been untouched for five seconds.
+
+So the same table with the same number of entries behaves in two completely
+different ways depending on how those entries arrived:
+
+- **Accumulated over an afternoon.** Plenty of entries are older than five
+  seconds. Every allocation past the limit evicts one to admit one, forever.
+  Nothing fails. Nothing is logged. The only symptom is that talking to a
+  machine you have not talked to recently costs an extra round trip.
+- **Arrived inside five seconds**, because the floor just came back from a
+  power cut. Nothing is old enough to reclaim, the collection frees nothing,
+  and the allocation is refused.
+
+That is why this failure follows maintenance windows, power events and
+scanners, and why the segment is fine again an hour later, and why nobody can
+reproduce it on Tuesday.
+
+## Why IPv6 costs more than twice as much
+
+A host has one IPv4 address on the segment and one entry in \`arp_cache\`.
+
+The same host has a link local address, at least one global address, and one
+entry per address in \`ndisc_cache\`. Turn on privacy extensions and it has a
+new temporary address every day, each of which is resolved and cached
+separately while it is in use. A host that is also doing Duplicate Address
+Detection and talking to a multicast group adds more.
+
+So the ratio is not one to one, and it is not reliably one to two either. It
+is one to at least two and occasionally more, against a table with identical
+defaults to the IPv4 one. The practical consequence is that a dual stack
+segment hits its IPv6 limit at roughly half the host count where it would hit
+its IPv4 limit, and since nothing about IPv6 is usually monitored, it fails
+first and silently.
+
+## Things that look like fixes and are not
+
+**Adding static entries.** Somebody adds \`ip neigh add ... nud permanent\` for
+the forty machines that matter. Those forty will always resolve, because
+\`NUD_PERMANENT\` sets \`exempt_from_gc\` and \`neigh_alloc\` jumps straight past
+the counter for them. They are invisible to every threshold, which means they
+also free nothing, and the other thousand hosts still fail intermittently.
+
+**Raising \`gc_thresh3\` alone.** The overflow messages stop, which is real
+progress, and the table now sits permanently above \`gc_thresh2\` with a forced
+collection attempted on every allocation. The failure became a cost, and the
+cost is invisible. Raise all three and keep their shape.
+
+**Sizing to the number you measured.** 1800 entries does not mean
+\`gc_thresh3\` of 1800. The moments a table is asked for more than it holds are
+exactly the unusual ones: a scan, a renumber, a broadcast storm, everything
+rebooting. Twice the steady count is the usual guidance and it is cheap, since
+an entry is a few hundred bytes and the difference between 1800 and 4096 is
+well under a megabyte.
+
+## The scanner that took itself down
+
+A vulnerability scanner on the same segment, pointed at the /22 it lives in.
+400 machines answer. The scan touches all 1022 usable addresses.
+
+An entry is created when resolution *starts*, not when it succeeds, so every
+address gets one in the INCOMPLETE state while the ARP request goes out, and
+the 622 with nothing behind them hold theirs until they are reclaimed. That is
+1022 entries in a few seconds, against a hard limit of 1024.
+
+Two entries of headroom. The scan does not quite take the host down by itself,
+and it does the moment that host also has to resolve its gateway and one other
+neighbor. The outage is on the scanner, not on anything it scanned, which is
+not where anybody looks.
+
+## What to check, in order
+
+1. \`ip -4 neigh show | wc -l\` and \`ip -6 neigh show | wc -l\`, separately.
+   They are different tables with different counters and the same limits.
+2. Count entries rather than hosts. A dual stack host is at least three
+   entries across the two tables.
+3. Compare against all three thresholds, not just the third. Above
+   \`gc_thresh2\` is a working table doing hidden work; above \`gc_thresh1\` is
+   where the collector starts existing at all.
+4. Check \`/proc/net/stat/arp_cache\` and \`/proc/net/stat/ndisc_cache\` for the
+   \`table_fulls\` column. It counts the failures that \`dmesg\` rate limited
+   away.
+5. If it only breaks after reboots and maintenance, that is the age condition,
+   not a different bug. Size for the cold start.
+6. Search \`dmesg\` for \`neighbor table overflow\`, spelled American, and prefixed
+   with the table name: \`arp_cache: neighbor table overflow!\`. Older kernels
+   printed \`Neighbour table overflow.\` with no prefix, which is the string
+   most search results still show and the reason the current one is hard to
+   find.
+
+## References
+
+- [net/core/neighbour.c](https://github.com/torvalds/linux/blob/master/net/core/neighbour.c), for neigh_alloc, neigh_forced_gc, neigh_periodic_work and the overflow message
+- [net/ipv4/arp.c](https://github.com/torvalds/linux/blob/master/net/ipv4/arp.c), where arp_tbl ships gc_thresh1 128, gc_thresh2 512 and gc_thresh3 1024
+- [net/ipv6/ndisc.c](https://github.com/torvalds/linux/blob/master/net/ipv6/ndisc.c), where nd_tbl ships exactly the same three
+- [ip-neighbour(8)](https://man7.org/linux/man-pages/man8/ip-neighbour.8.html), for the states an entry moves through and for nud permanent
+- [RFC 4861, Neighbor Discovery for IP version 6](https://www.rfc-editor.org/rfc/rfc4861), for why an IPv6 host has more than one address to resolve
+- [RFC 8981, Temporary Address Extensions for SLAAC](https://www.rfc-editor.org/rfc/rfc8981), for privacy addresses and how many of them a host holds at once`,
+  },
+  {
     slug: "the-service-that-crashed-faster-is-the-one-that-stopped",
     title: "The Service That Crashed Faster Is The One That Stopped",
     date: "2026-09-19",
@@ -6004,7 +6193,7 @@ native VLAN, so it leaves untagged and lands wherever dist-01 keeps untagged
 frames. A frame in VLAN 30 on dist-01 is not in dist-01's native VLAN, so it
 leaves with a tag saying 30, and a tag is unambiguous.
 
-So the echo request from the file server's neighbour on dist-01 crosses
+So the echo request from the file server's neighbor on dist-01 crosses
 correctly, tagged 30, and arrives. The echo reply leaves acc-01 untagged and
 lands in VLAN 1. The request arrives and the reply does not. tcpdump on the
 target is telling the truth, the person reading it is drawing the only
@@ -12785,7 +12974,7 @@ ip -6 neigh show dev eth0      # everything that answered
 \`\`\`
 
 That single fact makes IPv6 easier to troubleshoot than IPv4 on a dead
-network, because you can talk to neighbours before addressing works.
+network, because you can talk to neighbors before addressing works.
 
 ## Reading the flags
 
@@ -12878,11 +13067,11 @@ platforms have never implemented DHCPv6 address assignment. Android is the
 well known example. A segment advertising M with A cleared leaves those
 devices with a link local address and nothing else. If you need auditable
 addressing and you also need phones to work, run SLAAC with the O flag and
-get your auditability from neighbour table logging instead.
+get your auditability from neighbor table logging instead.
 
 ## Where lab networks actually break
 
-Filtering ICMPv6 like it is ICMPv4. Neighbour Discovery, Router Discovery,
+Filtering ICMPv6 like it is ICMPv4. Neighbor Discovery, Router Discovery,
 Path MTU Discovery, and DAD all ride on ICMPv6. Blanket dropping it breaks
 the protocol, and RFC 4890 exists specifically to tell you which types you
 can safely filter.
@@ -15501,7 +15690,7 @@ you build it.
       "A look under the hood of vector databases: why exact search is fine more often than people admit, and what graph and quantized indexes trade away.",
     coverImage: "/images/blog/vector-search-internals.jpg",
     content: `
-## Nearest neighbour is the whole problem
+## Nearest neighbor is the whole problem
 
 A vector database is a system for answering one question quickly: given this
 vector, which of my stored vectors are closest to it. Everything else, the
@@ -15554,8 +15743,8 @@ The dominant approach today is a navigable small world graph, usually the
 hierarchical variant known as HNSW. The idea is easier than the name.
 
 Build a graph where each vector is a node connected to some of its near
-neighbours. To search, start somewhere and greedily walk to whichever
-neighbour is closer to the query, repeating until no neighbour improves.
+neighbors. To search, start somewhere and greedily walk to whichever
+neighbor is closer to the query, repeating until no neighbor improves.
 Pure greedy walks get stuck in local minima, so two things are added: you
 keep a candidate list of several promising nodes rather than one, and you
 build multiple layers, where upper layers are sparse and let you take long
@@ -15564,7 +15753,7 @@ grained search.
 
 The knobs you actually tune:
 
-- **M**, how many neighbours each node keeps. Higher means better recall and
+- **M**, how many neighbors each node keeps. Higher means better recall and
   more memory, since the graph edges are stored alongside the vectors.
 - **efConstruction**, how hard the builder searches while inserting. Higher
   means a better graph and slower builds.
@@ -18851,7 +19040,7 @@ when the vectors are the same length.
 That means you cannot mix embeddings from two models in one index. Not "you
 should not." The distance function will happily compute a number for any two
 vectors of matching dimension, and the number will be meaningless. The system
-does not error. It just quietly returns bad neighbours, which is the worst
+does not error. It just quietly returns bad neighbors, which is the worst
 failure mode there is, because nothing alerts and quality degrades in a way
 that only shows up as users complaining that search got worse.
 
@@ -19909,8 +20098,8 @@ at the receiver drops. Lower SNR means the link negotiates a less aggressive
 modulation, which partly cancels the gain from the extra width.
 
 There is also a practical asymmetry: the access point may support a wide
-channel, but if a neighbouring network occupies part of it, the channel is busy
-whenever that neighbour transmits. A narrow clean channel beats a wide dirty
+channel, but if a neighboring network occupies part of it, the channel is busy
+whenever that neighbor transmits. A narrow clean channel beats a wide dirty
 one nearly every time.
 
 My default is 20 MHz on 2.4 GHz, 40 MHz on 5 GHz in a dense environment and 80
@@ -19961,7 +20150,7 @@ sudo iw dev wlan0 survey dump | grep -A5 "in use"
 # Busy above roughly 40 percent means contention, whoever is causing it.
 \`\`\`
 
-The scan tells you who your neighbours are. The survey tells you how much of the
+The scan tells you who your neighbors are. The survey tells you how much of the
 channel is already spoken for, including energy from sources that are not Wi-Fi
 at all and therefore never show up in a scan list.
 
@@ -21717,7 +21906,7 @@ is one of the most annoying failures to diagnose from the other end.
     date: "2026-08-11",
     tags: ["ai", "ml", "storage", "servers"],
     excerpt:
-      "Approximate nearest neighbour search feels like magic until you size the box. Here is where the memory goes, what the tuning knobs trade against each other, and when a flat scan wins.",
+      "Approximate nearest neighbor search feels like magic until you size the box. Here is where the memory goes, what the tuning knobs trade against each other, and when a flat scan wins.",
     coverImage: "/images/blog/hnsw-index-real-costs.jpg",
     coverCredit: {
       author: "blakespot",
@@ -21733,13 +21922,13 @@ the question "which stored vectors are closest to this one." Done exactly, that
 is a brute force scan: compute a distance against every vector and keep the top
 k. Exact, simple, and linear in the number of vectors.
 
-Approximate nearest neighbour indexes trade a small amount of recall for a large
+Approximate nearest neighbor indexes trade a small amount of recall for a large
 speedup. The dominant structure right now is HNSW, a hierarchical navigable
 small world graph. The idea is a layered proximity graph: each vector is a node
-connected to some number of near neighbours, upper layers are sparse and used
+connected to some number of near neighbors, upper layers are sparse and used
 for coarse navigation, and a search greedily walks downhill through the layers
 toward the query. You get logarithmic-ish behavior instead of linear, at the
-cost of sometimes missing a true nearest neighbour.
+cost of sometimes missing a true nearest neighbor.
 
 It works well. It is also not free, and the costs are not obvious from the API.
 
@@ -21750,7 +21939,7 @@ Two things consume memory: the vectors themselves and the graph on top of them.
 The vectors are straightforward. Dimension times bytes per component times
 count. A million 768 dimensional vectors at 4 byte floats is about 3 GB.
 
-The graph is the part that surprises people. Each node stores neighbour lists
+The graph is the part that surprises people. Each node stores neighbor lists
 for each layer it appears in. With a max connections parameter of M, the base
 layer typically allows up to 2M links and upper layers M, and each link is an
 integer id. That is real memory, often 20 to 50 percent on top of the raw
@@ -22283,7 +22472,7 @@ the bottleneck.
 
 And I measure before and after with the same tool, on the same path, at the same
 time of day. Congestion control interacts with everything else on the network,
-so a change that helps one flow can hurt a neighbour. If you cannot measure the
+so a change that helps one flow can hurt a neighbor. If you cannot measure the
 difference, you did not need to make the change.
 
 The deeper habit here is reading the assumptions rather than the recommendation.
@@ -25378,7 +25567,7 @@ When something works small and fails big: confirm the interface MTU on both endp
     date: "2026-06-05",
     tags: ["ai", "ml", "storage"],
     excerpt:
-      "Embeddings, distance metrics, and approximate nearest neighbour indexes, explained without the hand waving. Plus the honest answer to whether you need a dedicated database.",
+      "Embeddings, distance metrics, and approximate nearest neighbor indexes, explained without the hand waving. Plus the honest answer to whether you need a dedicated database.",
     coverImage: "/images/blog/vector-databases-explained.jpg",
     coverCredit: {
       author: "Eric Fischer",
@@ -25391,7 +25580,7 @@ When something works small and fails big: confirm the interface MTU on both endp
 
 An embedding model turns a piece of text into a fixed length list of numbers. A few hundred to a few thousand floats, always the same length for a given model. That list is a point in a high dimensional space, and the model is trained so that things with similar meaning land near each other.
 
-That is the whole trick. Once text is coordinates, "find related documents" becomes "find nearby points," which is a geometry problem with decades of prior work behind it. A vector database is a system for storing those points and answering nearest neighbour queries quickly.
+That is the whole trick. Once text is coordinates, "find related documents" becomes "find nearby points," which is a geometry problem with decades of prior work behind it. A vector database is a system for storing those points and answering nearest neighbor queries quickly.
 
 Two things worth internalizing early. The coordinates are only meaningful within one model: vectors from two different embedding models are not comparable, ever. And re embedding your corpus is the cost you pay whenever you change models, so pick deliberately.
 
@@ -25427,9 +25616,9 @@ At a million vectors it is still workable if you batch it. Somewhere past that, 
 
 ## Approximate indexes in plain terms
 
-Approximate nearest neighbour indexes trade a small amount of recall for a large amount of speed. Two families dominate.
+Approximate nearest neighbor indexes trade a small amount of recall for a large amount of speed. Two families dominate.
 
-HNSW builds a layered graph. Every vector is a node connected to its near neighbours, with sparse long range links in upper layers. A search starts at the top, greedily walks toward the query, drops a layer, and repeats. It is fast, gives high recall, and supports incremental inserts. The costs are memory, because you store the graph as well as the vectors, and build time.
+HNSW builds a layered graph. Every vector is a node connected to its near neighbors, with sparse long range links in upper layers. A search starts at the top, greedily walks toward the query, drops a layer, and repeats. It is fast, gives high recall, and supports incremental inserts. The costs are memory, because you store the graph as well as the vectors, and build time.
 
 IVF partitions the space into clusters, usually with k means, and stores which vectors belong to which cluster. A query finds the nearest few cluster centroids and only searches inside those. It is cheaper on memory and faster to build, but recall depends on how many clusters you probe, and vectors near a cluster boundary can be missed.
 
@@ -26862,7 +27051,7 @@ The change log is the part people skip and the part that pays off most. When som
 
 **Address space collides with something you did not choose.** ISP routers commonly hand out 192.168.0.0/24 or 192.168.1.0/24, Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs route all of 10.0.0.0/8. Pick lab subnets that are unlikely to be chosen by anything else, and check before you commit, because a VPN that swallows your whole range makes remote access to the lab impossible in a way that is very hard to diagnose from a coffee shop.
 
-**Enterprise hardware is loud, hot, and hungry.** Rack servers are designed for a datacenter with cold aisles and no neighbours. Fans that are inaudible in a server room are not inaudible in a bedroom, and the power draw shows up on a bill somebody pays. Work out where the machine lives and what it costs to run before it arrives, not after.
+**Enterprise hardware is loud, hot, and hungry.** Rack servers are designed for a datacenter with cold aisles and no neighbors. Fans that are inaudible in a server room are not inaudible in a bedroom, and the power draw shows up on a bill somebody pays. Work out where the machine lives and what it costs to run before it arrives, not after.
 
 **Nothing is backed up, including the configuration.** People back up the VMs and lose the switch config, the firewall rules, and the hypervisor's network setup, which is the part that took the longest. Export configs on a schedule and keep them in version control somewhere that is not the lab.
 
@@ -29732,7 +29921,7 @@ A transceiver is a small computer in its own right. It contains the laser or the
 
 Two more you will meet. **SFP28** is the same physical cage as SFP+ running a single 25 Gbps lane, and it is the building block that QSFP28 breaks out into. **QSFP+** is the 40 Gbps generation, four lanes of 10 Gbps, which breaks out to 4x10 Gbps the same way.
 
-The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighbouring port numbers, so check the platform's documentation before buying the cable.
+The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighboring port numbers, so check the platform's documentation before buying the cable.
 
 ## Reading the part number
 
@@ -30355,7 +30544,7 @@ A loop is catastrophic rather than merely inefficient because Ethernet frames ha
 
 Root bridge election uses the bridge ID: a 4-bit priority field, a 12-bit VLAN identifier, then the switch's MAC address. The default priority is 32768 everywhere and is only configurable in multiples of 4096, so when every switch shares the default the tiebreaker becomes the lowest MAC address, which usually means the oldest switch in the building wins. That is how a wiring-closet access switch ends up as root for a network whose core is two floors away. Set \`spanning-tree vlan 1-4094 root primary\` on your core and \`root secondary\` on the backup, on day one.
 
-The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbour waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardized as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbour instead of waiting on timers. If you find a switch running plain PVST+, \`spanning-tree mode rapid-pvst\` is one of the highest-value single lines in the config.
+The timers explain why classic STP feels so slow. Hello is 2 seconds, forward delay 15, and max age 20. A port coming up walks through listening and learning at 15 seconds each before forwarding, and a port reacting to a lost neighbor waits out max age first, so worst-case convergence is around 50 seconds. Rapid STP, standardized as 802.1w and now folded into 802.1D, cuts that to a couple of seconds on point-to-point links by negotiating with its neighbor instead of waiting on timers. If you find a switch running plain PVST+, \`spanning-tree mode rapid-pvst\` is one of the highest-value single lines in the config.
 
 Path cost is the other half. In the default short mode the costs are 100 for 10 Mbps, 19 for 100 Mbps, 4 for 1 Gbps, and 2 for 10 Gbps. Notice how little separates 1 G from 10 G, and that anything faster has nowhere left to go. With 25 G or 40 G links, turn on \`spanning-tree pathcost method long\` so the 32-bit values apply and faster links actually win.
 
@@ -30854,7 +31043,7 @@ ip route get 10.0.30.15
 
 **Overlapping subnets.** The most common subnetting mistake I see. If two [VLANs](/blog/vlan-segmentation-guide) have overlapping address ranges, routing breaks in confusing ways. Always plan your subnet layout on paper before configuring anything, and make sure every subnet uses a non-overlapping range. The overlaps that catch people are the ones they did not choose: Docker's default bridge sits on 172.17.0.0/16, and plenty of corporate VPNs hand out 10.x space. If your lab uses 10.0.x, a VPN route for 10.0.0.0/8 will swallow your whole network the moment you connect.
 
-**Forgetting the gateway.** Every subnet needs a gateway address (usually .1) configured on the router or L3 switch for inter-subnet traffic to work. A host with a correct address and no reachable gateway can talk to its neighbours perfectly and nothing else, which reads like a firewall problem and is not.
+**Forgetting the gateway.** Every subnet needs a gateway address (usually .1) configured on the router or L3 switch for inter-subnet traffic to work. A host with a correct address and no reachable gateway can talk to its neighbors perfectly and nothing else, which reads like a firewall problem and is not.
 
 **Mask mismatch between hosts on the same wire.** Host A is 10.0.20.5/24 and host B is 10.0.20.200/25. B thinks A is off-subnet and sends to the gateway, A thinks B is local and sends directly. Traffic works in one direction and fails in the other, or works until a router stops proxying. Always check the prefix on both ends, not just the addresses.
 
@@ -31926,7 +32115,7 @@ Note the word decode. Afterburner is a decoder, full stop. It does not accelerat
 
 ## Why ProRes is expensive to decode
 
-ProRes is an intra-frame codec. Every frame is compressed on its own, with no reference to the frames around it, using a discrete cosine transform on blocks within each frame much like JPEG does. Delivery codecs such as H.264 and HEVC instead encode most frames as differences from neighbours, which is why an H.264 file is small and why seeking in one is awkward.
+ProRes is an intra-frame codec. Every frame is compressed on its own, with no reference to the frames around it, using a discrete cosine transform on blocks within each frame much like JPEG does. Delivery codecs such as H.264 and HEVC instead encode most frames as differences from neighbors, which is why an H.264 file is small and why seeking in one is awkward.
 
 Intra-frame coding is the right choice for production. You can cut on any frame, you can scrub backwards as cheaply as forwards, and dropping a frame does not poison the ones after it. The cost is bitrate. Apple's published target data rates at 1920x1080 and 29.97 fps give you roughly 45 Mb/s for 422 Proxy, 102 Mb/s for 422 LT, 147 Mb/s for 422, 220 Mb/s for 422 HQ, 330 Mb/s for 4444, and 500 Mb/s for 4444 XQ. Those scale roughly with pixel count, so 4K is about four times those figures and 8K about sixteen.
 
@@ -33658,7 +33847,7 @@ The second iBGP trap is the next hop. A route learned over eBGP keeps the extern
 
 Those attributes are consulted in a fixed order, and knowing that order is the difference between predicting what BGP will do and guessing. On Cisco the sequence is: highest weight (a Cisco-only local value, default 32768 for routes you originate), then highest local preference (default 100), then locally originated routes, then shortest AS path, then lowest origin type, then lowest MED, then eBGP over iBGP, then lowest IGP metric to the next hop, and finally tiebreakers on age, router ID, and peer address. Notice that AS path is fourth. Local preference beats it every time, which is exactly why local preference is the knob you use to steer outbound traffic.
 
-Steering inbound traffic is much harder, and this is the honest limitation nobody mentions up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbour that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times so the path looks longer to everyone else running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look worse and hope.
+Steering inbound traffic is much harder, and this is the honest limitation nobody mentions up front. Local preference never leaves your AS. MED is a hint to a directly connected neighbor that many providers ignore outright. The blunt tool that works is AS path prepending, adding your own ASN two or three times so the path looks longer to everyone else running the algorithm above. You cannot make the internet send traffic where you want it. You can only make one path look worse and hope.
 
 One more attribute matters in practice. **Communities** (RFC 1997) are 32-bit tags, conventionally written as \`ASN:value\`, that carry no meaning of their own; providers publish a list of communities you can tag your announcements with to request behaviors like "do not export to peers" or "prepend twice in Europe". RFC 8092 added large communities so that 32-bit ASNs fit.
 
@@ -34356,19 +34545,19 @@ Classic STP has five port states: disabled, blocking (receives BPDUs, forwards n
 
 That arithmetic is where the convergence figures come from. A port coming up goes 15 seconds in listening plus 15 in learning, so 30 seconds before it forwards. A failure that a switch learns about only by BPDU timeout adds max age first: 20 plus 15 plus 15 gives the 50 second worst case.
 
-RSTP rebuilt this around explicit port roles and a proposal/agreement handshake instead of timers. It keeps root and designated, adds alternate (a backup path to the root, the RSTP equivalent of a blocked port) and backup (a redundant link to the same segment), and collapses the states to discarding, learning, and forwarding. Because a switch negotiates directly with its neighbour rather than waiting out max age, convergence on a point-to-point link is typically under a second.
+RSTP rebuilt this around explicit port roles and a proposal/agreement handshake instead of timers. It keeps root and designated, adds alternate (a backup path to the root, the RSTP equivalent of a blocked port) and backup (a redundant link to the same segment), and collapses the states to discarding, learning, and forwarding. Because a switch negotiates directly with its neighbor rather than waiting out max age, convergence on a point-to-point link is typically under a second.
 
 ## Path cost, and the two cost tables
 
 Root port selection is by lowest cumulative path cost to the root, and cost is derived from link speed. There are two tables, and mixing them is a real source of bad topologies.
 
-The original short (16-bit) costs from 802.1D-1998: 10 Mbit is 100, 100 Mbit is 19, 1 Gbit is 4, 10 Gbit is 2. The problem is obvious at the top end, where anything faster compresses toward 1 and the protocol loses the ability to tell links apart. The long (32-bit) costs from 802.1t give plenty of resolution: 100 Mbit is 200,000, 1 Gbit is 20,000, 10 Gbit is 2,000. Both ends of a network must agree on which table is in use, because a switch computing in the short table and a neighbour computing in the long table will disagree about which path is cheaper.
+The original short (16-bit) costs from 802.1D-1998: 10 Mbit is 100, 100 Mbit is 19, 1 Gbit is 4, 10 Gbit is 2. The problem is obvious at the top end, where anything faster compresses toward 1 and the protocol loses the ability to tell links apart. The long (32-bit) costs from 802.1t give plenty of resolution: 100 Mbit is 200,000, 1 Gbit is 20,000, 10 Gbit is 2,000. Both ends of a network must agree on which table is in use, because a switch computing in the short table and a neighbor computing in the long table will disagree about which path is cheaper.
 
 If costs tie, the tiebreakers run in order: lowest sender bridge ID, then lowest sender port ID, then lowest receiving port ID.
 
 ## What a BPDU actually is
 
-Bridge Protocol Data Units go to the multicast destination MAC 01:80:C2:00:00:00 inside an 802.3 LLC frame. They carry the root bridge ID, the sender's bridge ID, the sender's cost to the root, the port ID, and the three timers. In classic STP only the root originates configuration BPDUs and other switches relay them; in RSTP every switch generates its own each hello interval, which is what lets a neighbour detect a dead link after three missed hellos instead of waiting out max age.
+Bridge Protocol Data Units go to the multicast destination MAC 01:80:C2:00:00:00 inside an 802.3 LLC frame. They carry the root bridge ID, the sender's bridge ID, the sender's cost to the root, the port ID, and the three timers. In classic STP only the root originates configuration BPDUs and other switches relay them; in RSTP every switch generates its own each hello interval, which is what lets a neighbor detect a dead link after three missed hellos instead of waiting out max age.
 
 Topology Change Notifications are a separate, smaller BPDU that travels toward the root when a port changes state. The root then flags everyone to age out their MAC tables quickly. That flush is the point, and it is also why unnecessary topology changes hurt: an emptied MAC table means unknown-unicast flooding until it refills.
 
@@ -34398,7 +34587,7 @@ If this bridge is the root, \`bridge_id\` and \`root_id\` are identical. Port st
 4: enp3s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br0 state blocking priority 32 cost 4
 \`\`\`
 
-One forwarding and one blocking on a pair of ports facing the same neighbour is exactly right: the loop is broken logically while the cable stays in place. Pull the forwarding link and the blocking port should transition to forwarding on its own. The timer files in that sysfs directory (\`forward_delay\`, \`max_age\`, \`hello_time\`) are in hundredths of a second, so 1500 means 15 seconds.
+One forwarding and one blocking on a pair of ports facing the same neighbor is exactly right: the loop is broken logically while the cable stays in place. Pull the forwarding link and the blocking port should transition to forwarding on its own. The timer files in that sysfs directory (\`forward_delay\`, \`max_age\`, \`hello_time\`) are in hundredths of a second, so 1500 means 15 seconds.
 
 ## Common STP problems
 
@@ -34834,7 +35023,7 @@ show log               # System log
 
 Remember that all of those counters are cumulative since boot or since the last \`clear counters\`. A device with 400 CRC errors and 300 days of uptime is fine. Run \`clear counters\`, wait five minutes, and look again if you want to know whether the problem is happening now.
 
-\`show cdp neighbors\` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run \`no cdp enable\` on ports facing users or untrusted networks. LLDP, standardized as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type \`lldp run\`.
+\`show cdp neighbors\` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbor that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run \`no cdp enable\` on ports facing users or untrusted networks. LLDP, standardized as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type \`lldp run\`.
 
 The output filters are the other half of the help system. \`show run | include ip address\` greps, \`show run | section interface\` prints whole configuration blocks, and \`show run | begin router bgp\` starts output at the first match. \`terminal length 0\` turns off the \`--More--\` paging so you can capture a full config into a terminal log.
 
@@ -34866,7 +35055,7 @@ interface GigabitEthernet1/0/24
   switchport trunk allowed vlan 100,200,300
 \`\`\`
 
-The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range [VLANs](/blog/vlan-segmentation-guide), so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
+The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range [VLANs](/blog/vlan-segmentation-guide), so a VLAN 2000 created on one switch will not appear on its VTP neighbors. VLAN 1 exists by default and cannot be deleted.
 
 The 802.1Q tag adds four bytes to the frame, taking the maximum from 1518 to 1522. Any device in the path that does not accept these baby giants drops full-size tagged frames while small ones pass, producing the maddening symptom where ping works and file transfers hang.
 
@@ -36127,7 +36316,7 @@ pcs resource create nginx systemd:nginx   op monitor interval=30s
 pcs resource group add web-group virtual-ip nginx
 \`\`\`
 
-\`IPaddr2\` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbours update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to \`pcs status\` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
+\`IPaddr2\` does more than assign an address. After it brings the IP up on the new node it sends gratuitous ARP so switches and neighbors update their ARP caches to the new MAC. RFC 5227 covers the address conflict detection and announcement mechanics this relies on. When a failover "works" according to \`pcs status\` but clients keep hitting the dead node, you are almost always looking at a stale ARP entry or a switch that filtered the gratuitous ARP.
 
 Three defaults cause most of the confusing behavior after a first cluster is running:
 
@@ -39848,7 +40037,7 @@ The questions that expose gaps are almost never the advanced ones. They are thin
 
 **Letting setup consume the session.** Twenty students installing anything at once will not finish together. Pre-install, pre-image, or use a browser, and have a fallback ready for the three machines that will fail anyway.
 
-**No plan for the student who finishes first.** They will get bored in ten minutes and then they will help their neighbour in the least helpful way possible, by taking the keyboard. Write two extension tasks per activity in advance and hand them out without ceremony.
+**No plan for the student who finishes first.** They will get bored in ten minutes and then they will help their neighbor in the least helpful way possible, by taking the keyboard. Write two extension tasks per activity in advance and hand them out without ceremony.
 
 **Making students copy code off a projector.** Every typo becomes a debugging session about the typo instead of the concept, and the slow typists fall a full activity behind. Give them a file that already runs and have them modify it.
 
@@ -40170,7 +40359,7 @@ fast and the code is generated three seconds before a boundary, the phone is
 already in step N+1 while the server is still in step N. The code is correct
 and it does not validate.
 
-RFC 6238 handles this by letting the validator try neighbouring steps. One step
+RFC 6238 handles this by letting the validator try neighboring steps. One step
 back is the common setting, which accepts anything within roughly thirty to
 sixty seconds of the truth. You can see the effect directly:
 

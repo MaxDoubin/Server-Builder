@@ -112,7 +112,7 @@ the bottleneck.
 
 And I measure before and after with the same tool, on the same path, at the same
 time of day. Congestion control interacts with everything else on the network,
-so a change that helps one flow can hurt a neighbour. If you cannot measure the
+so a change that helps one flow can hurt a neighbor. If you cannot measure the
 difference, you did not need to make the change.
 
 The deeper habit here is reading the assumptions rather than the recommendation.

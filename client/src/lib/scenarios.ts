@@ -276,9 +276,9 @@ export const SCENARIOS: Scenario[] = [
     id: "hot-rack",
     title: "Hot rack in the middle of the row",
     discipline: "thermal",
-    summary: "One cabinet runs far above its neighbours. Find it and fix it.",
+    summary: "One cabinet runs far above its neighbors. Find it and fix it.",
     briefing:
-      "A capacity install went into whichever cabinets had space rather than into the cabinets that had airflow. The floor average looks fine and the plant is nowhere near its limit, but at least one rack is rejecting more heat than contained aisle airflow will carry away from it, and its neighbours are breathing that exhaust.",
+      "A capacity install went into whichever cabinets had space rather than into the cabinets that had airflow. The floor average looks fine and the plant is nowhere near its limit, but at least one rack is rejecting more heat than contained aisle airflow will carry away from it, and its neighbors are breathing that exhaust.",
     startingCondition:
       "A 60 rack floor with plenty of plant capacity and a handful of cabinets above 20 kW.",
     setup: { rackCount: 60 },

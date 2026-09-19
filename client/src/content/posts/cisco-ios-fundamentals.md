@@ -55,7 +55,7 @@ show log               # System log
 
 Remember that all of those counters are cumulative since boot or since the last `clear counters`. A device with 400 CRC errors and 300 days of uptime is fine. Run `clear counters`, wait five minutes, and look again if you want to know whether the problem is happening now.
 
-`show cdp neighbors` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbour that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run `no cdp enable` on ports facing users or untrusted networks. LLDP, standardized as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type `lldp run`.
+`show cdp neighbors` uses Cisco Discovery Protocol, which advertises every 60 seconds with a 180 second hold time, so a neighbor that just went away lingers for up to three minutes. CDP is Cisco proprietary and layer 2, meaning it does not cross a router, and it broadcasts your device model, IOS version, and the port you are plugged into to anything on the wire. Run `no cdp enable` on ports facing users or untrusted networks. LLDP, standardized as IEEE 802.1AB, does the same job across vendors and is off by default on IOS until you type `lldp run`.
 
 The output filters are the other half of the help system. `show run | include ip address` greps, `show run | section interface` prints whole configuration blocks, and `show run | begin router bgp` starts output at the first match. `terminal length 0` turns off the `--More--` paging so you can capture a full config into a terminal log.
 
@@ -87,7 +87,7 @@ interface GigabitEthernet1/0/24
   switchport trunk allowed vlan 100,200,300
 ```
 
-The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range [VLANs](/blog/vlan-segmentation-guide), so a VLAN 2000 created on one switch will not appear on its VTP neighbours. VLAN 1 exists by default and cannot be deleted.
+The VLAN ID field in an 802.1Q tag is 12 bits, giving 0 through 4095, with 0 and 4095 reserved, so the usable range is 1 to 4094. Cisco splits that into the normal range 1 to 1005, of which 1002 to 1005 are reserved for legacy Token Ring and FDDI, and the extended range 1006 to 4094. VTP versions 1 and 2 cannot propagate extended-range [VLANs](/blog/vlan-segmentation-guide), so a VLAN 2000 created on one switch will not appear on its VTP neighbors. VLAN 1 exists by default and cannot be deleted.
 
 The 802.1Q tag adds four bytes to the frame, taking the maximum from 1518 to 1522. Any device in the path that does not accept these baby giants drops full-size tagged frames while small ones pass, producing the maddening symptom where ping works and file transfers hang.
 

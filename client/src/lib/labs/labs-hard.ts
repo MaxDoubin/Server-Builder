@@ -139,7 +139,7 @@ const mtu = (): Machine =>
       { destination: "172.31.0.0/30", dev: "wg0", proto: "kernel", src: "172.31.0.2" },
       { destination: "10.200.0.0/16", via: "172.31.0.1", dev: "wg0", proto: "static" },
     ],
-    neighbours: [
+    neighbors: [
       { ip: "10.90.1.1", dev: "ens3", mac: "52:54:00:aa:11:01", state: "REACHABLE" },
       { ip: "172.31.0.1", dev: "wg0", state: "REACHABLE" },
     ],

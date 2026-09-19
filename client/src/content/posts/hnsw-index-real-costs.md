@@ -6,13 +6,13 @@ the question "which stored vectors are closest to this one." Done exactly, that
 is a brute force scan: compute a distance against every vector and keep the top
 k. Exact, simple, and linear in the number of vectors.
 
-Approximate nearest neighbour indexes trade a small amount of recall for a large
+Approximate nearest neighbor indexes trade a small amount of recall for a large
 speedup. The dominant structure right now is HNSW, a hierarchical navigable
 small world graph. The idea is a layered proximity graph: each vector is a node
-connected to some number of near neighbours, upper layers are sparse and used
+connected to some number of near neighbors, upper layers are sparse and used
 for coarse navigation, and a search greedily walks downhill through the layers
 toward the query. You get logarithmic-ish behavior instead of linear, at the
-cost of sometimes missing a true nearest neighbour.
+cost of sometimes missing a true nearest neighbor.
 
 It works well. It is also not free, and the costs are not obvious from the API.
 
@@ -23,7 +23,7 @@ Two things consume memory: the vectors themselves and the graph on top of them.
 The vectors are straightforward. Dimension times bytes per component times
 count. A million 768 dimensional vectors at 4 byte floats is about 3 GB.
 
-The graph is the part that surprises people. Each node stores neighbour lists
+The graph is the part that surprises people. Each node stores neighbor lists
 for each layer it appears in. With a max connections parameter of M, the base
 layer typically allows up to 2M links and upper layers M, and each link is an
 integer id. That is real memory, often 20 to 50 percent on top of the raw

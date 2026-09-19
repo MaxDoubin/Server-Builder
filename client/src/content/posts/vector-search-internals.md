@@ -1,5 +1,5 @@
 
-## Nearest neighbour is the whole problem
+## Nearest neighbor is the whole problem
 
 A vector database is a system for answering one question quickly: given this
 vector, which of my stored vectors are closest to it. Everything else, the
@@ -52,8 +52,8 @@ The dominant approach today is a navigable small world graph, usually the
 hierarchical variant known as HNSW. The idea is easier than the name.
 
 Build a graph where each vector is a node connected to some of its near
-neighbours. To search, start somewhere and greedily walk to whichever
-neighbour is closer to the query, repeating until no neighbour improves.
+neighbors. To search, start somewhere and greedily walk to whichever
+neighbor is closer to the query, repeating until no neighbor improves.
 Pure greedy walks get stuck in local minima, so two things are added: you
 keep a candidate list of several promising nodes rather than one, and you
 build multiple layers, where upper layers are sparse and let you take long
@@ -62,7 +62,7 @@ grained search.
 
 The knobs you actually tune:
 
-- **M**, how many neighbours each node keeps. Higher means better recall and
+- **M**, how many neighbors each node keeps. Higher means better recall and
   more memory, since the graph edges are stored alongside the vectors.
 - **efConstruction**, how hard the builder searches while inserting. Higher
   means a better graph and slower builds.

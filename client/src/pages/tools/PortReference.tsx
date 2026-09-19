@@ -231,7 +231,7 @@ const PORTS: PortEntry[] = [
     proto: "TCP",
     service: "BGP",
     description: "The routing protocol that holds the internet together.",
-    note: "Peer with explicit neighbours only, authenticate the session, and filter prefixes both ways.",
+    note: "Peer with explicit neighbors only, authenticate the session, and filter prefixes both ways.",
   },
   {
     port: 194,

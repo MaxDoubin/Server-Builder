@@ -96,6 +96,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/backlog": { load: () => import("@/pages/cinematic/CinematicBacklog") },
   "/keepalive": { load: () => import("@/pages/cinematic/CinematicKeepalive") },
   "/startlimit": { load: () => import("@/pages/cinematic/CinematicStartlimit") },
+  "/neigh": { load: () => import("@/pages/cinematic/CinematicNeigh") },
   "/cache": { load: () => import("@/pages/cinematic/CinematicCache") },
   "/route": { load: () => import("@/pages/cinematic/CinematicRoute") },
   "/restore": { load: () => import("@/pages/cinematic/CinematicRestore") },

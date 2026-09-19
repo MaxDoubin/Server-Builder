@@ -68,7 +68,7 @@ export function CinematicBlogPost() {
    *
    * A post used to end with a single "all field notes" link, so every one
    * of 247 pages was a dead end: nothing to read next, and nothing linking
-   * posts to each other for a crawler to follow. Neighbours come from the
+   * posts to each other for a crawler to follow. Neighbors come from the
    * date ordering; what to read next is scored in `relatedPosts`, which
    * explains at length why shared tags alone were not enough.
    */
@@ -580,7 +580,7 @@ export function CinematicBlogPost() {
                 <nav
                   aria-label="Adjacent posts"
                   className="mt-10 grid gap-4 sm:grid-cols-2"
-                  data-testid="post-neighbours"
+                  data-testid="post-neighbors"
                 >
                   {prev ? (
                     <PostPreviewLink

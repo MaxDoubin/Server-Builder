@@ -214,7 +214,7 @@ export function CinematicRackBuilder() {
   /**
    * Move a device by one unit, if the unit it would move into is free.
    *
-   * Nudging by one rather than swapping with the neighbour, because a 1U
+   * Nudging by one rather than swapping with the neighbor, because a 1U
    * moving past a 4U should take four presses and end up somewhere
    * predictable, not teleport above it.
    */

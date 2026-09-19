@@ -474,7 +474,7 @@ if (octal(0o1777) !== "1777" || octal(0o644) !== "644") {
 /*
   And the page has to render the model's walk rather than the case's prose.
   Checking that the file imports check() is satisfied by an unused import,
-  which is the mistake this file's neighbours have each made once, so this
+  which is the mistake this file's neighbors have each made once, so this
   looks for the call and for the steps being mapped over.
 */
 const page = readFileSync("client/src/pages/cinematic/CinematicPermissions.tsx", "utf8");

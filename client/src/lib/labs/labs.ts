@@ -58,7 +58,7 @@ const linkLocal = (): Machine =>
       { name: "enp3s0", up: true, mac: "3c:58:c2:11:9f:04", cidr: "169.254.88.213/16", mtu: 1500 },
     ],
     routes: [{ destination: "169.254.0.0/16", dev: "enp3s0", proto: "kernel", metric: 1000 }],
-    neighbours: [],
+    neighbors: [],
     dns: { servers: ["10.20.0.1"], reachable: false, zones: {} },
     remotes: {},
     root: dir({
@@ -255,7 +255,7 @@ const wrongRoute = (): Machine =>
       { destination: "10.0.0.0/8", via: "172.16.9.1", dev: "wg0", proto: "static", metric: 50 },
       { destination: "10.44.0.0/16", via: "10.10.0.1", dev: "eth0", proto: "static", metric: 50 },
     ],
-    neighbours: [
+    neighbors: [
       { ip: "10.10.0.1", dev: "eth0", mac: "52:54:00:aa:bb:01", state: "REACHABLE" },
       { ip: "172.16.9.1", dev: "wg0", state: "REACHABLE" },
     ],
@@ -487,7 +487,7 @@ const staleDns = (): Machine =>
       { destination: "default", via: "10.20.5.1", dev: "enp1s0", proto: "dhcp" },
       { destination: "10.20.5.0/24", dev: "enp1s0", proto: "kernel", src: "10.20.5.61" },
     ],
-    neighbours: [{ ip: "10.20.5.1", dev: "enp1s0", mac: "52:54:00:ab:cd:01", state: "REACHABLE" }],
+    neighbors: [{ ip: "10.20.5.1", dev: "enp1s0", mac: "52:54:00:ab:cd:01", state: "REACHABLE" }],
     dns: {
       servers: ["10.20.0.53"],
       reachable: true,
