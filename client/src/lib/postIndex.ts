@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 279 of them. Regenerate with script/generatePostIndex.ts.
+ * 285 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,60 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "it-works-in-chrome",
+    title: "It Works in Chrome",
+    date: "2026-09-19",
+    tags: ["security","encryption","troubleshooting"],
+    excerpt: "The certificate is fine. The server is sending only the leaf, and browsers cover for it by fetching the missing intermediate themselves, which is why curl, Java, Python and every monitoring probe fail while the padlock stays green. RFC 8446 lets a server omit the root, not the chain, and the difference is one filename.",
+    coverImage: "/images/blog/it-works-in-chrome.jpg",
+    wordCount: 1924,
+  },
+  {
+    slug: "swappiness-is-not-a-percentage",
+    title: "Swappiness Is Not a Percentage",
+    date: "2026-09-19",
+    tags: ["linux","memory","operations"],
+    excerpt: "vm.swappiness is a numerator out of 200, not a percentage of RAM, and nothing in the reclaim path compares it against a quantity of memory. It weights which list the kernel scans once reclaim is already running, a decision the watermarks made somewhere else. Zero has not disabled swap since Linux 3.5, and cgroup v2 never had memory.swappiness at all.",
+    coverImage: "/images/blog/swappiness-is-not-a-percentage.jpg",
+    wordCount: 1902,
+  },
+  {
+    slug: "it-works-in-the-shell",
+    title: "It Works in the Shell",
+    date: "2026-09-19",
+    tags: ["linux","operations","automation"],
+    excerpt: "Cron did run your script. It ran it with two directories on PATH, /bin/sh instead of bash, no terminal, and the output mailed to an address with no mail server behind it. Every one of those differences is documented in one man page, and the fix is to print the environment rather than reason about it.",
+    coverImage: "/images/blog/it-works-in-the-shell.jpg",
+    wordCount: 1898,
+  },
+  {
+    slug: "the-first-certificate-in-the-file",
+    title: "The First Certificate in the File",
+    date: "2026-09-19",
+    tags: ["security","servers","operations"],
+    excerpt: "A request that arrives with no name gets the certificate of whichever server block was parsed first, and on a Debian nginx that ordering comes from a glob nobody edited. The monitoring probe connecting by IP address will report that certificate forever, correctly, on every host you own. The fix is one directive in the default vhost and a probe that sends SNI.",
+    coverImage: "/images/blog/the-first-certificate-in-the-file.jpg",
+    wordCount: 1954,
+  },
+  {
+    slug: "fifty-certificates-a-week",
+    title: "Fifty Certificates a Week",
+    date: "2026-09-19",
+    tags: ["security","operations","automation"],
+    excerpt: "Fifty certificates per registered domain every seven days is the number everybody quotes, and almost no homelab gets near it. The limit that takes a site down allows five per identical set of names, and the renewal exemption everyone relies on covers the other one. Staging makes the whole problem free, and the error message already contains the only date worth acting on.",
+    coverImage: "/images/blog/fifty-certificates-a-week.jpg",
+    wordCount: 1988,
+  },
+  {
+    slug: "deleted-and-still-growing",
+    title: "Deleted, and Still Growing",
+    date: "2026-09-19",
+    tags: ["linux","operations","storage"],
+    excerpt: "Deleting a file does not free its blocks. It removes a name, and the space comes back only when the last name and the last open file descriptor are both gone, which is why df keeps climbing hours after the rm. lsof +L1 names the process still holding the inode, and truncating through /proc/PID/fd/N gets the disk back without restarting anything.",
+    coverImage: "/images/blog/deleted-and-still-growing.jpg",
+    wordCount: 1944,
+  },
   {
     slug: "the-first-probe-is-two-hours-late",
     title: "The First Probe Is Two Hours Late",
@@ -2744,10 +2798,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 279;
+export const POST_COUNT = 285;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy nine";
+export const POST_COUNT_SPELLED = "two hundred and eighty five";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2756,10 +2810,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy nine";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1061;
+export const CITATION_COUNT = 1115;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1220;
+export const CHECKED_URL_COUNT = 1274;

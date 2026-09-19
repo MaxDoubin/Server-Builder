@@ -50,6 +50,1626 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "it-works-in-chrome",
+    title: "It Works in Chrome",
+    date: "2026-09-19",
+    tags: ["security", "encryption", "troubleshooting"],
+    excerpt:
+      "The certificate is fine. The server is sending only the leaf, and browsers cover for it by fetching the missing intermediate themselves, which is why curl, Java, Python and every monitoring probe fail while the padlock stays green. RFC 8446 lets a server omit the root, not the chain, and the difference is one filename.",
+    coverImage: "/images/blog/it-works-in-chrome.jpg",
+    content: `## The padlock is green and four clients cannot connect
+
+A new certificate went on an API host on a Monday morning. The person who
+installed it loaded the URL in Chrome, got the padlock, checked the issuer and
+the expiry date, and closed the ticket.
+
+By afternoon four things were broken and none agreed on why.
+
+\`\`\`
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+\`\`\`
+
+\`\`\`
+javax.net.ssl.SSLHandshakeException: PKIX path building failed:
+sun.security.provider.certpath.SunCertPathBuilderException:
+unable to find valid certification path to requested target
+\`\`\`
+
+\`\`\`
+[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed:
+unable to get local issuer certificate
+\`\`\`
+
+\`\`\`
+x509: certificate signed by unknown authority
+\`\`\`
+
+curl, Java, Python and Go. Four wordings, one cause, and the person holding
+the ticket can still load the site in a browser and cannot reproduce any of
+them.
+
+The certificate is correct. What is missing is the certificate above it, and
+a browser does not notice because it goes and fetches it.
+
+## A chain is built by the client, not handed to it
+
+What a client validates is not the certificate but a path: an ordered sequence
+from the leaf to something in the trust store, each certificate signed by the
+next one up. RFC 4158 exists to describe this as a search problem.
+
+A search needs candidates, and a client collects them from a short list of
+places:
+
+- the certificates the peer sent in the handshake
+- the local trust store, which on most systems holds roots and nothing else
+- certificates cached from earlier connections, if the client keeps a cache
+- a live fetch over HTTP, if the client implements one
+
+Publicly trusted roots do not sign leaf certificates. There is always an
+intermediate in between, and it is not in your trust store, because trust
+stores ship roots. So when the server sends only the leaf, the first two
+sources are exhausted at once and the client is down to the third and fourth.
+Whether those exist is a property of the client, and that is the whole
+difference between Chrome and curl.
+
+## What RFC 8446 requires the server to send
+
+Section 4.4.2 of RFC 8446 is short and it is not ambiguous:
+
+> The sender's certificate MUST come in the first CertificateEntry in the
+> list. Each following certificate SHOULD directly certify the one immediately
+> preceding it. Because certificate validation requires that trust anchors be
+> distributed independently, a certificate that specifies a trust anchor MAY be
+> omitted from the chain, provided that supported peers are known to possess
+> any omitted certificates.
+
+The misconception lives in that last sentence. People read "MAY be omitted"
+and conclude that serving the leaf alone is supported. The permission is
+narrower. It covers a certificate "that specifies a trust anchor", meaning the
+root, and only where peers already have it. An intermediate is not a trust
+anchor and no peer is known to possess it.
+
+TLS 1.2 was stricter: RFC 5246 required that "Each following certificate MUST
+directly certify the one preceding it". TLS 1.3 relaxed the ordering to a
+SHOULD, having noted that some servers are "simply configured incorrectly" and
+that clients should cope. It did not relax the requirement to include them.
+
+## The browser goes and gets it
+
+RFC 5280 section 4.2.2.1 defines the authority information access extension,
+which "indicates how to access information and services for the issuer of the
+certificate in which the extension appears". Where its \`id-ad-caIssuers\`
+access method is used, "the additional information lists certificates that
+were issued to the CA that issued the certificate containing this extension".
+In practice: an HTTP URL serving one DER encoded certificate, the missing
+intermediate, published by the CA.
+
+Nothing in RFC 5280 tells a client to fetch it. Chrome does anyway, in
+\`net/cert/internal/cert_issuer_source_aia.cc\`, a candidate issuer source wired
+into the path builder alongside what the server sent:
+
+\`\`\`cpp
+if (!cert->has_authority_info_access())
+    return;
+...
+for (const auto& uri : cert->ca_issuers_uris()) {
+    GURL url(uri);
+    if (url.is_valid()) {
+      if (urls.size() < kMaxFetchesPerCert) {
+        urls.push_back(url);
+\`\`\`
+
+under limits set just above, with a comment that does not oversell them:
+
+\`\`\`cpp
+// TODO(mattm): These are arbitrary choices. Re-evaluate.
+const int kTimeoutMilliseconds = 10000;
+const int kMaxResponseBytes = 65536;
+const int kMaxFetchesPerCert = 5;
+\`\`\`
+
+Ten seconds, 64 KiB, five URLs per certificate. That is the mechanism behind
+every "it works in Chrome": a fetch the browser made for you, with nothing in
+the UI to say so.
+
+Firefox reaches the same outcome without fetching. It pre-downloads the known
+intermediates through Mozilla's Remote Settings infrastructure, specifically
+to cover "one of the most common server configuration problems: not specifying
+proper intermediate CA certificates". Windows and macOS fetch and then cache
+what they retrieve, so once one browser on a machine has papered over the
+problem, every tool there on the platform trust store inherits the fix.
+
+OpenSSL does none of this, and neither does Go's \`crypto/x509\`. Java's PKIX
+path builder can follow AIA, but only when
+\`com.sun.security.enableAIAcaIssuers\` is set, and it ships disabled for
+compatibility. Python's message matches curl's because both are OpenSSL
+underneath. Those four errors are four projects declining to make an HTTP
+request in the middle of a handshake.
+
+## What the server is actually sending
+
+One command answers it, and \`-showcerts\` is the whole point. The OpenSSL
+manual is careful about what it shows: it "displays the server certificate
+list as sent by the server: it only consists of certificates the server has
+sent (in the order the server has sent them). It is not a verified chain."
+
+\`\`\`
+$ openssl s_client -showcerts -connect api.example.com:443 \\
+    -servername api.example.com </dev/null 2>/dev/null \\
+  | grep -E '^ [0-9]+ s:'
+ 0 s:CN = api.example.com
+\`\`\`
+
+One line. That is the bug, in one screen. A correct host shows two:
+
+\`\`\`
+ 0 s:CN = api.example.com
+ 1 s:C = US, O = Example CA, CN = Example CA Intermediate R3
+\`\`\`
+
+The verification errors send people to the wrong end of the connection:
+
+\`\`\`
+depth=0 CN = api.example.com
+verify error:num=20:unable to get local issuer certificate
+verify return:1
+...
+    Verify return code: 21 (unable to verify the first certificate)
+\`\`\`
+
+Error 20 is \`X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY\` and error 21 is
+\`X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE\`. The first says "local" and is
+telling the truth, in that the issuer was not found locally. It does not mean
+the local store is at fault. I had already counted the certificates and seen
+exactly one, and still spent twenty minutes updating a container's CA bundle,
+because the error names my end and the fix was at the other end.
+
+One more trap. \`s_client\` "is designed to continue the handshake after any
+certificate verification errors", so it prints the error, completes the
+connection and exits successfully. A check built around "did \`s_client\`
+connect" passes on a broken chain. Add \`-verify_return_error\` and the
+handshake aborts, which is what a script wants.
+
+## fullchain.pem and cert.pem
+
+On anything issued by certbot, the difference is one filename. The
+documentation describes \`fullchain.pem\` as "All certificates, including server
+certificate (aka leaf certificate or end-entity certificate). The server
+certificate is the first one in this file, followed by any intermediates", and
+says it "is what Apache >= 2.4.8 needs for SSLCertificateFile, and what Nginx
+needs for ssl_certificate".
+
+\`cert.pem\` next to it "contains the server certificate by itself". One
+certificate, in the file whose name looks like the obvious answer to a
+directive called \`ssl_certificate\`. That is the failure mode.
+
+The server documentation agrees. Nginx: "If intermediate certificates should
+be specified in addition to a primary certificate, they should be specified in
+the same file in the following order: the primary certificate comes first,
+then the intermediate certificates." Apache, since 2.4.8: "The files may also
+include intermediate CA certificates, sorted from leaf to root."
+
+Certbot's own warning is the best sentence on this subject. Use \`cert.pem\` and
+you must also configure \`chain.pem\`, or "some browsers will show 'This
+Connection is Untrusted' errors for your site, some of the time". Some of the
+time. That is the bug, reported honestly.
+
+\`\`\`
+$ grep -c 'BEGIN CERTIFICATE' /etc/letsencrypt/live/api.example.com/fullchain.pem
+2
+$ grep -c 'BEGIN CERTIFICATE' /etc/letsencrypt/live/api.example.com/cert.pem
+1
+\`\`\`
+
+## Why it is invisible to the person who installed it
+
+Every check that person ran was contaminated. They tested in a browser, which
+fetched or preloaded the missing piece, and on Windows and macOS the platform
+cached what it fetched, so the next test from that machine succeeds even
+outside a browser.
+
+Meanwhile the failure concentrates in things with no screen: batch jobs,
+service-to-service calls, mobile SDKs and probes. The probe is right and
+nobody believes it, because the human in front of a browser has evidence and
+the probe only has a number.
+
+Certificates are renewed often enough now that this path is exercised
+constantly, and [lifetimes are getting
+shorter](/blog/certificate-lifetimes-are-200-days-now), so a deploy step that
+writes the wrong file will do it again in weeks. On an internal CA the AIA URL
+usually points at a host the client cannot reach, so the browsers stop
+covering for you too, which is worth designing for when you [stand up a
+private CA](/blog/internal-pki-private-ca).
+
+## What to do
+
+Point the server at the file with the chain in it, reload the service rather
+than only write the file, then verify from somewhere that has never spoken to
+the host. A container is fine, and is the point: fresh trust store, no cache.
+
+The chain can also be checked offline, with no network at all:
+
+\`\`\`
+$ openssl verify -untrusted chain.pem cert.pem
+cert.pem: OK
+\`\`\`
+
+\`-untrusted\` supplies the intermediates as candidates without trusting them,
+which is the job the handshake is supposed to do. If that passes and the live
+connection fails, the file is right and the server is not reading it. Then
+make it a gate rather than a habit: the count of certificates the server sends
+is something a script can assert on, in the renewal hook, next to the reload.
+
+## The questions, in order
+
+1. How many certificates does the server actually send? Count the index lines
+   from \`-showcerts\`. One is the answer to everything below it.
+2. Is the leaf's issuer among them? A chain that is present but wrong fails
+   the same way, and looks different in that same output.
+3. Which file does the running config name, and how many certificates are in
+   it? \`grep -c 'BEGIN CERTIFICATE'\` settles that in one line.
+4. Did anything reload after the file changed? A correct file nothing has read
+   is indistinguishable from a wrong one.
+5. Has the machine you are testing from already talked to this host? Then the
+   test proves nothing, and neither does the browser.
+
+None of those are about the trust store, and the trust store is the first
+thing everybody changes. For the other ways a chain fails, there is a piece on
+[what the client is actually checking](/blog/ssl-tls-certificates-explained).
+
+You can work through nine chains, including the one where only the leaf is
+served, at [nine servers, nine verdicts](/chain).
+
+## References
+
+- [RFC 8446 section 4.4.2, on certificate_list and what may be omitted](https://www.rfc-editor.org/rfc/rfc8446.html#section-4.4.2)
+- [RFC 5246 section 7.4.2, the stricter TLS 1.2 wording](https://www.rfc-editor.org/rfc/rfc5246.html#section-7.4.2)
+- [RFC 5280 section 4.2.2.1, authority information access and id-ad-caIssuers](https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.2.1)
+- [RFC 4158, certification path building as a search problem](https://www.rfc-editor.org/rfc/rfc4158.html)
+- [cert_issuer_source_aia.cc, where Chrome fetches the missing intermediate](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/net/cert/internal/cert_issuer_source_aia.cc)
+- [Preloading intermediate CA certificates into Firefox](https://blog.mozilla.org/security/2020/11/13/preloading-intermediate-ca-certificates-into-firefox/)
+- [Java PKI Programmer's Guide, on com.sun.security.enableAIAcaIssuers](https://docs.oracle.com/en/java/javase/17/security/java-pki-programmers-guide.html)
+- [openssl-s_client(1), on -showcerts and -verify_return_error](https://docs.openssl.org/master/man1/openssl-s_client/)
+- [Certbot, on fullchain.pem, cert.pem and chain.pem](https://eff-certbot.readthedocs.io/en/latest/using.html#where-are-my-certificates)
+- [nginx ssl_certificate, on the order of certificates in the file](https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_certificate)
+- [Apache mod_ssl SSLCertificateFile, on intermediates since 2.4.8](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslcertificatefile)`,
+  },
+  {
+    slug: "swappiness-is-not-a-percentage",
+    title: "Swappiness Is Not a Percentage",
+    date: "2026-09-19",
+    tags: ["linux", "memory", "operations"],
+    excerpt:
+      "vm.swappiness is a numerator out of 200, not a percentage of RAM, and nothing in the reclaim path compares it against a quantity of memory. It weights which list the kernel scans once reclaim is already running, a decision the watermarks made somewhere else. Zero has not disabled swap since Linux 3.5, and cgroup v2 never had memory.swappiness at all.",
+    coverImage: "/images/blog/swappiness-is-not-a-percentage.jpg",
+    content: `## Twenty six gigabytes available, and it is swapping
+
+The ticket says the change did not work. Somebody set \`vm.swappiness\` to 10 on
+a database host last week, believing the machine would then hold off swapping
+until memory was ninety percent used:
+
+\`\`\`
+$ sysctl vm.swappiness
+vm.swappiness = 10
+
+$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:            62Gi        34Gi       2.1Gi       1.1Gi        26Gi        26Gi
+Swap:          8.0Gi       2.4Gi       5.6Gi
+\`\`\`
+
+Twenty six gigabytes the kernel says a process could have, and 2.4 gigabytes of
+anonymous memory out on a disk. So either the setting is ignored or it needs to
+go lower.
+
+Neither. Nothing in the reclaim path compares \`vm.swappiness\` against a
+quantity of memory, a fraction of memory, or a percentage of anything. It is a
+weight on one decision, it is read only after the kernel has already committed
+to reclaiming, and the decision to reclaim is made elsewhere, by numbers this
+knob never touches.
+
+## What the documentation says, and what it said for a decade
+
+From \`Documentation/admin-guide/sysctl/vm.rst\`:
+
+> This control is used to define the rough relative IO cost of swapping and
+> filesystem paging, as a value between 0 and 200. At 100, the VM assumes equal
+> IO cost and will thus apply memory pressure to the page cache and swap-backed
+> pages equally; lower values signify more expensive swap IO, higher values
+> indicates cheaper.
+
+Relative cost, between two things. There is no sentence about when swapping
+starts, because the knob does not decide that.
+
+That paragraph arrived in Linux 5.8, merged in June 2020. For more than a
+decade before it, the same section opened with:
+
+> This control is used to define how aggressive the kernel will swap memory
+> pages. Higher values will increase aggressiveness, lower values decrease the
+> amount of swap.
+
+Which is where the folklore comes from, and it is hard to blame anybody. "How
+aggressive" sounds like a dial on one behavior, a range that stopped at 100
+reads as a percentage, and a default of 60 invites you to finish the sentence
+yourself. The wrong model even gives the right advice most of the time: lower
+the number, see less swapping. Nothing contradicts it, so it survives.
+
+## Reclaim begins at the watermarks
+
+From \`/proc/zoneinfo\`:
+
+\`\`\`
+Node 0, zone   Normal
+  pages free     232534
+        min      10394
+        low      12992
+        high     15590
+\`\`\`
+
+Pages, so multiply by four kilobytes: about 41, 51 and 61 MiB on a node
+managing 4.8 GiB. When free memory falls past \`low\`, kswapd wakes and reclaims
+until the zone is back above \`high\`. If an allocation cannot be satisfied above
+\`min\`, the allocating task reclaims in its own context, which is what direct
+reclaim means and why it arrives as latency rather than as a graph.
+
+That is the whole trigger, and it is about one percent of the node, not forty
+percent of it. The setting that moves it is \`vm.watermark_scale_factor\`,
+documented as controlling "the amount of memory left in a node/system before
+kswapd is woken up and how much memory needs to be free before kswapd goes back
+to sleep". If you wanted the machine to start reclaiming sooner, that is the
+knob. Swappiness is not read anywhere in this part.
+
+## The arithmetic the number appears in
+
+Reclaim has to split its scan between two lists. Anonymous pages can only be
+freed by writing them to swap. File-backed pages can be dropped and read from
+the filesystem again. \`get_scan_count()\` in \`mm/vmscan.c\` picks the split, and
+its \`calculate_pressure_balance()\` helper does the arithmetic:
+
+\`\`\`c
+	ap = swappiness * (total_cost + 1);
+	ap /= anon_cost + 1;
+
+	fp = (MAX_SWAPPINESS - swappiness) * (total_cost + 1);
+	fp /= file_cost + 1;
+
+	fraction[WORKINGSET_ANON] = ap;
+	fraction[WORKINGSET_FILE] = fp;
+	*denominator = ap + fp;
+\`\`\`
+
+\`MAX_SWAPPINESS\` is 200, defined in \`mm/internal.h\`. The setting is a numerator
+and the file side gets the rest of 200. At the default of 60, anon starts with
+60 and file with 140. At 10, anon starts with 10 and file with 190: nineteen to
+one against swapping, which is a preference and not a prohibition.
+
+\`anon_cost\` and \`file_cost\` are measured rather than configured. The comment
+above the block makes the pressure on each list inversely proportional to the
+cost of reclaiming it, "as determined by the share of pages that are
+refaulting, times the relative IO cost of bringing back a swapped out anonymous
+page vs reloading a filesystem page (swappiness)". Refaults are pages the
+kernel evicted and had to fetch back, counted in \`workingset_refault_anon\` and
+\`workingset_refault_file\`. The kernel already knows which list is expensive to
+take from. Swappiness is a thumb on that scale.
+
+Which is why the host in the ticket swapped. With 26 GiB of page cache to work
+through, the file list started every scan with nineteen twentieths of the
+pressure and the other twentieth landed on anonymous memory, pass after pass,
+for a week.
+
+## Zero, and the plus one that stopped it being zero
+
+> At 0, the kernel will not initiate swap until the amount of free and
+> file-backed pages is less than the high watermark in a zone.
+
+A condition, not an off switch. Before Linux 3.5 it was not even that much,
+because the numerator carried a plus one:
+
+\`\`\`c
+-	ap = (anon_prio + 1) * (reclaim_stat->recent_scanned[0] + 1);
++	ap = anon_prio * (reclaim_stat->recent_scanned[0] + 1);
+\`\`\`
+
+Satoru Moriya's 2012 commit fe35004fbf9e removed it, so that 0 produces a
+weight of 0 instead of 1. The message is blunt about the old behavior: "with
+current reclaim implementation, the kernel may swap out even if we set
+swappiness=0 and there is pagecache in RAM".
+
+Even now, 0 is advisory during global reclaim:
+
+\`\`\`c
+	/*
+	 * Global reclaim will swap to prevent OOM even with no
+	 * swappiness, but memcg users want to use this knob to
+	 * disable swapping for individual groups completely when
+	 * using the memory controller's swap limit feature would be
+	 * too expensive.
+	 */
+	if (cgroup_reclaim(sc) && !swappiness) {
+		scan_balance = SCAN_FILE;
+		goto out;
+	}
+\`\`\`
+
+Inside a cgroup, 0 means never. For the machine as a whole it means not until
+the file list and the free pages together can no longer cover the high
+watermark, and at that point \`sc->file_is_tiny\` is set and the scan is forced
+onto anonymous memory regardless. One more branch separates 0 from 1: at the
+last and most desperate reclaim priority, \`if (!sc->priority && swappiness)\`
+gives a nonzero setting an equal scan of both lists, and 0 skips it. If you
+want swap held back as a last resort but still used as one, 1 says that.
+
+I ran hosts at 0 for years believing it was the same as having no swap device.
+What it bought me was a machine that sat at zero for weeks, wrote out about 300
+MB during one nightly backup, and then sat at 300 MB forever, because nothing
+pulls a page back except a fault on it. Lowering the number afterwards undoes
+nothing. \`swapoff -a\` is the only thing that does, and the only real off
+switch.
+
+## Two hundred, for devices faster than the filesystem
+
+The ceiling moved from 100 to 200 in 5.8, in commit c843966c556d by Johannes
+Weiner, for the case where the premise has flipped: "With the advent of fast
+random IO devices (SSDs, PMEM) and in-memory swap devices such as zswap, it's
+possible for swap to be much faster than filesystems, and for swapping to be
+preferable over thrashing filesystem caches."
+
+The documentation gives the conversion:
+
+> For example, if the random IO against the swap device is on average 2x faster
+> than IO from the filesystem, swappiness should be 133 (x + 2x = 200, 2x =
+> 133.33).
+
+A ratio of two IO costs, out of 200. The ceiling is enforced in the sysctl
+table with \`SYSCTL_ZERO\` and \`SYSCTL_TWO_HUNDRED\`:
+
+\`\`\`
+# echo 201 > /proc/sys/vm/swappiness
+bash: echo: write error: Invalid argument
+\`\`\`
+
+On zram or zswap, check \`vm.page-cluster\` too. It is swap readahead, and its
+default of three means eight pages fetched on every swap-in fault: a reasonable
+bet against a seek, a poor one against a decompression.
+
+## cgroup v2 does not have memory.swappiness
+
+This is the knob people go looking for and do not find. It is a cgroup v1 file,
+and the v1 documentation says so in its own table: "Per memcg knob does not
+exist in cgroup v2." The kernel says it out loud in \`mm/memcontrol-v1.c\` when
+you write to the v1 file on a non-root cgroup:
+
+\`\`\`c
+		pr_info_once("Per memcg swappiness does not exist in cgroup v2. "
+			     "See memory.reclaim or memory.swap.max there\\n ");
+\`\`\`
+
+Under v2, \`mem_cgroup_swappiness()\` returns the global \`vm_swappiness\` for
+every cgroup. There is one value on the machine.
+
+What v2 gives instead is a different kind of thing. \`memory.swap.max\` is a
+"swap usage hard limit", and the documentation is exact about reaching it:
+"anonymous memory of the cgroup will not be swapped out". Zero there is the
+per-workload off switch that swappiness 0 was being used to approximate.
+
+One v2 interface still takes a swappiness value, and only for a single
+proactive reclaim call:
+
+\`\`\`
+# echo "1G swappiness=max" > /sys/fs/cgroup/system.slice/app.service/memory.reclaim
+\`\`\`
+
+> The valid range for swappiness is [0-200, max], setting swappiness=max
+> exclusively reclaims anonymous memory.
+
+\`max\` maps to \`SWAPPINESS_ANON_ONLY\`, defined as \`MAX_SWAPPINESS + 1\`, which is
+201: a value the sysctl itself will not accept.
+
+## Read the result, not the setting
+
+\`\`\`
+$ grep -E 'pgsteal_(anon|file)|pswp' /proc/vmstat
+pgsteal_anon 824190
+pgsteal_file 51339664
+pswpin 183407
+pswpout 812553
+\`\`\`
+
+Sixty two file pages reclaimed for every anonymous one, and \`pswpout\` minus
+\`pswpin\` is the 629,146 pages now in swap. The setting did exactly what it was
+set to do, and it was never going to produce zero. Next to that, read
+\`/proc/pressure/memory\`, which measures time actually lost to reclaim instead
+of counting pages, and watch the page cache over hours, for the same reason
+[the free column](/blog/the-free-column-was-always-going-to-be-zero) was always
+going to be small.
+
+## The questions, in order
+
+1. Is the machine reclaiming at all? That is the watermarks in \`/proc/zoneinfo\`
+   and the \`allocstall_*\` counters, not swappiness.
+2. When it reclaims, what does it take? \`pgsteal_anon\` against \`pgsteal_file\`.
+   That ratio is the only thing this knob moves.
+3. Is swap on this host faster or slower than the filesystem? That is the
+   question the number asks. On zram the default is wrong, in the direction
+   nobody expects.
+4. Is this really a per-workload question? Then it is \`memory.swap.max\` and
+   \`memory.high\`, because there is no per-cgroup swappiness in v2 to set.
+5. Do you want less swapping, or none? Zero is less. \`swapoff\` is none, and
+   choosing it is a decision about
+   [what should die when memory runs out](/blog/oom-killer-and-swap-sizing),
+   not a performance setting.
+
+Whatever you set, set it in \`/etc/sysctl.d/\`, where the next boot will find it.
+
+You can work through the other end of this, where there is nothing left to
+reclaim and the kernel picks a victim, at
+[which process the OOM killer kills](/oom).
+
+## References
+
+- [Documentation/admin-guide/sysctl/vm.rst, on swappiness and page-cluster](https://docs.kernel.org/admin-guide/sysctl/vm.html)
+- [mm/vmscan.c, get_scan_count and the pressure balance](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm/vmscan.c)
+- [The commit that raised the ceiling to 200, and why](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c843966c556d7370bb32e7319a6d164cb8c70ae2)
+- [The 3.5 commit that made swappiness 0 mean zero](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=fe35004fbf9eaf67482b074a2e032abb9c89b1dd)
+- [Documentation/admin-guide/cgroup-v2.rst, on memory.reclaim and memory.swap.max](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+- [Documentation/admin-guide/cgroup-v1/memory.rst, on the knob that did not carry over](https://docs.kernel.org/admin-guide/cgroup-v1/memory.html)
+- [swapon(8), and swapoff, the actual off switch](https://man7.org/linux/man-pages/man8/swapon.8.html)`,
+  },
+  {
+    slug: "it-works-in-the-shell",
+    title: "It Works in the Shell",
+    date: "2026-09-19",
+    tags: ["linux", "operations", "automation"],
+    excerpt:
+      "Cron did run your script. It ran it with two directories on PATH, /bin/sh instead of bash, no terminal, and the output mailed to an address with no mail server behind it. Every one of those differences is documented in one man page, and the fix is to print the environment rather than reason about it.",
+    coverImage: "/images/blog/it-works-in-the-shell.jpg",
+    content: `## The backup ran every night for six weeks and there is nothing to restore
+
+The crontab is right there:
+
+\`\`\`
+0 2 * * * /home/mika/bin/snapshot.sh >/dev/null 2>&1
+\`\`\`
+
+Cron agrees that it ran:
+
+\`\`\`
+$ journalctl -u cron --since "2 days ago" | grep snapshot
+Sep 17 02:00:01 app01 CRON[24310]: (mika) CMD (/home/mika/bin/snapshot.sh >/dev/null 2>&1)
+Sep 18 02:00:01 app01 CRON[26902]: (mika) CMD (/home/mika/bin/snapshot.sh >/dev/null 2>&1)
+\`\`\`
+
+Run the script by hand and it takes four minutes and leaves a file behind. Under cron it takes about a second and leaves nothing, and nobody noticed for six weeks because of the redirect at the end of that line.
+
+The script is not broken and cron is not broken. Cron ran it in a different environment than the one you tested in, and the differences are few, fixed and documented.
+
+## The environment cron gives you, and nothing else
+
+crontab(5) is unusually specific about what a job starts with:
+
+> SHELL is set to /bin/sh, and LOGNAME and HOME are set from the /etc/passwd line of the crontab's owner.
+
+Three variables, named. What the sentence does not mention is your shell's startup files, because cron runs neither a login shell nor an interactive one. \`/etc/profile\`, \`~/.bash_profile\`, \`~/.bashrc\` and \`~/.profile\` are never read. Every PATH entry those files append, every \`pyenv\` shim they install, every \`SSH_AUTH_SOCK\` they export, is not there.
+
+Do not reason about which survived. Print them:
+
+\`\`\`
+* * * * * /usr/bin/env > /tmp/cronenv 2>&1
+\`\`\`
+
+A minute later, on a Debian host with a user crontab, I get six lines:
+
+\`\`\`
+SHELL=/bin/sh
+PWD=/home/mika
+LOGNAME=mika
+HOME=/home/mika
+LANG=en_US.UTF-8
+PATH=/usr/bin:/bin
+\`\`\`
+
+My interactive shell on the same box has about fifty. \`LANG\` is there only because Debian's cron goes through PAM and \`pam_env\` reads \`/etc/environment\` and \`/etc/default/locale\`. Where that does not happen the line is absent, which is its own bug the first time a script sorts text.
+
+## PATH, and the exact value
+
+Debian and Ubuntu ship Vixie cron. When a crontab has no PATH line of its own, \`entry.c\` supplies one:
+
+\`\`\`c
+if (!env_get("PATH", e->envp)) {
+        sprintf(envstr, "PATH=%s", _PATH_DEFPATH);
+\`\`\`
+
+and \`_PATH_DEFPATH\` is glibc's, from \`paths.h\`:
+
+\`\`\`c
+/* Default search path. */
+#define	_PATH_DEFPATH	"/usr/bin:/bin"
+\`\`\`
+
+Two directories. Fedora and RHEL ship cronie, which does the same with \`_PATH_STDPATH\`, \`/usr/bin:/bin:/usr/sbin:/sbin\`, unless the daemon was started with \`-P\`: "Don't set PATH. PATH is instead inherited from the environment."
+
+Four directories at the most, and \`/usr/local/bin\` is in neither list. Neither is \`~/.local/bin\`, \`/opt/vendor/bin\`, or wherever \`go install\` and \`pip install --user\` put the binary you are calling. That is the whole failure, most of the time:
+
+\`\`\`
+/bin/sh: 1: restic: not found
+\`\`\`
+
+Exit status 127. If the script does not check it, the archive is never uploaded and the script still exits 0, on the strength of the last command that did work.
+
+You can set PATH in the crontab, above the schedule lines, but read the warning first. crontab(5) says the value "is not parsed for environmental substitutions or replacement of variables or tilde(~) expansion, thus lines like" \`PATH=$HOME/bin:$PATH\` "will not work as you might expect." There is no error. Your PATH contains the literal characters \`$HOME\`, which resolves nothing.
+
+## /bin/sh is not bash
+
+crontab(5) on the sixth field:
+
+> The entire command portion of the line, up to a newline or a "%" character, will be executed by /bin/sh or by the shell specified in the SHELL variable of the cronfile.
+
+On Debian and Ubuntu, \`/bin/sh\` is dash. \`[[\`, arrays, \`source\`, \`\${var,,}\` and process substitution are all bash, and dash reports them the way it reports any unknown word:
+
+\`\`\`
+/bin/sh: 1: [[: not found
+\`\`\`
+
+The distinction that matters: this is the command string in the crontab, not a script with a shebang. If the line calls \`snapshot.sh\` and that file begins with \`#!/bin/bash\`, bash runs it and bash syntax is fine. SHELL bites you when the logic is inline, when the script has no shebang, or when it says \`#!/bin/sh\` on top and has bash syntax underneath, which passes every test because you have been running it as \`bash snapshot.sh\`.
+
+Setting \`SHELL=/bin/bash\` in the crontab is legal and usually the wrong instinct. Put the work in a script, give it an honest shebang, and keep the crontab line to a path.
+
+## No terminal, and the things that check
+
+Cron gives a job no controlling terminal, so anything calling \`isatty()\` takes its other branch: \`git\` will not page, \`ls\` drops color, \`docker run -it\` fails outright.
+
+The expensive case is authentication. \`ssh\` with a passphrase-protected key wants to prompt, finds no terminal and no \`SSH_AUTH_SOCK\` (your agent was set up by a login shell that never ran), and falls through:
+
+\`\`\`
+Permission denied (publickey).
+\`\`\`
+
+Add \`-o BatchMode=yes\` to every \`ssh\`, \`scp\` and \`rsync -e ssh\` in a cron job. It does not fix the auth, it makes the failure immediate instead of a hang. \`gpg\` needs \`--batch\` for the same reason, and \`sudo\` needs \`NOPASSWD\` or it will not work from cron at all.
+
+## The percent sign, which nobody guesses
+
+This one is in the man page and still catches everyone:
+
+> A "%" character in the command, unless escaped with a backslash (\\\\), will be changed into newline characters, and all data after the first % will be sent to the command as standard input.
+
+So this:
+
+\`\`\`
+5 3 * * * tar -czf /srv/backups/db-$(date +%F).tar.gz /var/lib/db
+\`\`\`
+
+is not a tar command. The command is everything up to the first percent, \`tar -czf /srv/backups/db-$(date +\`, an unterminated command substitution, and \`F).tar.gz /var/lib/db\` arrives on its standard input.
+
+Watch the mechanism directly:
+
+\`\`\`
+* * * * * cat > /tmp/pct %one%two
+\`\`\`
+
+A minute later:
+
+\`\`\`
+$ cat /tmp/pct
+one
+two
+\`\`\`
+
+The command was \`cat > /tmp/pct \`. Everything after the first percent became the input, and the remaining percent became a newline. Escape each one as \`\\%\`, or move the \`date\` call inside a script, where percent means what it means everywhere else.
+
+## The output went to mail, and there is no mail
+
+crontab(5) on where a job's output goes:
+
+> If MAILTO is defined (and non-empty), mail is sent to the specified address. If MAILTO is defined but empty (MAILTO=""), no mail is sent. Otherwise, mail is sent to the owner of the crontab.
+
+"Otherwise" is the default, and on a server with no MTA there is nothing to hand the message to. The error that says your job failed becomes an error about delivering the error. The reflex everybody copies, \`>/dev/null 2>&1\`, is not the cause of the silence. It is the second cause, and the one that makes it permanent.
+
+Send output somewhere a human can reach:
+
+\`\`\`
+MAILTO=ops@example.net
+0 2 * * * /home/mika/bin/snapshot.sh >> /var/log/snapshot.log 2>&1
+\`\`\`
+
+or pipe it into \`logger -t snapshot\` so it lands in the journal alongside [everything else you already centralize](/blog/syslog-centralized-logging). Watch the order in \`>> file 2>&1\`: redirect stdout first, then point stderr at the same place. \`2>&1 >> file\` points stderr wherever stdout used to go, then moves stdout. It is backwards, and it looks identical.
+
+## run-parts, and the file with a dot in it
+
+Drop-in directories are a separate trap with the same symptom. Debian's \`/etc/crontab\` runs them:
+
+\`\`\`
+17 * * * *  root  cd / && run-parts --report /etc/cron.hourly
+\`\`\`
+
+and run-parts(8) is explicit about which files it will touch:
+
+> run-parts runs all the executable files named within constraints described below, found in directory directory. Other files and directories are silently ignored.
+
+> If neither the --lsbsysinit option nor the --regex option is given then the names must consist entirely of ASCII upper- and lower-case letters, ASCII digits, ASCII underscores, and ASCII minus-hyphens.
+
+A period is not on that list. \`/etc/cron.daily/snapshot\` runs. \`/etc/cron.daily/snapshot.sh\` does not, and neither does \`snapshot.bak\` or \`snapshot~\`. Nothing is logged, because "silently ignored" is the documented behavior and not a bug.
+
+I lost a week of a rotation job to this. What would have told me in one second:
+
+\`\`\`
+$ run-parts --test /etc/cron.daily
+/etc/cron.daily/apt-compat
+/etc/cron.daily/dpkg
+/etc/cron.daily/logrotate
+\`\`\`
+
+\`--test\` prints the names it would run without running them. If your script is not in that output, the schedule was never the problem. Check the executable bit in the same breath: a file matching the name rule that is not \`+x\` is skipped as well.
+
+## Reproducing it without waiting until 2am
+
+\`env -i\` starts a command with an empty environment, so you can rebuild cron's by hand and see the failure on demand:
+
+\`\`\`
+$ env -i SHELL=/bin/sh HOME=/home/mika LOGNAME=mika PATH=/usr/bin:/bin \\
+    setsid /bin/sh -c '/home/mika/bin/snapshot.sh' < /dev/null 2>&1 | cat
+\`\`\`
+
+\`env -i\` removes everything your login shell built, and the four assignments put back exactly what cron sets. \`setsid\` runs it in a new session with no controlling terminal, \`< /dev/null\` gives it cron's empty stdin, and the pipe into \`cat\` makes stdout something other than a tty. Almost every one of these bugs reproduces from that one command.
+
+The ground truth is still cron. Schedule the thing five minutes out, output going to a file, and read the file.
+
+## What to do
+
+Absolute paths for every binary, or a PATH line written out in full at the top of the crontab. One script per job, with a real shebang and \`set -eu\`, and a crontab entry that is a path and a redirect and nothing else. No percent signs. An explicit \`MAILTO\` and a log file, at least until you have watched it succeed twice.
+
+If the job has ordering requirements, needs a timeout, or must not overlap with itself, this is where a [systemd timer earns its keep](/blog/systemd-units-that-behave): the unit states its environment, \`systemctl status\` says whether the last run failed, and output reaches the journal without you arranging it. Cron's advantage is that the schedule is one line, and if you want to check that line says what you think, there is [a cron expression explainer](/tools/cron-explainer) here.
+
+## The questions, in order
+
+1. Did it run at all? \`journalctl -u cron\`, or \`grep CRON /var/log/syslog\`. No logged invocation means the schedule or the file name, not the script.
+2. What environment did it get? Run \`env\` from cron once and read the file. Do not reconstruct it from memory.
+3. Is the binary on cron's PATH? Two directories on Debian, four on cronie, and \`/usr/local/bin\` is not one of them.
+4. What shell ran it? Inline logic runs under \`/bin/sh\`. A script runs under its shebang.
+5. Is there a percent in the crontab line? Everything after the first one is standard input.
+6. Where did the output go? If the answer is \`/dev/null\`, you have no evidence, and getting some is the next step, not a later one.
+
+None of those are about the schedule, and the schedule is the first thing everybody changes.
+
+## References
+
+- [crontab(5), on the environment, MAILTO and the percent sign](https://man7.org/linux/man-pages/man5/crontab.5.html)
+- [cron(8), on -P and where output is mailed](https://man7.org/linux/man-pages/man8/cron.8.html)
+- [run-parts(8), on which file names are run and which are ignored](https://manpages.debian.org/trixie/debianutils/run-parts.8.en.html)
+- [Debian crontab(5), on why PATH=$HOME/bin does not work](https://manpages.debian.org/trixie/cron/crontab.5.en.html)
+- [Debian cron entry.c, where the default PATH is set](https://salsa.debian.org/debian/cron/-/blob/master/entry.c)
+- [cronie entry.c, the same code with _PATH_STDPATH](https://github.com/cronie-crond/cronie/blob/master/src/entry.c)
+- [glibc paths.h, for _PATH_DEFPATH and _PATH_STDPATH](https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/paths.h)
+- [env(1), for -i and an empty environment](https://man7.org/linux/man-pages/man1/env.1.html)
+- [systemd.timer(5), for the alternative](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html)`,
+  },
+  {
+    slug: "the-first-certificate-in-the-file",
+    title: "The First Certificate in the File",
+    date: "2026-09-19",
+    tags: ["security", "servers", "operations"],
+    excerpt:
+      "A request that arrives with no name gets the certificate of whichever server block was parsed first, and on a Debian nginx that ordering comes from a glob nobody edited. The monitoring probe connecting by IP address will report that certificate forever, correctly, on every host you own. The fix is one directive in the default vhost and a probe that sends SNI.",
+    coverImage: "/images/blog/the-first-certificate-in-the-file.jpg",
+    content: `## The expiry check is amber for a host nobody has heard of
+
+A certificate expiry probe pointed at \`198.51.100.20:443\` has been green for a
+year and is now nine days from red. The name on the certificate it found is
+\`admin.internal.example\`. Nothing on that host is called that. The three sites
+the box serves all renewed last week and all have eighty days left.
+
+The probe is not broken and the certificate is not wrong. The server answered
+a question nobody asked it. The probe connected to an IP address, so it had no
+name to offer during the handshake, and the server did the only thing it can:
+it handed back the certificate belonging to whichever server block it parsed
+first.
+
+Everything below follows from one ordering fact. TLS finishes before HTTP
+starts, so the certificate is chosen before the \`Host\` header exists.
+
+## The name arrives, if it arrives at all, in the ClientHello
+
+The nginx documentation is blunt about the shape of the problem, in its
+section on running two HTTPS servers on one address:
+
+> The SSL connection is established before the browser sends an HTTP request
+> and nginx does not know the name of the requested server. Therefore, it may
+> only offer the default server's certificate.
+
+Server Name Indication, RFC 6066 section 3, is the fix: the client puts the
+name in the ClientHello, in the clear, ahead of all of that. The RFC is
+specific about what may go in it.
+
+> "HostName" contains the fully qualified DNS hostname of the server, as
+> understood by the client.
+
+And, a paragraph later:
+
+> Literal IPv4 and IPv6 addresses are not permitted in "HostName".
+
+That second sentence is the entire IP-address case. There is no legal SNI to
+send for \`https://198.51.100.20/\`, so a correct client sends none and the
+server is back to guessing. nginx adds a warning worth keeping: "Only domain
+names can be passed in SNI, however some browsers may erroneously pass an IP
+address of the server as its name if a request includes literal IP address.
+One should not rely on this."
+
+## The guess is the first server block, and it belongs to the port
+
+For the plaintext case nginx states the rule directly:
+
+> If its value does not match any server name, or the request does not contain
+> this header field at all, then nginx will route the request to the default
+> server for this port.
+
+The default server is the first one defined for that listen address unless a
+\`listen\` directive marks another with \`default_server\`, and the docs add the
+part people forget: "Note that the default server is a property of the listen
+port and not of the server name." No \`server_name\` value can make a block the
+default. \`server_name _;\` is not a wildcard, just an invalid domain that never
+collides with a real one.
+
+Apache lands in the same place with different words:
+
+> If no matching ServerName or ServerAlias is found in the set of virtual
+> hosts containing the most specific matching IP address and port combination,
+> then the first listed virtual host that matches that will be used.
+
+On a Debian or Ubuntu nginx, "first" is decided by something nobody edited.
+\`include /etc/nginx/sites-enabled/*;\` expands through \`glob(3)\`, which nginx
+calls with a flags argument of zero:
+
+\`\`\`c
+n = glob((char *) gl->pattern, 0, NULL, &gl->pglob);
+\`\`\`
+
+No \`GLOB_NOSORT\`, and glob(3) says "By default, the returned pathnames are
+sorted." So the default vhost on 443 is whichever site sorts first by
+filename, behind anything in the \`conf.d\` glob Debian includes one line
+earlier. A file called \`admin\` beats \`www\` on nothing but the alphabet, and
+adding one called \`000-staging\` silently moves the target.
+
+## One socket, two clients, two certificates
+
+You can watch the whole mechanism without installing a web server.
+\`openssl s_server\` does SNI selection: a default certificate, plus one name
+given with \`-servername\` and its own \`-cert2\`.
+
+\`\`\`
+$ openssl s_server -accept 127.0.0.1:4433 \\
+    -cert default.crt -key default.key \\
+    -servername www.example.org -cert2 shop.crt -key2 shop.key -www
+\`\`\`
+
+\`default.crt\` is \`CN=admin.internal.example\` and \`shop.crt\` is
+\`CN=www.example.org\`. Now two clients against that one socket.
+
+\`\`\`
+$ openssl s_client -connect 127.0.0.1:4433 </dev/null 2>/dev/null \\
+    | openssl x509 -noout -subject
+subject=CN = admin.internal.example
+
+$ openssl s_client -connect 127.0.0.1:4433 -servername www.example.org \\
+    </dev/null 2>/dev/null | openssl x509 -noout -subject
+subject=CN = www.example.org
+\`\`\`
+
+Same port, same second, different certificate. Nothing on the server changed
+between those two commands. The difference is a few bytes in the ClientHello.
+
+## The test that looks right and proves nothing
+
+This is the one that cost me an afternoon:
+
+\`\`\`
+$ curl -sv -k -H 'Host: www.example.org' https://127.0.0.1:4433/ \\
+    -o /dev/null 2>&1 | grep -E 'subject:|Host:'
+*  subject: CN=admin.internal.example
+> Host: www.example.org
+\`\`\`
+
+The \`Host\` header is exactly what was asked for, and the certificate is still
+the default one. \`-H\` writes an HTTP header, and SNI is not an HTTP header. By
+the time curl sends that line the handshake is over and the certificate was
+already picked from a URL whose host is a literal IP, carrying no SNI at all.
+
+\`--resolve\` does what people expect \`-H\` to do, because it changes where curl
+connects without changing the name in the URL. The manual calls it "a sort of
+/etc/hosts alternative provided on the command line":
+
+\`\`\`
+$ curl -sv -k --resolve www.example.org:4433:127.0.0.1 \\
+    https://www.example.org:4433/ -o /dev/null 2>&1 | grep -E 'subject:|Host:'
+*  subject: CN=www.example.org
+> Host: www.example.org:4433
+\`\`\`
+
+For openssl the equivalent is \`-servername\`, and its default is worth reading
+exactly, because it decides what passing no flag means:
+
+> If -servername is not provided, the TLS SNI extension will be populated with
+> the name given to -connect if it follows a DNS name format.
+
+So \`-connect 127.0.0.1:4433\` sends nothing, an IP not being a DNS name format,
+while \`-connect www.example.org:443\` sends SNI whether or not you intended it.
+When what you are testing is precisely what a client without SNI sees,
+\`-noservername\` makes that deliberate rather than incidental. The other
+failures that look identical from a browser are in
+[what a certificate actually promises](/blog/ssl-tls-certificates-explained).
+
+## When SNI and Host disagree, most servers do not mind
+
+Two names now, two chances to be wrong, and only a client-side SHOULD NOT in
+RFC 6066 asks them to match. nginx compares them byte for byte and returns
+early if they are equal. If they are not, it finds the server block by \`Host\`
+and then does this:
+
+\`\`\`c
+sscf = ngx_http_get_module_srv_conf(cscf->ctx, ngx_http_ssl_module);
+
+if (sscf->verify) {
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
+                  "client attempted to request the server name "
+                  "different from the one that was negotiated");
+    ngx_http_finalize_request(r, NGX_HTTP_MISDIRECTED_REQUEST);
+    return NGX_ERROR;
+}
+\`\`\`
+
+\`sscf->verify\` is \`ssl_verify_client\`. If the target block does not ask for a
+client certificate there is no rejection at all: nginx serves that block's
+content over the certificate SNI already chose, and logs nothing. The 421
+arrived in nginx 1.11.0, described in the changelog as rejecting "requests to
+a virtual server different from one negotiated during an SSL handshake". Read
+the condition rather than the summary. That is a client-certificate
+protection, not a general consistency check.
+
+Apache added a general one later. \`SSLVHostSNIPolicy\`, available in httpd
+2.4.66 and defaulting to \`secure\`, compares the SSL configuration of the vhost
+named by SNI against the one named by \`Host\` and answers 421, which RFC 9110
+defines as indicating "that the request was directed at a server that is
+unable or unwilling to produce an authoritative response for the target URI".
+It exists because of CVE-2025-23048, where a client trusted by one vhost's set
+of client certificates could reach another through TLS 1.3 session resumption
+unless \`SSLStrictSNIVHostCheck\` was on. Fixed in 2.4.64. nginx had the same
+class of bug, CVE-2025-23419, fixed in 1.27.4.
+
+## Make the default refuse instead of answer
+
+The default vhost's job is to be wrong loudly. nginx has had a directive for
+exactly that since 1.19.4, and its documented example gives the default server
+no certificate at all:
+
+\`\`\`nginx
+server {
+    listen               443 ssl default_server;
+    ssl_reject_handshake on;
+}
+
+server {
+    listen              443 ssl;
+    server_name         example.com;
+    ssl_certificate     example.com.crt;
+    ssl_certificate_key example.com.key;
+}
+\`\`\`
+
+In the source that setting resolves to three lines:
+
+\`\`\`c
+c->ssl->handshake_rejected = 1;
+*ad = SSL_AD_UNRECOGNIZED_NAME;
+return SSL_TLSEXT_ERR_ALERT_FATAL;
+\`\`\`
+
+which is the \`unrecognized_name(112)\` alert, sent fatal. RFC 6066 gives a
+server exactly two choices here: "either abort the handshake by sending a
+fatal-level unrecognized_name(112) alert or continue the handshake".
+\`ssl_reject_handshake\` takes the first branch, literally. On port 80 the
+equivalent is \`return 444\`, a "non-standard code 444" that "closes a
+connection without sending a response header".
+
+On Apache the switch is \`SSLStrictSNIVHostCheck on\` in the default
+name-based vhost: "clients that are SNI unaware will not be allowed to access any virtual
+host, belonging to this particular IP / port combination." It has existed since
+2.2.12 and is off by default.
+
+Refusing is defensible, not hostile. RFC 8446 lists \`server_name\` among the
+mandatory-to-implement extensions for TLS 1.3 and says plainly that "Servers
+MAY require clients to send a valid "server_name" extension". The cost is that
+a client sending none gets nothing, which is the intended outcome, and nginx
+gives the one alternative in a flat sentence: "for maximum interoperability
+with clients that do not use SNI, virtual servers with different certificates
+should listen on different IP addresses."
+
+## Then fix the probe, not the certificate
+
+The check in the first paragraph used an IP because an IP was what somebody
+had at the time. Every check that connects by address reports the default
+vhost forever, on every host, and keeps doing it after you re-issue the
+certificate it complained about. Point it at the name and use \`--resolve\` when
+DNS should not be the thing under test. The same goes for load balancer health
+checks and for any
+[reverse proxy in front of everything](/blog/nginx-reverse-proxy-setup) that
+dials its backends by address.
+
+## The questions, in order
+
+1. Did the client send SNI at all? An IP address in the URL means no, by the
+   RFC, not by accident.
+2. If it did, what name arrived? \`$ssl_server_name\` in nginx logs it, and it
+   has been there since 1.7.0.
+3. Which server block is first on that listen port? Not first in the file you
+   are looking at. First in the sorted glob.
+4. Does \`Host\` match the SNI name? If not, assume the server served it anyway,
+   because unless client certificates are involved it did.
+5. What does the default vhost do with a name it does not know? If the answer
+   is "hands over a certificate", that is the bug, and it is one line.
+
+None of those is about the certificate, and the certificate is the first thing
+everybody re-issues.
+
+You can work through nine chains, validated check by check, including the
+wildcard that does not cover the name people type, at
+[certificate chain validation](/chain).
+
+## References
+
+- [RFC 6066, section 3: Server Name Indication](https://www.rfc-editor.org/rfc/rfc6066.html#section-3)
+- [RFC 8446, section 9.2: Mandatory-to-Implement Extensions](https://www.rfc-editor.org/rfc/rfc8446.html#section-9.2)
+- [RFC 9110, section 15.5.20: 421 Misdirected Request](https://www.rfc-editor.org/rfc/rfc9110.html#section-15.5.20)
+- [nginx, on configuring HTTPS servers and SNI](https://nginx.org/en/docs/http/configuring_https_servers.html)
+- [nginx, on request processing and the default server](https://nginx.org/en/docs/http/request_processing.html)
+- [nginx, on server names and the "_" catch-all](https://nginx.org/en/docs/http/server_names.html)
+- [ngx_http_ssl_module, for ssl_reject_handshake and $ssl_server_name](https://nginx.org/en/docs/http/ngx_http_ssl_module.html)
+- [ngx_http_rewrite_module, on return and the non-standard code 444](https://nginx.org/en/docs/http/ngx_http_rewrite_module.html#return)
+- [ngx_http_request.c, where an SNI and Host mismatch is decided](https://github.com/nginx/nginx/blob/master/src/http/ngx_http_request.c)
+- [ngx_files.c, where the include glob is opened with no GLOB_NOSORT](https://github.com/nginx/nginx/blob/master/src/os/unix/ngx_files.c)
+- [nginx changelog, where 1.11.0 adds the 421 response](https://nginx.org/en/CHANGES-1.12)
+- [nginx security advisories, for CVE-2025-23419](https://nginx.org/en/security_advisories.html)
+- [Apache, on name-based virtual hosts and the first-listed default](https://httpd.apache.org/docs/2.4/vhosts/name-based.html)
+- [mod_ssl, for SSLStrictSNIVHostCheck and SSLVHostSNIPolicy](https://httpd.apache.org/docs/2.4/mod/mod_ssl.html)
+- [Apache httpd 2.4 vulnerabilities, including CVE-2025-23048](https://httpd.apache.org/security/vulnerabilities_24.html)
+- [openssl-s_client(1), on -servername and -noservername](https://docs.openssl.org/master/man1/openssl-s_client/)
+- [curl(1), on --resolve](https://curl.se/docs/manpage.html#--resolve)
+- [glob(3), on sorting of returned pathnames](https://man7.org/linux/man-pages/man3/glob.3.html)`,
+  },
+  {
+    slug: "fifty-certificates-a-week",
+    title: "Fifty Certificates a Week",
+    date: "2026-09-19",
+    tags: ["security", "operations", "automation"],
+    excerpt:
+      "Fifty certificates per registered domain every seven days is the number everybody quotes, and almost no homelab gets near it. The limit that takes a site down allows five per identical set of names, and the renewal exemption everyone relies on covers the other one. Staging makes the whole problem free, and the error message already contains the only date worth acting on.",
+    coverImage: "/images/blog/fifty-certificates-a-week.jpg",
+    content: `## Fifty certificates were issued that week and none were on the server
+
+A container build ran \`certbot certonly\` as a step, wrote the result into the
+image, and shipped it. The image was rebuilt on every merge. The production
+host had its own \`certbot.timer\`, from before anyone set up CI.
+
+Both asked for the same two names. The build won every time, because it ran
+during the day and the timer ran at 03:00 into an empty bucket. Certbot starts
+trying thirty days out, so this had been in the timer's journal every night
+for a month, and nobody reads that journal:
+
+\`\`\`
+too many certificates (5) already issued for this exact set of identifiers
+in the last 168h0m0s, retry after 2026-09-11 02:47:09 UTC: see
+https://letsencrypt.org/docs/rate-limits/#new-certificates-per-exact-set-of-identifiers
+\`\`\`
+
+The certificates the build got were real, publicly trusted, and baked into
+image layers that were rebuilt over them. The one being served stopped being
+valid on a Thursday morning.
+
+The number everybody quotes is fifty a week. Five were issued, so that limit
+was never close. The limit that fired allows five, and almost nothing written
+about rate limits is about that one.
+
+## The issuance limits, as the page states them today
+
+| Limit | Allowance | Refill | Overrides |
+| --- | --- | --- | --- |
+| New Certificates per Registered Domain | 50 every 7 days | 1 per 202 minutes | on request |
+| New Certificates per Exact Set of Identifiers | 5 every 7 days | 1 per 34 hours | none |
+| New Orders per Account | 300 every 3 hours | 1 per 36 seconds | on request |
+| Authorization Failures per Identifier per Account | 5 every hour | 1 per 12 minutes | none |
+| Consecutive Authorization Failures per Identifier per Account | 1,152 | 1 per day | none |
+
+The page carries a last-updated date, and today it reads August 5, 2026. Read
+it rather than this table. The second row used to be the Duplicate Certificate
+limit, and half the internet still calls it that.
+
+## It is a bucket, not a calendar
+
+The page states the mechanism: "Limits are calculated, per request, using a
+token bucket algorithm."
+
+So "every 7 days" is not a window that resets on Monday. It is a burst size
+and a drip. Fifty per seven days is one token every 201.6 minutes, documented
+as 202. Five per seven days is one token every 33.6 hours, documented as 34.
+
+That changes the remedy. Having emptied the exact-set bucket, the usual advice
+to wait a week is wrong in both directions: you do not have to, and it does
+not hand you five. Thirty-four hours gives you one. The \`retry after\`
+timestamp is that arithmetic already done, and the only number in the message
+worth acting on.
+
+## Registered domain means the thing you bought
+
+"A registered domain is, generally speaking, the part of the domain you
+purchased from your domain name registrar." In \`www.example.com\` it is
+\`example.com\`, and in \`new.blog.example.co.uk\` it is \`example.co.uk\`, because
+"we use the Public Suffix List to identify registered domains".
+
+Fifty is generous at that granularity: a dozen services behind one domain is a
+dozen certificates, and you will not run out. But it is global to
+the registered domain rather than to your account, so two hosts with two ACME
+accounts on one domain draw from the same fifty. Splitting the account does
+not split the bucket.
+
+## The one that actually fires
+
+The exact-set limit keys on the full identifier list, "ignoring capitalization
+and the order of identifiers". So \`example.com\` alone is one set, and
+\`example.com\` plus \`www.example.com\` is a different set with its own
+independent five: adding a name creates a brand new bucket.
+
+That is why the folklore fix works and why it is a bad habit. Padding the SAN
+list with a throwaway name buys five more issuances, spends from the fifty
+every time, and leaves a certificate whose subject alternative names are a
+record of your outages.
+
+On the [90 day classic profile](/blog/certificate-lifetimes-are-200-days-now)
+a well behaved renewer asks about six times a year. A pipeline that issues on
+every deploy asks six times before lunch.
+
+## Renewals are exempt, and the hole is in exactly the wrong place
+
+This is the sentence everybody half remembers, and the half they drop is the
+half that matters. The documentation gives two cases.
+
+For clients that speak ARI: "Renewals coordinated by ARI offer the unique
+benefit of being exempt from all rate limits." For everyone else, an order
+"can still be considered a renewal of an earlier certificate if it contains
+the exact same set of identifiers, ignoring capitalization and the order of
+identifiers", and those orders are "exempt from the New Orders per Account and
+New Certificates per Registered Domain rate limits. However, unlike ARI
+renewals, these orders would still be subject to Authorization Failures per
+Identifier per Account and New Certificates per Exact Set of Identifiers."
+
+Read the second case twice. A renewal is by definition a request for the same
+identifier set, and the exact-set limit exists precisely to stop a client
+asking for the same thing over and over. Exempting renewals from it would
+exempt the loop it was built to catch, so the exemption you were counting on
+covers the limit you were never going to hit.
+
+ARI is the way out, and it is worth seeing why it can be. Under RFC
+9773 the ACME directory gains a \`renewalInfo\` field, and a GET against it
+returns the authority's own opinion about when to come back:
+
+\`\`\`json
+{
+  "suggestedWindow": {
+    "start": "2026-11-18T14:02:11Z",
+    "end": "2026-11-28T14:02:11Z"
+  }
+}
+\`\`\`
+
+The client picks a random time inside that window. The authority is not
+exempting a promise, it is exempting its own schedule.
+
+That matters more as lifetimes shrink. Short-lived certificates are "valid for
+160 hours, just over six days", and three nodes renewing one identifier set
+independently at two thirds of life come to about 4.7 issuances a week: the
+whole budget, before anything goes wrong.
+
+## Failed validation has two budgets behind it
+
+The hourly one: "Up to 5 authorization failures per identifier can be incurred
+by one account every hour. The ability to incur authorization failures refills
+at a rate of 1 per identifier every 12 minutes." It reads:
+
+\`\`\`
+too many failed authorizations (5) for "example.com" in the last 1h0m0s,
+retry after 2026-09-19 11:14:03 UTC: see
+https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-identifier-per-account
+\`\`\`
+
+Behind it sits a slower one most people meet once: "Up to 1,152 consecutive
+authorization failures per identifier can be incurred by one account. The
+ability to incur authorization failures refills at a rate of 1 per identifier
+every day and resets to zero if an authorization for that identifier is
+successfully validated."
+
+The reset condition is the design. A hook that occasionally times out clears
+its counter on the next success and never approaches 1,152. A hook writing the
+TXT record into the wrong zone never succeeds, so nothing resets it, and it
+drains a counter refilling at one per day. That ends in a pause on the
+identifier, with a link in the error to a self-service portal that lifts it.
+
+## Wildcards move the pressure onto a different bucket
+
+DNS-01 is not optional for a wildcard. Of HTTP-01 the documentation says
+flatly "This challenge cannot be used to issue wildcard certificates", and
+that it "can only be done on port 80". DNS-01 puts a TXT record at
+\`_acme-challenge.<YOUR_DOMAIN>\`, and you "can use CNAME records or NS records
+to delegate answering the challenge to other DNS zones", which is how a
+renewal robot gets the narrowest credential possible.
+
+An order covering both \`example.com\` and \`*.example.com\` needs two challenge
+values at that one \`_acme-challenge.example.com\` name, at the same time. A
+provider API that replaces a TXT record rather than appending serves only the
+second, one authorization fails, and you have spent from the hourly failure
+budget rather than from any certificate budget.
+
+The rate limit effect cuts both ways. Twelve names as twelve certificates is
+twelve against the fifty and twelve independent buckets of five. One wildcard
+is one against the fifty and a single bucket of five shared by everything
+behind it. Better for the limit you were not hitting, worse for the one you
+were.
+
+## Staging costs nothing, but it is not your test suite
+
+The staging directory is
+\`https://acme-staging-v02.api.letsencrypt.org/directory\`, and its limits are
+not a slightly larger production. As documented, New Certificates per
+Registered Domain "is 30000 per second" and New Certificates per Exact Set of
+Identifiers "is 30000 per week".
+
+Two things staging does not do. Its roots are named things like "(STAGING)
+Pretend Pear X1", and the page is clear: "Do not add the staging root or
+intermediate to a trust store that you use for ordinary browsing or other
+activities, since they are not audited or held to the same standards as our
+production roots." Accounts are separate too, so a key registered against
+production does not exist there.
+
+A staging run proves the plumbing and nothing about trust, which is the right
+division of labor: the plumbing breaks fifty times. But the page draws a line
+most CI advice misses. Staging "is not a great fit for integration with
+development environments or continuous integration (CI)", because the network
+calls add instability and it "offers no way to 'fake' DNS or challenge
+validation success". For that Let's Encrypt ships Pebble, "a small ACME server
+purpose built for CI and development environments". Staging is the rehearsal
+before production. Pebble is the test suite that runs on every commit.
+
+\`\`\`
+$ certbot certonly --dns-cloudflare \\
+    --server https://acme-staging-v02.api.letsencrypt.org/directory \\
+    -d example.com -d '*.example.com'
+\`\`\`
+
+\`certbot renew --dry-run\` does the same for the renewal path: it runs the
+whole cycle against staging and throws the result away.
+
+## What to change
+
+Issuance is state, not a build artifact. A certificate belongs to the host
+that serves it, or to a secret store it reads, never to an image layer that
+gets rebuilt. One issuer per identifier set, everything else consumes what it
+produced.
+
+Turn on ARI, because it is the only exemption covering the limit that fires.
+Rehearse against staging and run test suites against Pebble. Delete
+\`--force-renewal\` from anything on a schedule: \`certbot renew\` is a no-op when
+the certificate is not due, and that no-op is the feature.
+
+And alert on what the server is serving rather than on what sits in
+\`/etc/letsencrypt/live\`, because here those were different files for a month.
+That loop is covered in
+[the renewal loop and its five steps](/blog/certificate-rotation-automation).
+
+## The questions, in order
+
+1. Which limit fired? The error names it and links its section. \`already
+   issued for "example.com"\` is the fifty. \`for this exact set of
+   identifiers\` is the five.
+2. What does \`retry after\` say? That is the refill arithmetic already done,
+   and it is never a Monday.
+3. How many separate things issue for this identifier set? More than one is
+   the bug, and the loser is the one on the server.
+4. Does the client ask ARI? If not, the renewal exemption does not cover the
+   limit that fired.
+5. Is every pipeline off production? Rehearsals belong on staging, test
+   suites on Pebble.
+
+None of those are about the fifty, and the fifty is the first number everybody
+looks up.
+
+You can work through ten broken chains, including the ones where the
+certificate is valid and the server is serving the wrong file, at
+[a chain that does not validate](/chain).
+
+## References
+
+- [Let's Encrypt, Rate Limits](https://letsencrypt.org/docs/rate-limits/)
+- [Let's Encrypt, Staging Environment](https://letsencrypt.org/docs/staging-environment/)
+- [Let's Encrypt, Challenge Types](https://letsencrypt.org/docs/challenge-types/)
+- [Let's Encrypt, Certificate Profiles](https://letsencrypt.org/docs/profiles/)
+- [RFC 9773, ACME Renewal Information (ARI) Extension](https://www.rfc-editor.org/rfc/rfc9773.html)
+- [RFC 8555, Automatic Certificate Management Environment (ACME)](https://www.rfc-editor.org/rfc/rfc8555.html)
+- [boulder/ratelimits/limiter.go, where the error strings are built](https://github.com/letsencrypt/boulder/blob/main/ratelimits/limiter.go)
+- [Pebble, a small ACME server for CI](https://github.com/letsencrypt/pebble)
+- [The Public Suffix List](https://publicsuffix.org/)`,
+  },
+  {
+    slug: "deleted-and-still-growing",
+    title: "Deleted, and Still Growing",
+    date: "2026-09-19",
+    tags: ["linux", "operations", "storage"],
+    excerpt:
+      "Deleting a file does not free its blocks. It removes a name, and the space comes back only when the last name and the last open file descriptor are both gone, which is why df keeps climbing hours after the rm. lsof +L1 names the process still holding the inode, and truncating through /proc/PID/fd/N gets the disk back without restarting anything.",
+    coverImage: "/images/blog/deleted-and-still-growing.jpg",
+    content: `## The file is gone and the disk is still filling
+
+Two in the morning, a log filesystem at 100%, and somebody does the obvious
+thing:
+
+\`\`\`
+$ sudo rm /var/log/app/app.log
+\`\`\`
+
+Six hours later:
+
+\`\`\`
+$ df -h /var/log
+Filesystem           Size  Used Avail Use% Mounted on
+/dev/mapper/vg0-log   99G   93G     0 100% /var/log
+
+$ du -shx /var/log
+2.6G	/var/log
+\`\`\`
+
+Ninety gigabytes are allocated on that filesystem and nothing on it has a name,
+and the number is still climbing. The file was deleted six hours ago and it is
+getting bigger.
+
+This is not corruption and \`fsck\` will not find anything. \`du\` walks names; \`df\`
+asks the filesystem how many blocks are allocated. A file can have blocks and no
+name, and \`rm\` is exactly the thing that produces one.
+
+## The name and the file are two different objects
+
+A directory is a list of pairs: a name, and an inode number. The inode is the
+file. It holds the mode, the owner, the timestamps, the block pointers and a
+link count, which is how many directory entries point at it. The name holds none
+of that, which is why \`rm\` on one of two hard links leaves the data intact.
+
+\`rm\` calls \`unlink(2)\`, and the man page is unusually direct about what that
+does and does not do:
+
+> unlink() deletes a name from the filesystem. If that name was the last link
+> to a file and no processes have the file open, the file is deleted and the
+> space it was using is made available for reuse.
+
+Two conditions, joined by **and**. The second one gets its own sentence:
+
+> If the name was the last link to a file but any processes still have the file
+> open, the file will remain in existence until the last file descriptor
+> referring to it is closed.
+
+So there are two reference counts, not one: the link count on disk, and the
+count of open file descriptions in the kernel. The blocks come back when both
+reach zero, and \`rm\` only drives the first one down.
+
+The misconception is that deleting a file frees its space. Deleting a **name**
+frees its space only if it was the last name and nothing has it open, and on a
+log a daemon opened at boot neither is true. From the writer's side nothing has
+happened: \`rm\` on a file you have open is an event you are not told about and
+cannot observe, and it keeps appending to an inode that no longer appears
+anywhere in the directory tree.
+
+## lsof +L1, and what the link count tells you
+
+There is a flag for exactly this case:
+
+> When **+L** is followed by a number, only files having a link count less than
+> that number will be listed. (No number may follow **-L**.) A specification of
+> the form \`\`**+L1**'' will select open files that have been unlinked. A
+> specification of the form \`\`**+aL1** \`<file_system>\`'' will select unlinked open
+> files on the specified file system.
+
+Link count less than one means zero: no directory entry anywhere points at this
+inode:
+
+\`\`\`
+$ sudo lsof +aL1 /var/log
+COMMAND    PID USER   FD   TYPE DEVICE    SIZE/OFF NLINK    NODE NAME
+java     14811  app    3w   REG  253,2 96636764160     0  262145 /var/log/app/app.log (deleted)
+\`\`\`
+
+One line with everything: the process, the descriptor, ninety gibibytes in
+\`SIZE/OFF\`, \`NLINK\` at zero, the inode in \`NODE\`. The \`a\` is not optional.
+\`lsof\` ORs its selections by default, so \`+L1 /var/log\` without it lists every
+unlinked file on the box alongside everything open under \`/var/log\`.
+
+## /proc/PID/fd, and where "(deleted)" comes from
+
+\`lsof\` is reading \`/proc\`, and so can you:
+
+> This is a subdirectory containing one entry for each file which the process
+> has open, named by its file descriptor, and which is a symbolic link to the
+> actual file.
+
+\`\`\`
+$ sudo ls -l /proc/14811/fd/ | grep deleted
+l-wx------ 1 app app 64 Sep 19 08:14 3 -> /var/log/app/app.log (deleted)
+\`\`\`
+
+That suffix is not part of the filename and it is not \`lsof\` being helpful. It
+comes from \`d_path()\` in \`fs/d_path.c\`, whose comment reads "If the entry has
+been deleted the string " (deleted)" is appended" and whose code is two lines:
+
+\`\`\`c
+if (unlikely(d_unlinked(path->dentry)))
+	prepend(&b, " (deleted)", 11);
+\`\`\`
+
+\`proc_pid_maps(5)\` documents the same marker, because it is a property of
+rendering an unlinked dentry, not of this directory. It is appended text rather
+than structure, so a file genuinely named \`app.log (deleted)\` renders the same
+way: the link count is the fact, the suffix is a hint.
+
+\`fdinfo\` gives you the numbers the symlink cannot:
+
+\`\`\`
+$ sudo cat /proc/14811/fdinfo/3
+pos:	96636764160
+flags:	02102001
+mnt_id:	29
+ino:	262145
+\`\`\`
+
+\`pos\` is the file offset in decimal. \`flags\` is "an octal number that displays
+the file access mode and file status flags". Decompose it: \`1\` is \`O_WRONLY\`,
+\`2000\` is \`O_APPEND\`, \`100000\` is \`O_LARGEFILE\`, \`2000000\` is \`O_CLOEXEC\`. The
+bit that matters below is \`O_APPEND\`, and this process has it.
+
+## Why create needs a signal and copytruncate does not
+
+These files come from rotation, so be precise about what each does to the inode.
+The usual setup is rename plus create: \`logrotate\` renames \`app.log\` to
+\`app.log.1\` and then, per the man page, "Immediately after rotation (before the
+postrotate script is run) the log file is created (with the same name as the log
+file just rotated)."
+
+\`rename(2)\` changes a directory entry. It does not touch the inode, and it
+certainly does not touch anybody's open file description, so the daemon is still
+writing to the same inode, now named \`app.log.1\`. The freshly created \`app.log\`
+is a different inode with nothing writing to it, and it stays at zero bytes
+forever.
+
+That is what \`postrotate\` is for, and the signal is the only thing that makes
+the process \`close()\` and \`open()\` again. nginx documents its half. \`USR1\` means
+"re-opening log files", and the procedure is "In order to rotate log files, they
+need to be renamed first. After that USR1 signal should be sent to the master
+process."
+
+\`\`\`
+/var/log/nginx/*.log {
+        daily
+        rotate 14
+        missingok
+        compress
+        delaycompress
+        create 0640 www-data adm
+        sharedscripts
+        postrotate
+                kill -USR1 $(cat /run/nginx.pid)
+        endscript
+}
+\`\`\`
+
+Get that block wrong, or point it at a stale pid file, and you get fourteen
+rotated files, one still growing, and an \`app.log\` of zero bytes that looks fine
+in every listing. Then \`rotate 14\` comes around, the growing one ages out,
+\`logrotate\` unlinks it, and it is deleted and still growing.
+
+\`copytruncate\` exists for the process that cannot be signaled:
+
+> Truncate the original log file to zero size in place after creating a copy,
+> instead of moving the old log file and optionally creating a new one. It can
+> be used when some program cannot be told to close its logfile and thus might
+> continue writing (appending) to the previous log file forever.
+
+The inode never changes, so there is nothing to reopen and no signal to send.
+The descriptor was always pointing at the right inode and keeps working.
+
+## The race, and the hole it leaves
+
+The same paragraph is candid about the cost:
+
+> Note that there is a very small time slice between copying the file and
+> truncating it, so some logging data might be lost.
+
+The window is the gap between the copy reading its last byte and \`truncate()\`
+landing. Anything written in between is discarded, because truncation is
+unconditional: \`ftruncate(2)\` says "If the file previously was larger than this
+size, the extra data is lost." It does not know which bytes were copied.
+
+The window scales with the file. A 200 MB log on a device doing 400 MB/s is
+sub-second and negligible. A 12 GB log on the same device is roughly half a
+minute of copying, and the tail of that half minute is gone. How much you lose
+is a function of how badly you needed rotation, which is the wrong way round.
+
+The second failure is quieter, and comes from a sentence further down the same
+man page: "The file offset is not changed."
+
+With \`O_APPEND\` this never bites, because \`open(2)\` promises that "Before each
+write(2), the file offset is positioned at the end of the file, as if with
+lseek(2)." Truncate to zero and the next write goes to zero.
+
+Without it, the offset stays where it was. The file was 12 GB, it is now empty,
+and the next write lands at byte 12,884,901,888. The kernel fills the gap with a
+hole, so \`ls -l\` reports 12 GB again and \`du\` reports a few kilobytes. The first
+time I did this by hand I spent ten minutes convinced the truncate had failed,
+because \`ls -l\` was back where it started. It had not: \`df\` stayed down and I
+was reading apparent size. It matters later though: \`cp\` defaults to
+\`--sparse=auto\` and keeps the hole, but \`cat\`, \`tar\` and most log shippers will
+reconstitute those twelve gigabytes of null bytes somewhere else.
+
+So check the \`O_APPEND\` bit in \`fdinfo\` before assuming \`copytruncate\` is safe
+for a given writer.
+
+## Truncating through the descriptor
+
+An inode with no name, ninety gibibytes of blocks, and a process you would
+rather not restart. Reach it the only way left, through the descriptor keeping
+it alive:
+
+\`\`\`
+$ sudo truncate -s 0 /proc/14811/fd/3
+$ df -h /var/log
+Filesystem           Size  Used Avail Use% Mounted on
+/dev/mapper/vg0-log   99G  2.7G   91G   3% /var/log
+\`\`\`
+
+Opening the magic symlink resolves to the inode, \`ftruncate\` frees the blocks,
+and \`df\` moves before the command returns. No restart, no signal, no cooperation
+from the process. \`: > /proc/14811/fd/3\` does the same.
+
+Three things that do not work, in the order people try them. \`rm\` again: there
+is no name left to unlink. \`echo > /var/log/app/app.log\`: that makes a new inode
+and truncates it, freeing nothing. \`kill -HUP\`: only if the process implements
+reopen on HUP, which you want to know in advance.
+
+You are discarding the log: the blocks and the content are the same thing. If
+any of it matters, read it out of \`/proc/14811/fd/3\` first.
+
+## The questions, in order
+
+1. Do \`df\` and \`du -shx\` on the same mount point disagree? Then the space is
+   real and it is not under any name.
+2. Does \`lsof +aL1 <mountpoint>\` return anything with \`NLINK\` at 0? That names
+   the process and the descriptor, and that is the whole diagnosis.
+3. Is the writer's descriptor \`O_APPEND\`? \`grep flags /proc/PID/fdinfo/N\` and
+   look for the \`2000\` bit. It decides whether truncation leaves a hole.
+4. Why was it deleted rather than rotated? A hand written \`rm\` on a live log is
+   almost always a rotation config that was never wired to a signal.
+
+The first three take thirty seconds. The fourth is the one that stops it
+happening again, and it is the one nobody does, because by then \`df\` looks fine.
+
+If \`lsof +aL1\` comes back empty and the numbers still do not add up, the rest of
+the map is in [the disk was not full](/blog/the-disk-was-not-full), and you can
+work through it at [no space left on device](/space).
+
+## References
+
+- [unlink(2), on when the space is released](https://man7.org/linux/man-pages/man2/unlink.2.html)
+- [lsof(8), on +L and link counts](https://man7.org/linux/man-pages/man8/lsof.8.html)
+- [proc_pid_fd(5), on the descriptor symlinks](https://man7.org/linux/man-pages/man5/proc_pid_fd.5.html)
+- [proc_pid_fdinfo(5), on the octal flags field](https://man7.org/linux/man-pages/man5/proc_pid_fdinfo.5.html)
+- [proc_pid_maps(5), which documents the " (deleted)" suffix](https://man7.org/linux/man-pages/man5/proc_pid_maps.5.html)
+- [fs/d_path.c, where the kernel appends it](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/fs/d_path.c)
+- [ftruncate(2), on lost data and the file offset](https://man7.org/linux/man-pages/man2/ftruncate.2.html)
+- [open(2), on O_APPEND](https://man7.org/linux/man-pages/man2/open.2.html)
+- [cp(1), on --sparse=auto and holes](https://www.gnu.org/software/coreutils/manual/html_node/cp-invocation.html)
+- [logrotate(8), on create, copytruncate and postrotate](https://man7.org/linux/man-pages/man8/logrotate.8.html)
+- [nginx, on USR1 and rotating log files](https://nginx.org/en/docs/control.html)`,
+  },
+  {
     slug: "the-first-probe-is-two-hours-late",
     title: "The First Probe Is Two Hours Late",
     date: "2026-09-19",
