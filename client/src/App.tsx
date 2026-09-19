@@ -201,6 +201,9 @@ const CinematicLimits = lazyWithRetry(() =>
 const CinematicFree = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicFree").then((m) => ({ default: m.CinematicFree })),
 );
+const CinematicNdots = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicNdots").then((m) => ({ default: m.CinematicNdots })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -932,6 +935,11 @@ function AnimatedRoutes() {
           <Route path="/free">
             <Suspense fallback={<RouteLoading />}>
               <CinematicFree />
+            </Suspense>
+          </Route>
+          <Route path="/ndots">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicNdots />
             </Suspense>
           </Route>
           <Route path="/cache">

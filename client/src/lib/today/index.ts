@@ -34,6 +34,7 @@ import { CASES as THROTTLES } from "@/lib/throttle/index";
 import { CASES as PORTS } from "@/lib/ports/index";
 import { CASES as LIMITS } from "@/lib/limits/index";
 import { CASES as FREES } from "@/lib/free/index";
+import { CASES as NDOTS } from "@/lib/ndots/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -90,6 +91,7 @@ const OFFSET = {
   ports: 113,
   limits: 127,
   free: 131,
+  ndots: 137,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -344,6 +346,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "One line of /proc/meminfo and two subtractions. Work out what MemAvailable says and whether it is true here.",
       href: "/free",
       outOf: FREES.length,
+    });
+  }
+
+  const searched = pickFor(NDOTS, day, OFFSET.ndots);
+  if (searched) {
+    out.push({
+      surface: "ndots",
+      eyebrow: "Count",
+      title: searched.name,
+      blurb: "One hostname, two lines of resolv.conf. Work out how many DNS queries go on the wire and in what order.",
+      href: "/ndots",
+      outOf: NDOTS.length,
     });
   }
 

@@ -36,6 +36,7 @@ import { CASES as THROTTLE_CASES, everThrottled as thrEver, exhaustsAt as thrExh
 import { CASES as PORT_CASES, exhausts as portExhausts, TIME_WAIT_SECONDS as portTw } from "@/lib/ports/index";
 import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
+import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -336,6 +337,20 @@ export function CinematicPractice() {
         `${FREE_CASES.length} machines`,
         `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
         "si_mem_available",
+      ],
+      progress: null,
+    },
+    {
+      href: "/ndots",
+      eyebrow: "Count",
+      title: "Ten queries for one name",
+      blurb:
+        "The resolver counts the dots in a name against ndots and from that decides whether to try the name first or every search domain first. Work out how many queries one hostname costs.",
+      reachFor: "the cluster DNS is busy and every graph is NXDOMAIN",
+      stats: [
+        `${NDOTS_CASES.length} names`,
+        `${NDOTS_CASES.filter((item) => ndotsWasted(item.setup) >= 6).length} costing six or more wasted queries`,
+        "resolv.conf(5)",
       ],
       progress: null,
     },
