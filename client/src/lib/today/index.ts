@@ -43,6 +43,7 @@ import { CASES as NEIGHS } from "@/lib/neigh/index";
 import { CASES as SHMS } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS } from "@/lib/maxstartups/index";
 import { CASES as RETRANS } from "@/lib/retrans/index";
+import { CASES as CONNTRACK } from "@/lib/conntrack/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -108,6 +109,7 @@ const OFFSET = {
   shm: 167,
   maxstartups: 173,
   retrans: 179,
+  conntrack: 181,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -446,6 +448,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
       href: "/shm",
       outOf: SHMS.length,
+    });
+  }
+
+  const tracked = pickFor(CONNTRACK, day, OFFSET.conntrack);
+  if (tracked) {
+    out.push({
+      surface: "conntrack",
+      eyebrow: "Count",
+      title: tracked.name,
+      blurb: "A host, a workload, and a table whose limit depends on whether anybody ever touched a modprobe file. Work out what it holds and whether the kernel can make room.",
+      href: "/conntrack",
+      outOf: CONNTRACK.length,
     });
   }
 

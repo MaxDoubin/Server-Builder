@@ -132,8 +132,12 @@ const INDEX = path.join(DIST, "index.html");
  * one puts in the static entry is its row in the command palette. Eight
  * surfaces, seven raises, and the rule from the top of this comment has now
  * held eight times.
+ *
+ * 707 KB, raised from 706 by /conntrack, measured at 705.8. Nine surfaces,
+ * eight raises, every one between 0.3 and 0.7 KB, and still nothing in the
+ * static entry from any of them but a command palette row.
  */
-const BUDGET_BYTES = 706 * 1024;
+const BUDGET_BYTES = 707 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

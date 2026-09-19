@@ -662,6 +662,12 @@ jobs:
       - name: TCP retransmission budget
         run: npx tsx scripts-ci/check-retrans.ts
 
+      # The conntrack limit depends on whether anybody forced the hash size,
+      # and "table full" is printed only when early_drop found nothing it was
+      # allowed to take. Both are recomputed here against a measured kernel.
+      - name: Conntrack table
+        run: npx tsx scripts-ci/check-conntrack.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 
