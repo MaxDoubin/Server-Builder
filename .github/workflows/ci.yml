@@ -650,6 +650,12 @@ jobs:
       - name: Shared memory surface
         run: npx tsx scripts-ci/check-shm.ts
 
+      # sshd refuses connections with a probability, not at a number, and every
+      # step of the arithmetic behind it truncates. Both halves are recomputed
+      # here in shapes the model does not share.
+      - name: SSH startup ramp
+        run: npx tsx scripts-ci/check-maxstartups.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

@@ -43,6 +43,7 @@ import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/k
 import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
 import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
 import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
+import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -357,6 +358,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/maxstartups",
+      eyebrow: "Predict",
+      title: "Connection refused",
+      blurb:
+        "The daemon is idle, nobody is logged in, and it refused you. MaxStartups counts connections that have not authenticated yet, and it refuses them with a probability rather than at a number.",
+      reachFor: "ssh fails, you run it again, and it works",
+      stats: [
+        `${MAXSTARTUPS_CASES.length} daemons`,
+        `${MAXSTARTUPS_CASES.filter((item) => maxCertainty(item.setup) !== "accepted").length} refusing something`,
+        "10:30:100",
       ],
       progress: null,
     },

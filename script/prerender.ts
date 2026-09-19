@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as MAXSTARTUPS_CASES, asConfig as maxConfig, asLog as maxLog, certainty as maxCertainty, correctOption as maxCorrect, dropPercent as maxDrop, inFlight as maxInFlight, safeBegin as maxSafeBegin } from "../client/src/lib/maxstartups/index";
 import { CASES as SHM_CASES, asInvocation as shmInvocation, asSymptom as shmSymptom, chargedMiB as shmCharged, correctOption as shmCorrect, demandMiB as shmDemand, diesAtUnit as shmDies, failure as shmFailure, fits as shmFits, human as shmHuman, needsShmMiB as shmNeeds, shmKnob } from "../client/src/lib/shm/index";
 import { CASES as NEIGH_CASES, asCounts as neighCounts, asDmesg as neighDmesg, asSysctl as neighSysctl, canReclaim as neighCanReclaim, correctOption as neighCorrect, entries as neighEntries, headroom as neighHeadroom, overflows as neighOverflows, state as neighState, tableId as neighTableId, thresh3Needed as neighNeeded } from "../client/src/lib/neigh/index";
 import { CASES as STARTLIMIT_CASES, asJournal as startlimitJournal, asStatus as startlimitStatus, asUnit as startlimitUnit, correctOption as startlimitCorrect, cycleMs as startlimitCycle, ending as startlimitEnding, givesUpAtMs as startlimitGivesUp, human as startlimitHuman, rateLimited as startlimitStopped, safeRestartSecMs as startlimitSafe, startsBeforeFailing as startlimitStarts } from "../client/src/lib/startlimit/index";
@@ -891,6 +892,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/startlimit">The service gave up</a>, why systemd stopped restarting a unit and why the slower crash never stops.</li>
     <li><a href="${SITE_URL}/neigh">Neighbor table overflow</a>, how many entries a flat segment needs and why IPv6 needs twice as many.</li>
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
+    <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2196,6 +2198,7 @@ ${JSON.stringify({
     ["The service gave up", "/startlimit"],
     ["Neighbor table overflow", "/neigh"],
     ["Bus error", "/shm"],
+    ["Connection refused", "/maxstartups"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3965,6 +3968,114 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── the SSH startup ramp ──
+  /*
+    The static body carries the three numbers, the occupancy arithmetic per
+    daemon and the ramp's shape, because the search that brings people here is
+    a connection that failed once and worked on the retry, and what they need
+    next is the count for a daemon shaped like theirs. The table puts the
+    arrival rate beside the settled occupancy, which is the step everybody
+    skips.
+  */
+  const maxRefusing = MAXSTARTUPS_CASES.filter((item) => maxCertainty(item.setup) !== "accepted").length;
+  const maxCertain = MAXSTARTUPS_CASES.filter((item) => maxCertainty(item.setup) === "dropped").length;
+  const maxDescription =
+    "MaxStartups counts connections that have not finished authenticating, not sessions and not " +
+    "load, and sshd_config(5) gives its default as 10:30:100: random early drop, starting at ten " +
+    "concurrent unauthenticated connections with a thirty percent chance and reaching certainty " +
+    "at a hundred. So the eleventh connection is a coin toss, the same command run again works, " +
+    "and nothing about the machine changed. A slot is held until authentication succeeds or " +
+    "LoginGraceTime expires, which defaults to 120 seconds, so ten connections a minute that " +
+    `never authenticate is twenty slots standing. ${MAXSTARTUPS_CASES.length} daemons here, ${maxRefusing} refusing ` +
+    `something and ${maxCertain} refusing everything.`;
+
+  await writePage("maxstartups", base, {
+    title: "The Connection Was Refused and the Daemon Was Not Busy | Max Doubin",
+    description: maxDescription,
+    canonical: `${SITE_URL}/maxstartups`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Connection refused",
+  description: maxDescription,
+  url: `${SITE_URL}/maxstartups`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Why sshd refuses connections on an idle host: that MaxStartups counts concurrent unauthenticated connections rather than sessions or load, that its default 10:30:100 is a random early drop so the same command can fail and then succeed, that the middle number is the probability at the bottom of the ramp and not along it, that every step of should_drop_connection is integer arithmetic so the ramp is a staircase rather than the line its own comment describes, that raising the third number lowers the odds but only the first number can make them zero, that a slot is held until authentication succeeds or LoginGraceTime expires so arrival rate times holding time is the occupancy, that LoginGraceTime 0 means a connection that never authenticates never gives its slot back, and that drop_connection rate limits its own logging so a daemon dropping steadily goes quiet",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Connection refused</h1>
+  <p>
+    ${MAXSTARTUPS_CASES.length} SSH daemons, each with an arrival pattern and one question.
+    ${maxRefusing} of them are refusing something and ${maxCertain} are refusing everything, and
+    not one of them is short of processor, memory or bandwidth.
+  </p>
+  <p>
+    The manual page gives the default in one line: "Alternatively, random early drop can be
+    enabled by specifying the three colon separated values start:rate:full (e.g. 10:30:60). The
+    default is 10:30:100." What it does not say is that every step of the calculation behind it is
+    integer arithmetic, so the rise the source comment calls linear is a staircase. On the default
+    setting ten standing and eleven standing both give thirty percent, and the probability holds
+    flat for about one and a third connections at a time all the way up.
+  </p>
+  <p>
+    The other half is what fills the slots. A connection holds one from the moment it is accepted
+    until it authenticates or <code>LoginGraceTime</code> expires, which defaults to 120 seconds.
+    Arrival rate times holding time is the occupancy, and nothing else is. Ten connections a
+    minute that never authenticate is twenty slots standing, which is twice the default start
+    value, from a rate of traffic no graph would show.
+  </p>
+  <h2>What each daemon is holding</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>MaxStartups</th><th>Grace</th><th>Arriving</th><th>Never finishing</th><th>Standing</th><th>Chance of refusal</th><th>Safe start value</th></tr>
+    </thead>
+    <tbody>
+${MAXSTARTUPS_CASES.map((item) => {
+  const s = item.setup;
+  const standing = maxInFlight(s);
+  const safe = maxSafeBegin(s);
+  return `      <tr><td>${esc(s.host)}</td><td>${s.begin}:${s.rate}:${s.full}</td>` +
+    `<td>${s.graceSeconds === 0 ? "none" : `${s.graceSeconds}s`}</td>` +
+    `<td>${s.arrivalsPerMinute}/min at ${s.authSeconds}s</td><td>${s.stuckPerMinute}/min</td>` +
+    `<td>${standing === null ? "climbs without bound" : standing}</td>` +
+    `<td>${maxDrop(s)}%</td><td>${safe === null ? "none helps" : safe}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${MAXSTARTUPS_CASES.map((item) => {
+  const right = maxCorrect(item);
+  const s = item.setup;
+  const standing = maxInFlight(s);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(maxConfig(s))}
+
+${esc(maxLog(s))}</code></pre>
+    <p>${standing === null
+      ? "The count never settles, because nothing reclaims a slot from a connection that does not authenticate."
+      : `${standing} connections stand unauthenticated once the arrivals settle, which puts the chance of a refusal at ${maxDrop(s)} percent.`}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-connection-refused-by-a-daemon-doing-nothing", "The connection refused by a daemon doing nothing"], ["/backlog", "Idle, and the connections time out"], ["/keepalive", "Six minutes of silence"]])}
 </main>`,
   });
 
@@ -7080,6 +7191,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/startlimit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/neigh`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

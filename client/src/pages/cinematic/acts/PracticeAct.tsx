@@ -49,6 +49,7 @@ import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/k
 import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
 import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
 import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
+import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -183,6 +184,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/maxstartups",
+    eyebrow: "Predict",
+    title: "Connection refused",
+    blurb:
+      "It failed, you ran the same command again, and it worked. sshd refuses connections with a probability rather than at a number, and the thing it counts is nowhere on a dashboard.",
+    count: `${MAXSTARTUPS_CASES.length} daemons, ${MAXSTARTUPS_CASES.filter((item) => maxCertainty(item.setup) !== "accepted").length} refusing something`,
   },
   {
     href: "/neigh",

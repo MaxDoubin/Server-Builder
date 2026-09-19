@@ -37,6 +37,7 @@ import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
 import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
 import { CASES as NEIGHS } from "@/lib/neigh/index";
 import { CASES as SHMS } from "@/lib/shm/index";
+import { CASES as MAXSTARTUPS } from "@/lib/maxstartups/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -71,6 +72,7 @@ import { loadSolvedKeepalive } from "@/lib/keepalive/progress";
 import { loadSolvedStartlimit } from "@/lib/startlimit/progress";
 import { loadSolvedNeigh } from "@/lib/neigh/progress";
 import { loadSolvedShm } from "@/lib/shm/progress";
+import { loadSolvedMaxstartups } from "@/lib/maxstartups/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -201,6 +203,13 @@ export function readProgress(): Line[] {
       href: "/shm",
       done: loadSolvedShm().filter((slug) => SHMS.some((item) => item.slug === slug)).length,
       total: SHMS.length,
+      noun: "called right",
+    },
+    {
+      label: "Connection refused",
+      href: "/maxstartups",
+      done: loadSolvedMaxstartups().filter((slug) => MAXSTARTUPS.some((item) => item.slug === slug)).length,
+      total: MAXSTARTUPS.length,
       noun: "called right",
     },
     {
