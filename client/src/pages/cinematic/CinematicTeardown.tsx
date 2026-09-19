@@ -143,7 +143,7 @@ export function CinematicTeardown() {
                       setPlaying(false);
                       set(Number(e.target.value) / 1000);
                     }}
-                    className="h-1 w-full cursor-pointer appearance-none rounded bg-[hsl(var(--brand-iron))] accent-[hsl(var(--brand-signal))]"
+                    className="range-slider"
                   />
                 </label>
                 <span className="w-16 text-right font-mono-tight text-xs tabular-nums text-[hsl(var(--brand-ash))]">

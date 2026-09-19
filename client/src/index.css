@@ -1916,3 +1916,73 @@ html.lenis-smooth {
     transition: opacity 1ms linear;
   }
 }
+
+/*
+  Range sliders: a 24px hit area under a 6px track.
+
+  All four range inputs on this site styled the input element itself as
+  the track, at h-1 to h-2, which means the whole thing you have to hit is
+  the thin line you can see. They render as seven sliders, because
+  /transfer's is a component used four times. Measured in a browser at
+  390px: /mtu's packet size was 292x6, /transfer's four were 292x6 each,
+  /teardown's was 132x4 and the Caesar shift was 292x8.
+  On a mouse that is merely fiddly. On a phone it is a four pixel target,
+  against the twenty-four the target size guidance asks for, and you cannot
+  make it easier by aiming better.
+
+  The track is drawn by the pseudo-elements instead, so it stays as thin as
+  it looked while the input itself is 24px tall and transparent. Nothing
+  about the appearance changes; the part that responds to a finger is four
+  times taller.
+
+  Both vendor prefixes, because ::-webkit-slider-runnable-track and
+  ::-moz-range-track cannot be written in one rule: browsers drop a whole
+  selector list when they do not recognise one selector in it, so a combined
+  rule would style the slider in neither engine rather than in both.
+*/
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.range-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: hsl(var(--brand-iron));
+}
+
+.range-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: hsl(var(--brand-iron));
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  /* Centre the thumb on the track: half the thumb, less half the track. */
+  margin-top: -5px;
+  border-radius: 9999px;
+  background: hsl(var(--brand-signal));
+}
+
+.range-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 9999px;
+  background: hsl(var(--brand-signal));
+}
+
+/* The focus ring belongs on the control, not on the thumb, which cannot carry one. */
+.range-slider:focus-visible {
+  outline: 2px solid hsl(var(--brand-signal));
+  outline-offset: 2px;
+  border-radius: 9999px;
+}

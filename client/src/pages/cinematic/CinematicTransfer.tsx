@@ -109,7 +109,7 @@ function LogSlider({ label, value, min, max, format, onChange, testId }: SliderP
         onChange={(event) => onChange(logScale(Number(event.target.value), min, max))}
         data-testid={testId}
         aria-label={label}
-        className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[hsl(var(--brand-iron))] accent-[hsl(var(--brand-signal))]"
+        className="range-slider mt-2"
       />
     </label>
   );

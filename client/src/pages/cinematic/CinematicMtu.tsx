@@ -147,7 +147,7 @@ export function CinematicMtu() {
                   onChange={(event) => setSize(Number(event.target.value))}
                   data-testid="size"
                   aria-label="Packet size in bytes"
-                  className="mt-2 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-[hsl(var(--brand-iron))] accent-[hsl(var(--brand-signal))]"
+                  className="range-slider mt-2"
                 />
               </label>
               <button
