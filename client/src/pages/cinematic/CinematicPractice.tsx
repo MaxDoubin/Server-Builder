@@ -45,6 +45,7 @@ import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/i
 import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
 import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
+import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -359,6 +360,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/conntrack",
+      eyebrow: "Count",
+      title: "Table full",
+      blurb:
+        "The message names its own cause, which is why it is misread. The kernel prints it when it hit the limit, tried to evict something, and found nothing it was allowed to take.",
+      reachFor: "dmesg says table full and nobody knows what the limit is",
+      stats: [
+        `${CONNTRACK_CASES.length} hosts`,
+        `${CONNTRACK_CASES.filter((item) => ctOverflows(item.setup)).length} that overflow`,
+        "432000s",
       ],
       progress: null,
     },

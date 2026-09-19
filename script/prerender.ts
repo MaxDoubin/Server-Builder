@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as CONNTRACK_CASES, asCounters as ctCounters, asSysctl as ctSysctl, buckets as ctBuckets, correctOption as ctCorrect, count as ctCount, earlyDropHelps as ctEarly, entriesHeld as ctHeld, human as ctHuman, maxEntries as ctMax, maxFactor as ctFactor, overflows as ctOverflows, timeoutSeconds as ctTimeout } from "../client/src/lib/conntrack/index";
 import { CASES as RETRANS_CASES, asSysctl as retransSysctl, asTrace as retransTrace, budgetSeconds as retransBudget, correctOption as retransCorrect, countMatchesSysctl as retransMatches, ending as retransEnding, human as retransHuman, retransmissions as retransCount } from "../client/src/lib/retrans/index";
 import { CASES as MAXSTARTUPS_CASES, asConfig as maxConfig, asLog as maxLog, certainty as maxCertainty, correctOption as maxCorrect, dropPercent as maxDrop, inFlight as maxInFlight, safeBegin as maxSafeBegin } from "../client/src/lib/maxstartups/index";
 import { CASES as SHM_CASES, asInvocation as shmInvocation, asSymptom as shmSymptom, chargedMiB as shmCharged, correctOption as shmCorrect, demandMiB as shmDemand, diesAtUnit as shmDies, failure as shmFailure, fits as shmFits, human as shmHuman, needsShmMiB as shmNeeds, shmKnob } from "../client/src/lib/shm/index";
@@ -895,6 +896,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/conntrack">Table full</a>, why the kernel says so when it could not evict anything.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2202,6 +2204,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["Table full", "/conntrack"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3971,6 +3974,116 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── the conntrack table ──
+  /*
+    The static body carries the sizing table, because the search that brings
+    people here is the dmesg line and what they need next is the limit for a
+    host shaped like theirs. The columns put memory beside buckets beside max,
+    which is the comparison that shows the factor is one and not eight.
+  */
+  const ctOver = CONNTRACK_CASES.filter((item) => ctOverflows(item.setup)).length;
+  const ctStuck = CONNTRACK_CASES.filter((item) => ctOverflows(item.setup) && !ctEarly(item.setup)).length;
+  const ctDescription =
+    "nf_conntrack: table full, dropping packet does not mean the table reached its limit. " +
+    "early_drop runs first and the message is printed only when it returns false, and " +
+    "early_drop_list skips any entry with IPS_ASSURED set, which is every connection that has " +
+    "carried traffic both ways. So a table of scans can be evicted and a table of working " +
+    "connections cannot. The limit itself is nf_conntrack_max = max_factor * " +
+    "nf_conntrack_htable_size, and max_factor is 8 only when somebody set the hash size by hand: " +
+    "the auto-sizing branch sets it to 1, so an ordinary host has a limit equal to its bucket " +
+    `count rather than four or eight times it. ${CONNTRACK_CASES.length} hosts here, ${ctOver} that overflow and ` +
+    `${ctStuck} where the kernel can do nothing about it.`;
+
+  await writePage("conntrack", base, {
+    title: "The Table Is Full and the Kernel Cannot Shrink It | Max Doubin",
+    description: ctDescription,
+    canonical: `${SITE_URL}/conntrack`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Table full",
+  description: ctDescription,
+  url: `${SITE_URL}/conntrack`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a conntrack table fills and what the kernel can do about it: that nf_conntrack_max is max_factor times the hash size and max_factor is 1 on every host that did not have the size forced, so the widely quoted four or eight to one ratio is wrong; that the bucket count steps at one and four gibibytes rather than scaling with memory; that early_drop runs before the table full message and skips any entry marked assured, so a table of established connections cannot be shrunk while a table of half open scans can; that assured is set on two way UDP as well as TCP; and that nf_conntrack_tcp_timeout_established is 432000 seconds, so a connection that dies without a FIN holds its slot for five days",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Table full</h1>
+  <p>
+    ${CONNTRACK_CASES.length} hosts, one question each. ${ctOver} of them overflow, and on ${ctStuck} the
+    kernel cannot make room however hard it tries.
+  </p>
+  <p>
+    The message names its own cause, which is why it is usually misread. From
+    net/netfilter/nf_conntrack_core.c, the line is printed only when
+    <code>early_drop</code> has already run and come back empty:
+  </p>
+  <pre><code>if (unlikely(ct_count &gt; nf_conntrack_max)) {
+        if (!early_drop(net, hash)) {
+                ...
+                net_warn_ratelimited("nf_conntrack: table full, dropping packet\n");</code></pre>
+  <p>
+    And what early_drop is allowed to take is one bit. <code>early_drop_list</code> skips any entry
+    with <code>IPS_ASSURED</code> set, and a flow becomes assured once it has carried traffic in
+    both directions. So the eviction path clears out scans and abandoned handshakes and can do
+    nothing at all about a table of working connections. Measured, with the limit lowered to 20 and
+    the table filled with established connections: 296 drops against zero evictions.
+  </p>
+  <p>
+    The limit itself is <code>nf_conntrack_max = max_factor * nf_conntrack_htable_size</code>, and
+    <code>max_factor</code> is initialised to 8 but set to 1 on the last line of the branch that
+    sizes the table from memory. It is 8 only where somebody set the hash size by hand. The host
+    these numbers were taken on has 15 GiB, and reports nf_conntrack_max 262144 against
+    nf_conntrack_buckets 262144: one to one, not the four or eight that every tuning guide quotes.
+  </p>
+  <h2>What each host allows, and what it holds</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Memory</th><th>Hash size</th><th>Buckets</th><th>max_factor</th><th>nf_conntrack_max</th><th>Flows</th><th>Entry lifetime</th><th>Held</th><th>Overflows</th><th>early_drop helps</th></tr>
+    </thead>
+    <tbody>
+${CONNTRACK_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${s.ramGiB} GiB</td>` +
+    `<td>${s.forcedBuckets === null ? "auto" : "forced"}</td><td>${ctCount(ctBuckets(s))}</td>` +
+    `<td>${ctFactor(s)}</td><td>${ctCount(ctMax(s))}</td>` +
+    `<td>${s.flowsPerSecond}/s ${esc(s.flow)}</td><td>${esc(ctHuman(ctTimeout(s)))}</td>` +
+    `<td>${ctCount(ctHeld(s))}</td><td>${ctOverflows(s) ? "yes" : "no"}</td>` +
+    `<td>${ctEarly(s) ? "yes" : "no"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${CONNTRACK_CASES.map((item) => {
+  const right = ctCorrect(item);
+  const s = item.setup;
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(ctSysctl(s))}
+
+${esc(ctCounters(s))}</code></pre>
+    <p>${ctCount(ctHeld(s))} entries held against a limit of ${ctCount(ctMax(s))}, and early_drop ${ctEarly(s) ? "can" : "cannot"} take them.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-table-was-full-and-the-kernel-could-not-shrink-it", "The table was full and the kernel could not shrink it"], ["/neigh", "Neighbor table overflow"], ["/ports", "Out of ports"]])}
 </main>`,
   });
 
@@ -7299,6 +7412,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/conntrack`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

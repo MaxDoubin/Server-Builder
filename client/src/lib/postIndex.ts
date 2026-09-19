@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 290 of them. Regenerate with script/generatePostIndex.ts.
+ * 291 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-table-was-full-and-the-kernel-could-not-shrink-it",
+    title: "The Table Was Full and the Kernel Could Not Shrink It",
+    date: "2026-09-19",
+    tags: ["networking","linux","troubleshooting","operations"],
+    excerpt: "nf_conntrack: table full, dropping packet is printed inside if (!early_drop(...)), so it does not mean the table hit its limit: it means the kernel hit the limit, tried to evict, and found nothing it was allowed to take. Measured with the limit lowered to 20 and the table full of established connections: 296 drops against zero evictions. The limit is also not what the guides say, because max_factor is 1 on every host that did not have its hash size forced, and an established entry outlives its connection by five days, so one connection a second is enough to fill a default table.",
+    coverImage: "/images/blog/the-table-was-full-and-the-kernel-could-not-shrink-it.jpg",
+    wordCount: 1173,
+  },
   {
     slug: "tcp-retries2-is-not-a-count",
     title: "tcp_retries2 Is Not a Count",
@@ -2843,10 +2852,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 290;
+export const POST_COUNT = 291;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety";
+export const POST_COUNT_SPELLED = "two hundred and ninety one";
 
 /**
  * Unique external reference URLs in the article text.
