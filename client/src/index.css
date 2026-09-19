@@ -1937,7 +1937,7 @@ html.lenis-smooth {
 
   Both vendor prefixes, because ::-webkit-slider-runnable-track and
   ::-moz-range-track cannot be written in one rule: browsers drop a whole
-  selector list when they do not recognise one selector in it, so a combined
+  selector list when they do not recognize one selector in it, so a combined
   rule would style the slider in neither engine rather than in both.
 */
 .range-slider {

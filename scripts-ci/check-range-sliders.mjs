@@ -20,7 +20,7 @@
  * are still written as separate rules.
  *
  * That last one is not pedantry. A browser drops an entire selector list
- * when it does not recognise one selector in it, so writing the WebKit and
+ * when it does not recognize one selector in it, so writing the WebKit and
  * Gecko pseudo-elements in one comma separated rule styles the slider in
  * neither engine rather than in both, and the result looks like the plain
  * unstyled control in every browser at once.
