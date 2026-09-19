@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 285 of them. Regenerate with script/generatePostIndex.ts.
+ * 286 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-service-that-crashed-faster-is-the-one-that-stopped",
+    title: "The Service That Crashed Faster Is The One That Stopped",
+    date: "2026-09-19",
+    tags: ["linux","systemd","operations","troubleshooting"],
+    excerpt: "Restart=always does not mean the service will always be restarted. systemd rate limits unit starts in a fixed window anchored at the first start, not a sliding one, so a worker dying half a second in fills the window and is failed for good while the same worker dying two seconds in walks past the end of the window, resets the counter, and restarts ten thousand times overnight. The limit trips when burst times cycle fits inside the interval, which makes raising StartLimitBurst useless, widening the interval stricter rather than kinder, and RestartSec of interval over burst the last value that fails.",
+    coverImage: "/images/blog/the-service-that-crashed-faster-is-the-one-that-stopped.jpg",
+    wordCount: 1504,
+  },
   {
     slug: "it-works-in-chrome",
     title: "It Works in Chrome",
@@ -2798,10 +2807,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 285;
+export const POST_COUNT = 286;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty five";
+export const POST_COUNT_SPELLED = "two hundred and eighty six";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2810,10 +2819,10 @@ export const POST_COUNT_SPELLED = "two hundred and eighty five";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1115;
+export const CITATION_COUNT = 1121;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1274;
+export const CHECKED_URL_COUNT = 1280;

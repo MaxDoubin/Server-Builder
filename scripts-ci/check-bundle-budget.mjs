@@ -109,8 +109,17 @@ const INDEX = path.join(DIST, "index.html");
  * entry is longer than most because the thing a reader types is a sysctl
  * name, and there are a dozen of them that should all find it. 0.7 KB is what
  * that costs, and it is the right place to spend it.
+ *
+ * 703 KB, raised from 702 by /startlimit, measured at 702.7. Grepped again and
+ * the pattern is now established enough to state as a rule: the only strings
+ * from a new surface that reach the entry are its palette entry's title,
+ * detail, href and search terms. No case slug from this one is in there, and
+ * neither is any identifier from its model. Four surfaces, four raises, each
+ * between 0.4 and 0.7 KB. If a surface ever costs materially more than that,
+ * something has leaked and the right response is to find it rather than to
+ * raise this number again.
  */
-const BUDGET_BYTES = 702 * 1024;
+const BUDGET_BYTES = 703 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

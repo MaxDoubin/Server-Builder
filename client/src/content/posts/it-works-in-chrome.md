@@ -71,7 +71,7 @@ root, and only where peers already have it. An intermediate is not a trust
 anchor and no peer is known to possess it.
 
 TLS 1.2 was stricter: RFC 5246 required that "Each following certificate MUST
-directly certify the one preceding it". TLS 1.3 relaxed the ordering to a
+directly certify the one preceding it". [TLS 1.3](/blog/tls-modern-encryption) relaxed the ordering to a
 SHOULD, having noted that some servers are "simply configured incorrectly" and
 that clients should cope. It did not relax the requirement to include them.
 

@@ -177,7 +177,7 @@ named by SNI against the one named by `Host` and answers 421, which RFC 9110
 defines as indicating "that the request was directed at a server that is
 unable or unwilling to produce an authoritative response for the target URI".
 It exists because of CVE-2025-23048, where a client trusted by one vhost's set
-of client certificates could reach another through TLS 1.3 session resumption
+of client certificates could reach another through [TLS 1.3](/blog/tls-modern-encryption) session resumption
 unless `SSLStrictSNIVHostCheck` was on. Fixed in 2.4.64. nginx had the same
 class of bug, CVE-2025-23419, fixed in 1.27.4.
 

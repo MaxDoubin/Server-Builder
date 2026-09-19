@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as STARTLIMIT_CASES, asJournal as startlimitJournal, asStatus as startlimitStatus, asUnit as startlimitUnit, correctOption as startlimitCorrect, cycleMs as startlimitCycle, ending as startlimitEnding, givesUpAtMs as startlimitGivesUp, human as startlimitHuman, rateLimited as startlimitStopped, safeRestartSecMs as startlimitSafe, startsBeforeFailing as startlimitStarts } from "../client/src/lib/startlimit/index";
 import { CASES as KEEPALIVE_CASES, asMiddlebox as keepaliveMiddlebox, asSs as keepaliveSs, asSysctl as keepaliveSysctl, correctOption as keepaliveCorrect, firstProbe as keepaliveFirstProbe, forgottenAt as keepaliveForgotten, noticedAt as keepaliveNoticed, outcome as keepaliveOutcome, ssTimer as keepaliveTimer, survives as keepaliveSurvives } from "../client/src/lib/keepalive/index";
 import { CASES as BACKLOG_CASES, accepted as backlogAccepted, asNstat as backlogNstat, asSs as backlogSs, asSysctl as backlogSysctl, correctOption as backlogCorrect, effectiveCap as backlogCap, fate as backlogFate, humanMs as backlogHuman, overflowed as backlogOverflowed, peakDepth as backlogPeak, queueCapacity as backlogQueueCap } from "../client/src/lib/backlog/index";
 import { CASES as LEASES_CASES, asLease as leasesFile, asTimeline as leasesTimeline, clientsLost as leasesLost, concurrentLeases as leasesConcurrent, correctOption as leasesCorrect, exhaustsAfter as leasesDry, fractionLosing as leasesShare, human as leasesHuman, isInfinite as leasesInfinite, poolUnderPressure as leasesPressure, timers as leasesTimers } from "../client/src/lib/leases/index";
@@ -885,6 +886,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/leases">Forty minutes dark</a>, how many clients a DHCP outage costs and how large a pool has to be.</li>
     <li><a href="${SITE_URL}/backlog">Idle, and the connections time out</a>, what listen() installed as the accept queue and what a full one does.</li>
     <li><a href="${SITE_URL}/keepalive">Six minutes of silence</a>, which timer forgets an idle connection first and what the next write gets.</li>
+    <li><a href="${SITE_URL}/startlimit">The service gave up</a>, why systemd stopped restarting a unit and why the slower crash never stops.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2187,6 +2189,7 @@ ${JSON.stringify({
     ["Forty minutes dark", "/leases"],
     ["Idle, and the connections time out", "/backlog"],
     ["Six minutes of silence", "/keepalive"],
+    ["The service gave up", "/startlimit"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3855,6 +3858,117 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <p>It breaks the belief ${esc(item.breaks)}.</p>
   </article>`;
 }).join("\n")}
+</main>`,
+  });
+
+  // ── the start rate limit ──
+  /*
+    The table is the point of putting this in the static body: two columns,
+    "dies after" and "what happens", and the rows are not monotonic. A unit
+    dying at 200ms is failed, one at 500ms is failed, one at 2.3s restarts
+    forever. Somebody searching "start request repeated too quickly" wants to
+    know which side of that line their unit is on, and the table says.
+  */
+  const startlimitStoppedCount = STARTLIMIT_CASES.filter((item) => startlimitStopped(item.setup)).length;
+  const startlimitForever = STARTLIMIT_CASES.filter((item) => startlimitEnding(item.setup) === "restarting-forever").length;
+  const startlimitDescription =
+    "Restart=always does not mean the service will always be restarted. systemd rate limits unit " +
+    "starts, five inside ten seconds by default, and a unit that exceeds it is failed with " +
+    "start-limit-hit and left there until somebody runs systemctl reset-failed. The window is " +
+    "fixed at the first start rather than sliding, so the limit trips only when the whole burst " +
+    "fits inside one interval: a worker dying half a second in is stopped for good, and the same " +
+    "worker dying 2.3 seconds in walks past the end of the window, resets the counter and " +
+    `restarts forever. ${STARTLIMIT_CASES.length} units here, ${startlimitStoppedCount} stopped for good and ` +
+    `${startlimitForever} restarting with nothing to stop them.`;
+
+  await writePage("startlimit", base, {
+    title: "The Service Gave Up, and Only Because It Crashed Fast | Max Doubin",
+    description: startlimitDescription,
+    canonical: `${SITE_URL}/startlimit`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The service gave up",
+  description: startlimitDescription,
+  url: `${SITE_URL}/startlimit`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "How systemd's start rate limit actually behaves: that Restart= governs whether a restart is scheduled and StartLimitBurst governs whether the start is permitted, that the defaults are five starts in ten seconds, that the window is fixed at the first start rather than sliding so a slower crash loop resets the counter and never trips, that the comparison against the interval is strictly greater than so a start landing exactly on the boundary is refused, that raising StartLimitBurst above what the interval can hold disables the limit rather than raising it, that widening StartLimitIntervalSec makes the limiter stricter rather than kinder, and why a unit that burns its allowance in the first second of boot is never retried when its dependency appears",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The service gave up</h1>
+  <p>
+    ${STARTLIMIT_CASES.length} units in a crash loop, and one question each.
+    ${startlimitStoppedCount} are stopped for good by systemd's start rate limit and
+    ${startlimitForever} restart with nothing at all to stop them. Which of those happens is not
+    decided by the restart policy. It is decided by how fast the process dies.
+  </p>
+  <p>
+    systemd.unit(5) gives every unit <code>StartLimitIntervalSec</code>, 10s by default, and
+    <code>StartLimitBurst</code>, 5. Past that the unit is failed with result
+    <code>start-limit-hit</code> and stays failed until <code>systemctl reset-failed</code>.
+    <code>Restart=</code> in [Service] decides whether a restart is scheduled; it has no say in
+    whether the start is permitted. And the window is fixed at the first start rather than
+    sliding: src/basic/ratelimit.c resets the counter wholesale once the interval has elapsed,
+    so the limit trips exactly when the burst fits inside one interval, which is
+    <code>burst x cycle &lt;= interval</code> where the cycle is the crash time plus RestartSec.
+  </p>
+  <h2>What happens to each unit</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Dies after</th><th>RestartSec</th><th>Cycle</th><th>Restart=</th><th>Limiter</th><th>Starts</th><th>Refused at</th><th>Ends</th></tr>
+    </thead>
+    <tbody>
+${STARTLIMIT_CASES.map((item) => {
+  const s = item.setup;
+  const gave = startlimitGivesUp(s);
+  const cycle = startlimitCycle(s);
+  return `      <tr><td>${s.crashAfterMs === null ? "never" : esc(startlimitHuman(s.crashAfterMs))}</td>` +
+    `<td>${esc(startlimitHuman(s.restartSecMs))}</td><td>${cycle === null ? "n/a" : esc(startlimitHuman(cycle))}</td>` +
+    `<td>${esc(s.restart)}</td><td>${s.burst === 0 || s.intervalMs === 0 ? "off" : `${s.burst} per ${esc(startlimitHuman(s.intervalMs))}`}</td>` +
+    `<td>${startlimitStarts(s) >= 10_000 ? "no end" : startlimitStarts(s)}</td>` +
+    `<td>${gave === null ? "never" : esc(startlimitHuman(gave))}</td><td>${esc(startlimitEnding(s))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${STARTLIMIT_CASES.map((item) => {
+  const right = startlimitCorrect(item);
+  const s = item.setup;
+  const safe = startlimitSafe(s);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(startlimitUnit(s))}
+
+$ journalctl -u ${esc(s.unit)} -o short-monotonic
+${esc(startlimitJournal(s))}
+
+$ systemctl status ${esc(s.unit)}
+${esc(startlimitStatus(s))}</code></pre>
+    <p>${
+      startlimitStopped(s)
+        ? `Refused at ${esc(startlimitHuman(startlimitGivesUp(s) as number))}, after ${startlimitStarts(s)} starts.${safe !== null ? ` RestartSec of ${esc(startlimitHuman(safe))} would have avoided it.` : ""}`
+        : startlimitEnding(s) === "restarting-forever"
+          ? "Never refused: the window elapses and resets the counter before it can refuse anything."
+          : "The restart policy never asks for a restart, so the limiter is never consulted."
+    }</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-service-that-crashed-faster-is-the-one-that-stopped", "The service that crashed faster is the one that stopped"], ["/units", "It started before the thing it needs"], ["/backlog", "Idle, and the connections time out"]])}
 </main>`,
   });
 
@@ -6750,6 +6864,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/leases`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/backlog`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/keepalive`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/startlimit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

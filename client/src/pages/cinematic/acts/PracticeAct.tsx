@@ -46,6 +46,7 @@ import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/inde
 import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/index";
 import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/backlog/index";
 import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/keepalive/index";
+import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -172,6 +173,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The free column is small on every healthy server, by design. MemAvailable is the number that answers the question, and it is an estimate with an arm that flips.",
     count: `${FREE_CASES.length} machines, ${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where the estimate overstates`,
+  },
+  {
+    href: "/startlimit",
+    eyebrow: "Predict",
+    title: "The service gave up",
+    blurb:
+      "Two hosts, one bug, opposite outcomes. The one where the process dies faster is failed and quiet; the one where it dies slower has restarted ten thousand times overnight.",
+    count: `${STARTLIMIT_CASES.length} units, ${STARTLIMIT_CASES.filter((item) => startlimitStopped(item.setup)).length} stopped for good`,
   },
   {
     href: "/keepalive",

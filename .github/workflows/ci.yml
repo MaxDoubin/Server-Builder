@@ -641,6 +641,9 @@ jobs:
       - name: Idle connection surface
         run: npx tsx scripts-ci/check-keepalive.ts
 
+      - name: Start rate limit surface
+        run: npx tsx scripts-ci/check-startlimit.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 
