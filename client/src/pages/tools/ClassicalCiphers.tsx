@@ -228,7 +228,7 @@ export function ClassicalCiphers() {
                     value={shift}
                     onChange={(e) => setShift(Number(e.target.value))}
                     data-testid="input-shift"
-                    className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-[hsl(var(--brand-iron))] accent-[hsl(var(--brand-signal))]"
+                    className="range-slider mt-3"
                   />
                   <p className="mt-2 font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
                     A becomes {caesar("A", decode ? -shift : shift)}. Shift 13 is ROT13, shift 0

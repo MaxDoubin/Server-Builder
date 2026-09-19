@@ -702,6 +702,11 @@ jobs:
       - name: Dead modules
         run: node scripts-ci/check-dead-modules.mjs
 
+      # A range input styled so that its track is its element box gives you a
+      # four pixel target on a phone. All four were, measured at 390px.
+      - name: Range sliders
+        run: node scripts-ci/check-range-sliders.mjs
+
       # A grid whose only grid-cols sits behind a breakpoint has no columns
       # below it, so its implicit track is auto sized and a child that cannot
       # shrink widens it past the container. /patch was clipped by 110px on a
