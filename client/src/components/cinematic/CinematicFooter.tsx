@@ -40,11 +40,22 @@ export function CinematicFooter() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px hairline" />
       <DrawLine color="hsl(72 100% 50%)" className="relative z-10" delay={0.3} />
 
+      {/*
+        Two columns on a phone, three on a tablet, four from lg.
+
+        It went straight from one to four at md, and at 768px a twelve
+        column grid with a 48px gap spends 528px of its 688px on gaps: the
+        Elsewhere column came out 75px wide and clipped
+        MaxDoubin/Server-Builder by 29px, against a card that is
+        overflow-hidden, so the link was cut off mid-word rather than merely
+        tight. It was still 7px short at 900. Four columns need about 1024px
+        here, so that is where they start now.
+      */}
       <div
         data-nosnippet
-        className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-6 gap-y-10 px-6 py-14 md:grid-cols-12 md:gap-12 md:px-10 md:py-20"
+        className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-6 gap-y-10 px-6 py-14 md:grid-cols-3 md:gap-8 md:px-10 lg:grid-cols-12 lg:gap-12 lg:py-20"
       >
-        <div className="col-span-2 md:col-span-5">
+        <div className="col-span-2 md:col-span-3 lg:col-span-5">
           <ScrollReveal variants={fadeLeft} delay={0.1}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Max Doubin · Las Vegas, NV
@@ -84,7 +95,7 @@ export function CinematicFooter() {
           </ScrollReveal>
         </div>
 
-        <div className="md:col-span-3">
+        <div className="lg:col-span-3">
           <ScrollReveal variants={fadeUp} delay={0.25}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Navigate
@@ -145,7 +156,7 @@ export function CinematicFooter() {
           </StaggerGroup>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="lg:col-span-2">
           <ScrollReveal variants={fadeUp} delay={0.28}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               About
@@ -182,7 +193,7 @@ export function CinematicFooter() {
           </StaggerGroup>
         </div>
 
-        <div className="col-span-2 md:col-span-2">
+        <div className="col-span-2 md:col-span-1 lg:col-span-2">
           <ScrollReveal variants={fadeRight} delay={0.3}>
             <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Elsewhere
