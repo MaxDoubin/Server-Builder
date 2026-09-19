@@ -632,6 +632,9 @@ jobs:
       - name: Search list surface
         run: npx tsx scripts-ci/check-ndots.ts
 
+      - name: Lease timing surface
+        run: npx tsx scripts-ci/check-leases.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

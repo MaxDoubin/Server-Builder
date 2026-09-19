@@ -31,6 +31,7 @@ import { CASES as PORTS } from "@/lib/ports/index";
 import { CASES as LIMITS } from "@/lib/limits/index";
 import { CASES as FREES } from "@/lib/free/index";
 import { CASES as NDOTS } from "@/lib/ndots/index";
+import { CASES as LEASES } from "@/lib/leases/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -59,6 +60,7 @@ import { loadSolvedPorts } from "@/lib/ports/progress";
 import { loadSolvedLimits } from "@/lib/limits/progress";
 import { loadSolvedFree } from "@/lib/free/progress";
 import { loadSolvedNdots } from "@/lib/ndots/progress";
+import { loadSolvedLeases } from "@/lib/leases/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -182,6 +184,13 @@ export function readProgress(): Line[] {
       href: "/ndots",
       done: loadSolvedNdots().filter((slug) => NDOTS.some((item) => item.slug === slug)).length,
       total: NDOTS.length,
+      noun: "called right",
+    },
+    {
+      label: "DHCP leases",
+      href: "/leases",
+      done: loadSolvedLeases().filter((slug) => LEASES.some((item) => item.slug === slug)).length,
+      total: LEASES.length,
       noun: "called right",
     },
     {

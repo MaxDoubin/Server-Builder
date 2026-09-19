@@ -43,6 +43,7 @@ import { CASES as PORT_CASES, exhausts as portExhausts } from "@/lib/ports/index
 import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
 import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/index";
+import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -169,6 +170,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The free column is small on every healthy server, by design. MemAvailable is the number that answers the question, and it is an estimate with an arm that flips.",
     count: `${FREE_CASES.length} machines, ${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where the estimate overstates`,
+  },
+  {
+    href: "/leases",
+    eyebrow: "Predict",
+    title: "Forty minutes dark",
+    blurb:
+      "The DHCP server was rebooted for forty minutes and a third of the office lost its address. The number comes out of two timers, and the one that matters is not the lease length.",
+    count: `${LEASES_CASES.length} networks, ${LEASES_CASES.filter((item) => leasesLost(item.setup) > 0).length} that lose clients`,
   },
   {
     href: "/ndots",

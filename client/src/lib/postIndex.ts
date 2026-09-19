@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 276 of them. Regenerate with script/generatePostIndex.ts.
+ * 277 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "forty-minutes-dark",
+    title: "Forty Minutes Dark, And A Third Of The Office Fell Off",
+    date: "2026-09-19",
+    tags: ["networking","operations","troubleshooting"],
+    excerpt: "A DHCP server is rebooted for forty minutes and exactly a third of a 300 machine office loses its address, while the other two hundred never notice. The number follows from two timers RFC 2131 puts in every lease, and the one that decides outage tolerance is the lease less T1, not the lease. The same two numbers decide how large a pool has to be, which is arrivals per hour times lease hours and has nothing to do with how many devices are in the room.",
+    coverImage: "/images/blog/forty-minutes-dark.jpg",
+    wordCount: 2162,
+  },
   {
     slug: "ten-queries-for-one-name",
     title: "Ten Queries for One Name",
@@ -2717,10 +2726,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 276;
+export const POST_COUNT = 277;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy six";
+export const POST_COUNT_SPELLED = "two hundred and seventy seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2729,10 +2738,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy six";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1042;
+export const CITATION_COUNT = 1047;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1201;
+export const CHECKED_URL_COUNT = 1206;
