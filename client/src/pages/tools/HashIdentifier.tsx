@@ -454,7 +454,7 @@ export function HashIdentifier() {
                           {c.name}
                         </span>
                         <span
-                          className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] ${CONFIDENCE_STYLE[c.confidence]}`}
+                          className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] ${CONFIDENCE_STYLE[c.confidence]}`}
                         >
                           {c.confidence} confidence
                         </span>

@@ -156,7 +156,7 @@ export function CinematicNeigh() {
                       {item.setup.arrivedInABurst ? " · all at once" : ""}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -268,7 +268,7 @@ ${asSysctl(setup)}
                         <span style={{ backgroundColor: color }} className="absolute inset-y-0 block w-[2px]" />
                         <span
                           style={{ color }}
-                          className="absolute bottom-0.5 left-1 whitespace-nowrap font-mono-tight text-[0.59375rem]"
+                          className="absolute bottom-0.5 left-1 whitespace-nowrap font-mono-tight text-[0.625rem]"
                         >
                           {label} {value}
                         </span>

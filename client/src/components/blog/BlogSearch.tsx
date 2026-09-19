@@ -452,7 +452,7 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
                       {post.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+                          className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
                         >
                           <Highlight text={tag} tokens={tokens} />
                         </span>

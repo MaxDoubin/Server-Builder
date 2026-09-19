@@ -157,11 +157,11 @@ export function CinematicVlan() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                       {path.hops.length} {pluralise(path.hops.length, "switch")}
                     </span>
                     {mounted && solved.includes(path.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}

@@ -204,7 +204,7 @@ export function CinematicArchive() {
                               {/* Not shrink-0: four tags on a 390px screen
                                   are wider than the line, and this span has
                                   to be allowed to wrap inside itself. */}
-                              <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                              <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                                 {post.tags.map((tag) => (
                                   <span
                                     key={tag}

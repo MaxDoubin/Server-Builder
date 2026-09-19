@@ -150,7 +150,7 @@ function TracerouteScene({ attempted }: { attempted: string }) {
                 <span
                   className="font-mono-tight"
                   style={{
-                    fontSize: 10,
+                    fontSize: "0.625rem",
                     letterSpacing: "0.16em",
                     textTransform: "uppercase",
                     color: dead
@@ -163,7 +163,7 @@ function TracerouteScene({ attempted }: { attempted: string }) {
                 <span
                   className="font-mono-tight"
                   style={{
-                    fontSize: 10,
+                    fontSize: "0.625rem",
                     color: dead ? "hsl(var(--brand-danger))" : "hsl(var(--brand-ash))",
                   }}
                 >

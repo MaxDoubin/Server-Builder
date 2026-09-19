@@ -143,7 +143,7 @@ export function CinematicPorts() {
                         : `${item.setup.destinations.length} destinations`}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}

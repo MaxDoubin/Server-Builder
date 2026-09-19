@@ -223,17 +223,17 @@ export function CinematicMtu() {
                       MTU {hop.mtu}
                     </span>
                     {hop.blocksIcmp ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
                         drops ICMP
                       </span>
                     ) : null}
                     {stopped ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
                         packet dies here
                       </span>
                     ) : null}
                     {ate ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
                         and the explanation dies here
                       </span>
                     ) : null}

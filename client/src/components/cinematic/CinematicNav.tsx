@@ -404,7 +404,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               <span aria-hidden className="hidden 2xl:inline">Search</span>
               <kbd
                 aria-hidden
-                className="rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-techno text-[0.5625rem] tracking-[0.12em]"
+                className="rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-techno text-[0.625rem] tracking-[0.12em]"
               >
                 ⌘K
               </kbd>

@@ -49,7 +49,7 @@ export function DebugOverlay({ visible = true }: DebugOverlayProps) {
     <div className="rounded-lg border border-white/10 bg-black/60 p-3 text-[0.625rem] text-white/70 shadow-[0_0_20px_rgba(0,0,0,0.4)]">
       <div className="flex items-center justify-between text-[0.625rem] uppercase tracking-widest text-cyan-200">
         <span>Diagnostics</span>
-        <span className="text-[0.5625rem] text-white/40">
+        <span className="text-[0.625rem] text-white/40">
           {summary.errors} errors · {summary.warnings} warnings
         </span>
       </div>
@@ -60,8 +60,8 @@ export function DebugOverlay({ visible = true }: DebugOverlayProps) {
           recent.map((entry) => (
             <div key={entry.id} className="rounded border border-white/10 bg-black/40 px-2 py-1">
               <div className="flex items-center justify-between">
-                <span className="uppercase text-[0.5625rem] text-white/40">{entry.level}</span>
-                <span className="text-[0.5625rem] text-white/30">
+                <span className="uppercase text-[0.625rem] text-white/40">{entry.level}</span>
+                <span className="text-[0.625rem] text-white/30">
                   {new Date(entry.timestamp).toLocaleTimeString()}
                 </span>
               </div>

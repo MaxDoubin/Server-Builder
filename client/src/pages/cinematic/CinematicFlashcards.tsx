@@ -258,7 +258,7 @@ export function CinematicFlashcards() {
                   className="mt-6 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] sm:w-auto"
                 >
                   Reveal answer
-                  <span className="rounded border border-[hsl(var(--brand-obsidian)/0.4)] px-1.5 py-0.5 text-[0.5625rem]">
+                  <span className="rounded border border-[hsl(var(--brand-obsidian)/0.4)] px-1.5 py-0.5 text-[0.625rem]">
                     Space
                   </span>
                 </button>
@@ -273,7 +273,7 @@ export function CinematicFlashcards() {
                       className="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] px-3 py-2.5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.06)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                     >
                       <span className="flex items-center gap-1.5 font-mono-tight text-xs font-medium uppercase tracking-[0.1em] text-[hsl(var(--brand-bone))]">
-                        <span aria-hidden className="rounded border border-[hsl(var(--brand-iron))] px-1 text-[0.5625rem] text-[hsl(var(--brand-ash))]">
+                        <span aria-hidden className="rounded border border-[hsl(var(--brand-iron))] px-1 text-[0.625rem] text-[hsl(var(--brand-ash))]">
                           {key}
                         </span>
                         {label}

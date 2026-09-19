@@ -154,7 +154,7 @@ export function CinematicFree() {
                       {human(item.setup.total)} · {human(item.setup.free)} free
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -294,7 +294,7 @@ ${asMeminfo(setup)}
                     ["available", human(available(setup)), "the one that answers the question"],
                   ].map(([label, value, note]) => (
                     <div key={label} className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                      <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         · {label}
                       </p>
                       <p className="mt-2 font-display text-2xl text-[hsl(var(--brand-bone))]">{value}</p>

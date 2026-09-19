@@ -156,7 +156,7 @@ export function CinematicMaxstartups() {
                       {item.setup.graceSeconds === 0 ? "off" : `${item.setup.graceSeconds}s`}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}

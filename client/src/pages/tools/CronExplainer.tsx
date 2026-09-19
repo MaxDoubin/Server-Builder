@@ -467,7 +467,7 @@ export function CronExplainer() {
               {FIELDS.map((f, i) => (
                 <div
                   key={f.name}
-                  className="rounded border border-[hsl(var(--brand-iron)/0.6)] px-1 py-1.5 font-mono-tight text-[0.5625rem] uppercase leading-tight tracking-[0.1em] text-[hsl(var(--brand-ash))]"
+                  className="rounded border border-[hsl(var(--brand-iron)/0.6)] px-1 py-1.5 font-mono-tight text-[0.625rem] uppercase leading-tight tracking-[0.1em] text-[hsl(var(--brand-ash))]"
                 >
                   {f.name}
                   <div className="mt-0.5 text-[hsl(var(--brand-bone-dim))]">

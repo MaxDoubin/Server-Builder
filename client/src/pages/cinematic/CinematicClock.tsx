@@ -200,7 +200,7 @@ export function CinematicClock() {
                       {item.host}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -350,7 +350,7 @@ export function CinematicClock() {
                           style={{ left: `${place(tick)}%` }}
                         >
                           <span className="h-2 w-px bg-[hsl(var(--brand-iron))]" />
-                          <span className="mt-1 whitespace-nowrap font-mono-tight text-[0.59375rem] text-[hsl(var(--brand-ash))]">
+                          <span className="mt-1 whitespace-nowrap font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                             {TICK_LABEL[tick]}
                           </span>
                         </span>

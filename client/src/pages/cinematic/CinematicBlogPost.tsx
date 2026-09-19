@@ -425,7 +425,7 @@ export function CinematicBlogPost() {
               of bottom padding, and three lines of this size come to about
               36px, so the credit cannot grow into the headline.
             */
-            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-3 max-w-[80vw] text-right font-mono-tight text-[0.5625rem] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[0.625rem]">
+            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-3 max-w-[80vw] text-right font-mono-tight text-[0.625rem] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[0.625rem]">
               Photo{" "}
               <a
                 href={post.coverCredit.sourceUrl}

@@ -542,7 +542,7 @@ export function HttpStatusCodes() {
                       <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
                         {s.name}
                         {s.tag ? (
-                          <span className="ml-2 rounded-full border border-[hsl(var(--brand-iron))] px-2 py-0.5 align-middle font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                          <span className="ml-2 rounded-full border border-[hsl(var(--brand-iron))] px-2 py-0.5 align-middle font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                             {s.tag}
                           </span>
                         ) : null}

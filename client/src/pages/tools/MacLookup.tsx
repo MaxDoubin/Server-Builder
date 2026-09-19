@@ -373,7 +373,7 @@ export function MacLookup() {
                           >
                             {bit}
                           </span>
-                          <span className="mt-1 font-mono-tight text-[0.5rem] uppercase tracking-[0.1em] text-[hsl(var(--brand-ash))]">
+                          <span className="mt-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.1em] text-[hsl(var(--brand-ash))]">
                             {isUl ? "U/L" : isIg ? "I/G" : `b${7 - index}`}
                           </span>
                         </div>

@@ -160,7 +160,7 @@ export function CinematicShm() {
                       {item.setup.platform} · /dev/shm {human(item.setup.shmMiB)}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -260,7 +260,7 @@ export function CinematicShm() {
                         <span style={{ backgroundColor: mark.color }} className="absolute inset-y-0 block w-[2px]" />
                         <span
                           style={{ color: mark.color, top: `${4 + i * 15}px` }}
-                          className="absolute left-1.5 whitespace-nowrap font-mono-tight text-[0.59375rem]"
+                          className="absolute left-1.5 whitespace-nowrap font-mono-tight text-[0.625rem]"
                         >
                           {mark.label} {human(mark.value)}
                         </span>
@@ -288,7 +288,7 @@ export function CinematicShm() {
                           <span
                             key={n}
                             title={`${setup.unit} ${n}: ${isDead ? "SIGBUS" : isAfter ? "never started" : "ok"}`}
-                            className={`inline-block h-5 w-5 rounded-[3px] text-center font-mono-tight text-[0.59375rem] leading-5 ${
+                            className={`inline-block h-5 w-5 rounded-[3px] text-center font-mono-tight text-[0.625rem] leading-5 ${
                               isDead
                                 ? "bg-[hsl(var(--brand-danger)/0.8)] text-[hsl(var(--brand-obsidian))]"
                                 : isAfter

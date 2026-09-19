@@ -322,7 +322,7 @@ export function CidrVisualizer() {
                                   aria-pressed={isSelected}
                                   aria-label={`${ipToString(network)} slash ${level.prefix}`}
                                   title={`${ipToString(network)}/${level.prefix}`}
-                                  className={`min-h-[30px] min-w-0 flex-1 overflow-hidden rounded-[3px] border font-mono-tight text-[0.5625rem] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                                  className={`min-h-[30px] min-w-0 flex-1 overflow-hidden rounded-[3px] border font-mono-tight text-[0.625rem] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
                                     isSelected
                                       ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.35)] text-[hsl(var(--brand-bone))]"
                                       : i % 2 === 0

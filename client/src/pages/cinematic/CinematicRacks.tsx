@@ -281,7 +281,7 @@ export function CinematicRacks() {
                     {f.art}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
-                    <div className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                    <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                       {f.kicker}
                     </div>
                     <h3 className="mt-2 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">

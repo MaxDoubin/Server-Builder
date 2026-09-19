@@ -825,7 +825,7 @@ export function CinematicPractice() {
                   className="group grid grid-cols-1 gap-4 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] md:grid-cols-[1fr_auto] md:items-start md:gap-8"
                 >
                   <div className="min-w-0">
-                    <span className="font-techno text-[0.5625rem] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
                       {pillar.eyebrow}
                     </span>
                     <span className="mt-2 block font-display text-2xl font-medium leading-snug text-[hsl(var(--brand-bone))]">

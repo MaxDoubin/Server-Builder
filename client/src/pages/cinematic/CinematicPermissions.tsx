@@ -191,11 +191,11 @@ export function CinematicPermissions() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                       {OPERATION_LABEL[item.operation]}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         called
                       </span>
                     ) : null}
@@ -580,7 +580,7 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
                 <th
                   key={head}
                   scope="col"
-                  className="pb-2 pr-4 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                  className="pb-2 pr-4 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                 >
                   {head}
                 </th>

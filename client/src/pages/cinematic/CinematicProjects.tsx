@@ -260,7 +260,7 @@ export function CinematicProjects() {
                                 }}
                               />
                               <motion.div
-                                className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]"
+                                className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]"
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.3 + idx * 0.05, duration: 0.5 }}

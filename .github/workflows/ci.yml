@@ -726,6 +726,13 @@ jobs:
       - name: Text scaling
         run: node scripts-ci/check-text-scaling.mjs
 
+      # Type below the site's own smallest label size, 0.625rem. A sweep of 80
+      # routes at 390px found 8px, 9px and 9.5px text on 105 elements, all of
+      # it uppercase and tracked, which is the worst shape to set small. Reads
+      # inline styles too, where check-text-scaling cannot look.
+      - name: Type floor
+        run: node scripts-ci/check-type-floor.mjs
+
       # A range input styled so that its track is its element box gives you a
       # four pixel target on a phone. All four were, measured at 390px.
       - name: Range sliders

@@ -553,7 +553,7 @@ export function CommandPalette() {
                     i === cursor ? "bg-[hsl(var(--brand-iron)/0.55)]" : ""
                   }`}
                 >
-                  <span className="w-[4.5rem] shrink-0 font-techno text-[0.5625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                  <span className="w-[4.5rem] shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                     {e.kind}
                   </span>
                   <span className="min-w-0 flex-1">
