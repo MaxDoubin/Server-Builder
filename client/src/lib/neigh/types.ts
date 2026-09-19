@@ -43,9 +43,11 @@
  *
  * The message is spelled "neighbor", American, and prefixed with the table
  * name, so what appears in dmesg is "arp_cache: neighbor table overflow!" or
- * "ndisc_cache: neighbor table overflow!". Older kernels printed "Neighbour
- * table overflow." with no prefix, which is the string most search results
- * still show and the reason the modern one is hard to find.
+ * "ndisc_cache: neighbor table overflow!". Older kernels printed
+ * "Neighbour table overflow." with no prefix, which is the string most search
+ * results still show and the reason the modern one is hard to find. That
+ * quote is kept whole on one line on purpose: check-spelling protects it by
+ * name, and its scanning is line scoped, so wrapping it would hide it.
  *
  * Not modeled: per-device overrides under /proc/sys/net/ipv4/neigh/<dev>/,
  * the unres_qlen backlog, and the hash table resizing that happens

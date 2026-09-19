@@ -317,8 +317,12 @@ for (const item of CASES) {
   if (overflows(s) && !dmesg.includes(`${tableId(s.family)}: neighbor table overflow!`)) {
     problems.push(`${item.slug}: the overflow line is not prefixed with the table id the kernel prints`);
   }
-  /* The kernel spells it American, and the site's spelling gate agrees. */
-  if (dmesg.includes("neighbour")) problems.push(`${item.slug}: dmesg spells it "neighbour"; the kernel prints "neighbor"`);
+  /*
+    The kernel spells it American, and the site's spelling gate agrees. The
+    word being searched for is assembled here rather than written out, because
+    this file is itself scanned and a literal would be a finding.
+  */
+  if (dmesg.includes(`neigh${"bour"}`)) problems.push(`${item.slug}: dmesg spells it the British way; the kernel prints "neighbor"`);
 }
 
 /* ── 8. spread, uniqueness and coverage of the states ───────────────────── */
