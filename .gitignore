@@ -14,3 +14,6 @@ vite.config.ts.*
 # artifacts in client/public/models are committed.
 script/models/*.glb
 __pycache__/
+
+# Workflow agents check out isolated worktrees here; they are not part of the site.
+.claude/worktrees/
