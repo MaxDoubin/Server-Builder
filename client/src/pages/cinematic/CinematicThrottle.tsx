@@ -107,7 +107,7 @@ export function CinematicThrottle() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} cgroups against a quota
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -143,16 +143,16 @@ export function CinematicThrottle() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {limitCpus(item.setup)} cpu · {item.setup.threads} threads
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -165,7 +165,7 @@ export function CinematicThrottle() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="throttle-brief"
             >
               {active.brief}
@@ -175,7 +175,7 @@ export function CinematicThrottle() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="throttle-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ nproc
 ${setup.cores}
 $ cat /sys/fs/cgroup/.../cpu.max
@@ -191,7 +191,7 @@ ${setup.arrivals
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -205,7 +205,7 @@ ${setup.arrivals
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`throttle-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -223,7 +223,7 @@ ${setup.arrivals
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="throttle-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."}{" "}
                   {exhaustsAt(setup) === null
                     ? "The quota is never what stops it."
@@ -262,14 +262,14 @@ ${setup.arrivals
                             />
                             <span className="w-full flex-1 bg-[hsl(var(--brand-iron)/0.35)]" />
                           </div>
-                          <p className="mt-1 text-center font-mono-tight text-[9px] text-[hsl(var(--brand-ash))]">
+                          <p className="mt-1 text-center font-mono-tight text-[0.5625rem] text-[hsl(var(--brand-ash))]">
                             {period.n}
                           </p>
                         </div>
                       );
                     })}
                   </div>
-                  <p className="mt-2 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     One bar per {ms(setup.periodMs)} period, wall clock top to bottom. Green is the
                     group running, red is every thread in it stopped by the quota, grey is the group
                     having run out of work with quota left, which is idle rather than throttled.
@@ -279,25 +279,25 @@ ${setup.arrivals
                 {/* the two numbers, side by side, because they disagree */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · What the dashboard shows
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">
                       {Math.round(summary.utilisation * 100)}%
                     </p>
-                    <p className="mt-1 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                    <p className="mt-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                       of the limit, averaged over {ms(setup.windowMs)}
                     </p>
                   </div>
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · What cpu.stat shows
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">
                       {summary.nrThrottled}
                       <span className="text-lg text-[hsl(var(--brand-ash))]">/{summary.nrPeriods}</span>
                     </p>
-                    <p className="mt-1 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                    <p className="mt-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                       periods throttled, {ms(Math.round(summary.throttledMs * 10) / 10)} stopped in total
                     </p>
                   </div>
@@ -307,29 +307,29 @@ ${setup.arrivals
                   className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
                   data-testid="throttle-stat"
                 >
-                  <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ cat /sys/fs/cgroup/.../cpu.stat
 ${asCpuStat(setup)}`}
                   </pre>
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="throttle-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     The fix ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -338,13 +338,13 @@ ${asCpuStat(setup)}`}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="throttle-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything you need is above: the quota, the period, the thread count, the node's
                 cores and the work. The periods and what cpu.stat would say are drawn once you have
                 committed to an answer.
@@ -353,21 +353,21 @@ ${asCpuStat(setup)}`}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="throttle-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} cgroups`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI runs every one of these a second time, spending quota a tenth of a millisecond at a
             time instead of computing each period in closed form, and fails the build if the two
             disagree about the CPU spent or about which periods were stopped. It also checks that
             the two configurations in the period case still behave differently, because a change
             that quietly collapses them leaves a case that passes and teaches nothing.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other number that looks like a percentage and is not,{" "}
             <Link
               href="/load"
@@ -387,7 +387,7 @@ ${asCpuStat(setup)}`}
 
           <ReadAboutThis href="/throttle" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

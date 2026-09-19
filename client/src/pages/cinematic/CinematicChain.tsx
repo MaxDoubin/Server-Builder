@@ -66,7 +66,7 @@ export function CinematicChain() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Which of us fixes it
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -92,14 +92,14 @@ export function CinematicChain() {
             ))}
           </ol>
 
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI runs every chain through the same validator this page uses and fails the build if a
             stated fault or a named owner disagrees with it. The owner is the half that would rot
             silently: an explanation saying only the client can fix this, against a validator
             naming the server, is a page that teaches someone to open a ticket with the wrong team
             while looking entirely correct.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For a certificate at a prompt rather than on a page, one of the{" "}
             <Link
               href="/labs/used-before-issued"
@@ -141,27 +141,27 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
 
   return (
     <li className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
-      <p className="font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone))]">
+      <p className="font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone))]">
         “{item.symptom}”
       </p>
-      <p className="mt-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+      <p className="mt-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
         {item.hostname} · {item.store.name} · {item.now}
       </p>
       {item.store.note ? (
-        <p className="mt-1 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">
+        <p className="mt-1 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">
           {item.store.note}
         </p>
       ) : null}
 
       <div className="mt-4">
-        <h3 className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+        <h3 className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
           · Presented, in the order sent
         </h3>
         <ol className="mt-2 space-y-1">
           {item.presented.map((cert) => (
             <li
               key={cert.id}
-              className="break-words font-mono-tight text-[12px] leading-snug text-[hsl(var(--brand-bone-dim))]"
+              className="break-words font-mono-tight text-[0.75rem] leading-snug text-[hsl(var(--brand-bone-dim))]"
             >
               <span className="text-[hsl(var(--brand-bone))]">{cert.subject}</span>
               <span className="text-[hsl(var(--brand-ash))]"> issued by {cert.issuer}</span>
@@ -180,7 +180,7 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         data-testid={`chain-steps-${item.id}`}
-        className="mt-3 min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+        className="mt-3 min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
       >
         {open ? "Hide the checks" : "Run the checks"}
       </button>
@@ -188,7 +188,7 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
       {open ? (
         <ol className="mt-3 space-y-1.5 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] p-3">
           {result.steps.map((step, index) => (
-            <li key={index} className="font-mono-tight text-[12.5px] leading-snug">
+            <li key={index} className="font-mono-tight text-[0.78125rem] leading-snug">
               <span
                 className={
                   step.pass
@@ -230,7 +230,7 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
               disabled={picked !== null}
               aria-pressed={chosen}
               data-testid={`chain-option-${item.id}-${index}`}
-              className={`rounded-xl border px-4 py-2.5 text-left font-mono-tight text-[12.5px] leading-snug transition-colors ${tone}`}
+              className={`rounded-xl border px-4 py-2.5 text-left font-mono-tight text-[0.78125rem] leading-snug transition-colors ${tone}`}
             >
               {option.claim}
             </button>
@@ -243,20 +243,20 @@ function CaseCard({ item, onAnswer }: { item: ChainCase; onAnswer: (right: boole
           className="mt-4 border-t border-[hsl(var(--brand-iron))] pt-3"
           data-testid={`chain-explain-${item.id}`}
         >
-          <p className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+          <p className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
             · {picked !== null && item.options[picked] === answer ? "That is it" : "Not that one"} ·{" "}
             {FAULT_LABEL[result.fault] ?? result.fault}
           </p>
-          <p className="mt-2 font-mono-tight text-[12px] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">
+          <p className="mt-2 font-mono-tight text-[0.75rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">
             Fixed by {OWNER_LABEL[result.owner] ?? result.owner}
           </p>
-          <p className="mt-2.5 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]">
+          <p className="mt-2.5 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]">
             {result.summary}
           </p>
           {item.explain.map((paragraph, index) => (
             <p
               key={index}
-              className="mt-2.5 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+              className="mt-2.5 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
             >
               {paragraph}
             </p>

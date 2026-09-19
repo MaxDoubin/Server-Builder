@@ -102,13 +102,13 @@ function PlanView({ problem }: { problem: Problem }) {
         <div className="mx-auto max-w-[980px]">
           <Link
             href="/allocate"
-            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
           >
             ← All address plans
           </Link>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Address plan · {problem.difficulty}
             </div>
             <h1 className="mt-4 font-display text-[clamp(1.8rem,4.5vw,3rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))]">
@@ -117,19 +117,19 @@ function PlanView({ problem }: { problem: Problem }) {
             {problem.brief.map((paragraph, index) => (
               <p
                 key={index}
-                className="mt-4 max-w-2xl font-mono-tight text-[14.5px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 max-w-2xl font-mono-tight text-[0.90625rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
               >
                 {paragraph}
               </p>
             ))}
-            <p className="mt-4 font-mono-tight text-[12.5px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.78125rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
               {problem.block} · {blockSize.toLocaleString()} addresses ·{" "}
               {toDotted(blockStart)} to {block ? toDotted(broadcastOf(block)) : ""}
             </p>
           </header>
 
           <section className="mt-8">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · The block, to scale
             </h2>
             <div
@@ -140,7 +140,7 @@ function PlanView({ problem }: { problem: Problem }) {
             >
               {block ? <Map placed={result.placed} start={blockStart} size={blockSize} /> : null}
             </div>
-            <p className="mt-2 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">
+            <p className="mt-2 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">
               {result.used.toLocaleString()} of {result.capacity.toLocaleString()} addresses
               allocated. Gaps are unspent, which is not the same as wasted: a plan with no gap
               cannot absorb anything.
@@ -148,7 +148,7 @@ function PlanView({ problem }: { problem: Problem }) {
           </section>
 
           <section className="mt-9">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · What needs space
             </h2>
             <ul className="mt-4 space-y-3">
@@ -167,18 +167,18 @@ function PlanView({ problem }: { problem: Problem }) {
                           className="inline-block h-3 w-3 shrink-0 rounded-sm"
                           style={{ background: BAND[index % BAND.length] }}
                         />
-                        <span className="font-mono-tight text-[14px] text-[hsl(var(--brand-bone))]">
+                        <span className="font-mono-tight text-[0.875rem] text-[hsl(var(--brand-bone))]">
                           {requirement.label}
                         </span>
                       </span>
-                      <span className="font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
                         {requirement.hosts} hosts · at least a /{smallest} ({usableIn(smallest)}{" "}
                         usable)
                         {requirement.within ? ` · inside ${requirement.within}` : ""}
                       </span>
                     </div>
                     {requirement.note ? (
-                      <p className="mt-1 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+                      <p className="mt-1 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                         {requirement.note}
                       </p>
                     ) : null}
@@ -191,11 +191,11 @@ function PlanView({ problem }: { problem: Problem }) {
                       placeholder="10.0.0.0/24"
                       aria-label={`Subnet for ${requirement.label}`}
                       data-testid={`allocate-input-${requirement.id}`}
-                      className="mt-3 w-full max-w-[280px] rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
+                      className="mt-3 w-full max-w-[280px] rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
                     />
                     {finding ? (
                       <p
-                        className={`mt-2 font-mono-tight text-[12.5px] leading-relaxed ${
+                        className={`mt-2 font-mono-tight text-[0.78125rem] leading-relaxed ${
                           finding.ok
                             ? "text-[hsl(var(--brand-signal))]"
                             : "text-[hsl(var(--brand-amber))]"
@@ -212,7 +212,7 @@ function PlanView({ problem }: { problem: Problem }) {
 
             <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
               <p
-                className="font-mono-tight text-[12px] uppercase tracking-[0.2em]"
+                className="font-mono-tight text-[0.75rem] uppercase tracking-[0.2em]"
                 aria-live="polite"
                 data-testid="allocate-status"
               >
@@ -233,7 +233,7 @@ function PlanView({ problem }: { problem: Problem }) {
                   setPlan({});
                 }}
                 data-testid="allocate-clear"
-                className="min-h-[36px] font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                className="min-h-[36px] font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
               >
                 Clear it
               </button>
@@ -241,14 +241,14 @@ function PlanView({ problem }: { problem: Problem }) {
           </section>
 
           <section className="mt-9">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Hints, {hintsOpen} of {problem.hints.length}
             </h2>
             <ol className="mt-3 space-y-2">
               {problem.hints.slice(0, hintsOpen).map((hint, index) => (
                 <li
                   key={index}
-                  className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2.5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2.5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 >
                   {hint}
                 </li>
@@ -260,7 +260,7 @@ function PlanView({ problem }: { problem: Problem }) {
                   type="button"
                   onClick={() => setHintsOpen((n) => n + 1)}
                   data-testid="allocate-hint"
-                  className="min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   Open hint {hintsOpen + 1}
                 </button>
@@ -270,7 +270,7 @@ function PlanView({ problem }: { problem: Problem }) {
                   type="button"
                   onClick={() => setRevealed(true)}
                   data-testid="allocate-reveal"
-                  className="min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   Show me a plan that works
                 </button>
@@ -280,20 +280,20 @@ function PlanView({ problem }: { problem: Problem }) {
 
           {revealed && !result.solved ? (
             <section className="mt-9 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                 · One plan that works
               </h2>
-              <p className="mt-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+              <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                 Not the only one. This is marked on behaviour, so any plan that meets every
                 requirement without overlapping is right, including a tidier one than mine.
               </p>
               <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)]">
                 {problem.requirements.map((requirement) => (
                   <div key={requirement.id} className="contents">
-                    <dt className="font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+                    <dt className="font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
                       {requirement.label}
                     </dt>
-                    <dd className="font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone-dim))]">
+                    <dd className="font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone-dim))]">
                       {problem.solution[requirement.id]}
                     </dd>
                   </div>
@@ -306,7 +306,7 @@ function PlanView({ problem }: { problem: Problem }) {
                   savePlan(problem.slug, problem.solution);
                 }}
                 data-testid="allocate-apply"
-                className="mt-3 min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+                className="mt-3 min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
               >
                 Fill it in
               </button>
@@ -315,13 +315,13 @@ function PlanView({ problem }: { problem: Problem }) {
 
           {result.solved || revealed ? (
             <section className="mt-9 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.05)] p-5">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · What this one is about
               </h2>
               {problem.debrief.map((paragraph, index) => (
                 <p
                   key={index}
-                  className="mt-3 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                  className="mt-3 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
                 >
                   {paragraph}
                 </p>

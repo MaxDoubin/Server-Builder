@@ -121,7 +121,7 @@ export function CinematicRetry() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CHAINS.length} call paths
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -156,16 +156,16 @@ export function CinematicRetry() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                       {ASK_LABEL[chain.ask.kind]}
                     </span>
                     {mounted && solved.includes(chain.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {chain.name}
                   </span>
                 </button>
@@ -178,7 +178,7 @@ export function CinematicRetry() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="retry-brief"
             >
               {active.brief}
@@ -196,7 +196,7 @@ export function CinematicRetry() {
                       <th
                         key={head}
                         scope="col"
-                        className="px-3 py-2 font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
+                        className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
                       >
                         {head}
                       </th>
@@ -210,47 +210,47 @@ export function CinematicRetry() {
                       data-testid={`retry-policy-${depth}`}
                       className="border-b border-[hsl(var(--brand-iron)/0.5)] align-top last:border-0"
                     >
-                      <td className="px-3 py-2 font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone))]">
+                      <td className="px-3 py-2 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone))]">
                         <span style={{ paddingLeft: `${depth * 0.7}rem` }}>{caller.name}</span>
                         {caller.note ? (
-                          <span className="mt-0.5 block font-mono-tight text-[10.5px] italic text-[hsl(var(--brand-ash)/0.8)]">
+                          <span className="mt-0.5 block font-mono-tight text-[0.65625rem] italic text-[hsl(var(--brand-ash)/0.8)]">
                             {caller.note}
                           </span>
                         ) : null}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[12px] tabular-nums text-[hsl(var(--brand-bone-dim))]">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[0.75rem] tabular-nums text-[hsl(var(--brand-bone-dim))]">
                         {caller.attempts}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[12px] tabular-nums text-[hsl(var(--brand-bone-dim))]">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[0.75rem] tabular-nums text-[hsl(var(--brand-bone-dim))]">
                         {ms(caller.timeout)}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[12px] tabular-nums text-[hsl(var(--brand-ash))]">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[0.75rem] tabular-nums text-[hsl(var(--brand-ash))]">
                         {caller.attempts === 1
                           ? "n/a"
                           : `${ms(caller.backoff)}${caller.factor > 1 ? ` ×${caller.factor}` : ""}`}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[12px] tabular-nums text-[hsl(var(--brand-ash))]">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[0.75rem] tabular-nums text-[hsl(var(--brand-ash))]">
                         {caller.attempts === 1 ? "n/a" : caller.jitter === 0 ? "none" : `±${Math.round(caller.jitter * 100)}%`}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                         {caller.idempotent ? "yes" : "no"}
                       </td>
                     </tr>
                   ))}
                   <tr>
-                    <td className="px-3 py-2 font-mono-tight text-[12.5px] text-[hsl(var(--brand-cyan))]">
+                    <td className="px-3 py-2 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-cyan))]">
                       <span style={{ paddingLeft: `${active.callers.length * 0.7}rem` }}>
                         {active.leaf.name}
                       </span>
                       {active.leaf.note ? (
-                        <span className="mt-0.5 block font-mono-tight text-[10.5px] italic text-[hsl(var(--brand-ash)/0.8)]">
+                        <span className="mt-0.5 block font-mono-tight text-[0.65625rem] italic text-[hsl(var(--brand-ash)/0.8)]">
                           {active.leaf.note}
                         </span>
                       ) : null}
                     </td>
                     <td
                       colSpan={5}
-                      className="px-3 py-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]"
+                      className="px-3 py-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]"
                     >
                       answers in {ms(active.leaf.latency)}
                     </td>
@@ -260,7 +260,7 @@ export function CinematicRetry() {
             </div>
 
             {/* ── the question ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -274,7 +274,7 @@ export function CinematicRetry() {
                     onClick={() => answer(option.id)}
                     disabled={answered}
                     data-testid={`retry-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -292,17 +292,17 @@ export function CinematicRetry() {
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="retry-verdict" aria-live="polite">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? `${truth}, yes.` : `Not that one. It is ${truth}.`}
                 </p>
 
                 {/* ── the fan-out ── */}
                 <div>
-                  <h4 className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <h4 className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Requests, by depth
                   </h4>
                   <ol className="mt-3 space-y-1" data-testid="retry-fanout">
-                    <li className="flex items-baseline gap-3 font-mono-tight text-[12.5px]">
+                    <li className="flex items-baseline gap-3 font-mono-tight text-[0.78125rem]">
                       <span className="w-16 shrink-0 text-right tabular-nums text-[hsl(var(--brand-bone))]">1</span>
                       <span className="text-[hsl(var(--brand-ash))]">the button, pressed once</span>
                     </li>
@@ -313,12 +313,12 @@ export function CinematicRetry() {
                         <li
                           key={caller.name}
                           data-testid={`retry-fanout-${depth}`}
-                          className="flex items-baseline gap-3 font-mono-tight text-[12.5px]"
+                          className="flex items-baseline gap-3 font-mono-tight text-[0.78125rem]"
                         >
                           <span
                             className={`w-16 shrink-0 text-right tabular-nums ${
                               bottom
-                                ? "text-[hsl(var(--brand-danger))] text-[15px] font-medium"
+                                ? "text-[hsl(var(--brand-danger))] text-[0.9375rem] font-medium"
                                 : "text-[hsl(var(--brand-bone))]"
                             }`}
                           >
@@ -337,7 +337,7 @@ export function CinematicRetry() {
 
                 {/* ── the timeline ── */}
                 <div>
-                  <h4 className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <h4 className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Where each layer's deadline falls
                   </h4>
                   <ul className="mt-3 space-y-2.5" data-testid="retry-timeline">
@@ -348,7 +348,7 @@ export function CinematicRetry() {
                       const waits = delays(caller);
                       return (
                         <li key={caller.name} data-testid={`retry-track-${depth}`}>
-                          <span className="flex flex-wrap items-baseline justify-between gap-x-4 font-mono-tight text-[11.5px]">
+                          <span className="flex flex-wrap items-baseline justify-between gap-x-4 font-mono-tight text-[0.71875rem]">
                             <span className="text-[hsl(var(--brand-bone-dim))]">{caller.name}</span>
                             <span className={gives ? "text-[hsl(var(--brand-danger))]" : "text-[hsl(var(--brand-ash))]"}>
                               {gives
@@ -379,7 +379,7 @@ export function CinematicRetry() {
                       );
                     })}
                   </ul>
-                  <p className="mt-2 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <p className="mt-2 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     Hatched means the layer below was still working when this one stopped waiting.
                     Nothing cancels it. The dark gaps are the backoff waits, which are added once
                     per retry at every level and are where the wall clock comes from.
@@ -404,29 +404,29 @@ export function CinematicRetry() {
                       key={label}
                       className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] px-4 py-3"
                     >
-                      <dt className="font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <dt className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         {label}
                       </dt>
-                      <dd className="mt-1 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))]">{value}</dd>
+                      <dd className="mt-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))]">{value}</dd>
                     </div>
                   ))}
                 </dl>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
                 </p>
                 {unsafe.length > 0 ? (
-                  <p className="border-l-2 border-[hsl(var(--brand-danger)/0.7)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                    <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-danger))]">
+                  <p className="border-l-2 border-[hsl(var(--brand-danger)/0.7)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-danger))]">
                       Not safe to repeat ·{" "}
                     </span>
                     {unsafe.map((caller) => caller.name).join(", ")} retries an operation that is
@@ -436,7 +436,7 @@ export function CinematicRetry() {
                   </p>
                 ) : null}
                 {herd.length > 0 ? (
-                  <p className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <p className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     {herd.length} {pluralise(herd.length, "layer")} back off without jitter
                     ({herd.map((caller) => caller.name).join(", ")}). Exponential backoff with no
                     randomisation does not spread retries out, it synchronises them: every client
@@ -444,7 +444,7 @@ export function CinematicRetry() {
                   </p>
                 ) : null}
                 {abandoners.length > 0 && !truncates ? (
-                  <p className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <p className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     No layer's budget is smaller than its callee's, and work is still abandoned:
                     the innermost timeout is shorter than the dependency's response, which is a
                     timeout doing its job. The work it walks away from is real all the same.
@@ -454,13 +454,13 @@ export function CinematicRetry() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="retry-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything you need is in the table. The fan-out, the timeline and the readings
                 appear once you have committed, because they are the answer to more than the
                 question being asked.
@@ -469,7 +469,7 @@ export function CinematicRetry() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="retry-progress"
           >
@@ -480,7 +480,7 @@ export function CinematicRetry() {
 
           <ReadAboutThis href="/retry" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             No case here carries an answer key. Each one says which quantity is being asked for,
             the model computes it, and the correct option is whichever one's value matches. CI
             requires exactly one to match, which catches a case whose prose and arithmetic have
@@ -489,13 +489,13 @@ export function CinematicRetry() {
             thing that survives review forever: reading four plausible options does not tell you
             that two of them evaluate to the same number.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The fix, in every case except the last, is one budget divided downwards rather than
             four timeouts chosen upwards, and retrying in exactly one place: the layer that knows
             whether the operation is safe to repeat and can see the whole deadline. That is almost
             never the driver at the bottom.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             A slow dependency of a different kind, where the throughput rather than the retries is
             the problem, is at{" "}
             <Link

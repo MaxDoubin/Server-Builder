@@ -704,7 +704,7 @@ export function CinematicPractice() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[960px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Everything you do rather than read
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -748,7 +748,7 @@ export function CinematicPractice() {
                 key={group}
                 href={`#${group}`}
                 data-testid={`jump-${group}`}
-                className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 {GROUP_HEADING[group]}{" "}
                 <span className="text-[hsl(var(--brand-signal))]">
@@ -780,10 +780,10 @@ export function CinematicPractice() {
                 className="mt-14 scroll-mt-24"
                 data-testid={`group-${group}`}
               >
-                <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · {GROUP_HEADING[group]}
                 </h2>
-                <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                   {GROUP_BLURB[group]}
                 </p>
                 <ul className="mt-6 space-y-4">
@@ -795,19 +795,19 @@ export function CinematicPractice() {
                   className="group grid grid-cols-1 gap-4 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] md:grid-cols-[1fr_auto] md:items-start md:gap-8"
                 >
                   <div className="min-w-0">
-                    <span className="font-techno text-[9px] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.5625rem] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
                       {pillar.eyebrow}
                     </span>
                     <span className="mt-2 block font-display text-2xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
                       {pillar.title}
                     </span>
-                    <span className="mt-2 block font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <span className="mt-2 block font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                       {pillar.blurb}
                     </span>
-                    <span className="mt-3 block font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <span className="mt-3 block font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       Reach for it when {pillar.reachFor}.
                     </span>
-                    <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                    <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                       {pillar.stats.map((stat) => (
                         <span key={stat}>{stat}</span>
                       ))}
@@ -816,7 +816,7 @@ export function CinematicPractice() {
 
                   {pillar.progress ? (
                     <div className="md:w-40 md:shrink-0" aria-live="polite">
-                      <div className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                      <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                         {mounted
                           ? `${pillar.progress.done} of ${pillar.progress.total} ${pillar.progress.noun}`
                           : `${pillar.progress.total} ${pillar.progress.noun}`}
@@ -846,10 +846,10 @@ export function CinematicPractice() {
           })}
 
           <section className="mt-16 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.4)] p-6 md:p-8">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · If you are studying for an exam
             </h2>
-            <p className="mt-4 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-4 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The order that works is not the order these are listed in. Start at{" "}
               <Link href="/study" className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline">
                 exam objectives
@@ -870,7 +870,7 @@ export function CinematicPractice() {
               , because the performance-based questions are exactly this: here is some output, what
               is wrong with it.
             </p>
-            <p className="mt-4 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-4 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               The{" "}
               <Link href="/scenarios" className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline">
                 scenarios

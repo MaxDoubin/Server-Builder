@@ -56,7 +56,7 @@ export function GameHeader({
           href="/"
           data-testid="link-game-exit"
           aria-label="Back to the profile"
-          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-noc-blue hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-noc-blue"
+          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-border px-2.5 py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-noc-blue hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-noc-blue"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Portfolio</span>
@@ -67,7 +67,7 @@ export function GameHeader({
             <span className="font-display text-lg font-bold tracking-wider">
               HYPERSCALE
             </span>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--console-accent))]">
+            <span className="text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--console-accent))]">
               Max Doubin
             </span>
           </div>
@@ -124,7 +124,7 @@ export function GameHeader({
           >
             <Bell className="w-4 h-4" />
             {unacknowledgedCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-noc-red text-[10px] font-bold text-white flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-noc-red text-[0.625rem] font-bold text-white flex items-center justify-center">
                 {unacknowledgedCount}
               </span>
             )}

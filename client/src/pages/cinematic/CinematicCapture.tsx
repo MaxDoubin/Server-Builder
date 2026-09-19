@@ -87,13 +87,13 @@ function Workbench({ capture }: { capture: Capture }) {
         <div className="mx-auto max-w-[1100px]">
           <Link
             href="/capture"
-            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
           >
             ← All captures
           </Link>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Capture · {capture.difficulty}
             </div>
             <h1 className="mt-4 font-display text-[clamp(1.8rem,4.5vw,3rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))]">
@@ -102,7 +102,7 @@ function Workbench({ capture }: { capture: Capture }) {
             {capture.brief.map((paragraph, index) => (
               <p
                 key={index}
-                className="mt-4 max-w-3xl font-mono-tight text-[14px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 max-w-3xl font-mono-tight text-[0.875rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
               >
                 {paragraph}
               </p>
@@ -130,7 +130,7 @@ function Workbench({ capture }: { capture: Capture }) {
                 autoCorrect="off"
                 data-testid="capture-filter"
                 placeholder="http.request.method == POST"
-                className={`min-w-0 flex-1 rounded-lg border bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] outline-none placeholder:text-[hsl(var(--brand-ash))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                className={`min-w-0 flex-1 rounded-lg border bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] outline-none placeholder:text-[hsl(var(--brand-ash))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
                   compiled.error
                     ? "border-[hsl(var(--brand-danger)/0.7)]"
                     : applied
@@ -142,19 +142,19 @@ function Workbench({ capture }: { capture: Capture }) {
                 type="button"
                 onClick={apply}
                 data-testid="capture-apply"
-                className="min-h-[42px] rounded-lg bg-[hsl(var(--brand-signal))] px-5 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90"
+                className="min-h-[42px] rounded-lg bg-[hsl(var(--brand-signal))] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90"
               >
                 Apply
               </button>
               <button
                 type="button"
                 onClick={() => useFilter("")}
-                className="min-h-[42px] rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+                className="min-h-[42px] rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
               >
                 Clear
               </button>
             </div>
-            <p className="mt-2 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]" aria-live="polite">
+            <p className="mt-2 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]" aria-live="polite">
               {compiled.error ? (
                 <span className="text-[hsl(var(--brand-danger))]" data-testid="capture-filter-error">
                   {compiled.error}
@@ -170,7 +170,7 @@ function Workbench({ capture }: { capture: Capture }) {
 
           {/* Packet list */}
           <div className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))]">
-            <table className="w-full min-w-[720px] border-collapse font-mono-tight text-[12px]">
+            <table className="w-full min-w-[720px] border-collapse font-mono-tight text-[0.75rem]">
               <caption className="sr-only">
                 Packets in this capture, filtered to {shown.length} of {capture.packets.length}
               </caption>
@@ -223,7 +223,7 @@ function Workbench({ capture }: { capture: Capture }) {
 
           {/* Questions */}
           <section className="mt-12">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Questions, {solvedCount} of {capture.questions.length} answered
             </h2>
             <ol className="mt-5 space-y-5">
@@ -235,7 +235,7 @@ function Workbench({ capture }: { capture: Capture }) {
                     key={question.id}
                     className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5"
                   >
-                    <p className="font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                    <p className="font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                       {index + 1}. {question.prompt}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -259,7 +259,7 @@ function Workbench({ capture }: { capture: Capture }) {
                         }}
                         spellCheck={false}
                         data-testid={`answer-${question.id}`}
-                        className="min-w-0 flex-1 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
+                        className="min-w-0 flex-1 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
                       />
                       <button
                         type="button"
@@ -270,7 +270,7 @@ function Workbench({ capture }: { capture: Capture }) {
                           }))
                         }
                         data-testid={`check-${question.id}`}
-                        className="min-h-[40px] rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                        className="min-h-[40px] rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                       >
                         Check
                       </button>
@@ -279,7 +279,7 @@ function Workbench({ capture }: { capture: Capture }) {
                         onClick={() =>
                           setHintsOpen((previous) => ({ ...previous, [question.id]: true }))
                         }
-                        className="min-h-[40px] px-2 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                        className="min-h-[40px] px-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                       >
                         Hint
                       </button>
@@ -287,7 +287,7 @@ function Workbench({ capture }: { capture: Capture }) {
 
                     <div aria-live="polite">
                       {hintsOpen[question.id] && !right ? (
-                        <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                        <p className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                           {question.hint}
                           {question.hintFilter ? (
                             <>
@@ -304,7 +304,7 @@ function Workbench({ capture }: { capture: Capture }) {
                         </p>
                       ) : null}
                       {question.id in marked && !right ? (
-                        <p className="mt-3 font-mono-tight text-[12px] text-[hsl(var(--brand-amber))]">
+                        <p className="mt-3 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-amber))]">
                           Not that. Nothing is scored, so keep looking.
                         </p>
                       ) : null}
@@ -316,7 +316,7 @@ function Workbench({ capture }: { capture: Capture }) {
                           {question.explain.map((paragraph, i) => (
                             <p
                               key={i}
-                              className="mt-2 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                              className="mt-2 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
                             >
                               {paragraph}
                             </p>
@@ -332,7 +332,7 @@ function Workbench({ capture }: { capture: Capture }) {
 
           {capture.reading?.length ? (
             <section className="mt-12">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · The written version
               </h2>
               <ul className="mt-4 space-y-2">
@@ -340,7 +340,7 @@ function Workbench({ capture }: { capture: Capture }) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
+                      className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
                     >
                       {link.label}
                     </Link>
@@ -361,19 +361,19 @@ function Detail({ packet, onFilter }: { packet: Packet; onFilter: (text: string)
   return (
     <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
-        <h2 className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+        <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
           · Packet {packet.no}
         </h2>
         <div className="mt-3 space-y-3">
           {packet.layers.map((layer) => (
             <details key={layer.name} open className="group">
-              <summary className="cursor-pointer font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone))]">
+              <summary className="cursor-pointer font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone))]">
                 {layer.name}
               </summary>
               <dl className="mt-1.5 space-y-0.5 pl-4">
                 {layer.fields.map((field) => (
                   <div key={field.name} className="flex flex-wrap gap-x-2">
-                    <dt className="font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">
+                    <dt className="font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">
                       <button
                         type="button"
                         onClick={() => onFilter(`${field.name} == ${field.value}`)}
@@ -384,7 +384,7 @@ function Detail({ packet, onFilter }: { packet: Packet; onFilter: (text: string)
                       </button>
                       :
                     </dt>
-                    <dd className="font-mono-tight text-[11.5px] text-[hsl(var(--brand-bone-dim))]">
+                    <dd className="font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-bone-dim))]">
                       {field.value}
                     </dd>
                   </div>
@@ -396,17 +396,17 @@ function Detail({ packet, onFilter }: { packet: Packet; onFilter: (text: string)
       </div>
 
       <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
-        <h2 className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+        <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
           · Bytes
         </h2>
         {packet.payload ? (
           <div className="mt-3 overflow-x-auto">
-            <pre className="whitespace-pre-wrap break-words font-mono-tight text-[11.5px] leading-[1.7] text-[hsl(var(--brand-bone-dim))]">
+            <pre className="whitespace-pre-wrap break-words font-mono-tight text-[0.71875rem] leading-[1.7] text-[hsl(var(--brand-bone-dim))]">
               {packet.payload}
             </pre>
           </div>
         ) : (
-          <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             No readable payload. This packet is either encrypted, or it carries no application data
             at all, which is what a handshake or an acknowledgement looks like.
           </p>

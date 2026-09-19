@@ -213,7 +213,7 @@ export function ChmodCalculator() {
                     <th
                       key={bit.key}
                       scope="col"
-                      className="font-mono-tight text-[10px] font-normal uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                      className="font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                     >
                       {bit.label}
                     </th>
@@ -225,7 +225,7 @@ export function ChmodCalculator() {
                   <tr key={row.key}>
                     <th
                       scope="row"
-                      className="text-left font-mono-tight text-[11px] font-normal uppercase tracking-[0.18em] text-[hsl(var(--brand-bone-dim))]"
+                      className="text-left font-mono-tight text-[0.6875rem] font-normal uppercase tracking-[0.18em] text-[hsl(var(--brand-bone-dim))]"
                     >
                       {row.label}
                     </th>
@@ -261,7 +261,7 @@ export function ChmodCalculator() {
             </table>
           </div>
 
-          <h3 className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+          <h3 className="mt-6 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
             Special bits
           </h3>
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -274,7 +274,7 @@ export function ChmodCalculator() {
               return (
                 <label
                   key={special.label}
-                  className={`flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-lg border font-mono-tight text-[11px] uppercase tracking-[0.2em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${
+                  className={`flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-lg border font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${
                     on
                       ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-signal))]"
                       : "border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] text-[hsl(var(--brand-ash))]"
@@ -297,7 +297,7 @@ export function ChmodCalculator() {
           <div className="mt-6">
             <label
               htmlFor="chmod-input"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               Or type a mode
             </label>
@@ -356,7 +356,7 @@ export function ChmodCalculator() {
             <div className="mt-5">
               <label
                 htmlFor="chmod-path"
-                className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
               >
                 Target path
               </label>

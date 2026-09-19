@@ -298,7 +298,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </motion.span>
-                <span className="font-techno text-[11px] uppercase tracking-[0.32em]">
+                <span className="font-techno text-[0.6875rem] uppercase tracking-[0.32em]">
                   <GlitchText text="Max Doubin" intensity={0.6} />
                 </span>
               </Link>
@@ -322,7 +322,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                     {...prefetchHandlers(link.href)}
                       aria-current={active ? "page" : undefined}
                       data-testid={`link-nav-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
-                      className={`relative inline-flex items-center whitespace-nowrap px-3 py-2 font-mono-tight text-[11px] uppercase tracking-[0.22em] transition-colors ${
+                      className={`relative inline-flex items-center whitespace-nowrap px-3 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] transition-colors ${
                         active
                           ? "text-[hsl(var(--brand-bone))]"
                           : overHero && !scrolled
@@ -388,7 +388,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               }
               data-testid="button-nav-search"
               aria-label="Search this site"
-              className="hidden h-9 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[11px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] sm:inline-flex"
+              className="hidden h-9 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] sm:inline-flex"
             >
               {/*
                 The word goes below 2xl, the shortcut stays.
@@ -404,7 +404,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
               <span aria-hidden className="hidden 2xl:inline">Search</span>
               <kbd
                 aria-hidden
-                className="rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-techno text-[9px] tracking-[0.12em]"
+                className="rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-techno text-[0.5625rem] tracking-[0.12em]"
               >
                 ⌘K
               </kbd>
@@ -422,7 +422,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                   <Link
                     href="/contact"
                     data-testid="button-nav-cta"
-                    className="group relative hidden h-9 items-center gap-2 overflow-hidden rounded-full border border-[hsl(var(--brand-signal)/.4)] bg-[hsl(var(--brand-signal)/.06)] px-4 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-signal)/.12)] sm:inline-flex"
+                    className="group relative hidden h-9 items-center gap-2 overflow-hidden rounded-full border border-[hsl(var(--brand-signal)/.4)] bg-[hsl(var(--brand-signal)/.06)] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-signal)/.12)] sm:inline-flex"
                   >
                     <motion.span
                       className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
@@ -535,7 +535,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
                     {...prefetchHandlers(link.href)}
                         aria-current={active ? "page" : undefined}
                         data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s+/g, "-")}`}
-                        className={`flex items-center justify-between rounded-md border border-transparent px-4 py-3 font-mono-tight text-[13px] uppercase tracking-[0.22em] transition-colors ${
+                        className={`flex items-center justify-between rounded-md border border-transparent px-4 py-3 font-mono-tight text-[0.8125rem] uppercase tracking-[0.22em] transition-colors ${
                           active
                             ? "border-[hsl(var(--brand-signal)/.4)] bg-[hsl(var(--brand-signal)/.08)] text-[hsl(var(--brand-bone))]"
                             : "text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-iron))] hover:text-[hsl(var(--brand-bone))]"

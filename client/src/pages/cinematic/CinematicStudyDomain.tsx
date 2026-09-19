@@ -62,7 +62,7 @@ export function CinematicStudyDomain() {
       <CinematicLayout>
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="text-center">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
               · Study · Not found
             </div>
             <h1 className="mt-4 font-display text-4xl font-medium text-[hsl(var(--brand-bone))]">
@@ -70,7 +70,7 @@ export function CinematicStudyDomain() {
             </h1>
             <Link
               href="/study"
-              className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All exam domains
             </Link>
@@ -92,20 +92,20 @@ export function CinematicStudyDomain() {
             <Link
               href="/study"
               data-testid="link-study-index"
-              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← {exam.name} and other exams
             </Link>
           </nav>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {exam.name} · {exam.code}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.2rem,5.4vw,3.6rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               {domain.name}
             </h1>
-            <p className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               {domain.weight === null
                 ? `${exam.vendor} publishes no weighting for this domain`
                 : `${domain.weight}% of the ${exam.code} exam`}
@@ -152,7 +152,7 @@ export function CinematicStudyDomain() {
               </p>
             ) : (
               <>
-                <p className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <p className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   {posts.length} {posts.length === 1 ? "post" : "posts"}
                 </p>
                 <ul className="mt-4 space-y-px overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))]">
@@ -167,7 +167,7 @@ export function CinematicStudyDomain() {
                           <span className="font-display text-base text-[hsl(var(--brand-bone))]">
                             {post.title}
                           </span>
-                          <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                          <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                             {readMinutes(post)} min
                           </span>
                         </div>
@@ -183,7 +183,7 @@ export function CinematicStudyDomain() {
           </section>
 
           <section className="mt-12 border-t border-[hsl(var(--brand-iron))] pt-8">
-            <h2 className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+            <h2 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
               Other {exam.code} domains
             </h2>
             <ul className="mt-4 flex flex-wrap gap-2">
@@ -191,7 +191,7 @@ export function CinematicStudyDomain() {
                 <li key={d.slug}>
                   <Link
                     href={`/study/${exam.slug}/${d.slug}`}
-                    className="inline-flex min-h-[24px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                    className="inline-flex min-h-[24px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                   >
                     {d.name}
                   </Link>
@@ -202,7 +202,7 @@ export function CinematicStudyDomain() {
               href={exam.officialUrl}
               target="_blank"
               rel="noreferrer noopener"
-              className="mt-6 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="mt-6 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               Official {exam.code} objectives →
             </a>

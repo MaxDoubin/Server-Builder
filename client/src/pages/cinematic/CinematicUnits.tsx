@@ -110,7 +110,7 @@ export function CinematicUnits() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} unit files
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -145,16 +145,16 @@ export function CinematicUnits() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {item.units.length} units
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -167,7 +167,7 @@ export function CinematicUnits() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="units-brief"
             >
               {active.brief}
@@ -178,7 +178,7 @@ export function CinematicUnits() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="units-files"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {active.units
   .map((unit) => {
     const lines = [`# /etc/systemd/system/${unit.name}`, "[Unit]", `Description=${unit.description}`];
@@ -197,7 +197,7 @@ export function CinematicUnits() {
               className="mt-3 overflow-x-auto rounded-xl border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.05)] p-4"
               data-testid="units-command"
             >
-              <pre className="whitespace-pre font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-bone))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone))]">
 {`$ systemctl start ${active.start.join(" ")}${
   active.stop && active.stop.length > 0 ? `\n$ systemctl stop ${active.stop.join(" ")}` : ""
 }`}
@@ -205,7 +205,7 @@ export function CinematicUnits() {
             </div>
 
             {/* ── the question ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -219,7 +219,7 @@ export function CinematicUnits() {
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`units-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -237,7 +237,7 @@ export function CinematicUnits() {
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="units-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."}{" "}
                   {outcome.active.length === 0
                     ? "Nothing is left running."
@@ -251,7 +251,7 @@ export function CinematicUnits() {
                       {columns.map((group, at) => (
                         <div key={at} className="flex items-stretch gap-3">
                           {at > 0 ? (
-                            <div className="flex items-center font-mono-tight text-[15px] text-[hsl(var(--brand-ash))]">
+                            <div className="flex items-center font-mono-tight text-[0.9375rem] text-[hsl(var(--brand-ash))]">
                               &rarr;
                             </div>
                           ) : null}
@@ -270,7 +270,7 @@ export function CinematicUnits() {
                                   }`}
                                 >
                                   <div
-                                    className={`font-mono-tight text-[12px] ${
+                                    className={`font-mono-tight text-[0.75rem] ${
                                       failed
                                         ? "text-[hsl(var(--brand-danger))]"
                                         : "text-[hsl(var(--brand-signal))]"
@@ -278,7 +278,7 @@ export function CinematicUnits() {
                                   >
                                     {name}
                                   </div>
-                                  <div className="mt-0.5 font-mono-tight text-[10.5px] leading-snug text-[hsl(var(--brand-ash))]">
+                                  <div className="mt-0.5 font-mono-tight text-[0.65625rem] leading-snug text-[hsl(var(--brand-ash))]">
                                     {failed ? WHY[failed.why] : `active: ${meansStarted[unit.type]}`}
                                   </div>
                                 </div>
@@ -288,7 +288,7 @@ export function CinematicUnits() {
                         </div>
                       ))}
                     </div>
-                    <p className="mt-3 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-3 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                       Units in one column start at the same moment. An arrow is an ordering
                       somebody wrote with After= or Before=, and nothing else puts one anywhere.
                     </p>
@@ -298,13 +298,13 @@ export function CinematicUnits() {
                     className="rounded-xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.06)] px-4 py-3"
                     data-testid="units-cycle"
                   >
-                    <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                       · ordering cycle
                     </p>
-                    <p className="mt-2 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <p className="mt-2 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                       {(outcome.cycle ?? []).join(" → ")} → {(outcome.cycle ?? [])[0]}
                     </p>
-                    <p className="mt-2 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <p className="mt-2 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       There is no timeline to draw. systemd deletes one of these edges to break the
                       loop and logs which, and the unit files do not decide which one it picks.
                     </p>
@@ -321,37 +321,37 @@ export function CinematicUnits() {
                           data-testid={`units-absent-${name}`}
                           className="min-w-[190px] rounded-lg border border-dashed border-[hsl(var(--brand-iron))] px-3 py-2"
                         >
-                          <div className="font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">{name}</div>
-                          <div className="mt-0.5 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.8)]">
+                          <div className="font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">{name}</div>
+                          <div className="mt-0.5 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.8)]">
                             not in the transaction
                           </div>
                         </div>
                       ))}
                     </div>
-                    <p className="mt-3 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-3 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                       Named by a directive and pulled in by none of them, which is a different
                       thing from having failed.
                     </p>
                   </div>
                 ) : null}
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="units-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     The fix ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -360,13 +360,13 @@ export function CinematicUnits() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="units-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything you need is in the files. The transaction is drawn once you have
                 committed to an answer.
               </p>
@@ -374,7 +374,7 @@ export function CinematicUnits() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="units-progress"
           >
@@ -383,7 +383,7 @@ export function CinematicUnits() {
 
           <ReadAboutThis href="/units" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

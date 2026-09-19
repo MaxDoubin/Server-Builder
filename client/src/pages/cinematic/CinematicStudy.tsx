@@ -36,7 +36,7 @@ export function CinematicStudy() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Study
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -67,14 +67,14 @@ export function CinematicStudy() {
                   <h2 className="font-display text-2xl text-[hsl(var(--brand-bone))]">
                     {exam.name}
                   </h2>
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     {exam.code} · {exam.vendor}
                   </span>
                 </div>
                 <p className="mt-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {exam.intro}
                 </p>
-                <p className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-signal))]">
+                <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-signal))]">
                   {exam.status}
                 </p>
 
@@ -95,7 +95,7 @@ export function CinematicStudy() {
                             the CCNA rows say so instead of showing a number
                             that would have to be invented.
                           */}
-                          <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                          <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                             {d.weight === null ? "no published weighting" : `${d.weight}% of exam`}
                           </span>
                         </div>
@@ -111,7 +111,7 @@ export function CinematicStudy() {
                   href={exam.officialUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="mt-5 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="mt-5 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   Official objectives →
                 </a>

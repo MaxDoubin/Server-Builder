@@ -488,7 +488,7 @@ export function HttpStatusCodes() {
       <div className="mb-8">
         <label
           htmlFor="status-search"
-          className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+          className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
         >
           Search
         </label>
@@ -502,7 +502,7 @@ export function HttpStatusCodes() {
           className="mt-2 w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-sm text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
         />
         <p
-          className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+          className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
           role="status"
           data-testid="text-result-count"
         >
@@ -542,7 +542,7 @@ export function HttpStatusCodes() {
                       <h3 className="font-display text-base font-medium text-[hsl(var(--brand-bone))]">
                         {s.name}
                         {s.tag ? (
-                          <span className="ml-2 rounded-full border border-[hsl(var(--brand-iron))] px-2 py-0.5 align-middle font-mono-tight text-[9px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                          <span className="ml-2 rounded-full border border-[hsl(var(--brand-iron))] px-2 py-0.5 align-middle font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                             {s.tag}
                           </span>
                         ) : null}

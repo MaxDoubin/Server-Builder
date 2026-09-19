@@ -163,7 +163,7 @@ export function CinematicContact() {
 
           <div ref={headerRef} className="relative z-10 max-w-[56ch]">
             {/* ScrambleText eyebrow */}
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               <ScrambleText
                 text="· Channel · Contact"
                 scrambleDuration={1.5}
@@ -272,7 +272,7 @@ export function CinematicContact() {
                     <div className="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                       <div>
                         <ClipReveal delay={0.1} direction="left">
-                          <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                          <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                             · Form · Transmit
                           </div>
                         </ClipReveal>
@@ -283,7 +283,7 @@ export function CinematicContact() {
                         </ScrollReveal>
                       </div>
                       <ScrollReveal variants={fadeRight} delay={0.3}>
-                        <div className="flex items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                        <div className="flex items-center gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                           <motion.span
                             className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
                             style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
@@ -333,7 +333,7 @@ export function CinematicContact() {
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: 0.2, duration: 0.5 }}
-                              className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+                              className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
                             >
                               transmission · sent
                             </motion.div>
@@ -405,7 +405,7 @@ export function CinematicContact() {
                             animate="visible"
                             transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
                           >
-                            <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                            <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                               packet · unencrypted · mailto
                             </div>
 
@@ -422,7 +422,7 @@ export function CinematicContact() {
                               <ElasticButton
                                 type="submit"
                                 data-testid="button-send-message"
-                                className="group inline-flex h-11 items-center gap-3 rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))]"
+                                className="group inline-flex h-11 items-center gap-3 rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))]"
                               >
                                 <span className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-obsidian))]" />
                                 Transmit
@@ -482,13 +482,13 @@ function ChannelCard({
         <div className="scanline pointer-events-none absolute inset-0 opacity-10" />
         <div className="relative flex items-start justify-between">
           <div>
-            <div className="font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
               · {kind}
             </div>
             <div className="mt-3 font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
               {handle}
             </div>
-            <div className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <div className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               {caption}
             </div>
           </div>
@@ -550,7 +550,7 @@ function Field({
     <motion.div layout transition={{ type: "spring", stiffness: 300, damping: 30 }}>
       <motion.label
         htmlFor={id}
-        className="font-mono-tight text-[10px] uppercase tracking-[0.32em]"
+        className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em]"
         animate={{
           color: isFocused
             ? "hsl(var(--brand-signal))"
@@ -607,7 +607,7 @@ function Field({
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={{ opacity: 0, height: 0, y: -5 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="mt-2 flex items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-danger))]"
+            className="mt-2 flex items-center gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-danger))]"
           >
             <motion.span
               className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-danger))]"

@@ -42,7 +42,7 @@ function ScenePoster() {
 /* ------------------------------------------------------------------ */
 
 const EYEBROW_CLASS =
-  "font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]";
+  "font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]";
 const EYEBROW_STYLE = { textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" };
 const BODY_CLASS =
   "font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-sm";
@@ -70,7 +70,7 @@ function HeroCopy() {
         <br />
         <span className="signal-text">Cybersecurity, networking, and systems.</span>
       </h1>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[0.6875rem]">
         <span>Top 1% · National Cyber League</span>
         <span className={RULE_CLASS} />
         <span>CompTIA Tech+ certified</span>
@@ -125,7 +125,7 @@ function InfrastructureCopy() {
         A large-scale home data center
         <span className="signal-text"> built for serious systems work.</span>
       </h2>
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[11px]">
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] md:text-[0.6875rem]">
         <span>Enterprise switching</span>
         <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
         <span>VLAN segmentation</span>
@@ -435,7 +435,7 @@ export function SystemsAct() {
 
       <div className="pointer-events-none absolute left-6 top-24 z-20 flex items-baseline gap-4 font-mono-tight md:left-10 md:top-28">
         <span
-          className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
+          className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
           style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
         >
           · Unit
@@ -443,12 +443,12 @@ export function SystemsAct() {
         <span ref={beatCounterRef} className="font-display text-xl text-[hsl(var(--brand-bone))]">
           01
         </span>
-        <span ref={beatLabelRef} className="text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
+        <span ref={beatLabelRef} className="text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
           Profile
         </span>
       </div>
 
-      <div className="pointer-events-none absolute right-6 top-24 z-20 hidden flex-col items-end gap-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] md:flex md:right-10 md:top-28">
+      <div className="pointer-events-none absolute right-6 top-24 z-20 hidden flex-col items-end gap-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] md:flex md:right-10 md:top-28">
         <span>South CTA · Las Vegas</span>
         <span>cybersecurity · networking</span>
         <span>signal · verified</span>
@@ -511,7 +511,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
       <div className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl">
         {children}
       </div>
-      <div className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+      <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
         {label}
       </div>
     </div>

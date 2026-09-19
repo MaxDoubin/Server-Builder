@@ -87,7 +87,7 @@ export function CinematicMtu() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {PATHS.length} paths
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -115,7 +115,7 @@ export function CinematicMtu() {
                 onClick={() => choose(item)}
                 aria-pressed={path.slug === item.slug}
                 data-testid={`path-${item.slug}`}
-                className={`rounded-full border px-4 py-2 font-mono-tight text-[11.5px] transition-colors ${
+                className={`rounded-full border px-4 py-2 font-mono-tight text-[0.71875rem] transition-colors ${
                   path.slug === item.slug
                     ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -131,10 +131,10 @@ export function CinematicMtu() {
             <div className="flex flex-wrap items-baseline justify-between gap-4">
               <label className="flex-1 basis-[260px]">
                 <span className="flex items-baseline justify-between gap-3">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Packet size
                   </span>
-                  <span className="font-mono-tight text-[13px] tabular-nums text-[hsl(var(--brand-bone))]" data-testid="size-value">
+                  <span className="font-mono-tight text-[0.8125rem] tabular-nums text-[hsl(var(--brand-bone))]" data-testid="size-value">
                     {size} bytes
                   </span>
                 </span>
@@ -155,7 +155,7 @@ export function CinematicMtu() {
                 onClick={() => setDf((value) => !value)}
                 aria-pressed={df}
                 data-testid="df"
-                className={`rounded-full border px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] transition-colors ${
+                className={`rounded-full border px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] transition-colors ${
                   df
                     ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -174,7 +174,7 @@ export function CinematicMtu() {
                       type="button"
                       onClick={() => setSize(Math.min(value, path.senderMtu))}
                       data-testid={`mark-${label.replace(/\s+/g, "-")}`}
-                      className="font-mono-tight text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
+                      className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
                     >
                       <span
                         aria-hidden="true"
@@ -213,32 +213,32 @@ export function CinematicMtu() {
                             : "border-[hsl(var(--brand-iron))] opacity-55"
                     }`}
                   >
-                    <span className="w-6 font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-ash))]">
+                    <span className="w-6 font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-ash))]">
                       {index + 1}
                     </span>
-                    <span className="min-w-[120px] font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone))]">
+                    <span className="min-w-[120px] font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone))]">
                       {hop.name}
                     </span>
-                    <span className="font-mono-tight text-[11.5px] tabular-nums text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.71875rem] tabular-nums text-[hsl(var(--brand-ash))]">
                       MTU {hop.mtu}
                     </span>
                     {hop.blocksIcmp ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
                         drops ICMP
                       </span>
                     ) : null}
                     {stopped ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
                         packet dies here
                       </span>
                     ) : null}
                     {ate ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-amber))]">
                         and the explanation dies here
                       </span>
                     ) : null}
                     {hop.note ? (
-                      <span className="w-full font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                      <span className="w-full font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                         {hop.note}
                       </span>
                     ) : null}
@@ -253,10 +253,10 @@ export function CinematicMtu() {
               style={{ borderColor: `hsl(var(--brand-${accentFor(fate)}))` }}
               data-testid="verdict"
             >
-              <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+              <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                 · {HEADLINE[fate.kind]}
               </p>
-              <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                 {fate.kind === "delivered"
                   ? `${size} bytes fits every link on this path. The path MTU is ${pmtu}, so a TCP stack here should settle on an MSS of ${mssFor(pmtu)}.`
                   : fate.kind === "fragmented"
@@ -269,10 +269,10 @@ export function CinematicMtu() {
 
             {lies ? (
               <p
-                className="mt-4 border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 data-testid="ping-lies"
               >
-                <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                   And ping says it is fine ·{" "}
                 </span>
                 A default ping is {PING_DEFAULT} bytes and crosses this path without touching the
@@ -284,15 +284,15 @@ export function CinematicMtu() {
           </section>
 
           <section className="mt-12">
-            <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Finding it for real
             </h2>
-            <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Send the packet the application would send, with Don't Fragment set, and walk the
               size down until something arrives. The number you find is the path MTU, and the
               difference between it and 1500 tells you what is in the way.
             </p>
-            <pre className="mt-4 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <pre className="mt-4 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`# Linux: -M do sets DF, -s is payload, so add 28 for the headers
 ping -M do -s 1472 app.example.com    # 1500 on the wire
 ping -M do -s 1412 app.example.com    # 1440, an IPsec-shaped answer
@@ -307,7 +307,7 @@ ping -f -l 1472 app.example.com
 # Or ask the kernel what it has already worked out
 ip route get 203.0.113.10
 tracepath app.example.com`}</pre>
-            <p className="mt-4 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               The fix is usually one of three. Let the ICMP through, which is the correct one and
               costs nothing: type 3 code 4 is not an attack surface, it is the protocol working.
               Clamp the MSS on the tunnel interface, which makes TCP negotiate a size that fits and
@@ -319,7 +319,7 @@ tracepath app.example.com`}</pre>
 
           <ReadAboutThis href="/mtu" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The written version of this, with the capture that finally showed it, is at{" "}
             <Link
               href="/blog/mtu-mismatch-troubleshooting"

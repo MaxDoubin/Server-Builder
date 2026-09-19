@@ -26,7 +26,7 @@ const badgeVariants = cva(
         // string used to carry, so every existing call site renders exactly
         // as it did before this variant existed.
         default: "px-2.5 py-0.5 text-xs",
-        sm: "px-2 py-0 text-[10px]",
+        sm: "px-2 py-0 text-[0.625rem]",
         lg: "px-3 py-1 text-sm",
       },
     },

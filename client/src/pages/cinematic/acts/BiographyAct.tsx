@@ -177,7 +177,7 @@ export function BiographyAct() {
       <div className="relative mx-auto max-w-[1200px]">
         <div
           ref={eyebrowRef}
-          className="flex items-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]"
+          className="flex items-center gap-3 font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]"
         >
           <span>· Dossier · Max Doubin</span>
           <span className="h-px w-10 bg-[hsl(var(--brand-iron))]" />
@@ -207,7 +207,7 @@ export function BiographyAct() {
           <div className="scanline pointer-events-none absolute inset-0 opacity-20" />
           <div className="relative grid grid-cols-1 gap-0 md:grid-cols-12">
             <div className="border-b border-[hsl(var(--brand-iron))] p-8 md:col-span-5 md:border-b-0 md:border-r">
-              <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
                 · 05 · Home Data Center
               </div>
               <h3 className="mt-4 font-display text-[clamp(1.6rem,3.6vw,2.6rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[hsl(var(--brand-bone))]">
@@ -225,7 +225,7 @@ export function BiographyAct() {
                     <div className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-[1.75rem]">
                       {spec.value}
                     </div>
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       {spec.label}
                     </div>
                   </div>
@@ -239,7 +239,7 @@ export function BiographyAct() {
           ref={caltechRef}
           className="mt-24 flex flex-col items-center gap-6 text-center"
         >
-          <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+          <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
             · 07 · Academic Direction
           </div>
           <h3 className="max-w-[24ch] font-display text-[clamp(1.8rem,4.6vw,3rem)] font-medium leading-[1.02] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
@@ -249,7 +249,7 @@ export function BiographyAct() {
           <p className="max-w-[56ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             Current academic work includes AP Computer Science Principles, AP Human Geography, and cybersecurity coursework through CYBER.ORG. Long-term goals include advanced research in networking or systems engineering.
           </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
             <span>South CTA</span>
             <span className="h-px w-8 bg-[hsl(var(--brand-iron))]" />
             <span>AP Computer Science Principles</span>
@@ -261,7 +261,7 @@ export function BiographyAct() {
         </div>
 
         <div ref={pressRef} className="mt-24">
-          <div className="text-center font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+          <div className="text-center font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
             · 08 · Press
           </div>
           <a
@@ -271,7 +271,7 @@ export function BiographyAct() {
             data-testid="link-press-las-vegas-weekly"
             className="group mx-auto mt-6 block max-w-[64ch] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.6)] p-6 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/.55)] focus:outline-none focus-visible:border-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] md:p-8"
           >
-            <div className="flex flex-wrap items-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+            <div className="flex flex-wrap items-center gap-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
               <span className="text-[hsl(var(--brand-signal))]">{PRESS.outlet}</span>
               <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
               <time dateTime={PRESS.isoDate}>{PRESS.displayDate}</time>
@@ -296,7 +296,7 @@ export function BiographyAct() {
               League in 2025.
             </p>
 
-            <span className="mt-6 inline-flex items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+            <span className="mt-6 inline-flex items-center gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
               Read at lasvegasweekly.com
               <span
                 aria-hidden
@@ -332,7 +332,7 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
         }}
       />
       <div
-        className="relative font-techno text-[9px] uppercase tracking-[0.42em]"
+        className="relative font-techno text-[0.5625rem] uppercase tracking-[0.42em]"
         style={{ color: accentColor, textShadow: `0 0 10px ${accentColor}55` }}
       >
         {pillar.eyebrow}
@@ -340,7 +340,7 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
       <h3 className="relative mt-3 font-display text-[1.5rem] font-medium leading-[1.08] tracking-tight text-[hsl(var(--brand-bone))]">
         {pillar.title}
       </h3>
-      <ul className="relative mt-5 flex flex-col gap-2 font-mono-tight text-[12px] leading-snug text-[hsl(var(--brand-bone-dim))]">
+      <ul className="relative mt-5 flex flex-col gap-2 font-mono-tight text-[0.75rem] leading-snug text-[hsl(var(--brand-bone-dim))]">
         {pillar.lines.map((line, i) => (
           <li key={i} className="flex items-start gap-2">
             <span

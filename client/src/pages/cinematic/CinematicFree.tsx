@@ -113,7 +113,7 @@ export function CinematicFree() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} machines, one estimate
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -150,16 +150,16 @@ export function CinematicFree() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {human(item.setup.total)} · {human(item.setup.free)} free
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -172,7 +172,7 @@ export function CinematicFree() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="free-brief"
             >
               {active.brief}
@@ -182,7 +182,7 @@ export function CinematicFree() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="free-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ free -h
 ${asFree(setup)}
 
@@ -192,7 +192,7 @@ ${asMeminfo(setup)}
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -206,7 +206,7 @@ ${asMeminfo(setup)}
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`free-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -224,7 +224,7 @@ ${asMeminfo(setup)}
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="free-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} MemAvailable is {available(setup)} kB, which is{" "}
                   {human(available(setup))} of a {human(setup.total)} machine.
                   {overstated > 0
@@ -239,7 +239,7 @@ ${asMeminfo(setup)}
                 <div className="space-y-2" data-testid="free-parts">
                   {rows.map((row) => (
                     <div key={row.label} data-testid={`free-part-${row.label.split(" ")[0]}`}>
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                         <span className="text-[hsl(var(--brand-bone-dim))]">{row.label}</span>
                         <span className="text-[hsl(var(--brand-signal))]">
                           {row.value < 0 ? "" : "+"}
@@ -252,13 +252,13 @@ ${asMeminfo(setup)}
                           className="block h-full bg-[hsl(var(--brand-signal)/0.55)]"
                         />
                       </div>
-                      <p className="mt-0.5 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.85)]">
+                      <p className="mt-0.5 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.85)]">
                         {row.note}
                       </p>
                     </div>
                   ))}
                   <div className="pt-1" data-testid="free-total">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[12px]">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.75rem]">
                       <span className="text-[hsl(var(--brand-bone))]">MemAvailable</span>
                       <span className="text-[hsl(var(--brand-bone))]">{human(parts.available)}</span>
                     </div>
@@ -275,7 +275,7 @@ ${asMeminfo(setup)}
                         />
                       ) : null}
                     </div>
-                    <p className="mt-1 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-1 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.85)]">
                       {overstated > 0
                         ? `The red is tmpfs counted as reclaimable page cache on a host with no swap. Nothing frees it.`
                         : `Every part of this is genuinely reclaimable.`}
@@ -294,34 +294,34 @@ ${asMeminfo(setup)}
                     ["available", human(available(setup)), "the one that answers the question"],
                   ].map(([label, value, note]) => (
                     <div key={label} className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                      <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         · {label}
                       </p>
                       <p className="mt-2 font-display text-2xl text-[hsl(var(--brand-bone))]">{value}</p>
-                      <p className="mt-1 font-mono-tight text-[10.5px] leading-snug text-[hsl(var(--brand-ash))]">
+                      <p className="mt-1 font-mono-tight text-[0.65625rem] leading-snug text-[hsl(var(--brand-ash))]">
                         {note}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="free-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -330,13 +330,13 @@ ${asMeminfo(setup)}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="free-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the kernel uses is above, including the two fields it does not print:
                 the reserves and the low watermarks. The estimate taken apart is drawn once you have
                 committed to an answer.
@@ -345,21 +345,21 @@ ${asMeminfo(setup)}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="free-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} machines`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI recomputes every estimate from a straight transcription of si_mem_available, checks
             that both arms of that min() are represented in the set, and requires every quantity to
             be a whole kibibyte, because /proc/meminfo cannot print a fraction of one and a case it
             could not produce is teaching from a machine that does not exist. The first draft here
             had 1.2 GiB of slab written as a float and every answer came out ending in .2.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For what happens when the estimate runs out,{" "}
             <Link
               href="/oom"
@@ -379,7 +379,7 @@ ${asMeminfo(setup)}
 
           <ReadAboutThis href="/free" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

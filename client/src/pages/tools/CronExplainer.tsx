@@ -467,7 +467,7 @@ export function CronExplainer() {
               {FIELDS.map((f, i) => (
                 <div
                   key={f.name}
-                  className="rounded border border-[hsl(var(--brand-iron)/0.6)] px-1 py-1.5 font-mono-tight text-[9px] uppercase leading-tight tracking-[0.1em] text-[hsl(var(--brand-ash))]"
+                  className="rounded border border-[hsl(var(--brand-iron)/0.6)] px-1 py-1.5 font-mono-tight text-[0.5625rem] uppercase leading-tight tracking-[0.1em] text-[hsl(var(--brand-ash))]"
                 >
                   {f.name}
                   <div className="mt-0.5 text-[hsl(var(--brand-bone-dim))]">
@@ -516,14 +516,14 @@ export function CronExplainer() {
 
           <ToolPanel title="Next 8 fire times">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+              <p className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                 {timeZone} · {offsetLabel}
               </p>
               <button
                 type="button"
                 onClick={() => setNowTick(Date.now())}
                 data-testid="button-recalculate"
-                className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Recalculate
               </button>
@@ -555,7 +555,7 @@ export function CronExplainer() {
                       </span>
                       {formatFire(fire)}
                     </span>
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
                       {relative(now, fire)}
                     </span>
                   </li>

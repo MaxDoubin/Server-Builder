@@ -50,7 +50,7 @@ export function ContinueReading() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2
           id="continue-reading-heading"
-          className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+          className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
         >
           · Continue reading
         </h2>
@@ -61,7 +61,7 @@ export function ContinueReading() {
             setItems([]);
           }}
           data-testid="button-clear-history"
-          className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+          className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
         >
           Clear
         </button>
@@ -82,7 +82,7 @@ export function ContinueReading() {
                   <span className="min-w-0 font-display text-sm leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
                     {post.title}
                   </span>
-                  <span className="shrink-0 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                  <span className="shrink-0 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                     {percent}% · {left} min left
                   </span>
                 </div>

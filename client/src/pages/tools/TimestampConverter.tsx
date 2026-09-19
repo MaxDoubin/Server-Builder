@@ -258,7 +258,7 @@ const REFERENCES: { label: string; seconds: number; note: string }[] = [
 function FormatRow({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[hsl(var(--brand-iron)/0.5)] py-2.5 last:border-b-0">
-      <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
         {label}
       </span>
       <span className="flex min-w-0 items-center gap-2">
@@ -396,7 +396,7 @@ export function TimestampConverter() {
                 type="button"
                 onClick={() => commit(Math.floor(Date.now() / 1000) * 1000)}
                 data-testid="button-use-now"
-                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Convert now
               </button>
@@ -429,7 +429,7 @@ export function TimestampConverter() {
 
             <label
               htmlFor="epoch-unit"
-              className="mt-4 block font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="mt-4 block font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               Unit
             </label>
@@ -490,7 +490,7 @@ export function TimestampConverter() {
             />
 
             <fieldset className="mt-4">
-              <legend className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+              <legend className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                 Read a time with no offset as
               </legend>
               <div className="mt-2 flex gap-2">
@@ -502,7 +502,7 @@ export function TimestampConverter() {
                 ).map((option) => (
                   <label
                     key={option.id}
-                    className={`flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-lg border font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${
+                    className={`flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-lg border font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${
                       zone === option.id
                         ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-signal))]"
                         : "border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] text-[hsl(var(--brand-ash))]"

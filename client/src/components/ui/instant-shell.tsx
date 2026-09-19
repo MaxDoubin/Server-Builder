@@ -30,7 +30,7 @@ export function InstantShell({
           style={{ animationDelay: `${motionTokens.stagger.quick}ms` }}
         >
           <div className="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-[0_0_24px_rgba(34,211,238,0.15)] motion-surface">
-            <div className="mb-4 text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">
+            <div className="mb-4 text-[0.6875rem] uppercase tracking-[0.3em] text-cyan-200/70">
               System status
             </div>
             <div className="space-y-3">
@@ -44,7 +44,7 @@ export function InstantShell({
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-black/30 p-5 motion-surface">
-            <div className="mb-4 text-[11px] uppercase tracking-[0.3em] text-cyan-200/70">
+            <div className="mb-4 text-[0.6875rem] uppercase tracking-[0.3em] text-cyan-200/70">
               Live modules
             </div>
             <div className="space-y-3">

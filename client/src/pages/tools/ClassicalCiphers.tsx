@@ -199,7 +199,7 @@ export function ClassicalCiphers() {
                 onClick={() => setTab(t.id)}
                 aria-pressed={tab === t.id}
                 data-testid={`button-tab-${t.id}`}
-                className={`inline-flex min-h-[44px] items-center rounded-full border px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                className={`inline-flex min-h-[44px] items-center rounded-full border px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                   tab === t.id
                     ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-signal))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -216,7 +216,7 @@ export function ClassicalCiphers() {
                 <>
                   <label
                     htmlFor="caesar-shift"
-                    className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                    className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                   >
                     Shift: {shift}
                   </label>
@@ -241,7 +241,7 @@ export function ClassicalCiphers() {
                 <>
                   <label
                     htmlFor="vigenere-key"
-                    className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                    className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                   >
                     Keyword
                   </label>
@@ -289,7 +289,7 @@ export function ClassicalCiphers() {
 
             {tab === "caesar" || tab === "vigenere" ? (
               <div>
-                <span className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                   Direction
                 </span>
                 <div className="mt-2 flex gap-2" role="group" aria-label="Encode or decode">
@@ -303,7 +303,7 @@ export function ClassicalCiphers() {
                       onClick={() => setDecode(option.value)}
                       aria-pressed={decode === option.value}
                       data-testid={`button-${option.label.toLowerCase()}`}
-                      className={`inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg border font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                      className={`inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg border font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                         decode === option.value
                           ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-signal))]"
                           : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -363,7 +363,7 @@ export function ClassicalCiphers() {
                   onClick={() => setChartSource(which)}
                   aria-pressed={chartSource === which}
                   data-testid={`button-chart-${which}`}
-                  className={`inline-flex min-h-[32px] items-center rounded-full border px-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                  className={`inline-flex min-h-[32px] items-center rounded-full border px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                     chartSource === which
                       ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
                       : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -373,7 +373,7 @@ export function ClassicalCiphers() {
                 </button>
               ))}
             </div>
-            <p className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <p className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               <span className="text-[hsl(var(--brand-signal))]">bars</span> this text ·{" "}
               <span className="text-[hsl(var(--brand-cyan))]">ticks</span> English ·{" "}
               {totalLetters} letters
@@ -468,7 +468,7 @@ export function ClassicalCiphers() {
                       : "border-transparent"
                   }`}
                 >
-                  <span className="w-[3.5rem] shrink-0 font-mono-tight text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+                  <span className="w-[3.5rem] shrink-0 font-mono-tight text-[0.625rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
                     {String(row.shift).padStart(2, "0")}
                     {row.shift === bestShift ? (
                       <span className="ml-1 text-[hsl(var(--brand-signal))]">best</span>

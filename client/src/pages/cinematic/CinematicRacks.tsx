@@ -224,7 +224,7 @@ export function CinematicRacks() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1100px]">
           <header className="max-w-3xl">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Hardware · Rack Elevations
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -237,7 +237,7 @@ export function CinematicRacks() {
               to pull it out of the frame and read what it is, what it draws,
               and what every port on its face does.
             </p>
-            <p className="mt-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Every port count, rack unit and wattage is the vendor's published
               figure, linked at the bottom of each rack. Where a vendor
               publishes no consumption figure, the page says "not published"
@@ -256,12 +256,12 @@ export function CinematicRacks() {
                 headings saw a level skipped and no name for the group. The
                 type is unchanged.
               */}
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · In 3D · Vendor geometry
               </h2>
               <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
             </div>
-            <p className="mt-4 max-w-3xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 max-w-3xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               These three are not drawings of hardware. They are the hardware, from geometry
               Ubiquiti and Dell publish themselves, which means the panels are the panels and the
               parts are the parts. The first one is yours to fill. All three run in the browser
@@ -281,16 +281,16 @@ export function CinematicRacks() {
                     {f.art}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
-                    <div className="font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                    <div className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                       {f.kicker}
                     </div>
                     <h3 className="mt-2 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                       {f.title}
                     </h3>
-                    <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                       {f.blurb}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))]">
+                    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-techno text-[0.625rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))]">
                       {f.stats.map((stat) => (
                         <span key={stat}>{stat}</span>
                       ))}
@@ -302,7 +302,7 @@ export function CinematicRacks() {
           </section>
 
           <div className="mt-16 flex items-baseline gap-4">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Elevations · Drawn from datasheets
             </div>
             <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
@@ -324,10 +324,10 @@ export function CinematicRacks() {
                   <h2 className="mt-5 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                     {rack.name}
                   </h2>
-                  <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] overflow-hidden">
+                  <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] overflow-hidden">
                     {rack.blurb}
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))]">
+                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-techno text-[0.625rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))]">
                     <span>{rack.height}U frame</span>
                     <span>{unitsUsed(rack)}U mounted</span>
                     <span>{connectorCount(rack)} connectors</span>
@@ -344,7 +344,7 @@ export function CinematicRacks() {
             <h2 className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">
               Why elevations, and why these rules
             </h2>
-            <p className="mt-4 font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-4 font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               A rack elevation is how real deployments get planned: one drawing
               that answers what goes where, what it weighs on the circuit, and
               which port feeds which panel. Learning to read one is faster with
@@ -354,7 +354,7 @@ export function CinematicRacks() {
               because a rack plan built on guessed wattage fails on the day the
               PoE budget runs out.
             </p>
-            <p className="mt-4 font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-4 font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               To plan a build of your own, the{" "}
               <Link href="/tools/rack-budget" className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline">
                 rack budget tool

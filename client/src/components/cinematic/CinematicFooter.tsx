@@ -57,7 +57,7 @@ export function CinematicFooter() {
       >
         <div className="col-span-2 md:col-span-3 lg:col-span-5">
           <ScrollReveal variants={fadeLeft} delay={0.1}>
-            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Max Doubin · Las Vegas, NV
             </div>
           </ScrollReveal>
@@ -79,7 +79,7 @@ export function CinematicFooter() {
               <motion.a
                 href="mailto:max@maxdoubin.com"
                 data-testid="link-footer-email"
-                className="mt-6 inline-flex min-h-[24px] items-center gap-3 py-1 font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
+                className="mt-6 inline-flex min-h-[24px] items-center gap-3 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone))]"
                 whileHover={{ x: 6, color: "hsl(72 100% 50%)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
@@ -97,7 +97,7 @@ export function CinematicFooter() {
 
         <div className="lg:col-span-3">
           <ScrollReveal variants={fadeUp} delay={0.25}>
-            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Navigate
             </div>
           </ScrollReveal>
@@ -158,7 +158,7 @@ export function CinematicFooter() {
 
         <div className="lg:col-span-2">
           <ScrollReveal variants={fadeUp} delay={0.28}>
-            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               About
             </div>
           </ScrollReveal>
@@ -195,7 +195,7 @@ export function CinematicFooter() {
 
         <div className="col-span-2 md:col-span-1 lg:col-span-2">
           <ScrollReveal variants={fadeRight} delay={0.3}>
-            <div className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               Elsewhere
             </div>
           </ScrollReveal>
@@ -241,7 +241,7 @@ export function CinematicFooter() {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6, delay: 0.6 }}
       >
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] md:px-10">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] md:px-10">
           <motion.span
             initial={{ opacity: 0, x: -20 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}

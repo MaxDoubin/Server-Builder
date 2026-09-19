@@ -74,7 +74,7 @@ export function CinematicTeardown() {
       <div className="relative px-6 pb-24 pt-28 md:px-10">
         <div className="mx-auto max-w-[1400px]">
           <header className="max-w-[70ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Hardware · Teardown
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -153,7 +153,7 @@ export function CinematicTeardown() {
             </div>
 
             <aside className="flex flex-col gap-3">
-              <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                 · Order of removal
               </div>
               <ol className="flex flex-col divide-y divide-[hsl(var(--brand-iron)/0.5)] overflow-hidden rounded border border-[hsl(var(--brand-iron)/0.6)]">
@@ -171,7 +171,7 @@ export function CinematicTeardown() {
                             : "text-[hsl(var(--brand-bone-dim))] hover:bg-[hsl(var(--brand-iron)/0.28)]"
                         }`}
                       >
-                        <span className="font-mono-tight text-[10px] tabular-nums text-[hsl(var(--brand-ash))]">
+                        <span className="font-mono-tight text-[0.625rem] tabular-nums text-[hsl(var(--brand-ash))]">
                           {String(part.wave + 1).padStart(2, "0")}
                         </span>
                         <span className="font-mono-tight text-xs">{part.label}</span>
@@ -187,13 +187,13 @@ export function CinematicTeardown() {
                     <div className="font-mono-tight text-xs text-[hsl(var(--brand-bone))]">
                       {active.label}
                     </div>
-                    <p className="mt-2 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <p className="mt-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                       {active.note ??
                         "Comes out in step " + (active.wave + 1) + " of the sequence."}
                     </p>
                   </>
                 ) : (
-                  <p className="font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <p className="font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     Pick a part, in the list or in the model, to isolate it.
                   </p>
                 )}
@@ -202,7 +202,7 @@ export function CinematicTeardown() {
           </div>
 
           <section className="mt-14 max-w-[70ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Teardown · Provenance
             </div>
             <h2 className="mt-3 font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">

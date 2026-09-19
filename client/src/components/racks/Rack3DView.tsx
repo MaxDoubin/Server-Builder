@@ -276,7 +276,7 @@ export function Rack3DView({ rack }: { rack: RackDefinition }) {
         />
       </Canvas>
 
-      <p className="pointer-events-none absolute bottom-3 left-0 right-0 text-center font-techno text-[10px] uppercase tracking-[0.3em] text-[#5c6472]">
+      <p className="pointer-events-none absolute bottom-3 left-0 right-0 text-center font-techno text-[0.625rem] uppercase tracking-[0.3em] text-[#5c6472]">
         Drag to orbit · scroll to zoom
       </p>
     </div>

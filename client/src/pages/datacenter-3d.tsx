@@ -672,7 +672,7 @@ export function DataCenter3D({
                     Hyperscale Control
                   </div>
                   <div className="text-xl font-semibold text-white">Datacenter Command</div>
-                  <div className="text-[10px] text-white/60">
+                  <div className="text-[0.625rem] text-white/60">
                     Live orchestration for power, thermals, and topology. Created by Max Doubin.
                   </div>
                 </div>
@@ -686,7 +686,7 @@ export function DataCenter3D({
                   changing a component the whole site uses.
                 */}
                 <div role="group" aria-label={`Rack density, ${sliderValue} racks`}>
-                  <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-widest text-white/60">
+                  <div className="mb-2 flex items-center justify-between text-[0.625rem] uppercase tracking-widest text-white/60">
                     <span>Rack density</span>
                     <span className="text-cyan-200">{sliderValue}</span>
                   </div>
@@ -850,7 +850,7 @@ export function DataCenter3D({
                       aria-controls="dock-panel"
                       data-tour={tab.tour}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`min-h-[28px] rounded-full px-2.5 text-[10px] uppercase tracking-widest transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 ${
+                      className={`min-h-[28px] rounded-full px-2.5 text-[0.625rem] uppercase tracking-widest transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 ${
                         activeTab === tab.id
                           ? "bg-cyan-500/25 text-cyan-100"
                           : "bg-white/5 text-white/50 hover:text-white"
@@ -934,7 +934,7 @@ export function DataCenter3D({
         <div
           role="alert"
           data-ui="true"
-          className="absolute left-1/2 top-16 z-[70] w-[min(420px,calc(100%-2rem))] -translate-x-1/2 rounded-xl border border-rose-500/60 bg-black/90 px-3 py-2 text-[11px] leading-relaxed text-rose-100 shadow-[0_0_24px_rgba(244,63,94,0.25)] backdrop-blur"
+          className="absolute left-1/2 top-16 z-[70] w-[min(420px,calc(100%-2rem))] -translate-x-1/2 rounded-xl border border-rose-500/60 bg-black/90 px-3 py-2 text-[0.6875rem] leading-relaxed text-rose-100 shadow-[0_0_24px_rgba(244,63,94,0.25)] backdrop-blur"
         >
           <span className="mr-1 font-semibold uppercase tracking-widest text-rose-300">
             Over capacity
@@ -984,7 +984,7 @@ export function DataCenter3D({
       />
 
       {chromeVisible && showDiagnostics && perfWarning && (
-        <div className="absolute bottom-28 right-4 rounded-md border border-orange-400/30 bg-orange-500/10 p-2 text-[10px] text-orange-200">
+        <div className="absolute bottom-28 right-4 rounded-md border border-orange-400/30 bg-orange-500/10 p-2 text-[0.625rem] text-orange-200">
           {perfWarning}
         </div>
       )}

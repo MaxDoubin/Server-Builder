@@ -17,7 +17,7 @@ export function CinematicLinks() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Links · Resources
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -39,7 +39,7 @@ export function CinematicLinks() {
                 <li key={group.id}>
                   <a
                     href={`#${group.id}`}
-                    className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 py-1 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.45)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                    className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.45)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                   >
                     {group.heading}
                   </a>
@@ -51,7 +51,7 @@ export function CinematicLinks() {
           <div className="mt-14 space-y-16">
             {GROUPS.map((group) => (
               <section key={group.id} id={group.id} aria-labelledby={`${group.id}-heading`}>
-                <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+                <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                   {group.label}
                 </div>
                 <h2
@@ -77,14 +77,14 @@ export function CinematicLinks() {
                           <span className="font-display text-base font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                             {item.name} <span aria-hidden>↗</span>
                           </span>
-                          <span className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[9px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                          <span className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                             {item.access}
                           </span>
                         </div>
                         <p className="mt-2 max-w-[70ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                           {item.why}
                         </p>
-                        <p className="mt-3 break-all font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                        <p className="mt-3 break-all font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                           {item.url.replace(/^https:\/\//, "").replace(/\/$/, "")}
                         </p>
                       </a>
@@ -101,7 +101,7 @@ export function CinematicLinks() {
           >
             <h2
               id="links-local-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
             >
               Closer to home
             </h2>

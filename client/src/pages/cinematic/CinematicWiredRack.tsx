@@ -36,7 +36,7 @@ export function CinematicWiredRack() {
       <div className="relative px-6 pb-24 pt-28 md:px-10">
         <div className="mx-auto max-w-[1400px]">
           <header className="max-w-[72ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Racks · Wired
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -60,7 +60,7 @@ export function CinematicWiredRack() {
               [`${fibre}`, "fiber uplinks"],
             ].map(([value, label]) => (
               <div key={label} className="bg-[hsl(var(--brand-void))] px-4 py-3">
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                   {label}
                 </dt>
                 <dd className="mt-1 font-display text-xl text-[hsl(var(--brand-bone))]">{value}</dd>
@@ -82,13 +82,13 @@ export function CinematicWiredRack() {
                 </Suspense>
                 <LoadProgress />
               </div>
-              <p className="border-t border-[hsl(var(--brand-iron)/0.6)] px-5 py-3 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+              <p className="border-t border-[hsl(var(--brand-iron)/0.6)] px-5 py-3 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                 Drag to orbit, scroll to zoom, click a device to isolate it.
               </p>
             </div>
 
             <aside className="flex flex-col gap-3">
-              <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                 · Elevation
               </div>
               <ol className="overflow-hidden rounded border border-[hsl(var(--brand-iron)/0.6)] divide-y divide-[hsl(var(--brand-iron)/0.5)]">
@@ -106,11 +106,11 @@ export function CinematicWiredRack() {
                             : "text-[hsl(var(--brand-bone-dim))] hover:bg-[hsl(var(--brand-iron)/0.28)]"
                         }`}
                       >
-                        <span className="w-10 shrink-0 font-mono-tight text-[10px] tabular-nums text-[hsl(var(--brand-ash))]">
+                        <span className="w-10 shrink-0 font-mono-tight text-[0.625rem] tabular-nums text-[hsl(var(--brand-ash))]">
                           U{WIRED_RACK_UNITS - d.at}
                         </span>
                         <span className="font-mono-tight text-xs leading-snug">{d.label}</span>
-                        <span className="ml-auto font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                        <span className="ml-auto font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                           {d.u}U
                         </span>
                       </button>
@@ -118,7 +118,7 @@ export function CinematicWiredRack() {
                   );
                 })}
               </ol>
-              <p className="font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 All but one of these is an Ubiquiti model. The distribution unit is not: Ubiquiti
                 publish no model for it, so it is built by hand from their own dimensioned
                 elevation.
@@ -127,7 +127,7 @@ export function CinematicWiredRack() {
           </div>
 
           <section className="mt-14 max-w-[72ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Wired · How the cabling works
             </div>
             <h2 className="mt-3 font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">

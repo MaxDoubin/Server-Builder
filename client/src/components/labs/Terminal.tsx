@@ -215,10 +215,10 @@ export function Terminal({ machine, onCommand, banner }: Props) {
     >
       <div className="flex items-center gap-2 border-b border-[hsl(var(--brand-iron))] px-4 py-2">
         <span aria-hidden className="h-2 w-2 rounded-full bg-[hsl(var(--brand-signal))]" />
-        <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+        <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
           {machine.user}@{machine.hostname}
         </span>
-        <span className="ml-auto font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <span className="ml-auto font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           {busy ? "running" : "ready"}
         </span>
       </div>
@@ -234,7 +234,7 @@ export function Terminal({ machine, onCommand, banner }: Props) {
         {rows.map((row) => (
           <pre
             key={row.id}
-            className={`whitespace-pre-wrap break-words font-mono-tight text-[12.5px] leading-[1.6] ${
+            className={`whitespace-pre-wrap break-words font-mono-tight text-[0.78125rem] leading-[1.6] ${
               row.kind === "input"
                 ? "text-[hsl(var(--brand-bone))]"
                 : row.kind === "err"
@@ -253,7 +253,7 @@ export function Terminal({ machine, onCommand, banner }: Props) {
         <label htmlFor="lab-input" className="sr-only">
           Type a command and press Enter
         </label>
-        <span aria-hidden className="shrink-0 font-mono-tight text-[12.5px] text-[hsl(var(--brand-signal))]">
+        <span aria-hidden className="shrink-0 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-signal))]">
           {promptText}
         </span>
         <input
@@ -267,7 +267,7 @@ export function Terminal({ machine, onCommand, banner }: Props) {
           autoCorrect="off"
           autoComplete="off"
           data-testid="terminal-input"
-          className="min-w-0 flex-1 bg-transparent font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone))] outline-none placeholder:text-[hsl(var(--brand-ash))]"
+          className="min-w-0 flex-1 bg-transparent font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone))] outline-none placeholder:text-[hsl(var(--brand-ash))]"
           placeholder="help"
         />
       </div>

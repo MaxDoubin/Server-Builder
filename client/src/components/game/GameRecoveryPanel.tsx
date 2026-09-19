@@ -49,7 +49,7 @@ export function GameRecoveryPanel({
         <div className="overflow-hidden rounded-[32px] border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,hsl(var(--brand-graphite)/0.9),hsl(var(--brand-obsidian)/0.84))] p-7 shadow-[0_36px_140px_-48px_rgba(0,0,0,0.9)] backdrop-blur-xl md:p-9">
           <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,hsl(var(--brand-signal)),transparent)] opacity-80" />
 
-          <div className="flex flex-wrap items-center gap-3 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+          <div className="flex flex-wrap items-center gap-3 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
             <ShieldAlert className="h-4 w-4" />
             Interactive Lab Recovery
           </div>
@@ -78,7 +78,7 @@ export function GameRecoveryPanel({
               <button
                 type="button"
                 onClick={onRetry}
-                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.1)] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-cyan)/0.16)]"
+                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.1)] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-cyan)/0.16)]"
               >
                 <RotateCcw className="h-4 w-4" />
                 Retry scene
@@ -88,7 +88,7 @@ export function GameRecoveryPanel({
               <button
                 type="button"
                 onClick={onDowngrade}
-                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-signal)/0.36)] bg-[hsl(var(--brand-signal)/0.12)] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-signal)/0.18)]"
+                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-signal)/0.36)] bg-[hsl(var(--brand-signal)/0.12)] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-signal)/0.18)]"
               >
                 <Gauge className="h-4 w-4" />
                 Launch safe mode
@@ -97,14 +97,14 @@ export function GameRecoveryPanel({
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-bone)/0.16)] bg-[hsl(var(--brand-bone)/0.08)] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-bone)/0.14)]"
+              className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-bone)/0.16)] bg-[hsl(var(--brand-bone)/0.08)] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-bone)/0.14)]"
             >
               <RefreshCw className="h-4 w-4" />
               Reload page
             </button>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               Profile home
             </Link>
@@ -128,7 +128,7 @@ function DetailCard({
 }) {
   return (
     <div className="rounded-[22px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.46)] px-4 py-4 backdrop-blur-md">
-      <div className="flex items-center gap-2 text-[hsl(var(--brand-bone-dim))]">{icon}<span className="font-techno text-[10px] uppercase tracking-[0.32em]">{label}</span></div>
+      <div className="flex items-center gap-2 text-[hsl(var(--brand-bone-dim))]">{icon}<span className="font-techno text-[0.625rem] uppercase tracking-[0.32em]">{label}</span></div>
       <div className="mt-3 text-sm leading-relaxed text-[hsl(var(--brand-bone))]">{value}</div>
     </div>
   );
@@ -143,7 +143,7 @@ function RackPreview({ profile }: { profile: GameRenderProfile }) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--brand-cyan)/0.16),transparent_30%),radial-gradient(circle_at_50%_100%,hsl(var(--brand-signal)/0.12),transparent_26%)] animate-aurora-drift" />
       <div className="relative flex h-full min-h-[420px] flex-col justify-between">
         <div>
-          <div className="font-techno text-[10px] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
+          <div className="font-techno text-[0.625rem] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
             Alternate Experience
           </div>
           <h3 className="mt-4 font-display text-[clamp(1.5rem,3vw,2.4rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -177,7 +177,7 @@ function RackPreview({ profile }: { profile: GameRenderProfile }) {
                         className="inline-flex h-1.5 w-1.5 rounded-full text-[hsl(var(--brand-signal))] animate-rack-led"
                         style={{ background: "currentColor" }}
                       />
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
                         Unit {String(index + 1).padStart(2, "0")}
                       </span>
                     </div>
@@ -203,7 +203,7 @@ function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="rounded-[18px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.44)] px-4 py-3 text-center">
       <div className="font-display text-xl tracking-[-0.04em] text-[hsl(var(--brand-bone))]">{value}</div>
-      <div className="mt-1 font-techno text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-bone-dim))]">{label}</div>
+      <div className="mt-1 font-techno text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-bone-dim))]">{label}</div>
     </div>
   );
 }

@@ -273,7 +273,7 @@ export function DnsRecords() {
           <p
             role="status"
             data-testid="text-dns-count"
-            className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+            className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
           >
             {shown.length} of {RECORDS.length} record types
           </p>
@@ -282,7 +282,7 @@ export function DnsRecords() {
               <li key={record.anchor}>
                 <a
                   href={`#${record.anchor}`}
-                  className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[11px] tracking-[0.14em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.6875rem] tracking-[0.14em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   {record.type}
                 </a>
@@ -344,7 +344,7 @@ export function DnsRecords() {
               <h2 className="font-display text-2xl font-medium text-[hsl(var(--brand-signal))]">
                 {record.type}
               </h2>
-              <p className="font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <p className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                 {record.name}
               </p>
             </div>
@@ -353,7 +353,7 @@ export function DnsRecords() {
               {record.purpose}
             </p>
 
-            <h3 className="mt-5 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+            <h3 className="mt-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
               Zone file
             </h3>
             <div className="mt-2 flex items-start gap-3">
@@ -363,7 +363,7 @@ export function DnsRecords() {
               <CopyButton value={record.zone} label={`Copy ${record.type} zone example`} />
             </div>
 
-            <h3 className="mt-5 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+            <h3 className="mt-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
               Query it
             </h3>
             <CommandLine command={record.dig} />

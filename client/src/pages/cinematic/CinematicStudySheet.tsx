@@ -74,7 +74,7 @@ export function CinematicStudySheet() {
             <Link
               href="/study"
               data-testid="link-sheet-not-found-study"
-              className="mt-6 inline-block font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]"
+              className="mt-6 inline-block font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]"
             >
               ← All exams
             </Link>
@@ -97,20 +97,20 @@ export function CinematicStudySheet() {
             <Link
               href={`/study/${exam.slug}`}
               data-testid="link-sheet-back"
-              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← {exam.name}
             </Link>
           </nav>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Revision sheet · {exam.code}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.2rem,5.4vw,3.6rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               {exam.name}
             </h1>
-            <p className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               {exam.domains.length} {pluralise(exam.domains.length, "domain")} ·{" "}
               {totalPosts} {pluralise(totalPosts, "article")} · {totalTools}{" "}
               {pluralise(totalTools, "tool")}
@@ -136,7 +136,7 @@ export function CinematicStudySheet() {
               data-print-hide
               data-testid="button-print-sheet"
               onClick={() => window.print()}
-              className="mt-8 inline-flex min-h-[44px] items-center gap-3 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="mt-8 inline-flex min-h-[44px] items-center gap-3 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               <span
                 aria-hidden
@@ -157,7 +157,7 @@ export function CinematicStudySheet() {
                   <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">
                     {domain.name}
                   </h2>
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     {domain.weight === null
                       ? "no published weighting"
                       : `${domain.weight}% of the exam`}
@@ -170,7 +170,7 @@ export function CinematicStudySheet() {
 
                 {tools.length > 0 && (
                   <>
-                    <h3 className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                    <h3 className="mt-6 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                       Practice
                     </h3>
                     <ul className="mt-2 space-y-1">
@@ -192,7 +192,7 @@ export function CinematicStudySheet() {
                   </>
                 )}
 
-                <h3 className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                <h3 className="mt-6 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                   Read
                 </h3>
                 {posts.length === 0 ? (
@@ -213,7 +213,7 @@ export function CinematicStudySheet() {
                             ({SITE_URL}/blog/{p.slug})
                           </span>
                         </Link>
-                        <span className="ml-2 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                        <span className="ml-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                           {readMinutes(p)} min
                         </span>
                       </li>

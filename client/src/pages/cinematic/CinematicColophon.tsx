@@ -18,7 +18,7 @@ export function CinematicColophon() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Build · Colophon
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -32,7 +32,7 @@ export function CinematicColophon() {
           </header>
 
           <section aria-labelledby="colophon-stack-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Colophon · Stack
             </div>
             <h2
@@ -48,7 +48,7 @@ export function CinematicColophon() {
                     <span className="font-mono-tight text-sm font-medium text-[hsl(var(--brand-bone))]">
                       {item.name}
                     </span>
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       {item.role}
                     </span>
                   </dt>
@@ -61,7 +61,7 @@ export function CinematicColophon() {
           </section>
 
           <section aria-labelledby="colophon-decisions-heading" className="mt-20">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Colophon · Engineering
             </div>
             <h2
@@ -82,7 +82,7 @@ export function CinematicColophon() {
                   id={decision.id}
                   className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm"
                 >
-                  <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                  <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                   <h3 className="mt-2 max-w-[52ch] font-display text-lg font-medium leading-snug tracking-tight text-[hsl(var(--brand-bone))] md:text-xl">
@@ -104,7 +104,7 @@ export function CinematicColophon() {
           </section>
 
           <section aria-labelledby="colophon-type-heading" className="mt-20">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Colophon · Type and colour
             </div>
             <h2
@@ -139,7 +139,7 @@ export function CinematicColophon() {
           </section>
 
           <section aria-labelledby="colophon-absent-heading" className="mt-20">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Colophon · Absent
             </div>
             <h2
@@ -174,7 +174,7 @@ export function CinematicColophon() {
           >
             <h2
               id="colophon-source-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
             >
               Source and tools
             </h2>

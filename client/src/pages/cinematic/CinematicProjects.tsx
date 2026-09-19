@@ -113,7 +113,7 @@ export function CinematicProjects() {
           {/* Header wrapped in ScrollReveal with fadeRight */}
           <ScrollReveal variants={fadeRight} delay={0.1}>
             <div ref={headerRef} className="max-w-[58ch]">
-              <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
                 <ScrambleText text="· Index · Projects" scrambleDuration={1.8} />
               </div>
 
@@ -148,7 +148,7 @@ export function CinematicProjects() {
               data-print-hide
               className="flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
             >
-              <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <span className="mr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 filter ·
               </span>
               {CATEGORIES.map((cat) => {
@@ -158,7 +158,7 @@ export function CinematicProjects() {
                     key={cat.value}
                     onClick={() => setActiveCategory(cat.value)}
                     data-testid={`button-filter-${cat.value}`}
-                    className={`group relative inline-flex h-9 items-center gap-2 overflow-hidden rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+                    className={`group relative inline-flex h-9 items-center gap-2 overflow-hidden rounded-full border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors ${
                       active
                         ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
@@ -189,7 +189,7 @@ export function CinematicProjects() {
                   </motion.button>
                 );
               })}
-              <span className="ml-auto font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <span className="ml-auto font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 <AnimatedGradientText>
                   {filteredProjects.length.toString().padStart(2, "0")}
                 </AnimatedGradientText>
@@ -260,7 +260,7 @@ export function CinematicProjects() {
                                 }}
                               />
                               <motion.div
-                                className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]"
+                                className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]"
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.3 + idx * 0.05, duration: 0.5 }}
@@ -272,7 +272,7 @@ export function CinematicProjects() {
                                 UNIT · {String(idx + 1).padStart(2, "0")}
                               </motion.div>
                               <motion.div
-                                className="absolute right-4 top-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone-dim))]"
+                                className="absolute right-4 top-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone-dim))]"
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.35 + idx * 0.05, duration: 0.5 }}
@@ -308,7 +308,7 @@ export function CinematicProjects() {
                             {project.tech.map((t) => (
                               <motion.span
                                 key={t}
-                                className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.5)] px-2.5 py-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
+                                className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.5)] px-2.5 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
                                 variants={{
                                   rest: { scale: 1, y: 0 },
                                   hover: {
@@ -337,7 +337,7 @@ export function CinematicProjects() {
                           />
 
                           <div className="mt-0 flex items-center justify-between pt-5">
-                            <span className="font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                               {project.isGame
                                 ? "interactive · 3D"
                                 : !project.link
@@ -352,7 +352,7 @@ export function CinematicProjects() {
                                   <Link
                                     href={project.link}
                                     data-testid={`button-play-${project.id}`}
-                                    className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                                    className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                                   >
                                     <span
                                       className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
@@ -371,7 +371,7 @@ export function CinematicProjects() {
                                   target="_blank"
                                   rel="noreferrer noopener"
                                   data-testid={`link-project-${project.id}`}
-                                  className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                                  className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                                 >
                                   Open project →
                                 </a>
@@ -381,7 +381,7 @@ export function CinematicProjects() {
                                 <Link
                                   href={project.link}
                                   data-testid={`link-project-${project.id}`}
-                                  className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                                  className="inline-flex py-[14px] -my-[14px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                                 >
                                   See the work →
                                 </Link>
@@ -396,7 +396,7 @@ export function CinematicProjects() {
                                 substantiates it, so this branch is the
                                 genuine no-evidence case only.
                               */
-                              <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                              <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                                 no public link
                               </span>
                             )}
@@ -424,7 +424,7 @@ export function CinematicProjects() {
                 <div className="font-display text-2xl text-[hsl(var(--brand-bone))]">
                   No projects in this category.
                 </div>
-                <div className="mt-3 font-mono-tight text-[11px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                <div className="mt-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                   try a different filter
                 </div>
               </motion.div>

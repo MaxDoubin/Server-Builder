@@ -30,10 +30,10 @@ export function ReadAboutThis({ href }: { href: string }) {
 
   return (
     <section className="mt-14" data-testid="read-about-this">
-      <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+      <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
         · Read about this
       </h2>
-      <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         The written version, where the reasoning is worked through rather than
         exercised.
       </p>
@@ -45,10 +45,10 @@ export function ReadAboutThis({ href }: { href: string }) {
               data-testid={`read-${post.slug}`}
               className="block rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.4)] px-4 py-3 transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
-              <span className="font-mono-tight text-[13.5px] text-[hsl(var(--brand-bone))]">
+              <span className="font-mono-tight text-[0.84375rem] text-[hsl(var(--brand-bone))]">
                 {post.title}
               </span>
-              <span className="mt-1 block font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <span className="mt-1 block font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 {post.excerpt}
               </span>
             </Link>
@@ -75,7 +75,7 @@ export function PracticeThis({ slug }: { slug: string }) {
       className="mt-10 rounded-2xl border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.05)] p-5"
       data-testid="practice-this"
     >
-      <h2 className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+      <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
         · {surfaces.length === 1 ? "Practice this" : "Practice this, two ways"}
       </h2>
       <ul className="mt-3 space-y-2">
@@ -84,14 +84,14 @@ export function PracticeThis({ slug }: { slug: string }) {
             <Link
               href={surface.href}
               data-testid={`practice-${surface.href.slice(1)}`}
-              className="font-mono-tight text-[13.5px] text-[hsl(var(--brand-bone))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
+              className="font-mono-tight text-[0.84375rem] text-[hsl(var(--brand-bone))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
             >
               {surface.title}
             </Link>
           </li>
         ))}
       </ul>
-      <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         In the browser, with nothing to install and nothing sent anywhere.
       </p>
     </aside>

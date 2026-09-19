@@ -112,7 +112,7 @@ export function CinematicNeigh() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} segments, three thresholds each
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -150,18 +150,18 @@ export function CinematicNeigh() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {item.setup.family === "ipv4" ? "arp_cache" : "ndisc_cache"} ·{" "}
                       {item.setup.hosts} host{item.setup.hosts === 1 ? "" : "s"}
                       {item.setup.arrivedInABurst ? " · all at once" : ""}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -174,7 +174,7 @@ export function CinematicNeigh() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="neigh-brief"
             >
               {active.brief}
@@ -184,7 +184,7 @@ export function CinematicNeigh() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="neigh-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ sysctl -a | grep neigh.default.gc_thresh
 ${asSysctl(setup)}
 
@@ -195,7 +195,7 @@ ${asSysctl(setup)}
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -209,7 +209,7 @@ ${asSysctl(setup)}
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`neigh-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -227,7 +227,7 @@ ${asSysctl(setup)}
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="neigh-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} The {tableId(setup.family)} holds {held} counted
                   entr{held === 1 ? "y" : "ies"}
                   {setup.permanent > 0 ? `, plus ${setup.permanent} permanent ones that no threshold can see,` : ""}{" "}
@@ -242,7 +242,7 @@ ${asSysctl(setup)}
 
                 {/* ── the three thresholds on one axis ── */}
                 <div data-testid="neigh-bar">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                     <span className="text-[hsl(var(--brand-bone-dim))]">entries against the three thresholds</span>
                     <span className="text-[hsl(var(--brand-bone))]">
                       {held} held, {headroom(setup)} of headroom
@@ -268,17 +268,17 @@ ${asSysctl(setup)}
                         <span style={{ backgroundColor: color }} className="absolute inset-y-0 block w-[2px]" />
                         <span
                           style={{ color }}
-                          className="absolute bottom-0.5 left-1 whitespace-nowrap font-mono-tight text-[9.5px]"
+                          className="absolute bottom-0.5 left-1 whitespace-nowrap font-mono-tight text-[0.59375rem]"
                         >
                           {label} {value}
                         </span>
                       </span>
                     ))}
-                    <span className="absolute left-1.5 top-1 font-mono-tight text-[10.5px] text-[hsl(var(--brand-bone))]">
+                    <span className="absolute left-1.5 top-1 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-bone))]">
                       {held} entries
                     </span>
                   </div>
-                  <p className="mt-1.5 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-1.5 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     {!periodicRuns(setup)
                       ? "Below the first mark the periodic collector returns without walking the table, so nothing here is ever aged out."
                       : state(setup) === "collected-normally"
@@ -291,7 +291,7 @@ ${asSysctl(setup)}
 
                 {/* ── the second condition, which is about age rather than count ── */}
                 <div data-testid="neigh-age">
-                  <div className="font-mono-tight text-[11.5px] text-[hsl(var(--brand-bone-dim))]">
+                  <div className="font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-bone-dim))]">
                     the same {held} entries, arriving two ways
                   </div>
                   <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -304,7 +304,7 @@ ${asSysctl(setup)}
                       return (
                         <div
                           key={label}
-                          className={`rounded-lg border px-3 py-2 font-mono-tight text-[11.5px] ${
+                          className={`rounded-lg border px-3 py-2 font-mono-tight text-[0.71875rem] ${
                             isThis
                               ? "border-[hsl(var(--brand-signal)/0.6)] bg-[hsl(var(--brand-signal)/0.06)]"
                               : "border-[hsl(var(--brand-iron))]"
@@ -319,13 +319,13 @@ ${asSysctl(setup)}
                             {would ? "overflow: allocations refused" : "no overflow"}
                           </span>
                           {isThis ? (
-                            <span className="mt-0.5 block text-[10px] text-[hsl(var(--brand-ash)/0.8)]">this case</span>
+                            <span className="mt-0.5 block text-[0.625rem] text-[hsl(var(--brand-ash)/0.8)]">this case</span>
                           ) : null}
                         </div>
                       );
                     })}
                   </div>
-                  <p className="mt-1.5 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-1.5 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     {overflows({ ...setup, arrivedInABurst: true }) === overflows({ ...setup, arrivedInABurst: false })
                       ? "This table is far enough from the hard limit that arrival speed makes no difference to it."
                       : `Same count, same limit, opposite outcome. A forced collection may only take entries untouched for ${RECLAIM_AGE_SECONDS} seconds, and a burst has none.`}
@@ -334,7 +334,7 @@ ${asSysctl(setup)}
 
                 <div className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
                   <pre
-                    className="whitespace-pre font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                    className="whitespace-pre font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                     data-testid="neigh-counts"
                   >
 {`${asCounts(setup)}
@@ -344,28 +344,28 @@ ${asDmesg(setup)}`}
                   </pre>
                 </div>
 
-                <p className="font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="neigh-sizing">
+                <p className="font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="neigh-sizing">
                   Sized properly, this segment wants gc_thresh3 at {thresh3Needed(setup)}, with
                   gc_thresh1 and gc_thresh2 raised to keep their shape.
                 </p>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="neigh-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -374,13 +374,13 @@ ${asDmesg(setup)}`}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="neigh-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the answer needs is above: the three thresholds as this machine has
                 them, how many hosts are on the segment, how many entries each costs in this
                 family, and how fast they arrived. The thresholds are drawn once you have
@@ -390,21 +390,21 @@ ${asDmesg(setup)}`}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="neigh-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} segments`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI recomputes each table's state as four independent predicates and requires exactly one
             to be true, checks that the set contains a pair of tables identical but for how fast
             their entries arrived and opposite in outcome, and proves on every case that permanent
             entries change nothing, because exempt_from_gc means they never reach the counter. Per
             device overrides, the unres_qlen backlog and hash table resizing are not modeled.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the segment this table belongs to,{" "}
             <Link
               href="/allocate"
@@ -424,7 +424,7 @@ ${asDmesg(setup)}`}
 
           <ReadAboutThis href="/neigh" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

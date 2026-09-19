@@ -23,7 +23,7 @@ export function CinematicCerts() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1000px]">
           <header className="max-w-3xl">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Status · Certifications
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -96,7 +96,7 @@ function StatusChip({ cert }: { cert: Cert }) {
   const earned = cert.status === "earned";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono-tight text-[10px] uppercase tracking-[0.2em] ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] ${
         earned
           ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
           : "border-[hsl(var(--brand-amber)/0.6)] text-[hsl(var(--brand-amber))]"
@@ -116,13 +116,13 @@ function CertCard({ cert }: { cert: Cert }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+          <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
             {cert.vendor} · {cert.code}
           </div>
           <h3 className="mt-2 font-display text-xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-2xl">
             {cert.name}
           </h3>
-          <div className="mt-1 font-mono-tight text-[13px] text-[hsl(var(--brand-ash))]">
+          <div className="mt-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-ash))]">
             {cert.level}
           </div>
         </div>
@@ -135,18 +135,18 @@ function CertCard({ cert }: { cert: Cert }) {
 
       <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+          <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
             What it covers
           </div>
-          <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+          <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             {cert.covers}
           </p>
         </div>
         <div>
-          <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+          <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
             What it is worth
           </div>
-          <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+          <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             {cert.worth}
           </p>
         </div>
@@ -156,14 +156,14 @@ function CertCard({ cert }: { cert: Cert }) {
         href={cert.officialUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 inline-flex min-h-[24px] items-center gap-1.5 py-1 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+        className="mt-4 inline-flex min-h-[24px] items-center gap-1.5 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
       >
         Official objectives ↗
       </a>
 
       {cert.domains.length > 0 ? (
         <details className="group mt-5 border-t border-[hsl(var(--brand-iron))] pt-4">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-signal))]">
             <span>Exam objective domains ({cert.code})</span>
             <span aria-hidden className="text-[hsl(var(--brand-ash))] transition-transform group-open:rotate-90">
               →
@@ -179,11 +179,11 @@ function CertCard({ cert }: { cert: Cert }) {
                   <h4 className="font-mono-tight text-sm font-medium text-[hsl(var(--brand-bone))]">
                     {domain.name}
                   </h4>
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))]">
                     {domain.weight}
                   </span>
                 </div>
-                <p className="mt-1.5 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <p className="mt-1.5 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {domain.summary}
                 </p>
                 <ul className="mt-3 flex flex-wrap gap-2">
@@ -205,7 +205,7 @@ function CertCard({ cert }: { cert: Cert }) {
 function ResourceLink({ resource }: { resource: CertResource }) {
   const internal = resource.url.startsWith("/");
   const className =
-    "inline-flex min-h-[28px] items-center gap-1 rounded-md border border-[hsl(var(--brand-iron))] px-2.5 py-1 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]";
+    "inline-flex min-h-[28px] items-center gap-1 rounded-md border border-[hsl(var(--brand-iron))] px-2.5 py-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]";
 
   if (internal) {
     return (

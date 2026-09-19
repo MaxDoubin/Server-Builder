@@ -70,7 +70,7 @@ export function SiteLoader({
           <div className="absolute inset-y-0 -left-1/3 w-1/2 bg-[linear-gradient(90deg,transparent,hsl(var(--brand-cyan)/0.12),transparent)] blur-2xl animate-loader-sweep" />
         </div>
 
-        <div className="flex items-center gap-3 font-techno text-[10px] uppercase tracking-[0.42em] text-[hsl(var(--brand-signal))]">
+        <div className="flex items-center gap-3 font-techno text-[0.625rem] uppercase tracking-[0.42em] text-[hsl(var(--brand-signal))]">
           <span
             className="inline-flex h-2 w-2 rounded-full bg-[hsl(var(--brand-signal))] animate-rack-led"
             style={{ boxShadow: "0 0 12px hsl(var(--brand-signal))" }}
@@ -105,7 +105,7 @@ export function SiteLoader({
                   style={{ boxShadow: "0 0 10px hsl(var(--brand-cyan))" }}
                 />
                 <div className="flex-1">
-                  <div className="mb-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))]">
+                  <div className="mb-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))]">
                     {line}
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-[hsl(var(--brand-carbon))]">
@@ -120,11 +120,11 @@ export function SiteLoader({
           ))}
         </div>
 
-        <div className="mt-7 flex items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+        <div className="mt-7 flex items-center justify-between font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
           <span>{status}</span>
           <span className="signal-text">Live</span>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[9px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[0.5625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]">
           <span>Cybersecurity</span>
           <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
           <span>Networking</span>

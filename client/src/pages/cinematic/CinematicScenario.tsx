@@ -197,14 +197,14 @@ function Player({ scenario }: { scenario: Scenario }) {
         <div className="mx-auto max-w-[780px]">
           <Link
             href="/scenarios"
-            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             data-testid="link-scenarios-back"
           >
             ← All scenarios
           </Link>
 
           <header className="mt-6">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               <span>· {scenario.category}</span>
               <span className="text-[hsl(var(--brand-ash))]">
                 {DIFFICULTY_LABEL[scenario.difficulty]}
@@ -228,7 +228,7 @@ function Player({ scenario }: { scenario: Scenario }) {
 
           {started ? (
             <div
-              className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+              className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
               data-testid="scenario-clock"
             >
               <span
@@ -254,7 +254,7 @@ function Player({ scenario }: { scenario: Scenario }) {
 
           {started && scene?.where ? (
             <p
-              className="mt-5 font-techno text-[10px] uppercase tracking-[0.42em] text-[hsl(var(--brand-bone-dim))]"
+              className="mt-5 font-techno text-[0.625rem] uppercase tracking-[0.42em] text-[hsl(var(--brand-bone-dim))]"
               data-testid="scene-where"
             >
               {scene.where}
@@ -268,7 +268,7 @@ function Player({ scenario }: { scenario: Scenario }) {
               {scene.body.map((paragraph, index) => (
                 <p
                   key={index}
-                  className="mt-4 font-mono-tight text-[15px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                  className="mt-4 font-mono-tight text-[0.9375rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
                 >
                   {paragraph}
                 </p>
@@ -277,7 +277,7 @@ function Player({ scenario }: { scenario: Scenario }) {
                 <EvidenceBlock key={index} evidence={evidence} />
               ))}
 
-              <h2 className="mt-9 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="mt-9 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 What do you do?
               </h2>
               <ul className="mt-4 space-y-3">
@@ -291,16 +291,16 @@ function Player({ scenario }: { scenario: Scenario }) {
                     >
                       <span
                         aria-hidden
-                        className="mt-0.5 shrink-0 rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))] group-hover:border-[hsl(var(--brand-signal)/0.5)] group-hover:text-[hsl(var(--brand-signal))]"
+                        className="mt-0.5 shrink-0 rounded border border-[hsl(var(--brand-iron))] px-1.5 py-0.5 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))] group-hover:border-[hsl(var(--brand-signal)/0.5)] group-hover:text-[hsl(var(--brand-signal))]"
                       >
                         {index + 1}
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-mono-tight text-[14px] leading-snug text-[hsl(var(--brand-bone))]">
+                        <span className="block font-mono-tight text-[0.875rem] leading-snug text-[hsl(var(--brand-bone))]">
                           {choice.label}
                         </span>
                         {choice.detail ? (
-                          <span className="mt-1 block font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                          <span className="mt-1 block font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                             {choice.detail}
                           </span>
                         ) : null}
@@ -310,7 +310,7 @@ function Player({ scenario }: { scenario: Scenario }) {
                 ))}
               </ul>
 
-              <p className="mt-5 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                 Press 1 to {scene.choices.length} to choose
               </p>
 
@@ -319,7 +319,7 @@ function Player({ scenario }: { scenario: Scenario }) {
                   type="button"
                   onClick={() => rewindTo(trail.length - 1)}
                   data-testid="button-undo"
-                  className="mt-6 inline-flex min-h-[36px] items-center font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="mt-6 inline-flex min-h-[36px] items-center font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   ← Undo the last decision
                 </button>
@@ -359,17 +359,17 @@ function Brief({
 }) {
   return (
     <section className="mt-8">
-      <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         {scenario.role}
       </p>
       <div className="mt-6 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 md:p-8">
-        <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+        <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
           · The brief · {scenario.clockStart}
         </div>
         {scenario.brief.map((paragraph, index) => (
           <p
             key={index}
-            className="mt-4 font-mono-tight text-[15px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+            className="mt-4 font-mono-tight text-[0.9375rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
           >
             {paragraph}
           </p>
@@ -379,11 +379,11 @@ function Brief({
         type="button"
         onClick={onBegin}
         data-testid="button-begin"
-        className="mt-7 inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-[hsl(var(--brand-signal))] px-8 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] sm:w-auto"
+        className="mt-7 inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-[hsl(var(--brand-signal))] px-8 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] sm:w-auto"
       >
         Begin
       </button>
-      <p className="mt-4 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-4 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         {foundCount > 0
           ? `You have found ${foundCount} of the ${scenario.endings.length} endings. Nothing you do here is scored, and you can undo any decision.`
           : `${scenario.endings.length} endings. Nothing here is scored or timed in real seconds, and you can undo any decision.`}
@@ -418,17 +418,17 @@ function EndingView({
     <section className="scenario-scene mt-8" data-testid={`ending-${ending.id}`}>
       <div className="flex flex-wrap items-center gap-3">
         <span
-          className={`rounded-full border px-3 py-1 font-techno text-[10px] uppercase tracking-[0.28em] ${GRADE_TONE[ending.grade]}`}
+          className={`rounded-full border px-3 py-1 font-techno text-[0.625rem] uppercase tracking-[0.28em] ${GRADE_TONE[ending.grade]}`}
         >
           {GRADE_LABEL[ending.grade]}
         </span>
         <span
-          className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
+          className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
           data-testid="ending-rarity"
         >
           {rarity.label} · {percent(rarity.share)} of routes
         </span>
-        <span className="font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <span className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           {trail.length} decisions · {elapsedLabel(elapsed)}
         </span>
       </div>
@@ -436,27 +436,27 @@ function EndingView({
       {ending.body.map((paragraph, index) => (
         <p
           key={index}
-          className="mt-4 font-mono-tight text-[15px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+          className="mt-4 font-mono-tight text-[0.9375rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
         >
           {paragraph}
         </p>
       ))}
 
       <div className="mt-8 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-6 backdrop-blur-sm">
-        <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+        <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
           · What separated this from the best outcome
         </h2>
         {ending.lesson.map((paragraph, index) => (
           <p
             key={index}
-            className="mt-4 font-mono-tight text-[14px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+            className="mt-4 font-mono-tight text-[0.875rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
           >
             {paragraph}
           </p>
         ))}
       </div>
 
-      <h2 className="mt-10 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+      <h2 className="mt-10 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
         · The route you took
       </h2>
       <ol className="mt-4 space-y-2">
@@ -464,25 +464,25 @@ function EndingView({
           <li key={index} className="flex items-start gap-3">
             <span
               aria-hidden
-              className="mt-1 shrink-0 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]"
+              className="mt-1 shrink-0 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]"
             >
               {String(index + 1).padStart(2, "0")}
             </span>
             <button
               type="button"
               onClick={() => onRewind(index)}
-              className="min-h-[32px] text-left font-mono-tight text-[13px] leading-snug text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="min-h-[32px] text-left font-mono-tight text-[0.8125rem] leading-snug text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               {step.label}
             </button>
           </li>
         ))}
       </ol>
-      <p className="mt-3 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+      <p className="mt-3 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
         Any of those is a decision you can take again differently.
       </p>
 
-      <h2 className="mt-10 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+      <h2 className="mt-10 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
         · Endings, {foundCount} of {scenario.endings.length} found
       </h2>
       <ul className="mt-4 space-y-2">
@@ -495,11 +495,11 @@ function EndingView({
               className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[hsl(var(--brand-iron)/0.6)] pb-2"
             >
               <span
-                className={`font-mono-tight text-[13px] ${seen ? "text-[hsl(var(--brand-bone))]" : "text-[hsl(var(--brand-ash))]"}`}
+                className={`font-mono-tight text-[0.8125rem] ${seen ? "text-[hsl(var(--brand-bone))]" : "text-[hsl(var(--brand-ash))]"}`}
               >
                 {seen ? other.title : "Not found yet"}
               </span>
-              <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+              <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                 {r.label} · {percent(r.share)}
               </span>
             </li>
@@ -512,13 +512,13 @@ function EndingView({
           type="button"
           onClick={onRestart}
           data-testid="button-replay"
-          className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
         >
           Run it again
         </button>
         <Link
           href="/scenarios"
-          className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[hsl(var(--brand-iron))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[hsl(var(--brand-iron))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
         >
           Another scenario
         </Link>
@@ -526,7 +526,7 @@ function EndingView({
 
       {scenario.reading?.length ? (
         <>
-          <h2 className="mt-12 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+          <h2 className="mt-12 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
             · The written version
           </h2>
           <ul className="mt-4 space-y-2">
@@ -534,7 +534,7 @@ function EndingView({
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
+                  className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
                 >
                   {link.label}
                 </Link>

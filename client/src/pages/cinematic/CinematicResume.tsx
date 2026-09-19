@@ -76,14 +76,14 @@ export function CinematicResume() {
       <div className="resume-shell relative px-6 pb-32 pt-32 md:px-10">
         <div className="resume-doc mx-auto max-w-[820px]">
           <div className="resume-noprint mb-10 flex flex-wrap items-center justify-between gap-4">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Resume
             </div>
             <button
               type="button"
               onClick={() => window.print()}
               data-testid="button-print-resume"
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Print or save as PDF
             </button>
@@ -306,7 +306,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
     <section aria-labelledby={id} className="mt-10 border-t border-[hsl(var(--brand-iron))] pt-6">
       <h2
         id={id}
-        className="font-mono-tight text-[11px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+        className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
       >
         {title}
       </h2>

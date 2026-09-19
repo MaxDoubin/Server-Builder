@@ -132,7 +132,7 @@ export function RackBudget() {
             <div key={f.key}>
               <label
                 htmlFor={`rb-${f.key}`}
-                className="block font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                className="block font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
               >
                 {f.label}
               </label>
@@ -151,11 +151,11 @@ export function RackBudget() {
                   data-testid={`input-${f.key}`}
                   className="w-32 rounded-md border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))] px-3 py-2 font-mono-tight text-sm text-[hsl(var(--brand-bone))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
                 />
-                <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                   {f.suffix}
                 </span>
               </div>
-              <p className="mt-1.5 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <p className="mt-1.5 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                 {f.hint}
               </p>
             </div>
@@ -172,7 +172,7 @@ export function RackBudget() {
                 <tr key={label} className="border-b border-[hsl(var(--brand-iron))]">
                   <th
                     scope="row"
-                    className="py-3 pr-4 text-left align-top font-mono-tight text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]"
+                    className="py-3 pr-4 text-left align-top font-mono-tight text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]"
                   >
                     {label}
                   </th>
@@ -181,7 +181,7 @@ export function RackBudget() {
                       {val}
                     </span>
                   </td>
-                  <td className="hidden py-3 align-top font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))] sm:table-cell">
+                  <td className="hidden py-3 align-top font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] sm:table-cell">
                     {note}
                   </td>
                 </tr>

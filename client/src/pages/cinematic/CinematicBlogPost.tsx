@@ -286,7 +286,7 @@ export function CinematicBlogPost() {
       <CinematicLayout>
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="text-center">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
               · Error · 404
             </div>
             <h1 className="mt-4 font-display text-4xl font-medium text-[hsl(var(--brand-bone))]">
@@ -298,7 +298,7 @@ export function CinematicBlogPost() {
             <Link
               href="/blog"
               data-testid="link-back-to-blog"
-              className="mt-8 inline-flex items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="mt-8 inline-flex items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← Back to field notes
             </Link>
@@ -321,7 +321,7 @@ export function CinematicBlogPost() {
         <div
           data-print-hide
           data-testid="reading-time-left"
-          className="pointer-events-none fixed bottom-4 right-4 z-[60] rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.85)] px-3 py-1.5 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] backdrop-blur-md"
+          className="pointer-events-none fixed bottom-4 right-4 z-[60] rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.85)] px-3 py-1.5 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] backdrop-blur-md"
         >
           {minutesLeft <= 0 ? "Note finished" : `${minutesLeft} min left`}
         </div>
@@ -425,7 +425,7 @@ export function CinematicBlogPost() {
               of bottom padding, and three lines of this size come to about
               36px, so the credit cannot grow into the headline.
             */
-            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-3 max-w-[80vw] text-right font-mono-tight text-[9px] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[10px]">
+            <p data-print-hide className="absolute bottom-2 right-3 z-10 line-clamp-3 max-w-[80vw] text-right font-mono-tight text-[0.5625rem] uppercase leading-[1.35] tracking-[0.18em] text-[hsl(var(--brand-ash))] md:right-6 md:max-w-[60vw] md:text-[0.625rem]">
               Photo{" "}
               <a
                 href={post.coverCredit.sourceUrl}
@@ -459,7 +459,7 @@ export function CinematicBlogPost() {
                   opaque. Measured at 1.60:1 in dark and 2.16:1 in light
                   before this.
                 */
-                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:text-[hsl(var(--brand-bone))]"
               >
                 ← Field notes
               </Link>
@@ -470,7 +470,7 @@ export function CinematicBlogPost() {
                 loses a little of its quietness against the headline, which
                 is the price of it being readable at all.
               */}
-              <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone))]">
+              <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone))]">
                 <span
                   className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
                   style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
@@ -512,7 +512,7 @@ export function CinematicBlogPost() {
                   <Link
                     key={tag}
                     href={getTagPage(tag) ? `/topics/${tag}` : "/blog"}
-                    className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.5)] px-3 py-1 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] backdrop-blur-sm transition-colors hover:text-[hsl(var(--brand-bone))]"
+                    className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.5)] px-3 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))] backdrop-blur-sm transition-colors hover:text-[hsl(var(--brand-bone))]"
                   >
                     {tag}
                   </Link>
@@ -562,7 +562,7 @@ export function CinematicBlogPost() {
               <CodeCopyButtons contentRef={contentRef} contentKey={htmlContent} />
 
               <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
-                <div className="flex flex-wrap items-center justify-between gap-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                <div className="flex flex-wrap items-center justify-between gap-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                   <span>end of note</span>
                   <Link
                     href="/blog"
@@ -589,7 +589,7 @@ export function CinematicBlogPost() {
                       align="left"
                       className="group block rounded-lg border border-[hsl(var(--brand-iron))] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/.5)]"
                     >
-                      <span className="block font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                      <span className="block font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                         ← Previous
                       </span>
                       <span className="mt-2 block font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
@@ -607,7 +607,7 @@ export function CinematicBlogPost() {
                       wrapperClassName="sm:col-start-2"
                       className="group block rounded-lg border border-[hsl(var(--brand-iron))] p-5 text-right transition-colors hover:border-[hsl(var(--brand-signal)/.5)]"
                     >
-                      <span className="block font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                      <span className="block font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                         Next →
                       </span>
                       <span className="mt-2 block font-display text-base leading-snug text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
@@ -629,7 +629,7 @@ export function CinematicBlogPost() {
 
               {related.length > 0 && (
                 <section className="mt-12" data-testid="related-posts">
-                  <h2 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                  <h2 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                     · Related
                   </h2>
                   <ul className="mt-4 space-y-3">
@@ -640,7 +640,7 @@ export function CinematicBlogPost() {
                           testId={`link-related-${r.slug}`}
                           className="group flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1"
                         >
-                          <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                          <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                             {r.date}
                           </span>
                           <span className="min-w-0 font-display text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">

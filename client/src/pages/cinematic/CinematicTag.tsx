@@ -64,7 +64,7 @@ export function CinematicTag() {
       <CinematicLayout>
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="text-center">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
               · Topic · Not found
             </div>
             <h1 className="mt-4 font-display text-4xl font-medium text-[hsl(var(--brand-bone))]">
@@ -76,7 +76,7 @@ export function CinematicTag() {
             </p>
             <Link
               href="/topics"
-              className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All topics
             </Link>
@@ -96,14 +96,14 @@ export function CinematicTag() {
             <Link
               href="/topics"
               data-testid="link-topics-index"
-              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All topics
             </Link>
           </nav>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Topic
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -112,7 +112,7 @@ export function CinematicTag() {
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               {page.intro}
             </p>
-            <p className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               {posts.length} {posts.length === 1 ? "post" : "posts"}
             </p>
           </header>
@@ -129,7 +129,7 @@ export function CinematicTag() {
                     <span className="font-display text-base text-[hsl(var(--brand-bone))]">
                       {post.title}
                     </span>
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       <time dateTime={post.date}>{post.date}</time> ·{" "}
                       {readMinutes(post)} min
                     </span>
@@ -143,7 +143,7 @@ export function CinematicTag() {
           </ul>
 
           <section className="mt-16 border-t border-[hsl(var(--brand-iron))] pt-8">
-            <h2 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+            <h2 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
               Other topics
             </h2>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -151,7 +151,7 @@ export function CinematicTag() {
                 <Link
                   key={t.tag}
                   href={`/topics/${t.tag}`}
-                  className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3.5 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="inline-flex min-h-[32px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3.5 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   {t.title}
                 </Link>

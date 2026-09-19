@@ -44,7 +44,7 @@ export function CinematicAllocations() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Spend the block
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -75,7 +75,7 @@ export function CinematicAllocations() {
             </p>
           </header>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
             <span>
               {PROBLEMS.length} {pluralise(PROBLEMS.length, "plan")}
             </span>
@@ -84,7 +84,7 @@ export function CinematicAllocations() {
 
           {groups.map((group) => (
             <section key={group.difficulty} className="mt-11">
-              <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · {group.difficulty}
               </h2>
               <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -99,14 +99,14 @@ export function CinematicAllocations() {
             </section>
           ))}
 
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Marked on behaviour, like the firewall exercises: any plan that meets every requirement
             without overlapping is right, including a tidier one than mine. CI replays a working
             plan for each of these and refuses the build if one stops being satisfiable, which is
             not a theoretical worry. One of these six was arithmetically impossible when I wrote it,
             and the check caught it while I was still calling it an exercise.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the rules that sit on top of an address plan, the{" "}
             <Link
               href="/firewall"
@@ -137,16 +137,16 @@ function PlanCard({ problem, solved }: { problem: Problem; solved: boolean }) {
         data-testid={`card-allocate-${problem.slug}`}
         className="flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
       >
-        <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+        <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
           {problem.block}
         </span>
         <span className="mt-2 font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
           {problem.title}
         </span>
-        <span className="mt-2 flex-1 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+        <span className="mt-2 flex-1 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
           {problem.tagline}
         </span>
-        <span className="mt-4 flex items-center gap-4 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <span className="mt-4 flex items-center gap-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           <span>
             {problem.requirements.length} {pluralise(problem.requirements.length, "subnet")}
           </span>

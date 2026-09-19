@@ -127,7 +127,7 @@ export function CinematicLogs() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} logs
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -160,16 +160,16 @@ export function CinematicLogs() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                       {FACILITY_LABEL[item.facility]}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         read
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.title}
                   </span>
                 </button>
@@ -182,7 +182,7 @@ export function CinematicLogs() {
               {active.title}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="log-brief"
             >
               {active.brief}
@@ -195,16 +195,16 @@ export function CinematicLogs() {
                 </caption>
                 <thead>
                   <tr className="border-b border-[hsl(var(--brand-iron))]">
-                    <th scope="col" className="px-3 py-2 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Time
                     </th>
-                    <th scope="col" className="px-3 py-2 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Host
                     </th>
-                    <th scope="col" className="px-3 py-2 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Process
                     </th>
-                    <th scope="col" className="px-3 py-2 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Message
                     </th>
                   </tr>
@@ -230,16 +230,16 @@ export function CinematicLogs() {
                               : ""
                         } ${dimmed ? "opacity-45" : ""}`}
                       >
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11.5px] tabular-nums text-[hsl(var(--brand-ash))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.71875rem] tabular-nums text-[hsl(var(--brand-ash))]">
                           {clock(active, line)}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">
                           {line.host}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11.5px] text-[hsl(var(--brand-cyan))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-cyan))]">
                           {line.process}
                         </td>
-                        <td className="px-3 py-1.5 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                        <td className="px-3 py-1.5 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                           {line.message}
                         </td>
                       </tr>
@@ -250,7 +250,7 @@ export function CinematicLogs() {
             </div>
 
             {/* ── one: what happened ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · One. What happened
             </h3>
             <div className="mt-3 space-y-2">
@@ -264,7 +264,7 @@ export function CinematicLogs() {
                     onClick={() => (claim === null ? setClaim(option.id) : undefined)}
                     disabled={claim !== null}
                     data-testid={`log-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       claim === null
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : correct
@@ -283,11 +283,11 @@ export function CinematicLogs() {
             {/* ── two: the line that proves it ── */}
             {phase !== "reading" ? (
               <>
-                <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                   · Two. The line that proves it
                 </h3>
                 <p
-                  className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   aria-live="polite"
                   data-testid="log-claim-verdict"
                 >
@@ -300,7 +300,7 @@ export function CinematicLogs() {
 
             {phase === "done" ? (
               <div className="mt-5 space-y-4" data-testid="log-verdict" aria-live="polite">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {citeRight
                     ? claimRight
                       ? "Right on both. The conclusion and the line that carries it."
@@ -309,15 +309,15 @@ export function CinematicLogs() {
                       ? "Right conclusion, wrong line. That is the one worth catching: an explanation you cannot point at is a guess that happened to be right."
                       : "Neither. The highlighted line is the one that settles it."}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why that line ·{" "}
                   </span>
                   {active.why}
                 </p>
                 {active.noise ? (
-                  <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                    <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                  <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                       The loud part ·{" "}
                     </span>
                     {noisy.size} of these {active.lines.length} lines say{" "}
@@ -330,7 +330,7 @@ export function CinematicLogs() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="log-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Read it again
                 </button>
@@ -339,7 +339,7 @@ export function CinematicLogs() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="log-progress"
           >
@@ -350,13 +350,13 @@ export function CinematicLogs() {
 
           <ReadAboutThis href="/logs" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every line here is rendered to real syslog format and parsed back at build time, so a
             line no daemon would emit fails the build rather than teaching you to recognise
             something you will never see. The timestamps run forwards unless a case is about clocks
             that disagree, and two of them are.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The same shape of problem, in a packet trace rather than a log, is at{" "}
             <Link
               href="/capture"

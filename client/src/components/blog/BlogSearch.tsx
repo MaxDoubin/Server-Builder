@@ -394,7 +394,7 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
             }}
             aria-label="Clear search"
             data-testid="button-clear-search"
-            className="absolute right-2 top-1/2 inline-flex min-h-[32px] -translate-y-1/2 items-center rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-full before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+            className="absolute right-2 top-1/2 inline-flex min-h-[32px] -translate-y-1/2 items-center rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-full before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
           >
             Esc
           </button>
@@ -445,14 +445,14 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
                     <div className="font-display text-sm leading-snug text-[hsl(var(--brand-bone-dim))]">
                       <Highlight text={post.title} tokens={tokens} />
                     </div>
-                    <div className="mt-1 line-clamp-1 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <div className="mt-1 line-clamp-1 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       <Highlight text={post.excerpt} tokens={tokens} />
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {post.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="font-mono-tight text-[9px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+                          className="font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
                         >
                           <Highlight text={tag} tokens={tokens} />
                         </span>
@@ -469,7 +469,7 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
               // The count is announced by the live region above either way.
               <li
                 role="presentation"
-                className="px-4 py-5 text-center font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                className="px-4 py-5 text-center font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                 data-testid="search-no-results"
               >
                 No field notes match that.
@@ -477,7 +477,7 @@ export function BlogSearch({ posts, onResults, className = "" }: Props) {
             )}
           </ul>
           {results && results.length > suggestions.length && (
-            <div className="border-t border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <div className="border-t border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               {results.length - suggestions.length} more below
             </div>
           )}

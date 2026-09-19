@@ -69,7 +69,7 @@ const COST_LABEL: Record<string, string> = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+    <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
       {children}
     </div>
   );
@@ -91,7 +91,7 @@ export function CinematicClubKit() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Cyber Club in a Box · v{KIT_VERSION}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -115,13 +115,13 @@ export function CinematicClubKit() {
                 href={DOWNLOAD}
                 download
                 data-testid="link-kit-download"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Download the whole plan
               </a>
               <Link
                 href="/cyber-club"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
               >
                 The club this came from
               </Link>
@@ -134,7 +134,7 @@ export function CinematicClubKit() {
           >
             <h2
               id="kit-rules-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
             >
               Read this before week one
             </h2>
@@ -148,7 +148,7 @@ export function CinematicClubKit() {
             <ol className="mt-5 space-y-3">
               {KIT_RULES.map((rule, index) => (
                 <li key={rule} className="flex gap-4">
-                  <span className="shrink-0 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                  <span className="shrink-0 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="max-w-[66ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone))]">
@@ -184,7 +184,7 @@ export function CinematicClubKit() {
                   className="scroll-mt-24 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm"
                 >
                   <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                       Week {String(session.week).padStart(2, "0")}
                     </span>
                     <h3 className="font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))]">
@@ -198,13 +198,13 @@ export function CinematicClubKit() {
 
                   <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
-                      <h4 className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <h4 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         Before the meeting
                       </h4>
                       <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                         {session.prep}
                       </p>
-                      <h4 className="mt-5 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <h4 className="mt-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         How you know it worked
                       </h4>
                       <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -212,7 +212,7 @@ export function CinematicClubKit() {
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <h4 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         In the room
                       </h4>
                       <ol className="mt-2 space-y-2">
@@ -235,7 +235,7 @@ export function CinematicClubKit() {
                     {session.tools.map((tool) => (
                       <span
                         key={tool}
-                        className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]"
+                        className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]"
                       >
                         {tool}
                       </span>
@@ -264,13 +264,13 @@ export function CinematicClubKit() {
               <table className="w-full min-w-[640px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-[hsl(var(--brand-iron))]">
-                    <th className="py-3 pr-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th className="py-3 pr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Line
                     </th>
-                    <th className="py-3 pr-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th className="py-3 pr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       With no budget
                     </th>
-                    <th className="py-3 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th className="py-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       With a budget
                     </th>
                   </tr>
@@ -320,7 +320,7 @@ export function CinematicClubKit() {
                     >
                       {resource.name}
                     </a>
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                       {COST_LABEL[resource.cost]}
                     </span>
                   </div>
@@ -366,7 +366,7 @@ export function CinematicClubKit() {
           >
             <h2
               id="kit-help-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               If you get stuck
             </h2>

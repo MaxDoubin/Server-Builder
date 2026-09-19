@@ -16,7 +16,7 @@ export function CinematicTimeline() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[820px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Record · Timeline
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -52,7 +52,7 @@ export function CinematicTimeline() {
                         style={{ boxShadow: "0 0 10px hsl(var(--brand-signal) / 0.6)" }}
                       />
                       {entry.when ? (
-                        <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                        <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                           {entry.when}
                         </div>
                       ) : null}
@@ -68,7 +68,7 @@ export function CinematicTimeline() {
                           {...(entry.external
                             ? { target: "_blank", rel: "noopener noreferrer" }
                             : {})}
-                          className="mt-2 inline-flex min-h-[24px] items-center gap-2 break-words py-1 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                          className="mt-2 inline-flex min-h-[24px] items-center gap-2 break-words py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                         >
                           {entry.external ? "Read the article" : "More"}
                           <span aria-hidden>{entry.external ? "↗" : "→"}</span>

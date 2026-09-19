@@ -708,6 +708,12 @@ jobs:
       - name: Dead modules
         run: node scripts-ci/check-dead-modules.mjs
 
+      # Type written in px ignores the text size preference, which works by
+      # moving the rem basis. 1906 sizes did; on /blog two thirds of the text
+      # on the page did not move when the scale went to 1.4.
+      - name: Text scaling
+        run: node scripts-ci/check-text-scaling.mjs
+
       # A range input styled so that its track is its element box gives you a
       # four pixel target on a phone. All four were, measured at 390px.
       - name: Range sliders

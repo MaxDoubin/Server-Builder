@@ -253,7 +253,7 @@ export function CinematicRackBuilder() {
       <div className="relative px-6 pb-24 pt-28 md:px-10">
         <div className="mx-auto max-w-[1500px]">
           <header className="max-w-[72ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Racks · Builder
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -276,7 +276,7 @@ export function CinematicRackBuilder() {
               [mb(weight.bytes), `over ${weight.files} file${weight.files === 1 ? "" : "s"}`],
             ].map(([value, label]) => (
               <div key={label} className="bg-[hsl(var(--brand-void))] px-4 py-3">
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                   {label}
                 </dt>
                 <dd className="mt-1 font-display text-xl text-[hsl(var(--brand-bone))]">{value}</dd>
@@ -296,7 +296,7 @@ export function CinematicRackBuilder() {
           <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[300px_1fr_290px]">
             {/* Palette */}
             <aside className="flex min-w-0 flex-col gap-3">
-              <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                 · Hardware
               </div>
               <input
@@ -314,7 +314,7 @@ export function CinematicRackBuilder() {
                     type="button"
                     onClick={() => setVendor(v)}
                     aria-pressed={vendor === v}
-                    className={`rounded-full border px-2.5 py-1 font-mono-tight text-[10px] transition-colors ${
+                    className={`rounded-full border px-2.5 py-1 font-mono-tight text-[0.625rem] transition-colors ${
                       vendor === v
                         ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone-dim))]"
@@ -331,7 +331,7 @@ export function CinematicRackBuilder() {
                     type="button"
                     onClick={() => setGroup(g)}
                     aria-pressed={group === g}
-                    className={`rounded-full border px-2.5 py-1 font-mono-tight text-[10px] transition-colors ${
+                    className={`rounded-full border px-2.5 py-1 font-mono-tight text-[0.625rem] transition-colors ${
                       group === g
                         ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone-dim))]"
@@ -370,10 +370,10 @@ export function CinematicRackBuilder() {
                         className="h-5 w-16 shrink-0 rounded-[2px] bg-white/85 object-contain"
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-mono-tight text-[11px] text-[hsl(var(--brand-bone))]">
+                        <span className="block truncate font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-bone))]">
                           {d.name}
                         </span>
-                        <span className="block font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                        <span className="block font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                           {unitsOf(d)}U · {mb(d.bytes)}
                           {d.own ? " · built here" : ""}
                         </span>
@@ -385,12 +385,12 @@ export function CinematicRackBuilder() {
                   </li>
                 ))}
                 {catalogue && visible.length === 0 ? (
-                  <li className="px-3 py-6 text-center font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                  <li className="px-3 py-6 text-center font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                     Nothing matches that.
                   </li>
                 ) : null}
                 {!catalogue ? (
-                  <li className="px-3 py-6 text-center font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                  <li className="px-3 py-6 text-center font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                     Loading the catalogue...
                   </li>
                 ) : null}
@@ -425,7 +425,7 @@ export function CinematicRackBuilder() {
                 <LoadProgress />
               </div>
               <div className="flex flex-wrap items-center gap-3 border-t border-[hsl(var(--brand-iron)/0.6)] px-4 py-3">
-                <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                   Frame
                 </span>
                 {FRAME_SIZES.map((n) => (
@@ -438,7 +438,7 @@ export function CinematicRackBuilder() {
                       const d = byslug.get(p.slug);
                       return d ? p.at + unitsOf(d) > n : false;
                     })}
-                    className={`rounded border px-2.5 py-1 font-mono-tight text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+                    className={`rounded border px-2.5 py-1 font-mono-tight text-[0.6875rem] transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
                       frame === n
                         ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-bone-dim))]"
@@ -447,7 +447,7 @@ export function CinematicRackBuilder() {
                     {n}U
                   </button>
                 ))}
-                <span className="ml-auto font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                <span className="ml-auto font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                   Drag to orbit, click a device to select it.
                 </span>
               </div>
@@ -456,7 +456,7 @@ export function CinematicRackBuilder() {
             {/* Elevation */}
             <aside className="flex min-w-0 flex-col gap-3">
               <div className="flex items-baseline justify-between">
-                <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+                <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                   · Elevation
                 </div>
                 {placements.length > 0 ? (
@@ -466,7 +466,7 @@ export function CinematicRackBuilder() {
                       setPlacements([]);
                       setSelected(null);
                     }}
-                    className="inline-flex min-h-[24px] items-center font-mono-tight text-[10px] uppercase tracking-[0.15em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                    className="inline-flex min-h-[24px] items-center font-mono-tight text-[0.625rem] uppercase tracking-[0.15em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
                   >
                     Empty it
                   </button>
@@ -491,11 +491,11 @@ export function CinematicRackBuilder() {
                           className="flex min-h-[24px] min-w-0 flex-1 items-center text-left"
                         >
                           <span className="flex items-baseline gap-2">
-                            <span className="font-mono-tight text-[10px] tabular-nums text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.625rem] tabular-nums text-[hsl(var(--brand-ash))]">
                               U{frame - p.at}
                             </span>
                             <span
-                              className={`min-w-0 truncate font-mono-tight text-[11px] ${
+                              className={`min-w-0 truncate font-mono-tight text-[0.6875rem] ${
                                 on
                                   ? "text-[hsl(var(--brand-signal))]"
                                   : "text-[hsl(var(--brand-bone-dim))]"
@@ -505,7 +505,7 @@ export function CinematicRackBuilder() {
                             </span>
                           </span>
                         </button>
-                        <span className="shrink-0 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                        <span className="shrink-0 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                           {unitsOf(d)}U
                         </span>
                         {/*
@@ -522,7 +522,7 @@ export function CinematicRackBuilder() {
                             type="button"
                             onClick={() => nudge(p.id, -1)}
                             aria-label={`Move ${d.name} up`}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono-tight text-[11px] text-[hsl(var(--brand-ash))] transition-colors hover:bg-[hsl(var(--brand-iron)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))] transition-colors hover:bg-[hsl(var(--brand-iron)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                           >
                             ▲
                           </button>
@@ -530,7 +530,7 @@ export function CinematicRackBuilder() {
                             type="button"
                             onClick={() => nudge(p.id, 1)}
                             aria-label={`Move ${d.name} down`}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono-tight text-[11px] text-[hsl(var(--brand-ash))] transition-colors hover:bg-[hsl(var(--brand-iron)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))] transition-colors hover:bg-[hsl(var(--brand-iron)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                           >
                             ▼
                           </button>
@@ -538,7 +538,7 @@ export function CinematicRackBuilder() {
                             type="button"
                             onClick={() => remove(p.id)}
                             aria-label={`Remove ${d.name}`}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono-tight text-[11px] text-[hsl(var(--brand-ash))] transition-colors hover:bg-[hsl(0_60%_40%/0.35)] hover:text-[hsl(var(--brand-bone))]"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))] transition-colors hover:bg-[hsl(0_60%_40%/0.35)] hover:text-[hsl(var(--brand-bone))]"
                           >
                             ✕
                           </button>
@@ -548,7 +548,7 @@ export function CinematicRackBuilder() {
                   );
                 })}
                 {placements.length === 0 ? (
-                  <li className="px-3 py-8 text-center font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <li className="px-3 py-8 text-center font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     Empty frame. Pick something from the list on the left.
                   </li>
                 ) : null}
@@ -558,7 +558,7 @@ export function CinematicRackBuilder() {
                 type="button"
                 onClick={share}
                 disabled={placements.length === 0}
-                className="rounded border border-[hsl(var(--brand-iron))] px-3 py-2 font-mono-tight text-[11px] uppercase tracking-[0.16em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded border border-[hsl(var(--brand-iron))] px-3 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {copied ? "Link copied" : "Copy a link to this build"}
               </button>
@@ -566,7 +566,7 @@ export function CinematicRackBuilder() {
               {message ? (
                 <p
                   role="status"
-                  className="rounded border border-[hsl(var(--brand-iron))] px-3 py-2 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="rounded border border-[hsl(var(--brand-iron))] px-3 py-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 >
                   {message}
                 </p>
@@ -579,10 +579,10 @@ export function CinematicRackBuilder() {
                     if (!d) return null;
                     return (
                       <div className="rounded border border-[hsl(var(--brand-iron)/0.6)] px-3 py-3">
-                        <div className="font-mono-tight text-[11px] text-[hsl(var(--brand-bone))]">
+                        <div className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-bone))]">
                           {d.name}
                         </div>
-                        <p className="mt-1.5 font-mono-tight text-[10px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                        <p className="mt-1.5 font-mono-tight text-[0.625rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                           {d.short}
                         </p>
                         {d.store ? (
@@ -590,12 +590,12 @@ export function CinematicRackBuilder() {
                             href={d.store}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 inline-block font-mono-tight text-[10px] text-[hsl(var(--brand-signal))] underline underline-offset-4"
+                            className="mt-2 inline-block font-mono-tight text-[0.625rem] text-[hsl(var(--brand-signal))] underline underline-offset-4"
                           >
                             {d.sku} at Ubiquiti
                           </a>
                         ) : (
-                          <span className="mt-2 block font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                          <span className="mt-2 block font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                             {d.vendor} {d.sku}. Modelled here from photographs.
                           </span>
                         )}
@@ -607,7 +607,7 @@ export function CinematicRackBuilder() {
           </div>
 
           <section className="mt-14 max-w-[72ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Builder · How it works
             </div>
             <h2 className="mt-3 font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))]">

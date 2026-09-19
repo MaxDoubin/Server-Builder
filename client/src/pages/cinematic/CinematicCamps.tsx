@@ -91,7 +91,7 @@ export function CinematicCamps() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Teaching · Las Vegas Valley
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -107,7 +107,7 @@ export function CinematicCamps() {
               <a
                 href={`mailto:${siteConfig.email}?subject=${encodeURIComponent("Coding camps")}`}
                 data-testid="link-camps-email"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Ask a question
               </a>
@@ -116,7 +116,7 @@ export function CinematicCamps() {
                   href={CAMP_DETAILS.registerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
                 >
                   Registration
                 </a>
@@ -130,7 +130,7 @@ export function CinematicCamps() {
           >
             <h2
               id="camps-facts-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               Practical details
             </h2>
@@ -138,7 +138,7 @@ export function CinematicCamps() {
               <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {facts.map((fact) => (
                   <div key={fact.label}>
-                    <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       {fact.label}
                     </dt>
                     <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -164,7 +164,7 @@ export function CinematicCamps() {
           </section>
 
           <section aria-labelledby="camps-covers-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Camps · Curriculum
             </div>
             <h2
@@ -191,7 +191,7 @@ export function CinematicCamps() {
           </section>
 
           <section aria-labelledby="camps-session-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Camps · A session
             </div>
             <h2
@@ -217,7 +217,7 @@ export function CinematicCamps() {
                   key={step}
                   className="flex gap-4 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm"
                 >
-                  <span className="font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                  <span className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -229,7 +229,7 @@ export function CinematicCamps() {
           </section>
 
           <section aria-labelledby="camps-takeaway-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Camps · Outcome
             </div>
             <h2
@@ -258,7 +258,7 @@ export function CinematicCamps() {
           >
             <h2
               id="camps-who-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
             >
               Who is teaching
             </h2>

@@ -206,7 +206,7 @@ function TelemetryTile({ cfg }: { cfg: TileConfig }) {
             <div className="scanline pointer-events-none absolute inset-0 opacity-15" />
             <div className="relative flex items-start justify-between">
               <div>
-                <div className="font-techno text-[9px] uppercase tracking-[0.34em] text-[hsl(var(--brand-ash))]">
+                <div className="font-techno text-[0.5625rem] uppercase tracking-[0.34em] text-[hsl(var(--brand-ash))]">
                   {cfg.label}
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
@@ -216,7 +216,7 @@ function TelemetryTile({ cfg }: { cfg: TileConfig }) {
                   >
                     {cfg.format ? cfg.format(latest) : latest.toFixed(2)}
                   </span>
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     {cfg.unit}
                   </span>
                 </div>
@@ -229,7 +229,7 @@ function TelemetryTile({ cfg }: { cfg: TileConfig }) {
               </Breathing>
             </div>
             <Sparkline data={series} color={cfg.color} />
-            <div className="relative mt-3 flex items-center justify-between font-mono-tight text-[9px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <div className="relative mt-3 flex items-center justify-between font-mono-tight text-[0.5625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               <span>sample · 420ms</span>
               <span>window · 16s</span>
             </div>
@@ -338,7 +338,7 @@ export function TelemetryAct() {
       <div className="relative mx-auto max-w-[1200px]">
         {/* Eyebrow with ScrambleText + PulseGlow on LIVE */}
         <ScrollReveal variants={blurIn} transition={{ duration: 0.8 }}>
-          <div className="flex items-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
+          <div className="flex items-center gap-3 font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
             <ScrambleText
               text="· Unit 06 · NOC"
               className="inline-block"
@@ -420,7 +420,7 @@ export function TelemetryAct() {
 
         {/* Incident strip with staggered fadeUp items */}
         <StaggerGroup
-          className="mt-0 flex flex-wrap items-center gap-x-10 gap-y-3 border-b border-[hsl(var(--brand-iron))] py-4 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
+          className="mt-0 flex flex-wrap items-center gap-x-10 gap-y-3 border-b border-[hsl(var(--brand-iron))] py-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]"
           staggerDelay={0.08}
           delayChildren={0.3}
           threshold={0.1}

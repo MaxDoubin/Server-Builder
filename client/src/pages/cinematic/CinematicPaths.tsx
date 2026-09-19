@@ -69,7 +69,7 @@ export function CinematicPaths() {
     <CinematicLayout>
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1100px]">
-          <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+          <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
             · Journal · Reading Paths
           </div>
           <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -87,7 +87,7 @@ export function CinematicPaths() {
             aria-label="Jump to a path"
             className="mt-10 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
           >
-            <span className="mr-2 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+            <span className="mr-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
               path ·
             </span>
             {paths.map(({ path, steps }) => (
@@ -95,7 +95,7 @@ export function CinematicPaths() {
                 key={path.id}
                 href={`#${path.id}`}
                 data-testid={`link-path-${path.id}`}
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 {path.title}
                 <span className="text-[hsl(var(--brand-signal))]">{steps.length}</span>
@@ -123,7 +123,7 @@ export function CinematicPaths() {
                     <p className="mt-3 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                       {path.blurb}
                     </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       <span>
                         {steps.length} note{steps.length === 1 ? "" : "s"}
                       </span>
@@ -150,10 +150,10 @@ export function CinematicPaths() {
                             <span className="block font-display text-base leading-snug text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
                               {step.post.title}
                             </span>
-                            <span className="mt-1.5 block font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                            <span className="mt-1.5 block font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                               {step.why}
                             </span>
-                            <span className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                            <span className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                               <span>{readMinutes(step.post)} min read</span>
                               <DifficultyBadge level={postDifficulty(step.post)} />
                             </span>
@@ -170,13 +170,13 @@ export function CinematicPaths() {
           <div className="mt-20 flex flex-wrap gap-6 border-t border-[hsl(var(--brand-iron))] pt-8">
             <Link
               href="/blog"
-              className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All field notes
             </Link>
             <Link
               href="/archive"
-              className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               Full archive →
             </Link>

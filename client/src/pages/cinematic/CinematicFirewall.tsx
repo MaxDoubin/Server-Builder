@@ -119,13 +119,13 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
         <div className="mx-auto max-w-[980px]">
           <Link
             href="/firewall"
-            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
           >
             ← All firewall exercises
           </Link>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Packet filter · {exercise.difficulty}
             </div>
             <h1 className="mt-4 font-display text-[clamp(1.8rem,4.5vw,3rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))]">
@@ -134,7 +134,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
             {exercise.brief.map((paragraph, index) => (
               <p
                 key={index}
-                className="mt-4 max-w-2xl font-mono-tight text-[14.5px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 max-w-2xl font-mono-tight text-[0.90625rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
               >
                 {paragraph}
               </p>
@@ -144,7 +144,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="min-w-0">
               <div className="flex items-baseline justify-between gap-4">
-                <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · The chain
                 </h2>
                 <button
@@ -154,7 +154,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                     setSource(exercise.start);
                   }}
                   data-testid="firewall-reset"
-                  className="min-h-[36px] font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="min-h-[36px] font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   Put it back
                 </button>
@@ -166,7 +166,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                 rows={Math.max(8, source.split("\n").length + 2)}
                 aria-label="The firewall ruleset"
                 data-testid="firewall-source"
-                className="mt-3 w-full resize-y rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.75)] p-4 font-mono-tight text-[13px] leading-[1.7] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="mt-3 w-full resize-y rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.75)] p-4 font-mono-tight text-[0.8125rem] leading-[1.7] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
               />
 
               {errors.length > 0 ? (
@@ -174,7 +174,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                   {errors.map((error, index) => (
                     <li
                       key={index}
-                      className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-danger))]"
+                      className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-danger))]"
                     >
                       line {error.line}: {error.message}
                     </li>
@@ -183,7 +183,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
               ) : null}
 
               <section className="mt-7">
-                <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · Trace a packet
                 </h2>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -194,7 +194,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                       onClick={() => setProbe(index)}
                       aria-pressed={index === probe}
                       data-testid={`firewall-probe-${index}`}
-                      className={`rounded-full border px-3 py-1.5 font-mono-tight text-[11px] transition-colors ${
+                      className={`rounded-full border px-3 py-1.5 font-mono-tight text-[0.6875rem] transition-colors ${
                         index === probe
                           ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-signal))]"
                           : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -204,7 +204,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                     </button>
                   ))}
                 </div>
-                <p className="mt-3 break-all font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+                <p className="mt-3 break-all font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                   {describe(chosen.packet)}
                 </p>
 
@@ -215,7 +215,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                   >
                     <ol className="space-y-2">
                       {trace.steps.map((step, index) => (
-                        <li key={index} className="font-mono-tight text-[12.5px] leading-snug">
+                        <li key={index} className="font-mono-tight text-[0.78125rem] leading-snug">
                           <span
                             className={
                               step.matched
@@ -242,7 +242,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                         </li>
                       ))}
                       {trace.decidedBy === null ? (
-                        <li className="font-mono-tight text-[12.5px] text-[hsl(var(--brand-amber))]">
+                        <li className="font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-amber))]">
                           policy {trace.chain} {trace.verdict}
                           <span className="block pl-[3.9rem] text-[hsl(var(--brand-ash))]">
                             no rule matched, so the chain policy decided
@@ -252,7 +252,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                       {trace.notReached.map((rule) => (
                         <li
                           key={rule.line}
-                          className="font-mono-tight text-[12.5px] leading-snug opacity-45"
+                          className="font-mono-tight text-[0.78125rem] leading-snug opacity-45"
                           data-testid="firewall-unreached"
                         >
                           <span className="text-[hsl(var(--brand-ash))]">never  </span>
@@ -263,14 +263,14 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                       ))}
                     </ol>
                     {trace.notReached.length > 0 ? (
-                      <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                      <p className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                         {trace.notReached.length}{" "}
                         {trace.notReached.length === 1 ? "rule below" : "rules below"} the match
                         never ran. If the rule you are looking for is in that list, it is not
                         wrong, it is late.
                       </p>
                     ) : null}
-                    <p className="mt-4 border-t border-[hsl(var(--brand-iron))] pt-3 font-mono-tight text-[13px]">
+                    <p className="mt-4 border-t border-[hsl(var(--brand-iron))] pt-3 font-mono-tight text-[0.8125rem]">
                       <span className="text-[hsl(var(--brand-ash))]">verdict </span>
                       <span className={VERDICT_CLASS[trace.verdict]} data-testid="firewall-verdict">
                         {trace.verdict}
@@ -282,7 +282,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                     </p>
                   </div>
                 ) : (
-                  <p className="mt-3 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+                  <p className="mt-3 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
                     Fix the errors above and the trace comes back.
                   </p>
                 )}
@@ -290,14 +290,14 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
             </div>
 
             <aside className="min-w-0">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · What has to be true
               </h2>
               <ul className="mt-3 space-y-2" data-testid="firewall-checks">
                 {checks.map((check) => (
                   <li
                     key={check.label}
-                    className="flex gap-2 font-mono-tight text-[12.5px] leading-snug"
+                    className="flex gap-2 font-mono-tight text-[0.78125rem] leading-snug"
                     data-testid={`firewall-check-${check.pass ? "pass" : "fail"}`}
                   >
                     <span
@@ -318,7 +318,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                       }
                     >
                       {check.label}
-                      <span className="block text-[11px] text-[hsl(var(--brand-ash))]">
+                      <span className="block text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                         wants {check.expect}
                         {check.got && check.got !== check.expect ? `, gets ${check.got}` : ""}
                       </span>
@@ -328,7 +328,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
               </ul>
 
               <p
-                className="mt-4 font-mono-tight text-[12px] uppercase tracking-[0.2em]"
+                className="mt-4 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em]"
                 aria-live="polite"
                 data-testid="firewall-status"
               >
@@ -342,14 +342,14 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
               </p>
 
               <div className="mt-7">
-                <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · Hints, {hintsOpen} of {exercise.hints.length}
                 </h2>
                 <ol className="mt-3 space-y-2">
                   {exercise.hints.slice(0, hintsOpen).map((hint, index) => (
                     <li
                       key={index}
-                      className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-3 py-2 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                      className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-3 py-2 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                     >
                       {hint}
                     </li>
@@ -361,7 +361,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                       type="button"
                       onClick={() => setHintsOpen((n) => n + 1)}
                       data-testid="firewall-hint"
-                      className="min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                      className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                     >
                       Open hint {hintsOpen + 1}
                     </button>
@@ -371,7 +371,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                       type="button"
                       onClick={() => setRevealed(true)}
                       data-testid="firewall-reveal"
-                      className="min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                      className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                     >
                       Show me a chain that works
                     </button>
@@ -383,15 +383,15 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
 
           {revealed && !solved ? (
             <section className="mt-9 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                 · One chain that works
               </h2>
-              <p className="mt-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+              <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                 Not the only one. The checklist marks behaviour, so any ruleset that gets those
                 verdicts is right.
               </p>
               <div className="mt-3 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] p-3">
-                <pre className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <pre className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {exercise.solution}
                 </pre>
               </div>
@@ -399,7 +399,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                 type="button"
                 onClick={() => update(exercise.solution)}
                 data-testid="firewall-apply-solution"
-                className="mt-3 min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+                className="mt-3 min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
               >
                 Put it in the editor
               </button>
@@ -408,13 +408,13 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
 
           {solved || revealed ? (
             <section className="mt-9 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.05)] p-5">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · What this one is about
               </h2>
               {exercise.debrief.map((paragraph, index) => (
                 <p
                   key={index}
-                  className="mt-3 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                  className="mt-3 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
                 >
                   {paragraph}
                 </p>
