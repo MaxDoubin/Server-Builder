@@ -210,6 +210,9 @@ const CinematicLeases = lazyWithRetry(() =>
 const CinematicBacklog = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicBacklog").then((m) => ({ default: m.CinematicBacklog })),
 );
+const CinematicKeepalive = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicKeepalive").then((m) => ({ default: m.CinematicKeepalive })),
+);
 const CinematicCache = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCache").then((m) => ({ default: m.CinematicCache })),
 );
@@ -956,6 +959,11 @@ function AnimatedRoutes() {
           <Route path="/backlog">
             <Suspense fallback={<RouteLoading />}>
               <CinematicBacklog />
+            </Suspense>
+          </Route>
+          <Route path="/keepalive">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicKeepalive />
             </Suspense>
           </Route>
           <Route path="/cache">

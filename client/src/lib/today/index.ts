@@ -37,6 +37,7 @@ import { CASES as FREES } from "@/lib/free/index";
 import { CASES as NDOTS } from "@/lib/ndots/index";
 import { CASES as LEASES } from "@/lib/leases/index";
 import { CASES as BACKLOGS } from "@/lib/backlog/index";
+import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -96,6 +97,7 @@ const OFFSET = {
   ndots: 137,
   leases: 139,
   backlog: 149,
+  keepalive: 151,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -386,6 +388,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A listener, a burst of connections, and an application that is not accepting fast enough. Work out what the kernel does with the ones that do not fit.",
       href: "/backlog",
       outOf: BACKLOGS.length,
+    });
+  }
+
+  const idled = pickFor(KEEPALIVES, day, OFFSET.keepalive);
+  if (idled) {
+    out.push({
+      surface: "keepalive",
+      eyebrow: "Predict",
+      title: idled.name,
+      blurb: "An idle connection, a middlebox with a countdown, and keepalive settings nobody checked. Work out which timer expires first and what the next write gets.",
+      href: "/keepalive",
+      outOf: KEEPALIVES.length,
     });
   }
 

@@ -135,6 +135,7 @@ export function CinematicFooter() {
               { href: "/ndots", label: "Search list", testId: "link-footer-ndots" },
               { href: "/leases", label: "DHCP leases", testId: "link-footer-leases" },
               { href: "/backlog", label: "Accept queue", testId: "link-footer-backlog" },
+              { href: "/keepalive", label: "Idle connections", testId: "link-footer-keepalive" },
               { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },

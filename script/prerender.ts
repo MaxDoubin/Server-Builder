@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as KEEPALIVE_CASES, asMiddlebox as keepaliveMiddlebox, asSs as keepaliveSs, asSysctl as keepaliveSysctl, correctOption as keepaliveCorrect, firstProbe as keepaliveFirstProbe, forgottenAt as keepaliveForgotten, noticedAt as keepaliveNoticed, outcome as keepaliveOutcome, ssTimer as keepaliveTimer, survives as keepaliveSurvives } from "../client/src/lib/keepalive/index";
 import { CASES as BACKLOG_CASES, accepted as backlogAccepted, asNstat as backlogNstat, asSs as backlogSs, asSysctl as backlogSysctl, correctOption as backlogCorrect, effectiveCap as backlogCap, fate as backlogFate, humanMs as backlogHuman, overflowed as backlogOverflowed, peakDepth as backlogPeak, queueCapacity as backlogQueueCap } from "../client/src/lib/backlog/index";
 import { CASES as LEASES_CASES, asLease as leasesFile, asTimeline as leasesTimeline, clientsLost as leasesLost, concurrentLeases as leasesConcurrent, correctOption as leasesCorrect, exhaustsAfter as leasesDry, fractionLosing as leasesShare, human as leasesHuman, isInfinite as leasesInfinite, poolUnderPressure as leasesPressure, timers as leasesTimers } from "../client/src/lib/leases/index";
 import { CASES as NDOTS_CASES, asResolvConf as ndotsConf, asTrace as ndotsTrace, attempts as ndotsAttempts, correctOption as ndotsCorrect, nxdomains as ndotsWasted, order as ndotsOrder, queries as ndotsQueries, wentToWildcard as ndotsWildcard } from "../client/src/lib/ndots/index";
@@ -883,6 +884,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/ndots">Ten queries for one name</a>, how many DNS queries one hostname costs and why.</li>
     <li><a href="${SITE_URL}/leases">Forty minutes dark</a>, how many clients a DHCP outage costs and how large a pool has to be.</li>
     <li><a href="${SITE_URL}/backlog">Idle, and the connections time out</a>, what listen() installed as the accept queue and what a full one does.</li>
+    <li><a href="${SITE_URL}/keepalive">Six minutes of silence</a>, which timer forgets an idle connection first and what the next write gets.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2184,6 +2186,7 @@ ${JSON.stringify({
     ["Ten queries for one name", "/ndots"],
     ["Forty minutes dark", "/leases"],
     ["Idle, and the connections time out", "/backlog"],
+    ["Six minutes of silence", "/keepalive"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3852,6 +3855,112 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <p>It breaks the belief ${esc(item.breaks)}.</p>
   </article>`;
 }).join("\n")}
+</main>`,
+  });
+
+  // ── idle connections ──
+  /*
+    The table is the argument here: five columns of timers, one of which is
+    always much larger than the others, and that one is the keepalive default.
+    Seeing 7200 next to 350 does the work that a paragraph about middlebox
+    idle timeouts does not.
+  */
+  const keepaliveForgetting = KEEPALIVE_CASES.filter((item) => !keepaliveSurvives(item.setup)).length;
+  const keepaliveLate = KEEPALIVE_CASES.filter((item) => {
+    const probe = keepaliveFirstProbe(item.setup);
+    const forgotten = keepaliveForgotten(item.setup);
+    return probe !== null && forgotten !== null && probe > forgotten;
+  }).length;
+  const keepaliveDescription =
+    "TCP has no idle timeout of its own, so an established connection with nothing to say lives " +
+    "forever at both ends. The path is not the protocol: every stateful device in it holds a row " +
+    "with a countdown, and 350 seconds on a Network Load Balancer or four minutes on an Azure " +
+    "Load Balancer is shorter than most quiet periods. TCP keepalive is the usual answer and it " +
+    "is wrong twice, because SO_KEEPALIVE is off per socket unless something set it and because " +
+    "the first probe is due at tcp_keepalive_time, which defaults to 7200 seconds. " +
+    `${KEEPALIVE_CASES.length} connections here, ${keepaliveForgetting} that the path forgets, and ` +
+    `${keepaliveLate} where keepalive is switched on and its first probe still arrives after the flow is gone.`;
+
+  await writePage("keepalive", base, {
+    title: "The Connection Was Fine Until Nobody Spoke for Six Minutes | Max Doubin",
+    description: keepaliveDescription,
+    canonical: `${SITE_URL}/keepalive`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Six minutes of silence",
+  description: keepaliveDescription,
+  url: `${SITE_URL}/keepalive`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why an idle TCP connection dies in the middle rather than at either end: that TCP itself has no idle timeout, that stateful firewalls, NAT gateways and cloud load balancers each delete a flow after their own idle timer, that SO_KEEPALIVE is off per socket and net.ipv4.tcp_keepalive_time defaults to 7200 seconds so the first probe is far too late to hold a flow open, how TCP_KEEPIDLE, an application heartbeat and TCP_USER_TIMEOUT each change the outcome, and why the next write after the flow is forgotten either resets immediately or hangs for the roughly fifteen minutes that tcp_retries2 allows",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Six minutes of silence</h1>
+  <p>
+    ${KEEPALIVE_CASES.length} idle connections, each through a device that keeps its own countdown.
+    ${keepaliveForgetting} of them are forgotten by the path, and in ${keepaliveLate} of those the
+    socket has keepalive switched on and its first probe still arrives after the flow is gone.
+  </p>
+  <p>
+    There is no idle timeout in TCP. A connection with nothing to say is two pieces of memory, one
+    at each end, and they will hold it forever. Everything between them is different: a stateful
+    firewall, a NAT gateway or a load balancer holds a row per flow and deletes it when its own
+    timer runs out, and then the next segment either draws a reset or is dropped without a word.
+    Keepalive is the usual answer, and at stock settings it does not work for this, because
+    <code>SO_KEEPALIVE</code> is off unless the application set it and
+    <code>net.ipv4.tcp_keepalive_time</code> is 7200 seconds. The probe that would have kept the
+    row alive is due two hours after the row was deleted.
+  </p>
+  <h2>Which timer runs out first</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Path</th><th>Its idle timeout</th><th>Idle for</th><th>SO_KEEPALIVE</th><th>First probe</th><th>Flow forgotten at</th><th>The next write</th></tr>
+    </thead>
+    <tbody>
+${KEEPALIVE_CASES.map((item) => {
+  const s = item.setup;
+  const probe = keepaliveFirstProbe(s);
+  const forgotten = keepaliveForgotten(s);
+  const out = keepaliveOutcome(s);
+  return `      <tr><td>${esc(s.middlebox.label)}</td><td>${esc(keepaliveTimer(s.middlebox.idleTimeout))}</td>` +
+    `<td>${esc(keepaliveTimer(s.idleSeconds))}</td><td>${s.soKeepalive ? "on" : "off"}</td>` +
+    `<td>${probe === null ? "never" : esc(keepaliveTimer(probe))}</td>` +
+    `<td>${forgotten === null ? "never" : esc(keepaliveTimer(forgotten))}</td>` +
+    `<td>${esc(out.nextWrite.what)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${KEEPALIVE_CASES.map((item) => {
+  const right = keepaliveCorrect(item);
+  const s = item.setup;
+  const noticed = keepaliveNoticed(s);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(keepaliveSysctl(s))}
+
+${esc(keepaliveSs(s))}
+
+${esc(keepaliveMiddlebox(s))}</code></pre>
+    <p>${keepaliveSurvives(s) ? "The flow survives the quiet period." : `The path forgets the flow at ${esc(keepaliveTimer(keepaliveForgotten(s) as number))}.`} The next write gets ${esc(keepaliveOutcome(s).nextWrite.what)}${noticed === null ? "" : `, and the application learns of it after ${esc(keepaliveTimer(noticed))}`}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-first-probe-is-two-hours-late", "The first probe is two hours late"], ["/backlog", "Idle, and the connections time out"], ["/ports", "Out of ports"]])}
 </main>`,
   });
 
@@ -6640,6 +6749,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/ndots`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/leases`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/backlog`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/keepalive`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 278 of them. Regenerate with script/generatePostIndex.ts.
+ * 279 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-first-probe-is-two-hours-late",
+    title: "The First Probe Is Two Hours Late",
+    date: "2026-09-19",
+    tags: ["networking","linux","operations"],
+    excerpt: "TCP has no idle timeout, so an established connection with nothing to say lives forever. The path is not the protocol: every stateful device in it holds a row with a countdown, and 350 seconds on a Network Load Balancer or four minutes on an Azure Load Balancer is shorter than most quiet periods. TCP keepalive is the usual answer and it is wrong twice, because it is off per socket and because its first probe is due at 7200 seconds. What the next write gets is a reset, or 924.6 seconds of nothing.",
+    coverImage: "/images/blog/the-first-probe-is-two-hours-late.jpg",
+    wordCount: 1866,
+  },
   {
     slug: "the-connection-opened-and-then-nothing-happened",
     title: "The Connection Opened And Then Nothing Happened",
@@ -2735,10 +2744,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 278;
+export const POST_COUNT = 279;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy eight";
+export const POST_COUNT_SPELLED = "two hundred and seventy nine";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2747,10 +2756,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1054;
+export const CITATION_COUNT = 1061;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1213;
+export const CHECKED_URL_COUNT = 1220;
