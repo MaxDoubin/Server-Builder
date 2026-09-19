@@ -635,6 +635,9 @@ jobs:
       - name: Lease timing surface
         run: npx tsx scripts-ci/check-leases.ts
 
+      - name: Accept queue surface
+        run: npx tsx scripts-ci/check-backlog.ts
+
       - name: An option's prose says what its claim is checked against
         run: npx tsx scripts-ci/check-option-prose.ts
 

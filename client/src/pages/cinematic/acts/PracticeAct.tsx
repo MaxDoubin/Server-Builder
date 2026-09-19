@@ -44,6 +44,7 @@ import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
 import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/index";
 import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/index";
+import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/backlog/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -170,6 +171,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The free column is small on every healthy server, by design. MemAvailable is the number that answers the question, and it is an estimate with an arm that flips.",
     count: `${FREE_CASES.length} machines, ${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where the estimate overstates`,
+  },
+  {
+    href: "/backlog",
+    eyebrow: "Trace",
+    title: "Idle, and the connections time out",
+    blurb:
+      "A full accept queue does not refuse a connection. It drops the final ACK, the client thinks it is connected, and its first request goes into silence until a retransmission finds room.",
+    count: `${BACKLOG_CASES.length} listeners, ${BACKLOG_CASES.filter((item) => backlogOverflowed(item.setup) > 0).length} that overflow`,
   },
   {
     href: "/leases",

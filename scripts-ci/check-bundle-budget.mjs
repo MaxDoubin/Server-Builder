@@ -92,8 +92,18 @@ const INDEX = path.join(DIST, "index.html");
  * the third-of-a-kilobyte figure written down two raises ago. That
  * consistency is the useful part: a surface that ever costs several KB here
  * has leaked something, and this budget will say so.
+ *
+ * 701 KB, raised from 700 by /backlog, measured at 700.5. This one is worth
+ * recording because the grep came back non-empty for the first time:
+ * "somaxconn", "ListenOverflows" and "sk_acceptq_is_full" all appear in the
+ * entry chunk. They are not case data. They are inside the command palette
+ * entry's search terms, which is exactly where they belong, because somebody
+ * typing "listen overflow" into the palette on any page has to match this
+ * surface before its route has loaded. Checked by printing the surrounding
+ * 400 bytes rather than by assuming: it is one string literal in the palette
+ * array. No case slug and no line of case prose is in there.
  */
-const BUDGET_BYTES = 700 * 1024;
+const BUDGET_BYTES = 701 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 277 of them. Regenerate with script/generatePostIndex.ts.
+ * 278 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-connection-opened-and-then-nothing-happened",
+    title: "The Connection Opened And Then Nothing Happened",
+    date: "2026-09-19",
+    tags: ["networking","linux","operations","troubleshooting"],
+    excerpt: "listen() does not install the backlog you passed: it is min(backlog, somaxconn), clamped silently, and the queue then holds one more than that because the kernel's test is greater-than rather than greater-or-equal. When it fills, the kernel does not refuse the connection. It drops the final ACK and sends nothing back, so connect() has already returned and the client's first request goes into silence until a retransmission finds room. That is how a box at six percent CPU produces seconds of dead air and no error anywhere.",
+    coverImage: "/images/blog/the-connection-opened-and-then-nothing-happened.jpg",
+    wordCount: 1897,
+  },
   {
     slug: "forty-minutes-dark",
     title: "Forty Minutes Dark, And A Third Of The Office Fell Off",
@@ -2726,10 +2735,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 277;
+export const POST_COUNT = 278;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy seven";
+export const POST_COUNT_SPELLED = "two hundred and seventy eight";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2738,10 +2747,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1047;
+export const CITATION_COUNT = 1054;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1206;
+export const CHECKED_URL_COUNT = 1213;

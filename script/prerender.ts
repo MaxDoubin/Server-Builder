@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as BACKLOG_CASES, accepted as backlogAccepted, asNstat as backlogNstat, asSs as backlogSs, asSysctl as backlogSysctl, correctOption as backlogCorrect, effectiveCap as backlogCap, fate as backlogFate, humanMs as backlogHuman, overflowed as backlogOverflowed, peakDepth as backlogPeak, queueCapacity as backlogQueueCap } from "../client/src/lib/backlog/index";
 import { CASES as LEASES_CASES, asLease as leasesFile, asTimeline as leasesTimeline, clientsLost as leasesLost, concurrentLeases as leasesConcurrent, correctOption as leasesCorrect, exhaustsAfter as leasesDry, fractionLosing as leasesShare, human as leasesHuman, isInfinite as leasesInfinite, poolUnderPressure as leasesPressure, timers as leasesTimers } from "../client/src/lib/leases/index";
 import { CASES as NDOTS_CASES, asResolvConf as ndotsConf, asTrace as ndotsTrace, attempts as ndotsAttempts, correctOption as ndotsCorrect, nxdomains as ndotsWasted, order as ndotsOrder, queries as ndotsQueries, wentToWildcard as ndotsWildcard } from "../client/src/lib/ndots/index";
 import { CASES as LIMIT_CASES, SOURCE_LABEL as limSource, asProcLimits as limProc, correctOption as limCorrect, effective as limEffective, failsWith as limFails, highestFd as limHighest, limit as limNum, succeeds as limOk } from "../client/src/lib/limits/index";
@@ -881,6 +882,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/free">Two hundred megabytes free</a>, what MemAvailable computes and what the free column is not.</li>
     <li><a href="${SITE_URL}/ndots">Ten queries for one name</a>, how many DNS queries one hostname costs and why.</li>
     <li><a href="${SITE_URL}/leases">Forty minutes dark</a>, how many clients a DHCP outage costs and how large a pool has to be.</li>
+    <li><a href="${SITE_URL}/backlog">Idle, and the connections time out</a>, what listen() installed as the accept queue and what a full one does.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2181,6 +2183,7 @@ ${JSON.stringify({
     ["Two hundred megabytes free", "/free"],
     ["Ten queries for one name", "/ndots"],
     ["Forty minutes dark", "/leases"],
+    ["Idle, and the connections time out", "/backlog"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3849,6 +3852,107 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <p>It breaks the belief ${esc(item.breaks)}.</p>
   </article>`;
 }).join("\n")}
+</main>`,
+  });
+
+  // ── the accept queue ──
+  /*
+    The point of putting this one in the static body is the counter. Somebody
+    searching "connections timing out cpu idle" has already looked at CPU,
+    memory and the application log, and the thing that would have answered it
+    in one line is nstat TcpExtListenOverflows, which almost nobody runs. So
+    the rendered nstat block goes in the document, per case.
+  */
+  const backlogOverflowing = BACKLOG_CASES.filter((item) => backlogOverflowed(item.setup) > 0).length;
+  const backlogClamped = BACKLOG_CASES.filter((item) => backlogCap(item.setup) !== item.setup.backlog).length;
+  const backlogWorstMs = Math.max(...BACKLOG_CASES.map((item) => backlogFate(item.setup).delayMs));
+  const backlogDescription =
+    "listen(2) does not install the backlog an application passed: the accept queue cap is " +
+    "min(backlog, net.core.somaxconn), clamped silently, and the queue holds one more than that " +
+    "because the kernel's test is greater-than rather than greater-or-equal. When it fills, the " +
+    "kernel does not refuse the connection. With tcp_abort_on_overflow at its default of 0 it " +
+    "drops the client's final ACK, so connect() has already returned and the first request goes " +
+    "into silence until a retransmission finds room. " +
+    `${BACKLOG_CASES.length} listeners here, ${backlogOverflowing} that overflow, ${backlogClamped} whose backlog argument ` +
+    `was silently clamped, and a worst observed client delay of ${backlogHuman(backlogWorstMs)} on a host with an idle CPU.`;
+
+  await writePage("backlog", base, {
+    title: "The Server Is Idle and the Connections Are Timing Out | Max Doubin",
+    description: backlogDescription,
+    canonical: `${SITE_URL}/backlog`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The server is idle and the connections are timing out",
+  description: backlogDescription,
+  url: `${SITE_URL}/backlog`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How the TCP accept queue actually behaves: that listen(2) installs min(backlog, net.core.somaxconn) and clamps without telling anyone, that somaxconn's default changed from 128 to 4096 in Linux 5.4, that sk_acceptq_is_full compares with greater-than so the queue holds one past the cap, that an overflowing listener with tcp_abort_on_overflow at 0 drops the final ACK rather than sending RST so the client believes it is connected, how the SYN-ACK retransmission schedule and the client's own RTO decide when such a connection recovers or dies, and that TcpExtListenOverflows in nstat is the counter that proves it",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The server is idle and the connections are timing out</h1>
+  <p>
+    ${BACKLOG_CASES.length} listeners, each with a burst of connections arriving and an application
+    accepting at some rate. ${backlogOverflowing} of them overflow, ${backlogClamped} had the backlog
+    argument silently clamped to something smaller than what was passed, and the worst client delay
+    here is ${backlogHuman(backlogWorstMs)} on a machine doing almost nothing.
+  </p>
+  <p>
+    listen(2): "If the backlog argument is greater than the value in
+    <code>/proc/sys/net/core/somaxconn</code>, then it is silently truncated to that value."
+    somaxconn defaulted to 128 until Linux 5.4 raised it to 4096. The queue holds one more than the
+    cap, because <code>sk_acceptq_is_full()</code> tests greater-than. And when it is full, the
+    default <code>tcp_abort_on_overflow=0</code> means the kernel drops the completing handshake's
+    final ACK instead of resetting the connection, so the client's connect() has already succeeded
+    and its first write goes nowhere. The server retransmits its SYN-ACK on the schedule set by
+    tcp_synack_retries; whichever of that and the client's own retransmission arrives after a slot
+    opens is what rescues the connection, if anything does.
+  </p>
+  <h2>What each listener does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Kernel</th><th>listen() asked</th><th>somaxconn</th><th>Queue holds</th><th>Arrivals</th><th>Accepted</th><th>Overflowed</th><th>Ending</th></tr>
+    </thead>
+    <tbody>
+${BACKLOG_CASES.map((item) => {
+  const s = item.setup;
+  const f = backlogFate(s);
+  return `      <tr><td>${esc(s.kernel)}</td><td>${s.backlog}</td><td>${s.somaxconn}</td>` +
+    `<td>${backlogQueueCap(s)}</td><td>${s.arrivals}</td><td>${backlogAccepted(s)}</td>` +
+    `<td>${backlogOverflowed(s)}</td><td>${esc(f.ending)} after ${esc(backlogHuman(f.delayMs))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${BACKLOG_CASES.map((item) => {
+  const right = backlogCorrect(item);
+  const s = item.setup;
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(backlogSysctl(s))}
+
+${esc(backlogSs(s))}
+
+${esc(backlogNstat(s))}</code></pre>
+    <p>listen(${s.backlog}) on a host with somaxconn ${s.somaxconn} installs a cap of ${backlogCap(s)}, so the queue holds ${backlogQueueCap(s)}. Peak depth was ${backlogPeak(s)}, ${backlogAccepted(s)} of ${s.arrivals} were accepted and ${backlogOverflowed(s)} overflowed.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-connection-opened-and-then-nothing-happened", "The connection opened and then nothing happened"], ["/ports", "Out of ports"], ["/load", "Forty, and idle"]])}
 </main>`,
   });
 
@@ -6535,6 +6639,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/free`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/ndots`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/leases`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/backlog`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

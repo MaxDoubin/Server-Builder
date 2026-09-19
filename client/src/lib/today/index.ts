@@ -36,6 +36,7 @@ import { CASES as LIMITS } from "@/lib/limits/index";
 import { CASES as FREES } from "@/lib/free/index";
 import { CASES as NDOTS } from "@/lib/ndots/index";
 import { CASES as LEASES } from "@/lib/leases/index";
+import { CASES as BACKLOGS } from "@/lib/backlog/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -94,6 +95,7 @@ const OFFSET = {
   free: 131,
   ndots: 137,
   leases: 139,
+  backlog: 149,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -372,6 +374,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A DHCP lease, its two timers, and a server that is away. Work out how many clients lose an address and how long the pool lasts.",
       href: "/leases",
       outOf: LEASES.length,
+    });
+  }
+
+  const queued = pickFor(BACKLOGS, day, OFFSET.backlog);
+  if (queued) {
+    out.push({
+      surface: "backlog",
+      eyebrow: "Trace",
+      title: queued.name,
+      blurb: "A listener, a burst of connections, and an application that is not accepting fast enough. Work out what the kernel does with the ones that do not fit.",
+      href: "/backlog",
+      outOf: BACKLOGS.length,
     });
   }
 
