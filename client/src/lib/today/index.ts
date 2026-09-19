@@ -41,6 +41,7 @@ import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
 import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
 import { CASES as NEIGHS } from "@/lib/neigh/index";
 import { CASES as SHMS } from "@/lib/shm/index";
+import { CASES as MAXSTARTUPS } from "@/lib/maxstartups/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -104,6 +105,7 @@ const OFFSET = {
   startlimit: 157,
   neigh: 163,
   shm: 167,
+  maxstartups: 173,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -442,6 +444,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
       href: "/shm",
       outOf: SHMS.length,
+    });
+  }
+
+  const refused = pickFor(MAXSTARTUPS, day, OFFSET.maxstartups);
+  if (refused) {
+    out.push({
+      surface: "maxstartups",
+      eyebrow: "Predict",
+      title: refused.name,
+      blurb: "An SSH daemon, an arrival rate, and three numbers almost nobody sets. Work out how many connections are standing unauthenticated and what that does to the next one.",
+      href: "/maxstartups",
+      outOf: MAXSTARTUPS.length,
     });
   }
 

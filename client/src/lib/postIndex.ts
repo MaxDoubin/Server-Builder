@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 288 of them. Regenerate with script/generatePostIndex.ts.
+ * 289 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-connection-refused-by-a-daemon-doing-nothing",
+    title: "The Connection Refused by a Daemon Doing Nothing",
+    date: "2026-09-19",
+    tags: ["linux","networking","security","operations"],
+    excerpt: "sshd refuses connections by counting something no dashboard shows, and it refuses them with a probability rather than at a number, so the same command fails and then works. MaxStartups counts concurrent unauthenticated connections, LoginGraceTime defaults to 120 seconds, and ten connections a minute that never authenticate is twenty slots standing against a default start value of ten. The ramp between the three numbers is a staircase rather than the line its own source comment describes, because every step of the arithmetic is an integer divide, and raising the last of the three lowers the odds without ever reaching zero.",
+    coverImage: "/images/blog/the-connection-refused-by-a-daemon-doing-nothing.jpg",
+    wordCount: 1655,
+  },
   {
     slug: "bus-error-with-sixty-four-gigabytes-free",
     title: "Bus Error, With Sixty Four Gigabytes Free",
@@ -2825,10 +2834,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 288;
+export const POST_COUNT = 289;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty eight";
+export const POST_COUNT_SPELLED = "two hundred and eighty nine";
 
 /**
  * Unique external reference URLs in the article text.
