@@ -42,7 +42,7 @@ const VIEW_LABELS: Record<RackView, string> = {
    flashed black for the second the three.js chunk took to arrive. */
 function ModelLoading() {
   return (
-    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3] font-techno text-[10px] uppercase tracking-[0.3em] text-[#5c6472]">
+    <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-[hsl(var(--brand-iron))] bg-[#eef0f3] font-techno text-[0.625rem] uppercase tracking-[0.3em] text-[#5c6472]">
       Loading model
     </div>
   );
@@ -123,12 +123,12 @@ export function CinematicRackDetail() {
             <h1 className="font-display text-3xl font-medium text-[hsl(var(--brand-bone))]">
               No rack at this address.
             </h1>
-            <p className="mt-4 font-mono-tight text-[14px] text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-4 font-mono-tight text-[0.875rem] text-[hsl(var(--brand-bone-dim))]">
               The rack library has moved on, or this link never pointed at one.
             </p>
             <Link
               href="/racks"
-              className="mt-8 inline-block rounded-full border border-[hsl(var(--brand-iron))] px-5 py-2 font-techno text-[11px] uppercase tracking-[0.25em] text-[hsl(var(--brand-bone))] hover:border-[hsl(var(--brand-signal))]"
+              className="mt-8 inline-block rounded-full border border-[hsl(var(--brand-iron))] px-5 py-2 font-techno text-[0.6875rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-bone))] hover:border-[hsl(var(--brand-signal))]"
             >
               Back to the library
             </Link>
@@ -169,7 +169,7 @@ export function CinematicRackDetail() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1200px]">
           <header className="max-w-3xl">
-            <nav aria-label="Breadcrumb" className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <nav aria-label="Breadcrumb" className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               <Link
                 href="/racks"
                 className="inline-flex min-h-[24px] items-center transition-colors hover:text-[hsl(var(--brand-signal))]"
@@ -182,10 +182,10 @@ export function CinematicRackDetail() {
             <h1 className="mt-4 font-display text-[clamp(2.2rem,5vw,3.6rem)] font-medium leading-[0.98] tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
               {rack.name}.
             </h1>
-            <p className="mt-5 font-mono-tight text-[15px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+            <p className="mt-5 font-mono-tight text-[0.9375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               {rack.blurb}
             </p>
-            <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Click any device in the elevation, or Tab to it and press Enter,
               to pull it out and read its details. Switch to the 3D model to
               walk around the same rack: every device is built from the same
@@ -202,7 +202,7 @@ export function CinematicRackDetail() {
                     type="button"
                     onClick={() => setView(v)}
                     aria-pressed={view === v}
-                    className={`rounded-full border px-3 py-1.5 font-techno text-[10px] uppercase tracking-[0.25em] transition-colors ${
+                    className={`rounded-full border px-3 py-1.5 font-techno text-[0.625rem] uppercase tracking-[0.25em] transition-colors ${
                       view === v
                         ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-bone))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -250,8 +250,8 @@ export function CinematicRackDetail() {
                       ],
                     ].map(([label, value]) => (
                       <div key={label} className="flex items-baseline justify-between gap-4 border-b border-[hsl(var(--brand-iron))] py-2.5">
-                        <dt className="shrink-0 font-techno text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">{label}</dt>
-                        <dd className="text-right font-mono-tight text-[13px] text-[hsl(var(--brand-bone))]">{value}</dd>
+                        <dt className="shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">{label}</dt>
+                        <dd className="text-right font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))]">{value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -268,7 +268,7 @@ export function CinematicRackDetail() {
                     explaining it is what makes it legible as an answer.
                   */}
                   {power.unpublished > 0 && (
-                    <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       {power.total > 0
                         ? `${power.unpublished} device${power.unpublished === 1 ? "" : "s"} here publish${power.unpublished === 1 ? "es" : ""} no consumption figure.`
                         : "Nothing here publishes a consumption figure."}{" "}
@@ -304,10 +304,10 @@ export function CinematicRackDetail() {
                           onClick={() => select(d.id)}
                           className="group flex w-full items-baseline justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-[hsl(var(--brand-graphite))]"
                         >
-                          <span className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
+                          <span className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] transition-colors group-hover:text-[hsl(var(--brand-bone))]">
                             {d.vendor === "Generic" ? d.model : `${d.vendor} ${d.model}`}
                           </span>
-                          <span className="shrink-0 font-techno text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                          <span className="shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                             {d.u}U
                           </span>
                         </button>
@@ -320,7 +320,7 @@ export function CinematicRackDetail() {
                   </h2>
                   <ul className="mt-3 space-y-2">
                     {rack.sources.map((s) => (
-                      <li key={s.url} className="font-mono-tight text-[13px] leading-relaxed">
+                      <li key={s.url} className="font-mono-tight text-[0.8125rem] leading-relaxed">
                         {/*
                           inline-flex with a minimum height rather than the
                           text's own 15 pixels. WCAG 2.2 exempts a link inside
@@ -348,19 +348,19 @@ export function CinematicRackDetail() {
           <nav className="mt-20 flex flex-wrap gap-3" aria-label="Rack library">
             <Link
               href="/racks"
-              className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
+              className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-techno text-[0.625rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
             >
               All racks
             </Link>
             <Link
               href="/tools/rack-budget"
-              className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
+              className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-techno text-[0.625rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
             >
               Rack budget tool
             </Link>
             <Link
               href="/game"
-              className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
+              className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-techno text-[0.625rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
             >
               Build simulator
             </Link>

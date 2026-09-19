@@ -166,7 +166,7 @@ export function CinematicGlossary() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {TERMS.length} terms
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -194,7 +194,7 @@ export function CinematicGlossary() {
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search terms and definitions"
                 data-testid="glossary-search"
-                className="w-full rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] px-5 py-2.5 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus-visible:border-[hsl(var(--brand-signal)/0.7)] focus-visible:outline-none"
+                className="w-full rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] px-5 py-2.5 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus-visible:border-[hsl(var(--brand-signal)/0.7)] focus-visible:outline-none"
               />
             </label>
             <button
@@ -202,7 +202,7 @@ export function CinematicGlossary() {
               onClick={() => choose(null)}
               aria-pressed={field === null}
               data-testid="glossary-field-all"
-              className={`rounded-full border px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] transition-colors ${
+              className={`rounded-full border px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] transition-colors ${
                 field === null
                   ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                   : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -217,7 +217,7 @@ export function CinematicGlossary() {
                 onClick={() => choose(name)}
                 aria-pressed={field === name}
                 data-testid={`glossary-field-${name}`}
-                className={`rounded-full border px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] transition-colors ${
+                className={`rounded-full border px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] transition-colors ${
                   field === name
                     ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -229,7 +229,7 @@ export function CinematicGlossary() {
           </div>
 
           <p
-            className="mt-5 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-5 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="glossary-count"
           >
@@ -263,7 +263,7 @@ export function CinematicGlossary() {
                         {term.term}
                       </a>
                       {term.expansion ? (
-                        <span className="ml-3 font-mono-tight text-[12.5px] font-normal text-[hsl(var(--brand-ash))]">
+                        <span className="ml-3 font-mono-tight text-[0.78125rem] font-normal text-[hsl(var(--brand-ash))]">
                           {term.expansion}
                         </span>
                       ) : null}
@@ -271,22 +271,22 @@ export function CinematicGlossary() {
                     <button
                       type="button"
                       onClick={() => choose(term.field)}
-                      className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))] hover:underline"
+                      className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))] hover:underline"
                     >
                       · {FIELD_LABEL[term.field]}
                     </button>
                   </div>
 
-                  <p className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <p className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {term.definition}
                   </p>
 
                   {term.confusion ? (
                     <p
-                      className="mt-4 border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                      className="mt-4 border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                       data-testid={`glossary-confusion-${slug}`}
                     >
-                      <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                         What people get wrong ·{" "}
                       </span>
                       {term.confusion}
@@ -294,7 +294,7 @@ export function CinematicGlossary() {
                   ) : null}
 
                   {term.see?.length ? (
-                    <p className="mt-4 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+                    <p className="mt-4 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
                       Next ·{" "}
                       {term.see.map((other, index) => {
                         const target = TERMS.find(
@@ -324,7 +324,7 @@ export function CinematicGlossary() {
 
           {shown.length === 0 ? (
             <p
-              className="mt-6 rounded-2xl border border-[hsl(var(--brand-iron))] p-6 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-6 rounded-2xl border border-[hsl(var(--brand-iron))] p-6 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="glossary-empty"
             >
               Nothing here matches that. The glossary only covers vocabulary the site actually
@@ -333,7 +333,7 @@ export function CinematicGlossary() {
             </p>
           ) : null}
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             To use any of this rather than read it, the{" "}
             <Link
               href="/practice"

@@ -128,7 +128,7 @@ export function CinematicBacklog() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} listeners, one queue
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -166,16 +166,16 @@ export function CinematicBacklog() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       backlog {item.setup.backlog} · somaxconn {item.setup.somaxconn}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -188,7 +188,7 @@ export function CinematicBacklog() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="backlog-brief"
             >
               {active.brief}
@@ -198,7 +198,7 @@ export function CinematicBacklog() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="backlog-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ uname -r
 ${setup.kernel}.0-generic
 # net.core.somaxconn defaults to ${somaxconnDefault(setup.kernel)} on this release
@@ -217,7 +217,7 @@ ${asNstat(setup)}
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -231,7 +231,7 @@ ${asNstat(setup)}
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`backlog-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -249,7 +249,7 @@ ${asNstat(setup)}
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="backlog-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} The cap is {cap}, which is min({setup.backlog},{" "}
                   {setup.somaxconn}), so the queue holds {queueCapacity(setup)}.{" "}
                   {dropped > 0
@@ -259,7 +259,7 @@ ${asNstat(setup)}
 
                 {/* ── where the burst went ── */}
                 <div data-testid="backlog-queue">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                     <span className="text-[hsl(var(--brand-bone-dim))]">
                       {setup.arrivals} handshakes in {setup.windowMs} ms
                     </span>
@@ -284,7 +284,7 @@ ${asNstat(setup)}
                       data-testid="backlog-dropped"
                     />
                   </div>
-                  <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.9)]">
+                  <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.9)]">
                     <span>
                       <span className="text-[hsl(var(--brand-signal))]">■</span> {taken} accepted
                     </span>
@@ -301,7 +301,7 @@ ${asNstat(setup)}
 
                 {/* ── the two timers, on one axis ── */}
                 <div data-testid="backlog-timeline">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                     <span className="text-[hsl(var(--brand-bone-dim))]">
                       every chance an overflowed connection gets
                     </span>
@@ -317,7 +317,7 @@ ${asNstat(setup)}
                         className="absolute top-0 h-full w-px bg-[hsl(var(--brand-amber))]"
                         data-testid="backlog-slot"
                       >
-                        <span className="absolute -top-3.5 left-1 whitespace-nowrap font-mono-tight text-[9.5px] text-[hsl(var(--brand-amber))]">
+                        <span className="absolute -top-3.5 left-1 whitespace-nowrap font-mono-tight text-[0.59375rem] text-[hsl(var(--brand-amber))]">
                           slot at {humanMs(slotAt)}
                         </span>
                       </span>
@@ -347,7 +347,7 @@ ${asNstat(setup)}
                             }`}
                           />
                           {landed ? (
-                            <span className="absolute top-[5.1rem] -left-2 whitespace-nowrap font-mono-tight text-[9.5px] text-[hsl(var(--brand-signal))]">
+                            <span className="absolute top-[5.1rem] -left-2 whitespace-nowrap font-mono-tight text-[0.59375rem] text-[hsl(var(--brand-signal))]">
                               {humanMs(chance.atMs)}
                             </span>
                           ) : null}
@@ -355,11 +355,11 @@ ${asNstat(setup)}
                       );
                     })}
                   </div>
-                  <div className="mt-6 flex flex-wrap gap-x-5 gap-y-1 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.9)]">
+                  <div className="mt-6 flex flex-wrap gap-x-5 gap-y-1 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.9)]">
                     <span>upper ticks: the client's data retransmits, RTO {setup.clientRtoMs} ms, doubling</span>
                     <span>lower ticks: SYN-ACK retransmits at 1, 3, 7, 15 and 31 s</span>
                   </div>
-                  <p className="mt-2 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <p className="mt-2 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {ending.ending === "queued"
                       ? "Nothing overflowed on this listener, so no connection ever waited for one of these ticks."
                       : ending.ending === "late"
@@ -376,34 +376,34 @@ ${asNstat(setup)}
                     ["client waits", humanMs(ending.delayMs), "what the other end lives through"],
                   ].map(([label, value, note]) => (
                     <div key={label} className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                      <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         · {label}
                       </p>
                       <p className="mt-2 font-display text-2xl text-[hsl(var(--brand-bone))]">{value}</p>
-                      <p className="mt-1 font-mono-tight text-[10.5px] leading-snug text-[hsl(var(--brand-ash))]">
+                      <p className="mt-1 font-mono-tight text-[0.65625rem] leading-snug text-[hsl(var(--brand-ash))]">
                         {note}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="backlog-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -412,13 +412,13 @@ ${asNstat(setup)}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="backlog-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the kernel used is above, including the two numbers that are not on any
                 dashboard: Send-Q on the LISTEN row, and ListenOverflows. Where the burst went, and
                 what the client on the far end of it lived through, are drawn once you have
@@ -428,14 +428,14 @@ ${asNstat(setup)}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="backlog-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} listeners`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI checks eight fixed points against listen(2), ip-sysctl and the kernel source, because
             the numbers here are quoted rather than derived and every one of them is the kind a
             refactor moves quietly: somaxconn at 4096 since 5.4 and 128 before, the last SYN-ACK
@@ -445,7 +445,7 @@ ${asNstat(setup)}
             every burst by stepping through it connection by connection, because a clamp in the
             wrong place looks perfectly reasonable in a formula.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other number on this machine that is flat while something is badly wrong,{" "}
             <Link
               href="/load"
@@ -465,7 +465,7 @@ ${asNstat(setup)}
 
           <ReadAboutThis href="/backlog" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

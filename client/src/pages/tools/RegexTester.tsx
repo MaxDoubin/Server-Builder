@@ -440,7 +440,7 @@ export function RegexTester() {
                   <label
                     key={f.flag}
                     title={f.note}
-                    className={`inline-flex min-h-[36px] cursor-pointer items-center gap-2 rounded-full border px-3 font-mono-tight text-[11px] uppercase tracking-[0.18em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${
+                    className={`inline-flex min-h-[36px] cursor-pointer items-center gap-2 rounded-full border px-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.18em] transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[hsl(var(--brand-signal))] ${
                       on
                         ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-signal))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -464,7 +464,7 @@ export function RegexTester() {
             <div className="mt-4">
               <label
                 htmlFor="regex-preset"
-                className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
               >
                 Load a pattern
               </label>
@@ -517,7 +517,7 @@ export function RegexTester() {
               data-testid="input-text"
               className="w-full resize-y rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone))] placeholder:text-[hsl(var(--brand-ash))] focus:border-[hsl(var(--brand-signal))] focus:outline-none"
             />
-            <p className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               {text.length.toLocaleString()} characters
               {clipped ? ` · matching the first ${MAX_TEXT.toLocaleString()}` : ""}
             </p>
@@ -542,7 +542,7 @@ export function RegexTester() {
                 {timedOut || syntaxError ? "--" : matchCount}
                 {result?.data.truncated ? "+" : ""}
               </span>
-              <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+              <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                 {matchCount === 1 ? "match" : "matches"}
                 {elapsed !== null && !timedOut ? ` · ${elapsed.toFixed(1)} ms` : ""}
                 {!flags.includes("g") && !timedOut ? " · first only, g is off" : ""}
@@ -611,7 +611,7 @@ export function RegexTester() {
                     className="rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] p-3"
                   >
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         #{i + 1} at index {m.index}
                       </span>
                       <span className="min-w-0 break-all font-mono-tight text-sm text-[hsl(var(--brand-signal))]">
@@ -622,7 +622,7 @@ export function RegexTester() {
                       <dl className="mt-2 space-y-1">
                         {m.groups.map((g, gi) => (
                           <div key={`g${gi}`} className="flex flex-wrap gap-x-3">
-                            <dt className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                            <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                               group {gi + 1}
                             </dt>
                             <dd className="min-w-0 break-all font-mono-tight text-xs text-[hsl(var(--brand-bone-dim))]">
@@ -632,7 +632,7 @@ export function RegexTester() {
                         ))}
                         {m.named.map(([name, value]) => (
                           <div key={`n${name}`} className="flex flex-wrap gap-x-3">
-                            <dt className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-cyan))]">
+                            <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-cyan))]">
                               {name}
                             </dt>
                             <dd className="min-w-0 break-all font-mono-tight text-xs text-[hsl(var(--brand-bone-dim))]">

@@ -195,7 +195,7 @@ function TracerouteScene({ attempted }: { attempted: string }) {
         )}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 text-center font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
         traceroute {attempted} · no route to host
       </div>
     </div>
@@ -236,7 +236,7 @@ export function CinematicNotFound() {
       >
         <div className="mx-auto max-w-[860px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Signal · Lost
             </div>
             <h1
@@ -264,12 +264,12 @@ export function CinematicNotFound() {
               <span aria-hidden className="h-[9px] w-[9px] rounded-full bg-[hsl(var(--brand-danger))]" />
               <span aria-hidden className="h-[9px] w-[9px] rounded-full bg-[hsl(var(--brand-amber))]" />
               <span aria-hidden className="h-[9px] w-[9px] rounded-full bg-[hsl(var(--brand-signal))]" />
-              <span className="ml-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <span className="ml-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                 maxdoubin.com · shell
               </span>
             </div>
 
-            <pre className="overflow-x-auto p-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:p-6 md:text-[13px]">
+            <pre className="overflow-x-auto p-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))] md:p-6 md:text-[0.8125rem]">
               <code>
                 <Prompt />
                 <span className="text-[hsl(var(--brand-bone))]">cat .{attempted}</span>
@@ -316,7 +316,7 @@ export function CinematicNotFound() {
             <form onSubmit={handleSearch} role="search" className="mt-5">
               <label
                 htmlFor="notfound-search"
-                className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
               >
                 Query
               </label>
@@ -333,7 +333,7 @@ export function CinematicNotFound() {
                 <button
                   type="submit"
                   data-testid="button-404-search"
-                  className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   Search Field Notes
                 </button>
@@ -395,7 +395,7 @@ export function CinematicNotFound() {
             </div>
           </section>
 
-          <p className="mt-14 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
             // trace dropped · returning to main
           </p>
         </div>
@@ -429,7 +429,7 @@ function RecoveryLink({
       data-testid={testId}
       className="block rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
     >
-      <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
         {label}
       </span>
       <span className="mt-2 block font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">

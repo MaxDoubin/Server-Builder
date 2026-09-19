@@ -473,7 +473,7 @@ export function CinematicStudyTimer() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Utility · Study timer
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.25rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -502,7 +502,7 @@ export function CinematicStudyTimer() {
             </h2>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--brand-iron))] px-5 py-3">
-              <div className="flex items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <div className="flex items-center gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                 <span
                   aria-hidden
                   className={`h-[6px] w-[6px] rounded-full ${
@@ -511,7 +511,7 @@ export function CinematicStudyTimer() {
                 />
                 {running ? "running" : midPhase ? "paused" : "standby"}
               </div>
-              <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                 cycle {intoCycle}/{settings.longEvery} · total {sessions}
               </div>
             </div>
@@ -526,7 +526,7 @@ export function CinematicStudyTimer() {
                     onClick={() => selectPhase(p)}
                     aria-pressed={active}
                     data-testid={`button-phase-${p}`}
-                    className={`inline-flex min-h-[36px] items-center gap-2 rounded-full border px-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                    className={`inline-flex min-h-[36px] items-center gap-2 rounded-full border px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                       active
                         ? `${TONE_CLASS[p].border} ${TONE_CLASS[p].text} bg-[hsl(var(--brand-obsidian))]`
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -548,7 +548,7 @@ export function CinematicStudyTimer() {
               >
                 {clock}
               </div>
-              <div className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+              <div className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                 {PHASE_META[phase].label} · {Math.round(phaseSpan / 60_000)} min
               </div>
             </div>
@@ -577,7 +577,7 @@ export function CinematicStudyTimer() {
                 type="button"
                 onClick={running ? handlePause : handleStart}
                 data-testid="button-start-pause"
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 <span aria-hidden>{running ? "❙❙" : "▶"}</span>
                 {running ? "Pause" : "Start"}
@@ -586,7 +586,7 @@ export function CinematicStudyTimer() {
                 type="button"
                 onClick={handleReset}
                 data-testid="button-reset"
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Reset
               </button>
@@ -594,7 +594,7 @@ export function CinematicStudyTimer() {
                 type="button"
                 onClick={handleSkip}
                 data-testid="button-skip"
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Skip
                 <span aria-hidden>→</span>
@@ -610,7 +610,7 @@ export function CinematicStudyTimer() {
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <h2
                 id="sessions-heading"
-                className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
               >
                 Sessions completed
               </h2>
@@ -621,7 +621,7 @@ export function CinematicStudyTimer() {
                   setStatus("Session count cleared.");
                 }}
                 data-testid="button-clear-sessions"
-                className="inline-flex min-h-[28px] items-center py-1 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[28px] items-center py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Clear count
               </button>
@@ -661,7 +661,7 @@ export function CinematicStudyTimer() {
           >
             <h2
               id="settings-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               Durations
             </h2>
@@ -671,7 +671,7 @@ export function CinematicStudyTimer() {
                 <div key={key}>
                   <label
                     htmlFor={`setting-${key}`}
-                    className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                    className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                   >
                     {LIMITS[key].label}
                   </label>
@@ -692,7 +692,7 @@ export function CinematicStudyTimer() {
                     />
                     <span
                       id={`setting-${key}-help`}
-                      className="shrink-0 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+                      className="shrink-0 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
                     >
                       {LIMITS[key].help}
                     </span>
@@ -715,7 +715,7 @@ export function CinematicStudyTimer() {
           >
             <h2
               id="alerts-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               Alerts on phase change
             </h2>
@@ -745,7 +745,7 @@ export function CinematicStudyTimer() {
                   }}
                   aria-pressed={soundOn}
                   data-testid="button-toggle-sound"
-                  className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border px-5 font-mono-tight text-[10px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                  className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border px-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                     soundOn
                       ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
                       : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -780,7 +780,7 @@ export function CinematicStudyTimer() {
                     onClick={() => setNotifyOn((v) => !v)}
                     aria-pressed={notifyOn}
                     data-testid="button-toggle-notify"
-                    className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border px-5 font-mono-tight text-[10px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                    className={`inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border px-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                       notifyOn
                         ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-signal))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -795,7 +795,7 @@ export function CinematicStudyTimer() {
                     onClick={requestNotifications}
                     disabled={notifyPermission !== "default"}
                     data-testid="button-request-notify"
-                    className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] disabled:cursor-not-allowed disabled:text-[hsl(var(--brand-ash))] disabled:hover:border-[hsl(var(--brand-iron))]"
+                    className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] disabled:cursor-not-allowed disabled:text-[hsl(var(--brand-ash))] disabled:hover:border-[hsl(var(--brand-iron))]"
                   >
                     Ask permission
                   </button>

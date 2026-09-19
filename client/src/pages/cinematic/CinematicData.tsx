@@ -71,7 +71,7 @@ export function CinematicData() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Open data
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -131,7 +131,7 @@ export function CinematicData() {
               href="/data/equipment-catalog.json"
               download
               data-testid="download-json"
-              className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+              className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
             >
               equipment-catalog.json
             </a>
@@ -139,7 +139,7 @@ export function CinematicData() {
               href="/data/equipment-catalog.csv"
               download
               data-testid="download-csv"
-              className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+              className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
             >
               equipment-catalog.csv
             </a>
@@ -198,7 +198,7 @@ export function CinematicData() {
                 href="/data/rack-library.json"
                 download
                 data-testid="download-racks-json"
-                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
               >
                 rack-library.json
               </a>
@@ -206,7 +206,7 @@ export function CinematicData() {
                 href="/data/rack-library.csv"
                 download
                 data-testid="download-racks-csv"
-                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
+                className="inline-flex min-h-[24px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)]"
               >
                 rack-library.csv
               </a>
@@ -225,7 +225,7 @@ export function CinematicData() {
                       <th
                         key={h}
                         scope="col"
-                        className="whitespace-nowrap px-4 py-3 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                        className="whitespace-nowrap px-4 py-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                       >
                         {h}
                       </th>

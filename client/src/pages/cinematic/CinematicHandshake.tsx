@@ -43,7 +43,7 @@ export function CinematicHandshake() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Where it stops
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -68,7 +68,7 @@ export function CinematicHandshake() {
             ))}
           </div>
 
-          <p className="mt-16 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-16 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI checks that each break stops at a step that exists, that the breaks within one
             handshake do not all stop in the same place, and that the directions alternate unless
             a step declares itself part of a flight. That last rule started without the exception
@@ -76,7 +76,7 @@ export function CinematicHandshake() {
             same way. The rule was wrong rather than the data, and the exception is declared on the
             step rather than assumed, so it still catches a direction copied from the line above.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For these exchanges as bytes on the wire, the{" "}
             <Link
               href="/capture"
@@ -148,13 +148,13 @@ function Diagram({ handshake }: { handshake: Handshake }) {
       <h2 className="font-display text-[clamp(1.4rem,3vw,2rem)] font-medium leading-snug tracking-[-0.03em] text-[hsl(var(--brand-bone))]">
         {handshake.title}
       </h2>
-      <p className="mt-2 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+      <p className="mt-2 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
         {handshake.tagline}
       </p>
       {handshake.brief.map((paragraph, index) => (
         <p
           key={index}
-          className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-ash))]"
+          className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-ash))]"
         >
           {paragraph}
         </p>
@@ -166,7 +166,7 @@ function Diagram({ handshake }: { handshake: Handshake }) {
           onClick={() => choose(null)}
           aria-pressed={broken === null}
           data-testid={`handshake-${handshake.slug}-working`}
-          className={`rounded-full border px-3 py-1.5 font-mono-tight text-[11px] transition-colors ${
+          className={`rounded-full border px-3 py-1.5 font-mono-tight text-[0.6875rem] transition-colors ${
             broken === null
               ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-signal))]"
               : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -181,7 +181,7 @@ function Diagram({ handshake }: { handshake: Handshake }) {
             onClick={() => choose(item)}
             aria-pressed={broken?.id === item.id}
             data-testid={`handshake-${handshake.slug}-break-${item.id}`}
-            className={`rounded-full border px-3 py-1.5 text-left font-mono-tight text-[11px] transition-colors ${
+            className={`rounded-full border px-3 py-1.5 text-left font-mono-tight text-[0.6875rem] transition-colors ${
               broken?.id === item.id
                 ? "border-[hsl(var(--brand-danger)/0.7)] bg-[hsl(var(--brand-danger)/0.08)] text-[hsl(var(--brand-danger))]"
                 : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-danger)/0.5)]"
@@ -196,7 +196,7 @@ function Diagram({ handshake }: { handshake: Handshake }) {
         className="mt-5 overflow-x-auto rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.72)] p-4"
         data-testid={`handshake-${handshake.slug}-diagram`}
       >
-        <div className="flex items-baseline justify-between font-techno text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+        <div className="flex items-baseline justify-between font-techno text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
           <span>{handshake.client}</span>
           <span aria-live="polite" className="text-[hsl(var(--brand-signal))]">
             {playing ? "running" : broken ? `stopped at step ${broken.stopsAt}` : "complete"}
@@ -227,30 +227,30 @@ function Diagram({ handshake }: { handshake: Handshake }) {
                   }`}
                 >
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                       {String(step.n).padStart(2, "0")}
                     </span>
                     <span
                       aria-hidden="true"
-                      className={`font-mono-tight text-[13px] ${
+                      className={`font-mono-tight text-[0.8125rem] ${
                         failing ? "text-[hsl(var(--brand-danger))]" : "text-[hsl(var(--brand-signal))]"
                       }`}
                     >
                       {rightward ? "───▶" : "◀───"}
                     </span>
-                    <span className="font-mono-tight text-[13.5px] text-[hsl(var(--brand-bone))]">
+                    <span className="font-mono-tight text-[0.84375rem] text-[hsl(var(--brand-bone))]">
                       {step.label}
                     </span>
                     {step.sameFlight ? (
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
                         same flight
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1.5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <p className="mt-1.5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {step.detail}
                   </p>
-                  <p className="mt-1.5 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <p className="mt-1.5 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     {step.carries.join(" · ")}
                   </p>
                 </div>
@@ -265,19 +265,19 @@ function Diagram({ handshake }: { handshake: Handshake }) {
           className="mt-4 rounded-2xl border border-[hsl(var(--brand-danger)/0.4)] bg-[hsl(var(--brand-danger)/0.05)] p-5"
           data-testid={`handshake-${handshake.slug}-verdict`}
         >
-          <h3 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-danger))]">
+          <h3 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-danger))]">
             · Stops at step {broken.stopsAt} of {handshake.steps.length}
           </h3>
-          <p className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone))]">
+          <p className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone))]">
             {broken.symptom}
           </p>
-          <p className="mt-2 font-mono-tight text-[12px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+          <p className="mt-2 font-mono-tight text-[0.75rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
             Fixed by {OWNER_LABEL[broken.owner] ?? broken.owner}
           </p>
           {broken.explain.map((paragraph, index) => (
             <p
               key={index}
-              className="mt-3 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
             >
               {paragraph}
             </p>
@@ -288,7 +288,7 @@ function Diagram({ handshake }: { handshake: Handshake }) {
           {handshake.notes.map((note, index) => (
             <p
               key={index}
-              className="mt-3 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))] first:mt-0"
+              className="mt-3 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))] first:mt-0"
             >
               {note}
             </p>

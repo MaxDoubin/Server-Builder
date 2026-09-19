@@ -83,7 +83,7 @@ export function CinematicRoute() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {TABLES.length} tables
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -110,7 +110,7 @@ export function CinematicRoute() {
                 onClick={() => choose(item)}
                 aria-pressed={table.slug === item.slug}
                 data-testid={`table-${item.slug}`}
-                className={`rounded-full border px-4 py-2 font-mono-tight text-[11.5px] transition-colors ${
+                className={`rounded-full border px-4 py-2 font-mono-tight text-[0.71875rem] transition-colors ${
                   table.slug === item.slug
                     ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -122,7 +122,7 @@ export function CinematicRoute() {
           </div>
 
           <section className="mt-6 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6">
-            <p className="font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]" data-testid="table-brief">
+            <p className="font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]" data-testid="table-brief">
               {table.brief}
             </p>
 
@@ -137,7 +137,7 @@ export function CinematicRoute() {
                       <th
                         key={head}
                         scope="col"
-                        className="px-3 py-2 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                        className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                       >
                         {head}
                       </th>
@@ -164,32 +164,32 @@ export function CinematicRoute() {
                                 : "opacity-50"
                         }`}
                       >
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[12px] text-[hsl(var(--brand-bone))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-bone))]">
                           {prefixOf(route)}
                           {wins ? (
-                            <span className="ml-2 font-techno text-[9px] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                            <span className="ml-2 font-techno text-[0.5625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                               wins
                             </span>
                           ) : null}
                           {naiveOnly ? (
-                            <span className="ml-2 font-techno text-[9px] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
+                            <span className="ml-2 font-techno text-[0.5625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
                               first match
                             </span>
                           ) : null}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-ash))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-ash))]">
                           {range.addresses.toLocaleString()}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11.5px] text-[hsl(var(--brand-bone-dim))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-bone-dim))]">
                           {route.nextHop ?? (route.iface === "null0" ? "discard" : "on-link")}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11.5px] text-[hsl(var(--brand-cyan))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-cyan))]">
                           {route.iface}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">
                           {PROTOCOL_LABEL[route.protocol]}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-ash))]">
+                        <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-ash))]">
                           {route.distance} / {route.metric}
                         </td>
                       </tr>
@@ -201,7 +201,7 @@ export function CinematicRoute() {
 
             <div className="mt-6 flex flex-wrap items-end gap-3">
               <label className="flex-1 basis-[220px]">
-                <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   Destination
                 </span>
                 <input
@@ -212,7 +212,7 @@ export function CinematicRoute() {
                   data-testid="destination"
                   aria-label="Destination address"
                   aria-invalid={!valid}
-                  className={`mt-2 w-full rounded-full border bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-2 font-mono-tight text-[13px] tabular-nums text-[hsl(var(--brand-bone))] focus-visible:outline-none ${
+                  className={`mt-2 w-full rounded-full border bg-[hsl(var(--brand-obsidian)/0.6)] px-4 py-2 font-mono-tight text-[0.8125rem] tabular-nums text-[hsl(var(--brand-bone))] focus-visible:outline-none ${
                     valid ? "border-[hsl(var(--brand-iron))]" : "border-[hsl(var(--brand-amber)/0.7)]"
                   }`}
                 />
@@ -224,7 +224,7 @@ export function CinematicRoute() {
                   onClick={() => setDestination(item.destination)}
                   aria-pressed={destination === item.destination}
                   data-testid={`probe-${item.destination}`}
-                  className={`rounded-full border px-3.5 py-2 font-mono-tight text-[11.5px] tabular-nums transition-colors ${
+                  className={`rounded-full border px-3.5 py-2 font-mono-tight text-[0.71875rem] tabular-nums transition-colors ${
                     destination === item.destination
                       ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                       : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -237,7 +237,7 @@ export function CinematicRoute() {
 
             {!valid ? (
               <p
-                className="mt-5 border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                className="mt-5 border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 data-testid="invalid"
               >
                 That is not an IPv4 address. Four numbers, each 0 to 255, separated by dots.
@@ -246,10 +246,10 @@ export function CinematicRoute() {
               <>
                 <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2" data-testid="answers">
                   <div className="rounded-xl border border-[hsl(var(--brand-signal)/0.5)] bg-[hsl(var(--brand-signal)/0.06)] p-4">
-                    <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                       · Longest prefix, what a router does
                     </p>
-                    <p className="mt-2 font-mono-tight text-[14px] text-[hsl(var(--brand-bone))]" data-testid="answer-router">
+                    <p className="mt-2 font-mono-tight text-[0.875rem] text-[hsl(var(--brand-bone))]" data-testid="answer-router">
                       {result.winner === null ? "unreachable" : prefixOf(table.routes[result.winner])}
                       {result.winner !== null ? (
                         <span className="text-[hsl(var(--brand-ash))]">
@@ -258,7 +258,7 @@ export function CinematicRoute() {
                         </span>
                       ) : null}
                     </p>
-                    <p className="mt-2 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <p className="mt-2 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       {DECIDED[result.decidedBy]}
                     </p>
                   </div>
@@ -269,13 +269,13 @@ export function CinematicRoute() {
                         : "border-[hsl(var(--brand-iron))]"
                     }`}
                   >
-                    <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · First match, what the habit says
                     </p>
-                    <p className="mt-2 font-mono-tight text-[14px] text-[hsl(var(--brand-bone))]" data-testid="answer-naive">
+                    <p className="mt-2 font-mono-tight text-[0.875rem] text-[hsl(var(--brand-bone))]" data-testid="answer-naive">
                       {naive === null ? "no match" : prefixOf(table.routes[naive])}
                     </p>
-                    <p className="mt-2 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <p className="mt-2 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       {disagree
                         ? "Different. Reading this table top to bottom sends the packet somewhere else entirely."
                         : "Same answer here, which is why the habit survives: it is right often enough to feel reliable."}
@@ -285,10 +285,10 @@ export function CinematicRoute() {
 
                 {probe ? (
                   <p
-                    className="mt-5 border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                    className="mt-5 border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                     data-testid="why"
                   >
-                    <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                       Why ·{" "}
                     </span>
                     {probe.why}
@@ -297,14 +297,14 @@ export function CinematicRoute() {
 
                 {result.candidates.length > 1 ? (
                   <div className="mt-5" data-testid="order">
-                    <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · Consulted in this order
                     </p>
                     <ol className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                       {result.candidates.map((index, position) => (
                         <li
                           key={index}
-                          className={`font-mono-tight text-[12px] tabular-nums ${
+                          className={`font-mono-tight text-[0.75rem] tabular-nums ${
                             position === 0 ? "text-[hsl(var(--brand-bone))]" : "text-[hsl(var(--brand-ash))]"
                           }`}
                         >
@@ -313,7 +313,7 @@ export function CinematicRoute() {
                         </li>
                       ))}
                     </ol>
-                    <p className="mt-2 font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <p className="mt-2 font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       Longest first, then by distance, then by metric. Nothing about where they
                       appear in the table above matters.
                     </p>
@@ -326,12 +326,12 @@ export function CinematicRoute() {
 
           <ReadAboutThis href="/route" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             One simplification: where two routes tie on everything, a real router installs both and
             hashes flows across them. This picks the first, and the one table here that reaches
             that case says so.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The rule this contrasts with is at{" "}
             <Link
               href="/firewall"

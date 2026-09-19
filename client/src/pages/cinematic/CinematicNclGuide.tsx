@@ -59,7 +59,7 @@ export function CinematicNclGuide() {
             </p>
             <Link
               href="/ncl"
-              className="mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               All NCL guides
             </Link>
@@ -80,14 +80,14 @@ export function CinematicNclGuide() {
             <Link
               href="/ncl"
               data-testid="link-ncl-index"
-              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All NCL guides
             </Link>
           </nav>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · NCL Category · Guide {guide.order} of {NCL_GUIDES.length}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.25rem,5vw,3.75rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -124,7 +124,7 @@ export function CinematicNclGuide() {
                   <div className="font-mono-tight text-sm font-medium text-[hsl(var(--brand-signal))]">
                     {tool.name}
                   </div>
-                  <p className="mt-1.5 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <p className="mt-1.5 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {tool.use}
                   </p>
                 </div>
@@ -134,13 +134,13 @@ export function CinematicNclGuide() {
 
           <Section title="Worked example" eyebrow="04">
             <div className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.4)] p-5 backdrop-blur-sm md:p-6">
-              <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                 · Scenario
               </div>
               <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone))]">
                 {guide.walkthrough.scenario}
               </p>
-              <p className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+              <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                 Invented for teaching. No real NCL question is reproduced.
               </p>
 
@@ -151,7 +151,7 @@ export function CinematicNclGuide() {
               </ol>
 
               <div className="mt-6 rounded-xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.06)] p-4">
-                <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                   · Answer
                 </div>
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone))]">
@@ -192,7 +192,7 @@ export function CinematicNclGuide() {
                       <span className="font-mono-tight text-sm font-medium text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
                         {r.label}
                       </span>
-                      <span className="mt-1 block font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                      <span className="mt-1 block font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                         {r.detail}
                       </span>
                     </span>
@@ -212,13 +212,13 @@ export function CinematicNclGuide() {
           <div className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-[hsl(var(--brand-iron))] pt-8">
             <Link
               href="/ncl"
-              className="inline-flex min-h-[44px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[44px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All guides
             </Link>
             <Link
               href={`/ncl/${nextGuide.slug}`}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Next: {nextGuide.category} →
             </Link>
@@ -241,7 +241,7 @@ function Section({
   return (
     <section className="mt-14">
       <div className="flex items-baseline gap-3">
-        <span className="font-mono-tight text-[11px] tracking-[0.2em] text-[hsl(var(--brand-signal))]">
+        <span className="font-mono-tight text-[0.6875rem] tracking-[0.2em] text-[hsl(var(--brand-signal))]">
           {eyebrow}
         </span>
         <h2 className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-[1.75rem]">
@@ -260,14 +260,14 @@ function WalkStep({ index, step }: { index: number; step: WalkthroughStep }) {
     <li className="relative pl-10">
       <span
         aria-hidden
-        className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full border border-[hsl(var(--brand-signal)/0.5)] font-mono-tight text-[11px] text-[hsl(var(--brand-signal))]"
+        className="absolute left-0 top-0 flex h-7 w-7 items-center justify-center rounded-full border border-[hsl(var(--brand-signal)/0.5)] font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-signal))]"
       >
         {index}
       </span>
       <div className="font-mono-tight text-sm font-medium text-[hsl(var(--brand-bone))]">
         {step.label}
       </div>
-      <p className="mt-1.5 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+      <p className="mt-1.5 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
         {step.detail}
       </p>
       {step.code ? (

@@ -136,7 +136,7 @@ export function PostPreviewLink({
             align === "right" ? "right-0" : "left-0"
           }`}
         >
-          <div className="flex flex-wrap items-center gap-2 font-mono-tight text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
+          <div className="flex flex-wrap items-center gap-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
             <time dateTime={post.date}>
               {formatPostDate(post.date)}
             </time>
@@ -151,10 +151,10 @@ export function PostPreviewLink({
           >
             {post.title}
           </div>
-          <p className="mt-2 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+          <p className="mt-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             {post.excerpt}
           </p>
-          <p className="mt-3 font-mono-tight text-[9px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+          <p className="mt-3 font-mono-tight text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
             Esc to dismiss
           </p>
         </div>

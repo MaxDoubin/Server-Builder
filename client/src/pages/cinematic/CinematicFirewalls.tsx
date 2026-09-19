@@ -43,7 +43,7 @@ export function CinematicFirewalls() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · First match wins
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -62,7 +62,7 @@ export function CinematicFirewalls() {
             </p>
           </header>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
             <span>
               {EXERCISES.length} {pluralise(EXERCISES.length, "exercise")}
             </span>
@@ -71,7 +71,7 @@ export function CinematicFirewalls() {
 
           {groups.map((group) => (
             <section key={group.difficulty} className="mt-11">
-              <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · {group.difficulty}
               </h2>
               <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -86,14 +86,14 @@ export function CinematicFirewalls() {
             </section>
           ))}
 
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Each exercise is marked by behaviour, not by shape. The checklist is a set of packets
             and the verdicts they should get, so any chain that produces them is correct, including
             one shorter than mine. CI replays a working solution for every exercise on every push,
             and also checks that the starting ruleset fails, because an exercise that is accidentally
             already correct would sit there passing forever.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the packets themselves rather than the rules that stop them, the{" "}
             <Link
               href="/capture"
@@ -127,10 +127,10 @@ function ExerciseCard({ exercise, solved }: { exercise: Exercise; solved: boolea
         <span className="font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
           {exercise.title}
         </span>
-        <span className="mt-2 flex-1 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+        <span className="mt-2 flex-1 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
           {exercise.tagline}
         </span>
-        <span className="mt-4 flex items-center gap-4 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <span className="mt-4 flex items-center gap-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           <span>
             {exercise.expectations.length} {pluralise(exercise.expectations.length, "packet")}
           </span>

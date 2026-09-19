@@ -383,7 +383,7 @@ export function HashIdentifier() {
           />
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               Try
             </span>
             {EXAMPLES.map((ex) => (
@@ -391,7 +391,7 @@ export function HashIdentifier() {
                 key={ex.label}
                 type="button"
                 onClick={() => setValue(ex.value)}
-                className="inline-flex min-h-[28px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                className="inline-flex min-h-[28px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
               >
                 {ex.label}
               </button>
@@ -401,7 +401,7 @@ export function HashIdentifier() {
           {trimmed ? (
             <dl className="mt-5 border-t border-[hsl(var(--brand-iron)/0.6)] pt-4">
               <div className="flex justify-between gap-4 py-1">
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                   Length
                 </dt>
                 <dd className="font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -410,7 +410,7 @@ export function HashIdentifier() {
                 </dd>
               </div>
               <div className="flex justify-between gap-4 py-1">
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                   Alphabet
                 </dt>
                 <dd className="font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -454,7 +454,7 @@ export function HashIdentifier() {
                           {c.name}
                         </span>
                         <span
-                          className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 font-mono-tight text-[9px] uppercase tracking-[0.2em] ${CONFIDENCE_STYLE[c.confidence]}`}
+                          className={`inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] ${CONFIDENCE_STYLE[c.confidence]}`}
                         >
                           {c.confidence} confidence
                         </span>
@@ -466,7 +466,7 @@ export function HashIdentifier() {
                         <div className="mt-2.5 flex flex-wrap items-center gap-2">
                           {c.hashcat ? (
                             <>
-                              <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                              <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                                 hashcat -m {c.hashcat}
                               </span>
                               <CopyButton
@@ -476,7 +476,7 @@ export function HashIdentifier() {
                             </>
                           ) : null}
                           {c.john ? (
-                            <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                               john --format={c.john}
                             </span>
                           ) : null}

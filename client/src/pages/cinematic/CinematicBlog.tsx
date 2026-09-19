@@ -204,7 +204,7 @@ export function CinematicBlog() {
           {/* Header wrapped in ScrollReveal with fadeLeft */}
           <ScrollReveal variants={fadeLeft} delay={0.1}>
             <div ref={headerRef} className="max-w-[64ch]">
-              <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+              <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
                 <ScrambleText
                   text="· Journal · Field Notes"
                   scrambleDuration={1.5}
@@ -258,7 +258,7 @@ export function CinematicBlog() {
                   type="button"
                   onClick={openRandomPost}
                   data-testid="button-random-post"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   <span
                     aria-hidden
@@ -270,14 +270,14 @@ export function CinematicBlog() {
                 <Link
                   href="/paths"
                   data-testid="link-reading-paths"
-                  className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Paths
                 </Link>
                 <Link
                   href="/archive"
                   data-testid="link-archive"
-                  className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                  className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Archive
                 </Link>
@@ -294,7 +294,7 @@ export function CinematicBlog() {
               data-print-hide
               className="mt-10 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
             >
-              <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <span className="mr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 tag ·
               </span>
               <motion.button
@@ -302,7 +302,7 @@ export function CinematicBlog() {
                 data-testid="button-tag-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+                className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors ${
                   !activeTag
                     ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
@@ -325,7 +325,7 @@ export function CinematicBlog() {
                     data-testid={`button-tag-${tag}`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+                    className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors ${
                       active
                         ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
                         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
@@ -346,12 +346,12 @@ export function CinematicBlog() {
                   type="button"
                   data-testid="button-show-all-tags"
                   onClick={() => setShowAllTags(true)}
-                  className="inline-flex h-9 items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"
+                  className="inline-flex h-9 items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"
                 >
                   + {rankedTags.length - visibleTags.length} more
                 </button>
               )}
-              <span className="ml-auto font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <span className="ml-auto font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 <AnimatedGradientText>
                   {filteredPosts.length.toString().padStart(2, "0")} · post
                   {filteredPosts.length === 1 ? "" : "s"}
@@ -366,7 +366,7 @@ export function CinematicBlog() {
             data-print-hide
             className="mt-4 flex flex-wrap items-center gap-2 border-b border-[hsl(var(--brand-iron))] pb-4"
           >
-            <span className="mr-4 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+            <span className="mr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
               level ·
             </span>
             <button
@@ -374,7 +374,7 @@ export function CinematicBlog() {
               onClick={() => setActiveDifficulty(null)}
               data-testid="button-difficulty-all"
               aria-pressed={activeDifficulty === null}
-              className={`inline-flex h-9 items-center rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+              className={`inline-flex h-9 items-center rounded-full border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors ${
                 activeDifficulty === null
                   ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
                   : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
@@ -391,7 +391,7 @@ export function CinematicBlog() {
                   onClick={() => setActiveDifficulty(active ? null : level)}
                   data-testid={`button-difficulty-${level}`}
                   aria-pressed={active}
-                  className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors ${
+                  className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors ${
                     active
                       ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/.12)] text-[hsl(var(--brand-bone))]"
                       : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-bone))] hover:text-[hsl(var(--brand-bone))]"
@@ -401,7 +401,7 @@ export function CinematicBlog() {
                 </button>
               );
             })}
-            <span className="ml-auto font-mono-tight text-[10px] normal-case tracking-[0.12em] text-[hsl(var(--brand-ash))]">
+            <span className="ml-auto font-mono-tight text-[0.625rem] normal-case tracking-[0.12em] text-[hsl(var(--brand-ash))]">
               derived from tags and length
             </span>
           </div>
@@ -462,7 +462,7 @@ export function CinematicBlog() {
                                   "linear-gradient(90deg, transparent 60%, hsl(var(--brand-obsidian)) 100%)",
                               }}
                             />
-                            <div className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]">
+                            <div className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]">
                               <span
                                 className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
                                 style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
@@ -472,7 +472,7 @@ export function CinematicBlog() {
                           </div>
 
                           <div className="flex flex-col justify-center p-6">
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                               <time dateTime={post.date}>
                                 {formatPostDate(post.date)}
                               </time>
@@ -492,7 +492,7 @@ export function CinematicBlog() {
                               {post.tags.map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.4)] px-2 py-0.5 font-mono-tight text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
+                                  className="rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.4)] px-2 py-0.5 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
                                 >
                                   {tag}
                                 </span>
@@ -520,14 +520,14 @@ export function CinematicBlog() {
                 data-print-hide
                 data-testid="button-load-more-posts"
                 onClick={() => setVisible((v) => v + PAGE)}
-                className="group inline-flex items-center gap-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.6)] px-8 py-3 font-mono-tight text-[11px] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone-dim))] backdrop-blur-md transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"
+                className="group inline-flex items-center gap-3 border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.6)] px-8 py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-bone-dim))] backdrop-blur-md transition-colors hover:border-[hsl(var(--brand-signal)/.5)] hover:text-[hsl(var(--brand-bone))] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-signal))]"
               >
                 Load more
                 <span className="text-[hsl(var(--brand-signal))]">
                   {remaining.toString().padStart(2, "0")}
                 </span>
               </button>
-              <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                 Showing {shownPosts.length} of {filteredPosts.length}
               </div>
             </div>
@@ -542,7 +542,7 @@ export function CinematicBlog() {
                 <div className="font-display text-2xl text-[hsl(var(--brand-bone))]">
                   {searching ? "Nothing matches that." : "No posts with that tag."}
                 </div>
-                <div className="mt-3 font-mono-tight text-[11px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                <div className="mt-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                   {searching
                     ? "try fewer words, or clear the filters"
                     : "try a different filter"}

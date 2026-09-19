@@ -364,7 +364,7 @@ function SegmentPanel({ title, part, testId }: { title: string; part: Part; test
             {part.text}
           </pre>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               {part.raw.length} chars encoded
             </span>
             <CopyButton value={part.text} label={`Copy the ${title.toLowerCase()} JSON`} />
@@ -442,7 +442,7 @@ export function JwtDecoder() {
           )}
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               Try
             </span>
             {EXAMPLES.map((example) => (
@@ -451,7 +451,7 @@ export function JwtDecoder() {
                 type="button"
                 onClick={() => setRaw(example.token)}
                 data-testid={`button-example-${example.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 {example.label}
               </button>
@@ -461,7 +461,7 @@ export function JwtDecoder() {
                 type="button"
                 onClick={() => setRaw("")}
                 data-testid="button-clear"
-                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Clear
               </button>
@@ -470,7 +470,7 @@ export function JwtDecoder() {
         </ToolPanel>
 
         <div className="rounded-2xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.07)] p-5">
-          <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+          <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
             The signature is not verified
           </div>
           <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -538,11 +538,11 @@ export function JwtDecoder() {
                   type="button"
                   onClick={() => setNowTick(Date.now())}
                   data-testid="button-recheck"
-                  className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   <span aria-hidden>↻</span> Re-check the clock
                 </button>
-                <p className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                <p className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                   Compared against {localString(nowTick)} local
                 </p>
               </ToolPanel>
@@ -556,19 +556,19 @@ export function JwtDecoder() {
                       <tr className="border-b border-[hsl(var(--brand-iron))]">
                         <th
                           scope="col"
-                          className="py-2 pr-4 font-mono-tight text-[10px] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                          className="py-2 pr-4 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                         >
                           Claim
                         </th>
                         <th
                           scope="col"
-                          className="py-2 pr-4 font-mono-tight text-[10px] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                          className="py-2 pr-4 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                         >
                           Value
                         </th>
                         <th
                           scope="col"
-                          className="py-2 font-mono-tight text-[10px] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                          className="py-2 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                         >
                           What it means
                         </th>

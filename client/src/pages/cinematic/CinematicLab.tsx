@@ -81,13 +81,13 @@ function LabView({ lab }: { lab: Lab }) {
         <div className="mx-auto max-w-[900px]">
           <Link
             href="/labs"
-            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
           >
             ← All labs
           </Link>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Lab · {lab.difficulty}
             </div>
             <h1 className="mt-4 font-display text-[clamp(1.8rem,4.5vw,3rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))]">
@@ -96,13 +96,13 @@ function LabView({ lab }: { lab: Lab }) {
           </header>
 
           <div className="mt-7 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · The brief
             </h2>
             {lab.brief.map((paragraph, index) => (
               <p
                 key={index}
-                className="mt-4 font-mono-tight text-[14px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 font-mono-tight text-[0.875rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
               >
                 {paragraph}
               </p>
@@ -123,18 +123,18 @@ function LabView({ lab }: { lab: Lab }) {
               type="button"
               onClick={check}
               data-testid="button-check"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Check
             </button>
             <button
               type="button"
               onClick={restart}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
             >
               Restart the machine
             </button>
-            <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               {commandCount} command{commandCount === 1 ? "" : "s"} run
             </span>
           </div>
@@ -142,7 +142,7 @@ function LabView({ lab }: { lab: Lab }) {
           <div aria-live="polite">
             {checked === false ? (
               <p
-                className="mt-4 rounded-xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.07)] px-4 py-3 font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 rounded-xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.07)] px-4 py-3 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))]"
                 data-testid="check-not-yet"
               >
                 Not yet. Nothing is scored, so try something else, or open a hint.
@@ -153,13 +153,13 @@ function LabView({ lab }: { lab: Lab }) {
                 className="mt-6 rounded-2xl border border-[hsl(var(--brand-signal)/0.5)] bg-[hsl(var(--brand-signal)/0.06)] p-6"
                 data-testid="check-solved"
               >
-                <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · Solved
                 </h2>
                 {lab.debrief.map((paragraph, index) => (
                   <p
                     key={index}
-                    className="mt-4 font-mono-tight text-[14px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                    className="mt-4 font-mono-tight text-[0.875rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
                   >
                     {paragraph}
                   </p>
@@ -169,14 +169,14 @@ function LabView({ lab }: { lab: Lab }) {
           </div>
 
           <section className="mt-10">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Hints, {hintsOpen} of {lab.hints.length} open
             </h2>
             <ol className="mt-4 space-y-3">
               {lab.hints.slice(0, hintsOpen).map((hint, index) => (
                 <li
                   key={index}
-                  className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-3 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 >
                   {hint}
                 </li>
@@ -187,7 +187,7 @@ function LabView({ lab }: { lab: Lab }) {
                 type="button"
                 onClick={() => setHintsOpen((n) => n + 1)}
                 data-testid="button-hint"
-                className="mt-4 inline-flex min-h-[36px] items-center font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                className="mt-4 inline-flex min-h-[36px] items-center font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
               >
                 Open hint {hintsOpen + 1}
               </button>
@@ -196,7 +196,7 @@ function LabView({ lab }: { lab: Lab }) {
 
           {lab.reading?.length ? (
             <section className="mt-10">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · The written version
               </h2>
               <ul className="mt-4 space-y-2">
@@ -204,7 +204,7 @@ function LabView({ lab }: { lab: Lab }) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
+                      className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
                     >
                       {link.label}
                     </Link>

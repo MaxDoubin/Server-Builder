@@ -132,7 +132,7 @@ export function CinematicKeepalive() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} connections, three timers
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.2rem,5.2vw,4rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -167,17 +167,17 @@ export function CinematicKeepalive() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {label(item.setup.idleSeconds)} idle ·{" "}
                       {item.setup.soKeepalive ? "SO_KEEPALIVE" : "no keepalive"}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -190,7 +190,7 @@ export function CinematicKeepalive() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="keepalive-brief"
             >
               {active.brief}
@@ -200,7 +200,7 @@ export function CinematicKeepalive() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="keepalive-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ ss -tino
 ${asSs(setup)}
 
@@ -214,7 +214,7 @@ ${asMiddlebox(setup)}`}
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -228,7 +228,7 @@ ${asMiddlebox(setup)}`}
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`keepalive-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -246,7 +246,7 @@ ${asMiddlebox(setup)}`}
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="keepalive-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."}{" "}
                   {out.forgottenAt === null
                     ? `Nothing in the path forgets the flow: ${box.label} holds it for the whole idle period.`
@@ -265,18 +265,18 @@ ${asMiddlebox(setup)}`}
                   data-testid="keepalive-timeline"
                 >
                   {/* what goes on the wire */}
-                  <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     · on the wire
                   </p>
                   <div className="relative mt-1.5 h-5 w-full rounded-[3px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))]">
                     {gap === null ? (
-                      <span className="absolute inset-0 flex items-center pl-2 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                      <span className="absolute inset-0 flex items-center pl-2 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                         nothing, for the whole {label(setup.idleSeconds)}
                       </span>
                     ) : crowded ? (
                       <span
                         data-testid="keepalive-wire-dense"
-                        className="absolute inset-y-0 left-0 right-0 flex items-center pl-2 font-mono-tight text-[10px] text-[hsl(var(--brand-cyan))]"
+                        className="absolute inset-y-0 left-0 right-0 flex items-center pl-2 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-cyan))]"
                         style={{
                           backgroundImage:
                             "repeating-linear-gradient(90deg, hsl(var(--brand-cyan)/0.5) 0 1px, transparent 1px 7px)",
@@ -299,7 +299,7 @@ ${asMiddlebox(setup)}`}
                       ))
                     )}
                   </div>
-                  <p className="mt-0.5 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-0.5 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.85)]">
                     {gap === null
                       ? "No keepalive and no heartbeat, so the middlebox sees nothing to refresh its row with."
                       : !crowded && ticks.length === 0
@@ -312,7 +312,7 @@ ${asMiddlebox(setup)}`}
                   </p>
 
                   {/* the middlebox's row */}
-                  <p className="mt-4 font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <p className="mt-4 font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     · the row in {box.label}
                   </p>
                   <div className="relative mt-1.5 h-5 w-full overflow-hidden rounded-[3px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))]">
@@ -328,7 +328,7 @@ ${asMiddlebox(setup)}`}
                       />
                     ) : null}
                   </div>
-                  <p className="mt-0.5 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-0.5 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.85)]">
                     {box.setting}: {box.idleTimeout} s.{" "}
                     {out.forgottenAt === null
                       ? "Something arrives before it runs out, every time, so the row is never deleted."
@@ -336,7 +336,7 @@ ${asMiddlebox(setup)}`}
                   </p>
 
                   {/* the application */}
-                  <p className="mt-4 font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <p className="mt-4 font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     · the application
                   </p>
                   <div className="relative mt-1.5 h-5 w-full overflow-hidden rounded-[3px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))]">
@@ -362,14 +362,14 @@ ${asMiddlebox(setup)}`}
                       />
                     ) : null}
                   </div>
-                  <p className="mt-0.5 font-mono-tight text-[10.5px] text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-0.5 font-mono-tight text-[0.65625rem] text-[hsl(var(--brand-ash)/0.85)]">
                     The white mark is the next write, at {setup.idleSeconds} s.{" "}
                     {out.noticedAt === null
                       ? "It is delivered, and nothing else happens."
                       : `The red mark is ${out.noticedBy}, at ${out.noticedAt} s. The shaded stretch is the time this connection looked fine and was not.`}
                   </p>
 
-                  <div className="mt-3 flex justify-between font-mono-tight text-[10px] text-[hsl(var(--brand-ash)/0.7)]">
+                  <div className="mt-3 flex justify-between font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash)/0.7)]">
                     <span>0</span>
                     <span>{label(span / 2)}</span>
                     <span>{label(span)}</span>
@@ -395,34 +395,34 @@ ${asMiddlebox(setup)}`}
                     ],
                   ].map(([name, value, note]) => (
                     <div key={name} className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                      <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         · {name}
                       </p>
                       <p className="mt-2 font-display text-xl text-[hsl(var(--brand-bone))]">{value}</p>
-                      <p className="mt-1 font-mono-tight text-[10.5px] leading-snug text-[hsl(var(--brand-ash))]">
+                      <p className="mt-1 font-mono-tight text-[0.65625rem] leading-snug text-[hsl(var(--brand-ash))]">
                         {note}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="keepalive-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -431,13 +431,13 @@ ${asMiddlebox(setup)}`}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="keepalive-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the three timers use is above, including the two fields that decide
                 most of these: whether ss prints a keepalive timer for this socket at all, and
                 what the device in the path does with a flow it has forgotten. The timeline is
@@ -447,14 +447,14 @@ ${asMiddlebox(setup)}`}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="keepalive-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} connections`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI holds the model against the figures its sources print: 924.6 seconds for
             tcp_retries2 at 15, 7875 for keepalive at 7200 with nine probes at 75, and 432000,
             1200, 350, 300 and 240 for the five devices in the set. It also asserts the
@@ -463,7 +463,7 @@ ${asMiddlebox(setup)}`}
             cannot affect that socket, and a model that got that backwards would still produce
             internally consistent numbers.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For what the same conntrack table does to a reply that never comes back,{" "}
             <Link
               href="/nat"
@@ -483,7 +483,7 @@ ${asMiddlebox(setup)}`}
 
           <ReadAboutThis href="/keepalive" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

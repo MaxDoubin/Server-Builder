@@ -454,7 +454,7 @@ export function PacketHeaders() {
                   tabRefs.current[index] = node;
                 }}
                 onClick={() => switchProtocol(protocol)}
-                className={`inline-flex min-h-[44px] items-center rounded-full border px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                className={`inline-flex min-h-[44px] items-center rounded-full border px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                   isActive
                     ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] text-[hsl(var(--brand-obsidian))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] hover:border-[hsl(var(--brand-signal)/0.6)]"
@@ -485,7 +485,7 @@ export function PacketHeaders() {
                   {Array.from({ length: 32 }, (_, i) => (
                     <span
                       key={i}
-                      className="text-center font-mono-tight text-[9px] leading-none text-[hsl(var(--brand-iron))]"
+                      className="text-center font-mono-tight text-[0.5625rem] leading-none text-[hsl(var(--brand-iron))]"
                     >
                       {i % 4 === 0 ? i : "·"}
                     </span>
@@ -520,7 +520,7 @@ export function PacketHeaders() {
                             title={`${field.name} · bit ${field.offset} · ${field.width === 0 ? "variable" : `${field.width} bits`}`}
                             aria-label={`${field.name}, bit offset ${field.offset}, ${field.width === 0 ? "variable width" : `${field.width} bits wide`}`}
                             style={{ gridColumn: `span ${span} / span ${span}` }}
-                            className={`min-h-[44px] overflow-hidden rounded-md border px-1 font-mono-tight text-[10px] leading-tight transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                            className={`min-h-[44px] overflow-hidden rounded-md border px-1 font-mono-tight text-[0.625rem] leading-tight transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
                               isSelected
                                 ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.22)] text-[hsl(var(--brand-bone))]"
                                 : "border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-carbon))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
@@ -531,7 +531,7 @@ export function PacketHeaders() {
                               {field.short ?? field.name}
                             </span>
                             {field.width === 0 || field.width >= 8 ? (
-                              <span className="block truncate text-[9px] text-[hsl(var(--brand-ash))]">
+                              <span className="block truncate text-[0.5625rem] text-[hsl(var(--brand-ash))]">
                                 {field.width === 0 ? "variable length" : `${field.width} bits`}
                               </span>
                             ) : null}
@@ -560,7 +560,7 @@ export function PacketHeaders() {
             </h3>
             <dl className="mt-4 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3">
               <div>
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   Bit offset
                 </dt>
                 <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -568,7 +568,7 @@ export function PacketHeaders() {
                 </dd>
               </div>
               <div>
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   Width
                 </dt>
                 <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -578,7 +578,7 @@ export function PacketHeaders() {
                 </dd>
               </div>
               <div>
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   Starts at
                 </dt>
                 <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">

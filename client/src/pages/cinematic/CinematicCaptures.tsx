@@ -20,7 +20,7 @@ export function CinematicCaptures() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Packet analysis
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -38,7 +38,7 @@ export function CinematicCaptures() {
             </p>
           </header>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
             <span>
               {CAPTURES.length} {pluralise(CAPTURES.length, "capture")}
             </span>
@@ -58,16 +58,16 @@ export function CinematicCaptures() {
                   data-testid={`card-capture-${capture.slug}`}
                   className="flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
-                  <span className="font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                     {capture.difficulty}
                   </span>
                   <span className="mt-2 font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
                     {capture.title}
                   </span>
-                  <span className="mt-2 flex-1 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="mt-2 flex-1 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {capture.tagline}
                   </span>
-                  <span className="mt-4 flex gap-4 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                  <span className="mt-4 flex gap-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                     <span>{capture.packets.length} packets</span>
                     <span>{capture.questions.length} questions</span>
                   </span>
@@ -76,7 +76,7 @@ export function CinematicCaptures() {
             ))}
           </ul>
 
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For a prompt rather than a packet list, the{" "}
             <Link href="/labs" className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline">
               hands-on labs

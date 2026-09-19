@@ -60,7 +60,7 @@ function Trace({ steps, label, testid }: { steps: Step[]; label: string; testid:
   if (steps.length === 0) return null;
   return (
     <div data-testid={testid}>
-      <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">· {label}</p>
+      <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">· {label}</p>
       <ol className="mt-2 space-y-1.5">
         {steps.map((step, at) => {
           const moved = changed(step.packet, at === 0 ? null : steps[at - 1].packet);
@@ -73,8 +73,8 @@ function Trace({ steps, label, testid }: { steps: Step[]; label: string; testid:
               className="rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.45)] px-3 py-2"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <span className="font-mono-tight text-[11.5px] text-[hsl(var(--brand-cyan))]">{step.where}</span>
-                <span className="font-mono-tight text-[12px]">
+                <span className="font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-cyan))]">{step.where}</span>
+                <span className="font-mono-tight text-[0.75rem]">
                   <span className={lit("saddr")}>{step.packet.saddr}</span>
                   <span className="text-[hsl(var(--brand-ash))]">:</span>
                   <span className={lit("sport")}>{step.packet.sport}</span>
@@ -85,7 +85,7 @@ function Trace({ steps, label, testid }: { steps: Step[]; label: string; testid:
                 </span>
               </div>
               {step.note ? (
-                <p className="mt-1 font-mono-tight text-[10.5px] leading-snug text-[hsl(var(--brand-ash))]">
+                <p className="mt-1 font-mono-tight text-[0.65625rem] leading-snug text-[hsl(var(--brand-ash))]">
                   {step.note}
                 </p>
               ) : null}
@@ -149,7 +149,7 @@ export function CinematicNat() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} port forwards
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -184,16 +184,16 @@ export function CinematicNat() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       from {item.from}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -206,7 +206,7 @@ export function CinematicNat() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="nat-brief"
             >
               {active.brief}
@@ -217,7 +217,7 @@ export function CinematicNat() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="nat-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`${active.router.name}
 ${active.router.nics.map((nic) => `  ${nic.name.padEnd(6)} ${nic.address.padEnd(15)} ${nic.network}${isPrivate(nic.address) ? "   (not routable from the internet)" : ""}`).join("\n")}
 ${active.router.upstream ? `  default via ${active.router.upstream}` : "  no default route"}
@@ -236,14 +236,14 @@ ${active.router.rules
               className="mt-3 overflow-x-auto rounded-xl border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.05)] p-4"
               data-testid="nat-packet"
             >
-              <pre className="whitespace-pre font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-bone))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone))]">
 {`${active.from} opens a connection
   ${active.packet.saddr}:${active.packet.sport} -> ${active.packet.daddr}:${active.packet.dport}`}
               </pre>
             </div>
 
             {/* ── the question ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -257,7 +257,7 @@ ${active.router.rules
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`nat-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -275,7 +275,7 @@ ${active.router.rules
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="nat-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} {OUTCOME_LABEL[exchange.outcome]}
                   {exchange.seenBy ? `, and the far end sees the request coming from ${exchange.seenBy}` : ""}.
                 </p>
@@ -286,30 +286,30 @@ ${active.router.rules
                     <Trace steps={exchange.reply} label="the reply, routed separately" testid="reply" />
                   ) : null}
                 </div>
-                <p className="font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                <p className="font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                   A field in amber is one the step above rewrote.
                   {routable
                     ? " The reply is a second column because it is a second packet, routed by the machine that sends it and not by the rule that translated the first one."
                     : " There is no trace to draw past the first line: nothing on the internet can address this router."}
                 </p>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="nat-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     The fix ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -318,13 +318,13 @@ ${active.router.rules
                   type="button"
                   onClick={() => open(active)}
                   data-testid="nat-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything you need is above. The path the packet takes is drawn once you have
                 committed to an answer.
               </p>
@@ -332,7 +332,7 @@ ${active.router.rules
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="nat-progress"
           >
@@ -341,7 +341,7 @@ ${active.router.rules
 
           <ReadAboutThis href="/nat" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

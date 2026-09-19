@@ -110,7 +110,7 @@ export function CinematicLeases() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} networks, one lease each
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -148,18 +148,18 @@ export function CinematicLeases() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       lease {isInfinite(item.setup.lease) ? "infinite" : human(item.setup.lease as number)}
                       {item.setup.outage > 0 ? ` · dark ${human(item.setup.outage)}` : ""}
                       {item.setup.arrivalsPerHour > 0 ? ` · ${item.setup.arrivalsPerHour}/h` : ""}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -172,7 +172,7 @@ export function CinematicLeases() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="leases-brief"
             >
               {active.brief}
@@ -182,7 +182,7 @@ export function CinematicLeases() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="leases-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ cat /var/lib/dhcp/dhclient.leases
 ${asLease(setup)}
 ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "s"} holding leases and renewing normally` : ""}${
@@ -193,7 +193,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -207,7 +207,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`leases-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -225,7 +225,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="leases-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."}{" "}
                   {finite
                     ? `T1 is ${human(t.t1)}, T2 is ${human(t.t2)}, and the lease ends at ${human(t.expiry)}, so a renewing client always holds at least ${human(t.guaranteed)}.`
@@ -241,7 +241,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
                 {/* ── the band, which is the whole argument ── */}
                 {finite ? (
                   <div data-testid="leases-band">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                       <span className="text-[hsl(var(--brand-bone-dim))]">
                         time remaining across the room, at any instant
                       </span>
@@ -269,14 +269,14 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
                           className="absolute inset-y-0 block w-[2px] bg-[hsl(var(--brand-amber))]"
                         />
                       ) : null}
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-2 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-2 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                         0
                       </span>
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-2 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                         {human(t.expiry)}
                       </span>
                     </div>
-                    <p className="mt-1 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-1 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                       The shaded band is where every renewing client sits, spread evenly: never
                       below {human(t.guaranteed)}, never above {human(t.expiry)}.
                       {setup.outage > 0
@@ -293,7 +293,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
                 {/* ── the pool, when there is one ── */}
                 {setup.arrivalsPerHour > 0 ? (
                   <div data-testid="leases-pool">
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                       <span className="text-[hsl(var(--brand-bone-dim))]">addresses wanted against addresses held</span>
                       <span className="text-[hsl(var(--brand-bone))]">
                         {wanted === Infinity ? "every one, for good" : `${wanted} wanted, ${setup.pool} in the pool`}
@@ -316,7 +316,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
                         aria-hidden="true"
                       />
                     </div>
-                    <p className="mt-1 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-1 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                       {wanted === Infinity
                         ? "Nothing is ever returned, so demand has no steady state and the pool empties once and stays empty."
                         : poolUnderPressure(setup)
@@ -328,7 +328,7 @@ ${setup.clients > 0 ? `\n# ${setup.clients} client${setup.clients === 1 ? "" : "
 
                 <div className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
                   <pre
-                    className="whitespace-pre font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                    className="whitespace-pre font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                     data-testid="leases-timeline"
                   >
 {`# one client's lease, from the moment it was granted
@@ -336,23 +336,23 @@ ${asTimeline(setup)}`}
                   </pre>
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="leases-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -361,13 +361,13 @@ ${asTimeline(setup)}`}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="leases-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the answer needs is above: the lease, the two timers as the server set
                 them or left them, the size of the room, and how long the server is away. The band
                 is drawn once you have committed to an answer.
@@ -376,14 +376,14 @@ ${asTimeline(setup)}`}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="leases-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} networks`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI recomputes every population figure by laying the room out and counting clients one
             at a time, and every pool figure by keeping an hourly ledger of addresses out and
             addresses back, so the closed forms on this page are never the only thing that
@@ -391,7 +391,7 @@ ${asTimeline(setup)}`}
             is not modeled is the retransmission schedule inside RENEWING and REBINDING, which
             clients implement differently.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other half of an address that arrives by itself,{" "}
             <Link
               href="/allocate"
@@ -411,7 +411,7 @@ ${asTimeline(setup)}`}
 
           <ReadAboutThis href="/leases" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

@@ -490,7 +490,7 @@ export function CommandPalette() {
         className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite))] shadow-2xl"
       >
         <div className="flex items-center gap-3 border-b border-[hsl(var(--brand-iron))] px-4">
-          <span aria-hidden className="font-techno text-[11px] tracking-[0.3em] text-[hsl(var(--brand-signal))]">
+          <span aria-hidden className="font-techno text-[0.6875rem] tracking-[0.3em] text-[hsl(var(--brand-signal))]">
             ⌘K
           </span>
           <input
@@ -551,7 +551,7 @@ export function CommandPalette() {
                     i === cursor ? "bg-[hsl(var(--brand-iron)/0.55)]" : ""
                   }`}
                 >
-                  <span className="w-[4.5rem] shrink-0 font-techno text-[9px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                  <span className="w-[4.5rem] shrink-0 font-techno text-[0.5625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                     {e.kind}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -559,7 +559,7 @@ export function CommandPalette() {
                       {e.title}
                     </span>
                     {e.detail ? (
-                      <span className="mt-0.5 block truncate font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                      <span className="mt-0.5 block truncate font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                         {e.detail}
                       </span>
                     ) : null}
@@ -570,7 +570,7 @@ export function CommandPalette() {
           </ul>
         )}
 
-        <div className="flex items-center justify-between border-t border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <div className="flex items-center justify-between border-t border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           <span>
             {query.trim() ? `${results.length}${results.length === MAX_SHOWN ? "+" : ""} results` : "Start typing"}
           </span>

@@ -401,7 +401,7 @@ export function EncoderDecoder() {
             onClick={swap}
             data-testid="button-swap"
             aria-label="Swap the input and output formats"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
           >
             <span aria-hidden>⇄</span> Swap
           </button>
@@ -442,7 +442,7 @@ export function EncoderDecoder() {
           />
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <p className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               {converted.bytes.toLocaleString()} byte{converted.bytes === 1 ? "" : "s"} ·{" "}
               {converted.output.length.toLocaleString()} chars out
             </p>

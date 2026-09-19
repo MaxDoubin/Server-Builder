@@ -102,7 +102,7 @@ export function CinematicScenarios() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Incident response
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -122,7 +122,7 @@ export function CinematicScenarios() {
             </p>
           </header>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
             <span>
               {SCENARIOS.length} {pluralise(SCENARIOS.length, "scenario")}
             </span>
@@ -141,7 +141,7 @@ export function CinematicScenarios() {
                 onClick={() => setFilter(option)}
                 aria-pressed={filter === option}
                 data-testid={`filter-${option}`}
-                className={`min-h-[36px] rounded-full border px-4 font-mono-tight text-[11px] uppercase tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                className={`min-h-[36px] rounded-full border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                   filter === option
                     ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-signal))]"
                     : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
@@ -154,10 +154,10 @@ export function CinematicScenarios() {
 
           {shown.map((group) => (
             <section key={group.difficulty} className="mt-12">
-              <h2 className={`font-techno text-[11px] uppercase tracking-[0.4em] ${DIFFICULTY_TONE[group.difficulty]}`}>
+              <h2 className={`font-techno text-[0.6875rem] uppercase tracking-[0.4em] ${DIFFICULTY_TONE[group.difficulty]}`}>
                 · {DIFFICULTY_LABEL[group.difficulty]}
               </h2>
-              <p className="mt-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+              <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                 {DIFFICULTY_BLURB[group.difficulty]}
               </p>
               <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -172,7 +172,7 @@ export function CinematicScenarios() {
               </ul>
             </section>
           ))}
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             If you would rather be at a prompt than making a decision, the{" "}
             <Link
               href="/labs"
@@ -211,16 +211,16 @@ function ScenarioCard({
         data-testid={`card-scenario-${scenario.slug}`}
         className={`flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${accent.ring} ${accent.glow}`}
       >
-        <span className={`font-techno text-[9px] uppercase tracking-[0.32em] ${accent.text}`}>
+        <span className={`font-techno text-[0.5625rem] uppercase tracking-[0.32em] ${accent.text}`}>
           {scenario.category}
         </span>
         <span className="mt-2 font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
           {scenario.title}
         </span>
-        <span className="mt-2 flex-1 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+        <span className="mt-2 flex-1 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
           {scenario.tagline}
         </span>
-        <span className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <span className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           <span>{scenario.endings.length} endings</span>
           <span>{pathCount(scenario).toLocaleString("en-GB")} routes</span>
           {mounted && foundCount > 0 ? (

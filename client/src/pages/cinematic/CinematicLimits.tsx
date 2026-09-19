@@ -166,7 +166,7 @@ export function CinematicLimits() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} processes, five mechanisms
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -202,16 +202,16 @@ export function CinematicLimits() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {item.setup.origin}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -224,7 +224,7 @@ export function CinematicLimits() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="limits-brief"
             >
               {active.brief}
@@ -234,7 +234,7 @@ export function CinematicLimits() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="limits-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`# started by: ${setup.origin}
 # it wants ${limit(setup.wants)} descriptors open at once${setup.raisesItself ? "\n# and it raises its own soft limit to its hard limit at startup" : ""}
 
@@ -247,7 +247,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -261,7 +261,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`limits-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -279,7 +279,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="limits-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} Soft {limit(result.soft)}, hard {limit(result.hard)},
                   set by {SOURCE_LABEL[result.source]}. The highest descriptor it can hold is{" "}
                   {limit(highestFd(setup))}, and asking for {limit(setup.wants)}{" "}
@@ -301,7 +301,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                     >
                       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                         <span
-                          className={`font-mono-tight text-[12.5px] ${
+                          className={`font-mono-tight text-[0.78125rem] ${
                             mechanism.live
                               ? "text-[hsl(var(--brand-bone))]"
                               : "text-[hsl(var(--brand-ash))] line-through decoration-[hsl(var(--brand-ash)/0.5)]"
@@ -310,7 +310,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                           {mechanism.source}
                         </span>
                         <span
-                          className={`font-mono-tight text-[12px] ${
+                          className={`font-mono-tight text-[0.75rem] ${
                             mechanism.live
                               ? "text-[hsl(var(--brand-signal))]"
                               : "text-[hsl(var(--brand-ash)/0.75)]"
@@ -319,7 +319,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                           {mechanism.says}
                         </span>
                       </div>
-                      <p className="mt-0.5 font-mono-tight text-[11px] leading-snug text-[hsl(var(--brand-ash)/0.85)]">
+                      <p className="mt-0.5 font-mono-tight text-[0.6875rem] leading-snug text-[hsl(var(--brand-ash)/0.85)]">
                         {mechanism.because}
                       </p>
                     </li>
@@ -329,24 +329,24 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                 {/* two limits, two headrooms, because they are two problems */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · This process · EMFILE at
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">
                       {limit(result.soft)}
                     </p>
-                    <p className="mt-1 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                    <p className="mt-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                       it wants {limit(setup.wants)}
                     </p>
                   </div>
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · The machine · ENFILE at
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">
                       {limit(setup.fileMax)}
                     </p>
-                    <p className="mt-1 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                    <p className="mt-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                       {limit(openTotal(setup))} would be open
                     </p>
                   </div>
@@ -356,29 +356,29 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                   className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
                   data-testid="limits-proc"
                 >
-                  <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`$ cat /proc/PID/limits | head -1; grep 'Max open files' /proc/PID/limits
 ${asProcLimits(setup)}`}
                   </pre>
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="limits-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     The fix ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -387,13 +387,13 @@ ${asProcLimits(setup)}`}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="limits-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything you need is above: how the process was started, and what all five
                 mechanisms say. Which one was in scope is drawn once you have committed to an
                 answer.
@@ -402,14 +402,14 @@ ${asProcLimits(setup)}`}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="limits-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} processes`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             CI states the precedence as a table of nine origin and configuration pairs and checks
             the model against every one of them, whether or not a case here uses it, so a change
             that made limits.conf apply to a unit fails the build even if nothing on this page
@@ -417,7 +417,7 @@ ${asProcLimits(setup)}`}
             ENFILE into a success, because those are different limits with different files behind
             them.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other limit that runs out at a number nobody expects,{" "}
             <Link
               href="/ports"
@@ -437,7 +437,7 @@ ${asProcLimits(setup)}`}
 
           <ReadAboutThis href="/limits" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

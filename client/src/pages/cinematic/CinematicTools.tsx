@@ -81,7 +81,7 @@ export function CinematicTools() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1100px]">
           <header className="max-w-[62ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Utilities · Free
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -104,7 +104,7 @@ export function CinematicTools() {
           <div data-print-hide className="mt-10 max-w-xl">
             <label
               htmlFor="tools-search"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               Search
             </label>
@@ -120,7 +120,7 @@ export function CinematicTools() {
             <p
               role="status"
               data-testid="text-tools-count"
-              className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+              className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
             >
               {filtered.length} of {TOOLS.length} tools
             </p>
@@ -154,7 +154,7 @@ export function CinematicTools() {
                     >
                       {meta.label}
                     </h2>
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       {tools.length.toString().padStart(2, "0")} ·{" "}
                       {tools.length === 1 ? "tool" : "tools"}
                     </span>
@@ -177,7 +177,7 @@ export function CinematicTools() {
                           <p className="mt-2 flex-1 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                             {tool.blurb}
                           </p>
-                          <span className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                          <span className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                             /tools/{tool.slug}
                           </span>
                         </Link>

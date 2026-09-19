@@ -121,7 +121,7 @@ export function CinematicVlan() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {PATHS.length} frames
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -157,16 +157,16 @@ export function CinematicVlan() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                       {path.hops.length} {pluralise(path.hops.length, "switch")}
                     </span>
                     {mounted && solved.includes(path.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {path.name}
                   </span>
                 </button>
@@ -179,7 +179,7 @@ export function CinematicVlan() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="vlan-brief"
             >
               {active.brief}
@@ -192,16 +192,16 @@ export function CinematicVlan() {
                   key={`${hop.device}-${at}`}
                   className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
                 >
-                  <p className="font-techno text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-cyan))]">
+                  <p className="font-techno text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-cyan))]">
                     {hop.device}
                   </p>
                   {[hop.ingress, hop.egress].map((port, side) => (
                     <div key={port.name} className={side === 0 ? "mt-3" : "mt-3 border-t border-[hsl(var(--brand-iron)/0.6)] pt-3"}>
-                      <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                      <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                         {configOf(port).join("\n")}
                       </pre>
                       {port.note ? (
-                        <p className="mt-1 font-mono-tight text-[10.5px] italic leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                        <p className="mt-1 font-mono-tight text-[0.65625rem] italic leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                           {port.note}
                         </p>
                       ) : null}
@@ -211,13 +211,13 @@ export function CinematicVlan() {
               ))}
             </div>
 
-            <p className="mt-4 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               On the wire: <span className="text-[hsl(var(--brand-bone))]">{active.frame.label}</span>
               {active.frame.tags.length > 0 ? ` (${onWire(active.frame.tags)})` : ""}.
             </p>
 
             {/* ── the question ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -231,7 +231,7 @@ export function CinematicVlan() {
                     onClick={() => answer(option.id)}
                     disabled={answered}
                     data-testid={`vlan-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -249,7 +249,7 @@ export function CinematicVlan() {
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="vlan-verdict" aria-live="polite">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {truth === "dropped"
                     ? `${correct ? "Dropped, yes." : "Not that one. It is dropped."} ${
                         outcome.kind === "dropped"
@@ -261,11 +261,11 @@ export function CinematicVlan() {
 
                 {/* ── the chain, and the rungs between it ── */}
                 <div>
-                  <h4 className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <h4 className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     What each switch decided, and what was on the wire
                   </h4>
                   <ol className="mt-3 space-y-0" data-testid="vlan-chain">
-                    <li className="font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+                    <li className="font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                       the host sends {onWire(active.frame.tags)}
                     </li>
                     {outcome.steps.map((step, index) => {
@@ -284,11 +284,11 @@ export function CinematicVlan() {
                             }`}
                           >
                             <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                              <span className="font-mono-tight text-[12.5px] text-[hsl(var(--brand-cyan))]">
+                              <span className="font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-cyan))]">
                                 {hop.device}
                               </span>
                               <span
-                                className={`font-techno text-[11px] uppercase tracking-[0.2em] ${
+                                className={`font-techno text-[0.6875rem] uppercase tracking-[0.2em] ${
                                   step.refused
                                     ? "text-[hsl(var(--brand-danger))]"
                                     : "text-[hsl(var(--brand-signal))]"
@@ -297,7 +297,7 @@ export function CinematicVlan() {
                                 {step.refused ? "refuses it" : `VLAN ${step.internal}`}
                               </span>
                             </span>
-                            <span className="mt-1 block font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                            <span className="mt-1 block font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                               arrived {onWire(step.arrived)}, so {hop.ingress.name} put it in VLAN{" "}
                               {step.internal} by its {step.decidedBy}
                               {step.refused ? `. ${hop.egress.name}: ${REFUSAL_TEXT[step.refused]}` : ""}
@@ -305,7 +305,7 @@ export function CinematicVlan() {
                           </div>
                           {step.refused ? null : (
                             <div
-                              className={`ml-4 border-l-2 py-2 pl-4 font-mono-tight text-[11.5px] ${
+                              className={`ml-4 border-l-2 py-2 pl-4 font-mono-tight text-[0.71875rem] ${
                                 wireDisagrees && bare
                                   ? "border-[hsl(var(--brand-danger))] text-[hsl(var(--brand-danger))]"
                                   : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))]"
@@ -324,7 +324,7 @@ export function CinematicVlan() {
                       );
                     })}
                     {outcome.kind === "delivered" ? (
-                      <li className="mt-1.5 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+                      <li className="mt-1.5 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                         the host receives {onWire(outcome.leftover)}, in VLAN {outcome.vlan}
                       </li>
                     ) : null}
@@ -332,8 +332,8 @@ export function CinematicVlan() {
                 </div>
 
                 {mismatches.length > 0 ? (
-                  <p className="border-l-2 border-[hsl(var(--brand-danger)/0.7)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                    <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-danger))]">
+                  <p className="border-l-2 border-[hsl(var(--brand-danger)/0.7)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-danger))]">
                       Native VLAN mismatch ·{" "}
                     </span>
                     {mismatches
@@ -349,8 +349,8 @@ export function CinematicVlan() {
                 ) : null}
 
                 {nativeCarriesHosts(active).length > 0 ? (
-                  <p className="border-l-2 border-[hsl(var(--brand-amber)/0.7)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                    <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                  <p className="border-l-2 border-[hsl(var(--brand-amber)/0.7)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                       Hosts in the native VLAN ·{" "}
                     </span>
                     {nativeCarriesHosts(active)
@@ -362,14 +362,14 @@ export function CinematicVlan() {
                   </p>
                 ) : null}
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -378,13 +378,13 @@ export function CinematicVlan() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="vlan-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Both configurations are above in full. The frame's journey, the tags on each wire
                 and the VLAN inside each switch appear once you have committed, because between
                 them they are the answer to more than the question being asked.
@@ -393,7 +393,7 @@ export function CinematicVlan() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="vlan-progress"
           >
@@ -404,7 +404,7 @@ export function CinematicVlan() {
 
           <ReadAboutThis href="/vlan" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             No case here carries an answer key. Each one declares the frame and the ports it
             crosses, the model carries it, and the correct option is whichever one's value
             matches. CI requires exactly one to match, and separately checks the model against the
@@ -413,12 +413,12 @@ export function CinematicVlan() {
             lands in whatever the receiver calls native, and that a tagged frame is immune to the
             receiver's native VLAN because it says which VLAN it is.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The fix for all of it is one line and one habit: make the native VLAN a VLAN with no
             hosts in it. Then a mismatch moves traffic that does not exist, and a host has nothing
             to write a tag from. Dropping tagged frames on access ports is the other half.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The same shape of fault at the IP layer, where a packet is refused by a rule nobody
             reads, is at{" "}
             <Link

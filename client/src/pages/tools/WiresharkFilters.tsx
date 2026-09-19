@@ -337,7 +337,7 @@ export function WiresharkFilters() {
             </p>
           </div>
 
-          <h3 className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+          <h3 className="mt-6 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
             Capture filter examples (BPF)
           </h3>
           <ul className="mt-2">

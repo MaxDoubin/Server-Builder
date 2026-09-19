@@ -82,7 +82,7 @@ export function CinematicResolve() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Start at the root
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -105,7 +105,7 @@ export function CinematicResolve() {
           <section className="mt-9">
             <div className="flex flex-wrap items-end gap-3">
               <label className="flex-1 basis-[280px]">
-                <span className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <span className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · Name
                 </span>
                 <input
@@ -115,18 +115,18 @@ export function CinematicResolve() {
                   autoCapitalize="off"
                   autoCorrect="off"
                   data-testid="resolve-name"
-                  className="mt-2 w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="mt-2 w-full rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
                 />
               </label>
               <label>
-                <span className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+                <span className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                   · Type
                 </span>
                 <select
                   value={type}
                   onChange={(event) => setType(event.target.value as RRType)}
                   data-testid="resolve-type"
-                  className="mt-2 block rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="mt-2 block rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   {TYPES.map((option) => (
                     <option key={option} value={option}>
@@ -144,7 +144,7 @@ export function CinematicResolve() {
                   type="button"
                   onClick={() => setName(suggestion)}
                   data-testid={`resolve-suggest-${suggestion}`}
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   {suggestion}
                 </button>
@@ -157,7 +157,7 @@ export function CinematicResolve() {
             >
               <ol className="space-y-2.5">
                 {result.queries.map((query, index) => (
-                  <li key={index} className="font-mono-tight text-[12.5px] leading-snug">
+                  <li key={index} className="font-mono-tight text-[0.78125rem] leading-snug">
                     <span className="text-[hsl(var(--brand-ash))]">
                       {String(index + 1).padStart(2, "0")}{" "}
                     </span>
@@ -172,7 +172,7 @@ export function CinematicResolve() {
                 ))}
               </ol>
               <div className="mt-4 border-t border-[hsl(var(--brand-iron))] pt-3">
-                <p className="font-mono-tight text-[12px] uppercase tracking-[0.2em]">
+                <p className="font-mono-tight text-[0.75rem] uppercase tracking-[0.2em]">
                   <span className="text-[hsl(var(--brand-ash))]">outcome </span>
                   <span
                     className={
@@ -190,7 +190,7 @@ export function CinematicResolve() {
                     {pluralise(result.queries.length, "query", "queries")}
                   </span>
                 </p>
-                <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {result.summary}
                 </p>
               </div>
@@ -198,10 +198,10 @@ export function CinematicResolve() {
           </section>
 
           <section className="mt-14">
-            <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Eight symptoms
             </h2>
-            <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Each one is something a person actually said. Look the name up above, read the trace,
               then pick what is wrong. Every wrong option is something a competent person says in
               the first five minutes.
@@ -213,14 +213,14 @@ export function CinematicResolve() {
             </ol>
           </section>
 
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every name here is under a reserved suffix and every address is in a documentation
             range, and CI checks both, so nothing you copy out of this page reaches anything real.
             CI also runs each case through the resolver and fails the build if a stated diagnosis
             and the actual outcome disagree, which is the way this page would otherwise go wrong:
             a trace and a diagnosis that no longer match, both looking perfectly fine.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For DNS on the wire rather than in the delegation, the{" "}
             <Link
               href="/capture"
@@ -262,14 +262,14 @@ function CaseCard({
 
   return (
     <li className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
-      <p className="font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone))]">
+      <p className="font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone))]">
         “{item.symptom}”
       </p>
       <button
         type="button"
         onClick={() => onLookup(item.name, item.type)}
         data-testid={`resolve-case-lookup-${item.id}`}
-        className="mt-2 min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+        className="mt-2 min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
       >
         Trace {item.name} {item.type}
       </button>
@@ -297,7 +297,7 @@ function CaseCard({
               disabled={picked !== null}
               aria-pressed={chosen}
               data-testid={`resolve-option-${item.id}-${index}`}
-              className={`rounded-xl border px-4 py-2.5 text-left font-mono-tight text-[12.5px] leading-snug transition-colors ${tone}`}
+              className={`rounded-xl border px-4 py-2.5 text-left font-mono-tight text-[0.78125rem] leading-snug transition-colors ${tone}`}
             >
               {option.claim}
             </button>
@@ -307,13 +307,13 @@ function CaseCard({
 
       {picked !== null ? (
         <div className="mt-4 border-t border-[hsl(var(--brand-iron))] pt-3" data-testid={`resolve-explain-${item.id}`}>
-          <p className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+          <p className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
             · {picked !== null && item.options[picked] === answer ? "That is it" : "Not that one"}
           </p>
           {item.explain.map((paragraph, index) => (
             <p
               key={index}
-              className="mt-2.5 font-mono-tight text-[13px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+              className="mt-2.5 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
             >
               {paragraph}
             </p>

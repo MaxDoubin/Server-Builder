@@ -83,14 +83,14 @@ export function ToolShell({ slug, children, notes }: Props) {
             <Link
               href="/tools"
               data-testid="link-tools-index"
-              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All tools
             </Link>
           </nav>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Tool
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.25rem,5vw,3.75rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -99,7 +99,7 @@ export function ToolShell({ slug, children, notes }: Props) {
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               {blurb}
             </p>
-            <p className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               runs in your browser · nothing is uploaded
             </p>
           </header>
@@ -140,7 +140,7 @@ export function ToolPanel({
       className={`min-w-0 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm ${className}`}
     >
       {title ? (
-        <h2 className="mb-4 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+        <h2 className="mb-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
           {title}
         </h2>
       ) : null}
@@ -163,7 +163,7 @@ export function ToolResult({
 }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[hsl(var(--brand-iron)/0.5)] py-2.5 last:border-b-0">
-      <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
         {label}
       </span>
       <span

@@ -77,14 +77,14 @@ export function CinematicAsk() {
   const isLong = composed.body.length > LONG_MESSAGE;
 
   const actionClasses =
-    "inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-6 text-center font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]";
+    "inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full px-6 text-center font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]";
 
   return (
     <CinematicLayout>
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[860px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Channel · Ask
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.25rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -105,7 +105,7 @@ export function CinematicAsk() {
           >
             <h2
               id="how-it-works"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               How this works
             </h2>
@@ -146,7 +146,7 @@ export function CinematicAsk() {
               <div>
                 <label
                   htmlFor="ask-name"
-                  className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                  className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                 >
                   Name{" "}
                   <span className="text-[hsl(var(--brand-ash))]">
@@ -168,7 +168,7 @@ export function CinematicAsk() {
               <div>
                 <label
                   htmlFor="ask-question"
-                  className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                  className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                 >
                   Question
                 </label>
@@ -184,7 +184,7 @@ export function CinematicAsk() {
                 />
                 <p
                   id="ask-question-help"
-                  className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                  className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                 >
                   {trimmedQuestion.length} characters · nothing is sent until
                   you choose a route below
@@ -220,7 +220,7 @@ export function CinematicAsk() {
               {ready ? (
                 <>
                   <div className="border-b border-[hsl(var(--brand-iron))] px-4 py-3">
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       Subject
                     </span>
                     <p
@@ -305,7 +305,7 @@ export function CinematicAsk() {
             </div>
 
             {!ready ? (
-              <p className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+              <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                 Both routes unlock once there is a question to send
               </p>
             ) : null}

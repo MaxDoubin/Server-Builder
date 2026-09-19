@@ -55,7 +55,7 @@ export function CinematicToday() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {DATE.format(new Date())}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -82,20 +82,20 @@ export function CinematicToday() {
                   className="flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   <span className="flex items-baseline justify-between gap-3">
-                    <span className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                       · {pick.eyebrow}
                     </span>
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
                       {String(index + 1).padStart(2, "0")} of {picks.length}
                     </span>
                   </span>
                   <span className="mt-2 font-display text-lg font-medium leading-snug text-[hsl(var(--brand-bone))]">
                     {pick.title}
                   </span>
-                  <span className="mt-2 flex-1 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="mt-2 flex-1 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                     {pick.blurb}
                   </span>
-                  <span className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                  <span className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                     1 of {pick.outOf} in {pick.surface}
                   </span>
                 </Link>
@@ -104,10 +104,10 @@ export function CinematicToday() {
           </ol>
 
           <section className="mt-12">
-            <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Where you are
             </h2>
-            <p className="mt-3 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Read from what each surface already records in this browser, so this cannot disagree
               with the page it is summarising. Clearing site data clears it, and it has never left
               the machine you are on.
@@ -117,7 +117,7 @@ export function CinematicToday() {
                 <li key={line.href}>
                   <Link
                     href={line.href}
-                    className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] hover:text-[hsl(var(--brand-bone))]"
+                    className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] hover:text-[hsl(var(--brand-bone))]"
                   >
                     <span className="min-w-[150px]">{line.label}</span>
                     <span
@@ -131,7 +131,7 @@ export function CinematicToday() {
                         }}
                       />
                     </span>
-                    <span className="text-[11.5px] text-[hsl(var(--brand-ash))]">
+                    <span className="text-[0.71875rem] text-[hsl(var(--brand-ash))]">
                       {line.done} of {line.total} {line.noun}
                     </span>
                   </Link>
@@ -139,7 +139,7 @@ export function CinematicToday() {
               ))}
             </ul>
             <p
-              className="mt-5 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+              className="mt-5 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
               aria-live="polite"
               data-testid="today-summary"
             >
@@ -147,20 +147,20 @@ export function CinematicToday() {
               {mounted && visits > 1 ? ` · ${visits} ${pluralise(visits, "day")} here` : ""}
             </p>
             {mounted && visits > 1 ? (
-              <p className="mt-2 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-2 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 A count, not a streak. Nothing resets if you miss a day, because a number that
                 punishes you for having a life is not a number worth keeping.
               </p>
             ) : null}
           </section>
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The full set repeats every {cycleDays().toLocaleString()} days, which is the least
             common multiple of the surface sizes rather than a design goal. Individually each
             surface comes round much sooner: the shortest is a few days and the longest is a few
             weeks.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             To choose for yourself instead, the{" "}
             <Link
               href="/practice"

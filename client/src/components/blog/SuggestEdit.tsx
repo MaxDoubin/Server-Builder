@@ -20,7 +20,7 @@ export function SuggestEdit({ slug }: { slug: string }) {
       target="_blank"
       rel="noopener noreferrer"
       data-testid="link-suggest-edit"
-      className="group inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+      className="group inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
     >
       <span aria-hidden>✎</span>
       Found a mistake? Suggest an edit

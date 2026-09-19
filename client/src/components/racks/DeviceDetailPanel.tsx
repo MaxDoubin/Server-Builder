@@ -42,10 +42,10 @@ function ruRange(rack: RackDefinition, device: RackDevice): string {
 function SpecRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-[hsl(var(--brand-iron))] py-2.5">
-      <dt className="shrink-0 font-techno text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+      <dt className="shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
         {label}
       </dt>
-      <dd className="text-right font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+      <dd className="text-right font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
         {children}
       </dd>
     </div>
@@ -74,7 +74,7 @@ export function DeviceDetailPanel({
     <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="font-techno text-[10px] uppercase tracking-[0.4em]" style={{ color: device.accent ?? "hsl(var(--brand-signal))" }}>
+          <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em]" style={{ color: device.accent ?? "hsl(var(--brand-signal))" }}>
             {FAMILY_LABELS[device.family]} · {device.u}U · {ruRange(rack, device)}
           </div>
           <h2 className="mt-2 font-display text-xl font-medium leading-tight tracking-tight text-[hsl(var(--brand-bone))] md:text-2xl">
@@ -84,7 +84,7 @@ export function DeviceDetailPanel({
         <button
           type="button"
           onClick={onClose}
-          className="relative shrink-0 rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1.5 font-techno text-[10px] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
+          className="relative shrink-0 rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1.5 font-techno text-[0.625rem] uppercase tracking-[0.25em] text-[hsl(var(--brand-ash))] transition-colors before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-bone))]"
         >
           Back to rack
         </button>
@@ -103,7 +103,7 @@ export function DeviceDetailPanel({
         </svg>
       </div>
 
-      <p className="mt-6 font-mono-tight text-[14px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+      <p className="mt-6 font-mono-tight text-[0.875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
         {device.role}
       </p>
 
@@ -151,7 +151,7 @@ export function DeviceDetailPanel({
         )}
       </dl>
 
-      <p className="mt-5 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-5 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         Link lights, traffic bars and bay fit-out are illustrative: a plausible
         occupancy, drawn the same on every visit. Port counts, rack units and
         wattages are the vendor's published figures.

@@ -1011,7 +1011,7 @@ export function PortReference() {
                       aria-pressed={active}
                       data-testid={`button-proto-${filter.id}`}
                       onClick={() => setProto(filter.id)}
-                      className={`inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg border px-4 font-mono-tight text-[11px] uppercase tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                      className={`inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg border px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                         active
                           ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] text-[hsl(var(--brand-obsidian))]"
                           : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone))] hover:border-[hsl(var(--brand-signal)/0.6)]"
@@ -1046,7 +1046,7 @@ export function PortReference() {
                       <th
                         key={head}
                         scope="col"
-                        className="py-2 pr-4 align-bottom font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                        className="py-2 pr-4 align-bottom font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                       >
                         {head}
                       </th>

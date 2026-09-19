@@ -69,7 +69,7 @@ export function CinematicCyberClub() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Club · {clubConfig.school}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -83,7 +83,7 @@ export function CinematicCyberClub() {
               <a
                 href={`mailto:${siteConfig.email}?subject=${encodeURIComponent("Cyber Club")}`}
                 data-testid="link-club-email"
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Ask about joining
               </a>
@@ -92,7 +92,7 @@ export function CinematicCyberClub() {
                   href={clubConfig.signupUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
                 >
                   Sign up
                 </a>
@@ -106,7 +106,7 @@ export function CinematicCyberClub() {
           >
             <h2
               id="club-kit-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
             >
               Starting one at your own school
             </h2>
@@ -132,7 +132,7 @@ export function CinematicCyberClub() {
           >
             <h2
               id="club-meeting-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               When and where
             </h2>
@@ -156,7 +156,7 @@ export function CinematicCyberClub() {
 
             <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   President
                 </dt>
                 <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -165,7 +165,7 @@ export function CinematicCyberClub() {
               </div>
               {clubConfig.advisor ? (
                 <div>
-                  <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Faculty advisor
                   </dt>
                   <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -175,7 +175,7 @@ export function CinematicCyberClub() {
               ) : null}
               {clubConfig.memberCount !== null ? (
                 <div>
-                  <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Members
                   </dt>
                   <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -185,7 +185,7 @@ export function CinematicCyberClub() {
               ) : null}
               {clubConfig.costNote ? (
                 <div>
-                  <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Cost
                   </dt>
                   <dd className="mt-1 font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -197,7 +197,7 @@ export function CinematicCyberClub() {
           </section>
 
           <section aria-labelledby="club-do-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Club · Practice
             </div>
             <h2
@@ -224,7 +224,7 @@ export function CinematicCyberClub() {
           </section>
 
           <section aria-labelledby="club-learn-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Club · Skills
             </div>
             <h2
@@ -252,7 +252,7 @@ export function CinematicCyberClub() {
           </section>
 
           <section aria-labelledby="club-join-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Club · Join
             </div>
             <h2
@@ -267,7 +267,7 @@ export function CinematicCyberClub() {
                   key={step}
                   className="flex gap-4 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm"
                 >
-                  <span className="font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                  <span className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span className="font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -279,7 +279,7 @@ export function CinematicCyberClub() {
           </section>
 
           <section aria-labelledby="club-faq-heading" className="mt-16">
-            <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
               · Club · For parents
             </div>
             <h2
@@ -311,7 +311,7 @@ export function CinematicCyberClub() {
           >
             <h2
               id="club-contact-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]"
             >
               Still deciding
             </h2>

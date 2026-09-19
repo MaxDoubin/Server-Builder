@@ -164,7 +164,7 @@ export function BaseConverter() {
                   onClick={() => changeWidth(w)}
                   aria-pressed={width === w}
                   data-testid={`button-width-${w}`}
-                  className={`inline-flex min-h-[44px] items-center rounded-full border px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                  className={`inline-flex min-h-[44px] items-center rounded-full border px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                     width === w
                       ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.14)] text-[hsl(var(--brand-signal))]"
                       : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -186,7 +186,7 @@ export function BaseConverter() {
                 <div key={base.id}>
                   <label
                     htmlFor={`base-${base.id}`}
-                    className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                    className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                   >
                     {base.label}
                     {base.prefix ? ` (${base.prefix})` : ""}
@@ -247,7 +247,7 @@ export function BaseConverter() {
                 type="button"
                 onClick={() => commit(ZERO)}
                 data-testid="button-clear"
-                className="inline-flex min-h-[36px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[36px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Clear
               </button>
@@ -255,7 +255,7 @@ export function BaseConverter() {
                 type="button"
                 onClick={() => commit(max)}
                 data-testid="button-set-all"
-                className="inline-flex min-h-[36px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[36px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Set all
               </button>
@@ -263,7 +263,7 @@ export function BaseConverter() {
                 type="button"
                 onClick={() => commit(value ^ max)}
                 data-testid="button-invert"
-                className="inline-flex min-h-[36px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[36px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Invert
               </button>
@@ -321,7 +321,7 @@ export function BaseConverter() {
                       );
                     })}
                   </div>
-                  <div className="font-mono-tight text-[9px] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">
+                  <div className="font-mono-tight text-[0.5625rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">
                     {parseInt(nibble.bits.join(""), 2).toString(16).toUpperCase()} ·{" "}
                     {nibble.start}
                   </div>

@@ -119,7 +119,7 @@ export function CinematicShm() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} containers, one tmpfs each
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -156,16 +156,16 @@ export function CinematicShm() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {item.setup.platform} · /dev/shm {human(item.setup.shmMiB)}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -178,7 +178,7 @@ export function CinematicShm() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="shm-brief"
             >
               {active.brief}
@@ -188,7 +188,7 @@ export function CinematicShm() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="shm-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`${asInvocation(setup)}
 
 # ${setup.units} ${setup.unit}${setup.units === 1 ? "" : "s"} at peak, ${setup.perUnitMiB} MiB of shared memory each
@@ -196,7 +196,7 @@ export function CinematicShm() {
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -210,7 +210,7 @@ export function CinematicShm() {
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`shm-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -228,7 +228,7 @@ export function CinematicShm() {
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="shm-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} The workload wants {demandMiB(setup)} MiB of shared
                   memory at peak against a /dev/shm of {human(setup.shmMiB)}, so it{" "}
                   {fits(setup) ? "fits" : `does not fit, and ${unitLabel(setup, died)} is the one that dies`}.{" "}
@@ -240,7 +240,7 @@ export function CinematicShm() {
 
                 {/* ── the three numbers, on a log axis ── */}
                 <div data-testid="shm-scale">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                     <span className="text-[hsl(var(--brand-bone-dim))]">
                       the three limits in this ticket, on a log scale
                     </span>
@@ -260,14 +260,14 @@ export function CinematicShm() {
                         <span style={{ backgroundColor: mark.color }} className="absolute inset-y-0 block w-[2px]" />
                         <span
                           style={{ color: mark.color, top: `${4 + i * 15}px` }}
-                          className="absolute left-1.5 whitespace-nowrap font-mono-tight text-[9.5px]"
+                          className="absolute left-1.5 whitespace-nowrap font-mono-tight text-[0.59375rem]"
                         >
                           {mark.label} {human(mark.value)}
                         </span>
                       </span>
                     ))}
                   </div>
-                  <p className="mt-1.5 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-1.5 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     The two large numbers are in the ticket and the small one is not. A log scale is
                     the only way to draw {human(setup.shmMiB)} and {human(setup.hostMiB)} on one
                     axis, which is itself the reason nobody suspects the first.
@@ -277,7 +277,7 @@ export function CinematicShm() {
                 {/* ── the units coming up ── */}
                 {setup.perUnitMiB > 0 ? (
                   <div data-testid="shm-units">
-                    <div className="font-mono-tight text-[11.5px] text-[hsl(var(--brand-bone-dim))]">
+                    <div className="font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-bone-dim))]">
                       {setup.unit}s starting, and what each one takes
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1">
@@ -288,7 +288,7 @@ export function CinematicShm() {
                           <span
                             key={n}
                             title={`${setup.unit} ${n}: ${isDead ? "SIGBUS" : isAfter ? "never started" : "ok"}`}
-                            className={`inline-block h-5 w-5 rounded-[3px] text-center font-mono-tight text-[9.5px] leading-5 ${
+                            className={`inline-block h-5 w-5 rounded-[3px] text-center font-mono-tight text-[0.59375rem] leading-5 ${
                               isDead
                                 ? "bg-[hsl(var(--brand-danger)/0.8)] text-[hsl(var(--brand-obsidian))]"
                                 : isAfter
@@ -301,12 +301,12 @@ export function CinematicShm() {
                         );
                       })}
                       {setup.units > 40 ? (
-                        <span className="self-center font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                        <span className="self-center font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                           and {setup.units - 40} more
                         </span>
                       ) : null}
                     </div>
-                    <p className="mt-1.5 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-1.5 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                       {died === null
                         ? `All ${setup.units} get their ${setup.perUnitMiB} MiB.`
                         : `The first ${died - 1} fit. Number ${died} maps its region successfully, touches a page the tmpfs cannot back, and takes SIGBUS. The rest never start.`}
@@ -316,37 +316,37 @@ export function CinematicShm() {
 
                 <div className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
                   <pre
-                    className="whitespace-pre font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                    className="whitespace-pre font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                     data-testid="shm-symptom"
                   >
 {asSymptom(setup)}
                   </pre>
                 </div>
 
-                <p className="font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="shm-sizing">
+                <p className="font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]" data-testid="shm-sizing">
                   Sized for this peak, /dev/shm wants {human(needsShmMiB(setup))}.
                   {setup.memoryLimitMiB !== null
                     ? ` The memory limit sees ${chargedMiB(setup)} MiB of ${setup.memoryLimitMiB}, because a tmpfs is charged for what is written to it rather than for how large it is.`
                     : " There is no memory limit here, so the tmpfs is bounded only by its own size."}
                 </p>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="shm-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -355,13 +355,13 @@ export function CinematicShm() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="shm-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the answer needs is above: how the container was started, what /dev/shm
                 is, how many units of work run at once and what each one wants. The three limits are
                 drawn once you have committed to an answer.
@@ -370,14 +370,14 @@ export function CinematicShm() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="shm-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} containers`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The SIGBUS behavior here was measured rather than assumed: on an 8 MiB tmpfs, mapping a
             32 MiB file succeeds and the process dies after touching exactly 8388608 bytes, while
             dd on the same full filesystem gets an ordinary ENOSPC. CI recomputes each boundary by
@@ -386,7 +386,7 @@ export function CinematicShm() {
             cannot satisfy charges nothing to the cgroup. System V shared memory, which has its own
             limits, is not modeled.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the other way a container runs out of something the host has plenty of,{" "}
             <Link href="/throttle" className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline">
               thirty percent, and stalling
@@ -400,7 +400,7 @@ export function CinematicShm() {
 
           <ReadAboutThis href="/shm" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

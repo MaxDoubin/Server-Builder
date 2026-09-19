@@ -98,7 +98,7 @@ export function CTAAct() {
 
         <div ref={eyebrowRef}>
           <ScrollReveal variants={blurIn} delay={0.1}>
-            <div className="flex items-center justify-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
+            <div className="flex items-center justify-center gap-3 font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
               <motion.span className="h-px w-10 bg-[hsl(var(--brand-iron))]" initial={{ scaleX: 0 }} animate={sectionInView ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.2 }} />
               <span className="text-[hsl(var(--brand-signal))]"><ScrambleText text="· Contact ·" scrambleDuration={1} /></span>
               <motion.span className="h-px w-10 bg-[hsl(var(--brand-iron))]" initial={{ scaleX: 0 }} animate={sectionInView ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.3 }} />
@@ -130,7 +130,7 @@ export function CTAAct() {
           <StaggerItem variants={ctaButtonVariants}>
             <PulseGlow color="hsl(72 100% 50%)">
               <Magnetic strength={0.2} radius={150}>
-                <motion.a href="mailto:max@maxdoubin.com" data-testid="button-cta-email" className="group relative inline-flex h-12 items-center gap-3 overflow-hidden rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))]" style={{ boxShadow: "0 0 32px hsl(var(--brand-signal) / 0.4)" }} whileHover={{ scale: 1.06, boxShadow: "0 0 48px hsl(72 100% 50% / 0.6)" }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+                <motion.a href="mailto:max@maxdoubin.com" data-testid="button-cta-email" className="group relative inline-flex h-12 items-center gap-3 overflow-hidden rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))]" style={{ boxShadow: "0 0 32px hsl(var(--brand-signal) / 0.4)" }} whileHover={{ scale: 1.06, boxShadow: "0 0 48px hsl(72 100% 50% / 0.6)" }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
                   <Breathing intensity={1.5}><span className="h-[7px] w-[7px] rounded-full bg-[hsl(var(--brand-obsidian))]" style={{ boxShadow: "0 0 6px hsl(var(--brand-obsidian) / 0.8)" }} /></Breathing>
                   max@maxdoubin.com
                   <motion.span className="ml-1" animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>→</motion.span>
@@ -142,7 +142,7 @@ export function CTAAct() {
           <StaggerItem variants={ctaButtonVariants}>
             <Magnetic strength={0.15} radius={120}>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-                <Link href="/projects" data-testid="button-cta-projects" className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]">Review Projects<span>→</span></Link>
+                <Link href="/projects" data-testid="button-cta-projects" className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]">Review Projects<span>→</span></Link>
               </motion.div>
             </Magnetic>
           </StaggerItem>
@@ -150,7 +150,7 @@ export function CTAAct() {
           <StaggerItem variants={ctaButtonVariants}>
             <Magnetic strength={0.15} radius={120}>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-                <a href="https://github.com/MaxDoubin/Server-Builder" target="_blank" rel="noreferrer noopener" data-testid="button-cta-github" className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]">
+                <a href="https://github.com/MaxDoubin/Server-Builder" target="_blank" rel="noreferrer noopener" data-testid="button-cta-github" className="inline-flex h-12 items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-bone))]">
                   GitHub<motion.span animate={{ rotate: [0, 10, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>↗</motion.span>
                 </a>
               </motion.div>
@@ -160,7 +160,7 @@ export function CTAAct() {
           <StaggerItem variants={ctaButtonVariants}>
             <Magnetic strength={0.1} radius={100}>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <Link href="/blog" data-testid="button-cta-blog" className="inline-flex h-12 items-center gap-3 rounded-full border border-transparent bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]">Field Notes</Link>
+                <Link href="/blog" data-testid="button-cta-blog" className="inline-flex h-12 items-center gap-3 rounded-full border border-transparent bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]">Field Notes</Link>
               </motion.div>
             </Magnetic>
           </StaggerItem>
@@ -168,7 +168,7 @@ export function CTAAct() {
 
         <motion.div ref={sigRef} initial={{ opacity: 0, y: 20 }} animate={sectionInView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 1.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
           <DrawLine color="hsl(var(--brand-iron) / 0.4)" className="mx-auto mt-12 max-w-[400px]" delay={1} />
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
             <motion.span whileHover={{ color: "hsl(var(--brand-bone))" }}>Max Doubin</motion.span>
             <motion.span className="h-px w-8 bg-[hsl(var(--brand-iron))]" animate={{ width: [32, 48, 32] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} />
             <motion.span whileHover={{ color: "hsl(var(--brand-bone))" }}>South CTA · Las Vegas</motion.span>

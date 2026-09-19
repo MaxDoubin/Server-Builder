@@ -50,7 +50,7 @@ function StatusBadge({ status }: { status: RoadmapStatus }) {
   const style = STATUS_STYLE[status];
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[9px] uppercase tracking-[0.2em] ${style.className}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] ${style.className}`}
     >
       {/* The glyph carries the state alongside the color, so the status is
           still readable if the colors are indistinguishable. */}
@@ -78,7 +78,7 @@ export function CinematicRoadmap() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1000px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Meta · Roadmap
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.25rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -90,7 +90,7 @@ export function CinematicRoadmap() {
               decision, and each says what it is waiting for. Nothing here is
               marked done until it is live.
             </p>
-            <p className="mt-3 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               last updated {ROADMAP_UPDATED}
             </p>
           </header>
@@ -125,7 +125,7 @@ export function CinematicRoadmap() {
             <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
               {(Object.keys(STATUS_STYLE) as RoadmapStatus[]).map((status) => (
                 <div key={status}>
-                  <dt className="font-mono-tight text-[9px] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
+                  <dt className="font-mono-tight text-[0.5625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
                     {STATUS_STYLE[status].label}
                   </dt>
                   <dd className="mt-1 font-display text-xl text-[hsl(var(--brand-bone))]">
@@ -155,7 +155,7 @@ export function CinematicRoadmap() {
                       key={item.id}
                       className="flex flex-wrap items-start gap-x-4 gap-y-2 bg-[hsl(var(--brand-graphite)/0.4)] px-4 py-3"
                     >
-                      <span className="w-8 shrink-0 pt-0.5 font-mono-tight text-[10px] tabular-nums text-[hsl(var(--brand-ash))]">
+                      <span className="w-8 shrink-0 pt-0.5 font-mono-tight text-[0.625rem] tabular-nums text-[hsl(var(--brand-ash))]">
                         {String(item.id).padStart(3, "0")}
                       </span>
                       <div className="min-w-0 flex-1">

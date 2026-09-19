@@ -54,7 +54,7 @@ export function CinematicStudyExam() {
       <CinematicLayout>
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="text-center">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-ash))]">
               · Study · Not found
             </div>
             <h1 className="mt-4 font-display text-4xl font-medium text-[hsl(var(--brand-bone))]">
@@ -62,7 +62,7 @@ export function CinematicStudyExam() {
             </h1>
             <Link
               href="/study"
-              className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="mt-8 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All exams
             </Link>
@@ -80,20 +80,20 @@ export function CinematicStudyExam() {
             <Link
               href="/study"
               data-testid="link-study-index"
-              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← All exams
             </Link>
           </nav>
 
           <header className="mt-6">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {exam.vendor} · {exam.code}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.2rem,5.4vw,3.6rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
               {exam.name}
             </h1>
-            <p className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               {exam.status}
             </p>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -103,7 +103,7 @@ export function CinematicStudyExam() {
             <Link
               href={`/study/${exam.slug}/sheet`}
               data-testid="link-revision-sheet"
-              className="mt-8 inline-flex min-h-[44px] items-center gap-3 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="mt-8 inline-flex min-h-[44px] items-center gap-3 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               <span
                 aria-hidden
@@ -129,7 +129,7 @@ export function CinematicStudyExam() {
                       <span className="font-display text-base text-[hsl(var(--brand-bone))] group-hover:text-[hsl(var(--brand-signal))]">
                         {d.name}
                       </span>
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         {d.weight === null ? "no published weighting" : `${d.weight}% of the exam`}
                       </span>
                     </div>
@@ -155,7 +155,7 @@ export function CinematicStudyExam() {
               href={exam.officialUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="mt-4 inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Official {exam.code} objectives →
             </a>

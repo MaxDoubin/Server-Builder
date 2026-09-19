@@ -86,7 +86,7 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
         data-testid={testId}
         className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm"
       >
-        <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+        <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
           · {title} · Result
         </div>
         <h3
@@ -106,7 +106,7 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
           type="button"
           onClick={retry}
           data-testid="quiz-retry"
-          className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+          className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
         >
           Retry quiz
         </button>
@@ -123,10 +123,10 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
       className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm"
     >
       <div className="flex items-center justify-between gap-4">
-        <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+        <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
           · {title}
         </div>
-        <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+        <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
           {current + 1} / {total}
         </div>
       </div>
@@ -167,17 +167,17 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
               >
                 <span
                   aria-hidden
-                  className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[10px]"
+                  className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[0.625rem]"
                 >
                   {answered && isCorrect ? "✓" : answered && isChosen ? "✗" : String.fromCharCode(65 + index)}
                 </span>
                 <span className="flex-1">{choice}</span>
                 {answered && isCorrect ? (
-                  <span className="font-techno text-[9px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                  <span className="font-techno text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                     Correct
                   </span>
                 ) : answered && isChosen ? (
-                  <span className="font-techno text-[9px] uppercase tracking-[0.24em] text-[hsl(var(--brand-danger))]">
+                  <span className="font-techno text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-danger))]">
                     Your pick
                   </span>
                 ) : null}
@@ -191,7 +191,7 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
         {answered ? (
           <div className="mt-5 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] p-4">
             <div
-              className={`font-techno text-[10px] uppercase tracking-[0.32em] ${
+              className={`font-techno text-[0.625rem] uppercase tracking-[0.32em] ${
                 selected === question.correctIndex
                   ? "text-[hsl(var(--brand-signal))]"
                   : "text-[hsl(var(--brand-amber))]"
@@ -211,12 +211,12 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
           type="button"
           onClick={advance}
           data-testid="quiz-next"
-          className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+          className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
         >
           {current + 1 >= total ? "See results" : "Next question"}
         </button>
       ) : (
-        <p className="mt-5 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+        <p className="mt-5 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
           Select an answer to see the explanation.
         </p>
       )}

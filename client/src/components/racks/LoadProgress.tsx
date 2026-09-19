@@ -30,7 +30,7 @@ export function LoadProgress({ label = "files" }: { label?: string }) {
           style={{ width: `${Math.max(4, Math.round(progress))}%` }}
         />
       </div>
-      <span className="shrink-0 font-mono-tight text-[10px] tabular-nums text-[hsl(var(--brand-bone-dim))]">
+      <span className="shrink-0 font-mono-tight text-[0.625rem] tabular-nums text-[hsl(var(--brand-bone-dim))]">
         {loaded} of {total || "?"} {label} · {Math.round(progress)}%
       </span>
     </div>

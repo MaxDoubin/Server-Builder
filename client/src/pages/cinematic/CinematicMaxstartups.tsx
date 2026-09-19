@@ -113,7 +113,7 @@ export function CinematicMaxstartups() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} daemons, one ramp each
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -151,17 +151,17 @@ export function CinematicMaxstartups() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {item.setup.begin}:{item.setup.rate}:{item.setup.full} · grace{" "}
                       {item.setup.graceSeconds === 0 ? "off" : `${item.setup.graceSeconds}s`}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -174,7 +174,7 @@ export function CinematicMaxstartups() {
               {active.name}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="maxstartups-brief"
             >
               {active.brief}
@@ -184,7 +184,7 @@ export function CinematicMaxstartups() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="maxstartups-setup"
             >
-              <pre className="whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+              <pre className="whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
 {`${asConfig(setup)}
 
 # arriving: ${setup.arrivalsPerMinute} a minute that authenticate, ${setup.authSeconds}s each
@@ -196,7 +196,7 @@ export function CinematicMaxstartups() {
               </pre>
             </div>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -210,7 +210,7 @@ export function CinematicMaxstartups() {
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`maxstartups-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -228,7 +228,7 @@ export function CinematicMaxstartups() {
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="maxstartups-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."}{" "}
                   {standing === null
                     ? `With LoginGraceTime 0 nothing reclaims a slot from a connection that never authenticates, so the count climbs past ${setup.full} and stays there.`
@@ -245,7 +245,7 @@ export function CinematicMaxstartups() {
 
                 {/* ── the ramp, which is the whole argument ── */}
                 <div data-testid="maxstartups-ramp">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[11.5px]">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 font-mono-tight text-[0.71875rem]">
                     <span className="text-[hsl(var(--brand-bone-dim))]">
                       chance of refusal, against connections standing unauthenticated
                     </span>
@@ -273,14 +273,14 @@ export function CinematicMaxstartups() {
                         />
                       );
                     })}
-                    <span className="absolute bottom-0.5 left-1.5 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                    <span className="absolute bottom-0.5 left-1.5 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                       {from}
                     </span>
-                    <span className="absolute bottom-0.5 right-1.5 font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                    <span className="absolute bottom-0.5 right-1.5 font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                       {to}
                     </span>
                   </div>
-                  <p className="mt-1.5 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                  <p className="mt-1.5 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     {standing === null
                       ? "The white bar is where this daemon ends up, which is off the right hand end of its own ramp."
                       : `The white bar is this daemon at ${standing} standing. `}
@@ -292,7 +292,7 @@ export function CinematicMaxstartups() {
 
                 <div className="overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
                   <pre
-                    className="whitespace-pre font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                    className="whitespace-pre font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                     data-testid="maxstartups-log"
                   >
 {`$ journalctl -u ssh -o cat
@@ -300,23 +300,23 @@ ${asLog(setup)}`}
                   </pre>
                 </div>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="maxstartups-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     What to do ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}
@@ -325,13 +325,13 @@ ${asLog(setup)}`}
                   type="button"
                   onClick={() => open(active)}
                   data-testid="maxstartups-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything the answer needs is above: the three numbers, the grace, and how the
                 connections arrive. Arrival rate times holding time gives you the occupancy, and
                 the occupancy is the only thing the limiter looks at. The ramp is drawn once you
@@ -341,14 +341,14 @@ ${asLog(setup)}`}
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="maxstartups-progress"
           >
             {mounted ? `${solved.length} of ${CASES.length} called right` : `${CASES.length} daemons`}
           </p>
 
-          <p className="mt-6 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-6 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The model is a transcription of should_drop_connection from OpenSSH's own source,
             integer divide and all. CI recomputes every probability by inverting the ramp, using
             ceiling where the model uses floor, and recomputes every settled occupancy by running
@@ -356,7 +356,7 @@ ${asLog(setup)}`}
             and PerSourcePenalties, which are checked before this and have their own timers, are
             not modeled.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The same shape of problem, where a queue fills with things nobody is watching, is at{" "}
             <Link
               href="/backlog"
@@ -376,7 +376,7 @@ ${asLog(setup)}`}
 
           <ReadAboutThis href="/maxstartups" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

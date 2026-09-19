@@ -254,11 +254,11 @@ function BitRow({ label, value, prefix }: { label: string; value: number; prefix
   const bits = toBits(value);
   return (
     <div>
-      <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+      <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
         {label}
       </div>
       <div className="mt-1.5 overflow-x-auto pb-1">
-        <div className="flex w-max items-center font-mono-tight text-[11px] leading-none" aria-hidden="true">
+        <div className="flex w-max items-center font-mono-tight text-[0.6875rem] leading-none" aria-hidden="true">
           {Array.from({ length: 32 }, (_, i) => (
             <Fragment key={i}>
               {i === prefix ? (
@@ -365,7 +365,7 @@ export function SubnetCalculator() {
                   key={example}
                   type="button"
                   onClick={() => setRaw(example)}
-                  className="inline-flex min-h-[28px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[10px] tracking-[0.12em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="inline-flex min-h-[28px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.625rem] tracking-[0.12em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   {example}
                 </button>
@@ -413,7 +413,7 @@ export function SubnetCalculator() {
 
             {result.note ? (
               <div className="rounded-2xl border border-[hsl(var(--brand-signal)/0.35)] bg-[hsl(var(--brand-signal)/0.06)] p-5">
-                <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                   Edge case
                 </div>
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">

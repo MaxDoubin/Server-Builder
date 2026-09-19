@@ -90,11 +90,11 @@ function LogSlider({ label, value, min, max, format, onChange, testId }: SliderP
   return (
     <label className="block">
       <span className="flex items-baseline justify-between gap-3">
-        <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+        <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
           {label}
         </span>
         <span
-          className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone))]"
+          className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))]"
           data-testid={`${testId}-value`}
         >
           {format(value)}
@@ -134,19 +134,19 @@ function Ceiling({
     <li data-testid={`ceiling-${name.toLowerCase().replace(/\s+/g, "-")}`}>
       <div className="flex items-baseline justify-between gap-3">
         <span
-          className={`font-mono-tight text-[12.5px] ${
+          className={`font-mono-tight text-[0.78125rem] ${
             binding ? "text-[hsl(var(--brand-bone))]" : "text-[hsl(var(--brand-ash))]"
           }`}
         >
           {name}
           {binding ? (
-            <span className="ml-2 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+            <span className="ml-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
               binding
             </span>
           ) : null}
         </span>
         <span
-          className={`font-mono-tight text-[12.5px] tabular-nums ${
+          className={`font-mono-tight text-[0.78125rem] tabular-nums ${
             binding ? "text-[hsl(var(--brand-bone))]" : "text-[hsl(var(--brand-ash))]"
           }`}
         >
@@ -161,7 +161,7 @@ function Ceiling({
           style={{ width: `${width}%` }}
         />
       </div>
-      <p className="mt-1 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-1 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         {note}
       </p>
     </li>
@@ -240,7 +240,7 @@ export function CinematicTransfer() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[940px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} complaints
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -261,7 +261,7 @@ export function CinematicTransfer() {
 
           {/* ── the instrument ── */}
           <section className="mt-11 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6">
-            <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · The path
             </h2>
             <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -330,7 +330,7 @@ export function CinematicTransfer() {
             </ul>
 
             <div className="mt-7 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-[hsl(var(--brand-iron))] pt-5">
-              <span className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))]">
+              <span className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))]">
                 One stream gets{" "}
                 <strong
                   className="font-medium text-[hsl(var(--brand-bone))]"
@@ -347,7 +347,7 @@ export function CinematicTransfer() {
             </div>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                 Move
               </span>
               {[
@@ -365,7 +365,7 @@ export function CinematicTransfer() {
                   }}
                   aria-pressed={bytes === value}
                   data-testid={`bytes-${value}`}
-                  className={`rounded-full border px-3.5 py-1.5 font-mono-tight text-[11.5px] transition-colors ${
+                  className={`rounded-full border px-3.5 py-1.5 font-mono-tight text-[0.71875rem] transition-colors ${
                     bytes === value
                       ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.1)] text-[hsl(var(--brand-bone))]"
                       : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -377,7 +377,7 @@ export function CinematicTransfer() {
             </div>
 
             <p
-              className="mt-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="transfer-time"
             >
               {size(bytes)} takes <strong className="font-medium text-[hsl(var(--brand-bone))]">{duration(transfer.seconds)}</strong>:{" "}
@@ -386,11 +386,11 @@ export function CinematicTransfer() {
               the window still opening, then {duration(transfer.steadySeconds)} at the steady rate.
             </p>
             <p
-              className="mt-3 border-l-2 pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 border-l-2 pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               style={{ borderColor: `hsl(var(--brand-${accent}))` }}
               data-testid="verdict"
             >
-              <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+              <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                 {LABEL[binding]} ·{" "}
               </span>
               {BLURB[binding]}
@@ -399,10 +399,10 @@ export function CinematicTransfer() {
 
           {/* ── the complaints ── */}
           <section className="mt-14">
-            <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · The complaints
             </h2>
-            <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Each one loads its numbers into the instrument above. Read the ceilings, then say
               what is actually costing the time.
             </p>
@@ -422,16 +422,16 @@ export function CinematicTransfer() {
                     }`}
                   >
                     <span className="flex items-baseline justify-between gap-3">
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                         {rate(item.link.bandwidth)} · {Math.round(item.link.rtt)} ms
                       </span>
                       {mounted && solved.includes(item.slug) ? (
-                        <span className="font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                        <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                           called
                         </span>
                       ) : null}
                     </span>
-                    <span className="mt-2 font-display text-[15px] font-medium leading-snug text-[hsl(var(--brand-bone))]">
+                    <span className="mt-2 font-display text-[0.9375rem] font-medium leading-snug text-[hsl(var(--brand-bone))]">
                       {item.title}
                     </span>
                   </button>
@@ -447,10 +447,10 @@ export function CinematicTransfer() {
                 <h3 className="font-display text-lg font-medium leading-snug text-[hsl(var(--brand-bone))]">
                   {active.title}
                 </h3>
-                <p className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <p className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {active.complaint}
                 </p>
-                <p className="mt-3 font-mono-tight text-[12px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
+                <p className="mt-3 font-mono-tight text-[0.75rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
                   Moving {size(active.bytes)}
                 </p>
 
@@ -462,7 +462,7 @@ export function CinematicTransfer() {
                       onClick={() => judge(choice)}
                       disabled={answer !== null}
                       data-testid={`answer-${choice}`}
-                      className={`rounded-full border px-4 py-2 font-mono-tight text-[12px] transition-colors disabled:cursor-default ${
+                      className={`rounded-full border px-4 py-2 font-mono-tight text-[0.75rem] transition-colors disabled:cursor-default ${
                         answer === choice
                           ? choice === active.binding
                             ? "border-[hsl(var(--brand-signal)/0.8)] bg-[hsl(var(--brand-signal)/0.12)] text-[hsl(var(--brand-bone))]"
@@ -479,19 +479,19 @@ export function CinematicTransfer() {
 
                 {answer !== null ? (
                   <div className="mt-5 space-y-4" data-testid="case-verdict" aria-live="polite">
-                    <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                    <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                       {right
                         ? `Right. ${LABEL[active.binding]}.`
                         : `Not that one. It is ${LABEL[active.binding].toLowerCase()}.`}
                     </p>
-                    <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                      <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                    <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                         What to change ·{" "}
                       </span>
                       {active.fix}
                     </p>
-                    <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                      <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                    <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                         What would have done nothing ·{" "}
                       </span>
                       {active.redHerring}
@@ -502,7 +502,7 @@ export function CinematicTransfer() {
             ) : null}
 
             <p
-              className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+              className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
               aria-live="polite"
               data-testid="transfer-progress"
             >
@@ -513,14 +513,14 @@ export function CinematicTransfer() {
 
           <ReadAboutThis href="/transfer" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The loss ceiling is the Mathis bound, which is an approximation of a Reno-shaped
             sawtooth and not a law. BBR and friends behave differently, and a modern stack will
             usually do better than this on a lossy path. The shape is the part worth keeping:
             throughput falls with the square root of the loss rate, so a hundredfold reduction in
             loss buys a tenfold increase in speed, and no amount of bandwidth buys any.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             More of this sort of thing at the{" "}
             <Link
               href="/practice"

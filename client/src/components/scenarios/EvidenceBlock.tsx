@@ -39,17 +39,17 @@ export function EvidenceBlock({ evidence }: { evidence: Evidence }) {
   return (
     <figure className="mt-5 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.55)]">
       <figcaption className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[hsl(var(--brand-iron))] px-4 py-2.5">
-        <span className={`font-techno text-[9px] uppercase tracking-[0.32em] ${KIND_ACCENT[evidence.kind]}`}>
+        <span className={`font-techno text-[0.5625rem] uppercase tracking-[0.32em] ${KIND_ACCENT[evidence.kind]}`}>
           {KIND_LABEL[evidence.kind]}
         </span>
         {evidence.title ? (
-          <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-bone-dim))]">
+          <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-bone-dim))]">
             {evidence.title}
           </span>
         ) : null}
       </figcaption>
       <div className="overflow-x-auto">
-        <pre className="px-4 py-3 font-mono-tight text-[12px] leading-[1.65] text-[hsl(var(--brand-bone-dim))]">
+        <pre className="px-4 py-3 font-mono-tight text-[0.75rem] leading-[1.65] text-[hsl(var(--brand-bone-dim))]">
           <code>{evidence.lines.join("\n")}</code>
         </pre>
       </div>

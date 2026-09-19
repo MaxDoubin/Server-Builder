@@ -142,7 +142,7 @@ export function CinematicPatch() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {FINDINGS.length} advisories, one week
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -177,20 +177,20 @@ export function CinematicPatch() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-ash))]">
                       {finding.id}
                     </span>
                     <span
-                      className={`font-techno text-[9.5px] uppercase tracking-[0.2em] tabular-nums ${SEVERITY_COLOUR[finding.severity]}`}
+                      className={`font-techno text-[0.59375rem] uppercase tracking-[0.2em] tabular-nums ${SEVERITY_COLOUR[finding.severity]}`}
                     >
                       {finding.cvss.toFixed(1)}
                     </span>
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {finding.product}
                   </span>
                   {mounted && solved.includes(finding.id) ? (
-                    <span className="mt-1 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <span className="mt-1 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       called
                     </span>
                   ) : null}
@@ -204,7 +204,7 @@ export function CinematicPatch() {
               <h2 className="font-display text-lg font-medium leading-snug text-[hsl(var(--brand-bone))]">
                 {active.product}
               </h2>
-              <p className="font-mono-tight text-[12px] tabular-nums text-[hsl(var(--brand-ash))]">
+              <p className="font-mono-tight text-[0.75rem] tabular-nums text-[hsl(var(--brand-ash))]">
                 {active.id} ·{" "}
                 <span className={SEVERITY_COLOUR[active.severity]}>
                   {active.severity} {active.cvss.toFixed(1)}
@@ -212,27 +212,27 @@ export function CinematicPatch() {
               </p>
             </div>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="patch-summary"
             >
               {active.summary}
             </p>
 
-            <h3 className="mt-6 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-6 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · What your estate looks like
             </h3>
             <ul className="mt-3 space-y-2" data-testid="patch-estate">
               {active.estate.map((note) => (
                 <li
                   key={note}
-                  className="border-l-2 border-[hsl(var(--brand-iron))] pl-3.5 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-iron))] pl-3.5 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 >
                   {note}
                 </li>
               ))}
             </ul>
 
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · What do you do about it
             </h3>
             <div className="mt-3 space-y-2">
@@ -256,10 +256,10 @@ export function CinematicPatch() {
                             : "border-[hsl(var(--brand-iron))] opacity-60"
                     }`}
                   >
-                    <span className="font-techno text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))]">
+                    <span className="font-techno text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))]">
                       {PRIORITY_LABEL[tier]}
                     </span>
-                    <span className="mt-1 block font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                    <span className="mt-1 block font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                       {TIER_MEANS[tier]}
                     </span>
                   </button>
@@ -269,7 +269,7 @@ export function CinematicPatch() {
 
             {answered ? (
               <div className="mt-6 space-y-4" data-testid="patch-verdict" aria-live="polite">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {right
                     ? `${PRIORITY_LABEL[truth]}, yes.`
                     : `Not ${PRIORITY_LABEL[chosen].toLowerCase()}. The tree says ${PRIORITY_LABEL[truth].toLowerCase()}.`}{" "}
@@ -282,26 +282,26 @@ export function CinematicPatch() {
                       className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] px-4 py-3"
                     >
                       <span className="flex flex-wrap items-baseline gap-x-3">
-                        <span className="font-techno text-[10px] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
+                        <span className="font-techno text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
                           {POINT_LABEL[key]}
                         </span>
-                        <span className="font-mono-tight text-[13px] text-[hsl(var(--brand-signal))]">
+                        <span className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-signal))]">
                           {VALUE_LABEL[active.points[key]]}
                         </span>
                       </span>
-                      <span className="mt-1.5 block font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                      <span className="mt-1.5 block font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                         {active.because[key]}
                       </span>
                     </li>
                   ))}
                 </ul>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The reading to avoid ·{" "}
                   </span>
                   {active.trap}.
                 </p>
-                <p className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                <p className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                   {(() => {
                     const move = moves.get(active.id) ?? 0;
                     const at = scored.findIndex((item) => item.id === active.id) + 1;
@@ -316,13 +316,13 @@ export function CinematicPatch() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="patch-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Everything you need is above. The advisory gives you the score and the mechanism;
                 the estate notes give you the four things the score cannot know.
               </p>
@@ -330,7 +330,7 @@ export function CinematicPatch() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="patch-progress"
           >
@@ -341,10 +341,10 @@ export function CinematicPatch() {
 
           {/* ── the two queues ── */}
           <section className="mt-14" data-testid="patch-queues">
-            <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · The same week, sorted two ways
             </h2>
-            <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               On the left, the order a scanner hands you. On the right, the order the tree
               produces. {inverted} of the {pairs} pairs are the other way round, and the
               disagreements are not small: the thing at the bottom of the left column is second on
@@ -375,7 +375,7 @@ export function CinematicPatch() {
 
           <ReadAboutThis href="/patch" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The tree is the published deployer decision tree, all seventy-two rows of it,
             transcribed rather than reimplemented: the point of using somebody else's framework is
             lost if you rewrite its judgements into heuristics of your own on the way in. CI checks
@@ -385,12 +385,12 @@ export function CinematicPatch() {
             which holds across all one hundred and eighty six single-step comparisons and which a
             mistyped cell breaks.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The advisories are constructed, which is why they are numbered ADV rather than CVE:
             nothing here should be quotable as a real published vulnerability. The scoring system,
             the decision points and the tree are real, and cited below.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The same shape of problem, where a stated rule and the order you read it in disagree,
             is at{" "}
             <Link
@@ -415,7 +415,7 @@ export function CinematicPatch() {
             </Link>
             .
           </p>
-          <h2 className="mt-12 font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+          <h2 className="mt-12 font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
             · Where this comes from
           </h2>
           <ul className="mt-4 space-y-2">
@@ -431,7 +431,7 @@ export function CinematicPatch() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
+                  className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
                 >
                   {label}
                 </a>
@@ -460,10 +460,10 @@ interface ColumnProps {
 function QueueColumn({ heading, caption, findings, other, moves, active, onPick, sortedByScore }: ColumnProps) {
   return (
     <div className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] p-4">
-      <h3 className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))]">
+      <h3 className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone))]">
         {heading}
       </h3>
-      <p className="mt-1 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">{caption}</p>
+      <p className="mt-1 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">{caption}</p>
       <ol className="mt-4 space-y-1.5" data-testid={sortedByScore ? "queue-score" : "queue-priority"}>
         {findings.map((finding, index) => {
           const move = moves.get(finding.id) ?? 0;
@@ -481,14 +481,14 @@ function QueueColumn({ heading, caption, findings, other, moves, active, onPick,
                     : "border-transparent hover:border-[hsl(var(--brand-iron))]"
                 }`}
               >
-                <span className="w-5 shrink-0 font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-ash)/0.7)]">
+                <span className="w-5 shrink-0 font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-ash)/0.7)]">
                   {index + 1}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone))]">
+                  <span className="block truncate font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone))]">
                     {finding.product}
                   </span>
-                  <span className="mt-0.5 block font-mono-tight text-[10.5px] tabular-nums text-[hsl(var(--brand-ash))]">
+                  <span className="mt-0.5 block font-mono-tight text-[0.65625rem] tabular-nums text-[hsl(var(--brand-ash))]">
                     {sortedByScore
                       ? `${finding.cvss.toFixed(1)} · the tree puts it ${elsewhere}`
                       : `${PRIORITY_LABEL[tier]} · the score puts it ${elsewhere}`}
@@ -501,7 +501,7 @@ function QueueColumn({ heading, caption, findings, other, moves, active, onPick,
                 */}
                 {move === 0 ? null : (
                   <span
-                    className={`shrink-0 font-techno text-[10px] uppercase tracking-[0.14em] tabular-nums ${
+                    className={`shrink-0 font-techno text-[0.625rem] uppercase tracking-[0.14em] tabular-nums ${
                       move > 0
                         ? "text-[hsl(var(--brand-danger))]"
                         : "text-[hsl(var(--brand-cyan))]"

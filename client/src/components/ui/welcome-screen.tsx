@@ -123,7 +123,7 @@ export function WelcomeScreen({
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center px-6 py-10">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2 font-techno text-[10px] uppercase tracking-[0.42em] text-[hsl(var(--brand-signal))] backdrop-blur-md">
+            <div className="inline-flex items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2 font-techno text-[0.625rem] uppercase tracking-[0.42em] text-[hsl(var(--brand-signal))] backdrop-blur-md">
               <span
                 className="inline-flex h-2 w-2 rounded-full bg-[hsl(var(--brand-signal))]"
                 style={{ boxShadow: "0 0 12px hsl(var(--brand-signal))" }}
@@ -166,7 +166,7 @@ export function WelcomeScreen({
               <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,hsl(var(--brand-signal)),transparent)] opacity-75" />
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="max-w-xl">
-                  <div className="font-techno text-[10px] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
+                  <div className="font-techno text-[0.625rem] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
                     Choose your entry point
                   </div>
                   <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -248,7 +248,7 @@ export function WelcomeScreen({
               >
                 <div className="mb-3 flex items-center justify-between">
                   <div>
-                    <div className="font-techno text-[10px] uppercase tracking-[0.34em] text-[hsl(var(--brand-signal))]">
+                    <div className="font-techno text-[0.625rem] uppercase tracking-[0.34em] text-[hsl(var(--brand-signal))]">
                       {module.title}
                     </div>
                     <div className="mt-1 text-sm text-[hsl(var(--brand-bone-dim))]">{module.subtitle}</div>
@@ -261,7 +261,7 @@ export function WelcomeScreen({
                 <div className="space-y-3">
                   {module.lines.map((line, lineIndex) => (
                     <div key={line} className="space-y-2">
-                      <div className="flex items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <div className="flex items-center justify-between font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         <span>{line}</span>
                         <span className="text-[hsl(var(--brand-bone-dim))]">Ready</span>
                       </div>
@@ -301,7 +301,7 @@ export function WelcomeScreen({
         >
           <span aria-hidden>{showPanels ? "⟨" : "⟩"}</span>
         </Button>
-        <div className="mt-2 text-center font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
+        <div className="mt-2 text-center font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
           Press E
         </div>
       </div>
@@ -322,7 +322,7 @@ function InfoCard({
     <div className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,hsl(var(--brand-graphite)/0.82),hsl(var(--brand-obsidian)/0.72))] p-4 backdrop-blur-lg">
       <div className="mb-3 flex items-center gap-2">
         {icon}
-        <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+        <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
           {title}
         </div>
       </div>

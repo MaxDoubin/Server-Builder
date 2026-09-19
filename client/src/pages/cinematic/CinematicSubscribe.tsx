@@ -31,7 +31,7 @@ export function CinematicSubscribe() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[860px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Channel · Subscribe
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.25rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -52,7 +52,7 @@ export function CinematicSubscribe() {
           >
             <h2
               id="feed-url"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               The feed URL
             </h2>
@@ -78,7 +78,7 @@ export function CinematicSubscribe() {
               <a
                 href={FEED_URL}
                 data-testid="link-raw-feed"
-                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[24px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-signal))]"
               >
                 View the raw feed
                 <span aria-hidden>↗</span>
@@ -126,7 +126,7 @@ export function CinematicSubscribe() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm">
-              <h3 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+              <h3 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                 Start to finish
               </h3>
               <ol className="mt-4 space-y-3">
@@ -139,7 +139,7 @@ export function CinematicSubscribe() {
                   <li key={step} className="flex gap-4">
                     <span
                       aria-hidden
-                      className="mt-0.5 shrink-0 font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-signal))]"
+                      className="mt-0.5 shrink-0 font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-signal))]"
                     >
                       {String(index + 1).padStart(2, "0")}
                     </span>
@@ -184,7 +184,7 @@ export function CinematicSubscribe() {
                         ↗
                       </span>
                     </div>
-                    <span className="mt-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <span className="mt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       {reader.platforms}
                     </span>
                     <span className="mt-3 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
@@ -221,7 +221,7 @@ export function CinematicSubscribe() {
                 className="group rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-5 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/0.4)]"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     Profile
                   </span>
                   <span aria-hidden className="text-[hsl(var(--brand-ash))]">
@@ -244,7 +244,7 @@ export function CinematicSubscribe() {
                 className="group rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-5 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/0.4)]"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     This site
                   </span>
                   <span aria-hidden className="text-[hsl(var(--brand-ash))]">

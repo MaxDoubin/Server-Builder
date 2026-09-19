@@ -108,7 +108,7 @@ export function CinematicArchive() {
     <CinematicLayout>
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1100px]">
-          <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+          <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
             · Journal · Complete Index
           </div>
           <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -138,7 +138,7 @@ export function CinematicArchive() {
               aria-label="Jump to year"
               className="mt-10 flex flex-wrap items-center gap-2 border-y border-[hsl(var(--brand-iron))] py-4"
             >
-              <span className="mr-2 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+              <span className="mr-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                 year ·
               </span>
               {groups.map((group) => (
@@ -146,7 +146,7 @@ export function CinematicArchive() {
                   key={group.year}
                   href={`#year-${group.year}`}
                   data-testid={`link-year-${group.year}`}
-                  className="inline-flex h-9 items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="inline-flex h-9 items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   {group.year}
                   <span className="ml-2 text-[hsl(var(--brand-signal))]">
@@ -172,14 +172,14 @@ export function CinematicArchive() {
                   >
                     {group.year}
                   </h2>
-                  <span className="shrink-0 font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
+                  <span className="shrink-0 font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))]">
                     {group.count} note{group.count === 1 ? "" : "s"}
                   </span>
                 </div>
 
                 {group.months.map((monthGroup) => (
                   <div key={monthGroup.month} className="mt-8">
-                    <h3 className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                    <h3 className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                       {MONTHS[monthGroup.month - 1] ?? "Undated"}
                     </h3>
                     <ul className="mt-2">
@@ -194,7 +194,7 @@ export function CinematicArchive() {
                             >
                               <time
                                 dateTime={post.date}
-                                className="w-8 shrink-0 font-mono-tight text-[11px] tabular-nums text-[hsl(var(--brand-ash))]"
+                                className="w-8 shrink-0 font-mono-tight text-[0.6875rem] tabular-nums text-[hsl(var(--brand-ash))]"
                               >
                                 {day}
                               </time>
@@ -204,7 +204,7 @@ export function CinematicArchive() {
                               {/* Not shrink-0: four tags on a 390px screen
                                   are wider than the line, and this span has
                                   to be allowed to wrap inside itself. */}
-                              <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-mono-tight text-[9px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+                              <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
                                 {post.tags.map((tag) => (
                                   <span
                                     key={tag}
@@ -231,7 +231,7 @@ export function CinematicArchive() {
           <div className="mt-20 border-t border-[hsl(var(--brand-iron))] pt-8">
             <Link
               href="/blog"
-              className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← Back to field notes
             </Link>

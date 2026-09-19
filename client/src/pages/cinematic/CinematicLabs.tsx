@@ -42,7 +42,7 @@ export function CinematicLabs() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Practice · Hands on
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -61,7 +61,7 @@ export function CinematicLabs() {
             </p>
           </header>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-[hsl(var(--brand-iron))] py-3 font-mono-tight text-[0.6875rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
             <span>
               {LABS.length} {pluralise(LABS.length, "lab")}
             </span>
@@ -70,7 +70,7 @@ export function CinematicLabs() {
 
           {groups.map((group) => (
             <section key={group.difficulty} className="mt-11">
-              <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · {group.difficulty}
               </h2>
               <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -81,12 +81,12 @@ export function CinematicLabs() {
             </section>
           ))}
 
-          <p className="mt-14 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every lab ships a recorded solution that CI replays through the same shell on every
             push, so a lab that has stopped being solvable fails the build rather than your
             afternoon.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             For the decisions rather than the commands, the{" "}
             <Link
               href="/scenarios"
@@ -116,10 +116,10 @@ function LabCard({ lab, solved }: { lab: Lab; solved: boolean }) {
         <span className="font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
           {lab.title}
         </span>
-        <span className="mt-2 flex-1 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+        <span className="mt-2 flex-1 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
           {lab.tagline}
         </span>
-        <span className="mt-4 flex items-center gap-4 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
+        <span className="mt-4 flex items-center gap-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]">
           <span>{lab.hints.length} hints</span>
           {solved ? <span className="text-[hsl(var(--brand-signal))]">Solved</span> : null}
         </span>

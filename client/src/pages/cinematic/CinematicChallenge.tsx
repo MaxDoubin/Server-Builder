@@ -107,13 +107,13 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
         <div className="mx-auto max-w-[820px]">
           <Link
             href="/challenges"
-            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+            className="inline-flex min-h-[36px] items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
           >
             ← All challenges
           </Link>
 
           <header className="mt-6">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               <span>· {challenge.category}</span>
               <span className="text-[hsl(var(--brand-ash))]">{challenge.difficulty}</span>
             </div>
@@ -123,7 +123,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
             {challenge.brief.map((paragraph, index) => (
               <p
                 key={index}
-                className="mt-4 font-mono-tight text-[14.5px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                className="mt-4 font-mono-tight text-[0.90625rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
               >
                 {paragraph}
               </p>
@@ -137,11 +137,11 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
           <section className="mt-9 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5">
             <label
               htmlFor="flag"
-              className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]"
+              className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]"
             >
               · The answer
             </label>
-            <p className="mt-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+            <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
               Shape: {challenge.flagShape}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -160,13 +160,13 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
                 autoCorrect="off"
                 autoComplete="off"
                 data-testid="flag-input"
-                className="min-w-0 flex-1 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[13px] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="min-w-0 flex-1 rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] px-3 py-2.5 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))]"
               />
               <button
                 type="button"
                 onClick={() => void submit()}
                 data-testid="flag-submit"
-                className="min-h-[44px] rounded-lg bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90"
+                className="min-h-[44px] rounded-lg bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90"
               >
                 Submit
               </button>
@@ -175,7 +175,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
             <div aria-live="polite">
               {state === "wrong" ? (
                 <p
-                  className="mt-3 font-mono-tight text-[12.5px] text-[hsl(var(--brand-amber))]"
+                  className="mt-3 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-amber))]"
                   data-testid="flag-wrong"
                 >
                   Not that one. {attempts >= 3 ? "Open a hint, or show the method." : "Nothing is scored."}
@@ -183,7 +183,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
               ) : null}
               {state === "solved" ? (
                 <p
-                  className="mt-3 font-mono-tight text-[12.5px] text-[hsl(var(--brand-signal))]"
+                  className="mt-3 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-signal))]"
                   data-testid="flag-solved"
                 >
                   {restored
@@ -195,14 +195,14 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
           </section>
 
           <section className="mt-9">
-            <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+            <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · Hints, {hintsOpen} of {challenge.hints.length} open
             </h2>
             <ol className="mt-4 space-y-3">
               {challenge.hints.slice(0, hintsOpen).map((hint, index) => (
                 <li
                   key={index}
-                  className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-3 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-3 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                 >
                   {hint}
                 </li>
@@ -214,7 +214,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
                   type="button"
                   onClick={() => setHintsOpen((n) => n + 1)}
                   data-testid="challenge-hint"
-                  className="min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   Open hint {hintsOpen + 1}
                 </button>
@@ -224,7 +224,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
                   type="button"
                   onClick={() => setRevealed(true)}
                   data-testid="challenge-reveal"
-                  className="min-h-[36px] font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="min-h-[36px] font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   Show me the method
                 </button>
@@ -237,13 +237,13 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
               className="mt-9 rounded-2xl border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-signal)/0.05)] p-6"
               data-testid="challenge-method"
             >
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · The method
               </h2>
               {challenge.walkthrough.map((paragraph, index) => (
                 <p
                   key={index}
-                  className="mt-4 font-mono-tight text-[14px] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
+                  className="mt-4 font-mono-tight text-[0.875rem] leading-[1.75] text-[hsl(var(--brand-bone-dim))]"
                 >
                   {paragraph}
                 </p>
@@ -253,7 +253,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
 
           {challenge.reading?.length ? (
             <section className="mt-10">
-              <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+              <h2 className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · Tools and reading
               </h2>
               <ul className="mt-4 space-y-2">
@@ -261,7 +261,7 @@ function ChallengeView({ challenge }: { challenge: Challenge }) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
+                      className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
                     >
                       {link.label}
                     </Link>
@@ -280,17 +280,17 @@ function ArtefactBlock({ artefact }: { artefact: Artefact }) {
   return (
     <figure className="mt-6 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)]">
       <figcaption className="flex flex-wrap items-baseline gap-x-3 border-b border-[hsl(var(--brand-iron))] px-4 py-2.5">
-        <span className="font-techno text-[9px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+        <span className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
           {artefact.kind}
         </span>
         {artefact.title ? (
-          <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-bone-dim))]">
+          <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-bone-dim))]">
             {artefact.title}
           </span>
         ) : null}
       </figcaption>
       <div className="overflow-x-auto">
-        <pre className="px-4 py-3 font-mono-tight text-[12px] leading-[1.7] text-[hsl(var(--brand-bone-dim))]">
+        <pre className="px-4 py-3 font-mono-tight text-[0.75rem] leading-[1.7] text-[hsl(var(--brand-bone-dim))]">
           <code>{artefact.lines.join("\n")}</code>
         </pre>
       </div>

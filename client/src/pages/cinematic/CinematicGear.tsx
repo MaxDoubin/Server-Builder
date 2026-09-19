@@ -169,7 +169,7 @@ export function CinematicGear() {
   }, [filtered]);
 
   const chip = (active: boolean) =>
-    `rounded-full border px-3 py-1.5 font-techno text-[10px] uppercase tracking-[0.22em] transition-colors ${
+    `rounded-full border px-3 py-1.5 font-techno text-[0.625rem] uppercase tracking-[0.22em] transition-colors ${
       active
         ? "border-[hsl(var(--brand-signal))] text-[hsl(var(--brand-bone))]"
         : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -180,7 +180,7 @@ export function CinematicGear() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1180px]">
           <header className="max-w-[62ch]">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Hardware · Measured
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -238,7 +238,7 @@ export function CinematicGear() {
                 <div>
                   <label
                     htmlFor="gear-search"
-                    className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+                    className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
                   >
                     Search
                   </label>
@@ -255,7 +255,7 @@ export function CinematicGear() {
 
                 <div className="space-y-4">
                   <div>
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                    <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                       Mounts
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -278,7 +278,7 @@ export function CinematicGear() {
                   </div>
 
                   <div>
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+                    <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
                       Groups
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -303,7 +303,7 @@ export function CinematicGear() {
               <p
                 role="status"
                 data-testid="text-gear-count"
-                className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                className="mt-6 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
               >
                 {filtered.length} of {devices.length} models
                 {mount === "rack" ? (
@@ -340,7 +340,7 @@ export function CinematicGear() {
                       >
                         {name}
                       </h2>
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         {items.length} {items.length === 1 ? "model" : "models"}
                       </span>
                     </div>
@@ -355,7 +355,7 @@ export function CinematicGear() {
                             {open === d.slug ? (
                               <Suspense
                                 fallback={
-                                  <div className="flex h-40 items-center justify-center bg-[hsl(var(--brand-obsidian)/0.55)] font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                                  <div className="flex h-40 items-center justify-center bg-[hsl(var(--brand-obsidian)/0.55)] font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                                     Loading the model...
                                   </div>
                                 }
@@ -379,7 +379,7 @@ export function CinematicGear() {
                                     className="max-h-full max-w-full object-contain transition-transform group-hover:scale-105"
                                   />
                                 ) : (
-                                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                                     No render
                                   </span>
                                 )}
@@ -389,7 +389,7 @@ export function CinematicGear() {
                               <button
                                 type="button"
                                 onClick={() => setOpen(null)}
-                                className="border-b border-[hsl(var(--brand-iron))] px-4 py-2 text-left font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                                className="border-b border-[hsl(var(--brand-iron))] px-4 py-2 text-left font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                               >
                                 Close the model
                               </button>
@@ -413,7 +413,7 @@ export function CinematicGear() {
                                 <h3 className="font-display text-base font-medium leading-tight text-[hsl(var(--brand-bone))]">
                                   {d.name}
                                 </h3>
-                                <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] [overflow-wrap:anywhere]">
+                                <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] [overflow-wrap:anywhere]">
                                   {d.sku}
                                 </span>
                               </div>
@@ -422,7 +422,7 @@ export function CinematicGear() {
                                 {d.short}
                               </p>
 
-                              <dl className="mt-auto grid grid-cols-2 gap-x-4 gap-y-1 pt-2 font-mono-tight text-[10px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
+                              <dl className="mt-auto grid grid-cols-2 gap-x-4 gap-y-1 pt-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))]">
                                 <div className="col-span-2 flex justify-between">
                                   <dt>Size</dt>
                                   <dd className="text-[hsl(var(--brand-bone-dim))]">{dimensions(d)}</dd>
@@ -450,7 +450,7 @@ export function CinematicGear() {
                                   href={d.store}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="mt-2 inline-flex min-h-[24px] items-center font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] hover:underline"
+                                  className="mt-2 inline-flex min-h-[24px] items-center font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] hover:underline"
                                 >
                                   Vendor page →
                                 </a>
@@ -473,7 +473,7 @@ export function CinematicGear() {
                     {catalogue.note}
                   </p>
                 ) : null}
-                <p className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <p className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   <Link
                     href="/data"
                     className="inline-flex min-h-[24px] items-center text-[hsl(var(--brand-signal))] hover:underline"

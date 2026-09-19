@@ -156,7 +156,7 @@ export function CinematicGame() {
               onClick={() => setIsFullscreen(false)}
               data-testid="button-exit-fullscreen"
               aria-label="Exit fullscreen"
-              className="fixed right-4 top-4 z-[60] inline-flex h-10 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.7)] px-4 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] backdrop-blur-md transition-colors hover:border-[hsl(var(--brand-signal)/.6)]"
+              className="fixed right-4 top-4 z-[60] inline-flex h-10 items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/.7)] px-4 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] backdrop-blur-md transition-colors hover:border-[hsl(var(--brand-signal)/.6)]"
             >
               <Minimize2 className="h-4 w-4" />
               Exit
@@ -253,7 +253,7 @@ function GameBriefing({
       <div className="relative mx-auto flex max-w-[1400px] flex-col gap-8 px-6 py-10 md:px-10 md:py-14">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between md:gap-10">
           <div className="max-w-[62ch]">
-            <div className="flex flex-wrap items-center gap-3 font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="flex flex-wrap items-center gap-3 font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               <span
                 className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))] animate-rack-led"
                 style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}
@@ -281,7 +281,7 @@ function GameBriefing({
 
             <div
               ref={metaRef}
-              className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+              className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
             >
               <span>{profile} profile</span>
               <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" aria-hidden />
@@ -297,7 +297,7 @@ function GameBriefing({
             <button
               onClick={onLaunchFullscreen}
               data-testid="button-fullscreen"
-              className="group inline-flex h-11 items-center gap-3 rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))] transition-transform hover:scale-[1.02]"
+              className="group inline-flex h-11 items-center gap-3 rounded-full border border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-obsidian))] transition-transform hover:scale-[1.02]"
               style={{ boxShadow: "0 0 24px hsl(var(--brand-signal) / 0.35)" }}
             >
               <Maximize2 className="h-4 w-4" />
@@ -310,7 +310,7 @@ function GameBriefing({
               <button
                 type="button"
                 onClick={onDowngrade}
-                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.08)] px-4 py-2 font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-cyan)/0.14)]"
+                className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.08)] px-4 py-2 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:bg-[hsl(var(--brand-cyan)/0.14)]"
               >
                 <Gauge className="h-4 w-4" />
                 Prefer safer mode
@@ -320,7 +320,7 @@ function GameBriefing({
               type="button"
               onClick={() => setShown(false)}
               data-testid="button-collapse-briefing"
-              className="inline-flex min-h-[24px] items-center font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="inline-flex min-h-[24px] items-center font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               Hide briefing →
             </button>
@@ -360,7 +360,7 @@ function BriefingCard({
 }) {
   return (
     <div className="rounded-[24px] border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,hsl(var(--brand-graphite)/0.82),hsl(var(--brand-obsidian)/0.74))] p-5 backdrop-blur-md">
-      <div className="mb-3 flex items-center gap-2">{icon}<div className="font-techno text-[10px] uppercase tracking-[0.34em] text-[hsl(var(--brand-signal))]">{title}</div></div>
+      <div className="mb-3 flex items-center gap-2">{icon}<div className="font-techno text-[0.625rem] uppercase tracking-[0.34em] text-[hsl(var(--brand-signal))]">{title}</div></div>
       <p className="text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">{body}</p>
     </div>
   );

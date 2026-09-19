@@ -35,7 +35,7 @@ export function CinematicNcl() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1100px]">
           <header className="max-w-3xl">
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Study · Competitive Cyber
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -48,7 +48,7 @@ export function CinematicNcl() {
               scoreboard. These are my study notes for it: how it works, how to
               prepare, and a full guide to every category.
             </p>
-            <p className="mt-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+            <p className="mt-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
               Season dates, fees, and the exact scoring details change over time.
               Always confirm the current specifics at{" "}
               <a
@@ -126,13 +126,13 @@ export function CinematicNcl() {
                     className="group flex h-full items-start justify-between gap-3 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/0.5)]"
                   >
                     <span>
-                      <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         {String(guide.order).padStart(2, "0")}
                       </span>
                       <span className="mt-2 block font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
                         {guide.category}
                       </span>
-                      <span className="mt-2 block font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                      <span className="mt-2 block font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                         {guide.tagline}
                       </span>
                     </span>
@@ -179,7 +179,7 @@ export function CinematicNcl() {
           </section>
 
           <section className="mt-14 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 backdrop-blur-sm md:p-8">
-            <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · My experience
             </div>
             <h2 className="mt-3 font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl">
@@ -253,7 +253,7 @@ function InfoCard({ title, children }: { title: string; children: React.ReactNod
       <h3 className="font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))]">
         {title}
       </h3>
-      <p className="mt-2 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+      <p className="mt-2 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
         {children}
       </p>
     </div>

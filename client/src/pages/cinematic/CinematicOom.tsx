@@ -130,7 +130,7 @@ export function CinematicOom() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} machines
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -167,17 +167,17 @@ export function CinematicOom() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {human(item.machine.ram)}
                       {item.trigger.kind === "cgroup" ? " cgroup" : ""}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -190,14 +190,14 @@ export function CinematicOom() {
               <h2 className="font-display text-lg font-medium leading-snug text-[hsl(var(--brand-bone))]">
                 {active.name}
               </h2>
-              <p className="font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+              <p className="font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
                 {human(active.machine.ram)} RAM
                 {active.machine.swap > 0 ? `, ${human(active.machine.swap)} swap` : ", no swap"},{" "}
                 {human(committed(active.machine))} held
               </p>
             </div>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="oom-brief"
             >
               {active.brief}
@@ -205,10 +205,10 @@ export function CinematicOom() {
 
             {/* ── what ran out, and therefore who is in the running ── */}
             <p
-              className="mt-5 rounded-xl border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.05)] px-4 py-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-5 rounded-xl border border-[hsl(var(--brand-cyan)/0.35)] bg-[hsl(var(--brand-cyan)/0.05)] px-4 py-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="oom-trigger"
             >
-              <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+              <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                 {active.trigger.kind === "cgroup" ? "cgroup OOM · " : "system OOM · "}
               </span>
               {active.trigger.kind === "cgroup"
@@ -223,8 +223,8 @@ export function CinematicOom() {
               className="mt-5 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4"
               data-testid="oom-table"
             >
-              <table className="w-full min-w-[560px] border-collapse font-mono-tight text-[11.5px]">
-                <caption className="pb-2 text-left font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+              <table className="w-full min-w-[560px] border-collapse font-mono-tight text-[0.71875rem]">
+                <caption className="pb-2 text-left font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   · what you would have in front of you
                 </caption>
                 <thead>
@@ -276,7 +276,7 @@ export function CinematicOom() {
                   ))}
                 </tbody>
               </table>
-              <p className="mt-3 font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+              <p className="mt-3 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                 SWAP and PTE are two of the four terms and `top` shows neither without being asked.
                 SHR is here to be ignored: the kernel counts a shared page in full, in every
                 process that maps it.
@@ -284,7 +284,7 @@ export function CinematicOom() {
             </div>
 
             {/* ── the question ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -298,7 +298,7 @@ export function CinematicOom() {
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`oom-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -316,7 +316,7 @@ export function CinematicOom() {
 
             {answered ? (
               <div className="mt-6 space-y-5" data-testid="oom-verdict">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."}{" "}
                   {dead.length === 0
                     ? "Nothing is killed. The kernel finds no candidate, logs that it has none, and panics."
@@ -337,7 +337,7 @@ export function CinematicOom() {
                         <div key={task.pid} data-testid={`oom-score-${task.pid}`}>
                           <div className="flex flex-wrap items-baseline justify-between gap-x-4">
                             <span
-                              className={`font-mono-tight text-[11.5px] ${
+                              className={`font-mono-tight text-[0.71875rem] ${
                                 score === null
                                   ? "text-[hsl(var(--brand-ash))] line-through"
                                   : isDead(task)
@@ -347,7 +347,7 @@ export function CinematicOom() {
                             >
                               {task.name} · {task.pid}
                             </span>
-                            <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                               {score === null
                                 ? task.unkillable
                                   ? "not a candidate: kernel task"
@@ -416,30 +416,30 @@ export function CinematicOom() {
                     })}
                   </div>
                 </div>
-                <p className="font-mono-tight text-[11px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                <p className="font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                   Resident, swap and page tables in solid colour; the hatched arm is
                   oom_score_adj, worth {human(Math.abs(adjWorth(1000, total)))} at 1000 on this{" "}
                   {active.trigger.kind === "cgroup" ? "cgroup" : "machine"}
                   {lo < 0 ? ", and the pale line is zero" : ""}.
                 </p>
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
                 <p
-                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+                  className="border-l-2 border-[hsl(var(--brand-cyan)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
                   data-testid="oom-fix"
                 >
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-cyan))]">
                     The fix ·{" "}
                   </span>
                   {active.fix}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -448,13 +448,13 @@ export function CinematicOom() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="oom-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Four terms, and every number you need is in the table. The scores are drawn once
                 you have committed to an answer.
               </p>
@@ -462,7 +462,7 @@ export function CinematicOom() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="oom-progress"
           >
@@ -471,7 +471,7 @@ export function CinematicOom() {
 
           <ReadAboutThis href="/oom" />
 
-          <p className="mt-10 font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">
+          <p className="mt-10 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-ash))]">
             <Link href="/practice" className="underline decoration-dotted hover:text-[hsl(var(--brand-bone))]">
               All practice material
             </Link>

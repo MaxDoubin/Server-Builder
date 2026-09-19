@@ -447,7 +447,7 @@ export function PracticeAct() {
       <div className="mx-auto max-w-[1080px]">
         <div ref={headRef}>
           <div
-            className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
+            className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]"
             style={{ textShadow: "0 0 12px hsl(var(--brand-signal) / 0.5)" }}
           >
             · Not only reading
@@ -455,12 +455,12 @@ export function PracticeAct() {
           <h2 className="mt-5 max-w-3xl font-display text-[clamp(2rem,5vw,3.6rem)] font-medium leading-[1.02] tracking-[-0.035em] text-[hsl(var(--brand-bone))]">
             Ten places to practice, and none of them need anything installed.
           </h2>
-          <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-[15px]">
+          <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-[0.9375rem]">
             A shell on a broken host, a packet capture with a real filter bar, an inbox of mail to
             judge, a firewall chain that will show you which rule stole your packet. All of it runs
             in the browser, none of it reaches a real machine, and nothing you do leaves the page.
           </p>
-          <p className="mt-4 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every exercise ships a solution that CI replays on every push, so an exercise that has
             stopped being solvable fails the build rather than your afternoon.
           </p>
@@ -468,14 +468,14 @@ export function PracticeAct() {
             <Link
               href="/today"
               data-testid="home-practice-today"
-              className="inline-flex min-h-[46px] items-center rounded-lg bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="inline-flex min-h-[46px] items-center rounded-lg bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Start with today
             </Link>
             <Link
               href="/practice"
               data-testid="home-practice-hub"
-              className="inline-flex min-h-[46px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="inline-flex min-h-[46px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone-dim))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               Or choose for yourself
             </Link>
@@ -490,16 +490,16 @@ export function PracticeAct() {
                 data-testid={`home-surface-${surface.href.slice(1)}`}
                 className="flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.45)] p-5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
-                <span className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+                <span className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
                   · {surface.eyebrow}
                 </span>
                 <span className="mt-2 font-display text-lg font-medium leading-snug text-[hsl(var(--brand-bone))]">
                   {surface.title}
                 </span>
-                <span className="mt-2 flex-1 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                <span className="mt-2 flex-1 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   {surface.blurb}
                 </span>
-                <span className="mt-4 font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
+                <span className="mt-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))]">
                   {surface.count}
                 </span>
               </Link>

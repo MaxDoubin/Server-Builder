@@ -472,7 +472,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
       />
 
       <div className="relative flex flex-col items-center gap-7 px-6">
-        <div className="flex items-center gap-3 font-mono-tight text-[10px] uppercase tracking-[0.38em] text-[hsl(var(--brand-bone-dim))]">
+        <div className="flex items-center gap-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.38em] text-[hsl(var(--brand-bone-dim))]">
           <span
             className="inline-flex h-2 w-2 rounded-full bg-[hsl(var(--brand-signal))]"
             style={{
@@ -494,7 +494,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
           <Rack3D progress={progress} reduceMotion={!!reduceMotion} />
         </div>
 
-        <div className="flex w-[min(320px,78vw)] items-center justify-between font-mono-tight text-[11px] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
+        <div className="flex w-[min(320px,78vw)] items-center justify-between font-mono-tight text-[0.6875rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-bone-dim))]">
           <span>Loading site</span>
           <span className="signal-text" data-testid="text-preloader-percent">
             {pct.toString().padStart(3, "0")}%
@@ -511,7 +511,7 @@ export function Preloader({ minDurationMs = 1200, onDone }: PreloaderProps) {
           />
         </div>
 
-        <div className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
+        <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone-dim))]">
           Cybersecurity · Networking · Leadership
         </div>
       </div>

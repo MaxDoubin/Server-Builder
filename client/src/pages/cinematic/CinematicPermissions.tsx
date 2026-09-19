@@ -154,7 +154,7 @@ export function CinematicPermissions() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} accesses
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -191,16 +191,16 @@ export function CinematicPermissions() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                       {OPERATION_LABEL[item.operation]}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         called
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.title}
                   </span>
                 </button>
@@ -213,7 +213,7 @@ export function CinematicPermissions() {
               {active.title}
             </h2>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="permission-brief"
             >
               {active.brief}
@@ -221,7 +221,7 @@ export function CinematicPermissions() {
 
             {/* ── who you are ── */}
             <div className="mt-6 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
-              <p className="whitespace-nowrap font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="whitespace-nowrap font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 <span className="text-[hsl(var(--brand-cyan))]">$</span> id
                 <br />
                 uid={active.actor.user === "root" ? "0" : "1001"}(
@@ -272,7 +272,7 @@ export function CinematicPermissions() {
                 </tbody>
               </table>
 
-              <p className="mt-4 whitespace-nowrap font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone))]">
+              <p className="mt-4 whitespace-nowrap font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone))]">
                 <span className="text-[hsl(var(--brand-cyan))]">
                   {active.actor.user === "root" ? "#" : "$"}
                 </span>{" "}
@@ -281,7 +281,7 @@ export function CinematicPermissions() {
             </div>
 
             {/* ── the call ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · Does it work
             </h3>
             <div className="mt-3 space-y-2">
@@ -295,7 +295,7 @@ export function CinematicPermissions() {
                     onClick={() => answer(option.id)}
                     disabled={answered}
                     data-testid={`permission-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : correct
@@ -313,20 +313,20 @@ export function CinematicPermissions() {
 
             {answered ? (
               <div className="mt-5 space-y-4" data-testid="permission-verdict" aria-live="polite">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {right ? "Yes." : "No."}{" "}
                   {verdict.kind === "allowed"
                     ? "The call succeeds."
                     : refusal(active, verdict.at, verdict.reason)}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -335,13 +335,13 @@ export function CinematicPermissions() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="permission-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 The tree is unmarked on purpose. Which of the three sets of bits applies to you at
                 each row is most of the question, so the page does not answer it before you do.
               </p>
@@ -349,7 +349,7 @@ export function CinematicPermissions() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="permission-progress"
           >
@@ -362,7 +362,7 @@ export function CinematicPermissions() {
 
           <ReadAboutThis href="/permissions" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Nothing above is written down as an answer. Each case declares which option is correct
             and the verdict comes from a model of the rules, so a case whose prose disagrees with
             its own tree fails the build. The model is checked separately against the rules
@@ -370,7 +370,7 @@ export function CinematicPermissions() {
             delete never consults the file, that an unsearchable directory stops everything below
             it, over four thousand generated paths on every commit.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             To build a mode rather than read one, there is a{" "}
             <Link
               href="/tools/chmod-calculator"
@@ -433,7 +433,7 @@ function TreeRow({ node, index, depth, isTarget, step, answered, stoppedAt, oper
       className={`permission-row align-baseline ${beyond ? "opacity-40" : ""}`}
       style={answered ? { animationDelay: `${index * 110}ms` } : undefined}
     >
-      <td className="whitespace-nowrap py-1 pr-4 font-mono-tight text-[12.5px] tabular-nums">
+      <td className="whitespace-nowrap py-1 pr-4 font-mono-tight text-[0.78125rem] tabular-nums">
         {answered && step ? (
           <>
             <span className="text-[hsl(var(--brand-ash))]">{line[0]}</span>
@@ -456,19 +456,19 @@ function TreeRow({ node, index, depth, isTarget, step, answered, stoppedAt, oper
           <span className="text-[hsl(var(--brand-bone-dim))]">{line}</span>
         )}
       </td>
-      <td className="whitespace-nowrap py-1 pr-4 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash))]">
+      <td className="whitespace-nowrap py-1 pr-4 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash))]">
         {node.owner} {node.group}
       </td>
-      <td className="whitespace-nowrap py-1 pr-4 font-mono-tight text-[11.5px] text-[hsl(var(--brand-ash)/0.7)]">
+      <td className="whitespace-nowrap py-1 pr-4 font-mono-tight text-[0.71875rem] text-[hsl(var(--brand-ash)/0.7)]">
         {octal(node.mode)}
       </td>
-      <td className="w-full py-1 font-mono-tight text-[12.5px]">
+      <td className="w-full py-1 font-mono-tight text-[0.78125rem]">
         <span style={{ paddingLeft: `${depth * 0.85}rem` }} className="text-[hsl(var(--brand-bone))]">
           {node.name}
           {node.kind === "dir" && node.name !== "/" ? "/" : ""}
         </span>
         {answered && step ? (
-          <span className="ml-3 font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+          <span className="ml-3 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
             {step.bypassed
               ? "root, so no check"
               : `${CLASS_LABEL[step.using]} ${triad(step.has)}, needs ${
@@ -477,17 +477,17 @@ function TreeRow({ node, index, depth, isTarget, step, answered, stoppedAt, oper
           </span>
         ) : null}
         {node.note ? (
-          <span className="ml-3 font-mono-tight text-[11px] italic text-[hsl(var(--brand-ash)/0.75)]">
+          <span className="ml-3 font-mono-tight text-[0.6875rem] italic text-[hsl(var(--brand-ash)/0.75)]">
             {node.note}
           </span>
         ) : null}
         {answered && isTarget && node.interpreted && operation === "execute" ? (
-          <span className="ml-3 font-mono-tight text-[11px] text-[hsl(var(--brand-amber))]">
+          <span className="ml-3 font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-amber))]">
             a script, so the interpreter has to read it too
           </span>
         ) : null}
       </td>
-      <td className="whitespace-nowrap py-1 pl-3 text-right font-techno text-[10px] uppercase tracking-[0.18em]">
+      <td className="whitespace-nowrap py-1 pl-3 text-right font-techno text-[0.625rem] uppercase tracking-[0.18em]">
         {!answered ? null : halted ? (
           <span className="text-[hsl(var(--brand-danger))]">stops here</span>
         ) : beyond ? (
@@ -542,10 +542,10 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
 
   return (
     <section className="mt-14" data-testid="umask-panel">
-      <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+      <h2 className="font-techno text-[0.6875rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
         · And the arithmetic that is not arithmetic
       </h2>
-      <p className="mt-3 max-w-2xl font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-3 max-w-2xl font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         A umask clears bits. It does not subtract, and the reason nearly everybody believes it
         subtracts is that for the two or three masks anybody actually sets, the two methods give
         the same answer. Pick one of the others and they part company.
@@ -558,7 +558,7 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
             onClick={() => onPick(mask.value)}
             aria-pressed={umask === mask.value}
             data-testid={`umask-${octal(mask.value)}`}
-            className={`rounded-full border px-3.5 py-1.5 font-mono-tight text-[12px] transition-colors ${
+            className={`rounded-full border px-3.5 py-1.5 font-mono-tight text-[0.75rem] transition-colors ${
               umask === mask.value
                 ? "border-[hsl(var(--brand-signal)/0.7)] bg-[hsl(var(--brand-signal)/0.08)] text-[hsl(var(--brand-bone))]"
                 : "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-ash))] hover:border-[hsl(var(--brand-signal)/0.5)]"
@@ -568,7 +568,7 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
           </button>
         ))}
       </div>
-      <p className="mt-3 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
+      <p className="mt-3 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
         {MASKS.find((mask) => mask.value === umask)?.note}
       </p>
 
@@ -580,7 +580,7 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
                 <th
                   key={head}
                   scope="col"
-                  className="pb-2 pr-4 font-techno text-[9.5px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                  className="pb-2 pr-4 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                 >
                   {head}
                 </th>
@@ -594,23 +594,23 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
               const same = masked === naive;
               return (
                 <tr key={row.label} data-testid={`umask-row-${row.born.toString(8)}`}>
-                  <td className="py-1.5 pr-4 font-mono-tight text-[12.5px] text-[hsl(var(--brand-bone-dim))]">
+                  <td className="py-1.5 pr-4 font-mono-tight text-[0.78125rem] text-[hsl(var(--brand-bone-dim))]">
                     {row.label}
                   </td>
-                  <td className="py-1.5 pr-4 font-mono-tight text-[12.5px] tabular-nums text-[hsl(var(--brand-ash))]">
+                  <td className="py-1.5 pr-4 font-mono-tight text-[0.78125rem] tabular-nums text-[hsl(var(--brand-ash))]">
                     {octal(row.born)}
                   </td>
-                  <td className="py-1.5 pr-4 font-mono-tight text-[12.5px] tabular-nums text-[hsl(var(--brand-signal))]">
+                  <td className="py-1.5 pr-4 font-mono-tight text-[0.78125rem] tabular-nums text-[hsl(var(--brand-signal))]">
                     {octal(masked)}
                   </td>
                   <td
-                    className={`py-1.5 pr-4 font-mono-tight text-[12.5px] tabular-nums ${
+                    className={`py-1.5 pr-4 font-mono-tight text-[0.78125rem] tabular-nums ${
                       same ? "text-[hsl(var(--brand-ash))]" : "text-[hsl(var(--brand-danger))]"
                     }`}
                   >
                     {octal(naive)}
                   </td>
-                  <td className="py-1.5 font-mono-tight text-[12px] text-[hsl(var(--brand-bone-dim))]">
+                  <td className="py-1.5 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-bone-dim))]">
                     {symbolic({
                       name: "",
                       kind: row.born === BORN_DIR ? "dir" : "file",
@@ -626,7 +626,7 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
         </table>
       </div>
       <p
-        className="mt-3 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+        className="mt-3 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
         aria-live="polite"
         data-testid="umask-verdict"
       >
@@ -634,7 +634,7 @@ function UmaskPanel({ umask, onPick }: { umask: number; onPick: (value: number) 
           ? "The two disagree here, and the masked column is the one the kernel produces. Subtracting borrows across digits and clamps at zero; masking clears bit by bit and never touches a bit the mask does not name."
           : "The two agree here, which is exactly the problem: this is one of the handful of masks that let the wrong method survive."}
       </p>
-      <p className="mt-3 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+      <p className="mt-3 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
         Files are born 666 and directories 777, and the execute bit a file never gets is why a
         script needs a chmod after you write it. A mask cannot add a bit, so no umask makes a new
         file executable and none of them can hand out setuid either.

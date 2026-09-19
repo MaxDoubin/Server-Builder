@@ -18,7 +18,7 @@ export function CinematicNow() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[900px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Now · {nowConfig.period}
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -28,7 +28,7 @@ export function CinematicNow() {
               {nowConfig.intro}
             </p>
 
-            <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               <span className="inline-flex items-center gap-2">
                 <span
                   aria-hidden
@@ -45,7 +45,7 @@ export function CinematicNow() {
           <div className="mt-12 space-y-14">
             {nowConfig.sections.map((section) => (
               <section key={section.id} id={section.id} aria-labelledby={`${section.id}-heading`}>
-                <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
+                <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
                   {section.label}
                 </div>
                 <h2
@@ -77,7 +77,7 @@ export function CinematicNow() {
           >
             <h2
               id="now-about-heading"
-              className="font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
+              className="font-mono-tight text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]"
             >
               About this page
             </h2>

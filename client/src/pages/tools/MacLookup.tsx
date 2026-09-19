@@ -295,7 +295,7 @@ export function MacLookup() {
                   key={example}
                   type="button"
                   onClick={() => setRaw(example)}
-                  className="inline-flex min-h-[28px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[10px] tracking-[0.12em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                  className="inline-flex min-h-[28px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.625rem] tracking-[0.12em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                 >
                   {example}
                 </button>
@@ -320,7 +320,7 @@ export function MacLookup() {
                     key={label}
                     className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[hsl(var(--brand-iron)/0.5)] py-2.5 last:border-b-0"
                   >
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       {label}
                     </span>
                     <span className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export function MacLookup() {
             <ToolPanel title="First octet">
               <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
                 <div>
-                  <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     0x{decoded.bytes[0]} in binary
                   </div>
                   <div className="mt-2 flex items-end gap-1" aria-hidden="true">
@@ -373,7 +373,7 @@ export function MacLookup() {
                           >
                             {bit}
                           </span>
-                          <span className="mt-1 font-mono-tight text-[8px] uppercase tracking-[0.1em] text-[hsl(var(--brand-ash))]">
+                          <span className="mt-1 font-mono-tight text-[0.5rem] uppercase tracking-[0.1em] text-[hsl(var(--brand-ash))]">
                             {isUl ? "U/L" : isIg ? "I/G" : `b${7 - index}`}
                           </span>
                         </div>
@@ -388,7 +388,7 @@ export function MacLookup() {
 
                 <div className="min-w-[220px] flex-1 space-y-3">
                   <div>
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       I/G bit ({decoded.multicast ? "1" : "0"})
                     </div>
                     <p
@@ -399,7 +399,7 @@ export function MacLookup() {
                     </p>
                   </div>
                   <div>
-                    <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       U/L bit ({decoded.locallyAdministered ? "1" : "0"})
                     </div>
                     <p
@@ -470,7 +470,7 @@ export function MacLookup() {
                     <th
                       key={head}
                       scope="col"
-                      className="py-2 pr-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                      className="py-2 pr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                     >
                       {head}
                     </th>

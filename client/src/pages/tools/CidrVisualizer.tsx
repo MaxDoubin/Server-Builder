@@ -301,10 +301,10 @@ export function CidrVisualizer() {
                       return (
                         <div key={level.prefix}>
                           <div className="mb-1 flex items-baseline justify-between gap-3">
-                            <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                               /{level.prefix}
                             </span>
-                            <span className="font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                               {commas(level.count)} × {commas(size)} addresses
                             </span>
                           </div>
@@ -322,7 +322,7 @@ export function CidrVisualizer() {
                                   aria-pressed={isSelected}
                                   aria-label={`${ipToString(network)} slash ${level.prefix}`}
                                   title={`${ipToString(network)}/${level.prefix}`}
-                                  className={`min-h-[30px] min-w-0 flex-1 overflow-hidden rounded-[3px] border font-mono-tight text-[9px] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
+                                  className={`min-h-[30px] min-w-0 flex-1 overflow-hidden rounded-[3px] border font-mono-tight text-[0.5625rem] leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[hsl(var(--brand-signal))] ${
                                     isSelected
                                       ? "border-[hsl(var(--brand-signal))] bg-[hsl(var(--brand-signal)/0.35)] text-[hsl(var(--brand-bone))]"
                                       : i % 2 === 0
@@ -387,7 +387,7 @@ export function CidrVisualizer() {
                           <th
                             key={head}
                             scope="col"
-                            className="py-2 pr-4 font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                            className="py-2 pr-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                           >
                             {head}
                           </th>

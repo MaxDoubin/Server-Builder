@@ -158,7 +158,7 @@ export function CinematicClock() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[1040px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · {CASES.length} clocks
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -196,16 +196,16 @@ export function CinematicClock() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-cyan))]">
+                    <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-cyan))]">
                       {item.host}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[9.5px] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1.5 font-mono-tight text-[12.5px] leading-snug text-[hsl(var(--brand-bone))]">
+                  <span className="mt-1.5 font-mono-tight text-[0.78125rem] leading-snug text-[hsl(var(--brand-bone))]">
                     {item.name}
                   </span>
                 </button>
@@ -218,17 +218,17 @@ export function CinematicClock() {
               <h2 className="font-display text-lg font-medium leading-snug text-[hsl(var(--brand-bone))]">
                 {active.name}
               </h2>
-              <p className="font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">{active.host}</p>
+              <p className="font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">{active.host}</p>
             </div>
             <p
-              className="mt-3 font-mono-tight text-[13.5px] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
+              className="mt-3 font-mono-tight text-[0.84375rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]"
               data-testid="clock-brief"
             >
               {active.brief}
             </p>
 
             {/* ── what was observed ── */}
-            <h3 className="mt-6 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-6 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · What was seen
             </h3>
             <ul className="mt-3 space-y-2.5" data-testid="clock-observations">
@@ -242,11 +242,11 @@ export function CinematicClock() {
                   }`}
                 >
                   <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                    <span className="font-mono-tight text-[13px] text-[hsl(var(--brand-bone))]">
+                    <span className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))]">
                       {check.label}
                     </span>
                     <span
-                      className={`font-techno text-[10px] uppercase tracking-[0.24em] ${
+                      className={`font-techno text-[0.625rem] uppercase tracking-[0.24em] ${
                         check.observed === "works"
                           ? "text-[hsl(var(--brand-signal))]"
                           : "text-[hsl(var(--brand-danger))]"
@@ -255,7 +255,7 @@ export function CinematicClock() {
                       {check.observed}
                     </span>
                   </span>
-                  <span className="mt-1.5 block overflow-x-auto whitespace-pre font-mono-tight text-[11.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <span className="mt-1.5 block overflow-x-auto whitespace-pre font-mono-tight text-[0.71875rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     {check.message}
                   </span>
                 </li>
@@ -263,7 +263,7 @@ export function CinematicClock() {
             </ul>
 
             {/* ── the question ── */}
-            <h3 className="mt-7 font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+            <h3 className="mt-7 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
               · {active.question}
             </h3>
             <div className="mt-3 space-y-2">
@@ -277,7 +277,7 @@ export function CinematicClock() {
                     onClick={() => pick(option.id)}
                     disabled={answered}
                     data-testid={`clock-option-${option.id}`}
-                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[13px] leading-relaxed transition-colors disabled:cursor-default ${
+                    className={`block w-full rounded-xl border px-4 py-3 text-left font-mono-tight text-[0.8125rem] leading-relaxed transition-colors disabled:cursor-default ${
                       !answered
                         ? "border-[hsl(var(--brand-iron))] text-[hsl(var(--brand-bone-dim))] hover:border-[hsl(var(--brand-signal)/0.5)] hover:text-[hsl(var(--brand-bone))]"
                         : isRight
@@ -295,7 +295,7 @@ export function CinematicClock() {
 
             {answered && answer ? (
               <div className="mt-6 space-y-5" data-testid="clock-verdict" aria-live="polite">
-                <p className="font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone))]">
+                <p className="font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone))]">
                   {correct ? "Yes." : "No."} The observations allow {spanText(answer)}, which is a
                   window {width(answer)} {pluralise(width(answer), "second")} wide.
                 </p>
@@ -303,7 +303,7 @@ export function CinematicClock() {
                 {/* ── the axis ── */}
                 <div className="overflow-x-auto">
                   <div className="min-w-[520px]">
-                    <h4 className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <h4 className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       Where each observation puts the clock
                     </h4>
                     <ul className="mt-3 space-y-2.5" data-testid="clock-axis">
@@ -312,7 +312,7 @@ export function CinematicClock() {
                         const keeps = check.observed === "works";
                         return (
                           <li key={check.label} data-testid={`clock-band-${keeps ? "works" : "fails"}`}>
-                            <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-ash))]">
+                            <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
                               {check.label}: {keeps ? "so the clock is inside" : "so the clock is outside"}{" "}
                               {spanText(span)}
                             </span>
@@ -330,7 +330,7 @@ export function CinematicClock() {
                         );
                       })}
                       <li data-testid="clock-band-answer">
-                        <span className="font-mono-tight text-[11px] text-[hsl(var(--brand-bone))]">
+                        <span className="font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-bone))]">
                           all of them together: {spanText(answer)}
                         </span>
                         <span className="relative mt-1 block h-4 w-full overflow-hidden rounded-sm border border-[hsl(var(--brand-signal)/0.4)] bg-[hsl(var(--brand-obsidian)/0.6)]">
@@ -350,13 +350,13 @@ export function CinematicClock() {
                           style={{ left: `${place(tick)}%` }}
                         >
                           <span className="h-2 w-px bg-[hsl(var(--brand-iron))]" />
-                          <span className="mt-1 whitespace-nowrap font-mono-tight text-[9.5px] text-[hsl(var(--brand-ash))]">
+                          <span className="mt-1 whitespace-nowrap font-mono-tight text-[0.59375rem] text-[hsl(var(--brand-ash))]">
                             {TICK_LABEL[tick]}
                           </span>
                         </span>
                       ))}
                     </div>
-                    <p className="mt-1 font-mono-tight text-[10.5px] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
+                    <p className="mt-1 font-mono-tight text-[0.65625rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                       The axis is symmetric log, so a case that spans thirty seconds and thirteen
                       days fits on it. Hatched means the observation rules that range out rather
                       than in.
@@ -365,20 +365,20 @@ export function CinematicClock() {
                 </div>
 
                 {spans.length > 1 ? (
-                  <p className="font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-amber))]">
+                  <p className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-amber))]">
                     These observations allow {spans.length} separate ranges, so they do not narrow
                     to one answer.
                   </p>
                 ) : null}
 
-                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                <p className="border-l-2 border-[hsl(var(--brand-signal)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     Why ·{" "}
                   </span>
                   {active.why}
                 </p>
-                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  <span className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+                <p className="border-l-2 border-[hsl(var(--brand-amber)/0.6)] pl-4 font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
                     The belief this breaks ·{" "}
                   </span>
                   {active.breaks}.
@@ -387,13 +387,13 @@ export function CinematicClock() {
                   type="button"
                   onClick={() => open(active)}
                   data-testid="clock-again"
-                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[11.5px] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
+                  className="rounded-full border border-[hsl(var(--brand-iron))] px-4 py-2 font-mono-tight text-[0.71875rem] uppercase tracking-[0.16em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))]"
                 >
                   Clear the answer
                 </button>
               </div>
             ) : (
-              <p className="mt-5 font-mono-tight text-[12.5px] leading-relaxed text-[hsl(var(--brand-ash))]">
+              <p className="mt-5 font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                 Each observation on its own rules out very little. Together they pin the clock to a
                 window, and the window is drawn once you have committed to an answer.
               </p>
@@ -401,7 +401,7 @@ export function CinematicClock() {
           </section>
 
           <p
-            className="mt-6 font-mono-tight text-[12px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
+            className="mt-6 font-mono-tight text-[0.75rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))]"
             aria-live="polite"
             data-testid="clock-progress"
           >
@@ -412,7 +412,7 @@ export function CinematicClock() {
 
           <ReadAboutThis href="/clock" />
 
-          <p className="mt-12 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every tolerance here is a real default. Kerberos allows five minutes, which is the
             clockskew default in MIT krb5 and in Active Directory. A one-time code is a thirty
             second step and validators accept a step either side, so thirty seconds is the figure
@@ -420,7 +420,7 @@ export function CinematicClock() {
             which is the conservative reading. A certificate and an RRSIG have hard edges and no
             tolerance at all, which is why they are the checks that pin the answer down.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             No case carries an answer key. Each states what was observed, the model intersects the
             intervals, and the correct option is the one whose range matches. CI computes the same
             range a second way, by walking every second in the fortnight either side of correct and
@@ -428,7 +428,7 @@ export function CinematicClock() {
             that is nearly right and an off-by-one on the complement of a closed interval gives a
             case two correct answers.
           </p>
-          <p className="mt-4 font-mono-tight text-[12px] leading-relaxed text-[hsl(var(--brand-ash))]">
+          <p className="mt-4 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The certificate side of this, where the chain rather than the clock is at fault, is at{" "}
             <Link
               href="/chain"

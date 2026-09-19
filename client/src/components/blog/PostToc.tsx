@@ -190,7 +190,7 @@ export function PostToc({ headings, activeId, variant, className = "" }: Props) 
               onClick={(e) => jump(e, heading.id)}
               aria-current={active ? "location" : undefined}
               data-testid={`toc-link-${heading.id}`}
-              className={`flex min-h-[24px] items-start gap-2 py-1 font-mono-tight text-[11px] leading-relaxed transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
+              className={`flex min-h-[24px] items-start gap-2 py-1 font-mono-tight text-[0.6875rem] leading-relaxed transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${
                 active
                   ? "text-[hsl(var(--brand-signal))]"
                   : "text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
@@ -219,7 +219,7 @@ export function PostToc({ headings, activeId, variant, className = "" }: Props) 
         data-print-hide
         data-testid="post-toc-collapsible"
       >
-        <summary className="cursor-pointer list-none font-mono-tight text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))] marker:content-none">
+        <summary className="cursor-pointer list-none font-mono-tight text-[0.625rem] uppercase tracking-[0.3em] text-[hsl(var(--brand-ash))] marker:content-none">
           <span className="text-[hsl(var(--brand-signal))]">·</span> Contents
           <span className="ml-2 text-[hsl(var(--brand-signal))]">
             ({headings.length})
@@ -239,7 +239,7 @@ export function PostToc({ headings, activeId, variant, className = "" }: Props) 
       data-testid="post-toc-sidebar"
     >
       <div className="sticky top-28">
-        <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+        <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
           · Contents
         </div>
         <div className="mt-4 border-l border-[hsl(var(--brand-iron))] pl-3">{list}</div>

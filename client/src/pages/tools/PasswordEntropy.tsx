@@ -390,7 +390,7 @@ export function PasswordEntropy() {
               onClick={() => setVisible((current) => !current)}
               aria-pressed={visible}
               data-testid="button-visibility"
-              className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+              className="inline-flex min-h-[44px] items-center rounded-lg border border-[hsl(var(--brand-iron))] px-5 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
             >
               {visible ? "Hide" : "Show"}
             </button>
@@ -400,7 +400,7 @@ export function PasswordEntropy() {
           </p>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               Try
             </span>
             {EXAMPLES.map((example) => (
@@ -412,7 +412,7 @@ export function PasswordEntropy() {
                   setVisible(true);
                 }}
                 data-testid={`button-example-${example.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 {example.label}
               </button>
@@ -422,7 +422,7 @@ export function PasswordEntropy() {
                 type="button"
                 onClick={() => setPassword("")}
                 data-testid="button-clear"
-                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[10px] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-[hsl(var(--brand-iron))] px-4 font-mono-tight text-[0.625rem] uppercase tracking-[0.18em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:text-[hsl(var(--brand-bone))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
               >
                 Clear
               </button>
@@ -437,7 +437,7 @@ export function PasswordEntropy() {
           className="rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-5"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               Search space
             </span>
             <span className={`font-display text-2xl ${strength.tone}`} data-testid="text-bits">
@@ -539,19 +539,19 @@ export function PasswordEntropy() {
                 <tr className="border-b border-[hsl(var(--brand-iron))]">
                   <th
                     scope="col"
-                    className="py-2 pr-4 font-mono-tight text-[10px] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                    className="py-2 pr-4 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                   >
                     Attack
                   </th>
                   <th
                     scope="col"
-                    className="py-2 pr-4 font-mono-tight text-[10px] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                    className="py-2 pr-4 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                   >
                     Rate
                   </th>
                   <th
                     scope="col"
-                    className="py-2 font-mono-tight text-[10px] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
+                    className="py-2 font-mono-tight text-[0.625rem] font-normal uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]"
                   >
                     Average time
                   </th>
@@ -622,7 +622,7 @@ export function PasswordEntropy() {
                   key={item.label}
                   className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[hsl(var(--brand-iron)/0.5)] py-2.5 last:border-b-0"
                 >
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                     {item.label}
                   </span>
                   <span className="font-mono-tight text-sm text-[hsl(var(--brand-bone))]">
@@ -643,7 +643,7 @@ export function PasswordEntropy() {
         </div>
 
         <div className="rounded-2xl border border-[hsl(var(--brand-amber)/0.5)] bg-[hsl(var(--brand-amber)/0.07)] p-5">
-          <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
+          <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-amber))]">
             Entropy is not resistance
           </div>
           <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">

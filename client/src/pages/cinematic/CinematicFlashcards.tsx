@@ -185,7 +185,7 @@ export function CinematicFlashcards() {
       <div className="relative px-6 pb-32 pt-32 md:px-10">
         <div className="mx-auto max-w-[820px]">
           <header>
-            <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
               · Study · Spaced Repetition
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
@@ -214,22 +214,22 @@ export function CinematicFlashcards() {
                 <button
                   type="button"
                   onClick={backToDecks}
-                  className="inline-flex min-h-[36px] items-center gap-2 py-1 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                  className="inline-flex min-h-[36px] items-center gap-2 py-1 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                 >
                   ← Decks
                 </button>
                 <div className="flex items-center gap-4">
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     {deck.name}
                   </span>
-                  <span className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                     {queue.length} left
                   </span>
                 </div>
               </div>
 
               <div className="mt-6 min-h-[16rem] rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm md:p-8">
-                <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   Front
                 </div>
                 <p className="mt-3 font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))] md:text-2xl">
@@ -239,7 +239,7 @@ export function CinematicFlashcards() {
                 <div aria-live="polite">
                   {revealed && card ? (
                     <div className="mt-6 border-t border-[hsl(var(--brand-iron))] pt-5">
-                      <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
+                      <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                         Back
                       </div>
                       <p className="mt-3 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))] md:text-base">
@@ -255,10 +255,10 @@ export function CinematicFlashcards() {
                   type="button"
                   onClick={() => setRevealed(true)}
                   data-testid="flashcard-reveal"
-                  className="mt-6 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] sm:w-auto"
+                  className="mt-6 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] sm:w-auto"
                 >
                   Reveal answer
-                  <span className="rounded border border-[hsl(var(--brand-obsidian)/0.4)] px-1.5 py-0.5 text-[9px]">
+                  <span className="rounded border border-[hsl(var(--brand-obsidian)/0.4)] px-1.5 py-0.5 text-[0.5625rem]">
                     Space
                   </span>
                 </button>
@@ -273,12 +273,12 @@ export function CinematicFlashcards() {
                       className="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] px-3 py-2.5 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.06)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
                     >
                       <span className="flex items-center gap-1.5 font-mono-tight text-xs font-medium uppercase tracking-[0.1em] text-[hsl(var(--brand-bone))]">
-                        <span aria-hidden className="rounded border border-[hsl(var(--brand-iron))] px-1 text-[9px] text-[hsl(var(--brand-ash))]">
+                        <span aria-hidden className="rounded border border-[hsl(var(--brand-iron))] px-1 text-[0.5625rem] text-[hsl(var(--brand-ash))]">
                           {key}
                         </span>
                         {label}
                       </span>
-                      <span className="font-mono-tight text-[10px] text-[hsl(var(--brand-ash))]">
+                      <span className="font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                         {previewInterval(currentSchedule, g)}
                       </span>
                     </button>
@@ -287,26 +287,26 @@ export function CinematicFlashcards() {
               )}
 
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                <p className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                <p className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                   Space reveals · 1 to 4 grade · reviewed {stats.reviewed}
                 </p>
                 {confirmReset ? (
                   <div className="flex items-center gap-2" role="alert">
-                    <span className="font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-amber))]">
+                    <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-amber))]">
                       Clear this deck's progress?
                     </span>
                     <button
                       type="button"
                       onClick={doReset}
                       data-testid="flashcard-reset-confirm"
-                      className="min-h-[28px] rounded-md border border-[hsl(var(--brand-danger))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-danger))] transition-colors hover:bg-[hsl(var(--brand-danger)/0.1)]"
+                      className="min-h-[28px] rounded-md border border-[hsl(var(--brand-danger))] px-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-danger))] transition-colors hover:bg-[hsl(var(--brand-danger)/0.1)]"
                     >
                       Confirm
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmReset(false)}
-                      className="min-h-[28px] rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+                      className="min-h-[28px] rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:text-[hsl(var(--brand-bone))]"
                     >
                       Cancel
                     </button>
@@ -316,7 +316,7 @@ export function CinematicFlashcards() {
                     type="button"
                     onClick={() => setConfirmReset(true)}
                     data-testid="flashcard-reset"
-                    className="min-h-[28px] rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-danger)/0.6)] hover:text-[hsl(var(--brand-danger))]"
+                    className="min-h-[28px] rounded-md border border-[hsl(var(--brand-iron))] px-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] transition-colors hover:border-[hsl(var(--brand-danger)/0.6)] hover:text-[hsl(var(--brand-danger))]"
                   >
                     Reset deck
                   </button>
@@ -357,10 +357,10 @@ function DeckPicker({
                   <span className="block font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
                     {deck.name}
                   </span>
-                  <span className="mt-1.5 block font-mono-tight text-[13px] leading-relaxed text-[hsl(var(--brand-ash))]">
+                  <span className="mt-1.5 block font-mono-tight text-[0.8125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     {deck.description}
                   </span>
-                  <span className="mt-3 block font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                  <span className="mt-3 block font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                     {deck.cards.length} cards
                     {mounted && typeof due === "number" ? (
                       <span className="text-[hsl(var(--brand-signal))]"> · {due} due</span>
@@ -402,7 +402,7 @@ function SessionSummary({
       aria-labelledby="summary-heading"
       className="mt-10 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 backdrop-blur-sm md:p-8"
     >
-      <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
+      <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
         · Session complete
       </div>
       <h2
@@ -417,7 +417,7 @@ function SessionSummary({
             key={row.label}
             className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] p-4 text-center"
           >
-            <dt className="font-mono-tight text-[10px] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+            <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
               {row.label}
             </dt>
             <dd className="mt-1 font-display text-2xl font-medium text-[hsl(var(--brand-bone))]">
@@ -430,14 +430,14 @@ function SessionSummary({
         <button
           type="button"
           onClick={onAgain}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[hsl(var(--brand-signal))] px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-obsidian))] transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
         >
           Study again
         </button>
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[11px] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[hsl(var(--brand-iron))] bg-transparent px-6 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-bone))] transition-colors hover:border-[hsl(var(--brand-signal))] hover:text-[hsl(var(--brand-signal))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))]"
         >
           Back to decks
         </button>
