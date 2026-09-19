@@ -138,6 +138,7 @@ export function CinematicFooter() {
               { href: "/keepalive", label: "Idle connections", testId: "link-footer-keepalive" },
               { href: "/startlimit", label: "Restart limits", testId: "link-footer-startlimit" },
               { href: "/neigh", label: "Neighbor tables", testId: "link-footer-neigh" },
+              { href: "/shm", label: "Shared memory", testId: "link-footer-shm" },
               { href: "/cache", label: "Cache keys", testId: "link-footer-cache" },
               { href: "/route", label: "Routing tables", testId: "link-footer-route" },
               { href: "/restore", label: "Backups and restores", testId: "link-footer-restore" },

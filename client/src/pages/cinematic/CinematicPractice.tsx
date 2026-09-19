@@ -42,6 +42,7 @@ import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/b
 import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/keepalive/index";
 import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
 import { CASES as NEIGH_CASES, overflows as neighOverflows } from "@/lib/neigh/index";
+import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -342,6 +343,20 @@ export function CinematicPractice() {
         `${FREE_CASES.length} machines`,
         `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
         "si_mem_available",
+      ],
+      progress: null,
+    },
+    {
+      href: "/shm",
+      eyebrow: "Predict",
+      title: "Bus error",
+      blurb:
+        "A process dies with two words and nothing in dmesg, on a host with 60 GiB free. What ran out is a 64 MiB filesystem the container runtime mounted and nobody sized.",
+      reachFor: "a container dies and every memory graph looks fine",
+      stats: [
+        `${SHM_CASES.length} containers`,
+        `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+        "64m",
       ],
       progress: null,
     },

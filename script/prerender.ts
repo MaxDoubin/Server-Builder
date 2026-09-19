@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as SHM_CASES, asInvocation as shmInvocation, asSymptom as shmSymptom, chargedMiB as shmCharged, correctOption as shmCorrect, demandMiB as shmDemand, diesAtUnit as shmDies, failure as shmFailure, fits as shmFits, human as shmHuman, needsShmMiB as shmNeeds, shmKnob } from "../client/src/lib/shm/index";
 import { CASES as NEIGH_CASES, asCounts as neighCounts, asDmesg as neighDmesg, asSysctl as neighSysctl, canReclaim as neighCanReclaim, correctOption as neighCorrect, entries as neighEntries, headroom as neighHeadroom, overflows as neighOverflows, state as neighState, tableId as neighTableId, thresh3Needed as neighNeeded } from "../client/src/lib/neigh/index";
 import { CASES as STARTLIMIT_CASES, asJournal as startlimitJournal, asStatus as startlimitStatus, asUnit as startlimitUnit, correctOption as startlimitCorrect, cycleMs as startlimitCycle, ending as startlimitEnding, givesUpAtMs as startlimitGivesUp, human as startlimitHuman, rateLimited as startlimitStopped, safeRestartSecMs as startlimitSafe, startsBeforeFailing as startlimitStarts } from "../client/src/lib/startlimit/index";
 import { CASES as KEEPALIVE_CASES, asMiddlebox as keepaliveMiddlebox, asSs as keepaliveSs, asSysctl as keepaliveSysctl, correctOption as keepaliveCorrect, firstProbe as keepaliveFirstProbe, forgottenAt as keepaliveForgotten, noticedAt as keepaliveNoticed, outcome as keepaliveOutcome, ssTimer as keepaliveTimer, survives as keepaliveSurvives } from "../client/src/lib/keepalive/index";
@@ -889,6 +890,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/keepalive">Six minutes of silence</a>, which timer forgets an idle connection first and what the next write gets.</li>
     <li><a href="${SITE_URL}/startlimit">The service gave up</a>, why systemd stopped restarting a unit and why the slower crash never stops.</li>
     <li><a href="${SITE_URL}/neigh">Neighbor table overflow</a>, how many entries a flat segment needs and why IPv6 needs twice as many.</li>
+    <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2193,6 +2195,7 @@ ${JSON.stringify({
     ["Six minutes of silence", "/keepalive"],
     ["The service gave up", "/startlimit"],
     ["Neighbor table overflow", "/neigh"],
+    ["Bus error", "/shm"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3861,6 +3864,107 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     <p>It breaks the belief ${esc(item.breaks)}.</p>
   </article>`;
 }).join("\n")}
+</main>`,
+  });
+
+  // ── shared memory ──
+  /*
+    The static body leads with the three numbers side by side, because the
+    search that brings people here is "bus error docker" and the thing they
+    need is the comparison: the host's memory, the container's limit, and a
+    64 MiB filesystem that appears in no dashboard.
+  */
+  const shmFailing = SHM_CASES.filter((item) => !shmFits(item.setup)).length;
+  const shmDefaults = SHM_CASES.filter((item) => item.setup.shmMiB === 64).length;
+  const shmDescription =
+    "Docker mounts /dev/shm as a tmpfs in every container, and the documentation is plain about " +
+    "the size: if you omit --shm-size entirely, the system uses 64m. On a host the same path is " +
+    "half of physical memory, so the same binary has five hundred times more shared memory " +
+    "outside a container than inside one. And a tmpfs that cannot back a page does not return an " +
+    "error: the mmap succeeds and the process takes SIGBUS at the page fault, which prints as " +
+    "Bus error with nothing in dmesg, while an ordinary write to the same full filesystem gets " +
+    `ENOSPC like anything else. ${SHM_CASES.length} containers here, ${shmFailing} that do not fit and ` +
+    `${shmDefaults} sitting at the 64 MiB default.`;
+
+  await writePage("shm", base, {
+    title: "Bus Error, in a Container With Gigabytes to Spare | Max Doubin",
+    description: shmDescription,
+    canonical: `${SITE_URL}/shm`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Bus error",
+  description: shmDescription,
+  url: `${SITE_URL}/shm`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "Why a container with free memory dies of shared memory exhaustion: that Docker's /dev/shm defaults to 64 MiB while a host's defaults to half of RAM, that mmap on a tmpfs succeeds and defers the failure to a page fault that raises SIGBUS rather than returning ENOSPC, that the same full filesystem returns an ordinary error to write() so the obvious test does not reproduce the crash, that tmpfs pages are charged to the container's memory cgroup so raising the mount without raising the limit trades a Bus error for an OOM kill, that a large tmpfs costs nothing until written to, that shm_size is a per service key in compose, and that Kubernetes has no shm-size field at all and needs an emptyDir with medium Memory",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Bus error</h1>
+  <p>
+    ${SHM_CASES.length} containers that use shared memory, and one question each.
+    ${shmFailing} of them ask for more than /dev/shm holds, and ${shmDefaults} are sitting at the
+    64 MiB that the runtime mounts when nothing says otherwise.
+  </p>
+  <p>
+    The Docker documentation states the default in one sentence: "If you omit the size entirely,
+    the system uses <code>64m</code>." Outside a container the same path defaults to half of
+    physical memory, a factor of five hundred on a 64 GiB host, decided by the runtime rather than
+    by the kernel or by anything the application can see. And the failure does not arrive as an
+    error. Measured on an 8 MiB tmpfs with a 32 MiB mapping: the <code>mmap</code> succeeds, and
+    the process dies after touching exactly 8388608 bytes. A signal, not an errno, so code that
+    checks every return value has checked three calls that all succeeded. An ordinary
+    <code>write</code> to the same full filesystem gets ENOSPC, which is why the obvious test comes
+    back clean.
+  </p>
+  <h2>What each container asks for</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Platform</th><th>/dev/shm</th><th>Per unit</th><th>Units</th><th>Demand</th><th>Memory limit</th><th>Dies at</th><th>Ending</th></tr>
+    </thead>
+    <tbody>
+${SHM_CASES.map((item) => {
+  const s = item.setup;
+  const died = shmDies(s);
+  return `      <tr><td>${esc(s.platform)}</td><td>${esc(shmHuman(s.shmMiB))}</td>` +
+    `<td>${s.perUnitMiB} MiB</td><td>${s.units} ${esc(s.unit)}${s.units === 1 ? "" : "s"}</td>` +
+    `<td>${esc(shmHuman(shmDemand(s)))}</td>` +
+    `<td>${s.memoryLimitMiB === null ? "none" : esc(shmHuman(s.memoryLimitMiB))}</td>` +
+    `<td>${died === null ? "nothing" : `${esc(s.unit)} ${died}`}</td><td>${esc(shmFailure(s))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${SHM_CASES.map((item) => {
+  const right = shmCorrect(item);
+  const s = item.setup;
+  const knob = shmKnob(s.platform);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(shmInvocation(s))}
+
+${esc(shmSymptom(s))}</code></pre>
+    <p>${shmDemand(s)} MiB wanted against ${esc(shmHuman(s.shmMiB))} of /dev/shm${
+      s.memoryLimitMiB !== null ? `, and ${shmCharged(s)} MiB charged against a limit of ${s.memoryLimitMiB} MiB` : ""
+    }. Sized for this peak it wants ${esc(shmHuman(shmNeeds(s)))}${knob === null ? ", and this platform has no shm-size field to set it in" : `, set with ${esc(knob)}`}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
 </main>`,
   });
 
@@ -6975,6 +7079,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/keepalive`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/startlimit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/neigh`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

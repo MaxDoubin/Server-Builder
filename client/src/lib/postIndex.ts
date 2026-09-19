@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 287 of them. Regenerate with script/generatePostIndex.ts.
+ * 288 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "bus-error-with-sixty-four-gigabytes-free",
+    title: "Bus Error, With Sixty Four Gigabytes Free",
+    date: "2026-09-19",
+    tags: ["linux","containers","troubleshooting","operations"],
+    excerpt: "Docker gives every container a 64 MiB /dev/shm unless told otherwise, and on a host the same path is half of RAM, a factor of five hundred decided by the runtime. Worse, a tmpfs that cannot back a page does not return an error: the mmap succeeds and the process takes SIGBUS at the page fault, so code that checks every return value checks three things that all succeeded. The same full filesystem gives an ordinary ENOSPC to a write, which is why the obvious test never reproduces the crash.",
+    coverImage: "/images/blog/bus-error-with-sixty-four-gigabytes-free.jpg",
+    wordCount: 1246,
+  },
   {
     slug: "the-arp-cache-holds-a-thousand-and-twenty-four",
     title: "The ARP Cache Holds A Thousand And Twenty Four",
@@ -2816,10 +2825,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 287;
+export const POST_COUNT = 288;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty seven";
+export const POST_COUNT_SPELLED = "two hundred and eighty eight";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2828,10 +2837,10 @@ export const POST_COUNT_SPELLED = "two hundred and eighty seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1125;
+export const CITATION_COUNT = 1132;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1284;
+export const CHECKED_URL_COUNT = 1291;
