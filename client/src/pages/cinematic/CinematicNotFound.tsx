@@ -373,7 +373,7 @@ export function CinematicNotFound() {
             >
               Or go somewhere that exists
             </h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <RecoveryLink
                 href="/tools"
                 testId="link-404-tools"

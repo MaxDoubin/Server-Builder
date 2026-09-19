@@ -327,7 +327,7 @@ function GameBriefing({
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <BriefingCard
             icon={<Layers3 className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
             title="Adaptive Profiles"

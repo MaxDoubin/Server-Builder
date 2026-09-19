@@ -244,7 +244,7 @@ export function CinematicRoute() {
               </p>
             ) : (
               <>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2" data-testid="answers">
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2" data-testid="answers">
                   <div className="rounded-xl border border-[hsl(var(--brand-signal)/0.5)] bg-[hsl(var(--brand-signal)/0.06)] p-4">
                     <p className="font-techno text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
                       · Longest prefix, what a router does

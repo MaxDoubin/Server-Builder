@@ -142,7 +142,7 @@ export function CinematicVlan() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="vlan-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="vlan-list">
             {PATHS.map((path) => (
               <li key={path.slug}>
                 <button
@@ -186,7 +186,7 @@ export function CinematicVlan() {
             </p>
 
             {/* ── the configuration ── */}
-            <div className="mt-6 grid gap-3 md:grid-cols-2" data-testid="vlan-config">
+            <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2" data-testid="vlan-config">
               {active.hops.map((hop, at) => (
                 <div
                   key={`${hop.device}-${at}`}

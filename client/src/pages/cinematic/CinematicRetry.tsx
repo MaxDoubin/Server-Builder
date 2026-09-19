@@ -141,7 +141,7 @@ export function CinematicRetry() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="retry-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="retry-list">
             {CHAINS.map((chain) => (
               <li key={chain.slug}>
                 <button
@@ -387,7 +387,7 @@ export function CinematicRetry() {
                 </div>
 
                 {/* ── the readings ── */}
-                <dl className="grid gap-3 sm:grid-cols-2" data-testid="retry-readings">
+                <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="retry-readings">
                   {[
                     [`${active.leaf.name} sees`, `${amplification(active)} ${pluralise(amplification(active), "request")}`],
                     ["the user waits", ms(total)],

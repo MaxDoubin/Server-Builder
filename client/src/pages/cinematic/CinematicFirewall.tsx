@@ -141,7 +141,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
             ))}
           </header>
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="min-w-0">
               <div className="flex items-baseline justify-between gap-4">
                 <h2 className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">

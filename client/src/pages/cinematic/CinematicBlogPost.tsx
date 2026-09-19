@@ -579,7 +579,7 @@ export function CinematicBlogPost() {
               {(prev || next) && (
                 <nav
                   aria-label="Adjacent posts"
-                  className="mt-10 grid gap-4 sm:grid-cols-2"
+                  className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2"
                   data-testid="post-neighbors"
                 >
                   {prev ? (

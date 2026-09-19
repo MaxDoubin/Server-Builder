@@ -26,7 +26,7 @@ export function InstantShell({
         </header>
 
         <section
-          className="motion-rise grid gap-4 sm:grid-cols-[1.2fr_1fr]"
+          className="motion-rise grid grid-cols-1 gap-4 sm:grid-cols-[1.2fr_1fr]"
           style={{ animationDelay: `${motionTokens.stagger.quick}ms` }}
         >
           <div className="rounded-2xl border border-white/10 bg-black/40 p-5 shadow-[0_0_24px_rgba(34,211,238,0.15)] motion-surface">
@@ -60,7 +60,7 @@ export function InstantShell({
 
         <div className="app-shell__line h-px w-full opacity-60" />
         <div
-          className="motion-enter grid gap-4 sm:grid-cols-3"
+          className="motion-enter grid grid-cols-1 gap-4 sm:grid-cols-3"
           style={{ animationDelay: `${motionTokens.stagger.moderate * 2}ms` }}
         >
           {[0, 1, 2].map((index) => (

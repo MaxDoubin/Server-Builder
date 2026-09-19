@@ -403,7 +403,7 @@ export function TelemetryAct() {
 
         {/* Tile grid wrapped in StaggerGroup */}
         <StaggerGroup
-          className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+          className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"
           staggerDelay={0.12}
           delayChildren={0.15}
           threshold={0.1}

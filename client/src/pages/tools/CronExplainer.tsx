@@ -443,7 +443,7 @@ export function CronExplainer() {
     <ToolShell
       slug="cron-explainer"
     >
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
         <div className="space-y-6">
           <ToolPanel title="Expression">
             <label htmlFor="cron-input" className="sr-only">

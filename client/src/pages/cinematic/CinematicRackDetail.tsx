@@ -193,7 +193,7 @@ export function CinematicRackDetail() {
             </p>
           </header>
 
-          <div className="mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+          <div className="mt-12 grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
             <div className="lg:sticky lg:top-24">
               <div className="mb-3 flex gap-2" role="group" aria-label="View">
                 {views.map((v) => (

@@ -48,14 +48,14 @@ export function BuildDashboard() {
       title="Build Command Center"
       subtitle="Track layout changes, power impacts, and build workflow health."
     >
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <KpiCard label="Active Racks" value={rackCount.toString()} icon={<Boxes className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Build Actions" value="128" icon={<Wrench className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Power Impact" value={`${(facilityMetrics.itLoad / 1000).toFixed(1)} kW`} icon={<Zap className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Layout Health" value="98%" icon={<Gauge className="h-4 w-4 text-cyan-300" />} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel title="Build activity timeline">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

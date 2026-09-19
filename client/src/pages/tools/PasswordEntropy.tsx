@@ -456,7 +456,7 @@ export function PasswordEntropy() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <ToolPanel title="Numbers">
             <ToolResult
               label="Length"
@@ -590,7 +590,7 @@ export function PasswordEntropy() {
           </p>
         </ToolPanel>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <ToolPanel title="What the caveats are">
             {analysis.length === 0 ? (
               <p className="font-mono-tight text-sm text-[hsl(var(--brand-ash))]">

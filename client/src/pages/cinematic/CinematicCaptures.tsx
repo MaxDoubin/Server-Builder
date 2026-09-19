@@ -50,7 +50,7 @@ export function CinematicCaptures() {
             </span>
           </div>
 
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+          <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {CAPTURES.map((capture) => (
               <li key={capture.slug}>
                 <Link

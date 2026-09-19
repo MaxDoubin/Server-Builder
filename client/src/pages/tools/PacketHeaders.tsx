@@ -558,7 +558,7 @@ export function PacketHeaders() {
             >
               {selected.name}
             </h3>
-            <dl className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-3">
+            <dl className="mt-4 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-3">
               <div>
                 <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   Bit offset

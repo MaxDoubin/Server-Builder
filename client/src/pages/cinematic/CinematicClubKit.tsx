@@ -196,7 +196,7 @@ export function CinematicClubKit() {
                     {session.goal}
                   </p>
 
-                  <div className="mt-5 grid gap-5 md:grid-cols-2">
+                  <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
                       <h4 className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         Before the meeting

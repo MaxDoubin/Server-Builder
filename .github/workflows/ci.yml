@@ -702,6 +702,13 @@ jobs:
       - name: Dead modules
         run: node scripts-ci/check-dead-modules.mjs
 
+      # A grid whose only grid-cols sits behind a breakpoint has no columns
+      # below it, so its implicit track is auto sized and a child that cannot
+      # shrink widens it past the container. /patch was clipped by 110px on a
+      # phone this way and /triage by 19px; 134 places had the same shape.
+      - name: Responsive grids
+        run: node scripts-ci/check-grid-cols.mjs
+
       # Last because it reads both the source trees and the built HTML.
       - name: Em dashes
         run: node scripts-ci/check-em-dashes.mjs

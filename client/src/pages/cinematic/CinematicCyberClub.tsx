@@ -154,7 +154,7 @@ export function CinematicCyberClub() {
               </p>
             )}
 
-            <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+            <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                   President
@@ -206,7 +206,7 @@ export function CinematicCyberClub() {
             >
               What members actually do
             </h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {clubConfig.whatWeDo.map((item) => (
                 <div
                   key={item.title}

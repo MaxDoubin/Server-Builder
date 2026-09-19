@@ -399,7 +399,7 @@ export function RegexTester() {
     <ToolShell
       slug="regex-tester"
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <ToolPanel title="Pattern">
             <div className="flex items-stretch gap-2">

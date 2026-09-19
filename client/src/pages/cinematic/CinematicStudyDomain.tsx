@@ -120,7 +120,7 @@ export function CinematicStudyDomain() {
               <h2 className="font-display text-xl text-[hsl(var(--brand-bone))]">
                 Practice it
               </h2>
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {tools.map((t) => (
                   <li key={t!.slug}>
                     <Link

@@ -183,7 +183,7 @@ export function CinematicTriage() {
             </div>
           ) : null}
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
             <ol className="space-y-2" data-testid="triage-list">
               {MESSAGES.map((message) => {
                 const judged = mounted ? judgements[message.id] : undefined;
@@ -301,7 +301,7 @@ function Reader({
         <h2 className="font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">
           {message.subject}
         </h2>
-        <dl className="mt-4 grid gap-x-4 gap-y-1 font-mono-tight text-[12px] sm:grid-cols-[auto_minmax(0,1fr)]">
+        <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1 font-mono-tight text-[12px] sm:grid-cols-[auto_minmax(0,1fr)]">
           <Row label="From">
             <span className="text-[hsl(var(--brand-bone))]">{message.displayName}</span>{" "}
             <span className="break-all text-[hsl(var(--brand-ash))]">

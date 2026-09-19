@@ -193,7 +193,7 @@ export function BiographyAct() {
 
         <div
           ref={pillarsRef}
-          className="mt-20 grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+          className="mt-20 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"
         >
           {PILLARS.map((p) => (
             <PillarCard key={p.id} pillar={p} />
@@ -205,7 +205,7 @@ export function BiographyAct() {
           className="relative mt-24 overflow-hidden rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/.4)] backdrop-blur-md"
         >
           <div className="scanline pointer-events-none absolute inset-0 opacity-20" />
-          <div className="relative grid gap-0 md:grid-cols-12">
+          <div className="relative grid grid-cols-1 gap-0 md:grid-cols-12">
             <div className="border-b border-[hsl(var(--brand-iron))] p-8 md:col-span-5 md:border-b-0 md:border-r">
               <div className="font-techno text-[10px] uppercase tracking-[0.48em] text-[hsl(var(--brand-signal))]">
                 · 05 · Home Data Center

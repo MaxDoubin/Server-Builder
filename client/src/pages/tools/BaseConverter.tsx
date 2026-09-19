@@ -153,7 +153,7 @@ export function BaseConverter() {
     <ToolShell
       slug="base-converter"
     >
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_1fr]">
         <div className="space-y-6">
           <ToolPanel title="Bit width">
             <div className="flex flex-wrap gap-2">

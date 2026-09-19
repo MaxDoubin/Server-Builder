@@ -264,7 +264,7 @@ export function CinematicTransfer() {
             <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
               · The path
             </h2>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
               <LogSlider
                 label="Link rate"
                 testId="slider-bandwidth"
@@ -407,7 +407,7 @@ export function CinematicTransfer() {
               what is actually costing the time.
             </p>
 
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2" data-testid="case-list">
+            <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="case-list">
               {CASES.map((item) => (
                 <li key={item.slug}>
                   <button

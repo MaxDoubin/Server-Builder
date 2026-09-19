@@ -533,7 +533,7 @@ export function HttpStatusCodes() {
                   <li
                     key={s.code}
                     data-testid={`status-${s.code}`}
-                    className="grid gap-x-4 gap-y-1 border-t border-[hsl(var(--brand-iron)/0.6)] py-4 sm:grid-cols-[4.5rem_1fr]"
+                    className="grid grid-cols-1 gap-x-4 gap-y-1 border-t border-[hsl(var(--brand-iron)/0.6)] py-4 sm:grid-cols-[4.5rem_1fr]"
                   >
                     <div className="font-mono-tight text-lg leading-none text-[hsl(var(--brand-signal))]">
                       {s.code}

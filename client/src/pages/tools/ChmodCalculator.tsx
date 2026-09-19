@@ -200,7 +200,7 @@ export function ChmodCalculator() {
     <ToolShell
       slug="chmod-calculator"
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ToolPanel title="Permission bits">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[280px] border-separate border-spacing-1">
@@ -264,7 +264,7 @@ export function ChmodCalculator() {
           <h3 className="mt-6 font-mono-tight text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
             Special bits
           </h3>
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
             {[
               { label: "setuid", bit: SETUID, testId: "checkbox-setuid" },
               { label: "setgid", bit: SETGID, testId: "checkbox-setgid" },
@@ -405,7 +405,7 @@ export function ChmodCalculator() {
       </div>
 
       <ToolPanel title="Common modes" className="mt-6">
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {PRESETS.map((preset) => (
             <button
               key={preset.mode}

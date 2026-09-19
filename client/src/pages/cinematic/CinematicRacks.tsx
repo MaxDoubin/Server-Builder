@@ -269,7 +269,7 @@ export function CinematicRacks() {
               than in the grid with them.
             </p>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {FEATURED.map((f) => (
                 <Link
                   key={f.href}
@@ -308,7 +308,7 @@ export function CinematicRacks() {
             <div className="h-px flex-1 bg-[hsl(var(--brand-iron))]" />
           </div>
 
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
             {RACKS.map((rack) => {
               const power = publishedWatts(rack);
               return (

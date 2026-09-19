@@ -135,7 +135,7 @@ export function CinematicNeigh() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="neigh-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="neigh-list">
             {CASES.map((item) => (
               <li key={item.slug}>
                 <button
@@ -294,7 +294,7 @@ ${asSysctl(setup)}
                   <div className="font-mono-tight text-[11.5px] text-[hsl(var(--brand-bone-dim))]">
                     the same {held} entries, arriving two ways
                   </div>
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {([
                       ["all at once, inside 5 s", true],
                       ["gradually, over hours", false],

@@ -287,7 +287,7 @@ function PlanView({ problem }: { problem: Problem }) {
                 Not the only one. This is marked on behaviour, so any plan that meets every
                 requirement without overlapping is right, including a tidier one than mine.
               </p>
-              <dl className="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)]">
+              <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)]">
                 {problem.requirements.map((requirement) => (
                   <div key={requirement.id} className="contents">
                     <dt className="font-mono-tight text-[12.5px] text-[hsl(var(--brand-ash))]">

@@ -162,7 +162,7 @@ export function CinematicPatch() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="patch-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="patch-list">
             {scored.map((finding) => (
               <li key={finding.id}>
                 <button
@@ -350,7 +350,7 @@ export function CinematicPatch() {
               disagreements are not small: the thing at the bottom of the left column is second on
               the right, and it is a Medium.
             </p>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               <QueueColumn
                 heading="By base score"
                 caption="What the tool gives you"

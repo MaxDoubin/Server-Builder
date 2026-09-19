@@ -977,7 +977,7 @@ export function PortReference() {
     >
       <div className="space-y-6">
         <ToolPanel title="Filter">
-          <div className="grid gap-5 md:grid-cols-[2fr_1fr]">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[2fr_1fr]">
             <div>
               <label
                 htmlFor="port-search"

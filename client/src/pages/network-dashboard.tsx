@@ -43,14 +43,14 @@ export function NetworkDashboard() {
       title="Network Operations"
       subtitle="Topology overview, throughput trends, and link health."
     >
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <KpiCard label="Nodes" value={networkNodes.length.toString()} icon={<Network className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Links" value={networkLinks.length.toString()} icon={<Link2 className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Utilization" value="78%" icon={<Activity className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Edge Servers" value="56" icon={<Server className="h-4 w-4 text-cyan-300" />} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel title="Throughput (Gbps)">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

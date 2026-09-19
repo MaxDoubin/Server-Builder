@@ -364,7 +364,7 @@ export function HashIdentifier() {
       >
         {summary}
       </p>
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
         <ToolPanel title="Hash">
           <label
             htmlFor="hash-input"

@@ -164,7 +164,7 @@ export function ShortcutsDialog({
             : ""}
         </p>
 
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {GROUPS.map((group) => (
             <section key={group.title}>
               <h3 className="text-[10px] uppercase tracking-[0.24em] text-white/50">

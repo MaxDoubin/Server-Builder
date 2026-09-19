@@ -128,7 +128,7 @@ export function CinematicThrottle() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="throttle-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="throttle-list">
             {CASES.map((item) => (
               <li key={item.slug}>
                 <button
@@ -277,7 +277,7 @@ ${setup.arrivals
                 </div>
 
                 {/* the two numbers, side by side, because they disagree */}
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
                     <p className="font-techno text-[9.5px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · What the dashboard shows

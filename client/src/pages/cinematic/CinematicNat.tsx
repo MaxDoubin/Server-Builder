@@ -169,7 +169,7 @@ export function CinematicNat() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="nat-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="nat-list">
             {CASES.map((item) => (
               <li key={item.slug}>
                 <button
@@ -280,7 +280,7 @@ ${active.router.rules
                   {exchange.seenBy ? `, and the far end sees the request coming from ${exchange.seenBy}` : ""}.
                 </p>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <Trace steps={exchange.request} label="the request" testid="request" />
                   {exchange.reply.length > 0 ? (
                     <Trace steps={exchange.reply} label="the reply, routed separately" testid="reply" />

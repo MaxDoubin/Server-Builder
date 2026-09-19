@@ -777,7 +777,7 @@ export function CinematicPractice() {
                 <Link
                   href={pillar.href}
                   data-testid={`pillar-${pillar.href.slice(1)}`}
-                  className="group grid gap-4 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] md:grid-cols-[1fr_auto] md:items-start md:gap-8"
+                  className="group grid grid-cols-1 gap-4 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-6 transition-colors hover:border-[hsl(var(--brand-signal)/0.6)] hover:bg-[hsl(var(--brand-signal)/0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] md:grid-cols-[1fr_auto] md:items-start md:gap-8"
                 >
                   <div className="min-w-0">
                     <span className="font-techno text-[9px] uppercase tracking-[0.36em] text-[hsl(var(--brand-signal))]">
