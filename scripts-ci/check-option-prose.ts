@@ -71,17 +71,35 @@ const FALLBACK_FIELDS = ["at"];
  * silent.
  */
 
+/**
+ * How many milliseconds one of the units a claim may open with is worth.
+ *
+ * Only consulted for a field named `ms`, and only when the prose states a
+ * unit immediately after the number. It is a translation, not a loosening:
+ * "2s" against ms=2000 agrees and against ms=3000 still does not.
+ *
+ * It exists because /startlimit states RestartSec the way a unit file states
+ * it, in seconds, against a model that carries milliseconds because its cases
+ * turn on tenths of a second. Writing "2000 ms" in prose about RestartSec to
+ * satisfy this file would make the check pass by making the page worse.
+ */
+const MS_PER: Record<string, number> = { ms: 1, s: 1000, min: 60_000, h: 3_600_000 };
+
 /** The literal an option's prose opens with, if it opens with one. */
-function leading(claim: string): { text: string; numeric: number | null } | null {
+function leading(claim: string): { text: string; numeric: number | null; unit: string | null } | null {
   const text = claim.trim();
   /* A dotted quad first, so 198.51.100.9 is not read as the number 198.51. */
   const quad = /^((?:\d{1,3}\.){3}\d{1,3})(?![\d.])/.exec(text);
-  if (quad) return { text: quad[1], numeric: null };
+  if (quad) return { text: quad[1], numeric: null, unit: null };
   /* Not [\d,]* at the end, which swallows the comma in "1024, because ..."
      and prints it back in the message. */
   const number = /^(\d(?:[\d,]*\d)?(?:\.\d+)?)/.exec(text);
   if (!number) return null;
-  return { text: number[1], numeric: Number(number[1].replace(/,/g, "")) };
+  /* A unit only counts when it is attached to the number or one space away,
+     so "5 starts" reads as no unit and "2s" and "100 ms" both read as one. */
+  const after = text.slice(number[1].length);
+  const suffix = /^ ?(ms|s|min|h)(?![a-z])/.exec(after);
+  return { text: number[1], numeric: Number(number[1].replace(/,/g, "")), unit: suffix ? suffix[1] : null };
 }
 
 async function main(): Promise<void> {
@@ -131,9 +149,18 @@ async function main(): Promise<void> {
         if (!lead) continue;
 
         const value = fields[name];
+        /*
+          A millisecond field may be stated in any time unit, and then the
+          prose figure has to be that many milliseconds. Every other field is
+          compared as written.
+        */
+        const stated =
+          name === "ms" && lead.numeric !== null && lead.unit !== null && lead.unit in MS_PER
+            ? lead.numeric * MS_PER[lead.unit]
+            : lead.numeric;
         const agrees =
           typeof value === "number"
-            ? lead.numeric !== null && value === lead.numeric
+            ? stated !== null && value === stated
             : typeof value === "string"
               ? value === lead.text
               : false;
@@ -141,7 +168,8 @@ async function main(): Promise<void> {
         here += 1;
         if (!agrees) {
           problems.push(
-            `${where}/${option.id ?? "?"}: the claim opens with ${lead.text} and is checked` +
+            `${where}/${option.id ?? "?"}: the claim opens with ${lead.text}${lead.unit ?? ""}` +
+              `${stated !== lead.numeric ? ` (${stated} ms)` : ""} and is checked` +
               ` against ${name}=${JSON.stringify(value)}. A reader believes the prose.`,
           );
         }

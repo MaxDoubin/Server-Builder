@@ -40,6 +40,7 @@ import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/inde
 import { CASES as LEASES_CASES, clientsLost as leasesLost } from "@/lib/leases/index";
 import { CASES as BACKLOG_CASES, overflowed as backlogOverflowed } from "@/lib/backlog/index";
 import { CASES as KEEPALIVE_CASES, survives as keepaliveSurvives } from "@/lib/keepalive/index";
+import { CASES as STARTLIMIT_CASES, rateLimited as startlimitStopped } from "@/lib/startlimit/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -340,6 +341,20 @@ export function CinematicPractice() {
         `${FREE_CASES.length} machines`,
         `${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where it overstates`,
         "si_mem_available",
+      ],
+      progress: null,
+    },
+    {
+      href: "/startlimit",
+      eyebrow: "Predict",
+      title: "The service gave up",
+      blurb:
+        "Restart=always does not mean always. systemd stops a unit that starts too often, and the window it counts in is fixed rather than sliding, so the service that crashes faster is the one that stops.",
+      reachFor: "a service is dead and the unit file says it should be running",
+      stats: [
+        `${STARTLIMIT_CASES.length} units`,
+        `${STARTLIMIT_CASES.filter((item) => startlimitStopped(item.setup)).length} stopped for good`,
+        "systemd.unit(5)",
       ],
       progress: null,
     },

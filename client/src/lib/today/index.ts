@@ -38,6 +38,7 @@ import { CASES as NDOTS } from "@/lib/ndots/index";
 import { CASES as LEASES } from "@/lib/leases/index";
 import { CASES as BACKLOGS } from "@/lib/backlog/index";
 import { CASES as KEEPALIVES } from "@/lib/keepalive/index";
+import { CASES as STARTLIMITS } from "@/lib/startlimit/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -98,6 +99,7 @@ const OFFSET = {
   leases: 139,
   backlog: 149,
   keepalive: 151,
+  startlimit: 157,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -400,6 +402,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "An idle connection, a middlebox with a countdown, and keepalive settings nobody checked. Work out which timer expires first and what the next write gets.",
       href: "/keepalive",
       outOf: KEEPALIVES.length,
+    });
+  }
+
+  const restarted = pickFor(STARTLIMITS, day, OFFSET.startlimit);
+  if (restarted) {
+    out.push({
+      surface: "startlimit",
+      eyebrow: "Predict",
+      title: restarted.name,
+      blurb: "A unit in a crash loop and systemd's start rate limit. Work out whether it is stopped for good, restarting forever, or never restarted at all.",
+      href: "/startlimit",
+      outOf: STARTLIMITS.length,
     });
   }
 
