@@ -125,8 +125,15 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 705 KB, raised from 704 by /shm, measured at 704.7. Six surfaces, six
  * raises, every one between 0.4 and 0.7 KB, all of it palette entries.
+ *
+ * 706 KB, raised from 705 by /maxstartups and /retrans together, measured at
+ * 705.4. Two surfaces for 0.6 KB between them, which is the cheapest pair so
+ * far: both pages are lazy, both models are lazy, and the only thing either
+ * one puts in the static entry is its row in the command palette. Eight
+ * surfaces, seven raises, and the rule from the top of this comment has now
+ * held eight times.
  */
-const BUDGET_BYTES = 705 * 1024;
+const BUDGET_BYTES = 706 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

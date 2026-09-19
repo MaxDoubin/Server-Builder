@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 289 of them. Regenerate with script/generatePostIndex.ts.
+ * 290 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "tcp-retries2-is-not-a-count",
+    title: "tcp_retries2 Is Not a Count",
+    date: "2026-09-19",
+    tags: ["networking","linux","troubleshooting","operations"],
+    excerpt: "tcp(7) calls tcp_retries2 the maximum number of times a packet is retransmitted before giving up, and says the duration depends on the retransmission timeout. The kernel never counts a retransmission, and the duration does not depend on the path: retransmits_timed_out turns the number into a time budget modeled from TCP_RTO_MIN, so the default is 924.6 seconds on every Linux host. Measured on a real kernel, tcp_retries2 at 5 aborts after 13.25 seconds having sent 6 segments, one more than the sysctl names, and a slow path gets fewer attempts in the same time rather than more.",
+    coverImage: "/images/blog/tcp-retries2-is-not-a-count.jpg",
+    wordCount: 1460,
+  },
   {
     slug: "the-connection-refused-by-a-daemon-doing-nothing",
     title: "The Connection Refused by a Daemon Doing Nothing",
@@ -2834,10 +2843,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 289;
+export const POST_COUNT = 290;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty nine";
+export const POST_COUNT_SPELLED = "two hundred and ninety";
 
 /**
  * Unique external reference URLs in the article text.
