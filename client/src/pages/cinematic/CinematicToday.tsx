@@ -73,7 +73,7 @@ export function CinematicToday() {
             </p>
           </header>
 
-          <ol className="mt-11 grid gap-4 sm:grid-cols-2">
+          <ol className="mt-11 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {picks.map((pick, index) => (
               <li key={pick.surface}>
                 <Link

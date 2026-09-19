@@ -74,7 +74,7 @@ export function CinematicFirewalls() {
               <h2 className="font-techno text-[11px] uppercase tracking-[0.4em] text-[hsl(var(--brand-signal))]">
                 · {group.difficulty}
               </h2>
-              <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+              <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {group.items.map((exercise) => (
                   <ExerciseCard
                     key={exercise.slug}

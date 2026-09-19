@@ -425,7 +425,7 @@ export function CinematicBlog() {
                         className="group relative block overflow-hidden rounded-lg border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/.4)] backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/.4)]"
                       >
                         <div className="scanline pointer-events-none absolute inset-0 opacity-10" />
-                        <div className="relative grid gap-0 sm:grid-cols-[220px_1fr]">
+                        <div className="relative grid grid-cols-1 gap-0 sm:grid-cols-[220px_1fr]">
                           <div className="relative aspect-[3/2] overflow-hidden sm:aspect-auto">
                             <ParallaxFloat speed={0.15} direction="up">
                               <img

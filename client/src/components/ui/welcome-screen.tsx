@@ -121,7 +121,7 @@ export function WelcomeScreen({
       <div className="pointer-events-none absolute inset-x-[12vw] top-[34vh] h-[20vh] bg-[linear-gradient(180deg,transparent,hsl(var(--brand-cyan)/0.08),hsl(var(--brand-signal)/0.08),transparent)] blur-3xl" />
 
       <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-3 rounded-full border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] px-4 py-2 font-techno text-[10px] uppercase tracking-[0.42em] text-[hsl(var(--brand-signal))] backdrop-blur-md">
               <span
@@ -220,7 +220,7 @@ export function WelcomeScreen({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
             <InfoCard
               icon={<Shield className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />}
               title="Cybersecurity"

@@ -133,7 +133,7 @@ function CertCard({ cert }: { cert: Cert }) {
         {cert.statusDetail}
       </p>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <div className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))]">
             What it covers

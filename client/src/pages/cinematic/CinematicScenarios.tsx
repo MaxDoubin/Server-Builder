@@ -160,7 +160,7 @@ export function CinematicScenarios() {
               <p className="mt-2 font-mono-tight text-[12px] text-[hsl(var(--brand-ash))]">
                 {DIFFICULTY_BLURB[group.difficulty]}
               </p>
-              <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+              <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {group.items.map((scenario) => (
                   <ScenarioCard
                     key={scenario.slug}

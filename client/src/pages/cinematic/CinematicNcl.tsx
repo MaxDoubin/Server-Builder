@@ -67,7 +67,7 @@ export function CinematicNcl() {
             <h2 className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl">
               How the competition is structured
             </h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <InfoCard title="Gymnasium">
                 An open practice environment with challenges and content you can
                 work through at your own pace before the games. It is the place to
@@ -117,7 +117,7 @@ export function CinematicNcl() {
               tools, a worked example, common mistakes, practice resources, and a
               short quiz.
             </p>
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+            <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {NCL_GUIDES.map((guide) => (
                 <li key={guide.slug}>
                   <Link
@@ -149,7 +149,7 @@ export function CinematicNcl() {
             <h2 className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl">
               How to prepare
             </h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <InfoCard title="Drill the fundamentals">
                 Ports, protocols, the OSI model, Linux commands, and crypto basics
                 come up everywhere. The{" "}

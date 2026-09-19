@@ -193,7 +193,7 @@ export function CinematicContact() {
 
           {/* Channel cards with StaggerGroup + TiltCard */}
           <StaggerGroup
-            className="mt-14 grid gap-4 md:grid-cols-3"
+            className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3"
             staggerDelay={0.12}
             delayChildren={0.2}
           >

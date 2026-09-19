@@ -152,7 +152,7 @@ export function CinematicKeepalive() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="keepalive-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="keepalive-list">
             {CASES.map((item) => (
               <li key={item.slug}>
                 <button
@@ -377,7 +377,7 @@ ${asMiddlebox(setup)}`}
                 </div>
 
                 {/* the four numbers, side by side */}
-                <div className="grid gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                   {[
                     [
                       "first probe",

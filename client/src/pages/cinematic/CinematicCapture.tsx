@@ -359,7 +359,7 @@ function Workbench({ capture }: { capture: Capture }) {
 
 function Detail({ packet, onFilter }: { packet: Packet; onFilter: (text: string) => void }) {
   return (
-    <div className="mt-5 grid gap-4 lg:grid-cols-2">
+    <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
       <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)] p-4">
         <h2 className="font-techno text-[10px] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
           · Packet {packet.no}

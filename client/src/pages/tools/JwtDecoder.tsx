@@ -492,12 +492,12 @@ export function JwtDecoder() {
 
         {decoded ? (
           <>
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <SegmentPanel title="Header" part={decoded.header} testId="text-header-json" />
               <SegmentPanel title="Payload" part={decoded.payload} testId="text-payload-json" />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <ToolPanel title="Shape">
                 <ToolResult label="Algorithm" value={alg} testId="text-alg" />
                 <ToolResult

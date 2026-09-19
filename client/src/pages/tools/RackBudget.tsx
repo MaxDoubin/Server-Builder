@@ -126,7 +126,7 @@ export function RackBudget() {
       >
         {summary}
       </p>
-      <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[320px_1fr]">
         <div className="space-y-5">
           {FIELDS.map((f) => (
             <div key={f.key}>

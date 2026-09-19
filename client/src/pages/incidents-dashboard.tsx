@@ -43,7 +43,7 @@ export function IncidentsDashboard() {
       title="Incident Command"
       subtitle="Severity distribution, response speed, and open incident tracking."
     >
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <KpiCard label="Open Incidents" value={incidents.length.toString()} icon={<AlertTriangle className="h-4 w-4 text-cyan-300" />} />
         <KpiCard
           label="Critical"
@@ -56,7 +56,7 @@ export function IncidentsDashboard() {
         <KpiCard label="Median MTTR" value="11m" icon={<Timer className="h-4 w-4 text-cyan-300" />} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel title="Severity breakdown">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

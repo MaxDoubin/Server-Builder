@@ -42,14 +42,14 @@ export function NocDashboard() {
       title="NOC Overview"
       subtitle="Monitor alert volume, uptime stability, and response cadence."
     >
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <KpiCard label="Active Alerts" value={alerts.length.toString()} icon={<Bell className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Critical" value={facilityMetrics.criticalAlerts.toString()} icon={<ShieldAlert className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Uptime" value={`${facilityMetrics.uptime.toFixed(2)}%`} icon={<Activity className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Avg Response" value="4.2m" icon={<Clock className="h-4 w-4 text-cyan-300" />} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel title="Alert volume">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

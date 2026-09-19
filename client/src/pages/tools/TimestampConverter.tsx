@@ -404,7 +404,7 @@ export function TimestampConverter() {
           </div>
         </ToolPanel>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ToolPanel title="From an epoch value">
             <label
               htmlFor="epoch-input"
@@ -550,7 +550,7 @@ export function TimestampConverter() {
           {summary}
         </p>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ToolPanel title="Epoch">
             <FormatRow label="Seconds" value={String(seconds)} testId="text-epoch-seconds" />
             <FormatRow label="Milliseconds" value={String(instant)} testId="text-epoch-ms" />
@@ -567,7 +567,7 @@ export function TimestampConverter() {
           </ToolPanel>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ToolPanel title="In words">
             <FormatRow label="UTC" value={readable(instant, "UTC")} testId="text-readable-utc" />
             <FormatRow label={`Local (${localZone})`} value={readable(instant)} testId="text-readable-local" />
@@ -593,7 +593,7 @@ export function TimestampConverter() {
         </div>
 
         <ToolPanel title="Reference points">
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {REFERENCES.map((reference) => (
               <button
                 key={reference.label}

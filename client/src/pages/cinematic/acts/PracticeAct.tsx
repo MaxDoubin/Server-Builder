@@ -473,7 +473,7 @@ export function PracticeAct() {
           </div>
         </div>
 
-        <ul ref={gridRef} className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul ref={gridRef} className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {SURFACES.map((surface) => (
             <li key={surface.href}>
               <Link

@@ -113,7 +113,7 @@ export function CinematicColophon() {
             >
               Type and colour
             </h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm">
                 <h3 className="font-display text-base font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                   Four typefaces, each with a job

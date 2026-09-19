@@ -92,7 +92,7 @@ export function CinematicTeardown() {
             </p>
           </header>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
             <div className="relative overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))]">
               <div className="relative aspect-[16/10] w-full">
                 <Suspense

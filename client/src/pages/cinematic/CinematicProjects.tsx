@@ -210,7 +210,7 @@ export function CinematicProjects() {
           <AnimatePresence mode="popLayout">
             <StaggerGroup
               key={activeCategory}
-              className="mt-10 grid gap-6 md:grid-cols-2"
+              className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2"
               staggerDelay={0.1}
               delayChildren={0.15}
             >

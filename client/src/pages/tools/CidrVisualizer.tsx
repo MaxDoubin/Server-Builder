@@ -184,7 +184,7 @@ export function CidrVisualizer() {
       </p>
       <div className="space-y-6">
         <ToolPanel title="Block">
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
               <label
                 htmlFor="cidr-base"
@@ -266,7 +266,7 @@ export function CidrVisualizer() {
 
         {parsed.kind === "ok" ? (
           <>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <ToolPanel title="Parent">
                 <ToolResult label="Block" value={`${ipToString(baseAddr)}/${basePrefix}`} testId="text-parent" />
                 <ToolResult label="Mask" value={ipToString(prefixToMask(basePrefix))} />
@@ -353,7 +353,7 @@ export function CidrVisualizer() {
 
             {selectedDetail ? (
               <ToolPanel title="Selected block">
-                <div className="grid gap-x-8 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-x-8 md:grid-cols-2">
                   <div>
                     <ToolResult label="Block" value={selectedDetail.cidr} testId="text-selected" />
                     <ToolResult label="Mask" value={selectedDetail.mask} />

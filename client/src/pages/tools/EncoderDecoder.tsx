@@ -341,7 +341,7 @@ export function EncoderDecoder() {
     <ToolShell
       slug="encoder-decoder"
     >
-      <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-start">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-start">
         <ToolPanel title="Input">
           <label htmlFor="source-format" className="sr-only">
             Input format

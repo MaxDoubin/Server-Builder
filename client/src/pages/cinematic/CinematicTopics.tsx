@@ -68,7 +68,7 @@ export function CinematicTopics() {
             </p>
           </header>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2">
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {withCounts.map((topic) => (
               <Link
                 key={topic.tag}

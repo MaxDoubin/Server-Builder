@@ -293,7 +293,7 @@ export function CinematicRackBuilder() {
             pixels off the right of a phone with no way to scroll to them: the
             page itself did not overflow, only the content did.
           */}
-          <div className="mt-8 grid gap-6 xl:grid-cols-[300px_1fr_290px]">
+          <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[300px_1fr_290px]">
             {/* Palette */}
             <aside className="flex min-w-0 flex-col gap-3">
               <div className="font-techno text-[10px] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">

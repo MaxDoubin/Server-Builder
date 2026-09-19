@@ -135,7 +135,7 @@ export function CinematicCamps() {
               Practical details
             </h2>
             {facts.length > 0 ? (
-              <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+              <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {facts.map((fact) => (
                   <div key={fact.label}>
                     <dt className="font-mono-tight text-[10px] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
@@ -173,7 +173,7 @@ export function CinematicCamps() {
             >
               What the camps cover
             </h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {COVERS.map((item) => (
                 <div
                   key={item.title}

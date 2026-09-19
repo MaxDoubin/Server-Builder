@@ -45,7 +45,7 @@ export function GameRecoveryPanel({
       <div className="pointer-events-none absolute left-[8vw] top-[10vh] h-[18rem] w-[18rem] rounded-full bg-[hsl(var(--brand-cyan)/0.14)] blur-3xl animate-aurora-drift" />
       <div className="pointer-events-none absolute right-[10vw] top-[20vh] h-[22rem] w-[22rem] rounded-full bg-[hsl(var(--brand-signal)/0.12)] blur-3xl animate-panel-float" />
 
-      <div className="relative grid w-full max-w-[1320px] gap-8 lg:grid-cols-[minmax(0,0.94fr)_minmax(340px,0.86fr)]">
+      <div className="relative grid grid-cols-1 w-full max-w-[1320px] gap-8 lg:grid-cols-[minmax(0,0.94fr)_minmax(340px,0.86fr)]">
         <div className="overflow-hidden rounded-[32px] border border-[hsl(var(--brand-iron))] bg-[linear-gradient(180deg,hsl(var(--brand-graphite)/0.9),hsl(var(--brand-obsidian)/0.84))] p-7 shadow-[0_36px_140px_-48px_rgba(0,0,0,0.9)] backdrop-blur-xl md:p-9">
           <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,hsl(var(--brand-signal)),transparent)] opacity-80" />
 
@@ -61,7 +61,7 @@ export function GameRecoveryPanel({
             {body}
           </p>
 
-          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+          <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <DetailCard icon={<Layers3 className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />} label="Profile" value={PROFILE_LABELS[profile]} />
             <DetailCard icon={<Gauge className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />} label="Renderer Tier" value={support.tier === "webgl2" ? "WebGL 2" : support.tier === "webgl1" ? "WebGL 1" : "Unavailable"} />
             <DetailCard icon={<Cpu className="h-4 w-4 text-[hsl(var(--brand-cyan))]" />} label="Renderer" value={support.renderer ?? "Browser-managed"} />
@@ -189,7 +189,7 @@ function RackPreview({ profile }: { profile: GameRenderProfile }) {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Stat value="Adaptive" label="Render ladder" />
           <Stat value="Graceful" label="Fallback surface" />
           <Stat value="Safer" label="Compatibility boot" />

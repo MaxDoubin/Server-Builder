@@ -210,7 +210,7 @@ export function ClassicalCiphers() {
             ))}
           </div>
 
-          <div className="mt-5 grid gap-5 md:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
               {tab === "caesar" ? (
                 <>
@@ -318,7 +318,7 @@ export function ClassicalCiphers() {
           </div>
         </ToolPanel>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ToolPanel title="Input">
             <label htmlFor="cipher-input" className="sr-only">
               Text to transform

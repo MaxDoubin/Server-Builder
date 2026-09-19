@@ -46,14 +46,14 @@ export function FloorDashboard() {
       title="Floor Operations"
       subtitle="Thermal zones, airflow balance, and rack distribution across the floor."
     >
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <KpiCard label="Total Racks" value={rackCount.toString()} icon={<LayoutGrid className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Avg Temp" value="24°C" icon={<Thermometer className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Airflow Balance" value="92%" icon={<Wind className="h-4 w-4 text-cyan-300" />} />
         <KpiCard label="Active Zones" value="12" icon={<Layers className="h-4 w-4 text-cyan-300" />} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel title="Temperature distribution">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

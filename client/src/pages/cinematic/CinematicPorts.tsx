@@ -122,7 +122,7 @@ export function CinematicPorts() {
             </p>
           </header>
 
-          <ul className="mt-11 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="ports-list">
+          <ul className="mt-11 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="ports-list">
             {CASES.map((item) => (
               <li key={item.slug}>
                 <button

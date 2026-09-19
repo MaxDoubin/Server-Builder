@@ -68,7 +68,7 @@ export function CinematicWiredRack() {
             ))}
           </dl>
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
             <div className="overflow-hidden rounded-lg border border-[hsl(var(--brand-iron)/0.6)] bg-[hsl(var(--brand-void))]">
               <div className="relative aspect-[3/4] w-full sm:aspect-[4/3] lg:aspect-[5/4]">
                 <Suspense

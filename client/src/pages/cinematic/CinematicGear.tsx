@@ -233,7 +233,7 @@ export function CinematicGear() {
               */}
               <div
                 data-print-hide
-                className="mt-12 grid gap-6 md:grid-cols-[minmax(0,22rem)_1fr]"
+                className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,22rem)_1fr]"
               >
                 <div>
                   <label
@@ -345,7 +345,7 @@ export function CinematicGear() {
                       </span>
                     </div>
 
-                    <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {items.map((d) => (
                         <li key={d.slug}>
                           <article
@@ -503,7 +503,7 @@ export function CinematicGear() {
               <p role="status" className="font-mono-tight text-sm text-[hsl(var(--brand-ash))]">
                 Loading the catalogue...
               </p>
-              <ul aria-hidden className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <ul aria-hidden className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }, (_, i) => (
                   <li
                     key={i}
