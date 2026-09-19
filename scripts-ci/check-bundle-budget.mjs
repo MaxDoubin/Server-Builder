@@ -78,8 +78,14 @@ const INDEX = path.join(DIST, "index.html");
  * are seven of those and six belong to lazily loaded modules, so a glob picks
  * a chunk that contains none of the surface and the measurement comes back
  * reading zero for everything, which looks like a clean result.
+ *
+ * 699 KB, raised from 698 by /ndots, measured: the closure came in at 698.5,
+ * over by 0.5 KB, and grepping the entry for any of its case slugs or a line
+ * of its case prose finds nothing, so the cost is the palette entry and the
+ * route registration and nothing else. One surface, half a kilobyte, which
+ * is the rate the two raises above predicted.
  */
-const BUDGET_BYTES = 698 * 1024;
+const BUDGET_BYTES = 699 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as NDOTS_CASES, asResolvConf as ndotsConf, asTrace as ndotsTrace, attempts as ndotsAttempts, correctOption as ndotsCorrect, nxdomains as ndotsWasted, order as ndotsOrder, queries as ndotsQueries, wentToWildcard as ndotsWildcard } from "../client/src/lib/ndots/index";
 import { CASES as LIMIT_CASES, SOURCE_LABEL as limSource, asProcLimits as limProc, correctOption as limCorrect, effective as limEffective, failsWith as limFails, highestFd as limHighest, limit as limNum, succeeds as limOk } from "../client/src/lib/limits/index";
 import { CASES as PORT_CASES, TIME_WAIT_SECONDS as portTw, asSysctl as portSysctl, count as portCount, exhausts as portExhausts, heldBy as portHeldBy, loads as portLoads, maxRate as portMaxRate, portsHeld, rangeSize as portRangeSize, correctOption as portCorrect } from "../client/src/lib/ports/index";
 import { CASES as THROTTLE_CASES, asCpuMax as thrMax, asCpuStat as thrStat, everThrottled as thrEver, exhaustsAt as thrExhausts, finishesAt as thrFinishes, limitCpus as thrLimit, ms as thrMs, rate as thrRate, run as thrRun, stat as thrStatOf, correctOption as thrCorrect } from "../client/src/lib/throttle/index";
@@ -877,6 +878,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/ports">Out of ports</a>, ten hosts against one ephemeral range and which connection fails first.</li>
     <li><a href="${SITE_URL}/limits">Too many open files</a>, five mechanisms that set a descriptor limit and which one was in scope.</li>
     <li><a href="${SITE_URL}/free">Two hundred megabytes free</a>, what MemAvailable computes and what the free column is not.</li>
+    <li><a href="${SITE_URL}/ndots">Ten queries for one name</a>, how many DNS queries one hostname costs and why.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
     <li><a href="${SITE_URL}/array">Array calculator</a>, capacity, rebuild time and the URE arithmetic behind them.</li>
@@ -2175,6 +2177,7 @@ ${JSON.stringify({
     ["Out of ports", "/ports"],
     ["Too many open files", "/limits"],
     ["Two hundred megabytes free", "/free"],
+    ["Ten queries for one name", "/ndots"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
     ["You have backups, not restores", "/restore"],
@@ -3748,6 +3751,101 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     stalled rather than predicting whether reclaim might cost something.</li>
   </ol>
   ${backLinks([["/practice", "All practice material"], ["/blog/the-free-column-was-always-going-to-be-zero", "The free column was always going to be zero"], ["/oom", "Something has to die"], ["/load", "Forty, and idle"]])}
+</main>`,
+  });
+
+  // ── the search list ──
+  /*
+    The walk goes into the static body one name per row, because the
+    argument is that a lookup everybody thinks of as one query is a list
+    nobody has seen. Somebody searching "kubernetes dns nxdomain ndots" lands
+    here and the first row shows api.stripe.com costing ten queries under
+    ndots:5, eight of them for names that do not exist.
+  */
+  const ndotsWasting = NDOTS_CASES.filter((item) => ndotsWasted(item.setup) > 0).length;
+  const ndotsWrong = NDOTS_CASES.filter((item) => ndotsWildcard(item.setup)).length;
+  const ndotsMost = Math.max(...NDOTS_CASES.map((item) => ndotsQueries(item.setup)));
+  const ndotsDescription =
+    "A program asks for one hostname and the stub resolver counts the dots in it against ndots. " +
+    "Fewer dots than ndots means every search domain is tried first and the name as written last; " +
+    "at least ndots means the name as written goes first; a trailing dot means the search list is " +
+    "never consulted. Each attempt is two queries, A and AAAA. In a Kubernetes pod with ndots:5 and " +
+    "four search domains, a two-dot name costs ten queries and eight are NXDOMAIN. " +
+    `${NDOTS_CASES.length} names here, ${ndotsWasting} that cost wasted queries, up to ${ndotsMost} for one ` +
+    `lookup, and ${ndotsWrong} where a wildcard record in a search domain answers with the wrong address.`;
+
+  await writePage("ndots", base, {
+    title: "Ten Queries for One Name, Eight of Them for Nothing | Max Doubin",
+    description: ndotsDescription,
+    canonical: `${SITE_URL}/ndots`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Ten queries for one name",
+  description: ndotsDescription,
+  url: `${SITE_URL}/ndots`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Intermediate",
+  teaches:
+    "How the glibc stub resolver applies the resolv.conf search list: the ndots threshold on the dots in a name, search-first versus absolute-first order, why a trailing dot skips the list, why every attempt is an A and an AAAA query, why Kubernetes sets ndots:5 and what that costs for external names, the six-domain cap in glibc before 2.26, and why a wildcard record inside a search domain returns the wrong address without any error",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Ten queries for one name</h1>
+  <p>
+    ${NDOTS_CASES.length} names and the two lines of resolv.conf that decide how each is looked up.
+    ${ndotsWasting} of them cost queries for names that do not exist, one costs ${ndotsMost} for a
+    single lookup, and ${ndotsWrong} gets the wrong address back with no error anywhere.
+  </p>
+  <p>
+    resolv.conf(5): "Resolver queries having fewer than ndots dots (default is 1) in them will be
+    attempted using each component of the search path in turn until a match is found." A name with
+    at least ndots dots is tried as written first. A name ending in a dot is fully qualified and the
+    search list is never consulted. Every attempt is two queries, A and AAAA, because getaddrinfo
+    asks for both. Kubernetes writes <code>ndots:5</code> so that every name a cluster hands out is
+    tried under the search list first, and the same setting makes every external name walk the
+    whole list before it is tried as written.
+  </p>
+  <h2>What each name costs</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Name</th><th>ndots</th><th>Search domains</th><th>Order</th><th>Queries</th><th>NXDOMAIN</th><th>Answered by</th></tr>
+    </thead>
+    <tbody>
+${NDOTS_CASES.map((item) => {
+  const last = ndotsAttempts(item.setup).at(-1);
+  const answered = last && last.outcome !== "nxdomain" ? `${last.fqdn}${last.outcome === "wildcard" ? " (wildcard)" : ""}` : "nothing";
+  return `      <tr><td>${esc(item.setup.name)}</td><td>${item.setup.ndots}</td><td>${item.setup.search.length}</td>` +
+    `<td>${esc(ndotsOrder(item.setup))}</td><td>${ndotsQueries(item.setup)}</td><td>${ndotsWasted(item.setup)}</td>` +
+    `<td>${esc(answered)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${NDOTS_CASES.map((item) => {
+  const right = ndotsCorrect(item);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>$ cat /etc/resolv.conf
+${esc(ndotsConf(item.setup))}
+
+$ getent hosts ${esc(item.setup.name)}
+${esc(ndotsTrace(item.setup))}</code></pre>
+    <p>The resolver went ${esc(ndotsOrder(item.setup))}: ${ndotsAttempts(item.setup).length} name${ndotsAttempts(item.setup).length === 1 ? "" : "s"}, ${ndotsQueries(item.setup)} queries, ${ndotsWasted(item.setup)} of them NXDOMAIN.${ndotsWildcard(item.setup) ? " The answer came from a wildcard and the real name was never asked for." : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}.</p>
+  </article>`;
+}).join("\n")}
 </main>`,
   });
 
@@ -6313,6 +6411,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/ports`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/limits`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/free`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/ndots`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 275 of them. Regenerate with script/generatePostIndex.ts.
+ * 276 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "ten-queries-for-one-name",
+    title: "Ten Queries for One Name",
+    date: "2026-09-19",
+    tags: ["networking","dns","operations"],
+    excerpt: "A program asks for one hostname and the stub resolver sends ten DNS queries, eight of them for names that do not exist. Two lines of resolv.conf decide the order: fewer dots than ndots means every search domain is tried first, and Kubernetes sets ndots to five so that its own names go first. A trailing dot skips the whole list, and a wildcard record inside a search domain answers with the wrong address and no error.",
+    coverImage: "/images/blog/ten-queries-for-one-name.jpg",
+    wordCount: 1950,
+  },
   {
     slug: "nothing-translates-the-reply",
     title: "Nothing Translates the Reply",
@@ -2708,10 +2717,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 275;
+export const POST_COUNT = 276;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy five";
+export const POST_COUNT_SPELLED = "two hundred and seventy six";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2720,10 +2729,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy five";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1037;
+export const CITATION_COUNT = 1042;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1196;
+export const CHECKED_URL_COUNT = 1201;

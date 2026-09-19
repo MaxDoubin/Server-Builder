@@ -42,6 +42,7 @@ import { CASES as THROTTLE_CASES, everThrottled as thrEver } from "@/lib/throttl
 import { CASES as PORT_CASES, exhausts as portExhausts } from "@/lib/ports/index";
 import { CASES as LIMIT_CASES, succeeds as limOk } from "@/lib/limits/index";
 import { CASES as FREE_CASES, overstatedBy as freeOverstated } from "@/lib/free/index";
+import { CASES as NDOTS_CASES, nxdomains as ndotsWasted } from "@/lib/ndots/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -168,6 +169,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The free column is small on every healthy server, by design. MemAvailable is the number that answers the question, and it is an estimate with an arm that flips.",
     count: `${FREE_CASES.length} machines, ${FREE_CASES.filter((item) => freeOverstated(item.setup) > 0).length} where the estimate overstates`,
+  },
+  {
+    href: "/ndots",
+    eyebrow: "Count",
+    title: "Ten queries for one name",
+    blurb:
+      "A program asks for one hostname and the resolver sends ten queries, eight for names that do not exist. Two lines of resolv.conf decide the order, and a trailing dot skips it.",
+    count: `${NDOTS_CASES.length} names, ${NDOTS_CASES.filter((item) => ndotsWasted(item.setup) > 0).length} costing wasted queries`,
   },
   {
     href: "/limits",
