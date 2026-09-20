@@ -55,6 +55,7 @@ import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
 import { CASES as LOCKS } from "@/lib/locks/index";
+import { CASES as SIGNALS } from "@/lib/signals/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -134,6 +135,7 @@ const OFFSET = {
   eloop: 263,
   pipebuf: 269,
   locks: 271,
+  signals: 277,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -556,6 +558,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A write at or under PIPE_BUF is never interleaved and above it there is no promise at all. Work out whether this writer's records can come out with somebody else's inside them.",
       href: "/pipebuf",
       outOf: PIPEBUF.length,
+    });
+  }
+
+  const coalesced = pickFor(SIGNALS, day, OFFSET.signals);
+  if (coalesced) {
+    out.push({
+      surface: "signals",
+      eyebrow: "Predict",
+      title: coalesced.name,
+      blurb: "A signal below SIGRTMIN does not queue, and neither the sender nor the receiver can tell how many went missing. Work out how many times the handler actually runs.",
+      href: "/signals",
+      outOf: SIGNALS.length,
     });
   }
 

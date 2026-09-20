@@ -64,6 +64,7 @@ import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
 import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
+import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -238,6 +239,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/signals",
+    eyebrow: "Predict",
+    title: "A thousand sent, one arrived",
+    blurb:
+      "Send a standard signal a thousand times while the receiver has it blocked and the handler runs once. No error at the sender, nothing at the receiver, and the sending call has nothing to do with it.",
+    count: `${SIGNALS_CASES.length} bursts, ${SIGNALS_CASES.filter((item) => sgLost(item.setup) > 0).length} that lose sends`,
   },
   {
     href: "/locks",

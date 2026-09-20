@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as SIGNALS_CASES, accepted as sgAccepted, asSignals as sgLines, correctOption as sgCorrect, delivered as sgDelivered, dequeueOrder as sgDequeue, handlerOrder as sgHandlers, lost as sgLost, nameOf as sgName, queueDepth as sgDepth, queues as sgQueues, refused as sgRefused } from "../client/src/lib/signals/index";
 import { CASES as LOCKS_CASES, asLocks as lkLines, bothShared as lkShared, callOf as lkCall, correctOption as lkCorrect, granted as lkGranted, humanRange as lkRange, identity as lkWho, lostBecause as lkLost, overlaps as lkOverlaps, ownerOf as lkOwner, sameOwner as lkSame, stillHeld as lkHeld, why as lkWhy, world as lkWorld } from "../client/src/lib/locks/index";
 import { CASES as PIPEBUF_CASES, PIPE_BUF as PB_BUF, alignsWithCapacity as pbAligns, asSetup as pbSetup, atRisk as pbRisk, because as pbBecause, correctOption as pbCorrect, granted as pbGranted, guaranteed as pbGuaranteed, refused as pbRefused, tears as pbTearsAt, tearsHere as pbTears, uniform as pbUniform } from "../client/src/lib/pipebuf/index";
 import { CASES as ELOOP_CASES, MAX_TRAVERSALS as EL_MAX, asWalk as elWalk, correctOption as elCorrect, demanded as elAsked, followsFinal as elFollows, headroom as elLeft, reason as elReason, result as elResult, spent as elSpent, succeeds as elOk } from "../client/src/lib/eloop/index";
@@ -915,6 +916,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/eloop">There is no loop</a>, why a path with no cycle in it reports too many levels of symbolic links.</li>
     <li><a href="${SITE_URL}/pipebuf">Two writers, one line</a>, why a log line comes out with another log line inside it.</li>
     <li><a href="${SITE_URL}/locks">Three locks, one file</a>, why two programs can both hold the lock on one file.</li>
+    <li><a href="${SITE_URL}/signals">A thousand sent, one arrived</a>, why a standard signal sent a thousand times runs the handler once.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2235,6 +2237,7 @@ ${JSON.stringify({
     ["There is no loop", "/eloop"],
     ["Two writers, one line", "/pipebuf"],
     ["Three locks, one file", "/locks"],
+    ["A thousand sent, one arrived", "/signals"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4810,6 +4813,143 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-log-line-with-another-log-line-inside-it", "The log line with another log line inside it"], ["/writeback", "Not written down"], ["/nagle", "Eight bytes, forty four milliseconds"]])}
+</main>`,
+  });
+
+  // ── signal delivery ──
+  /*
+    The static body carries both tables, because the search that brings people
+    here is a handler that ran once when it should have run forty times, and
+    the answer is which side of SIGRTMIN the number is on. The second table is
+    the one that corrects the usual advice: changing the sending call does
+    nothing.
+  */
+  const sgLossy = SIGNALS_CASES.filter((item) => sgLost(item.setup) > 0).length;
+  const sgDescription =
+    "A signal below SIGRTMIN does not queue: its pending state is one bit, so 1000 sends of SIGUSR1 " +
+    "while the receiver had it blocked produced exactly one handler call, measured, with no error at " +
+    "the sender and nothing the receiver can inspect. A realtime signal queued all 1000. Which of the " +
+    "two happens is decided by the signal number and not by whether you called kill or sigqueue. " +
+    `${SIGNALS_CASES.length} bursts here, ${sgLossy} where sends produce nothing.`;
+
+  await writePage("signals", base, {
+    title: "A Thousand Sent, One Arrived: Signal Queueing | Max Doubin",
+    description: sgDescription,
+    canonical: `${SITE_URL}/signals`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "A thousand sent, one arrived",
+  description: sgDescription,
+  url: `${SITE_URL}/signals`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a handler runs once when the signal was sent forty times: that a standard signal, meaning anything below SIGRTMIN which is 34 on Linux, has a pending state of one bit, so sending it again while it is already pending does nothing and the extra sends are lost with no error at the sender and nothing at the receiver; that realtime signals at or above SIGRTMIN do queue, measured at 1000 sends and 1000 deliveries; that which of the two happens is decided by the signal number rather than by the sending call, so sigqueue on SIGUSR1 still coalesces and plain kill on SIGRTMIN still queues; that what the call does decide is whether the sender is told, since kill returns success for signals it is about to drop where sigqueue returns EAGAIN, both delivering the same number; that the queue holds RLIMIT_SIGPENDING minus one and that the limit is per real user rather than per process; and that the kernel dequeues the lowest pending number first while the handlers for several signals delivered at once run in the reverse order, highest first, without nesting",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>A thousand sent, one arrived</h1>
+  <p>
+    ${SIGNALS_CASES.length} bursts, one question each. On ${sgLossy} of them some of the sends produce nothing at all, and
+    on most of those nobody is in a position to notice.
+  </p>
+  <h2>A standard signal does not queue</h2>
+  <p>
+    Blocking the signal, sending it N times, then unblocking, with the handler calls counted in C:
+  </p>
+  <pre><code>SIGUSR1   sent    1   delivered 1
+SIGUSR1   sent    2   delivered 1
+SIGUSR1   sent    5   delivered 1
+SIGUSR1   sent  100   delivered 1
+SIGUSR1   sent 1000   delivered 1</code></pre>
+  <p>
+    SIGHUP gave the same five rows. The pending state for a standard signal is a bit in a mask, and
+    setting a bit that is already set does nothing. The 999 that went nowhere produced no error at
+    the sender, no counter anywhere, and nothing the receiver can inspect.
+  </p>
+  <h2>A realtime signal does</h2>
+  <pre><code>SIGRTMIN  sent    1   delivered    1
+SIGRTMIN  sent    2   delivered    2
+SIGRTMIN  sent    5   delivered    5
+SIGRTMIN  sent  100   delivered  100
+SIGRTMIN  sent 1000   delivered 1000</code></pre>
+  <h2>And the sending call has nothing to do with it</h2>
+  <pre><code>SIGUSR1  via kill      1000 sent, 1 delivered
+SIGUSR1  via sigqueue  1000 sent, 1 delivered
+SIGRTMIN via kill      1000 sent, 1000 delivered
+SIGRTMIN via sigqueue  1000 sent, 1000 delivered</code></pre>
+  <p>
+    sigqueue on a standard signal still coalesces. kill on a realtime signal still queues. Reaching
+    for sigqueue does not buy a queue; reaching for a number at or above SIGRTMIN does.
+  </p>
+  <h2>What the call decides is whether you are told</h2>
+  <pre><code>five SIGRTMIN, at various RLIMIT_SIGPENDING
+
+limit   via        accepted   delivered
+    1   kill              5           1
+    1   sigqueue          0           0    EAGAIN
+    2   kill              5           1
+    2   sigqueue          1           1    EAGAIN
+    3   kill              5           2
+    3   sigqueue          2           2    EAGAIN
+    4   kill              5           3
+    4   sigqueue          3           3    EAGAIN</code></pre>
+  <p>
+    The delivered column is the same either way. kill returns 0 for the ones it is about to drop.
+    The queue itself holds one less than the limit: 1, 2, 4, 8, 16 and 32 took 0, 1, 3, 7, 15 and 31,
+    and the default 64313 took 64312. That limit is per real user, shared by every process they own.
+  </p>
+  <h2>Two orders, and they are opposites</h2>
+  <pre><code>queued SIGRTMIN+5, SIGUSR2, SIGRTMIN, SIGUSR1, SIGRTMIN+2
+
+  dequeued with sigtimedwait   10, 12, 34, 36, 39
+  handlers ran                 39, 36, 34, 12, 10</code></pre>
+  <p>
+    The kernel dequeues the lowest pending number first and builds a signal frame for each one
+    before returning to user space. Each frame's saved context is the previous handler's entry, so
+    the last frame built is the first to run and they unwind downward. The handlers do not nest: over
+    five runs and four different sets the depth counter never left 1.
+  </p>
+  <h2>What each burst does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Signal</th><th>Queues</th><th>Sent</th><th>Via</th><th>Limit</th><th>Queue holds</th><th>Delivered</th><th>Lost</th><th>EAGAIN</th></tr>
+    </thead>
+    <tbody>
+${SIGNALS_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(sgName(s.sig))} (${s.sig})</td><td>${sgQueues(s.sig) ? "yes" : "no"}</td>` +
+    `<td>${s.sends}</td><td>${esc(s.via)}</td><td>${s.pendingLimit}</td>` +
+    `<td>${sgQueues(s.sig) ? sgDepth(s.pendingLimit) : "n/a"}</td><td>${sgDelivered(s)}</td>` +
+    `<td>${sgLost(s)}</td><td>${sgRefused(s)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${SIGNALS_CASES.map((item) => {
+  const right = sgCorrect(item);
+  const s = item.setup;
+  const lines = sgLines(s).map((line) => `${line.name.padEnd(19)} ${line.value.padStart(20)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The handler runs ${sgDelivered(s)} time${sgDelivered(s) === 1 ? "" : "s"} for ${s.sends} ${esc(s.via)} call${s.sends === 1 ? "" : "s"}. ${sgLost(s) === 0 ? "Nothing is lost." : `${sgLost(s)} of them produce nothing, and ${sgRefused(s) === 0 ? "every call returned success, so nobody was told" : `${sgRefused(s)} of the calls came back EAGAIN`}.`} ${sgQueues(s.sig) ? `${esc(sgName(s.sig))} is at or above SIGRTMIN, and the queue holds ${sgDepth(s.pendingLimit)}.` : `${esc(sgName(s.sig))} is below SIGRTMIN, so its pending state is one bit.`} ${s.alsoQueued.length ? `With ${esc(s.alsoQueued.map(sgName).join(", "))} pending alongside it, sigtimedwait takes them ${sgDequeue(s).join(", ")} and the handlers run ${sgHandlers(s).join(", ")}.` : ""} ${sgAccepted(s) === s.sends ? "" : `Only ${sgAccepted(s)} of the calls returned success.`}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/a-thousand-signals-and-one-handler-call", "A thousand signals and one handler call"], ["/backlog", "The server is idle and the connections are timing out"], ["/locks", "Three locks, one file"]])}
 </main>`,
   });
 
@@ -8982,6 +9122,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/eloop`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/pipebuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/locks`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/signals`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
