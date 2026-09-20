@@ -66,6 +66,7 @@ import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/inde
 import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
+import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -240,6 +241,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/umask",
+    eyebrow: "Predict",
+    title: "A ceiling, not a request",
+    blurb:
+      "A umask subtracts and can never add, so the mode in your source is a ceiling rather than a request. It is also nine bits wide where a mode is twelve, which is why 6777 under a umask of 0777 leaves a setuid file behind.",
+    count: `${UMASK_CASES.length} creations, ${UMASK_CASES.filter((item) => umMasked(item.setup)).length} the mask narrows`,
   },
   {
     href: "/exit",

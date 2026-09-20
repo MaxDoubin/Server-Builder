@@ -53,6 +53,7 @@ import { CASES as ELOOP } from "@/lib/eloop/index";
 import { CASES as LOCKS } from "@/lib/locks/index";
 import { CASES as SIGNALS } from "@/lib/signals/index";
 import { CASES as EXIT } from "@/lib/exit/index";
+import { CASES as UMASK } from "@/lib/umask/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -104,6 +105,7 @@ import { loadSolvedEloop } from "@/lib/eloop/progress";
 import { loadSolvedLocks } from "@/lib/locks/progress";
 import { loadSolvedSignals } from "@/lib/signals/progress";
 import { loadSolvedExit } from "@/lib/exit/progress";
+import { loadSolvedUmask } from "@/lib/umask/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -270,6 +272,13 @@ export function readProgress(): Line[] {
       href: "/eloop",
       done: loadSolvedEloop().filter((slug) => ELOOP.some((item) => item.slug === slug)).length,
       total: ELOOP.length,
+      noun: "called right",
+    },
+    {
+      label: "A ceiling, not a request",
+      href: "/umask",
+      done: loadSolvedUmask().filter((slug) => UMASK.some((item) => item.slug === slug)).length,
+      total: UMASK.length,
       noun: "called right",
     },
     {

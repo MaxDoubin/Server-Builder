@@ -60,6 +60,7 @@ import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/inde
 import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
+import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -444,6 +445,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/umask",
+      eyebrow: "Predict",
+      title: "A ceiling, not a request",
+      blurb:
+        "The mode passed to open is a maximum the umask lowers and nothing raises, so a program asking for 0600 is 0600 everywhere and one asking for 0666 is at the mercy of a setting. And no umask can reach the setuid bit.",
+      reachFor: "the same code made a different file on the other host",
+      stats: [
+        `${UMASK_CASES.length} creations`,
+        `${UMASK_CASES.filter((item) => umMasked(item.setup)).length} the mask narrows`,
+        "9 of 12 bits",
       ],
       progress: null,
     },
