@@ -73,6 +73,7 @@ import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
 import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
 import { CASES as PAGECACHE_CASES, pinned as pcPinned } from "@/lib/pagecache/index";
+import { CASES as ODIRECT_CASES, accepted as odAccepted } from "@/lib/odirect/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -279,6 +280,14 @@ const SURFACES: Surface[] = [
     blurb:
       "buff/cache is Buffers plus Cached plus SReclaimable, and tmpfs is inside Cached. So the column reads the same for a gibibyte you will get back and a gibibyte you never will, and the only field that distinguishes them is the one free labels shared.",
     count: `${PAGECACHE_CASES.length} machines, ${PAGECACHE_CASES.filter((item) => pcPinned(item.setup)).length} hold memory nothing returns`,
+  },
+  {
+    href: "/odirect",
+    eyebrow: "Predict",
+    title: "Three alignments, one errno",
+    blurb:
+      "statx will tell you the alignment and almost nobody asks, reaching for st_blksize instead, which is larger and therefore works. Then a header of 100 bytes moves every offset, and three separate requirements all report the same undifferentiated EINVAL.",
+    count: `${ODIRECT_CASES.length} writes, ${ODIRECT_CASES.filter((item) => !odAccepted(item.setup)).length} refused`,
   },
   {
     href: "/sparse",

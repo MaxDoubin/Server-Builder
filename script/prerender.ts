@@ -34,6 +34,7 @@ import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, corre
 import { CASES as APPEND_CASES, asAppend as apLines, asBytes as apBytes, asHow as apHow, correctOption as apCorrect, honorsOffset as apOffset, lost as apLost, safe as apSafe, size as apSize, survived as apSurvived, written as apWritten } from "../client/src/lib/append/index";
 import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome as mpSignal, backed as mpBacked, correctOption as mpCorrect, covers as mpCovers, lastSafe as mpLastSafe, outcome as mpOutcome, persists as mpPersists, reads as mpReads, resized as mpResized } from "../client/src/lib/mapped/index";
 import { CASES as FDSET_CASES, asFdset as fsLines, asFortify as fsFortify, asHex as fsHex, bitFor as fsBit, bitValue as fsValue, byteFor as fsByte, correctOption as fsCorrect, inTheSet as fsInSet, landsIn as fsLands, outcome as fsOutcome, reported as fsReported, setBytes as fsSetBytes, watched as fsWatched } from "../client/src/lib/fdset/index";
+import { CASES as ODIRECT_CASES, accepted as odOk, asAddress as odAddress, asBytes as odSize, asOdirect as odLines, blame as odBlame, correctOption as odCorrect, largest as odLargest, memAligned as odMemOk, outcome as odOutcome } from "../client/src/lib/odirect/index";
 import { CASES as PAGECACHE_CASES, after as pcAfter, asAttempt as pcAttempt, asSize as pcSize, asStore as pcStore, availableCostKb as pcCost, buffCache as pcColumn, cached as pcCached, correctOption as pcCorrect, costKb as pcWrote, freed as pcFreed, asPagecache as pcLines, pinned as pcPinned, shared as pcShared, survives as pcSurvives } from "../client/src/lib/pagecache/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
@@ -933,6 +934,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/mapped">Three boundaries, three outcomes</a>, where a mapping ends, where the file behind it ends, and which signal you get past each.</li>
     <li><a href="${SITE_URL}/fdset">One descriptor too many</a>, why FD_SET past 1023 writes into the next member of your own struct.</li>
     <li><a href="${SITE_URL}/pagecache">The cache you cannot drop</a>, why a gibibyte of tmpfs and a gibibyte of page cache read the same in free.</li>
+    <li><a href="${SITE_URL}/odirect">Three alignments, one errno</a>, why an O_DIRECT write returns EINVAL and nothing says which requirement it was.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2262,6 +2264,7 @@ ${JSON.stringify({
     ["Three boundaries, three outcomes", "/mapped"],
     ["One descriptor too many", "/fdset"],
     ["The cache you cannot drop", "/pagecache"],
+    ["Three alignments, one errno", "/odirect"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5751,6 +5754,137 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-cache-you-cannot-drop", "The cache you cannot drop"], ["/free", "Two hundred megabytes free"], ["/pss", "Four processes, one copy"]])}
+</main>`,
+  });
+
+  // ── direct I/O alignment ──
+  /*
+    The static body carries the three requirements and the table of largest
+    lengths, because the search that brings people here is an O_DIRECT write
+    returning EINVAL with nothing to say why, and the answer is one of three
+    things the reader can check by hand. The table of misalignments is the
+    part that is not in any man page.
+  */
+  const odRefused = ODIRECT_CASES.filter((item) => !odOk(item.setup)).length;
+  const odDescription =
+    "O_DIRECT wants three things aligned to the device's block size: the file offset, the " +
+    "transfer length, and the address of the buffer. Every violation returns the same EINVAL and " +
+    "nothing says which. A misaligned buffer is tolerated while the whole transfer stays inside " +
+    "the page it started in, measured, so the largest length from a buffer N bytes into a page is " +
+    `4096 minus N rounded down to a block. ${ODIRECT_CASES.length} writes here, ${odRefused} of them refused.`;
+
+  await writePage("odirect", base, {
+    title: "Three Alignments And One Errno: O_DIRECT | Max Doubin",
+    description: odDescription,
+    canonical: `${SITE_URL}/odirect`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Three alignments, one errno",
+  description: odDescription,
+  url: `${SITE_URL}/odirect`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why an O_DIRECT write returns EINVAL when nothing looks wrong: that three separate things must be aligned to the device's logical block size, the file offset, the transfer length and the memory address of the buffer, and that all three failures report the same undifferentiated errno so the return value distinguishes none of them; that statx with STATX_DIOALIGN reports the two figures that matter while st_blksize, which is what most code reaches for, is a different and larger number that happens to satisfy the requirement and therefore hides the bug until the code meets a device or a file layout where it does not; that a misaligned buffer is not always refused but is tolerated exactly while the whole transfer stays inside the page it began in, so the same code succeeds at two kilobytes and fails at four; and that an accepted direct write really does bypass the page cache, which mincore confirms",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Three alignments, one errno</h1>
+  <p>
+    ${ODIRECT_CASES.length} writes through O_DIRECT, one question each. ${odRefused} of them are refused, every one with the same
+    EINVAL, and nothing anywhere says which of the three requirements it was.
+  </p>
+  <h2>The figure to use, and the one everybody uses</h2>
+  <pre><code>statx STATX_DIOALIGN
+  stx_dio_mem_align      512
+  stx_dio_offset_align   512
+st_blksize               4096</code></pre>
+  <p>
+    st_blksize is four times the alignment, so code that reaches for it is aligned by accident and
+    never finds out. Then it meets a device with 4096 byte blocks, or somebody adds a 100 byte
+    header, and the same code starts returning EINVAL.
+  </p>
+  <h2>The offset and the length</h2>
+  <pre><code>length 1, 100, 255, 256, 511, 513, 4095, 4097    EINVAL
+length 512, 1024, 4096                          wrote it
+offset 1, 100, 255, 256, 511, 513               EINVAL
+offset 0, 512, 1024, 4096                       wrote it</code></pre>
+  <p>
+    Multiples of the block size, and nothing else. No short write and no padding.
+  </p>
+  <h2>The buffer, which is not the same rule</h2>
+  <p>
+    A misaligned buffer is tolerated, but only while the whole transfer stays inside the page it
+    started in. From a buffer N bytes into a page, the largest length that works is 4096 minus N,
+    rounded down to a whole block:
+  </p>
+  <pre><code>buffer at    largest length that works    rest of the page
+    +1                  3584                   4095
+    +7                  3584                   4089
+   +64                  3584                   4032
+  +100                  3584                   3996
+  +511                  3584                   3585
+  +513                  3072                   3583
+ +1000                  3072                   3096
+ +2000                  2048                   2096
+ +3000                  1024                   1096
+ +4000              nothing works                96</code></pre>
+  <p>
+    Ten misalignments and the rule holds on all ten. At the boundary, from +1, a length of 3584
+    ends at byte 3585 of the page and is accepted, and 4096 ends one byte into the next page and
+    is not. This is the worst of the three, because a malloc buffer writes 512 bytes happily in a
+    test and refuses 64 KiB in production.
+  </p>
+  <h2>And it really is direct</h2>
+  <pre><code>a 64 KiB write, then mincore on the file
+
+  buffer aligned to 4096   wrote it, 0 of the file's pages resident
+  buffer at +512           wrote it, 0 resident
+  buffer at +1, +7, +64    EINVAL
+  the same write buffered  wrote it, 16 resident</code></pre>
+  <p>
+    The kernel is not quietly falling back to buffered I/O behind the flag. It either does it
+    directly or refuses.
+  </p>
+  <h2>Every write here</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Buffer</th><th>Offset</th><th>Length</th><th>Result</th><th>What was wrong</th><th>Largest from here</th></tr>
+    </thead>
+    <tbody>
+${ODIRECT_CASES.map((item) => {
+  const s2 = item.setup;
+  return `      <tr><td>${esc(s2.host)}</td><td>${esc(odAddress(s2))}</td><td>${s2.at}</td>` +
+    `<td>${s2.length}</td><td>${esc(odOutcome(s2))}</td><td>${esc(odBlame(s2))}</td>` +
+    `<td>${esc(odMemOk(s2) ? "no limit from the address" : odSize(odLargest(s2)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${ODIRECT_CASES.map((item) => {
+  const right = odCorrect(item);
+  const s2 = item.setup;
+  const lines = odLines(s2).map((line) => `${line.name.padEnd(14)} ${line.value.padStart(20)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The offset is ${s2.at}, the length is ${s2.length}, and the buffer is ${esc(odAddress(s2))}, against a block size of ${s2.blockAlign}. So ${esc(odOutcome(s2))}${odOk(s2) ? "" : `, and what is wrong is ${esc(odBlame(s2))}`}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/three-alignments-and-one-errno", "Three alignments and one errno"], ["/pagecache", "The cache you cannot drop"], ["/writeback", "Not written down"]])}
 </main>`,
   });
 
@@ -10202,6 +10336,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/mapped`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/fdset`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/pagecache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/odirect`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

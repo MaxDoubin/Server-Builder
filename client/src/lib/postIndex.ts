@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 313 of them. Regenerate with script/generatePostIndex.ts.
+ * 314 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "three-alignments-and-one-errno",
+    title: "Three Alignments And One Errno",
+    date: "2026-09-20",
+    tags: ["linux","programming","storage","troubleshooting"],
+    excerpt: "An O_DIRECT write returns EINVAL. Three separate things have to be aligned and all three failures report the same errno, so the return value tells you nothing. One of the three is not the rule you think it is: a misaligned buffer works until the transfer leaves its page.",
+    coverImage: "/images/blog/three-alignments-and-one-errno.jpg",
+    wordCount: 1128,
+  },
   {
     slug: "the-cache-you-cannot-drop",
     title: "The Cache You Cannot Drop",
@@ -3051,10 +3060,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 313;
+export const POST_COUNT = 314;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and thirteen";
+export const POST_COUNT_SPELLED = "three hundred and fourteen";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3063,10 +3072,10 @@ export const POST_COUNT_SPELLED = "three hundred and thirteen";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1197;
+export const CITATION_COUNT = 1200;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1356;
+export const CHECKED_URL_COUNT = 1359;

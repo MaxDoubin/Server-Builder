@@ -67,6 +67,7 @@ import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
 import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
 import { CASES as PAGECACHE_CASES, pinned as pcPinned } from "@/lib/pagecache/index";
+import { CASES as ODIRECT_CASES, accepted as odAccepted } from "@/lib/odirect/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -507,6 +508,20 @@ export function CinematicPractice() {
         `${PAGECACHE_CASES.length} machines`,
         `${PAGECACHE_CASES.filter((item) => pcPinned(item.setup)).length} hold memory nothing returns`,
         "4 columns",
+      ],
+      progress: null,
+    },
+    {
+      href: "/odirect",
+      eyebrow: "Predict",
+      title: "Three alignments, one errno",
+      blurb:
+        "The offset, the length and the buffer address all have to be aligned, and every violation returns the same EINVAL. A misaligned buffer is tolerated while the transfer stays inside one page, so the same code writes 2 KiB and refuses 4 KiB.",
+      reachFor: "a direct write returns EINVAL and nothing says which of the three it was",
+      stats: [
+        `${ODIRECT_CASES.length} writes`,
+        `${ODIRECT_CASES.filter((item) => !odAccepted(item.setup)).length} refused`,
+        "1 errno",
       ],
       progress: null,
     },

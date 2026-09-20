@@ -119,6 +119,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/mapped": { load: () => import("@/pages/cinematic/CinematicMapped") },
   "/fdset": { load: () => import("@/pages/cinematic/CinematicFdset") },
   "/pagecache": { load: () => import("@/pages/cinematic/CinematicPagecache") },
+  "/odirect": { load: () => import("@/pages/cinematic/CinematicOdirect") },
   "/fds": { load: () => import("@/pages/cinematic/CinematicFds") },
   "/writeback": { load: () => import("@/pages/cinematic/CinematicWriteback") },
   "/conntrack": { load: () => import("@/pages/cinematic/CinematicConntrack") },

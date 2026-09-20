@@ -219,8 +219,11 @@ const INDEX = path.join(DIST, "index.html");
  * 727 KB, raised from 726 by /pagecache at 725.3. Nine tenths again, for the
  * third surface running, which is the number to use when estimating what the
  * next one costs.
+ *
+ * 728 KB, raised from 727 by /odirect at 726.3. Nine tenths for the fourth
+ * time, so the estimate holds and the raise is bookkeeping rather than news.
  */
-const BUDGET_BYTES = 727 * 1024;
+const BUDGET_BYTES = 728 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
