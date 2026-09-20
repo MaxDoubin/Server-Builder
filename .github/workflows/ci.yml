@@ -726,6 +726,13 @@ jobs:
       - name: Atomic write size
         run: npx tsx scripts-ci/check-pipebuf.ts
 
+      # File locking. The model is five conditions in a row, and the thing that
+      # can be encoded backwards is ownership, so the gate keeps the kernel's
+      # books instead: descriptors, open file descriptions, and two lists of
+      # records with an owner each, replayed as the syscalls the case describes.
+      - name: File locking
+        run: npx tsx scripts-ci/check-locks.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

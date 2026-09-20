@@ -54,6 +54,7 @@ import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
+import { CASES as LOCKS } from "@/lib/locks/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -132,6 +133,7 @@ const OFFSET = {
   argmax: 257,
   eloop: 263,
   pipebuf: 269,
+  locks: 271,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -554,6 +556,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A write at or under PIPE_BUF is never interleaved and above it there is no promise at all. Work out whether this writer's records can come out with somebody else's inside them.",
       href: "/pipebuf",
       outOf: PIPEBUF.length,
+    });
+  }
+
+  const guarded = pickFor(LOCKS, day, OFFSET.locks);
+  if (guarded) {
+    out.push({
+      surface: "locks",
+      eyebrow: "Predict",
+      title: guarded.name,
+      blurb: "flock and fcntl keep separate lock lists and never see each other, and only one of the three belongs to the process rather than the descriptor. Work out whether the second party gets in.",
+      href: "/locks",
+      outOf: LOCKS.length,
     });
   }
 

@@ -50,6 +50,7 @@ import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
+import { CASES as LOCKS } from "@/lib/locks/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -98,6 +99,7 @@ import { loadSolvedAtime } from "@/lib/atime/progress";
 import { loadSolvedNagle } from "@/lib/nagle/progress";
 import { loadSolvedArgmax } from "@/lib/argmax/progress";
 import { loadSolvedEloop } from "@/lib/eloop/progress";
+import { loadSolvedLocks } from "@/lib/locks/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -264,6 +266,13 @@ export function readProgress(): Line[] {
       href: "/eloop",
       done: loadSolvedEloop().filter((slug) => ELOOP.some((item) => item.slug === slug)).length,
       total: ELOOP.length,
+      noun: "called right",
+    },
+    {
+      label: "Three locks, one file",
+      href: "/locks",
+      done: loadSolvedLocks().filter((slug) => LOCKS.some((item) => item.slug === slug)).length,
+      total: LOCKS.length,
       noun: "called right",
     },
     {
