@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 293 of them. Regenerate with script/generatePostIndex.ts.
+ * 294 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
+    title: "The Socket Buffer You Tuned Is Smaller Than the One You Did Not",
+    date: "2026-09-20",
+    tags: ["networking","linux","operations","troubleshooting"],
+    excerpt: "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
+    coverImage: "/images/blog/the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not.jpg",
+    wordCount: 974,
+  },
   {
     slug: "too-many-open-files-and-which-of-the-four-limits-it-was",
     title: "Too Many Open Files, and Which of the Four Limits It Was",
@@ -2870,10 +2879,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 293;
+export const POST_COUNT = 294;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety three";
+export const POST_COUNT_SPELLED = "two hundred and ninety four";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2882,10 +2891,10 @@ export const POST_COUNT_SPELLED = "two hundred and ninety three";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1136;
+export const CITATION_COUNT = 1138;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1295;
+export const CHECKED_URL_COUNT = 1297;

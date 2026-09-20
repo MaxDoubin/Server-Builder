@@ -42,6 +42,7 @@ import { CASES as RETRANS } from "@/lib/retrans/index";
 import { CASES as CONNTRACK } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK } from "@/lib/writeback/index";
 import { CASES as FDS } from "@/lib/fds/index";
+import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -81,6 +82,7 @@ import { loadSolvedRetrans } from "@/lib/retrans/progress";
 import { loadSolvedConntrack } from "@/lib/conntrack/progress";
 import { loadSolvedWriteback } from "@/lib/writeback/progress";
 import { loadSolvedFds } from "@/lib/fds/progress";
+import { loadSolvedRcvbuf } from "@/lib/rcvbuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -211,6 +213,13 @@ export function readProgress(): Line[] {
       href: "/shm",
       done: loadSolvedShm().filter((slug) => SHMS.some((item) => item.slug === slug)).length,
       total: SHMS.length,
+      noun: "called right",
+    },
+    {
+      label: "Tuned smaller",
+      href: "/rcvbuf",
+      done: loadSolvedRcvbuf().filter((slug) => RCVBUF.some((item) => item.slug === slug)).length,
+      total: RCVBUF.length,
       noun: "called right",
     },
     {
