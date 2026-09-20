@@ -762,6 +762,13 @@ jobs:
       - name: Proportional set size
         run: npx tsx scripts-ci/check-pss.ts
 
+      # Sparse files. Every mistake available here is a mistake about a
+      # boundary, and a run based expression can be wrong at one edge and
+      # right everywhere a case happens to look, so the gate keeps one entry
+      # per block and replays the operations over it.
+      - name: Sparse files
+        run: npx tsx scripts-ci/check-sparse.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

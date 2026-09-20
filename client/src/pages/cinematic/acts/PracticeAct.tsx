@@ -68,6 +68,7 @@ import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
 import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
+import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -242,6 +243,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/sparse",
+    eyebrow: "Read",
+    title: "A gigabyte in one block",
+    blurb:
+      "ls reports the length of a file and du reports the blocks it was given, and on a preallocated image those differ by a factor of a quarter of a million. Which tool copies it decides whether the copy does too.",
+    count: `${SPARSE_CASES.length} files, ${SPARSE_CASES.filter((item) => spSparse(item.setup)).length} still have holes`,
   },
   {
     href: "/pss",
