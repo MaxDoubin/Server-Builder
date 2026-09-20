@@ -69,6 +69,7 @@ import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
 import { CASES as PAGECACHE_CASES, pinned as pcPinned } from "@/lib/pagecache/index";
 import { CASES as ODIRECT_CASES, accepted as odAccepted } from "@/lib/odirect/index";
 import { CASES as REUSEPORT_CASES, binds as rpBinds, stable as rpStable } from "@/lib/reuseport/index";
+import { CASES as MALLOCTRIM_CASES, freeHelps as mtFreeHelps } from "@/lib/malloctrim/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -537,6 +538,20 @@ export function CinematicPractice() {
         `${REUSEPORT_CASES.length} pools`,
         `${REUSEPORT_CASES.filter((item) => rpBinds(item.setup) && !rpStable(item.setup)).length} rehash`,
         "1 port",
+      ],
+      progress: null,
+    },
+    {
+      href: "/malloctrim",
+      eyebrow: "Predict",
+      title: "The memory you freed and still hold",
+      blurb:
+        "Free twenty thousand chunks and twenty megabytes goes back to the kernel. Keep one of them and nothing does, because the heap only shrinks at one end. Then malloc_trim reaches the middle, and what it recovers is decided by how far apart the survivors are rather than how many bytes they are.",
+      reachFor: "the batch finished, everything was freed, and RSS did not move",
+      stats: [
+        `${MALLOCTRIM_CASES.length} heaps`,
+        `${MALLOCTRIM_CASES.filter((item) => !mtFreeHelps(item.setup)).length} give nothing back`,
+        "1 page",
       ],
       progress: null,
     },

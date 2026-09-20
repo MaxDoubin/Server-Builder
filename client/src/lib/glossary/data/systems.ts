@@ -257,6 +257,16 @@ export const SYSTEMS: Term[] = [
     see: ["SNMP", "IPMI"],
   },
   {
+    term: "RSS",
+    expansion: "Resident Set Size",
+    field: "systems",
+    definition:
+      "How much of a process's memory is in RAM right now, counted in pages the process has touched and the kernel has not reclaimed. It is the figure ps and top print, and the one people mean by \"how much memory is this using\".",
+    confusion:
+      "It answers neither of the two questions people ask it. It is not what the process asked for, because a page allocated and never written to is not resident and costs nothing. And it is not what the process costs the machine, because a page shared between several processes is counted in full against every one of them, so summing RSS across a process tree can exceed the memory the machine has. PSS divides shared pages by the number of sharers and is the figure that adds up. RSS also does not fall when memory is freed unless the allocator hands the pages back, which it often cannot.",
+    see: ["NUMA", "DIMM", "hypervisor"],
+  },
+  {
     term: "T2",
     expansion: "Apple T2 Security Chip",
     field: "hardware",

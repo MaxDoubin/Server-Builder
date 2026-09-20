@@ -36,6 +36,7 @@ import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome
 import { CASES as FDSET_CASES, asFdset as fsLines, asFortify as fsFortify, asHex as fsHex, bitFor as fsBit, bitValue as fsValue, byteFor as fsByte, correctOption as fsCorrect, inTheSet as fsInSet, landsIn as fsLands, outcome as fsOutcome, reported as fsReported, setBytes as fsSetBytes, watched as fsWatched } from "../client/src/lib/fdset/index";
 import { CASES as ODIRECT_CASES, accepted as odOk, asAddress as odAddress, asBytes as odSize, asOdirect as odLines, blame as odBlame, correctOption as odCorrect, largest as odLargest, memAligned as odMemOk, outcome as odOutcome } from "../client/src/lib/odirect/index";
 import { CASES as REUSEPORT_CASES, after as rpAfter, asChange as rpChange, asCount as rpCount, asReuseport as rpLines, binds as rpBinds, correctOption as rpCorrect, each as rpEach, movedPercent as rpMoved, stable as rpStable } from "../client/src/lib/reuseport/index";
+import { CASES as MALLOCTRIM_CASES, afterFree as mtAfterFree, asBytes as mtSize, asMalloctrim as mtLines, asPattern as mtPattern, correctOption as mtCorrect, freeHelps as mtFreeHelps, freeReturns as mtReturns, held as mtHeld, heldAfterTrim as mtHeldAfterTrim, peak as mtPeak, source as mtSource } from "../client/src/lib/malloctrim/index";
 import { CASES as PAGECACHE_CASES, after as pcAfter, asAttempt as pcAttempt, asSize as pcSize, asStore as pcStore, availableCostKb as pcCost, buffCache as pcColumn, cached as pcCached, correctOption as pcCorrect, costKb as pcWrote, freed as pcFreed, asPagecache as pcLines, pinned as pcPinned, shared as pcShared, survives as pcSurvives } from "../client/src/lib/pagecache/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
@@ -937,6 +938,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/pagecache">The cache you cannot drop</a>, why a gibibyte of tmpfs and a gibibyte of page cache read the same in free.</li>
     <li><a href="${SITE_URL}/odirect">Three alignments, one errno</a>, why an O_DIRECT write returns EINVAL and nothing says which requirement it was.</li>
     <li><a href="${SITE_URL}/reuseport">Even is not stable</a>, why SO_REUSEPORT spreads connections evenly and still moves them when the worker count changes.</li>
+    <li><a href="${SITE_URL}/malloctrim">The memory you freed and still hold</a>, why resident memory does not fall after free and what decides whether it will.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2268,6 +2270,7 @@ ${JSON.stringify({
     ["The cache you cannot drop", "/pagecache"],
     ["Three alignments, one errno", "/odirect"],
     ["Even is not stable", "/reuseport"],
+    ["The memory you freed and still hold", "/malloctrim"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -6017,6 +6020,155 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/even-is-not-stable", "Even is not stable"], ["/backlog", "The server is idle and the connections are timing out"], ["/timewait", "Still a minute"]])}
+</main>`,
+  });
+
+  // ── what free gives back ──
+  /*
+    The static body carries the two tables, because the search that brings
+    people here is a batch that finished, freed everything, and did not shrink.
+    The first table is the one that explains it: the same twenty megabytes,
+    the same frees, four arrangements of survivor, and a factor of twenty
+    between what comes back at either end. The second is the band, which
+    nobody would guess and which is a constant in glibc's source.
+  */
+  const mtStuck = MALLOCTRIM_CASES.filter((item) => !mtFreeHelps(item.setup)).length;
+  const mtDescription =
+    "free() handed twenty megabytes back to the kernel when every chunk was freed and nothing at all " +
+    "when one kilobyte survived, because the heap only shrinks at one end. malloc_trim reaches the " +
+    "middle, and what it recovers is decided by how far apart the survivors are: two megabytes of " +
+    "sparse survivors released ten megabytes and ten megabytes of dense ones released nothing. " +
+    `${MALLOCTRIM_CASES.length} heaps here, ${mtStuck} of them get nothing back from free() at all.`;
+
+  await writePage("malloctrim", base, {
+    title: "The Memory You Freed And Still Hold: glibc malloc And RSS | Max Doubin",
+    description: mtDescription,
+    canonical: `${SITE_URL}/malloctrim`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The memory you freed and still hold",
+  description: mtDescription,
+  url: `${SITE_URL}/malloctrim`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why resident memory does not fall after free() and what decides whether it will: that glibc's heap is grown with brk and shrinks only from its top, so free() returns pages only when the freed space reaches that top and exceeds M_TRIM_THRESHOLD, which one surviving allocation anywhere above the free space prevents entirely; that malloc_trim releases whole free pages anywhere in the arena with MADV_DONTNEED, so what it can recover is a function of how far apart the surviving objects are rather than how many bytes they are, and survivors closer together than a page release nothing at all; that an allocation over M_MMAP_THRESHOLD gets a mapping of its own and is returned in full when freed, but that freeing it raises the threshold to its size so the identical allocation a moment later comes from the heap and is not returned; and that the same adjustment doubles M_TRIM_THRESHOLD while the freed chunk is at or under 32 MiB, so one allocation in a band can switch the automatic trim off for the rest of the process while a larger one does not",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The memory you freed and still hold</h1>
+  <p>
+    ${MALLOCTRIM_CASES.length} heaps, one question each. ${mtStuck} of them get nothing back from free() at all, and in
+    every one of those the code freed exactly what it meant to free.
+  </p>
+  <h2>One kilobyte out of twenty megabytes</h2>
+  <pre><code>20000 x 1 kB allocated and touched      RSS  22092 kB
+all 20000 freed                         RSS   1912 kB
+
+20000 x 1 kB allocated and touched      RSS  22088 kB
+19999 freed, the last one held          RSS  22088 kB</code></pre>
+  <p>
+    The heap is grown with brk and brk moves at one end. free() shrinks it only when the free space
+    reaches that end and there is more of it there than M_TRIM_THRESHOLD, which is 128 kB. One live
+    allocation above the free space and none of it is at the end. Sixteen bytes is enough: an 8 MB
+    block freed with nothing above it took 9812 kB to 1748 kB, and the same block with a 16 byte
+    allocation above it did not move.
+  </p>
+  <h2>What malloc_trim recovers, and what decides it</h2>
+  <pre><code>survivors                 after free()      after malloc_trim(0)
+none                          1908 kB              1780 kB
+every 100th  (200 kB live)   22084 kB              2788 kB
+every 10th   (2 MB live)     22084 kB             11892 kB
+every other  (10 MB live)    22084 kB             22084 kB</code></pre>
+  <p>
+    Read the last two rows together. The run holding two megabytes got ten megabytes back. The run
+    holding ten megabytes got nothing, not one page. malloc_trim calls MADV_DONTNEED on whole free
+    pages anywhere in the arena, so a page comes back only when nothing live is in it. Survivors
+    every hundredth chunk are 104 kB apart and twenty five pages between each pair are free.
+    Survivors every other chunk are two kilobytes apart and no whole page in that heap is free.
+    Fragmentation is a spacing, not a quantity.
+  </p>
+  <h2>The same allocation, twice</h2>
+  <pre><code>round 1  10 MB allocated   RSS 11928 kB   mmapped 10489856  in 1 mapping
+round 1  freed             RSS  1684 kB   mmapped        0
+round 2  10 MB allocated   RSS 11924 kB   mmapped        0   from the heap
+round 2  freed             RSS 11924 kB   nothing came back
+round 3  10 MB allocated   RSS 11924 kB
+round 3  freed             RSS 11924 kB</code></pre>
+  <p>
+    Freeing an mmapped chunk sets mmap_threshold to that chunk's mapping, so a program that repeats
+    an allocation stops paying for the mapping. It also stops getting the memory back. Note the two
+    numbers: the mapping is 10489856 bytes and the next request's chunk is 10485776, which is under
+    it.
+  </p>
+  <h2>The band that switches the automatic trim off</h2>
+  <pre><code>the identical 20 MB workload, twice, with one allocate-free in between
+
+   1 MB in between    the second run's free() gave it back
+   8 MB               gave it back
+   9 MB               gave it back
+  10 MB               gave back nothing
+  11, 12, 13, 16 MB   nothing
+  30, 31 MB           nothing
+  32 MB               gave it back
+  33, 64 MB           gave it back</code></pre>
+  <p>
+    The adjustment sets trim_threshold to twice the new mmap_threshold, and only applies while the
+    freed chunk is at or under DEFAULT_MMAP_THRESHOLD_MAX, which is 32 MiB on 64 bit. So a 33 MB
+    allocation is cheaper here than a 20 MB one, permanently, for every unrelated allocation
+    afterwards. The lower edge belongs to the workload; the upper edge is a constant.
+  </p>
+  <h2>The heap does not shrink and the memory still comes back</h2>
+  <pre><code>                              VmSize    VmRSS   VmData
+at the start                    2564     1416       96
+20000 x 1 kB allocated         23052    22152    20584
+all but 200 freed              23052    22152    20584
+after malloc_trim(0)           22944     2856    20476
+the last 200 freed, trimmed     2740     1848      272</code></pre>
+  <p>
+    Both sentences are true at once and they are different lines of the same file.
+  </p>
+  <h2>Every heap here</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Working set</th><th>From</th><th>Survivors</th><th>free() returned</th><th>A trim reaches</th><th>Held</th></tr>
+    </thead>
+    <tbody>
+${MALLOCTRIM_CASES.map((item) => {
+  const s2 = item.setup;
+  const reach = Math.max(0, mtAfterFree(s2) - mtHeldAfterTrim(s2));
+  return `      <tr><td>${esc(s2.host)}</td><td>${s2.chunks} x ${esc(mtSize(s2.chunkBytes))}</td>` +
+    `<td>${esc(mtSource(s2) === "mmap" ? "mmap" : "heap")}</td><td>${esc(mtPattern(s2.pattern))}</td>` +
+    `<td>${esc(mtSize(mtReturns(s2)))}</td><td>${esc(mtSize(reach))}</td><td>${esc(mtSize(mtHeld(s2)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${MALLOCTRIM_CASES.map((item) => {
+  const right = mtCorrect(item);
+  const s2 = item.setup;
+  const lines = mtLines(s2).map((line) => `${line.name.padEnd(22)} ${line.value.padStart(26)}  # ${line.unit}`).join("\n");
+  const reach = Math.max(0, mtAfterFree(s2) - mtHeldAfterTrim(s2));
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>Of the ${esc(mtSize(mtPeak(s2)))} at the peak, free() gave back ${esc(mtSize(mtReturns(s2)))}, a trim could reach ${esc(mtSize(reach))}, and ${esc(mtSize(mtHeldAfterTrim(s2)))} is pinned by what is still live.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-memory-you-freed-and-still-hold", "The memory you freed and still hold"], ["/pss", "Four processes, one copy"], ["/overcommit", "The allocation that succeeded"]])}
 </main>`,
   });
 
@@ -10470,6 +10622,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/pagecache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/odirect`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/reuseport`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/malloctrim`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

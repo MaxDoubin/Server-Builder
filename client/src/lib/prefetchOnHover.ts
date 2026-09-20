@@ -121,6 +121,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/pagecache": { load: () => import("@/pages/cinematic/CinematicPagecache") },
   "/odirect": { load: () => import("@/pages/cinematic/CinematicOdirect") },
   "/reuseport": { load: () => import("@/pages/cinematic/CinematicReuseport") },
+  "/malloctrim": { load: () => import("@/pages/cinematic/CinematicMalloctrim") },
   "/fds": { load: () => import("@/pages/cinematic/CinematicFds") },
   "/writeback": { load: () => import("@/pages/cinematic/CinematicWriteback") },
   "/conntrack": { load: () => import("@/pages/cinematic/CinematicConntrack") },

@@ -66,6 +66,7 @@ import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PAGECACHE } from "@/lib/pagecache/index";
 import { CASES as ODIRECT } from "@/lib/odirect/index";
 import { CASES as REUSEPORT } from "@/lib/reuseport/index";
+import { CASES as MALLOCTRIM } from "@/lib/malloctrim/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -156,6 +157,7 @@ const OFFSET = {
   pagecache: 331,
   odirect: 337,
   reuseport: 347,
+  malloctrim: 349,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -686,6 +688,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "SO_REUSEPORT spreads connections across the listeners evenly at every worker count, and moves a large share of them the moment that count changes. Work out how many stay put.",
       href: "/reuseport",
       outOf: REUSEPORT.length,
+    });
+  }
+
+  const heap = pickFor(MALLOCTRIM, day, OFFSET.malloctrim);
+  if (heap) {
+    out.push({
+      surface: "malloctrim",
+      eyebrow: "Predict",
+      title: heap.name,
+      blurb: "Freeing twenty thousand chunks handed twenty megabytes back to the kernel, and keeping one of them handed back nothing. Work out what free gives back, what a trim can still reach, and what nothing can.",
+      href: "/malloctrim",
+      outOf: MALLOCTRIM.length,
     });
   }
 
