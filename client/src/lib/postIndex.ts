@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 302 of them. Regenerate with script/generatePostIndex.ts.
+ * 303 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-client-that-the-server-never-saw",
+    title: "The Client That The Server Never Saw",
+    date: "2026-09-20",
+    tags: ["networking","linux","operations","troubleshooting"],
+    excerpt: "A full accept queue has two ways to drop a connection and they produce opposite symptoms. If the queue fills mid handshake the client ends up established and stalled, which is the case everybody writes about. If the queue is already full when the SYN arrives, the kernel drops the SYN before a request sock exists, no SYN-ACK is ever sent, and connect() simply does not return. Two hundred clients at a listener with room for three produced 3 established and 197 still in SYN_SENT.",
+    coverImage: "/images/blog/the-client-that-the-server-never-saw.jpg",
+    wordCount: 1638,
+  },
   {
     slug: "the-log-line-with-another-log-line-inside-it",
     title: "The Log Line With Another Log Line Inside It",
@@ -260,10 +269,11 @@ export const postIndex: PostMeta[] = [
     slug: "the-connection-opened-and-then-nothing-happened",
     title: "The Connection Opened And Then Nothing Happened",
     date: "2026-09-19",
+    updated: "2026-09-20",
     tags: ["networking","linux","operations","troubleshooting"],
-    excerpt: "listen() does not install the backlog you passed: it is min(backlog, somaxconn), clamped silently, and the queue then holds one more than that because the kernel's test is greater-than rather than greater-or-equal. When it fills, the kernel does not refuse the connection. It drops the final ACK and sends nothing back, so connect() has already returned and the client's first request goes into silence until a retransmission finds room. That is how a box at six percent CPU produces seconds of dead air and no error anywhere.",
+    excerpt: "listen() does not install the backlog you passed: it is min(backlog, somaxconn), clamped silently, and the queue then holds one more than that because the kernel's test is greater-than rather than greater-or-equal. When it fills, the kernel does not refuse the connection. If it fills part way through a handshake it drops the final ACK and sends nothing back, so connect() has already returned and the client's first request goes into silence until a retransmission finds room. That is how a box at six percent CPU produces seconds of dead air and no error anywhere.",
     coverImage: "/images/blog/the-connection-opened-and-then-nothing-happened.jpg",
-    wordCount: 1897,
+    wordCount: 2000,
   },
   {
     slug: "forty-minutes-dark",
@@ -2951,10 +2961,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 302;
+export const POST_COUNT = 303;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and two";
+export const POST_COUNT_SPELLED = "three hundred and three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2963,10 +2973,10 @@ export const POST_COUNT_SPELLED = "three hundred and two";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1161;
+export const CITATION_COUNT = 1165;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1320;
+export const CHECKED_URL_COUNT = 1324;

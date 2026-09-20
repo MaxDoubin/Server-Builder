@@ -29,7 +29,17 @@ export const PROTOCOLS: Term[] = [
       "The flag on the first packet of a TCP connection, proposing a starting sequence number. The reply carries SYN and ACK together, and the third packet acknowledges it.",
     confusion:
       "The third packet is what makes the handshake three-way. Without it the server has proof the client can receive and none that it can send, and a connection left in that state is the half-open one a SYN flood exploits.",
-    see: ["TCP"],
+    see: ["TCP", "ACK"],
+  },
+  {
+    term: "ACK",
+    expansion: "acknowledgment",
+    field: "protocols",
+    definition:
+      "The flag that reports the next sequence number a receiver expects, which is how a sender learns what arrived. It rides on the second and third packets of the handshake and on most packets after that, because acknowledging costs nothing when there is already a packet going the other way.",
+    confusion:
+      "An ACK is from the kernel, not from the application. A request that was acknowledged has been accepted by the receiving TCP stack and may still be sitting in a queue that no process has read, which is why a captured handshake proves reachability and proves nothing at all about whether anything is serving.",
+    see: ["TCP", "SYN"],
   },
   {
     term: "QUIC",
