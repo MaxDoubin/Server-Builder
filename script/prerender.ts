@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, correctOption as umCorrect, created as umCreated, executable as umExec, gid as umGid, masked as umMasked, mode as umMode, modeText as umText, removed as umRemoved, special as umSpecial } from "../client/src/lib/umask/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
 import { CASES as SIGNALS_CASES, accepted as sgAccepted, asSignals as sgLines, correctOption as sgCorrect, delivered as sgDelivered, dequeueOrder as sgDequeue, handlerOrder as sgHandlers, lost as sgLost, nameOf as sgName, queueDepth as sgDepth, queues as sgQueues, refused as sgRefused } from "../client/src/lib/signals/index";
 import { CASES as LOCKS_CASES, asLocks as lkLines, bothShared as lkShared, callOf as lkCall, correctOption as lkCorrect, granted as lkGranted, humanRange as lkRange, identity as lkWho, lostBecause as lkLost, overlaps as lkOverlaps, ownerOf as lkOwner, sameOwner as lkSame, stillHeld as lkHeld, why as lkWhy, world as lkWorld } from "../client/src/lib/locks/index";
@@ -919,6 +920,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/locks">Three locks, one file</a>, why two programs can both hold the lock on one file.</li>
     <li><a href="${SITE_URL}/signals">A thousand sent, one arrived</a>, why a standard signal sent a thousand times runs the handler once.</li>
     <li><a href="${SITE_URL}/exit">One byte, two kinds of news</a>, why an exit of 137 and a kill by SIGKILL are the same number.</li>
+    <li><a href="${SITE_URL}/umask">A ceiling, not a request</a>, why the mode your program passes to open is a maximum.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2241,6 +2243,7 @@ ${JSON.stringify({
     ["Three locks, one file", "/locks"],
     ["A thousand sent, one arrived", "/signals"],
     ["One byte, two kinds of news", "/exit"],
+    ["A ceiling, not a request", "/umask"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4816,6 +4819,121 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-log-line-with-another-log-line-inside-it", "The log line with another log line inside it"], ["/writeback", "Not written down"], ["/nagle", "Eight bytes, forty four milliseconds"]])}
+</main>`,
+  });
+
+  // ── umask ──
+  /*
+    The static body carries the grid, because the search that brings people
+    here is the same program producing a different mode on two hosts, and the
+    answer is a table of mode against umask. The second table is the one that
+    surprises: the three bits the mask cannot reach at all.
+  */
+  const umNarrowed = UMASK_CASES.filter((item) => umMasked(item.setup)).length;
+  const umDescription =
+    "The mode a program passes to open() is a maximum the umask lowers and nothing raises, so a " +
+    "program asking for 0600 produces 0600 under every umask measured and one asking for 0666 " +
+    "produces 0644, 0664 or 0600 depending on the host. A umask is nine bits and a mode is twelve, " +
+    "so 6777 under a umask of 0777 leaves a setuid setgid file with no ordinary permissions at all. " +
+    `${UMASK_CASES.length} creations here, ${umNarrowed} the mask narrows.`;
+
+  await writePage("umask", base, {
+    title: "A Ceiling, Not A Request: umask And File Modes | Max Doubin",
+    description: umDescription,
+    canonical: `${SITE_URL}/umask`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "A ceiling, not a request",
+  description: umDescription,
+  url: `${SITE_URL}/umask`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why the same program writes a differently permissioned file on two hosts: that the mode argument to open() and mkdir() is a ceiling and the umask is mode AND NOT umask, measured across thirty six combinations for files and six for directories with no exceptions; that a umask can only ever clear, so a program that asks for 0600 is 0600 under every umask while one that asks for 0666 is at the mercy of the environment; that a umask is nine bits and a mode is twelve, so the setuid, setgid and sticky bits pass through untouched and a umask of 0777 leaves 6000 behind; that chmod does not consult the umask at all, so a script that chmods after writing undoes whatever the umask was for; that a setgid parent directory changes the group of what is created and leaves the mode to the umask; and that a directory inherits the setgid bit itself while a file does not",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>A ceiling, not a request</h1>
+  <p>
+    ${UMASK_CASES.length} files and directories, one question each. On ${umNarrowed} of them the umask takes something away that
+    the program asked for, and on the rest it does nothing at all.
+  </p>
+  <h2>The arithmetic is mode and not umask</h2>
+  <pre><code>asked  0000  0022  0002  0077  0027  0777
+ 0666  0666  0644  0664  0600  0640  0000
+ 0777  0777  0755  0775  0700  0750  0000
+ 0600  0600  0600  0600  0600  0600  0000
+ 0644  0644  0644  0644  0600  0640  0000
+ 0755  0755  0755  0755  0700  0750  0000
+ 0640  0640  0640  0640  0600  0640  0000</code></pre>
+  <p>
+    mkdir behaves identically. Look at the 0600 row: a program that asks for exactly what it needs
+    is the same on every host, and one that asks for 0666 is not. The mask subtracts and can never
+    add, so there is no umask anywhere that widens a mode.
+  </p>
+  <h2>A umask is nine bits and a mode is twelve</h2>
+  <pre><code>asked  0000  0022  0002  0077  0027  0777
+ 6777  6777  6755  6775  6700  6750  6000</code></pre>
+  <p>
+    A umask of 0777, which removes every ordinary permission there is, leaves a setuid setgid file
+    behind. The mask covers owner, group and other and nothing above them, so it is not a defense
+    against those bits and never was.
+  </p>
+  <h2>And chmod does not consult it</h2>
+  <pre><code>umask 0077, open with 0666   ->  0600
+then chmod 0666              ->  0666</code></pre>
+  <p>
+    The mask applies when a file is created and never again, which is why a deploy script that
+    chmods after writing quietly undoes the hardening it was deployed alongside.
+  </p>
+  <h2>A setgid parent moves the group, not the mode</h2>
+  <pre><code>parent plain  0777 gid 1    file inside 0644 gid 0    dir inside 0755 gid 0
+parent setgid 2777 gid 1    file inside 0644 gid 1    dir inside 2755 gid 1</code></pre>
+  <p>
+    Measured with the process in group 0. The mode is 0644 either way, so the umask did the same
+    work: what moved is the group. And a directory inherits the setgid bit itself, which is how the
+    arrangement survives further down the tree, where a file does not.
+  </p>
+  <h2>What each creation does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Kind</th><th>Asked</th><th>umask</th><th>Removed</th><th>Created</th><th>Final</th><th>Group</th><th>Executable</th><th>Special bits</th></tr>
+    </thead>
+    <tbody>
+${UMASK_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(s.kind)}</td><td>${umText(s.asked)}</td><td>${umText(s.um)}</td>` +
+    `<td>${umRemoved(s) === 0 ? "nothing" : umText(umRemoved(s))}</td><td>${umText(umCreated(s))}</td>` +
+    `<td>${umText(umMode(s))}</td><td>${umGid(s)}</td><td>${umExec(s) ? "yes" : "no"}</td>` +
+    `<td>${umSpecial(s) ? "yes" : "no"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${UMASK_CASES.map((item) => {
+  const right = umCorrect(item);
+  const s = item.setup;
+  const lines = umLines(s).map((line) => `${line.name.padEnd(18)} ${line.value.padStart(26)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>It is created ${umText(umCreated(s))}, which is ${esc(umLetters(umCreated(s)))}${s.thenChmod > 0 ? `, and ends up ${umText(umMode(s))} after the chmod` : ""}, owned by group ${umGid(s)}. ${umMasked(s) ? `The umask removed ${esc(umLetters(umRemoved(s)))}.` : "The umask removed nothing, because none of the bits it clears were asked for."} ${umSpecial(s) ? "It carries a bit no umask can reach." : ""} ${s.kind === "directory" && s.parentSetgid ? "The setgid bit was inherited from the parent rather than asked for." : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/a-ceiling-and-not-a-request", "A ceiling and not a request"], ["/permissions", "The bits that decide"], ["/locks", "Three locks, one file"]])}
 </main>`,
   });
 
@@ -9260,6 +9378,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/locks`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/signals`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/exit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/umask`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

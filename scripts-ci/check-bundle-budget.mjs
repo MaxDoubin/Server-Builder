@@ -188,8 +188,12 @@ const INDEX = path.join(DIST, "index.html");
  * 720 KB, raised from 719 by /exit, measured at 719.1. Twenty three surfaces,
  * twenty one raises. The last two each landed within a tenth of the ceiling
  * they were given, which is the closest this has run.
+ *
+ * 721 KB, raised from 720 by /umask, which measured 720.0 exactly. It passed on
+ * the nose, and a budget with no headroom at all is not a budget: one byte of
+ * difference between this build and CI's would have failed it.
  */
-const BUDGET_BYTES = 720 * 1024;
+const BUDGET_BYTES = 721 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -747,6 +747,13 @@ jobs:
       - name: Exit status
         run: npx tsx scripts-ci/check-exit.ts
 
+      # umask. The model is one AND NOT, and an expression that applies the
+      # mask to all twelve bits agrees with it everywhere the top three were
+      # not asked for, which is almost everywhere, so the gate decides each of
+      # the twelve bits on its own instead.
+      - name: File mode creation
+        run: npx tsx scripts-ci/check-umask.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container
