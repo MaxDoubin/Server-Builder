@@ -776,6 +776,13 @@ jobs:
       - name: Concurrent appenders
         run: npx tsx scripts-ci/check-append.ts
 
+      # What a mapping covers. Which signal an access gets is decided by which
+      # of two page-aligned edges it is past, so the gate lays the address
+      # space out one page at a time and reads the outcome off the page the
+      # access lands in, rather than evaluating the same comparisons twice.
+      - name: What a mapping covers
+        run: npx tsx scripts-ci/check-mapped.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

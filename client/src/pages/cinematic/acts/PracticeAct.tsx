@@ -70,6 +70,7 @@ import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
 import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
+import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -252,6 +253,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A file offset belongs to an open file description, not to a file and not to a process. Two processes that each open one log walk their own offsets from zero and write over each other, and every call returns success.",
     count: `${APPEND_CASES.length} logs, ${APPEND_CASES.filter((item) => !apSafe(item.setup)).length} lose writes`,
+  },
+  {
+    href: "/mapped",
+    eyebrow: "Predict",
+    title: "Three boundaries, three outcomes",
+    blurb:
+      "A mapping ends on a page boundary and the file behind it ends wherever it likes, so there are two edges and two signals. Past the mapping is SIGSEGV, past the file's last page is SIGBUS, and the gap between the end of the file and the end of its page is neither.",
+    count: `${MAPPED_CASES.length} accesses, ${MAPPED_CASES.filter((item) => mpOutcome(item.setup) !== "ok").length} fault`,
   },
   {
     href: "/sparse",

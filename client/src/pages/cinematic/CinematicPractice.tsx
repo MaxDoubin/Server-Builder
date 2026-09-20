@@ -64,6 +64,7 @@ import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
 import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
+import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -462,6 +463,20 @@ export function CinematicPractice() {
         `${APPEND_CASES.length} logs`,
         `${APPEND_CASES.filter((item) => !apSafe(item.setup)).length} lose writes`,
         "1 flag",
+      ],
+      progress: null,
+    },
+    {
+      href: "/mapped",
+      eyebrow: "Predict",
+      title: "Three boundaries, three outcomes",
+      blurb:
+        "A 100 byte file mapped for two pages reads byte 4095 without a signal and takes SIGBUS at 4096. Past the mapping is the other signal, and the stretch between the end of the file and the end of its last page reads as zero and keeps nothing you store there.",
+      reachFor: "a process died on a mapped file and you need to know which edge it hit",
+      stats: [
+        `${MAPPED_CASES.length} accesses`,
+        `${MAPPED_CASES.filter((item) => mpOutcome(item.setup) !== "ok").length} fault`,
+        "2 signals",
       ],
       progress: null,
     },

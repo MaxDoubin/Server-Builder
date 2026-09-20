@@ -202,8 +202,13 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 724 KB, raised from 723 by /append at 722.6. Twenty six surfaces and
  * twenty five raises: the rate has not changed in a year of this.
+ *
+ * 725 KB, raised from 724 by /mapped at 723.5. Half a kilobyte of headroom is
+ * not a margin either, and the next surface would have spent it before it
+ * built anything, so this raise is for the surface that landed and the one
+ * after it both.
  */
-const BUDGET_BYTES = 724 * 1024;
+const BUDGET_BYTES = 725 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
