@@ -33,6 +33,7 @@ import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorr
 import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, correctOption as umCorrect, created as umCreated, executable as umExec, gid as umGid, masked as umMasked, mode as umMode, modeText as umText, removed as umRemoved, special as umSpecial } from "../client/src/lib/umask/index";
 import { CASES as APPEND_CASES, asAppend as apLines, asBytes as apBytes, asHow as apHow, correctOption as apCorrect, honorsOffset as apOffset, lost as apLost, safe as apSafe, size as apSize, survived as apSurvived, written as apWritten } from "../client/src/lib/append/index";
 import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome as mpSignal, backed as mpBacked, correctOption as mpCorrect, covers as mpCovers, lastSafe as mpLastSafe, outcome as mpOutcome, persists as mpPersists, reads as mpReads, resized as mpResized } from "../client/src/lib/mapped/index";
+import { CASES as FDSET_CASES, asFdset as fsLines, asFortify as fsFortify, asHex as fsHex, bitFor as fsBit, bitValue as fsValue, byteFor as fsByte, correctOption as fsCorrect, inTheSet as fsInSet, landsIn as fsLands, outcome as fsOutcome, reported as fsReported, setBytes as fsSetBytes, watched as fsWatched } from "../client/src/lib/fdset/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
@@ -929,6 +930,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/sparse">A gigabyte in one block</a>, why ls and du disagree about a file and which copy makes it real.</li>
     <li><a href="${SITE_URL}/append">Two writers, one offset</a>, why four processes can hand a log more bytes than it ends up holding.</li>
     <li><a href="${SITE_URL}/mapped">Three boundaries, three outcomes</a>, where a mapping ends, where the file behind it ends, and which signal you get past each.</li>
+    <li><a href="${SITE_URL}/fdset">One descriptor too many</a>, why FD_SET past 1023 writes into the next member of your own struct.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2256,6 +2258,7 @@ ${JSON.stringify({
     ["A gigabyte in one block", "/sparse"],
     ["Two writers, one offset", "/append"],
     ["Three boundaries, three outcomes", "/mapped"],
+    ["One descriptor too many", "/fdset"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5441,6 +5444,166 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/sparse", "A gigabyte in one block"], ["/pss", "Four processes, one copy"], ["/cache", "The page that showed somebody else's name"]])}
+</main>`,
+  });
+
+  // ── descriptor sets ──
+  /*
+    The static body carries the arithmetic and one struct, because the search
+    that brings people here is a long lived select loop that started behaving
+    strangely after a week, and the answer is a division the reader can do by
+    hand against their own offsets. The second table is the one that surprises:
+    which member of their struct a given descriptor picks.
+  */
+  const fsOutside = FDSET_CASES.filter((item) => !fsInSet(item.setup)).length;
+  const fsDescription =
+    "FD_SET(fd, &set) sets bit fd mod 8 of byte fd over 8, and an fd_set is 128 bytes, so " +
+    "FD_SET(1024) leaves 0x01 at offset 128 and that byte belongs to whatever the compiler put " +
+    "after the set. Measured: live, a name, four bytes of padding, a function pointer. The macro " +
+    "has nothing to return, glibc's bounds check is off unless the build asks for it, and the " +
+    `descriptor came from accept(). ${FDSET_CASES.length} calls here, ${fsOutside} of which land outside the set.`;
+
+  await writePage("fdset", base, {
+    title: "One Descriptor Too Many: FD_SETSIZE And select | Max Doubin",
+    description: fsDescription,
+    canonical: `${SITE_URL}/fdset`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "One descriptor too many",
+  description: fsDescription,
+  url: `${SITE_URL}/fdset`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a long running select loop corrupts itself once descriptors pass 1023: that FD_SET, FD_ISSET and FD_CLR are one division and one shift with no bounds check, so the arithmetic is identical either side of FD_SETSIZE and nothing in it can notice the boundary; that the byte it writes past the end of a 128 byte fd_set belongs to the next member of the program's own struct, so the descriptor number decides which of your fields is corrupted and the answer differs between programs and between builds; that FD_ISSET reads the same byte and therefore reports ordinary data as readiness, turning a worker's name into descriptors that were never accepted; that glibc ships a check for this and it is compiled in from _FORTIFY_SOURCE 1, the lowest level there is, and not at all without the flag; that the kernel has no FD_SETSIZE at all and select will watch a descriptor at 2000 given a bitmap large enough and an nfds above it; and that nfds is how many bytes of your buffer the syscall reads rather than a hint, so a bit past it is silently never polled",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>One descriptor too many</h1>
+  <p>
+    ${FDSET_CASES.length} calls, one question each. On ${fsOutside} of them the bit lands outside the set the program
+    passed, in a byte that belongs to something else, and nothing anywhere returns an error.
+  </p>
+  <h2>The whole of the arithmetic</h2>
+  <pre><code>FD_SET(fd, &amp;set)   sets bit (fd % 8) of byte (fd / 8)
+
+FD_SETSIZE      1024
+sizeof(fd_set)  128 bytes, which is 1024 bits, one per descriptor</code></pre>
+  <p>
+    There is no check anywhere in that, and the expression does not change at 1024, which is
+    exactly why nothing notices 1024. The descriptor is the index, and the index comes from
+    <code>accept()</code>.
+  </p>
+  <h2>Where the bit goes</h2>
+  <pre><code>FD_SET(1022)   inside the set
+FD_SET(1023)   inside the set, byte 127, bit 7
+FD_SET(1024)   0x01 at byte 128, one past the end
+FD_SET(1031)   0x80 at byte 128, the same byte
+FD_SET(1088)   0x01 at byte 136
+FD_SET(1500)   0x10 at byte 187
+FD_SET(5119)   0x80 at byte 639</code></pre>
+  <p>
+    Eight descriptors to a byte, from 1024 upward, walking off the end of the object at the rate
+    the program accepts connections.
+  </p>
+  <h2>Which member of your struct takes it</h2>
+  <pre><code>struct conn_table {
+  fd_set readable;   /*   0, 128 bytes */
+  int    live;       /* 128,   4 */
+  char   name[16];   /* 132,  16 */
+  long   deadline;   /* 152,   8 */
+  void  *handler;    /* 160,   8 */
+  char   tail[512];  /* 168, 512 */
+};
+
+FD_SET(1024)   byte 128   live
+FD_SET(1050)   byte 131   live
+FD_SET(1100)   byte 137   name
+FD_SET(1180)   byte 147   name
+FD_SET(1200)   byte 150   padding, between name and deadline
+FD_SET(1300)   byte 162   handler
+FD_SET(2000)   byte 250   tail</code></pre>
+  <p>
+    A descriptor number picks a member of the program's own struct. One of those is a function
+    pointer, and the bit set in it does not crash anything until the pointer is called, somewhere
+    else, later. One of them is padding, which is the version that survives every test and moves
+    the moment anybody adds a field.
+  </p>
+  <h2>FD_ISSET reads the same byte</h2>
+  <p>
+    With <code>live</code> set to 3, <code>name</code> set to <code>worker-7</code>, and not one
+    bit ever set in the fd_set:
+  </p>
+  <pre><code>FD_ISSET(1024)        ready, from bit 0 of live
+FD_ISSET(1025)        ready, from bit 1 of live
+FD_ISSET(1056..1117)  39 of them ready, from the ASCII of "worker-7"</code></pre>
+  <p>
+    The loop then handles connections that do not exist, at descriptor numbers taken from a
+    string, and every <code>read()</code> on them returns EBADF.
+  </p>
+  <h2>The check exists and is off</h2>
+  <pre><code>-D_FORTIFY_SOURCE=0   FD_SET(1024) returns normally
+-D_FORTIFY_SOURCE=1   *** bit out of range 0 - FD_SETSIZE on fd_set ***: terminated
+-D_FORTIFY_SOURCE=2   the same
+-D_FORTIFY_SOURCE=3   the same</code></pre>
+  <p>
+    Whether this corrupts silently or stops immediately is a build flag that nobody chose with
+    this in mind.
+  </p>
+  <h2>1024 is not the kernel's number</h2>
+  <pre><code>a readable pipe end at descriptor 2000
+
+poll(fd 2000)                        returns 1, POLLIN
+select(nfds 2001, 512 byte bitmap)   returns 1, bit 2000 set on return
+select(nfds 2001, a real fd_set)     returns -1 EBADF
+select(nfds 1024, bit 2000 set)      returns 0, the bit is past nfds
+select(nfds -1)                      returns -1 EINVAL</code></pre>
+  <p>
+    The syscall takes nfds and a pointer and reads ceil(nfds / 8) bytes from it. FD_SETSIZE is a
+    number in <code>&lt;sys/select.h&gt;</code> and the kernel has never heard of it. Which also
+    means nfds is not a hint: it is how much of your buffer gets read, so a bit above it is a
+    descriptor that is silently never polled.
+  </p>
+  <h2>Every call here</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Call</th><th>Byte</th><th>Bit</th><th>Leaves</th><th>Lands in</th><th>Build</th><th>Reported</th><th>Watched</th></tr>
+    </thead>
+    <tbody>
+${FDSET_CASES.map((item) => {
+  const s2 = item.setup;
+  return `      <tr><td>${esc(s2.host)}</td><td>${esc(s2.call)}(${s2.fd})</td><td>${fsByte(s2)}</td>` +
+    `<td>${fsBit(s2)}</td><td>${esc(fsHex(fsValue(s2)))}</td><td>${esc(fsLands(s2))}</td>` +
+    `<td>${esc(fsFortify(s2.fortify))}</td><td>${fsReported(s2) ? "yes" : "no"}</td>` +
+    `<td>${fsWatched(s2) ? "yes" : "no"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${FDSET_CASES.map((item) => {
+  const right = fsCorrect(item);
+  const s2 = item.setup;
+  const lines = fsLines(s2).map((line) => `${line.name.padEnd(16)} ${line.value.padStart(22)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>${s2.fd} over 8 is byte ${fsByte(s2)} and ${s2.fd} mod 8 is bit ${fsBit(s2)}, so the macro touches ${esc(fsHex(fsValue(s2)))} at byte ${fsByte(s2)}, which is ${esc(fsLands(s2))}. The set owns bytes 0 to ${fsSetBytes(s2.setSize) - 1}, so this is ${fsInSet(s2) ? "inside it" : "past the end of it"} and ${esc(fsOutcome(s2))}. ${fsReported(s2) ? "The build has the check compiled in, so the process stops there." : "Nothing reports it."}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/one-descriptor-too-many", "One descriptor too many"], ["/fds", "Too many open files"], ["/mapped", "Three boundaries, three outcomes"]])}
 </main>`,
   });
 
@@ -9890,6 +10053,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/sparse`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/append`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mapped`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/fdset`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

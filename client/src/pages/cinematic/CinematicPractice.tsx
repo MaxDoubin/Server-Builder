@@ -65,6 +65,7 @@ import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
 import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
+import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -477,6 +478,20 @@ export function CinematicPractice() {
         `${MAPPED_CASES.length} accesses`,
         `${MAPPED_CASES.filter((item) => mpOutcome(item.setup) !== "ok").length} fault`,
         "2 signals",
+      ],
+      progress: null,
+    },
+    {
+      href: "/fdset",
+      eyebrow: "Predict",
+      title: "One descriptor too many",
+      blurb:
+        "FD_SET(fd, &set) sets bit fd mod 8 of byte fd over 8, and an fd_set is 128 bytes. Past descriptor 1023 that byte belongs to the next member of your own struct, the macro has nothing to return, and the check glibc ships is off unless the build asked for it.",
+      reachFor: "a select loop started reporting descriptors that were never accepted",
+      stats: [
+        `${FDSET_CASES.length} calls`,
+        `${FDSET_CASES.filter((item) => !fsInSet(item.setup)).length} land outside the set`,
+        "1 division",
       ],
       progress: null,
     },

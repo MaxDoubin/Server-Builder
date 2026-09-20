@@ -207,8 +207,16 @@ const INDEX = path.join(DIST, "index.html");
  * not a margin either, and the next surface would have spent it before it
  * built anything, so this raise is for the surface that landed and the one
  * after it both.
+ *
+ * 726 KB, raised from 725 by /fdset at 724.4, which is the raise the previous
+ * note said it was making in advance and then did not make. A surface costs
+ * about nine tenths of a kilobyte here and every one of them has, so a raise
+ * of one per surface is the rate rather than a slip. What is in it is the
+ * registrations, which are eager by design: a route, a palette row, a blurb
+ * and two cards. The case data is not, and a check that the entry chunk does
+ * not grow by the size of a surface's prose is what this budget is really for.
  */
-const BUDGET_BYTES = 725 * 1024;
+const BUDGET_BYTES = 726 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
