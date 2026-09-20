@@ -1104,18 +1104,6 @@ export function DatacenterScene({
             />
           )}
 
-          {/*
-            Sits low and off to one side. At y=10 dead center it landed
-            right where the build toolbar floats, so the two read as one
-            cluttered strip at the default camera.
-          */}
-          {showHUD && (
-            <HolographicHUD
-              position={[floorSize * 0.22, 5.5, -floorSize * 0.7]}
-              visible
-            />
-          )}
-
           <PerformanceOverlay
             visible={showPerfOverlay}
             qualityMode={effectiveQualityMode}
@@ -1126,6 +1114,13 @@ export function DatacenterScene({
           {allowScenePrecompile && <Preload all />}
         </Suspense>
       </Canvas>
+
+      {/*
+        Outside the Canvas on purpose. It reads as a panel in the room but it
+        is screen space chrome; HolographicHUD explains what standing it in
+        the scene cost.
+      */}
+      {showHUD && <HolographicHUD />}
 
       {isUnlocked && (
         <div
