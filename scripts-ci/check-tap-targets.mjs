@@ -28,10 +28,27 @@
  *
  * WHAT THIS CHECKS. Every <button> carries a height, some vertical padding,
  * or the tap-target class, and tap-target still pads enough to clear 24px
- * from the smallest line box wearing it. Buttons only: a <a> in prose is
- * the legitimate case above and cannot be told from a standalone one by
- * reading the source, so the links this did fix were found in a browser and
- * are held by the class, not by a rule here.
+ * from the smallest line box wearing it.
+ *
+ * And two shapes of link, because two shapes can be judged from the source.
+ * Both require the link to name its own type size, which a link in a
+ * sentence does not do: it inherits the paragraph's. On top of that, either
+ *
+ *   it declares a block level display, so it lays itself out rather than
+ *   flowing in a line of prose. /today's progress rows were 38 of these at
+ *   20px, and there were three more.
+ *
+ *   or it is the only thing in a list item, which is navigation rather than
+ *   prose whatever its display. The "Practice this" block under every
+ *   article was two of these at 16px with 8px between them, close enough
+ *   that a 24px circle on one reaches the next, and there were seven more.
+ *
+ * The discriminator matters. Six block level links on the site set no height
+ * and no padding, and two of them are the card links on /blog and /racks,
+ * which wrap an image and are tall by construction. Neither names a type
+ * size on the anchor, so neither is flagged, and the rule needs no list of
+ * files to ignore. A rule that did would be the same mistake as exempting a
+ * folder because the labels in it happened to be the case you meant.
  *
  * Class names are resolved through same-file helpers. /gear builds its
  * chips with chip(active) and /ask its actions with actionClasses, and both
@@ -52,11 +69,29 @@ const problems = [];
 /* A utility that gives the box a height of its own, rather than its text's. */
 const HEIGHTY = /\b(py-|p-[0-9[]|h-[0-9[]|min-h-|size-|aspect-|inset-0|absolute|fixed)/;
 
+/* A link that lays itself out rather than flowing in a sentence. */
+const BLOCKY = /\b(flex|grid|block|inline-flex|inline-grid|inline-block)\b/;
+
+/*
+  And names its own size. A link inside a paragraph inherits the paragraph's,
+  so an anchor that sets one is captioning itself rather than being read as
+  part of a sentence. Card links that wrap an image set no size at all, which
+  is what keeps the two on /blog and /racks out of this without a list.
+
+  Any size under a rem qualifies, not just the very small ones. At the normal
+  line height 0.8125rem draws a 20px line box and even 0.875rem draws 21, so
+  the cutoff is not where the type starts looking small, it is wherever one
+  line stops clearing 24px. An earlier version stopped at 0.7x and therefore
+  did not hold /today's rows, which were the reason this rule exists.
+*/
+const OWN_SMALL_TYPE = /text-\[0\.[0-9]+rem\]|\btext-(xs|sm|base)\b/;
+
 const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8" })
   .split("\n")
   .filter((f) => f.endsWith(".tsx"));
 
 let buttons = 0;
+let links = 0;
 let wearing = 0;
 
 for (const file of files) {
@@ -68,7 +103,8 @@ for (const file of files) {
     if (/class|chip|pill|btn|action|tab|style/i.test(m[1])) helpers.set(m[1], m[2]);
   }
 
-  for (const m of source.matchAll(/<button\b/g)) {
+  for (const m of source.matchAll(/<(?:button|a|Link)\b/g)) {
+    const isButton = /^<button/.test(source.slice(m.index, m.index + 8));
     /* Walk to the tag's end, ignoring a > inside a JSX expression. */
     let i = m.index, depth = 0, end = -1;
     while (i < source.length) {
@@ -80,8 +116,6 @@ for (const file of files) {
     }
     if (end === -1) continue;
     const tag = source.slice(m.index, end + 1);
-    buttons += 1;
-
     let classes = [...tag.matchAll(/className=(?:"([^"]*)"|\{`([\s\S]*?)`\}|\{([^}]*)\})/g)]
       .map((c) => c[1] || c[2] || c[3] || "")
       .join(" ");
@@ -90,13 +124,25 @@ for (const file of files) {
       if (new RegExp(`\\b${name}\\b`).test(classes)) classes += " " + body;
     }
 
+    /*
+      A link is judged only when it is unambiguously standalone: block level,
+      and naming its own small type size rather than inheriting a paragraph's.
+    */
+    const aloneInAListItem = /<li\b[^>]*>\s*$/.test(source.slice(Math.max(0, m.index - 220), m.index));
+    const standaloneLink =
+      !isButton && OWN_SMALL_TYPE.test(classes) && (BLOCKY.test(classes) || aloneInAListItem);
+    if (!isButton && !standaloneLink) continue;
+    if (isButton) buttons += 1;
+    else links += 1;
+
     if (classes.includes(CLASS)) { wearing += 1; continue; }
     if (HEIGHTY.test(classes)) continue;
 
     const line = source.slice(0, m.index).split("\n").length;
     problems.push(
-      `${file}:${line} is a button with no height and no vertical padding, so its hit area is exactly the ` +
-        `line box of its own text. Give it padding, a height, or the ${CLASS} class.`,
+      `${file}:${line} is a ${isButton ? "button" : "standalone link naming its own type size"} with no height ` +
+        `and no vertical padding, so its hit area is exactly the line box of its own text. ` +
+        `Give it padding, a height, or the ${CLASS} class.`,
     );
   }
 }
@@ -149,6 +195,6 @@ if (problems.length) {
 }
 
 console.log(
-  `OK  all ${buttons} buttons have a hit area of their own, ${wearing} of them through .${CLASS}, ` +
-    `which pads a ${SMALLEST_LINE_BOX_PX}px line box past the ${FLOOR_PX}px floor.`,
+  `OK  all ${buttons} buttons and ${links} standalone links have a hit area of their own, ${wearing} of them ` +
+    `through .${CLASS}, which pads a ${SMALLEST_LINE_BOX_PX}px line box past the ${FLOOR_PX}px floor.`,
 );

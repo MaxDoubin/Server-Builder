@@ -117,7 +117,7 @@ export function CinematicToday() {
                 <li key={line.href}>
                   <Link
                     href={line.href}
-                    className="flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] hover:text-[hsl(var(--brand-bone))]"
+                    className="tap-target flex flex-wrap items-baseline gap-x-3 gap-y-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] hover:text-[hsl(var(--brand-bone))]"
                   >
                     <span className="min-w-[150px]">{line.label}</span>
                     <span

@@ -534,7 +534,7 @@ function EndingView({
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
+                  className="tap-target font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone-dim))] underline decoration-[hsl(var(--brand-iron))] underline-offset-4 transition-colors hover:text-[hsl(var(--brand-bone))] hover:decoration-[hsl(var(--brand-signal))]"
                 >
                   {link.label}
                 </Link>
