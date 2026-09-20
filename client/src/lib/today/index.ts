@@ -46,6 +46,7 @@ import { CASES as RETRANS } from "@/lib/retrans/index";
 import { CASES as CONNTRACK } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK } from "@/lib/writeback/index";
 import { CASES as FDS } from "@/lib/fds/index";
+import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -114,6 +115,7 @@ const OFFSET = {
   conntrack: 181,
   writeback: 193,
   fds: 211,
+  rcvbuf: 227,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -452,6 +454,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
       href: "/shm",
       outOf: SHMS.length,
+    });
+  }
+
+  const buffered = pickFor(RCVBUF, day, OFFSET.rcvbuf);
+  if (buffered) {
+    out.push({
+      surface: "rcvbuf",
+      eyebrow: "Read",
+      title: buffered.name,
+      blurb: "Two sysctls in different units and a setter that doubles what you give it. Work out what this socket really holds, and whether the tuning helped or was the cap.",
+      href: "/rcvbuf",
+      outOf: RCVBUF.length,
     });
   }
 

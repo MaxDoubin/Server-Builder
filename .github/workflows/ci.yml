@@ -662,6 +662,13 @@ jobs:
       - name: TCP retransmission budget
         run: npx tsx scripts-ci/check-retrans.ts
 
+      # tcp_mem is in pages and the sysctl beside it is in bytes, setsockopt
+      # doubles what you give it and clamps the rest in silence, and pinning a
+      # buffer turns autotuning off at a lower ceiling than it would have
+      # reached. Every step is walked rather than branched.
+      - name: Socket receive buffers
+        run: npx tsx scripts-ci/check-rcvbuf.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

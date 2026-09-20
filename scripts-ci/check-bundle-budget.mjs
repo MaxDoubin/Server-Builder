@@ -145,8 +145,12 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 709 KB, raised from 708 by /fds, measured at 707.8. Eleven surfaces, ten
  * raises, and the eleventh is the same kilobyte as the other ten.
+ *
+ * 710 KB, raised from 709 by /rcvbuf, measured at 708.7. Twelve surfaces,
+ * eleven raises, every one under a kilobyte, and the static entry still
+ * carries nothing from any of them but a command palette row.
  */
-const BUDGET_BYTES = 709 * 1024;
+const BUDGET_BYTES = 710 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

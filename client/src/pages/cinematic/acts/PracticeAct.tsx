@@ -54,6 +54,7 @@ import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/
 import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
 import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
+import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -188,6 +189,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/rcvbuf",
+    eyebrow: "Read",
+    title: "Tuned smaller",
+    blurb:
+      "Two ceilings on one socket, set by different sysctls, and which applies depends only on whether anybody called setsockopt. Tuning it picks the smaller one.",
+    count: `${RCVBUF_CASES.length} hosts, ${RCVBUF_CASES.filter((item) => rcvBackfired(item.setup)).length} tuned smaller`,
   },
   {
     href: "/fds",

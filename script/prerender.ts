@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as RCVBUF_CASES, asSysctl as rcSysctl, autotuning as rcAuto, backfired as rcBackfired, band as rcBand, ceilingBytes as rcCeiling, correctOption as rcCorrect, highMarkBytes as rcHigh, highMarkIfBytes as rcHighBytes, human as rcHuman, reportedBytes as rcReported } from "../client/src/lib/rcvbuf/index";
 import { CASES as FDS_CASES, asLimits as fdLimits, binding as fdBinding, correctOption as fdCorrect, count as fdCount, effectiveHard as fdHard, effectiveSoft as fdSoft, frozen as fdFrozen, outcome as fdOutcome } from "../client/src/lib/fds/index";
 import { CASES as WRITEBACK_CASES, asMiB as wbMiB, asSysctl as wbSysctl, backgroundThresholdBytes as wbBackground, correctOption as wbCorrect, dirtyableBytes as wbDirtyable, hardThresholdBytes as wbHard, human as wbHuman, isThrottled as wbThrottled, liveKnob as wbLive, maxAgeSeconds as wbAge, settledDirtyBytes as wbSettled } from "../client/src/lib/writeback/index";
 import { CASES as CONNTRACK_CASES, asCounters as ctCounters, asSysctl as ctSysctl, buckets as ctBuckets, correctOption as ctCorrect, count as ctCount, earlyDropHelps as ctEarly, entriesHeld as ctHeld, human as ctHuman, maxEntries as ctMax, maxFactor as ctFactor, overflows as ctOverflows, timeoutSeconds as ctTimeout } from "../client/src/lib/conntrack/index";
@@ -898,6 +899,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
     <li><a href="${SITE_URL}/fds">Too many open files</a>, which of the four descriptor limits is the smallest.</li>
     <li><a href="${SITE_URL}/writeback">Not written down</a>, which dirty page threshold runs and what it is a percentage of.</li>
     <li><a href="${SITE_URL}/conntrack">Table full</a>, why the kernel says so when it could not evict anything.</li>
@@ -2208,6 +2210,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["Tuned smaller", "/rcvbuf"],
     ["Too many open files", "/fds"],
     ["Not written down", "/writeback"],
     ["Table full", "/conntrack"],
@@ -3980,6 +3983,122 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── the socket receive buffer ──
+  /*
+    The static body carries the ceilings table, because the search that brings
+    people here is a transfer that got slower after somebody tuned it, and
+    what they need is the two ceilings side by side for a host shaped like
+    theirs. The columns put tcp_rmem's maximum beside twice rmem_max, which is
+    the comparison the whole surface turns on.
+  */
+  const rcShrunk = RCVBUF_CASES.filter((item) => rcBackfired(item.setup)).length;
+  const rcDescription =
+    "net.ipv4.tcp_mem is in pages and the tcp_rmem beside it is in bytes, with nothing in either " +
+    "name to say so. A socket's default reads back undoubled and a value passed to setsockopt " +
+    "reads back doubled, because sock_setsockopt stores twice what you give it. Asking for more " +
+    "than net.core.rmem_max is clamped with no error. And setting SO_RCVBUF turns autotuning off " +
+    "for the life of the socket, so where autotuning may reach tcp_rmem's maximum, a tuned socket " +
+    "is capped at twice net.core.rmem_max: on a stock host that is four times smaller than leaving " +
+    `it alone. ${RCVBUF_CASES.length} hosts here, ${rcShrunk} where the tuning is what capped it.`;
+
+  await writePage("rcvbuf", base, {
+    title: "The Socket Buffer You Tuned Is Smaller Than the One You Did Not | Max Doubin",
+    description: rcDescription,
+    canonical: `${SITE_URL}/rcvbuf`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Tuned smaller",
+  description: rcDescription,
+  url: `${SITE_URL}/rcvbuf`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How Linux sizes a TCP receive buffer and why tuning it usually makes it smaller: that net.ipv4.tcp_mem is counted in pages while tcp_rmem and tcp_wmem next to it are in bytes, so the same three numbers are four thousand times apart depending on which you assume; that a socket nobody has set reports tcp_rmem's default undoubled while a value passed to setsockopt reports back doubled, because sock_setsockopt stores twice the request for sk_buff overhead; that a request over net.core.rmem_max is clamped silently and setsockopt still returns success; that setting SO_RCVBUF disables autotuning permanently for that socket; that autotuning's ceiling is tcp_rmem's third value while a pinned buffer's ceiling is twice net.core.rmem_max, two different sysctls commonly left at different values; and that tcp_mem's three marks are three behaviors, with the kernel not accounting below the first, shrinking buffers past the second and refusing allocations past the third",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Tuned smaller</h1>
+  <p>
+    ${RCVBUF_CASES.length} hosts, one socket each. On ${rcShrunk} of them the setting somebody added is the thing
+    capping the buffer.
+  </p>
+  <p>
+    Four things make socket buffer tuning wrong more often than not, and all four were measured on
+    one host. First, the units do not match:
+  </p>
+  <pre><code>net.ipv4.tcp_mem    191742  255659  383484    # PAGES
+net.ipv4.tcp_rmem     4096  131072 33554432    # bytes
+net.core.rmem_max            4194304           # bytes</code></pre>
+  <p>
+    383484 pages is 1.46 GiB, which is 9.3 percent of a 16 GiB machine and is a number somebody
+    chose. Read as bytes it is 0.4 MiB, or 0.0023 percent, which is not. The arithmetic is the tell.
+    /proc/net/sockstat's mem column is in pages as well.
+  </p>
+  <p>
+    Second, the doubling is on the assignment and not on the field:
+  </p>
+  <pre><code>fresh socket  SO_RCVBUF 131072, tcp_rmem default 131072   ratio 1.0
+setting that  131072 reads back            262144         ratio 2.0</code></pre>
+  <p>
+    So reading the value before and after a change shows a doubling that looks like the kernel
+    rounding up to the default, and is not.
+  </p>
+  <p>
+    Third, it is clamped in silence. Asking for 16 MiB against an rmem_max of 4 MiB returned success
+    and gave 8 MiB, which is twice the sysctl. A program that checks the return value and not the
+    value learns nothing.
+  </p>
+  <p>
+    And fourth, the one that costs throughput: setting SO_RCVBUF turns autotuning off for the life
+    of the socket, and autotuning is allowed to go further than you are. Autotuning may reach
+    tcp_rmem's maximum of 32 MiB. A pinned buffer is capped at twice rmem_max, which is 8 MiB. The
+    socket somebody tuned tops out four times smaller than the one nobody touched.
+  </p>
+  <h2>What each host allows, and which ceiling applies</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>tcp_mem high</th><th>tcp_rmem max</th><th>rmem_max</th><th>Asks</th><th>Reports</th><th>Autotuning</th><th>Ceiling</th><th>Tuned smaller</th><th>Band</th></tr>
+    </thead>
+    <tbody>
+${RCVBUF_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(rcHuman(rcHigh(s)))}</td><td>${esc(rcHuman(s.tcpRmem[2]))}</td>` +
+    `<td>${esc(rcHuman(s.rmemMax))}</td><td>${s.asks === null ? "never" : esc(rcHuman(s.asks))}</td>` +
+    `<td>${esc(rcHuman(rcReported(s)))}</td><td>${rcAuto(s) ? "on" : "off"}</td>` +
+    `<td>${esc(rcHuman(rcCeiling(s)))}</td><td>${rcBackfired(s) ? "yes" : "no"}</td><td>${esc(rcBand(s))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${RCVBUF_CASES.map((item) => {
+  const right = rcCorrect(item);
+  const s = item.setup;
+  const sysctl = rcSysctl(s).map((line) => `${line.name.padEnd(20)} ${line.value.padEnd(26)} # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(sysctl)}
+
+# the program ${s.asks === null ? "never calls setsockopt" : `calls setsockopt(SO_RCVBUF, ${s.asks})`}</code></pre>
+    <p>getsockopt reports ${esc(rcHuman(rcReported(s)))}, autotuning is ${rcAuto(s) ? "on" : "off"}, and the ceiling is ${esc(rcHuman(rcCeiling(s)))}. tcp_mem's high mark is ${esc(rcHuman(rcHigh(s)))} read as pages and ${esc(rcHuman(rcHighBytes(s)))} read as bytes.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not", "The socket buffer you tuned is smaller than the one you did not"], ["/transfer", "Why the transfer is slow"], ["/fds", "Too many open files"]])}
 </main>`,
   });
 
@@ -7653,7 +7772,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/fds`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/fds`, lastmod: today, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/writeback`, lastmod: today, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/conntrack`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },

@@ -48,6 +48,7 @@ import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/
 import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
 import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
+import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -362,6 +363,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/rcvbuf",
+      eyebrow: "Read",
+      title: "Tuned smaller",
+      blurb:
+        "tcp_mem is in pages and the sysctl beside it is in bytes. The value you set reads back doubled. And setting SO_RCVBUF turns autotuning off, which can cap the socket below where it would have gone.",
+      reachFor: "somebody tuned the socket buffers and throughput went down",
+      stats: [
+        `${RCVBUF_CASES.length} hosts`,
+        `${RCVBUF_CASES.filter((item) => rcvBackfired(item.setup)).length} tuned smaller`,
+        "2 ceilings",
       ],
       progress: null,
     },
