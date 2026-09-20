@@ -56,6 +56,7 @@ import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
 import { CASES as LOCKS } from "@/lib/locks/index";
 import { CASES as SIGNALS } from "@/lib/signals/index";
+import { CASES as EXIT } from "@/lib/exit/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -136,6 +137,7 @@ const OFFSET = {
   pipebuf: 269,
   locks: 271,
   signals: 277,
+  exit: 281,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -558,6 +560,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A write at or under PIPE_BUF is never interleaved and above it there is no promise at all. Work out whether this writer's records can come out with somebody else's inside them.",
       href: "/pipebuf",
       outOf: PIPEBUF.length,
+    });
+  }
+
+  const ended = pickFor(EXIT, day, OFFSET.exit);
+  if (ended) {
+    out.push({
+      surface: "exit",
+      eyebrow: "Predict",
+      title: ended.name,
+      blurb: "An exit code is one byte and the shell spends the top half twice, so exit 137 and a kill by SIGKILL are the same number. Work out what the status actually holds.",
+      href: "/exit",
+      outOf: EXIT.length,
     });
   }
 

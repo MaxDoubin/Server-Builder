@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
 import { CASES as SIGNALS_CASES, accepted as sgAccepted, asSignals as sgLines, correctOption as sgCorrect, delivered as sgDelivered, dequeueOrder as sgDequeue, handlerOrder as sgHandlers, lost as sgLost, nameOf as sgName, queueDepth as sgDepth, queues as sgQueues, refused as sgRefused } from "../client/src/lib/signals/index";
 import { CASES as LOCKS_CASES, asLocks as lkLines, bothShared as lkShared, callOf as lkCall, correctOption as lkCorrect, granted as lkGranted, humanRange as lkRange, identity as lkWho, lostBecause as lkLost, overlaps as lkOverlaps, ownerOf as lkOwner, sameOwner as lkSame, stillHeld as lkHeld, why as lkWhy, world as lkWorld } from "../client/src/lib/locks/index";
 import { CASES as PIPEBUF_CASES, PIPE_BUF as PB_BUF, alignsWithCapacity as pbAligns, asSetup as pbSetup, atRisk as pbRisk, because as pbBecause, correctOption as pbCorrect, granted as pbGranted, guaranteed as pbGuaranteed, refused as pbRefused, tears as pbTearsAt, tearsHere as pbTears, uniform as pbUniform } from "../client/src/lib/pipebuf/index";
@@ -917,6 +918,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/pipebuf">Two writers, one line</a>, why a log line comes out with another log line inside it.</li>
     <li><a href="${SITE_URL}/locks">Three locks, one file</a>, why two programs can both hold the lock on one file.</li>
     <li><a href="${SITE_URL}/signals">A thousand sent, one arrived</a>, why a standard signal sent a thousand times runs the handler once.</li>
+    <li><a href="${SITE_URL}/exit">One byte, two kinds of news</a>, why an exit of 137 and a kill by SIGKILL are the same number.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2238,6 +2240,7 @@ ${JSON.stringify({
     ["Two writers, one line", "/pipebuf"],
     ["Three locks, one file", "/locks"],
     ["A thousand sent, one arrived", "/signals"],
+    ["One byte, two kinds of news", "/exit"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4813,6 +4816,139 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-log-line-with-another-log-line-inside-it", "The log line with another log line inside it"], ["/writeback", "Not written down"], ["/nagle", "Eight bytes, forty four milliseconds"]])}
+</main>`,
+  });
+
+  // ── exit status ──
+  /*
+    The static body carries the two halves of the status word, because the
+    search that brings people here is a job that reported 137 and an argument
+    about whether it was killed. The answer is that the shell cannot say and the
+    parent can, and the table of raw statuses is what settles it.
+  */
+  const exTwoWays = EXIT_CASES.filter((item) => exAmbiguous(item.setup)).length;
+  const exDescription =
+    "An exit code is truncated to one byte, so exit(256) gives a status of 0 and reads as success, " +
+    "measured, along with 512 and 768. A death by signal lands in the low seven bits of the wait " +
+    "status where no exit code reaches, so waitpid can always tell an exit of 137 from a kill by " +
+    "SIGKILL, while $? reports both as 137 because it has one byte for two kinds of news. " +
+    `${EXIT_CASES.length} endings here, ${exTwoWays} whose status reads two ways.`;
+
+  await writePage("exit", base, {
+    title: "One Byte, Two Kinds Of News: Exit Status | Max Doubin",
+    description: exDescription,
+    canonical: `${SITE_URL}/exit`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "One byte, two kinds of news",
+  description: exDescription,
+  url: `${SITE_URL}/exit`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a job that reported 137 may or may not have been killed: that an exit code is truncated to one unsigned byte with no warning at either end, so exit(256), exit(512) and exit(768) all produce a status of 0 and exit(-1) produces 255; that the kernel puts an exit code in the high byte of the wait status and a terminating signal in the low seven bits, so the two can never be confused and WIFEXITED is simply a test that the low bits are empty; that the shell has one byte for both and reports a death as 128 plus the signal number, which makes every status from 129 to 192 mean either an exit with that code or a death by that signal; that the core dump flag is bit 0x80 of the low byte and follows RLIMIT_CORE rather than the signal, so the same SIGSEGV gives 0x000b or 0x008b; that 126 and 127 are the shell's own conventions and the kernel produces neither; and that a pipeline reports only its last command, so a process killed by the out of memory killer inside one reports success",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>One byte, two kinds of news</h1>
+  <p>
+    ${EXIT_CASES.length} endings, one question each. On ${exTwoWays} of them the status could be read two different ways and
+    nothing in it says which.
+  </p>
+  <h2>An exit code is truncated to a byte</h2>
+  <pre><code>_exit(0)      raw 0x0000   $? = 0
+_exit(1)      raw 0x0100   $? = 1
+_exit(42)     raw 0x2a00   $? = 42
+_exit(255)    raw 0xff00   $? = 255
+_exit(256)    raw 0x0000   $? = 0
+_exit(300)    raw 0x2c00   $? = 44
+_exit(512)    raw 0x0000   $? = 0
+_exit(768)    raw 0x0000   $? = 0
+_exit(1000)   raw 0xe800   $? = 232
+_exit(-1)     raw 0xff00   $? = 255</code></pre>
+  <p>
+    The status is the code and 0xff. A validator returning its error count reports success on the
+    run that found exactly 256 problems, and neither end sees an error: exit() does not return and
+    the parent reads a perfectly clean WIFEXITED.
+  </p>
+  <h2>A death goes in the other half of the word</h2>
+  <pre><code>killed by SIGINT    2   raw 0x0002   $? = 130
+killed by SIGKILL   9   raw 0x0009   $? = 137
+killed by SIGSEGV  11   raw 0x000b   $? = 139
+killed by SIGTERM  15   raw 0x000f   $? = 143
+killed by SIGRTMIN 34   raw 0x0022   $? = 162
+killed by SIGRTMAX 64   raw 0x0040   $? = 192</code></pre>
+  <p>
+    An exit code sits in the high byte and a signal in the low seven bits, so they cannot collide.
+    WIFEXITED is nothing more than a test that the low bits are zero.
+  </p>
+  <h2>And then the shell flattens both into one byte</h2>
+  <pre><code>( exit 137 )              $? = 137    raw 0x8900
+sh -c 'kill -9 $$'        $? = 137    raw 0x0009</code></pre>
+  <p>
+    The same number for two entirely different events. Every value from 129 to 192 is both an exit
+    code and a death by the signal 128 below it, which is exactly the range a program reaches by
+    returning a negative number or by adding to 128 on purpose. A parent calling waitpid is never
+    confused; a shell script has nothing to go on.
+  </p>
+  <h2>The core flag follows the limit, not the signal</h2>
+  <pre><code>RLIMIT_CORE 0        SIGSEGV 0x000b   SIGQUIT 0x0003   SIGABRT 0x0006
+RLIMIT_CORE raised   SIGSEGV 0x008b   SIGQUIT 0x0083   SIGABRT 0x0086</code></pre>
+  <p>
+    Bit 0x80 of the low byte. $? is 139, 131 and 134 in all six cases, so a script cannot tell
+    whether there is a core file waiting for it.
+  </p>
+  <h2>A pipeline reports its last command and nothing else</h2>
+  <pre><code>false | true                 $? = 0    PIPESTATUS 1 0
+( exit 42 ) | ( exit 7 )     $? = 7    PIPESTATUS 42 7
+killed by SIGKILL | true     $? = 0    PIPESTATUS 137 0</code></pre>
+  <p>
+    The last row is the expensive one: a process killed by the out of memory killer, inside a
+    pipeline, reports success. Also worth knowing that 127 for a missing command and 126 for one
+    that is not executable are bash's own inventions, and the kernel produces neither.
+  </p>
+  <h2>What each ending does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Ending</th><th>Raw status</th><th>WIFEXITED</th><th>WEXITSTATUS</th><th>Core</th><th>Own status</th><th>$? after</th><th>Reads two ways</th></tr>
+    </thead>
+    <tbody>
+${EXIT_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td>` +
+    `<td>${s.ending === "exited" ? `exit(${s.code})` : `killed by ${esc(exSignal(s.sig))}`}</td>` +
+    `<td>${exHex(exRaw(s))}</td><td>${s.ending === "exited" ? 1 : 0}</td>` +
+    `<td>${s.ending === "exited" ? exStatus(s) : "n/a"}</td><td>${s.ending === "signaled" ? (exCored(s) ? "yes" : "no") : "n/a"}</td>` +
+    `<td>${exPipe(s)[s.place === "first in a pipeline" ? 0 : exPipe(s).length - 1]}</td>` +
+    `<td>${exReported(s)}</td><td>${exAmbiguous(s) ? "yes" : "no"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${EXIT_CASES.map((item) => {
+  const right = exCorrect(item);
+  const s = item.setup;
+  const lines = exLines(s).map((line) => `${line.name.padEnd(24)} ${line.value.padStart(22)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The raw status is ${exHex(exRaw(s))} and $? holds ${exReported(s)}. ${exAmbiguous(s) ? `That number would equally be ${esc(exOther(s))}, and nothing in it says which.` : "No signal produces that number, so it can only be read one way."} ${s.place === "alone" ? "" : `PIPESTATUS reads ${exPipe(s).join(" ")}.`} ${s.ending === "signaled" ? `A core was ${exCored(s) ? "written" : "not written, because the limit refused"}.` : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/one-byte-and-two-kinds-of-news", "One byte and two kinds of news"], ["/signals", "A thousand sent, one arrived"], ["/oom", "The one that got picked"]])}
 </main>`,
   });
 
@@ -9123,6 +9259,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/pipebuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/locks`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/signals`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/exit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

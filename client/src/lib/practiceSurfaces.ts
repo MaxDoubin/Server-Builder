@@ -136,6 +136,7 @@ export const PRACTICE_SURFACES: PracticeSurface[] = [
   { href: "/inotify", eyebrow: "Read", title: "No space left", group: "measure" , reading: ["no-space-left-on-device-with-nineteen-gigabytes-free", "too-many-open-files-and-which-of-the-four-limits-it-was", "linux-disk-io-troubleshooting"] },
   { href: "/atime", eyebrow: "Predict", title: "The read that wrote", group: "measure" , reading: ["the-read-that-wrote-a-thousand-inodes", "linux-page-cache-and-io", "the-disk-was-not-full"] },
   { href: "/nagle", eyebrow: "Predict", title: "Eight bytes, forty four milliseconds", group: "measure" , reading: ["eight-bytes-forty-four-milliseconds", "tcp-congestion-control-basics", "linux-network-tuning-without-cargo-cult"] },
+  { href: "/exit", eyebrow: "Predict", title: "One byte, two kinds of news", group: "measure" , reading: ["one-byte-and-two-kinds-of-news", "a-thousand-signals-and-one-handler-call", "it-works-in-the-shell"] },
   { href: "/signals", eyebrow: "Predict", title: "A thousand sent, one arrived", group: "measure" , reading: ["a-thousand-signals-and-one-handler-call", "it-works-in-the-shell", "permissions-do-not-add-up"] },
   { href: "/locks", eyebrow: "Predict", title: "Three locks, one file", group: "measure" , reading: ["the-lock-that-two-programs-both-held", "permissions-do-not-add-up", "it-works-in-the-shell"] },
   { href: "/pipebuf", eyebrow: "Predict", title: "Two writers, one line", group: "measure" , reading: ["the-log-line-with-another-log-line-inside-it", "syslog-centralized-logging", "it-works-in-the-shell"] },

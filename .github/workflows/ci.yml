@@ -740,6 +740,13 @@ jobs:
       - name: Signal delivery
         run: npx tsx scripts-ci/check-signals.ts
 
+      # Exit status. Everything here turns on which half of one word a number
+      # lands in, and an expression can put it in the wrong half and still
+      # produce the right $?, so the gate packs and unpacks the word with the
+      # macros from wait.h transcribed rather than reading the model twice.
+      - name: Exit status
+        run: npx tsx scripts-ci/check-exit.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

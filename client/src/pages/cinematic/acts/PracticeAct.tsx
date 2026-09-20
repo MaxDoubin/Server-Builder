@@ -65,6 +65,7 @@ import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
 import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
+import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -239,6 +240,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/exit",
+    eyebrow: "Predict",
+    title: "One byte, two kinds of news",
+    blurb:
+      "The kernel puts an exit code and a terminating signal in different halves of one word, so it always knows which happened. $? has one byte for both, and every status from 129 to 192 means two things.",
+    count: `${EXIT_CASES.length} endings, ${EXIT_CASES.filter((item) => exAmbiguous(item.setup)).length} that read two ways`,
   },
   {
     href: "/signals",
