@@ -132,7 +132,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
                 <Trash2 className="w-3 h-3" />
               </Button>
             )}
-            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[10px] font-mono text-muted-foreground">
+            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[0.625rem] font-mono text-muted-foreground">
               {u}
             </div>
           </div>
@@ -146,7 +146,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
               onClick={() => handleSlotClick(u)}
               onDropEquipment={(equipmentId) => handleDropEquipment(equipmentId, u)}
             />
-            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[10px] font-mono text-muted-foreground">
+            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[0.625rem] font-mono text-muted-foreground">
               {u}
             </div>
           </div>
@@ -160,7 +160,7 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
               onClick={() => handleSlotClick(u)}
               onDropEquipment={(equipmentId) => handleDropEquipment(equipmentId, u)}
             />
-            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[10px] font-mono text-muted-foreground">
+            <div className="absolute left-0 top-0 -translate-x-full pr-1 text-[0.625rem] font-mono text-muted-foreground">
               {u}
             </div>
           </div>
@@ -351,14 +351,14 @@ export function RackDetailPanel({ rack, onClose, isUnlocked, capacity }: RackDet
                           }`}
                         >
                           <Equipment3D equipment={equipment} installed={mockInstalled} uHeight={equipment.uHeight} />
-                          <div className="mt-1 text-[10px] font-mono text-white/70">
+                          <div className="mt-1 text-[0.625rem] font-mono text-white/70">
                             {equipment.name}
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="mt-2 text-[10px] text-white/50">
+                  <div className="mt-2 text-[0.625rem] text-white/50">
                     Showing 20 of {equipmentCatalog.length} items. Drag onto any empty slot.
                   </div>
                 </div>

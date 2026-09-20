@@ -61,7 +61,7 @@ function Meter({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-baseline justify-between gap-2 text-[10px] uppercase tracking-widest text-white/60">
+      <div className="flex items-baseline justify-between gap-2 text-[0.625rem] uppercase tracking-widest text-white/60">
         <span>{label}</span>
         <span className={STATE_LABEL[state]}>{formatPercent(utilization)}</span>
       </div>
@@ -79,7 +79,7 @@ function Meter({
           style={{ width: `${width}%` }}
         />
       </div>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-[10px] text-white/60">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-[0.625rem] text-white/60">
         <span className="font-mono">
           {formatWatts(loadW)} of {formatWatts(capacityW)}
         </span>
@@ -87,7 +87,7 @@ function Meter({
           {headroom >= 0 ? `${formatWatts(headroom)} free` : `${formatWatts(-headroom)} over`}
         </span>
       </div>
-      <div className={`text-[10px] ${STATE_LABEL[state]}`}>
+      <div className={`text-[0.625rem] ${STATE_LABEL[state]}`}>
         {STATE_TEXT[state]}
         <span className="text-white/50"> · {detail}</span>
       </div>
@@ -120,7 +120,7 @@ export function CapacityMeters({
   return (
     <div className="space-y-3" data-tour="capacity">
       {scenarioNote && (
-        <p className="rounded-md border border-amber-400/40 bg-amber-500/10 px-2 py-1.5 text-[10px] leading-relaxed text-amber-100">
+        <p className="rounded-md border border-amber-400/40 bg-amber-500/10 px-2 py-1.5 text-[0.625rem] leading-relaxed text-amber-100">
           {scenarioNote}
         </p>
       )}
@@ -144,7 +144,7 @@ export function CapacityMeters({
       {overAnything && (
         <p
           role="alert"
-          className="rounded-md border border-rose-500/50 bg-rose-500/10 px-2 py-1.5 text-[10px] leading-relaxed text-rose-100"
+          className="rounded-md border border-rose-500/50 bg-rose-500/10 px-2 py-1.5 text-[0.625rem] leading-relaxed text-rose-100"
         >
           {capacity.overPower && capacity.overCooling
             ? `This build is past both ceilings: ${formatWatts(
@@ -162,7 +162,7 @@ export function CapacityMeters({
         </p>
       )}
 
-      <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-white/60">
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[0.625rem] text-white/60">
         <div className="flex justify-between gap-2">
           <dt>Hottest rack</dt>
           <dd className="font-mono text-white/80">
@@ -187,7 +187,7 @@ export function CapacityMeters({
 
       {heatmapOn && (
         <div className="rounded-md border border-white/10 bg-white/5 p-2">
-          <div className="text-[10px] uppercase tracking-widest text-white/50">
+          <div className="text-[0.625rem] uppercase tracking-widest text-white/50">
             Heatmap scale, heat per rack
           </div>
           <div className="mt-1.5 flex items-center gap-1" aria-hidden>
@@ -199,12 +199,12 @@ export function CapacityMeters({
               />
             ))}
           </div>
-          <div className="mt-1 flex justify-between text-[9px] font-mono text-white/50">
+          <div className="mt-1 flex justify-between text-[0.625rem] font-mono text-white/50">
             {legend.map((stop) => (
               <span key={stop.level}>{stop.label}</span>
             ))}
           </div>
-          <p className="mt-1.5 text-[10px] leading-relaxed text-white/50">
+          <p className="mt-1.5 text-[0.625rem] leading-relaxed text-white/50">
             Blue is under 5 kW, green around 10 kW, amber around 15 kW, red at 25 kW and above.
             Colour comes from the equipment in each rack plus an airflow penalty.
           </p>

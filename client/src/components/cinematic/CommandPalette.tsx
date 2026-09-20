@@ -527,7 +527,7 @@ export function CommandPalette() {
               <button
                 type="button"
                 onClick={() => go({ kind: "Page", title: "Field notes", href: "/blog" })}
-                className="text-[hsl(var(--brand-signal))] hover:underline"
+                className="tap-target text-[hsl(var(--brand-signal))] hover:underline"
               >
                 archive
               </button>

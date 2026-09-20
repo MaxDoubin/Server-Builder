@@ -139,7 +139,7 @@ export function ShortcutsDialog({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-cyan-300/80">
+            <div className="text-[0.625rem] uppercase tracking-[0.3em] text-cyan-300/80">
               Keyboard
             </div>
             <h2 id="shortcuts-title" className="text-lg font-semibold text-white">
@@ -157,7 +157,7 @@ export function ShortcutsDialog({
           </button>
         </div>
 
-        <p className="mt-2 text-[11px] leading-relaxed text-white/50">
+        <p className="mt-2 text-[0.6875rem] leading-relaxed text-white/50">
           Shortcuts are ignored while you are typing in a field, and while the entry screen is up.
           {compatibilityMode
             ? " This device is on the compatibility renderer, so 2 and 3 stay on the orbit camera."
@@ -167,7 +167,7 @@ export function ShortcutsDialog({
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {GROUPS.map((group) => (
             <section key={group.title}>
-              <h3 className="text-[10px] uppercase tracking-[0.24em] text-white/50">
+              <h3 className="text-[0.625rem] uppercase tracking-[0.24em] text-white/50">
                 {group.title}
               </h3>
               <dl className="mt-1.5 space-y-1.5">
@@ -177,13 +177,13 @@ export function ShortcutsDialog({
                       {item.keys.map((key) => (
                         <kbd
                           key={key}
-                          className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-white/80"
+                          className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[0.625rem] text-white/80"
                         >
                           {key}
                         </kbd>
                       ))}
                     </dt>
-                    <dd className="text-[11px] leading-snug text-white/60">{item.description}</dd>
+                    <dd className="text-[0.6875rem] leading-snug text-white/60">{item.description}</dd>
                   </div>
                 ))}
               </dl>

@@ -74,7 +74,7 @@ export function BuildToolbar() {
           );
         })}
         <div className="mx-1 h-6 w-px bg-white/10" />
-        <div className="pointer-events-none flex items-center gap-2 text-[10px] font-mono text-white/50">
+        <div className="pointer-events-none flex items-center gap-2 text-[0.625rem] font-mono text-white/50">
           <span className="rounded-full bg-white/10 px-2 py-1 uppercase tracking-widest">
             {selectedIds.length} selected
           </span>

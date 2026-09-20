@@ -85,10 +85,10 @@ export function PerformanceOverlay({
         className={`pointer-events-none select-none z-50 ${positionClassName}`}
       >
         <div className="rounded-lg border border-cyan-500/30 bg-black/70 px-3 py-2 backdrop-blur-md shadow-[0_0_18px_rgba(34,211,238,0.2)]">
-          <div className="text-[10px] font-mono text-cyan-300 uppercase tracking-widest">
+          <div className="text-[0.625rem] font-mono text-cyan-300 uppercase tracking-widest">
             Performance
           </div>
-          <div className="mt-1 grid grid-cols-3 gap-2 text-[10px] font-mono">
+          <div className="mt-1 grid grid-cols-3 gap-2 text-[0.625rem] font-mono">
             <div>
               <div className="text-white/50">FPS</div>
               <div

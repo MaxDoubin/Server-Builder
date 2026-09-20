@@ -295,7 +295,7 @@ function Workbench({ capture }: { capture: Capture }) {
                               <button
                                 type="button"
                                 onClick={() => useFilter(question.hintFilter!)}
-                                className="text-[hsl(var(--brand-signal))] underline underline-offset-4"
+                                className="tap-target text-[hsl(var(--brand-signal))] underline underline-offset-4"
                               >
                                 Try {question.hintFilter}
                               </button>
@@ -378,7 +378,7 @@ function Detail({ packet, onFilter }: { packet: Packet; onFilter: (text: string)
                         type="button"
                         onClick={() => onFilter(`${field.name} == ${field.value}`)}
                         title={`Filter on ${field.name}`}
-                        className="underline decoration-dotted underline-offset-2 hover:text-[hsl(var(--brand-signal))]"
+                        className="tap-target underline decoration-dotted underline-offset-2 hover:text-[hsl(var(--brand-signal))]"
                       >
                         {field.label}
                       </button>

@@ -258,7 +258,7 @@ export function CinematicGlossary() {
                       <a
                         href={`#${slug}`}
                         onClick={(event) => follow(term, event)}
-                        className="hover:text-[hsl(var(--brand-signal))]"
+                        className="tap-target hover:text-[hsl(var(--brand-signal))]"
                       >
                         {term.term}
                       </a>
@@ -271,7 +271,7 @@ export function CinematicGlossary() {
                     <button
                       type="button"
                       onClick={() => choose(term.field)}
-                      className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))] hover:underline"
+                      className="tap-target font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-signal))] hover:underline"
                     >
                       · {FIELD_LABEL[term.field]}
                     </button>
@@ -308,7 +308,7 @@ export function CinematicGlossary() {
                             <a
                               href={`#${slugFor(target)}`}
                               onClick={(event) => follow(target, event)}
-                              className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
+                              className="tap-target text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
                             >
                               {other}
                             </a>

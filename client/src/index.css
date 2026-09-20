@@ -1986,3 +1986,26 @@ html.lenis-smooth {
   outline-offset: 2px;
   border-radius: 9999px;
 }
+
+/*
+  A control that is only its own text is only as tall as its line box.
+
+  The glossary's field chip is a button with no padding at all: font-techno at
+  0.625rem, so 15px of hit area, a hundred of them down the page, one beside
+  every term. The cross-references under a term are 14px, the mtu size
+  buttons 17px, the term headings 21px. All of them under the 24px that the
+  target size guidance asks for, and all of them for the same reason, which
+  is that nobody set a height because the text already had one.
+
+  Vertical padding rather than a min-height, because several of these sit in
+  running text. Padding on an inline box is painted and hit tested but does
+  not push the lines around it apart, so the finger target grows and the
+  paragraph does not reflow. A min-height would need display: inline-flex,
+  which drops the box out of the line's baseline and moves the text.
+
+  0.3125rem a side is 10px, which clears 24 from any line box of 14px or
+  more. Everything wearing this class is at least that.
+*/
+.tap-target {
+  padding-block: 0.3125rem;
+}

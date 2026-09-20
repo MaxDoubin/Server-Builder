@@ -22,18 +22,25 @@
  * root, and 14px at a scale of 1.4. This checks that nobody writes another
  * one in px, and that the mechanism the rem values depend on is still there.
  *
- * WHAT IS EXEMPT, AND WHY. client/src/components/3d. Those labels sit in
- * absolutely positioned boxes the size of a rack unit, with truncate, over
- * geometry whose apparent size is set by the camera. Growing the text there
+ * WHAT IS EXEMPT, AND WHY. A label inside <Html distanceFactor>, where drei
+ * ties the element's apparent size to the camera. Growing the text there
  * does not make it readable, it makes it truncate sooner, and the control a
- * reader actually has over that scene is the zoom. The exemption is counted
- * rather than open, so it cannot quietly become where new px type goes.
+ * reader actually has over that scene is the zoom.
+ *
+ * This used to be the whole of client/src/components/3d, which was written
+ * for that case and then covered everything near it: of the 105 px sizes in
+ * that directory, 4 were inside a camera scaled <Html> and 101 were in
+ * panels, dialogs, toolbars and a fullscreen overlay, all of them ordinary
+ * screen space DOM that a reader's text size preference should move. The
+ * rule is the thing that makes the label special, not the folder it sits in.
+ * The exemption is still counted rather than open, so it cannot quietly
+ * become where new px type goes.
  */
 import { readFileSync } from "fs";
 import { execFileSync } from "child_process";
+import { cameraScaledRanges, isCameraScaled } from "./lib/camera-scaled.mjs";
 
-const EXEMPT_DIR = "client/src/components/3d/";
-const EXEMPT_CAP = 105;
+const EXEMPT_CAP = 4;
 const CSS = "client/src/index.css";
 
 const problems = [];
@@ -47,8 +54,9 @@ const PX = /text-\[\d+(?:\.\d+)?px\]/g;
 let exempt = 0;
 for (const file of files) {
   const source = readFileSync(file, "utf8");
+  const scaled = cameraScaledRanges(source);
   for (const match of source.matchAll(PX)) {
-    if (file.startsWith(EXEMPT_DIR)) {
+    if (isCameraScaled(scaled, match.index)) {
       exempt += 1;
       continue;
     }
@@ -62,8 +70,8 @@ for (const file of files) {
 
 if (exempt > EXEMPT_CAP) {
   problems.push(
-    `${EXEMPT_DIR} holds ${exempt} pixel type sizes, over the cap of ${EXEMPT_CAP}. ` +
-      `That directory is exempt because its labels are fixed boxes over 3D geometry, not because px is fine there.`,
+    `${exempt} pixel type sizes sit inside a camera scaled <Html>, over the cap of ${EXEMPT_CAP}. ` +
+      `That case is exempt because distanceFactor already ties the label's size to the zoom, not because px is fine there.`,
   );
 }
 
@@ -88,6 +96,6 @@ if (problems.length) {
 }
 
 console.log(
-  `OK  every arbitrary type size outside the 3D labels is in rem and follows the reader's text size preference ` +
-    `(${exempt} exempt in ${EXEMPT_DIR}, capped at ${EXEMPT_CAP}).`,
+  `OK  every arbitrary type size outside the camera scaled labels is in rem and follows the reader's text size ` +
+    `preference (${exempt} exempt inside <Html distanceFactor>, capped at ${EXEMPT_CAP}).`,
 );
