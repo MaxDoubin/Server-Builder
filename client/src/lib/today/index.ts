@@ -48,6 +48,7 @@ import { CASES as WRITEBACK } from "@/lib/writeback/index";
 import { CASES as FDS } from "@/lib/fds/index";
 import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT } from "@/lib/timewait/index";
+import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -118,6 +119,7 @@ const OFFSET = {
   fds: 211,
   rcvbuf: 227,
   timewait: 229,
+  overcommit: 233,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -468,6 +470,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Two sysctls in different units and a setter that doubles what you give it. Work out what this socket really holds, and whether the tuning helped or was the cap.",
       href: "/rcvbuf",
       outOf: RCVBUF.length,
+    });
+  }
+
+  const promised = pickFor(OVERCOMMIT, day, OFFSET.overcommit);
+  if (promised) {
+    out.push({
+      surface: "overcommit",
+      eyebrow: "Read",
+      title: promised.name,
+      blurb: "CommitLimit is half the memory on a stock host and in the default mode nothing reads it. Work out what the limit is here, and whether this allocation gets the memory.",
+      href: "/overcommit",
+      outOf: OVERCOMMIT.length,
     });
   }
 

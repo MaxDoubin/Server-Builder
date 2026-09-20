@@ -44,6 +44,7 @@ import { CASES as WRITEBACK } from "@/lib/writeback/index";
 import { CASES as FDS } from "@/lib/fds/index";
 import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT } from "@/lib/timewait/index";
+import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -85,6 +86,7 @@ import { loadSolvedWriteback } from "@/lib/writeback/progress";
 import { loadSolvedFds } from "@/lib/fds/progress";
 import { loadSolvedRcvbuf } from "@/lib/rcvbuf/progress";
 import { loadSolvedTimewait } from "@/lib/timewait/progress";
+import { loadSolvedOvercommit } from "@/lib/overcommit/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -215,6 +217,13 @@ export function readProgress(): Line[] {
       href: "/shm",
       done: loadSolvedShm().filter((slug) => SHMS.some((item) => item.slug === slug)).length,
       total: SHMS.length,
+      noun: "called right",
+    },
+    {
+      label: "Half a machine",
+      href: "/overcommit",
+      done: loadSolvedOvercommit().filter((slug) => OVERCOMMIT.some((item) => item.slug === slug)).length,
+      total: OVERCOMMIT.length,
       noun: "called right",
     },
     {

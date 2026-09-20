@@ -50,6 +50,7 @@ import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writ
 import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
+import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -364,6 +365,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/overcommit",
+      eyebrow: "Read",
+      title: "Half a machine",
+      blurb:
+        "vm.overcommit_ratio defaults to 50 and applies to RAM alone, so CommitLimit is half the memory. Turn on strict accounting and a 5 GiB allocation is refused with 13.92 GiB free.",
+      reachFor: "malloc is failing on a machine with memory to spare",
+      stats: [
+        `${OVERCOMMIT_CASES.length} machines`,
+        `${OVERCOMMIT_CASES.filter((item) => ocWasteful(item.setup)).length} refused with RAM free`,
+        "50% default",
       ],
       progress: null,
     },
