@@ -804,6 +804,13 @@ jobs:
       - name: Direct I/O alignment
         run: npx tsx scripts-ci/check-odirect.ts
 
+      # Port sharing. An even spread is not a stable one, so the gate does not
+      # take the model's percentage on trust: it deals hashed connections out
+      # across the old set and the new one and counts how many changed hands,
+      # within four binomial standard deviations of the share the model claims.
+      - name: Port sharing
+        run: npx tsx scripts-ci/check-reuseport.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

@@ -61,6 +61,7 @@ import { CASES as MAPPED } from "@/lib/mapped/index";
 import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PAGECACHE } from "@/lib/pagecache/index";
 import { CASES as ODIRECT } from "@/lib/odirect/index";
+import { CASES as REUSEPORT } from "@/lib/reuseport/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -120,6 +121,7 @@ import { loadSolvedMapped } from "@/lib/mapped/progress";
 import { loadSolvedFdset } from "@/lib/fdset/progress";
 import { loadSolvedPagecache } from "@/lib/pagecache/progress";
 import { loadSolvedOdirect } from "@/lib/odirect/progress";
+import { loadSolvedReuseport } from "@/lib/reuseport/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -342,6 +344,13 @@ export function readProgress(): Line[] {
       href: "/odirect",
       done: loadSolvedOdirect().filter((slug) => ODIRECT.some((item) => item.slug === slug)).length,
       total: ODIRECT.length,
+      noun: "called right",
+    },
+    {
+      label: "Even is not stable",
+      href: "/reuseport",
+      done: loadSolvedReuseport().filter((slug) => REUSEPORT.some((item) => item.slug === slug)).length,
+      total: REUSEPORT.length,
       noun: "called right",
     },
     {
