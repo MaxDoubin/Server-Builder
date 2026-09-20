@@ -49,6 +49,7 @@ import { CASES as FDS } from "@/lib/fds/index";
 import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
+import { CASES as INOTIFY } from "@/lib/inotify/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -120,6 +121,7 @@ const OFFSET = {
   rcvbuf: 227,
   timewait: 229,
   overcommit: 233,
+  inotify: 239,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -470,6 +472,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Two sysctls in different units and a setter that doubles what you give it. Work out what this socket really holds, and whether the tuning helped or was the cap.",
       href: "/rcvbuf",
       outOf: RCVBUF.length,
+    });
+  }
+
+  const watched = pickFor(INOTIFY, day, OFFSET.inotify);
+  if (watched) {
+    out.push({
+      surface: "inotify",
+      eyebrow: "Read",
+      title: watched.name,
+      blurb: "A file watcher reports that the disk is full, on a disk with nineteen gigabytes free. Work out what ran out, who spent it, and whether the message names any part of it.",
+      href: "/inotify",
+      outOf: INOTIFY.length,
     });
   }
 

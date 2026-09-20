@@ -103,6 +103,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/rcvbuf": { load: () => import("@/pages/cinematic/CinematicRcvbuf") },
   "/timewait": { load: () => import("@/pages/cinematic/CinematicTimewait") },
   "/overcommit": { load: () => import("@/pages/cinematic/CinematicOvercommit") },
+  "/inotify": { load: () => import("@/pages/cinematic/CinematicInotify") },
   "/fds": { load: () => import("@/pages/cinematic/CinematicFds") },
   "/writeback": { load: () => import("@/pages/cinematic/CinematicWriteback") },
   "/conntrack": { load: () => import("@/pages/cinematic/CinematicConntrack") },

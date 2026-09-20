@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 296 of them. Regenerate with script/generatePostIndex.ts.
+ * 297 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "no-space-left-on-device-with-nineteen-gigabytes-free",
+    title: "No Space Left on Device, With Nineteen Gigabytes Free",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","tooling"],
+    excerpt: "A file watcher fails with ENOSPC on a disk with 19.7 GiB free, and with EMFILE on a process holding six descriptors. Neither message says inotify and neither resource is short. Both limits are charged to the user across every process, so the program that reports the error is rarely the one that spent the budget. Measured on one host, including the queue overflow that loses events and returns success.",
+    coverImage: "/images/blog/no-space-left-on-device-with-nineteen-gigabytes-free.jpg",
+    wordCount: 922,
+  },
   {
     slug: "commitlimit-is-half-the-memory-and-it-is-not-a-memory-limit",
     title: "CommitLimit Is Half the Memory, and It Is Not a Memory Limit",
@@ -2897,10 +2906,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 296;
+export const POST_COUNT = 297;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety six";
+export const POST_COUNT_SPELLED = "two hundred and ninety seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2909,10 +2918,10 @@ export const POST_COUNT_SPELLED = "two hundred and ninety six";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1142;
+export const CITATION_COUNT = 1146;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1301;
+export const CHECKED_URL_COUNT = 1305;

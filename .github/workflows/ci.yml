@@ -683,6 +683,13 @@ jobs:
       - name: Overcommit accounting
         run: npx tsx scripts-ci/check-overcommit.ts
 
+      # Two inotify limits are per UID and one is per instance, the instance
+      # limit reports before the watch limit, and neither error message names
+      # the resource that ran out. Watches are charged one add at a time with
+      # a set per instance, and the errno order is walked across a grid.
+      - name: inotify limits
+        run: npx tsx scripts-ci/check-inotify.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

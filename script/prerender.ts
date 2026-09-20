@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
 import { CASES as OVERCOMMIT_CASES, asSysctl as ocSysctl, commitLimitKb as ocLimit, committedPercentOfLimit as ocPctLimit, committedPercentOfRam as ocPctRam, correctOption as ocCorrect, headroomKb as ocHeadroom, human as ocHuman, limitPercentOfRam as ocLimitPct, modeName as ocMode, oomPossible as ocOom, refuses as ocRefuses, refusesWithMemoryFree as ocWasteful } from "../client/src/lib/overcommit/index";
 import { CASES as TIMEWAIT_CASES, TIME_WAIT_SECONDS as TW_LEN, asSysctl as twSysctl, closerState as twState, correctOption as twCorrect, ephemeralPorts as twPorts, exhausts as twExhausts, human as twHuman, overflowsBuckets as twOverflows, reuseHelps as twReuse, stateSeconds as twSeconds, sustainableRate as twRate, tupleCapacity as twTuples } from "../client/src/lib/timewait/index";
 import { CASES as RCVBUF_CASES, asSysctl as rcSysctl, autotuning as rcAuto, backfired as rcBackfired, band as rcBand, ceilingBytes as rcCeiling, correctOption as rcCorrect, highMarkBytes as rcHigh, highMarkIfBytes as rcHighBytes, human as rcHuman, reportedBytes as rcReported } from "../client/src/lib/rcvbuf/index";
@@ -901,6 +902,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/inotify">No space left</a>, why a file watcher says the disk is full when it is not.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2214,6 +2216,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["No space left", "/inotify"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -3989,6 +3992,130 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── inotify limits ──
+  /*
+    The static body carries the limits table, because the search that brings
+    people here is "ENOSPC" next to a df that shows the disk is fine, and what
+    they need is the two budgets with the held portion spelled out for a host
+    shaped like theirs.
+  */
+  const inoBroken = INOTIFY_CASES.filter((item) => !inoFits(item.setup)).length;
+  const inoDescription =
+    "A file watcher that runs out of fs.inotify.max_user_watches fails with ENOSPC, which strerror " +
+    "prints as \"No space left on device\", measured here with 19.7 GiB free. One that runs out of " +
+    "fs.inotify.max_user_instances fails with EMFILE, \"Too many open files\", measured with " +
+    "RLIMIT_NOFILE at 20000 and a handful of descriptors open. Neither message contains the word " +
+    "inotify and neither resource is short. Both limits are charged to the real UID across every " +
+    "process, so the program that reports the error is usually not the one that spent the budget. " +
+    `${INOTIFY_CASES.length} watchers here, ${inoBroken} of them failing.`;
+
+  await writePage("inotify", base, {
+    title: "No Space Left on Device, With Nineteen Gigabytes Free | Max Doubin",
+    description: inoDescription,
+    canonical: `${SITE_URL}/inotify`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "No space left",
+  description: inoDescription,
+  url: `${SITE_URL}/inotify`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How the inotify limits fail and why their error messages point at the wrong resource: that exhausting fs.inotify.max_user_watches makes inotify_add_watch return ENOSPC, printed as \"No space left on device\" on a filesystem with gigabytes free; that exhausting fs.inotify.max_user_instances makes inotify_init return EMFILE, printed as \"Too many open files\" with almost no descriptors open and RLIMIT_NOFILE untouched; that both limits are charged to the real UID across every process that user runs, so a watcher asking for a few hundred watches can fail on a limit of a hundred and thirty thousand because other processes already hold it; that inotify_init runs before inotify_add_watch, so when both budgets are short the instance limit reports and raising the watch limit changes nothing; that a watch covers one directory rather than a tree, so a recursive watch costs one per directory; that watches are deduplicated per instance against the inode, so a second add inside one instance is free while a second instance watching the same directory pays in full; and that overflowing fs.inotify.max_queued_events drops events silently, leaving a single IN_Q_OVERFLOW marker with wd -1 while every read returns success",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>No space left</h1>
+  <p>
+    ${INOTIFY_CASES.length} hosts, one file watcher each. ${inoBroken} of them fail, and on none of them is the
+    resource named in the error message the one that ran out.
+  </p>
+  <p>
+    Here are the three limits on one host, with their scope, which is the part that catches people:
+  </p>
+  <pre><code>fs.inotify.max_user_watches    130082    per real UID, across every process
+fs.inotify.max_user_instances     128    per real UID, across every process
+fs.inotify.max_queued_events    16384    per instance</code></pre>
+  <p>
+    Exhaust the first and <code>inotify_add_watch</code> returns ENOSPC, which prints as
+    <em>No space left on device</em>. Measured on that host at the moment of the failure: 19.7 GiB
+    free. Nothing about the disk is involved, and df, du and /proc/meminfo all look healthy.
+  </p>
+  <p>
+    Exhaust the second and <code>inotify_init</code> returns EMFILE, <em>Too many open files</em>,
+    with RLIMIT_NOFILE at 20000 and a handful of descriptors actually open. Instances are created
+    before watches are added, so when both budgets are short this is the error that arrives, and
+    raising the watch limit in response changes nothing at all.
+  </p>
+  <p>
+    The scope is the other half of it. With the watch limit lowered to 200 for the experiment, a
+    fresh instance managed 19 watches, because 181 were already held by an unrelated process under
+    the same user. 181 plus 19 is 200. The program that gets the error is whichever one asked last.
+  </p>
+  <p>
+    What a watch costs follows from the same rules. A watch is one directory, not one tree, so a
+    recursive watch on a project costs one per directory in it. Within one instance the kernel keys
+    the watch on the inode, so asking twice is free:
+  </p>
+  <pre><code>same instance, same directory twice     wd 1, then wd 1 again
+same instance, same inode, other path   wd 1
+a second instance, same directory       wd 1 of its own
+watches charged to the user by those    2</code></pre>
+  <p>
+    Two programs watching the same tree each pay in full. That is how a machine runs out: an editor,
+    a bundler, a test runner and a file syncer all watching the same node_modules.
+  </p>
+  <p>
+    And the failure that is not an error. With the queue lowered to 64 and 256 files created before
+    it was read, 65 events came back, 192 were gone, and the only sign was one IN_Q_OVERFLOW marker
+    with <code>wd</code> set to -1. Every read returned success. A reader that does not check for
+    that marker sees a short burst and no indication that three quarters of it was dropped.
+  </p>
+  <h2>What each host allows, and what the watcher gets</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Dirs</th><th>Instances</th><th>Watches wanted</th><th>Watches free</th><th>Instances free</th><th>Result</th><th>Message</th><th>What ran out</th><th>Events lost</th></tr>
+    </thead>
+    <tbody>
+${INOTIFY_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(inoHuman(s.directories))}</td><td>${s.instances}</td>` +
+    `<td>${esc(inoHuman(inoWanted(s)))}</td><td>${esc(inoHuman(inoFree(s)))}</td><td>${esc(inoHuman(inoInstFree(s)))}</td>` +
+    `<td>${esc(inoErrno(s))}</td><td>${esc(inoMessage(s))}</td><td>${esc(inoCulprit(s))}</td>` +
+    `<td>${esc(inoHuman(inoLost(s)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${INOTIFY_CASES.map((item) => {
+  const right = inoCorrect(item);
+  const s = item.setup;
+  const sysctl = inoSysctl(s).map((line) => `${line.name.padEnd(30)} ${line.value.padStart(22)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(sysctl)}
+
+# this watcher: ${s.directories} directories across ${s.instances} instance${s.instances === 1 ? "" : "s"}</code></pre>
+    <p>It wants ${esc(inoHuman(inoWanted(s)))} watches against ${esc(inoHuman(inoFree(s)))} free and ${s.instances} instance${s.instances === 1 ? "" : "s"} against ${esc(inoHuman(inoInstFree(s)))}. ${inoFits(s) ? "Everything fits." : `The call fails with ${esc(inoErrno(s))}, printed as "${esc(inoMessage(s))}", and what ran out is ${esc(inoCulprit(s))}.`} ${inoLost(s) > 0 ? `A burst of ${esc(inoHuman(s.eventsBurst))} events loses ${esc(inoHuman(inoLost(s)))} of them without an error.` : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/no-space-left-on-device-with-nineteen-gigabytes-free", "No space left on device, with nineteen gigabytes free"], ["/fds", "Too many open files"], ["/space", "No space left on device"]])}
 </main>`,
   });
 
@@ -8027,6 +8154,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/inotify`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
