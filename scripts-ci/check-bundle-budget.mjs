@@ -228,8 +228,11 @@ const INDEX = path.join(DIST, "index.html");
  * enough pattern that a surface costing materially more than nine tenths of a
  * kilobyte is now itself worth looking at: it would mean something that ought
  * to be lazy was not.
+ *
+ * 730 KB, raised from 729 by /malloctrim at 728.2. A sixth, at the same
+ * price, which is now the rate rather than a run of coincidences.
  */
-const BUDGET_BYTES = 729 * 1024;
+const BUDGET_BYTES = 730 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

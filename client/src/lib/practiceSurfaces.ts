@@ -145,6 +145,7 @@ export const PRACTICE_SURFACES: PracticeSurface[] = [
   { href: "/pagecache", eyebrow: "Read", title: "The cache you cannot drop", group: "measure" , reading: ["the-cache-you-cannot-drop", "the-free-column-was-always-going-to-be-zero", "the-sum-of-rss-is-not-an-amount-of-memory"] },
   { href: "/odirect", eyebrow: "Predict", title: "Three alignments, one errno", group: "measure" , reading: ["three-alignments-and-one-errno", "the-cache-you-cannot-drop", "three-boundaries-and-two-signals"] },
   { href: "/reuseport", eyebrow: "Predict", title: "Even is not stable", group: "measure" , reading: ["even-is-not-stable", "three-alignments-and-one-errno", "the-connection-opened-and-then-nothing-happened"] },
+  { href: "/malloctrim", eyebrow: "Predict", title: "The memory you freed and still hold", group: "measure" , reading: ["the-memory-you-freed-and-still-hold", "the-sum-of-rss-is-not-an-amount-of-memory", "the-cache-you-cannot-drop"] },
   { href: "/exit", eyebrow: "Predict", title: "One byte, two kinds of news", group: "measure" , reading: ["one-byte-and-two-kinds-of-news", "a-thousand-signals-and-one-handler-call", "it-works-in-the-shell"] },
   { href: "/signals", eyebrow: "Predict", title: "A thousand sent, one arrived", group: "measure" , reading: ["a-thousand-signals-and-one-handler-call", "it-works-in-the-shell", "permissions-do-not-add-up"] },
   { href: "/locks", eyebrow: "Predict", title: "Three locks, one file", group: "measure" , reading: ["the-lock-that-two-programs-both-held", "permissions-do-not-add-up", "it-works-in-the-shell"] },

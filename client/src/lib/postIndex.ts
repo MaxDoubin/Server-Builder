@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 315 of them. Regenerate with script/generatePostIndex.ts.
+ * 316 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-memory-you-freed-and-still-hold",
+    title: "The Memory You Freed And Still Hold",
+    date: "2026-09-20",
+    tags: ["linux","programming","performance","troubleshooting"],
+    excerpt: "free() returned twenty megabytes to the kernel in one measurement and nothing at all in the next, and the only difference was one surviving kilobyte. Then a sixteen mebibyte allocation at startup switched the automatic trim off for the rest of the process, and a thirty three mebibyte one did not.",
+    coverImage: "/images/blog/the-memory-you-freed-and-still-hold.jpg",
+    wordCount: 1628,
+  },
   {
     slug: "even-is-not-stable",
     title: "Even Is Not Stable",
@@ -3069,10 +3078,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 315;
+export const POST_COUNT = 316;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and fifteen";
+export const POST_COUNT_SPELLED = "three hundred and sixteen";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3081,10 +3090,10 @@ export const POST_COUNT_SPELLED = "three hundred and fifteen";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1204;
+export const CITATION_COUNT = 1209;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1363;
+export const CHECKED_URL_COUNT = 1368;

@@ -75,6 +75,7 @@ import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
 import { CASES as PAGECACHE_CASES, pinned as pcPinned } from "@/lib/pagecache/index";
 import { CASES as ODIRECT_CASES, accepted as odAccepted } from "@/lib/odirect/index";
 import { CASES as REUSEPORT_CASES, binds as rpBinds, stable as rpStable } from "@/lib/reuseport/index";
+import { CASES as MALLOCTRIM_CASES, freeHelps as mtFreeHelps } from "@/lib/malloctrim/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -297,6 +298,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Four listeners on one port take a quarter of the connections each, at every worker count, on every run. That is the half everybody measures. Change the count and the kernel rehashes, and most of the clients arrive at a worker they were not arriving at before.",
     count: `${REUSEPORT_CASES.length} pools, ${REUSEPORT_CASES.filter((item) => rpBinds(item.setup) && !rpStable(item.setup)).length} rehash`,
+  },
+  {
+    href: "/malloctrim",
+    eyebrow: "Predict",
+    title: "The memory you freed and still hold",
+    blurb:
+      "Free every chunk and twenty megabytes goes back to the kernel with no other call. Keep one of them, anywhere above the free space, and nothing does. Then malloc_trim reaches the middle of the heap, and what it recovers turns on how far apart the survivors are rather than how many bytes they are.",
+    count: `${MALLOCTRIM_CASES.length} heaps, ${MALLOCTRIM_CASES.filter((item) => !mtFreeHelps(item.setup)).length} give nothing back`,
   },
   {
     href: "/sparse",

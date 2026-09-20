@@ -62,6 +62,7 @@ import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PAGECACHE } from "@/lib/pagecache/index";
 import { CASES as ODIRECT } from "@/lib/odirect/index";
 import { CASES as REUSEPORT } from "@/lib/reuseport/index";
+import { CASES as MALLOCTRIM } from "@/lib/malloctrim/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -122,6 +123,7 @@ import { loadSolvedFdset } from "@/lib/fdset/progress";
 import { loadSolvedPagecache } from "@/lib/pagecache/progress";
 import { loadSolvedOdirect } from "@/lib/odirect/progress";
 import { loadSolvedReuseport } from "@/lib/reuseport/progress";
+import { loadSolvedMalloctrim } from "@/lib/malloctrim/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -351,6 +353,13 @@ export function readProgress(): Line[] {
       href: "/reuseport",
       done: loadSolvedReuseport().filter((slug) => REUSEPORT.some((item) => item.slug === slug)).length,
       total: REUSEPORT.length,
+      noun: "called right",
+    },
+    {
+      label: "The memory you freed and still hold",
+      href: "/malloctrim",
+      done: loadSolvedMalloctrim().filter((slug) => MALLOCTRIM.some((item) => item.slug === slug)).length,
+      total: MALLOCTRIM.length,
       noun: "called right",
     },
     {
