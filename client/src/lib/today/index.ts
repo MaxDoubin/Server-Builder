@@ -51,6 +51,7 @@ import { CASES as TIMEWAIT } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as INOTIFY } from "@/lib/inotify/index";
 import { CASES as ATIME } from "@/lib/atime/index";
+import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -124,6 +125,7 @@ const OFFSET = {
   overcommit: 233,
   inotify: 239,
   atime: 241,
+  nagle: 251,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -498,6 +500,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "On a relatime mount most reads write nothing and some read writes an inode. Work out whether this one does, and what the access time is worth to anyone reading it afterwards.",
       href: "/atime",
       outOf: ATIME.length,
+    });
+  }
+
+  const held = pickFor(NAGLE, day, OFFSET.nagle);
+  if (held) {
+    out.push({
+      surface: "nagle",
+      eyebrow: "Predict",
+      title: held.name,
+      blurb: "Two small writes then a read, and the round trip takes forty four milliseconds on loopback. Work out whether this one waits on the timer, and which end can stop it.",
+      href: "/nagle",
+      outOf: NAGLE.length,
     });
   }
 

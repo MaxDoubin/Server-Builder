@@ -59,6 +59,7 @@ import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/
 import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
 import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index";
+import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -209,6 +210,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Three tests decide whether reading a file writes an inode, and most of the time the answer is no. When the answer is yes it is once a day, per file, and it lands on whichever pass gets there first.",
     count: `${ATIME_CASES.length} filesystems, ${ATIME_CASES.filter((item) => atimeUpdates(item.setup)).length} where the read writes`,
+  },
+  {
+    href: "/nagle",
+    eyebrow: "Predict",
+    title: "Eight bytes, forty four milliseconds",
+    blurb:
+      "Two ends of a connection, each behaving correctly, deadlocked until a timer fires. The fix everybody reaches for is on the wrong socket, and the measurement says so.",
+    count: `${NAGLE_CASES.length} connections, ${NAGLE_CASES.filter((item) => nagleStalls(item.setup)).length} that stall`,
   },
   {
     href: "/overcommit",
