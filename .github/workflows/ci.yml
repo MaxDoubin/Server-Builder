@@ -797,6 +797,13 @@ jobs:
       - name: The page cache column
         run: npx tsx scripts-ci/check-pagecache.ts
 
+      # Direct I/O alignment. Whether a write is accepted is not a property of
+      # three modulo tests, so the gate cuts the transfer into the blocks the
+      # device deals in and asks of each piece whether it could be handed over,
+      # and finds the largest length by growing it rather than dividing.
+      - name: Direct I/O alignment
+        run: npx tsx scripts-ci/check-odirect.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

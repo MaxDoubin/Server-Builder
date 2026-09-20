@@ -64,6 +64,7 @@ import { CASES as APPEND } from "@/lib/append/index";
 import { CASES as MAPPED } from "@/lib/mapped/index";
 import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PAGECACHE } from "@/lib/pagecache/index";
+import { CASES as ODIRECT } from "@/lib/odirect/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -152,6 +153,7 @@ const OFFSET = {
   mapped: 313,
   fdset: 317,
   pagecache: 331,
+  odirect: 337,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -658,6 +660,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A gibibyte written to a file and a gibibyte written to tmpfs put the same figure in free's buff/cache column, and dropping caches returns one of them. Work out how much of the column is really yours.",
       href: "/pagecache",
       outOf: PAGECACHE.length,
+    });
+  }
+
+  const aligned = pickFor(ODIRECT, day, OFFSET.odirect);
+  if (aligned) {
+    out.push({
+      surface: "odirect",
+      eyebrow: "Predict",
+      title: aligned.name,
+      blurb: "O_DIRECT wants the offset, the length and the buffer address aligned, and every violation is the same EINVAL. Work out whether the kernel takes the write, and which requirement stopped it.",
+      href: "/odirect",
+      outOf: ODIRECT.length,
     });
   }
 
