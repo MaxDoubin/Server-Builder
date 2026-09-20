@@ -387,7 +387,7 @@ function ExerciseView({ exercise }: { exercise: Exercise }) {
                 · One chain that works
               </h2>
               <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
-                Not the only one. The checklist marks behaviour, so any ruleset that gets those
+                Not the only one. The checklist marks behavior, so any ruleset that gets those
                 verdicts is right.
               </p>
               <div className="mt-3 overflow-x-auto rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.7)] p-3">

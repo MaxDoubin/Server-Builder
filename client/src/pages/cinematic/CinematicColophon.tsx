@@ -105,13 +105,13 @@ export function CinematicColophon() {
 
           <section aria-labelledby="colophon-type-heading" className="mt-20">
             <div className="font-techno text-[0.625rem] uppercase tracking-[0.4em] text-[hsl(var(--brand-ash))]">
-              · Colophon · Type and colour
+              · Colophon · Type and color
             </div>
             <h2
               id="colophon-type-heading"
               className="mt-3 font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl"
             >
-              Type and colour
+              Type and color
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 backdrop-blur-sm">
@@ -131,7 +131,7 @@ export function CinematicColophon() {
                 </h3>
                 <p className="mt-2 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   Obsidian background, bone text, and a single signal lime accent, all defined as
-                  HSL custom properties so opacity variants come free. Colour is never the only
+                  HSL custom properties so opacity variants come free. Color is never the only
                   thing carrying meaning: every state that uses it also says what it is in words.
                 </p>
               </div>

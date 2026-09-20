@@ -206,7 +206,7 @@ export function CapacityMeters({
           </div>
           <p className="mt-1.5 text-[0.625rem] leading-relaxed text-white/50">
             Blue is under 5 kW, green around 10 kW, amber around 15 kW, red at 25 kW and above.
-            Colour comes from the equipment in each rack plus an airflow penalty.
+            Color comes from the equipment in each rack plus an airflow penalty.
           </p>
         </div>
       )}

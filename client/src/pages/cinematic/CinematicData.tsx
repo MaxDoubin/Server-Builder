@@ -166,7 +166,7 @@ export function CinematicData() {
             <p className="mt-4 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               {rackDevices} devices across {RACKS.length} rack elevations, and
               the distinction from the table above is the whole point of
-              publishing them separately. Those are modelling figures for a
+              publishing them separately. Those are modeling figures for a
               simulator. These are vendor published figures: {rackSourced} of
               the {rackDevices} carry the datasheet page their numbers came
               from, and a device whose vendor publishes no consumption figure

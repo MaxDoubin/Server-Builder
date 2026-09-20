@@ -271,7 +271,7 @@ ${setup.arrivals
                   </div>
                   <p className="mt-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     One bar per {ms(setup.periodMs)} period, wall clock top to bottom. Green is the
-                    group running, red is every thread in it stopped by the quota, grey is the group
+                    group running, red is every thread in it stopped by the quota, gray is the group
                     having run out of work with quota left, which is idle rather than throttled.
                   </p>
                 </div>

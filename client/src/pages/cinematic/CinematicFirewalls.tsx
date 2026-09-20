@@ -87,7 +87,7 @@ export function CinematicFirewalls() {
           ))}
 
           <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
-            Each exercise is marked by behaviour, not by shape. The checklist is a set of packets
+            Each exercise is marked by behavior, not by shape. The checklist is a set of packets
             and the verdicts they should get, so any chain that produces them is correct, including
             one shorter than mine. CI replays a working solution for every exercise on every push,
             and also checks that the starting ruleset fails, because an exercise that is accidentally

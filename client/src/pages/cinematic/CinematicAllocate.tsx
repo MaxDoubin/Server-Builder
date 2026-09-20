@@ -284,7 +284,7 @@ function PlanView({ problem }: { problem: Problem }) {
                 · One plan that works
               </h2>
               <p className="mt-2 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-ash))]">
-                Not the only one. This is marked on behaviour, so any plan that meets every
+                Not the only one. This is marked on behavior, so any plan that meets every
                 requirement without overlapping is right, including a tidier one than mine.
               </p>
               <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)]">
