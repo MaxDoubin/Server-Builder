@@ -690,6 +690,13 @@ jobs:
       - name: inotify limits
         run: npx tsx scripts-ci/check-inotify.ts
 
+      # relatime is three comparisons and four things that override them, and
+      # the model stores ages while the kernel stores timestamps, so the gate
+      # transcribes atime_needs_update and touch_atime counting forward from a
+      # fixed instant and checks the model against that on a grid.
+      - name: Access times
+        run: npx tsx scripts-ci/check-atime.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

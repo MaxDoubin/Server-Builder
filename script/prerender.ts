@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as ATIME_CASES, asStat as atStat, atimeAgeAfterRead as atAfter, blockedBy as atBlocked, correctOption as atCorrect, ctimeRule as atCtime, dayRule as atDay, humanAge as atAge, inodesDirtied as atDirtied, mtimeRule as atMtime, reason as atReason, rulesFiring as atFiring, selectedByCleanup as atSelected, updates as atUpdates } from "../client/src/lib/atime/index";
 import { CASES as OVERCOMMIT_CASES, asSysctl as ocSysctl, commitLimitKb as ocLimit, committedPercentOfLimit as ocPctLimit, committedPercentOfRam as ocPctRam, correctOption as ocCorrect, headroomKb as ocHeadroom, human as ocHuman, limitPercentOfRam as ocLimitPct, modeName as ocMode, oomPossible as ocOom, refuses as ocRefuses, refusesWithMemoryFree as ocWasteful } from "../client/src/lib/overcommit/index";
 import { CASES as TIMEWAIT_CASES, TIME_WAIT_SECONDS as TW_LEN, asSysctl as twSysctl, closerState as twState, correctOption as twCorrect, ephemeralPorts as twPorts, exhausts as twExhausts, human as twHuman, overflowsBuckets as twOverflows, reuseHelps as twReuse, stateSeconds as twSeconds, sustainableRate as twRate, tupleCapacity as twTuples } from "../client/src/lib/timewait/index";
 import { CASES as RCVBUF_CASES, asSysctl as rcSysctl, autotuning as rcAuto, backfired as rcBackfired, band as rcBand, ceilingBytes as rcCeiling, correctOption as rcCorrect, highMarkBytes as rcHigh, highMarkIfBytes as rcHighBytes, human as rcHuman, reportedBytes as rcReported } from "../client/src/lib/rcvbuf/index";
@@ -903,6 +904,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
     <li><a href="${SITE_URL}/inotify">No space left</a>, why a file watcher says the disk is full when it is not.</li>
+    <li><a href="${SITE_URL}/atime">The read that wrote</a>, when reading a file writes an inode and when it does not.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2217,6 +2219,7 @@ ${JSON.stringify({
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
     ["No space left", "/inotify"],
+    ["The read that wrote", "/atime"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4116,6 +4119,136 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/no-space-left-on-device-with-nineteen-gigabytes-free", "No space left on device, with nineteen gigabytes free"], ["/fds", "Too many open files"], ["/space", "No space left on device"]])}
+</main>`,
+  });
+
+  // ── access times ──
+  /*
+    The static body carries the three rules in the kernel's order, because the
+    two searches that bring people here are "does reading a file write to
+    disk" and "why is my atime not updating", and each of them is answered by
+    one line of that list plus the four things that stop the update outright.
+  */
+  const atWriting = ATIME_CASES.filter((item) => atUpdates(item.setup)).length;
+  const atDescription =
+    "On a relatime mount, which is the default on Linux since 2009, reading a file updates its " +
+    "access time only when mtime or ctime is at least as new as the stored atime, or when that " +
+    "atime is a day old or more. So most reads write nothing and one read a day per file writes " +
+    "an inode: reading 1059 files here dirtied 1059 inodes, and reading the same 1059 again " +
+    "dirtied none. An access time frozen by noatime does not read as missing, it reads as old, " +
+    `and a cleanup job that selects on age agrees. ${ATIME_CASES.length} filesystems here, ` +
+    `${atWriting} where the read writes.`;
+
+  await writePage("atime", base, {
+    title: "The Read That Wrote: When atime Costs You an Inode | Max Doubin",
+    description: atDescription,
+    canonical: `${SITE_URL}/atime`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The read that wrote",
+  description: atDescription,
+  url: `${SITE_URL}/atime`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "When reading a file on Linux writes to the disk and when it does not: that relatime, the default mount option since 2009, updates atime on a read only if mtime is at least as new as the stored atime, or ctime is at least as new as it, or that atime is twenty four hours old or more; that the second test subsumes the first, because ctime is never older than mtime on a real inode, so a chmod alone arms the next read to write; that the day is fixed in the kernel rather than tunable; that four things stop the update regardless, the per-inode A flag that chattr sets, noatime on the mount, nodiratime for directories only, and a read-only mount, where the decision is made and then refused when touch_atime asks for write access; that directories have access times too and a listing is a read; that a read-only pass over a tree therefore writes one inode per file per day and nothing at all on a second pass the same day; and that an access time frozen by noatime does not read as missing but as old, so a cleanup rule of \"not accessed in 30 days\" selects a file being read two hundred times a minute",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The read that wrote</h1>
+  <p>
+    ${ATIME_CASES.length} filesystems, one read each. On ${atWriting} of them the read writes an inode, and the
+    question each time is which of three tests is true, or what stops the update before anyone gets
+    to ask.
+  </p>
+  <p>
+    Since 2009 the default mount option has been <code>relatime</code>, and it updates the access
+    time on a read only when one of these holds. The kernel checks them in this order:
+  </p>
+  <pre><code>mtime is at least as new as atime      the file changed since it was last read
+ctime is at least as new as atime      the inode changed since it was last read
+the stored atime is a day old or more  once a day, whatever else is true</code></pre>
+  <p>
+    The middle one swallows the first. Nothing moves mtime without also moving ctime, and
+    <code>utimes</code>, which sets mtime to whatever you like, sets ctime to now, so ctime is never
+    older than mtime on a real inode. Measured: a chmod, which moves ctime alone, made the next read
+    write, with mtime left 25 hours old.
+  </p>
+  <p>
+    The day rule, isolated on a file nothing had touched: <code>/usr/lib/file/magic.mgc</code>, atime
+    494.23 hours old, mtime 21671.60 hours old, so the first two tests both said no. One read moved
+    atime 494 hours forward. A second read, seconds later, moved nothing. Same file, same reader; the
+    only thing that differed was how old the stored atime was.
+  </p>
+  <p>
+    What that costs a workload that only reads: 1059 files under <code>/usr/share/doc</code>, none of
+    them read that day, dirtied 1059 inodes. The same 1059, read again, dirtied none. Directories are
+    charged the same way and separately, one per listing: the subdirectories of <code>/usr/src</code>,
+    <code>/var/cache</code> and <code>/usr/libexec</code> moved 1, 8 and 6 access times on a single
+    pass, while the 33 under <code>/usr/lib/x86_64-linux-gnu</code>, listed once already that hour,
+    moved none.
+  </p>
+  <p>
+    Four things stop the update whatever the three tests say:
+  </p>
+  <pre><code>the A flag on the inode     chattr +A, and lsattr prints it
+noatime on the mount        nothing under it records a read
+nodiratime on the mount     directories only; files still record
+a read-only mount           the decision is made, then refused</code></pre>
+  <p>
+    That last one is worth stating plainly. On <code>/opt/claude-code/bin/claude</code>, an ext4
+    image mounted <code>ro,relatime</code>, atime equalled mtime and ctime was 29 hours newer, so all
+    three tests said update. Reading it moved nothing. <code>atime_needs_update</code> says yes and
+    then <code>touch_atime</code> asks the mount for write access and is told no.
+  </p>
+  <p>
+    And the reason any of this matters outside a profiler. An access time frozen by noatime does not
+    read as missing. It reads as old. A file with the per-inode flag set, backdated 40 days and then
+    read 200 times in a row, still reported an access time 40.0 days old, and a cleanup rule of "not
+    accessed in 30 days" selects it while it is being read 200 times a minute.
+  </p>
+  <h2>What each filesystem does with one read</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Mount</th><th>Read</th><th>mtime rule</th><th>ctime rule</th><th>day rule</th><th>Blocked by</th><th>Writes</th><th>atime after</th><th>Inodes a pass dirties</th></tr>
+    </thead>
+    <tbody>
+${ATIME_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(`${s.readOnly ? "ro" : "rw"},${s.mountOption}`)}</td><td>${esc(s.target)}</td>` +
+    `<td>${atMtime(s) ? "yes" : "no"}</td><td>${atCtime(s) ? "yes" : "no"}</td><td>${atDay(s) ? "yes" : "no"}</td>` +
+    `<td>${esc(atBlocked(s) === "" ? "nothing" : atBlocked(s))}</td><td>${atUpdates(s) ? `yes, ${esc(atReason(s))}` : "no"}</td>` +
+    `<td>${esc(atAge(atAfter(s)))}</td><td>${atDirtied(s)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${ATIME_CASES.map((item) => {
+  const right = atCorrect(item);
+  const s = item.setup;
+  const stat = atStat(s).map((line) => `${line.name.padEnd(16)} ${line.value.padStart(22)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(stat)}
+
+# a pass over this tree reads ${s.filesInPass} files, ${s.filesFreshInPass} of them already read today</code></pre>
+    <p>Of relatime's three tests, ${atFiring(s)} ${atFiring(s) === 1 ? "is" : "are"} true here. ${atBlocked(s) === "" ? `Nothing blocks the update, so the read ${atUpdates(s) ? `writes, by the ${esc(atReason(s))} rule` : "writes nothing"}.` : `The update is blocked by ${esc(atBlocked(s))}, so the read writes nothing.`} Afterwards the stored access time is ${esc(atAge(atAfter(s)))}, which a rule of "not accessed in ${s.cleanupDays} days" ${atSelected(s) ? "selects" : "leaves alone"}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-read-that-wrote-a-thousand-inodes", "The read that wrote a thousand inodes"], ["/free", "Two hundred megabytes free"], ["/space", "No space left on device"]])}
 </main>`,
   });
 
@@ -8155,6 +8288,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/inotify`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/atime`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

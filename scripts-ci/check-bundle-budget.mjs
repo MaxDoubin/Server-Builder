@@ -162,8 +162,11 @@ const INDEX = path.join(DIST, "index.html");
  * 713 KB, raised from 712 by /inotify, measured at 711.5. Fifteen surfaces,
  * fourteen raises, still a kilobyte apiece. The step has not grown with the
  * site, which is the whole point of the lazy route split.
+ *
+ * 714 KB, raised from 713 by /atime, measured at 712.5. Sixteen surfaces,
+ * fifteen raises, and the step is still one kilobyte.
  */
-const BUDGET_BYTES = 713 * 1024;
+const BUDGET_BYTES = 714 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
