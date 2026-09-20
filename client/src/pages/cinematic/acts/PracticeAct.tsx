@@ -72,6 +72,7 @@ import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/ind
 import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
 import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
+import { CASES as PAGECACHE_CASES, pinned as pcPinned } from "@/lib/pagecache/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -270,6 +271,14 @@ const SURFACES: Surface[] = [
     blurb:
       "An fd_set is 128 bytes and FD_SET is one division and a store. Descriptor 1024 is byte 128, which is not in the set, and what is there is whichever member of your struct the compiler put next. Nothing returns, nothing checks, and the number came from accept().",
     count: `${FDSET_CASES.length} calls, ${FDSET_CASES.filter((item) => !fsInSet(item.setup)).length} land outside the set`,
+  },
+  {
+    href: "/pagecache",
+    eyebrow: "Read",
+    title: "The cache you cannot drop",
+    blurb:
+      "buff/cache is Buffers plus Cached plus SReclaimable, and tmpfs is inside Cached. So the column reads the same for a gibibyte you will get back and a gibibyte you never will, and the only field that distinguishes them is the one free labels shared.",
+    count: `${PAGECACHE_CASES.length} machines, ${PAGECACHE_CASES.filter((item) => pcPinned(item.setup)).length} hold memory nothing returns`,
   },
   {
     href: "/sparse",

@@ -34,6 +34,7 @@ import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, corre
 import { CASES as APPEND_CASES, asAppend as apLines, asBytes as apBytes, asHow as apHow, correctOption as apCorrect, honorsOffset as apOffset, lost as apLost, safe as apSafe, size as apSize, survived as apSurvived, written as apWritten } from "../client/src/lib/append/index";
 import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome as mpSignal, backed as mpBacked, correctOption as mpCorrect, covers as mpCovers, lastSafe as mpLastSafe, outcome as mpOutcome, persists as mpPersists, reads as mpReads, resized as mpResized } from "../client/src/lib/mapped/index";
 import { CASES as FDSET_CASES, asFdset as fsLines, asFortify as fsFortify, asHex as fsHex, bitFor as fsBit, bitValue as fsValue, byteFor as fsByte, correctOption as fsCorrect, inTheSet as fsInSet, landsIn as fsLands, outcome as fsOutcome, reported as fsReported, setBytes as fsSetBytes, watched as fsWatched } from "../client/src/lib/fdset/index";
+import { CASES as PAGECACHE_CASES, after as pcAfter, asAttempt as pcAttempt, asSize as pcSize, asStore as pcStore, availableCostKb as pcCost, buffCache as pcColumn, cached as pcCached, correctOption as pcCorrect, costKb as pcWrote, freed as pcFreed, asPagecache as pcLines, pinned as pcPinned, shared as pcShared, survives as pcSurvives } from "../client/src/lib/pagecache/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
@@ -931,6 +932,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/append">Two writers, one offset</a>, why four processes can hand a log more bytes than it ends up holding.</li>
     <li><a href="${SITE_URL}/mapped">Three boundaries, three outcomes</a>, where a mapping ends, where the file behind it ends, and which signal you get past each.</li>
     <li><a href="${SITE_URL}/fdset">One descriptor too many</a>, why FD_SET past 1023 writes into the next member of your own struct.</li>
+    <li><a href="${SITE_URL}/pagecache">The cache you cannot drop</a>, why a gibibyte of tmpfs and a gibibyte of page cache read the same in free.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2259,6 +2261,7 @@ ${JSON.stringify({
     ["Two writers, one offset", "/append"],
     ["Three boundaries, three outcomes", "/mapped"],
     ["One descriptor too many", "/fdset"],
+    ["The cache you cannot drop", "/pagecache"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5604,6 +5607,150 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/one-descriptor-too-many", "One descriptor too many"], ["/fds", "Too many open files"], ["/mapped", "Three boundaries, three outcomes"]])}
+</main>`,
+  });
+
+  // ── the cache you cannot drop ──
+  /*
+    The static body carries the two runs side by side, because the search that
+    brings people here is a machine with gigabytes of buff/cache that is still
+    short of memory, and the answer is which mount the bytes were written to.
+    The table of columns is the one that settles it: the same Cached figure,
+    the opposite Shmem.
+  */
+  const pcPinnedCount = PAGECACHE_CASES.filter((item) => pcPinned(item.setup)).length;
+  const pcDescription =
+    "A gibibyte written to an ordinary file and a gibibyte written to tmpfs put the same figure in " +
+    "free's buff/cache column: Cached read 1261688 for one and 1261392 for the other, measured. " +
+    "Dropping caches returned the first and none of the second, because a tmpfs page has no disk " +
+    "behind it to be written back to. Shmem, which free prints under shared, is the one column in " +
+    `the output that tells them apart, and MemAvailable already knows. ${PAGECACHE_CASES.length} machines here, ` +
+    `${pcPinnedCount} of them holding memory nothing will return.`;
+
+  await writePage("pagecache", base, {
+    title: "The Cache You Cannot Drop: tmpfs, Shmem And buff/cache | Max Doubin",
+    description: pcDescription,
+    canonical: `${SITE_URL}/pagecache`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "The cache you cannot drop",
+  description: pcDescription,
+  url: `${SITE_URL}/pagecache`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a machine can show gigabytes of buff/cache and still be short of memory: that free's buff/cache column is Buffers plus Cached plus SReclaimable, so the reclaimable slab is in there too; that tmpfs pages are counted in Cached and in Shmem both, so a gibibyte of tmpfs and a gibibyte of ordinary page cache put the same figure in that column while only one of them is reclaimable; that drop_caches returns the ordinary page cache a job created and returns none of the tmpfs, and does not return the baseline either because most of a running system's baseline is mapped pages; that MemAvailable is the field that already accounts for this correctly and is what monitoring should alert on; that unlinking a tmpfs file with a descriptor still open frees nothing; that a tmpfs mount returns ENOSPC at its size= option rather than when the machine runs out, with the default being half of RAM; and that tmpfs allocates in whole pages, so a million one byte files is four gigabytes of unreclaimable memory",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>The cache you cannot drop</h1>
+  <p>
+    ${PAGECACHE_CASES.length} machines, one question each. On ${pcPinnedCount} of them the buff/cache column is holding memory
+    that nothing will hand back, and the column looks exactly the same as it does on the others.
+  </p>
+  <h2>What the column is</h2>
+  <pre><code>free's buff/cache  =  Buffers + Cached + SReclaimable
+                      8704 + 230000 + 24828  =  263532     free said 263532
+free's shared      =  Shmem
+                      12996                                free said 12996</code></pre>
+  <p>
+    Measured against one atomic copy of <code>/proc/meminfo</code> taken next to one
+    <code>free -k</code>. The reclaimable slab being in that column is the first surprise. Shmem
+    being inside Cached is the second, and it is the one that costs people a machine.
+  </p>
+  <h2>The same gibibyte, written two ways</h2>
+  <pre><code>a real file on disk        MemFree     Cached      Shmem   MemAvailable
+  clean                   14896456     212780      13164       14856712
+  written                 13817736    1261688      12992       14840752
+  after drop_caches       14901160     212360      12992       14860988
+
+a file in tmpfs            MemFree     Cached      Shmem   MemAvailable
+  clean                   14924388     212652      12992       14893824
+  written                 13874728    1261392    1061396       13836480
+  after drop_caches       13871756    1261232    1061568       13832524</code></pre>
+  <p>
+    Cached reads 1261 MB in both. In the first it is memory the kernel hands back the moment
+    anything wants it, and <code>echo 3 &gt; /proc/sys/vm/drop_caches</code> hands it back. In the
+    second the same command on the same machine freed nothing at all.
+  </p>
+  <p>
+    Two other things are in those rows. MemAvailable is honest: the real file did not move it and
+    the tmpfs file cost the whole gibibyte. And the baseline survives the drop in both runs, going
+    212780 to 212360, because most of a running system's baseline page cache is mapped and mapped
+    pages are not droppable.
+  </p>
+  <h2>Deleting it is not enough</h2>
+  <pre><code>512 MiB in /dev/shm, then rm with one descriptor still open
+
+  written                 Shmem 537096    df says 512M used
+  unlinked, fd still open Shmem 537096    df says 512M used
+  fd closed               Shmem  12992    df says 0</code></pre>
+  <p>
+    The ordinary unlink rule, and worth knowing here because the space being held is RAM. Look for
+    the descriptor with <code>lsof +L1</code>, not for the file.
+  </p>
+  <h2>No space, with fourteen gigabytes free</h2>
+  <pre><code>mount -t tmpfs -o size=16M tmpfs small
+writing 32 MiB       stopped at exactly 16777216 bytes
+the error            errno 28 ENOSPC, "No space left on device"
+MemFree at the time  14782776 kB
+
+mount -t tmpfs tmpfs deflt    df says 7.9G
+MemTotal                      16481980 kB</code></pre>
+  <p>
+    The <code>size=</code> option is the only thing that stopped it, and the error names the wrong
+    resource: the device is memory, and there were fourteen gigabytes of it. With no
+    <code>size=</code> at all the default is half of RAM, which is a default and not a
+    recommendation.
+  </p>
+  <h2>A byte costs a page</h2>
+  <pre><code>echo -n x &gt; one       apparent size 1
+df --block-size=1     4096 used
+du --block-size=1     4096</code></pre>
+  <p>
+    The ordinary rule again, and it matters more here: a million small files in tmpfs is four
+    gigabytes of RAM that free reports as cache, MemAvailable correctly refuses to count, and
+    nothing will reclaim.
+  </p>
+  <h2>Every machine here</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Wrote</th><th>Where</th><th>Cached</th><th>Shmem</th><th>buff/cache</th><th>Tried</th><th>Freed</th><th>Left</th></tr>
+    </thead>
+    <tbody>
+${PAGECACHE_CASES.map((item) => {
+  const s2 = item.setup;
+  return `      <tr><td>${esc(s2.host)}</td><td>${esc(pcSize(pcWrote(s2)))}</td><td>${esc(pcStore(s2.store))}</td>` +
+    `<td>${pcCached(s2)}</td><td>${pcShared(s2)}</td><td>${pcColumn(s2)}</td>` +
+    `<td>${esc(pcAttempt(s2.attempt))}</td><td>${pcFreed(s2)}</td><td>${pcAfter(s2)}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${PAGECACHE_CASES.map((item) => {
+  const right = pcCorrect(item);
+  const s2 = item.setup;
+  const lines = pcLines(s2).map((line) => `${line.name.padEnd(16)} ${line.value.padStart(22)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The column reads ${pcColumn(s2)} kB, of which ${pcShared(s2)} is Shmem. This job wrote ${esc(pcSize(pcWrote(s2)))} to ${esc(pcStore(s2.store))} and cost MemAvailable ${pcCost(s2)} kB. ${s2.attempt === "nothing" ? "Nothing has been tried yet." : `${esc(pcAttempt(s2.attempt))} hands back ${pcFreed(s2)} kB, leaving ${pcAfter(s2)}, and this job's own bytes are ${pcSurvives(s2) ? "still there" : "gone"}.`}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-cache-you-cannot-drop", "The cache you cannot drop"], ["/free", "Two hundred megabytes free"], ["/pss", "Four processes, one copy"]])}
 </main>`,
   });
 
@@ -10054,6 +10201,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/append`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/mapped`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/fdset`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/pagecache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

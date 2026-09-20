@@ -273,6 +273,9 @@ const CinematicMapped = lazyWithRetry(() =>
 const CinematicFdset = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicFdset").then((m) => ({ default: m.CinematicFdset })),
 );
+const CinematicPagecache = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicPagecache").then((m) => ({ default: m.CinematicPagecache })),
+);
 const CinematicOvercommit = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicOvercommit").then((m) => ({ default: m.CinematicOvercommit })),
 );
@@ -1142,6 +1145,11 @@ function AnimatedRoutes() {
           <Route path="/fdset">
             <Suspense fallback={<RouteLoading />}>
               <CinematicFdset />
+            </Suspense>
+          </Route>
+          <Route path="/pagecache">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicPagecache />
             </Suspense>
           </Route>
           <Route path="/overcommit">
