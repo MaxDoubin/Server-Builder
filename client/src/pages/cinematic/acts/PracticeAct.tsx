@@ -56,6 +56,7 @@ import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writ
 import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
+import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -190,6 +191,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/overcommit",
+    eyebrow: "Read",
+    title: "Half a machine",
+    blurb:
+      "CommitLimit and MemTotal are printed four lines apart in the same unit, and on a stock host one is half the other. Strict mode turns the smaller one into a wall.",
+    count: `${OVERCOMMIT_CASES.length} machines, ${OVERCOMMIT_CASES.filter((item) => ocWasteful(item.setup)).length} refused with RAM free`,
   },
   {
     href: "/timewait",

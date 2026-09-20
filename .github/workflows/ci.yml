@@ -676,6 +676,13 @@ jobs:
       - name: TIME_WAIT
         run: npx tsx scripts-ci/check-timewait.ts
 
+      # CommitLimit is swap plus a percentage of RAM alone, computed in pages
+      # rather than kilobytes, and only strict mode reads it. The limit is
+      # recounted a page block at a time across all 301 ratios, and each
+      # mode's name is tied to what that mode does.
+      - name: Overcommit accounting
+        run: npx tsx scripts-ci/check-overcommit.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as OVERCOMMIT_CASES, asSysctl as ocSysctl, commitLimitKb as ocLimit, committedPercentOfLimit as ocPctLimit, committedPercentOfRam as ocPctRam, correctOption as ocCorrect, headroomKb as ocHeadroom, human as ocHuman, limitPercentOfRam as ocLimitPct, modeName as ocMode, oomPossible as ocOom, refuses as ocRefuses, refusesWithMemoryFree as ocWasteful } from "../client/src/lib/overcommit/index";
 import { CASES as TIMEWAIT_CASES, TIME_WAIT_SECONDS as TW_LEN, asSysctl as twSysctl, closerState as twState, correctOption as twCorrect, ephemeralPorts as twPorts, exhausts as twExhausts, human as twHuman, overflowsBuckets as twOverflows, reuseHelps as twReuse, stateSeconds as twSeconds, sustainableRate as twRate, tupleCapacity as twTuples } from "../client/src/lib/timewait/index";
 import { CASES as RCVBUF_CASES, asSysctl as rcSysctl, autotuning as rcAuto, backfired as rcBackfired, band as rcBand, ceilingBytes as rcCeiling, correctOption as rcCorrect, highMarkBytes as rcHigh, highMarkIfBytes as rcHighBytes, human as rcHuman, reportedBytes as rcReported } from "../client/src/lib/rcvbuf/index";
 import { CASES as FDS_CASES, asLimits as fdLimits, binding as fdBinding, correctOption as fdCorrect, count as fdCount, effectiveHard as fdHard, effectiveSoft as fdSoft, frozen as fdFrozen, outcome as fdOutcome } from "../client/src/lib/fds/index";
@@ -900,6 +901,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
     <li><a href="${SITE_URL}/fds">Too many open files</a>, which of the four descriptor limits is the smallest.</li>
@@ -2212,6 +2214,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
     ["Too many open files", "/fds"],
@@ -3986,6 +3989,129 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── overcommit accounting ──
+  /*
+    The static body carries the limit table, because the search that brings
+    people here is malloc failing on a machine with memory free, and what they
+    need is CommitLimit beside MemTotal for a host shaped like theirs. The
+    columns put the wall next to the hardware, which is the comparison the
+    whole surface turns on.
+  */
+  const ocWaste = OVERCOMMIT_CASES.filter((item) => ocWasteful(item.setup)).length;
+  const ocDescription =
+    "vm.overcommit_ratio defaults to 50 and applies to RAM alone, with swap added whole, so a " +
+    "machine with no swap has a CommitLimit of half its memory. In the default heuristic mode " +
+    "nothing reads that number and Committed_AS passes it without comment. Set " +
+    "vm.overcommit_memory to 2 to stop the out of memory killer and the same number becomes a " +
+    "wall: on the host measured here it refuses a 5 GiB allocation with 13.92 GiB free, because " +
+    "the comparison is reservations against the limit and free memory is not in it. " +
+    `${OVERCOMMIT_CASES.length} machines here, ${ocWaste} refused with the memory sitting there.`;
+
+  await writePage("overcommit", base, {
+    title: "CommitLimit Is Half the Memory, and It Is Not a Memory Limit | Max Doubin",
+    description: ocDescription,
+    canonical: `${SITE_URL}/overcommit`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Half a machine",
+  description: ocDescription,
+  url: `${SITE_URL}/overcommit`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How Linux overcommit accounting decides whether an allocation is refused: that CommitLimit is SwapTotal plus vm.overcommit_ratio percent of RAM alone, so the default of 50 with no swap makes the limit half the machine; that vm_commit_limit computes this in pages, flooring the page count before multiplying, so a formula written in kilobytes is two or three kilobytes high; that vm.overcommit_kbytes replaces the ratio rather than adding to it; that mode 0, the default heuristic, never reads the running total and lets Committed_AS sit above CommitLimit indefinitely; that mode 1 refuses nothing and is what a database or cache wants because forking reserves an address space that is never written; that mode 2 compares reservations against the limit and will refuse an allocation while MemAvailable is several times its size; that Committed_AS counts reservations rather than pages touched and is not comparable to MemAvailable; and that strict mode does not retire the out of memory killer, least of all with a ratio above 100, where the limit exceeds RAM plus swap",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Half a machine</h1>
+  <p>
+    ${OVERCOMMIT_CASES.length} machines, one allocation each. On ${ocWaste} of them the allocation is refused while the
+    memory it asked for is sitting there unused.
+  </p>
+  <p>
+    Here is /proc/meminfo on a 15.72 GiB host with no swap, untuned:
+  </p>
+  <pre><code>MemTotal      16481980 kB
+SwapTotal            0 kB
+CommitLimit    8240988 kB
+Committed_AS   4006572 kB</code></pre>
+  <p>
+    CommitLimit is half the machine. Not because anything is wrong, but because the formula is
+    swap plus <code>vm.overcommit_ratio</code> percent of RAM, the ratio defaults to 50, and there
+    is no swap to add. Walking the ratio on that host:
+  </p>
+  <pre><code>ratio  25 -&gt;  4120492 kB      ratio 100 -&gt; 16481980 kB
+ratio  50 -&gt;  8240988 kB      ratio 150 -&gt; 24722968 kB
+ratio  80 -&gt; 13185584 kB</code></pre>
+  <p>
+    Two things to notice. The last figure is larger than the machine, which tells you this is an
+    accounting policy and not a capacity. And the arithmetic is done in pages: 16481980 kB is
+    4120495 pages, half of that floors to 2060247, and 2060247 pages is 8240988 kB. Write the
+    formula in kilobytes and you get 8240990, which is close enough to look like rounding noise
+    and wrong in every case that matters.
+  </p>
+  <p>
+    In the default mode none of this does anything. Mode 0 is a heuristic that judges one request
+    at a time; it never reads the running total, so Committed_AS can sit above CommitLimit for
+    weeks on a healthy host. That is why the limit is usually first noticed by a dashboard.
+  </p>
+  <p>
+    Set <code>vm.overcommit_memory</code> to 2 and the same number becomes a wall. On the host
+    above that leaves 4.04 GiB of headroom, so a worker asking for 5 GiB does not start, while
+    MemAvailable reads 13.92 GiB. Nothing is broken. Strict accounting compares reservations
+    against the limit, and free memory is not one of the terms.
+  </p>
+  <p>
+    It does not retire the out of memory killer either. Committed_AS counts reservations rather
+    than pages touched, page cache and shared pages are not in it, and a ratio above 100 hands out
+    more than exists. Mode 2 changes when an allocation is refused. It does not change what happens
+    when the pages are finally written to.
+  </p>
+  <h2>What each machine allows, and what it does with the request</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Mode</th><th>Ratio</th><th>Swap</th><th>CommitLimit</th><th>% of RAM</th><th>Committed_AS</th><th>Headroom</th><th>Asks</th><th>Refused</th><th>RAM free</th></tr>
+    </thead>
+    <tbody>
+${OVERCOMMIT_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${s.mode} ${esc(ocMode(s))}</td><td>${s.ratio}</td>` +
+    `<td>${esc(ocHuman(s.swapKb))}</td><td>${esc(ocHuman(ocLimit(s)))}</td><td>${ocLimitPct(s)}%</td>` +
+    `<td>${esc(ocHuman(s.committedKb))}</td><td>${esc(ocHuman(ocHeadroom(s)))}</td><td>${esc(ocHuman(s.wantKb))}</td>` +
+    `<td>${ocRefuses(s) ? "yes" : "no"}</td><td>${esc(ocHuman(s.availableKb))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${OVERCOMMIT_CASES.map((item) => {
+  const right = ocCorrect(item);
+  const s = item.setup;
+  const sysctl = ocSysctl(s).map((line) => `${line.name.padEnd(22)} ${line.value.padStart(10)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(sysctl)}
+
+# the next allocation asks for ${s.wantKb} kB, ${esc(ocHuman(s.wantKb))}</code></pre>
+    <p>CommitLimit is ${esc(ocHuman(ocLimit(s)))}, ${ocLimitPct(s)} percent of RAM. Committed_AS is ${ocPctLimit(s)} percent of that limit and ${ocPctRam(s)} percent of the machine. The request is ${ocRefuses(s) ? "refused" : "allowed"}${ocWasteful(s) ? `, with ${esc(ocHuman(s.availableKb))} available` : ""}. The killer ${ocOom(s) ? "can still run: the limit is above RAM plus swap" : "is not made possible by this accounting alone"}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/commitlimit-is-half-the-memory-and-it-is-not-a-memory-limit", "CommitLimit is half the memory, and it is not a memory limit"], ["/oom", "Something has to die"], ["/throttle", "Thirty percent, and stalling"]])}
 </main>`,
   });
 
@@ -7901,6 +8027,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/fds`, lastmod: today, changefreq: "monthly", priority: "0.8" },

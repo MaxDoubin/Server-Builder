@@ -154,8 +154,12 @@ const INDEX = path.join(DIST, "index.html");
  * twelve raises. The page, the model and the ten cases are all behind the
  * route's lazy import; what lands in the static entry is the palette row and
  * the practice index card, which is why the step is a kilobyte again.
+ *
+ * 712 KB, raised from 711 by /overcommit, measured at 710.6. Fourteen
+ * surfaces, thirteen raises, and the same kilobyte each time, which is the
+ * property worth watching rather than the total.
  */
-const BUDGET_BYTES = 711 * 1024;
+const BUDGET_BYTES = 712 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
