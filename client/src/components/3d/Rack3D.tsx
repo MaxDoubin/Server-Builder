@@ -504,7 +504,7 @@ export function Rack3D({
                 </div>
                 <Badge
                   variant="outline"
-                  className={`text-[9px] uppercase h-4 px-1 ${
+                  className={`text-[10px] uppercase h-4 px-1 ${
                     operationalStatus === "critical"
                       ? "border-red-500 text-red-400"
                       : operationalStatus === "warning"
@@ -525,7 +525,7 @@ export function Rack3D({
                   </div>
                 </div>
                 <div className="space-y-1 pt-1">
-                  <div className="flex justify-between text-[8px] text-white/50 uppercase">
+                  <div className="flex justify-between text-[10px] text-white/50 uppercase">
                     <span>Power Usage</span>
                     <span>{Math.round((rack.currentPowerDraw / rack.powerCapacity) * 100)}%</span>
                   </div>
