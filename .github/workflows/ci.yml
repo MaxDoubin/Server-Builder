@@ -711,6 +711,13 @@ jobs:
       - name: Exec argument budget
         run: npx tsx scripts-ci/check-argmax.ts
 
+      # The symlink traversal budget. One counter spans the whole path, so a
+      # model that kept one per component gets every single-chain case right
+      # and is wrong about the ones that matter: the gate walks the path a
+      # link at a time and checks every split of a total agrees.
+      - name: Symlink traversal budget
+        run: npx tsx scripts-ci/check-eloop.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

@@ -172,8 +172,11 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 716 KB, raised from 715 by /argmax, measured at 714.5. Eighteen surfaces,
  * seventeen raises, one kilobyte apiece and no drift.
+ *
+ * 717 KB, raised from 716 by /eloop, measured at 715.4. Nineteen surfaces,
+ * eighteen raises, still a kilobyte each.
  */
-const BUDGET_BYTES = 716 * 1024;
+const BUDGET_BYTES = 717 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

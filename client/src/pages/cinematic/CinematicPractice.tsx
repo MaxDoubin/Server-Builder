@@ -55,6 +55,7 @@ import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index";
 import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
+import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -425,6 +426,20 @@ export function CinematicPractice() {
         `${ARGMAX_CASES.length} command lines`,
         `${ARGMAX_CASES.filter((item) => !argmaxFits(item.setup)).length} refused`,
         "23 measurements",
+      ],
+      progress: null,
+    },
+    {
+      href: "/eloop",
+      eyebrow: "Count",
+      title: "There is no loop",
+      blurb:
+        "Forty symlink traversals, for the whole path rather than per chain, so a path that is shallow everywhere can still cross the line. And the kernel has no cycle detection: a two link cycle and a forty one link straight chain return the identical error.",
+      reachFor: "a path reports a loop and you are certain it has none",
+      stats: [
+        `${ELOOP_CASES.length} paths`,
+        `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+        "3 meanings",
       ],
       progress: null,
     },
