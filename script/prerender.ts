@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as LOCKS_CASES, asLocks as lkLines, bothShared as lkShared, callOf as lkCall, correctOption as lkCorrect, granted as lkGranted, humanRange as lkRange, identity as lkWho, lostBecause as lkLost, overlaps as lkOverlaps, ownerOf as lkOwner, sameOwner as lkSame, stillHeld as lkHeld, why as lkWhy, world as lkWorld } from "../client/src/lib/locks/index";
 import { CASES as PIPEBUF_CASES, PIPE_BUF as PB_BUF, alignsWithCapacity as pbAligns, asSetup as pbSetup, atRisk as pbRisk, because as pbBecause, correctOption as pbCorrect, granted as pbGranted, guaranteed as pbGuaranteed, refused as pbRefused, tears as pbTearsAt, tearsHere as pbTears, uniform as pbUniform } from "../client/src/lib/pipebuf/index";
 import { CASES as ELOOP_CASES, MAX_TRAVERSALS as EL_MAX, asWalk as elWalk, correctOption as elCorrect, demanded as elAsked, followsFinal as elFollows, headroom as elLeft, reason as elReason, result as elResult, spent as elSpent, succeeds as elOk } from "../client/src/lib/eloop/index";
 import { CASES as ARGMAX_CASES, MAX_ARG_STRLEN as AM_CAP, POINTER as AM_PTR, asLimits as amLimits, budget as amBudget, correctOption as amCorrect, costPerArg as amPerArg, envCost as amEnv, fits as amFits, headroom as amSpare, humanBytes as amBytes, maxArgs as amMax, pointerShare as amShare, programCost as amProg, refusedBy as amRefused, textBytes as amText, totalCost as amTotal } from "../client/src/lib/argmax/index";
@@ -913,6 +914,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/argmax">Argument list too long</a>, why a command line under ARG_MAX is refused anyway.</li>
     <li><a href="${SITE_URL}/eloop">There is no loop</a>, why a path with no cycle in it reports too many levels of symbolic links.</li>
     <li><a href="${SITE_URL}/pipebuf">Two writers, one line</a>, why a log line comes out with another log line inside it.</li>
+    <li><a href="${SITE_URL}/locks">Three locks, one file</a>, why two programs can both hold the lock on one file.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2232,6 +2234,7 @@ ${JSON.stringify({
     ["Argument list too long", "/argmax"],
     ["There is no loop", "/eloop"],
     ["Two writers, one line", "/pipebuf"],
+    ["Three locks, one file", "/locks"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4807,6 +4810,133 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-log-line-with-another-log-line-inside-it", "The log line with another log line inside it"], ["/writeback", "Not written down"], ["/nagle", "Eight bytes, forty four milliseconds"]])}
+</main>`,
+  });
+
+  // ── file locking ──
+  /*
+    The static body carries both matrices, because the search that brings
+    people here is two programs writing a file that was supposed to be locked,
+    and the answer is a table: which of the three interfaces sees which. The
+    second matrix is the same nine cells asked inside one process, where
+    exactly one of them moves, and that one moving cell is the surface.
+  */
+  const lkBoth = LOCKS_CASES.filter((item) => lkGranted(item.setup)).length;
+  const lkDescription =
+    "flock and fcntl keep separate lock lists and do not see each other, so two programs guarding one " +
+    "file, one written against each, both take the lock and both believe they have it alone. Of the " +
+    "three interfaces only fcntl belongs to the process rather than to the open file description, " +
+    "which is why a second descriptor in your own process is handed the lock, why a forked child is " +
+    "refused it, and why closing any unrelated descriptor to the file throws it away. " +
+    `${LOCKS_CASES.length} files here, ${lkBoth} where the second party gets in.`;
+
+  await writePage("locks", base, {
+    title: "Three Locks, One File: fcntl, flock and F_OFD_SETLK | Max Doubin",
+    description: lkDescription,
+    canonical: `${SITE_URL}/locks`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Three locks, one file",
+  description: lkDescription,
+  url: `${SITE_URL}/locks`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why two programs can both hold the lock on one file and neither is told: that Linux keeps two lock lists, one shared by fcntl record locks and F_OFD_SETLK open file description locks and one used by flock alone, so a flock holder never conflicts with an fcntl request in either direction, measured across all nine combinations of the three interfaces; that an fcntl lock is owned by the process while flock and open file description locks are owned by the open file description, and that every other difference between them follows from that one fact; that a second descriptor in the holder's own process is therefore granted an fcntl lock the process already holds, so fcntl provides no mutual exclusion inside one program; that closing any descriptor to the file releases all of that process's fcntl locks on it, including ones taken through an entirely different descriptor, so a library reading one line can silently unlock your file; that a forked child cannot take an fcntl lock on the descriptor it inherited but can both take and release a flock or an open file description lock, because it shares the description rather than the process; and that fcntl and F_OFD_SETLK lock byte ranges while flock is always the whole file",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Three locks, one file</h1>
+  <p>
+    ${LOCKS_CASES.length} files, one lock each. On ${lkBoth} of them the second party gets the lock, and on several of
+    those it should not have.
+  </p>
+  <h2>There are two lists, not one</h2>
+  <p>
+    A second process asking for a file the holder has already locked, both exclusive, both the whole
+    file:
+  </p>
+  <pre><code>holder used    fcntl asks    flock asks    OFD asks
+fcntl             blocked       GRANTED     blocked
+flock             GRANTED       blocked     GRANTED
+OFD               blocked       GRANTED     blocked</code></pre>
+  <p>
+    flock keeps its own list. fcntl and F_OFD_SETLK share the other one. Nothing consults across
+    them, so a collector guarding <code>/var/run/collect.lock</code> with flock and a second copy of
+    the same job guarding it with fcntl will both hold it, forever, without one error between them.
+  </p>
+  <h2>A lock belongs either to the process or to the descriptor</h2>
+  <p>
+    The same nine cells, except the second party is a second descriptor in the holder's own process:
+  </p>
+  <pre><code>holder used    fcntl asks    flock asks    OFD asks
+fcntl             GRANTED       GRANTED     blocked
+flock             GRANTED       blocked     GRANTED
+OFD               blocked       GRANTED     blocked</code></pre>
+  <p>
+    One cell moved, and it is fcntl against fcntl. An fcntl lock is owned by the process, so the
+    process asking again is the owner asking again and is handed it. Two components of one program,
+    each taking the lock carefully before it writes, both get it and neither is told.
+  </p>
+  <h2>The close that has nothing to do with you</h2>
+  <pre><code>lock fd a, then open fd b to the same file, then close fd b
+  fcntl    the lock is gone, an outsider took it
+  flock    still held
+  OFD      still held</code></pre>
+  <p>
+    Closing any descriptor to a file drops every fcntl lock that process holds on it, however it was
+    taken. A metrics library opening the path to read one line is enough. This is specified behavior
+    and there is no way to opt out of it, which is what open file description locks were added for.
+  </p>
+  <h2>And fork cuts both ways</h2>
+  <pre><code>the forked child, using the descriptor it inherited
+  takes the same lock     fcntl blocked    flock GRANTED    OFD GRANTED
+  calls the unlock        fcntl no effect  flock RELEASED   OFD RELEASED</code></pre>
+  <p>
+    So fcntl refuses to let your own worker touch the file it was forked to write, and flock lets a
+    helper you forgot you forked release the lock that keeps a second daemon from starting. Both are
+    correct, and they surprise people in opposite directions.
+  </p>
+  <h2>What each file does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Holder</th><th>Belongs to</th><th>Asker</th><th>Who is asking</th><th>Same list</th><th>Still held</th><th>Second party</th></tr>
+    </thead>
+    <tbody>
+${LOCKS_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(lkCall(s.held, s.holderExclusive))}</td><td>${esc(lkOwner(s.held))}</td>` +
+    `<td>${esc(lkCall(s.asking, s.askerExclusive))}</td><td>${esc(s.asker)}</td>` +
+    `<td>${lkWorld(s.asking) === lkWorld(s.held) ? "yes" : "no"}</td><td>${lkHeld(s) ? "yes" : "no"}</td>` +
+    `<td>${lkGranted(s) ? "gets the lock" : "waits"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${LOCKS_CASES.map((item) => {
+  const right = lkCorrect(item);
+  const s = item.setup;
+  const lines = lkLines(s).map((line) => `${line.name.padEnd(17)} ${line.value.padStart(34)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The second party ${lkGranted(s) ? "gets the lock" : "waits"}, because ${esc(lkWhy(s))}. ${lkHeld(s) ? `The holder still has its lock, which belongs to ${esc(lkWho(s.held, "the holder"))}.` : `The holder has nothing left: ${esc(lkLost(s))}.`} ${s.held === "flock" || s.asking === "flock" ? "flock is always the whole file." : `The ranges are ${esc(lkRange(s.holderStart, s.holderLength))} against ${esc(lkRange(s.askerStart, s.askerLength))}, which ${lkOverlaps(s) ? "overlap" : "do not overlap"}.`} ${lkShared(s) ? "Both are shared." : ""} ${lkSame(s) ? "Both belong to the same owner." : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-lock-that-two-programs-both-held", "The lock that two programs both held"], ["/pipebuf", "Two writers, one line"], ["/permissions", "The bits that decide"]])}
 </main>`,
   });
 
@@ -8851,6 +8981,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/argmax`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/eloop`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/pipebuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/locks`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

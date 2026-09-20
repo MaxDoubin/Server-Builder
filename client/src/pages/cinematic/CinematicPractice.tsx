@@ -57,6 +57,7 @@ import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
+import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -441,6 +442,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/locks",
+      eyebrow: "Predict",
+      title: "Three locks, one file",
+      blurb:
+        "flock and fcntl keep separate lock lists and never see each other, so two programs guarding one file can both hold it. Of the three, only fcntl belongs to the process, and it is dropped by a close it had nothing to do with.",
+      reachFor: "two things wrote the file that was supposed to be locked",
+      stats: [
+        `${LOCKS_CASES.length} files`,
+        `${LOCKS_CASES.filter((item) => lkGranted(item.setup)).length} the second party gets`,
+        "3 interfaces",
       ],
       progress: null,
     },

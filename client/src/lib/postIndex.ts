@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 303 of them. Regenerate with script/generatePostIndex.ts.
+ * 304 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-lock-that-two-programs-both-held",
+    title: "The Lock That Two Programs Both Held",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","programming"],
+    excerpt: "Linux keeps two lock lists. flock is on one, fcntl and F_OFD_SETLK are on the other, and nothing looks across, so two programs guarding the same file with different calls both hold it and neither is told. Of the three, only fcntl belongs to the process, which is why a second descriptor in your own program is handed the lock and why a library opening the file to read one line silently releases it.",
+    coverImage: "/images/blog/the-lock-that-two-programs-both-held.jpg",
+    wordCount: 1403,
+  },
   {
     slug: "the-client-that-the-server-never-saw",
     title: "The Client That The Server Never Saw",
@@ -2961,10 +2970,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 303;
+export const POST_COUNT = 304;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and three";
+export const POST_COUNT_SPELLED = "three hundred and four";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2973,10 +2982,10 @@ export const POST_COUNT_SPELLED = "three hundred and three";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1165;
+export const CITATION_COUNT = 1167;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1324;
+export const CHECKED_URL_COUNT = 1326;

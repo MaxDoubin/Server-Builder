@@ -63,6 +63,7 @@ import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
+import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -237,6 +238,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/locks",
+    eyebrow: "Predict",
+    title: "Three locks, one file",
+    blurb:
+      "Two programs can guard the same file, one with flock and one with fcntl, and both will hold it at once. The lists are separate, and what a lock belongs to differs between the three calls in ways that decide everything else.",
+    count: `${LOCKS_CASES.length} files, ${LOCKS_CASES.filter((item) => lkGranted(item.setup)).length} the second party gets`,
   },
   {
     href: "/pipebuf",
