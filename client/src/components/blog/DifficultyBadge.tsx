@@ -42,7 +42,7 @@ export function DifficultyBadge({ level, className = "" }: Props) {
     <span
       title={DIFFICULTY_BLURB[level]}
       data-testid={`badge-difficulty-${level}`}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border bg-[hsl(var(--brand-obsidian))] px-2 py-0.5 font-mono-tight text-[0.5625rem] uppercase tracking-[0.22em] ${TONE[level]} ${className}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border bg-[hsl(var(--brand-obsidian))] px-2 py-0.5 font-mono-tight text-[0.625rem] uppercase tracking-[0.22em] ${TONE[level]} ${className}`}
     >
       <span aria-hidden className="tracking-normal">
         {DIFFICULTY_MARK[level]}

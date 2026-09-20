@@ -485,7 +485,7 @@ export function PacketHeaders() {
                   {Array.from({ length: 32 }, (_, i) => (
                     <span
                       key={i}
-                      className="text-center font-mono-tight text-[0.5625rem] leading-none text-[hsl(var(--brand-iron))]"
+                      className="text-center font-mono-tight text-[0.625rem] leading-none text-[hsl(var(--brand-iron))]"
                     >
                       {i % 4 === 0 ? i : "·"}
                     </span>
@@ -531,7 +531,7 @@ export function PacketHeaders() {
                               {field.short ?? field.name}
                             </span>
                             {field.width === 0 || field.width >= 8 ? (
-                              <span className="block truncate text-[0.5625rem] text-[hsl(var(--brand-ash))]">
+                              <span className="block truncate text-[0.625rem] text-[hsl(var(--brand-ash))]">
                                 {field.width === 0 ? "variable length" : `${field.width} bits`}
                               </span>
                             ) : null}

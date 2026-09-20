@@ -185,7 +185,7 @@ export function DeviceViewer({
         </Suspense>
         <OrbitControls makeDefault target={[0, 0, 0]} enablePan={false} enableDamping />
       </Canvas>
-      <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center font-techno text-[0.5625rem] uppercase tracking-[0.28em] text-[hsl(220_6%_45%)]">
+      <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(220_6%_45%)]">
         {label} · drag to orbit · scroll to zoom
       </p>
     </div>

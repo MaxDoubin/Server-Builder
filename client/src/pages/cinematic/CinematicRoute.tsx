@@ -137,7 +137,7 @@ export function CinematicRoute() {
                       <th
                         key={head}
                         scope="col"
-                        className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
+                        className="px-3 py-2 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]"
                       >
                         {head}
                       </th>
@@ -167,12 +167,12 @@ export function CinematicRoute() {
                         <td className="whitespace-nowrap px-3 py-1.5 font-mono-tight text-[0.75rem] text-[hsl(var(--brand-bone))]">
                           {prefixOf(route)}
                           {wins ? (
-                            <span className="ml-2 font-techno text-[0.5625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                            <span className="ml-2 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                               wins
                             </span>
                           ) : null}
                           {naiveOnly ? (
-                            <span className="ml-2 font-techno text-[0.5625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
+                            <span className="ml-2 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
                               first match
                             </span>
                           ) : null}

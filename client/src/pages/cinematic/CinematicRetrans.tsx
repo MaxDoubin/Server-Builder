@@ -157,7 +157,7 @@ export function CinematicRetrans() {
                       {item.setup.userTimeoutMs > 0 ? ` · ut ${human(item.setup.userTimeoutMs)}` : ""}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}

@@ -156,11 +156,11 @@ export function CinematicRetry() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                       {ASK_LABEL[chain.ask.kind]}
                     </span>
                     {mounted && solved.includes(chain.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -196,7 +196,7 @@ export function CinematicRetry() {
                       <th
                         key={head}
                         scope="col"
-                        className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
+                        className="px-3 py-2 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]"
                       >
                         {head}
                       </th>
@@ -404,7 +404,7 @@ export function CinematicRetry() {
                       key={label}
                       className="rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.5)] px-4 py-3"
                     >
-                      <dt className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <dt className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         {label}
                       </dt>
                       <dd className="mt-1 font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))]">{value}</dd>

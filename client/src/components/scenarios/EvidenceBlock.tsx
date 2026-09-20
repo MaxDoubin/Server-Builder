@@ -39,7 +39,7 @@ export function EvidenceBlock({ evidence }: { evidence: Evidence }) {
   return (
     <figure className="mt-5 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.55)]">
       <figcaption className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[hsl(var(--brand-iron))] px-4 py-2.5">
-        <span className={`font-techno text-[0.5625rem] uppercase tracking-[0.32em] ${KIND_ACCENT[evidence.kind]}`}>
+        <span className={`font-techno text-[0.625rem] uppercase tracking-[0.32em] ${KIND_ACCENT[evidence.kind]}`}>
           {KIND_LABEL[evidence.kind]}
         </span>
         {evidence.title ? (

@@ -172,7 +172,7 @@ export function CinematicKeepalive() {
                       {item.setup.soKeepalive ? "SO_KEEPALIVE" : "no keepalive"}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -265,7 +265,7 @@ ${asMiddlebox(setup)}`}
                   data-testid="keepalive-timeline"
                 >
                   {/* what goes on the wire */}
-                  <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     · on the wire
                   </p>
                   <div className="relative mt-1.5 h-5 w-full rounded-[3px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))]">
@@ -312,7 +312,7 @@ ${asMiddlebox(setup)}`}
                   </p>
 
                   {/* the middlebox's row */}
-                  <p className="mt-4 font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <p className="mt-4 font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     · the row in {box.label}
                   </p>
                   <div className="relative mt-1.5 h-5 w-full overflow-hidden rounded-[3px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))]">
@@ -336,7 +336,7 @@ ${asMiddlebox(setup)}`}
                   </p>
 
                   {/* the application */}
-                  <p className="mt-4 font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                  <p className="mt-4 font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                     · the application
                   </p>
                   <div className="relative mt-1.5 h-5 w-full overflow-hidden rounded-[3px] border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian))]">
@@ -395,7 +395,7 @@ ${asMiddlebox(setup)}`}
                     ],
                   ].map(([name, value, note]) => (
                     <div key={name} className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                      <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         · {name}
                       </p>
                       <p className="mt-2 font-display text-xl text-[hsl(var(--brand-bone))]">{value}</p>

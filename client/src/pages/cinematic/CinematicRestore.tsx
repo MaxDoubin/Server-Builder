@@ -163,12 +163,12 @@ export function CinematicRestore() {
                       <span className="font-mono-tight text-[0.8125rem] text-[hsl(var(--brand-bone))]">
                         {copy.name}
                         {isChoice ? (
-                          <span className="ml-2 font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
+                          <span className="ml-2 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-signal))]">
                             restore from this
                           </span>
                         ) : null}
                         {revealed && !verdict.usable ? (
-                          <span className="ml-2 font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
+                          <span className="ml-2 font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-danger))]">
                             gone
                           </span>
                         ) : null}

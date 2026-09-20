@@ -140,7 +140,7 @@ function Ceiling({
         >
           {name}
           {binding ? (
-            <span className="ml-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+            <span className="ml-2 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
               binding
             </span>
           ) : null}
@@ -426,7 +426,7 @@ export function CinematicTransfer() {
                         {rate(item.link.bandwidth)} · {Math.round(item.link.rtt)} ms
                       </span>
                       {mounted && solved.includes(item.slug) ? (
-                        <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                        <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                           called
                         </span>
                       ) : null}

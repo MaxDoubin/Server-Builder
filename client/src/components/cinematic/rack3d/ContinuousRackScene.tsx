@@ -351,7 +351,7 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
                   transform: "translate(12px, -50%)",
                   whiteSpace: "nowrap",
                   fontFamily: "'Space Grotesk', monospace",
-                  fontSize: "10px",
+                  fontSize: "0.625rem",
                   letterSpacing: "0.22em",
                   textTransform: "uppercase",
                   color: "hsl(40 16% 92%)",
@@ -381,7 +381,7 @@ function FocusServer({ progressRef }: { progressRef: ContinuousProgressRef }) {
                         display: "block",
                         color: "hsl(40 8% 72%)",
                         marginTop: "2px",
-                        fontSize: "8px",
+                        fontSize: "0.625rem",
                         letterSpacing: "0.2em",
                       }}
                     >

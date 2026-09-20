@@ -462,7 +462,7 @@ export function CinematicBlog() {
                                   "linear-gradient(90deg, transparent 60%, hsl(var(--brand-obsidian)) 100%)",
                               }}
                             />
-                            <div className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]">
+                            <div className="absolute left-4 top-4 flex items-center gap-2 font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-bone))]">
                               <span
                                 className="h-[6px] w-[6px] rounded-full bg-[hsl(var(--brand-signal))]"
                                 style={{ boxShadow: "0 0 6px hsl(var(--brand-signal))" }}

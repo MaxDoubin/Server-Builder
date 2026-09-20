@@ -170,7 +170,7 @@ export function CinematicBacklog() {
                       backlog {item.setup.backlog} · somaxconn {item.setup.somaxconn}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -317,7 +317,7 @@ ${asNstat(setup)}
                         className="absolute top-0 h-full w-px bg-[hsl(var(--brand-amber))]"
                         data-testid="backlog-slot"
                       >
-                        <span className="absolute -top-3.5 left-1 whitespace-nowrap font-mono-tight text-[0.59375rem] text-[hsl(var(--brand-amber))]">
+                        <span className="absolute -top-3.5 left-1 whitespace-nowrap font-mono-tight text-[0.625rem] text-[hsl(var(--brand-amber))]">
                           slot at {humanMs(slotAt)}
                         </span>
                       </span>
@@ -347,7 +347,7 @@ ${asNstat(setup)}
                             }`}
                           />
                           {landed ? (
-                            <span className="absolute top-[5.1rem] -left-2 whitespace-nowrap font-mono-tight text-[0.59375rem] text-[hsl(var(--brand-signal))]">
+                            <span className="absolute top-[5.1rem] -left-2 whitespace-nowrap font-mono-tight text-[0.625rem] text-[hsl(var(--brand-signal))]">
                               {humanMs(chance.atMs)}
                             </span>
                           ) : null}
@@ -376,7 +376,7 @@ ${asNstat(setup)}
                     ["client waits", humanMs(ending.delayMs), "what the other end lives through"],
                   ].map(([label, value, note]) => (
                     <div key={label} className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                      <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                      <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                         · {label}
                       </p>
                       <p className="mt-2 font-display text-2xl text-[hsl(var(--brand-bone))]">{value}</p>

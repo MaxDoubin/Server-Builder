@@ -482,7 +482,7 @@ function ChannelCard({
         <div className="scanline pointer-events-none absolute inset-0 opacity-10" />
         <div className="relative flex items-start justify-between">
           <div>
-            <div className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
+            <div className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-ash))]">
               · {kind}
             </div>
             <div className="mt-3 font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">

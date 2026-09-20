@@ -321,7 +321,7 @@ export function BaseConverter() {
                       );
                     })}
                   </div>
-                  <div className="font-mono-tight text-[0.5625rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">
+                  <div className="font-mono-tight text-[0.625rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))]">
                     {parseInt(nibble.bits.join(""), 2).toString(16).toUpperCase()} ·{" "}
                     {nibble.start}
                   </div>

@@ -332,7 +332,7 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
         }}
       />
       <div
-        className="relative font-techno text-[0.5625rem] uppercase tracking-[0.42em]"
+        className="relative font-techno text-[0.625rem] uppercase tracking-[0.42em]"
         style={{ color: accentColor, textShadow: `0 0 10px ${accentColor}55` }}
       >
         {pillar.eyebrow}

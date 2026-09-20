@@ -211,7 +211,7 @@ function ScenarioCard({
         data-testid={`card-scenario-${scenario.slug}`}
         className={`flex h-full flex-col rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.5)] p-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[hsl(var(--brand-signal))] ${accent.ring} ${accent.glow}`}
       >
-        <span className={`font-techno text-[0.5625rem] uppercase tracking-[0.32em] ${accent.text}`}>
+        <span className={`font-techno text-[0.625rem] uppercase tracking-[0.32em] ${accent.text}`}>
           {scenario.category}
         </span>
         <span className="mt-2 font-display text-xl font-medium leading-snug text-[hsl(var(--brand-bone))]">

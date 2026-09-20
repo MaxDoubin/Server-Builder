@@ -154,7 +154,7 @@ export function PostPreviewLink({
           <p className="mt-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-bone-dim))]">
             {post.excerpt}
           </p>
-          <p className="mt-3 font-mono-tight text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+          <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
             Esc to dismiss
           </p>
         </div>

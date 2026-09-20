@@ -173,11 +173,11 @@ export function Quiz({ questions, title = "Check yourself", testId }: Props) {
                 </span>
                 <span className="flex-1">{choice}</span>
                 {answered && isCorrect ? (
-                  <span className="font-techno text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                     Correct
                   </span>
                 ) : answered && isChosen ? (
-                  <span className="font-techno text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-danger))]">
+                  <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-danger))]">
                     Your pick
                   </span>
                 ) : null}

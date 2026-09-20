@@ -206,7 +206,7 @@ function TelemetryTile({ cfg }: { cfg: TileConfig }) {
             <div className="scanline pointer-events-none absolute inset-0 opacity-15" />
             <div className="relative flex items-start justify-between">
               <div>
-                <div className="font-techno text-[0.5625rem] uppercase tracking-[0.34em] text-[hsl(var(--brand-ash))]">
+                <div className="font-techno text-[0.625rem] uppercase tracking-[0.34em] text-[hsl(var(--brand-ash))]">
                   {cfg.label}
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
@@ -229,7 +229,7 @@ function TelemetryTile({ cfg }: { cfg: TileConfig }) {
               </Breathing>
             </div>
             <Sparkline data={series} color={cfg.color} />
-            <div className="relative mt-3 flex items-center justify-between font-mono-tight text-[0.5625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+            <div className="relative mt-3 flex items-center justify-between font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
               <span>sample · 420ms</span>
               <span>window · 16s</span>
             </div>

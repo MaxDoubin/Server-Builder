@@ -77,7 +77,7 @@ export function CinematicLinks() {
                           <span className="font-display text-base font-medium tracking-tight text-[hsl(var(--brand-bone))]">
                             {item.name} <span aria-hidden>↗</span>
                           </span>
-                          <span className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.5625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                          <span className="rounded-full border border-[hsl(var(--brand-iron))] px-3 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                             {item.access}
                           </span>
                         </div>

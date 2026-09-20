@@ -50,7 +50,7 @@ function StatusBadge({ status }: { status: RoadmapStatus }) {
   const style = STATUS_STYLE[status];
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[0.5625rem] uppercase tracking-[0.2em] ${style.className}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono-tight text-[0.625rem] uppercase tracking-[0.2em] ${style.className}`}
     >
       {/* The glyph carries the state alongside the color, so the status is
           still readable if the colors are indistinguishable. */}
@@ -125,7 +125,7 @@ export function CinematicRoadmap() {
             <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
               {(Object.keys(STATUS_STYLE) as RoadmapStatus[]).map((status) => (
                 <div key={status}>
-                  <dt className="font-mono-tight text-[0.5625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
+                  <dt className="font-mono-tight text-[0.625rem] uppercase tracking-[0.26em] text-[hsl(var(--brand-ash))]">
                     {STATUS_STYLE[status].label}
                   </dt>
                   <dd className="mt-1 font-display text-xl text-[hsl(var(--brand-bone))]">

@@ -206,7 +206,7 @@ export function CinematicLimits() {
                       {item.setup.origin}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -329,7 +329,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                 {/* two limits, two headrooms, because they are two problems */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · This process · EMFILE at
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">
@@ -340,7 +340,7 @@ fs.file-max                 ${limit(setup.fileMax)}   (${limit(setup.openElsewhe
                     </p>
                   </div>
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · The machine · ENFILE at
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">

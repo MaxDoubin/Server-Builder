@@ -160,11 +160,11 @@ export function CinematicLogs() {
                   }`}
                 >
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
+                    <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]">
                       {FACILITY_LABEL[item.facility]}
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                         read
                       </span>
                     ) : null}
@@ -195,16 +195,16 @@ export function CinematicLogs() {
                 </caption>
                 <thead>
                   <tr className="border-b border-[hsl(var(--brand-iron))]">
-                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Time
                     </th>
-                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Host
                     </th>
-                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Process
                     </th>
-                    <th scope="col" className="px-3 py-2 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <th scope="col" className="px-3 py-2 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       Message
                     </th>
                   </tr>

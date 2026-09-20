@@ -280,7 +280,7 @@ function ArtefactBlock({ artefact }: { artefact: Artefact }) {
   return (
     <figure className="mt-6 overflow-hidden rounded-xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-obsidian)/0.6)]">
       <figcaption className="flex flex-wrap items-baseline gap-x-3 border-b border-[hsl(var(--brand-iron))] px-4 py-2.5">
-        <span className="font-techno text-[0.5625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
+        <span className="font-techno text-[0.625rem] uppercase tracking-[0.32em] text-[hsl(var(--brand-signal))]">
           {artefact.kind}
         </span>
         {artefact.title ? (

@@ -147,7 +147,7 @@ export function CinematicThrottle() {
                       {limitCpus(item.setup)} cpu · {item.setup.threads} threads
                     </span>
                     {mounted && solved.includes(item.slug) ? (
-                      <span className="font-techno text-[0.59375rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
+                      <span className="font-techno text-[0.625rem] uppercase tracking-[0.22em] text-[hsl(var(--brand-ash))]">
                         done
                       </span>
                     ) : null}
@@ -262,7 +262,7 @@ ${setup.arrivals
                             />
                             <span className="w-full flex-1 bg-[hsl(var(--brand-iron)/0.35)]" />
                           </div>
-                          <p className="mt-1 text-center font-mono-tight text-[0.5625rem] text-[hsl(var(--brand-ash))]">
+                          <p className="mt-1 text-center font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
                             {period.n}
                           </p>
                         </div>
@@ -279,7 +279,7 @@ ${setup.arrivals
                 {/* the two numbers, side by side, because they disagree */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · What the dashboard shows
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">
@@ -290,7 +290,7 @@ ${setup.arrivals
                     </p>
                   </div>
                   <div className="rounded-xl border border-[hsl(var(--brand-iron))] p-4">
-                    <p className="font-techno text-[0.59375rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
+                    <p className="font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
                       · What cpu.stat shows
                     </p>
                     <p className="mt-2 font-display text-3xl text-[hsl(var(--brand-bone))]">

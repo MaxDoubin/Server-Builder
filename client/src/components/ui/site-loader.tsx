@@ -124,7 +124,7 @@ export function SiteLoader({
           <span>{status}</span>
           <span className="signal-text">Live</span>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[0.5625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]">
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-techno text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-bone-dim))]">
           <span>Cybersecurity</span>
           <span className="h-px w-6 bg-[hsl(var(--brand-iron))]" />
           <span>Networking</span>

@@ -181,7 +181,7 @@ export function CinematicPatch() {
                       {finding.id}
                     </span>
                     <span
-                      className={`font-techno text-[0.59375rem] uppercase tracking-[0.2em] tabular-nums ${SEVERITY_COLOUR[finding.severity]}`}
+                      className={`font-techno text-[0.625rem] uppercase tracking-[0.2em] tabular-nums ${SEVERITY_COLOUR[finding.severity]}`}
                     >
                       {finding.cvss.toFixed(1)}
                     </span>
@@ -190,7 +190,7 @@ export function CinematicPatch() {
                     {finding.product}
                   </span>
                   {mounted && solved.includes(finding.id) ? (
-                    <span className="mt-1 font-techno text-[0.59375rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
+                    <span className="mt-1 font-techno text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
                       called
                     </span>
                   ) : null}
