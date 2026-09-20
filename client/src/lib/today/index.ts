@@ -44,6 +44,7 @@ import { CASES as SHMS } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS } from "@/lib/maxstartups/index";
 import { CASES as RETRANS } from "@/lib/retrans/index";
 import { CASES as CONNTRACK } from "@/lib/conntrack/index";
+import { CASES as WRITEBACK } from "@/lib/writeback/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -110,6 +111,7 @@ const OFFSET = {
   maxstartups: 173,
   retrans: 179,
   conntrack: 181,
+  writeback: 193,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -448,6 +450,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
       href: "/shm",
       outOf: SHMS.length,
+    });
+  }
+
+  const unwritten = pickFor(WRITEBACK, day, OFFSET.writeback);
+  if (unwritten) {
+    out.push({
+      surface: "writeback",
+      eyebrow: "Hold",
+      title: unwritten.name,
+      blurb: "A host, a write rate and a disk. Work out what the dirty threshold is in bytes here, whether the writer ever gets stopped, and how much of it was never written down.",
+      href: "/writeback",
+      outOf: WRITEBACK.length,
     });
   }
 

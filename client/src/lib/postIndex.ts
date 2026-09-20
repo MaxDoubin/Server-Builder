@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 291 of them. Regenerate with script/generatePostIndex.ts.
+ * 292 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end",
+    title: "The Page Cache Is a Buffer and You Tuned the Wrong End",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","storage"],
+    excerpt: "vm.dirty_ratio is described everywhere as a percentage of RAM that you raise to make writes faster. It is a percentage of dirtyable memory, which excludes every anonymous page in the machine; it is not where the queue settles, because that is dirty_background_ratio; and raising it on a saturated device buys a longer run between stalls paid for in data you have not written down. Measured: holding 9 GiB of anonymous memory moved the ceiling by exactly the factor dirtyable memory moved by, and 64 MiB written to an idle disk sat in volatile memory for thirty five seconds.",
+    coverImage: "/images/blog/the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end.jpg",
+    wordCount: 1423,
+  },
   {
     slug: "the-table-was-full-and-the-kernel-could-not-shrink-it",
     title: "The Table Was Full and the Kernel Could Not Shrink It",
@@ -2852,10 +2861,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 291;
+export const POST_COUNT = 292;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety one";
+export const POST_COUNT_SPELLED = "two hundred and ninety two";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2864,10 +2873,10 @@ export const POST_COUNT_SPELLED = "two hundred and ninety one";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1132;
+export const CITATION_COUNT = 1133;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1291;
+export const CHECKED_URL_COUNT = 1292;

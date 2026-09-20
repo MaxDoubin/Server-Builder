@@ -46,6 +46,7 @@ import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
 import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
 import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
+import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -360,6 +361,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/writeback",
+      eyebrow: "Hold",
+      title: "Not written down",
+      blurb:
+        "dirty_ratio is not a percentage of RAM, it is not where the queue settles, and a file you closed can sit in volatile memory for thirty five seconds.",
+      reachFor: "the write stalls come and go and nobody can find the threshold",
+      stats: [
+        `${WRITEBACK_CASES.length} hosts`,
+        `${WRITEBACK_CASES.filter((item) => wbThrottled(item.setup)).length} that stall`,
+        "35s",
       ],
       progress: null,
     },
