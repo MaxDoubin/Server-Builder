@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as WRITEBACK_CASES, asMiB as wbMiB, asSysctl as wbSysctl, backgroundThresholdBytes as wbBackground, correctOption as wbCorrect, dirtyableBytes as wbDirtyable, hardThresholdBytes as wbHard, human as wbHuman, isThrottled as wbThrottled, liveKnob as wbLive, maxAgeSeconds as wbAge, settledDirtyBytes as wbSettled } from "../client/src/lib/writeback/index";
 import { CASES as CONNTRACK_CASES, asCounters as ctCounters, asSysctl as ctSysctl, buckets as ctBuckets, correctOption as ctCorrect, count as ctCount, earlyDropHelps as ctEarly, entriesHeld as ctHeld, human as ctHuman, maxEntries as ctMax, maxFactor as ctFactor, overflows as ctOverflows, timeoutSeconds as ctTimeout } from "../client/src/lib/conntrack/index";
 import { CASES as RETRANS_CASES, asSysctl as retransSysctl, asTrace as retransTrace, budgetSeconds as retransBudget, correctOption as retransCorrect, countMatchesSysctl as retransMatches, ending as retransEnding, human as retransHuman, retransmissions as retransCount } from "../client/src/lib/retrans/index";
 import { CASES as MAXSTARTUPS_CASES, asConfig as maxConfig, asLog as maxLog, certainty as maxCertainty, correctOption as maxCorrect, dropPercent as maxDrop, inFlight as maxInFlight, safeBegin as maxSafeBegin } from "../client/src/lib/maxstartups/index";
@@ -896,6 +897,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/writeback">Not written down</a>, which dirty page threshold runs and what it is a percentage of.</li>
     <li><a href="${SITE_URL}/conntrack">Table full</a>, why the kernel says so when it could not evict anything.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
     <li><a href="${SITE_URL}/route">Longest prefix wins</a>, why a routing table is not read like a firewall chain.</li>
@@ -2204,6 +2206,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["Not written down", "/writeback"],
     ["Table full", "/conntrack"],
     ["The page that showed somebody else's name", "/cache"],
     ["Longest prefix wins", "/route"],
@@ -3974,6 +3977,121 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── the dirty page thresholds ──
+  /*
+    The static body carries the threshold table, because the search that
+    brings people here is a write stall or a sysctl nobody can account for,
+    and what they need is the byte figure for a host shaped like theirs. The
+    columns put installed memory beside dirtyable beside the two thresholds,
+    which is the comparison that shows the ratio is not of the first one.
+  */
+  const wbStalls = WRITEBACK_CASES.filter((item) => wbThrottled(item.setup)).length;
+  const wbDescription =
+    "vm.dirty_ratio is not a percentage of installed memory. global_dirtyable_memory() sums free " +
+    "pages and the file backed LRU, so every anonymous page in the machine is outside the base " +
+    "the ratio is taken against, and the same sysctl means a different number of bytes on a busy " +
+    "host than an idle one. It is also not where the queue settles: that is " +
+    "dirty_background_ratio, where the flushers are woken, and a writer only reaches dirty_ratio " +
+    "by outrunning its device. And under the background threshold nothing is in a hurry at all, " +
+    "so a closed file can sit in volatile memory for dirty_expire_centisecs plus one flusher " +
+    `wake, measured at 35 seconds on the defaults. ${WRITEBACK_CASES.length} hosts here, ${wbStalls} that stall.`;
+
+  await writePage("writeback", base, {
+    title: "The Page Cache Is a Buffer and You Tuned the Wrong End | Max Doubin",
+    description: wbDescription,
+    canonical: `${SITE_URL}/writeback`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Not written down",
+  description: wbDescription,
+  url: `${SITE_URL}/writeback`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How Linux decides when a buffered write leaves memory: that vm.dirty_ratio and vm.dirty_background_ratio are percentages of dirtyable memory, which is free pages plus the file backed LRU and excludes anonymous memory, so the same setting means different byte counts on two machines with identical RAM; that the queue settles at the background threshold rather than at dirty_ratio, because the writer only reaches dirty_ratio by outrunning its device; that raising dirty_ratio on a saturated device buys a longer run between stalls at the cost of more unwritten data; that dirty_expire_centisecs and dirty_writeback_centisecs together let a closed file sit in volatile memory for 35 seconds on the defaults; and that the ratio and bytes forms of each knob are mutually exclusive, last write wins, and the loser reads back as zero",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Not written down</h1>
+  <p>
+    ${WRITEBACK_CASES.length} hosts, one question each. ${wbStalls} of them stall the writer, and on the rest the
+    ceiling everybody tunes is never reached at all.
+  </p>
+  <p>
+    The percentage is not of installed memory. From mm/page-writeback.c:
+  </p>
+  <pre><code>x = global_zone_page_state(NR_FREE_PAGES);
+x -= min(x, totalreserve_pages);
+
+x += global_node_page_state(NR_INACTIVE_FILE);
+x += global_node_page_state(NR_ACTIVE_FILE);</code></pre>
+  <p>
+    Free pages plus the file backed LRU. Anonymous memory is absent from that sum, correctly, because
+    a page of heap has nowhere to be written back to. So the base shrinks exactly when a process
+    starts using memory, and two machines with identical RAM and identical sysctls have thresholds
+    that are nothing like each other.
+  </p>
+  <p>
+    Measured. With dirty_background_ratio at 1 and dirty_ratio at 2, writing 2.5 GiB and sampling
+    /proc/meminfo every 20ms, the ceiling was 147 MiB against 14.90 GiB of dirtyable memory. Holding
+    9 GiB of anonymous memory took dirtyable to 5.85 GiB and the ceiling to 57 MiB. Both fell by the
+    same factor of 0.39, while the share of installed memory moved from 0.91 to 0.35 percent. If the
+    ratio were of RAM the ceiling would not have moved.
+  </p>
+  <p>
+    Both of those runs had dirty_ratio at 2 and settled at 1, which is the background number.
+    dirty_ratio is where the writer itself is made to wait, and a device that keeps up means nothing
+    ever gets there. And below the background threshold nothing is in a hurry: 64 MiB written to an
+    idle disk stayed at 64 MiB of Dirty for thirty seconds without a byte moving, and reached zero at
+    thirty five, which is dirty_expire_centisecs plus one flusher wake.
+  </p>
+  <h2>What each host holds, and where its thresholds fall</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Installed</th><th>Anonymous</th><th>Dirtyable</th><th>Live knob</th><th>Flushers wake</th><th>Writer waits</th><th>Write</th><th>Device</th><th>Settles at</th><th>Stalls</th></tr>
+    </thead>
+    <tbody>
+${WRITEBACK_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${s.ramGiB} GiB</td><td>${s.anonGiB} GiB</td>` +
+    `<td>${esc(wbHuman(wbDirtyable(s)))}</td><td>${esc(wbLive("hard", s))}</td>` +
+    `<td>${esc(wbHuman(wbBackground(s)))}</td><td>${esc(wbHuman(wbHard(s)))}</td>` +
+    `<td>${s.writeMiBps} MiB/s</td><td>${s.deviceMiBps} MiB/s</td>` +
+    `<td>${esc(wbHuman(wbSettled(s)))}</td><td>${wbThrottled(s) ? "yes" : "no"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${WRITEBACK_CASES.map((item) => {
+  const right = wbCorrect(item);
+  const s = item.setup;
+  const sysctl = wbSysctl(s).map((line) => `${line.name.padEnd(30)} ${line.value}${line.live ? "" : "   # zeroed: the other form is live"}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(sysctl)}
+
+# ${s.ramGiB} GiB installed, ${s.anonGiB} GiB anonymous, ${esc(wbHuman(wbDirtyable(s)))} dirtyable
+# writing ${s.writeMiBps} MiB/s at a device that retires ${s.deviceMiBps} MiB/s</code></pre>
+    <p>Flushers wake at ${esc(wbHuman(wbBackground(s)))}, the writer waits at ${esc(wbHuman(wbHard(s)))}, and it settles at ${esc(wbHuman(wbSettled(s)))} (${wbMiB(wbSettled(s))} MiB). An unhurried page waits ${wbAge(s)} seconds.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end", "The page cache is a buffer and you tuned the wrong end"], ["/free", "Something has to give"], ["/shm", "Bus error"]])}
 </main>`,
   });
 
@@ -7412,7 +7530,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/conntrack`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/writeback`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/conntrack`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/handshake`, lastmod: today, changefreq: "monthly", priority: "0.9" },

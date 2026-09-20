@@ -52,6 +52,7 @@ import { CASES as SHM_CASES, fits as shmFits } from "@/lib/shm/index";
 import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/maxstartups/index";
 import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
 import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
+import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -186,6 +187,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/writeback",
+    eyebrow: "Hold",
+    title: "Not written down",
+    blurb:
+      "The knob every guide tells you to raise is not the one that runs, and the percentage is not of the memory you think. What is left in RAM when the power goes is the part nobody measures.",
+    count: `${WRITEBACK_CASES.length} hosts, ${WRITEBACK_CASES.filter((item) => wbThrottled(item.setup)).length} that stall`,
   },
   {
     href: "/conntrack",

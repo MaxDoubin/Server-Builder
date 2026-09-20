@@ -136,8 +136,14 @@ const INDEX = path.join(DIST, "index.html");
  * 707 KB, raised from 706 by /conntrack, measured at 705.8. Nine surfaces,
  * eight raises, every one between 0.3 and 0.7 KB, and still nothing in the
  * static entry from any of them but a command palette row.
+ *
+ * 708 KB, raised from 707 by /writeback, measured at 706.8. Ten surfaces,
+ * nine raises, and the rule has now held ten times: the page and the model
+ * are both lazy, and the only thing reaching the static entry is the command
+ * palette row, which is the whole reason a surface costs a kilobyte rather
+ * than the twenty its code weighs.
  */
-const BUDGET_BYTES = 707 * 1024;
+const BUDGET_BYTES = 708 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
