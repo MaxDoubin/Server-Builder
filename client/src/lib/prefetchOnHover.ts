@@ -101,6 +101,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/maxstartups": { load: () => import("@/pages/cinematic/CinematicMaxstartups") },
   "/retrans": { load: () => import("@/pages/cinematic/CinematicRetrans") },
   "/rcvbuf": { load: () => import("@/pages/cinematic/CinematicRcvbuf") },
+  "/timewait": { load: () => import("@/pages/cinematic/CinematicTimewait") },
   "/fds": { load: () => import("@/pages/cinematic/CinematicFds") },
   "/writeback": { load: () => import("@/pages/cinematic/CinematicWriteback") },
   "/conntrack": { load: () => import("@/pages/cinematic/CinematicConntrack") },

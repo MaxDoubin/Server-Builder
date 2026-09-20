@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as TIMEWAIT_CASES, TIME_WAIT_SECONDS as TW_LEN, asSysctl as twSysctl, closerState as twState, correctOption as twCorrect, ephemeralPorts as twPorts, exhausts as twExhausts, human as twHuman, overflowsBuckets as twOverflows, reuseHelps as twReuse, stateSeconds as twSeconds, sustainableRate as twRate, tupleCapacity as twTuples } from "../client/src/lib/timewait/index";
 import { CASES as RCVBUF_CASES, asSysctl as rcSysctl, autotuning as rcAuto, backfired as rcBackfired, band as rcBand, ceilingBytes as rcCeiling, correctOption as rcCorrect, highMarkBytes as rcHigh, highMarkIfBytes as rcHighBytes, human as rcHuman, reportedBytes as rcReported } from "../client/src/lib/rcvbuf/index";
 import { CASES as FDS_CASES, asLimits as fdLimits, binding as fdBinding, correctOption as fdCorrect, count as fdCount, effectiveHard as fdHard, effectiveSoft as fdSoft, frozen as fdFrozen, outcome as fdOutcome } from "../client/src/lib/fds/index";
 import { CASES as WRITEBACK_CASES, asMiB as wbMiB, asSysctl as wbSysctl, backgroundThresholdBytes as wbBackground, correctOption as wbCorrect, dirtyableBytes as wbDirtyable, hardThresholdBytes as wbHard, human as wbHuman, isThrottled as wbThrottled, liveKnob as wbLive, maxAgeSeconds as wbAge, settledDirtyBytes as wbSettled } from "../client/src/lib/writeback/index";
@@ -899,6 +900,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
     <li><a href="${SITE_URL}/fds">Too many open files</a>, which of the four descriptor limits is the smallest.</li>
     <li><a href="${SITE_URL}/writeback">Not written down</a>, which dirty page threshold runs and what it is a percentage of.</li>
@@ -2210,6 +2212,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
     ["Too many open files", "/fds"],
     ["Not written down", "/writeback"],
@@ -3983,6 +3986,132 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── TIME_WAIT ──
+  /*
+    The static body carries the state table, because the search that brings
+    people here is a TIME_WAIT count that did not move after the usual sysctl,
+    and what they need is the two timers side by side with the knob's value on
+    one of them. The columns put who closed beside what that costs.
+  */
+  const twStuck = TIMEWAIT_CASES.filter((item) => twExhausts(item.setup)).length;
+  const twDescription =
+    "Lowering net.ipv4.tcp_fin_timeout does nothing to TIME_WAIT. Measured on one host: with the " +
+    "knob at 5, a socket held TIME_WAIT for 60.2 seconds, because TIME_WAIT runs for " +
+    "TCP_TIMEWAIT_LEN, sixty seconds compiled into the kernel. The knob governs FIN_WAIT2, the " +
+    "state before it, which the same host reaped after 5.3 seconds at 5 and 20.9 at 20. " +
+    "TIME_WAIT lands on whichever end called close() first, so a server holding them is a server " +
+    "hanging up first, and the real ceiling on a client is ephemeral ports times destinations " +
+    `divided by sixty. ${TIMEWAIT_CASES.length} hosts here, ${twStuck} that outrun the tuple space.`;
+
+  await writePage("timewait", base, {
+    title: "The TIME_WAIT Knob Everybody Turns Governs a Different State | Max Doubin",
+    description: twDescription,
+    canonical: `${SITE_URL}/timewait`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Still a minute",
+  description: twDescription,
+  url: `${SITE_URL}/timewait`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "How TIME_WAIT actually behaves on Linux and why the usual advice misses it: that net.ipv4.tcp_fin_timeout governs FIN_WAIT2 rather than TIME_WAIT, measured at 5.3 and 20.9 seconds for settings of 5 and 20 while TIME_WAIT held 60.2 seconds throughout; that TIME_WAIT's length is TCP_TIMEWAIT_LEN in include/net/tcp.h and no sysctl reaches it; that the end which calls close() first is the end that waits, so a web server closing its own keepalives is the one accumulating them while the client sits in CLOSE_WAIT; that the ceiling on outbound connections is the four tuple count, ephemeral ports times distinct destinations divided by the sixty second hold, which is 470 a second to a single destination on a stock range; that tcp_tw_reuse only serves the side making connections and needs tcp_timestamps to be on; that tcp_tw_recycle was removed in 4.12 for breaking clients behind NAT; and that tcp_max_tw_buckets caps how many sockets wait rather than how long, destroying the excess and logging an overflow",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Still a minute</h1>
+  <p>
+    ${TIMEWAIT_CASES.length} hosts, one connection each. On ${twStuck} of them the workload outruns the tuple space,
+    which is the limit that actually bites, and on none of them does the knob everybody turns help.
+  </p>
+  <p>
+    The advice is always to lower <code>net.ipv4.tcp_fin_timeout</code>. Here is that experiment on
+    one host, watching <code>/proc/net/tcp</code>:
+  </p>
+  <pre><code>tcp_fin_timeout 5    TIME_WAIT held           60.2s
+tcp_fin_timeout 5    FIN_WAIT2 reaped after    5.3s
+tcp_fin_timeout 20   FIN_WAIT2 reaped after   20.9s</code></pre>
+  <p>
+    The knob does exactly what its name says. It is a FIN timeout, and it governs FIN_WAIT2, the
+    state a socket sits in after it has closed and while it waits for the peer's FIN. TIME_WAIT is
+    not waiting for a FIN. It is waiting out the maximum segment lifetime, twice over, and its
+    length is <code>TCP_TIMEWAIT_LEN</code> in <code>include/net/tcp.h</code>, sixty seconds fixed
+    when the kernel was compiled. Nothing in <code>/proc/sys</code> reaches it.
+  </p>
+  <p>
+    The second surprise is who waits. Watching both ends of a connection where the client closed
+    first:
+  </p>
+  <pre><code>client   FIN_WAIT1 -&gt; FIN_WAIT2 -&gt; TIME_WAIT
+server   CLOSE_WAIT</code></pre>
+  <p>
+    TIME_WAIT belongs to whoever sends the first FIN. A server drowning in it is a server that
+    closes its own connections, which is what happens when its keepalive timeout is shorter than
+    the client's. Moving the first FIN moves the TIME_WAIT with it, and that is a configuration
+    change rather than a sysctl.
+  </p>
+  <p>
+    The third is that the ceiling is arithmetic. With <code>ip_local_port_range</code> at
+    <code>32768 60999</code> there are 28,232 ephemeral ports, and each one is held for sixty
+    seconds, so a client sustains 470 new connections a second to any one destination address and
+    port. A second destination doubles it, because what has to be unique is the whole four tuple.
+    Widening the range to the full sixteen bits buys about twice this and no more.
+  </p>
+  <p>
+    <code>tcp_tw_reuse</code> lets a new outbound connection take over a TIME_WAIT slot, so it
+    helps the side dialing out and does nothing for a server, and it needs
+    <code>tcp_timestamps</code> to tell an old segment from a new one. <code>tcp_tw_recycle</code>,
+    which is still in every old tuning guide, was removed in 4.12 because it dropped connections
+    from clients behind NAT. And <code>tcp_max_tw_buckets</code> caps how many sockets wait, never
+    how long: past it the kernel destroys the excess and logs
+    <code>TCP: time wait bucket table overflow</code>, which is the protocol's safety window being
+    skipped rather than a tuning success.
+  </p>
+  <h2>What each host is doing, and what it costs</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Closed first</th><th>State</th><th>Lasts</th><th>fin_timeout</th><th>Ports</th><th>Destinations</th><th>Ceiling/s</th><th>Attempted/s</th><th>Out of tuples</th><th>Buckets</th></tr>
+    </thead>
+    <tbody>
+${TIMEWAIT_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(s.closedFirst)}</td><td>${esc(twState(s))}</td>` +
+    `<td>${twSeconds(s)}s</td><td>${s.finTimeout}</td><td>${esc(twHuman(twPorts(s)))}</td>` +
+    `<td>${s.destinations}</td><td>${esc(twHuman(twRate(s)))}</td><td>${esc(twHuman(s.attemptsPerSecond))}</td>` +
+    `<td>${twExhausts(s) ? "yes" : "no"}</td><td>${twOverflows(s) ? "overflowing" : "ok"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${TIMEWAIT_CASES.map((item) => {
+  const right = twCorrect(item);
+  const s = item.setup;
+  const sysctl = twSysctl(s).map((line) => `${line.name.padEnd(30)} ${line.value.padEnd(14)} # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(sysctl)}
+
+# the ${s.closedFirst} called close() first${s.peerFinSeen ? " and the peer's FIN has arrived" : ", and the peer has not answered"}</code></pre>
+    <p>The ${esc(s.closedFirst)} is in ${esc(twState(s))} for ${twSeconds(s)} seconds. ${esc(twHuman(twPorts(s)))} ports across ${s.destinations} destination${s.destinations === 1 ? "" : "s"} is ${esc(twHuman(twTuples(s)))} four tuples, which over ${TW_LEN} seconds sustains ${esc(twHuman(twRate(s)))} connections a second against the ${esc(twHuman(s.attemptsPerSecond))} attempted. tcp_tw_reuse ${twReuse(s) ? "relieves this workload" : "does nothing here"}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-time-wait-knob-everybody-turns-governs-a-different-state", "The TIME_WAIT knob everybody turns governs a different state"], ["/retrans", "Fifteen, and there were four"], ["/conntrack", "Table full"]])}
 </main>`,
   });
 
@@ -7772,6 +7901,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/fds`, lastmod: today, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/writeback`, lastmod: today, changefreq: "monthly", priority: "0.8" },

@@ -49,6 +49,7 @@ import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntr
 import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
 import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
+import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -363,6 +364,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/timewait",
+      eyebrow: "Read",
+      title: "Still a minute",
+      blurb:
+        "Lowering tcp_fin_timeout does nothing to TIME_WAIT. It governs FIN_WAIT2, the state before it. TIME_WAIT is sixty seconds compiled into the kernel, on whichever end hung up first.",
+      reachFor: "TIME_WAIT is piling up and the usual sysctl did not help",
+      stats: [
+        `${TIMEWAIT_CASES.length} hosts`,
+        `${TIMEWAIT_CASES.filter((item) => twExhausts(item.setup)).length} out of tuples`,
+        "60s fixed",
       ],
       progress: null,
     },

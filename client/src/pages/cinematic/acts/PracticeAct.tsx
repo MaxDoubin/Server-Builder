@@ -55,6 +55,7 @@ import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntr
 import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
 import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
+import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -189,6 +190,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/timewait",
+    eyebrow: "Read",
+    title: "Still a minute",
+    blurb:
+      "Two timers, one connection, and the knob everybody turns moves the other one. TIME_WAIT is sixty seconds compiled into the kernel, and it lands on whichever end called close() first.",
+    count: `${TIMEWAIT_CASES.length} hosts, ${TIMEWAIT_CASES.filter((item) => twExhausts(item.setup)).length} out of tuples`,
   },
   {
     href: "/rcvbuf",
