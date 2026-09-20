@@ -32,6 +32,7 @@ import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, avail
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
 import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, correctOption as umCorrect, created as umCreated, executable as umExec, gid as umGid, masked as umMasked, mode as umMode, modeText as umText, removed as umRemoved, special as umSpecial } from "../client/src/lib/umask/index";
 import { CASES as APPEND_CASES, asAppend as apLines, asBytes as apBytes, asHow as apHow, correctOption as apCorrect, honorsOffset as apOffset, lost as apLost, safe as apSafe, size as apSize, survived as apSurvived, written as apWritten } from "../client/src/lib/append/index";
+import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome as mpSignal, backed as mpBacked, correctOption as mpCorrect, covers as mpCovers, lastSafe as mpLastSafe, outcome as mpOutcome, persists as mpPersists, reads as mpReads, resized as mpResized } from "../client/src/lib/mapped/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
@@ -927,6 +928,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/pss">Four processes, one copy</a>, why adding up a column of RSS gives memory that does not exist.</li>
     <li><a href="${SITE_URL}/sparse">A gigabyte in one block</a>, why ls and du disagree about a file and which copy makes it real.</li>
     <li><a href="${SITE_URL}/append">Two writers, one offset</a>, why four processes can hand a log more bytes than it ends up holding.</li>
+    <li><a href="${SITE_URL}/mapped">Three boundaries, three outcomes</a>, where a mapping ends, where the file behind it ends, and which signal you get past each.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2253,6 +2255,7 @@ ${JSON.stringify({
     ["Four processes, one copy", "/pss"],
     ["A gigabyte in one block", "/sparse"],
     ["Two writers, one offset", "/append"],
+    ["Three boundaries, three outcomes", "/mapped"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5310,6 +5313,134 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-log-that-lost-three-quarters-of-itself", "The log that lost three quarters of itself"], ["/pipebuf", "Two writers, one line"], ["/locks", "Three locks, one file"]])}
+</main>`,
+  });
+
+  // ── what a mapping covers ──
+  /*
+    The static body carries the two boundaries as a table of addresses, because
+    the search that brings people here is a process that died with SIGBUS on a
+    mapped file and an argument about whether the file was too short or the
+    mapping was. The answer is which of the two edges the address was past, and
+    the third row, the store that is thrown away, is the one nothing reports.
+  */
+  const mpFaulting = MAPPED_CASES.filter((item) => mpOutcome(item.setup) !== "ok").length;
+  const mpDescription =
+    "A 100 byte file mapped with a length of 8192 reads byte 4095 without a signal and takes " +
+    "SIGBUS at byte 4096, measured, because a mapping is checked against the file's last page and " +
+    "not against the file. A 16 KiB file mapped with a length of 100 takes SIGSEGV at byte 4096 " +
+    "instead, because that edge is the mapping's own and the file has nothing to do with it. And a " +
+    "store between the end of the file and the end of its last page completes, reports nothing, " +
+    `and is thrown away. ${MAPPED_CASES.length} accesses here, ${mpFaulting} of which fault.`;
+
+  await writePage("mapped", base, {
+    title: "Three Boundaries, Three Outcomes: mmap, SIGBUS And SIGSEGV | Max Doubin",
+    description: mpDescription,
+    canonical: `${SITE_URL}/mapped`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Three boundaries, three outcomes",
+  description: mpDescription,
+  url: `${SITE_URL}/mapped`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a process can die with SIGBUS on a file it mapped successfully: that mmap rounds the length it is given up to a whole page and never checks it against the file, so the error surfaces as a signal at the first touch rather than as a return value; that there are two separate edges, the end of the mapping and the end of the file's last page, and that passing the first gives SIGSEGV while passing the second gives SIGBUS; that the stretch between the end of the file and the end of the page the file stops in is real zeroed memory, so reads there return zero and stores there complete, report nothing and are discarded; that resizing a file under a live mapping moves the second edge in both directions with no call by the mapping process; and that MAP_PRIVATE is no protection against a truncation, because ftruncate unmaps the range from every mapping of the inode including copy on write pages the process has already written to",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Three boundaries, three outcomes</h1>
+  <p>
+    ${MAPPED_CASES.length} accesses through a mapping, one question each. ${mpFaulting} of them kill the process, and which
+    signal does it is decided by which of two edges the address is past.
+  </p>
+  <h2>A 100 byte file mapped with a length of 8192</h2>
+  <pre><code>byte      what happens
+  99      reads the last byte of the file
+ 100      reads zero, past the end of the file
+4095      reads zero, last byte of the file's page
+4096      SIGBUS</code></pre>
+  <p>
+    The signal is at 4096 and not at 100. What the kernel can hand you is a page, so the last page
+    of the file exists in full however little of the file is in it. Everything from the end of the
+    file to the end of that page is memory it zeroed, and there is nothing to distinguish it from
+    data that happens to be zero.
+  </p>
+  <h2>The same byte, the other signal</h2>
+  <pre><code>a 16384 byte file, mmap called with a length of 100
+  99      reads the byte in the file
+4095      reads zero, the length rounded up to a page
+4096      SIGSEGV</code></pre>
+  <p>
+    Here the file is long enough and it does not help, because the question at byte 4096 is not
+    whether the file has a page there but whether the process has a mapping there. SIGBUS is a
+    mapping longer than its file. SIGSEGV is an access longer than its mapping. This was measured
+    inside an eight page <code>PROT_NONE</code> reservation, because without one a neighboring
+    mapping took the address and the first attempt reported the access as fine.
+  </p>
+  <h2>The store that is thrown away</h2>
+  <pre><code>write 'A' at offset 50 and 'Z' at offset 200 of a 100 byte file, then msync
+
+  read offset 50 through the descriptor     A
+  file size                                 100
+  grow the file to 4096, read offset 200    zero</code></pre>
+  <p>
+    Both stores completed and neither raised a signal. The first is in the file because offset 50
+    is inside it. The second is not, because a store through a mapping never makes a file longer,
+    and growing the file afterwards does not recover it. Nothing in the program can tell the two
+    apart.
+  </p>
+  <h2>Resizing the file under a live mapping</h2>
+  <pre><code>grow 100 to 4106       byte 4096 becomes readable
+shrink 4106 to 100     byte 4096 is SIGBUS again
+MAP_PRIVATE, store to page 1 first, then shrink    still SIGBUS</code></pre>
+  <p>
+    The mapping process makes no call in any of these; the edge moves because a mapping refers to
+    the file rather than to a copy of it. The last row is the one worth keeping: the process owned
+    a copy on write copy of that page, and <code>ftruncate</code> unmapped the range from every
+    mapping of the inode anyway. MAP_PRIVATE insulates the file from your stores, not your process
+    from the file.
+  </p>
+  <h2>Every access here</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>File</th><th>Length</th><th>Flags</th><th>Now</th><th>Mapped</th><th>Backed</th><th>Access</th><th>Outcome</th></tr>
+    </thead>
+    <tbody>
+${MAPPED_CASES.map((item) => {
+  const s2 = item.setup;
+  return `      <tr><td>${esc(s2.host)}</td><td>${s2.fileBytes}</td><td>${s2.mappedBytes}</td>` +
+    `<td>${esc(mpKind(s2.kind))}</td><td>${s2.resizedTo}${mpResized(s2) ? " (resized)" : ""}</td>` +
+    `<td>${mpCovers(s2)}</td><td>${mpBacked(s2)}</td>` +
+    `<td>${s2.writing ? "store" : "read"} at ${s2.at}</td><td>${esc(mpSignal(mpOutcome(s2)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${MAPPED_CASES.map((item) => {
+  const right = mpCorrect(item);
+  const s2 = item.setup;
+  const lines = mpLines(s2).map((line) => `${line.name.padEnd(18)} ${line.value.padStart(24)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The mapping covers ${mpCovers(s2)} bytes and the file backs ${mpBacked(s2)} of them, so the last byte with no signal is ${mpLastSafe(s2)} and the ${s2.writing ? "store" : "read"} at ${s2.at} gives ${esc(mpSignal(mpOutcome(s2)))}. ${mpOutcome(s2) === "ok" ? (s2.writing ? (mpPersists(s2) ? "The byte is in the file afterwards." : "The byte is thrown away, and nothing reports it.") : `It reads ${esc(mpReads(s2))}.`) : "Nothing comes back."}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/sparse", "A gigabyte in one block"], ["/pss", "Four processes, one copy"], ["/cache", "The page that showed somebody else's name"]])}
 </main>`,
   });
 
@@ -9758,6 +9889,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/pss`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/sparse`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/append`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/mapped`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

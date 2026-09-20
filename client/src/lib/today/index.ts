@@ -61,6 +61,7 @@ import { CASES as UMASK } from "@/lib/umask/index";
 import { CASES as PSS } from "@/lib/pss/index";
 import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as APPEND } from "@/lib/append/index";
+import { CASES as MAPPED } from "@/lib/mapped/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -146,6 +147,7 @@ const OFFSET = {
   pss: 293,
   sparse: 307,
   append: 311,
+  mapped: 313,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -616,6 +618,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Four processes hand a log 51200 bytes and the file comes out 12800 long, with no error anywhere. Work out how much of what the writers sent is actually in the file.",
       href: "/append",
       outOf: APPEND.length,
+    });
+  }
+
+  const mapping = pickFor(MAPPED, day, OFFSET.mapped);
+  if (mapping) {
+    out.push({
+      surface: "mapped",
+      eyebrow: "Predict",
+      title: mapping.name,
+      blurb: "A 100 byte file mapped for two pages reads byte 4095 without a signal and takes SIGBUS at 4096. Work out which of the two edges an access falls past, and which signal that is.",
+      href: "/mapped",
+      outOf: MAPPED.length,
     });
   }
 
