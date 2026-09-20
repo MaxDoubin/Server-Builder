@@ -47,6 +47,7 @@ import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/max
 import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
 import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
+import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -361,6 +362,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/fds",
+      eyebrow: "Read",
+      title: "Too many open files",
+      blurb:
+        "Raising ulimit -n does nothing, raising fs.file-max does nothing, and the process is running as root. Four numbers cap an open file and only one of them is the answer.",
+      reachFor: "EMFILE, and every limit you can find already looks generous",
+      stats: [
+        `${FDS_CASES.length} processes`,
+        `${FDS_CASES.filter((item) => fdsFrozen(item.setup)).length} frozen outright`,
+        "4 limits",
       ],
       progress: null,
     },

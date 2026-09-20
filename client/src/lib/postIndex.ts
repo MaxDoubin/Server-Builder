@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 292 of them. Regenerate with script/generatePostIndex.ts.
+ * 293 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "too-many-open-files-and-which-of-the-four-limits-it-was",
+    title: "Too Many Open Files, and Which of the Four Limits It Was",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","containers"],
+    excerpt: "Four limits cap an open file and they are checked in different places with different permissions, so the one everybody raises is rarely the one that was stopping them. Measured on a container running as uid 0 with forty of the forty one capabilities, where the single missing bit is CAP_SYS_RESOURCE: root could not raise its own hard limit by one, lowering fs.nr_open froze every limit in both directions including calls that only reduced them, and the machine was 0.034 percent used at the moment a process died of EMFILE.",
+    coverImage: "/images/blog/too-many-open-files-and-which-of-the-four-limits-it-was.jpg",
+    wordCount: 1195,
+  },
   {
     slug: "the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end",
     title: "The Page Cache Is a Buffer and You Tuned the Wrong End",
@@ -2861,10 +2870,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 292;
+export const POST_COUNT = 293;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety two";
+export const POST_COUNT_SPELLED = "two hundred and ninety three";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2873,10 +2882,10 @@ export const POST_COUNT_SPELLED = "two hundred and ninety two";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1133;
+export const CITATION_COUNT = 1136;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1292;
+export const CHECKED_URL_COUNT = 1295;

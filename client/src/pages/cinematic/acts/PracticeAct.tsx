@@ -53,6 +53,7 @@ import { CASES as MAXSTARTUPS_CASES, certainty as maxCertainty } from "@/lib/max
 import { CASES as RETRANS_CASES, countMatchesSysctl as retransMatches } from "@/lib/retrans/index";
 import { CASES as CONNTRACK_CASES, overflows as ctOverflows } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK_CASES, isThrottled as wbThrottled } from "@/lib/writeback/index";
+import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -187,6 +188,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/fds",
+    eyebrow: "Read",
+    title: "Too many open files",
+    blurb:
+      "Four limits cap an open file, checked in different places with different permissions, and the one everybody raises is rarely the one that was stopping them.",
+    count: `${FDS_CASES.length} processes, ${FDS_CASES.filter((item) => fdsFrozen(item.setup)).length} frozen outright`,
   },
   {
     href: "/writeback",

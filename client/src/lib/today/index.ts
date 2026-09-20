@@ -45,6 +45,7 @@ import { CASES as MAXSTARTUPS } from "@/lib/maxstartups/index";
 import { CASES as RETRANS } from "@/lib/retrans/index";
 import { CASES as CONNTRACK } from "@/lib/conntrack/index";
 import { CASES as WRITEBACK } from "@/lib/writeback/index";
+import { CASES as FDS } from "@/lib/fds/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -112,6 +113,7 @@ const OFFSET = {
   retrans: 179,
   conntrack: 181,
   writeback: 193,
+  fds: 211,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -450,6 +452,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A container, a workload that uses shared memory, and a 64 MiB filesystem nobody sized. Work out whether it fits and which unit of work dies.",
       href: "/shm",
       outOf: SHMS.length,
+    });
+  }
+
+  const descriptors = pickFor(FDS, day, OFFSET.fds);
+  if (descriptors) {
+    out.push({
+      surface: "fds",
+      eyebrow: "Read",
+      title: descriptors.name,
+      blurb: "Four limits cap an open file and they are checked in different places with different permissions. Work out which of them is the one actually stopping this process.",
+      href: "/fds",
+      outOf: FDS.length,
     });
   }
 
