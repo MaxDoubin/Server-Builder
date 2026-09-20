@@ -65,6 +65,7 @@ import { CASES as MAPPED } from "@/lib/mapped/index";
 import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PAGECACHE } from "@/lib/pagecache/index";
 import { CASES as ODIRECT } from "@/lib/odirect/index";
+import { CASES as REUSEPORT } from "@/lib/reuseport/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -154,6 +155,7 @@ const OFFSET = {
   fdset: 317,
   pagecache: 331,
   odirect: 337,
+  reuseport: 347,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -672,6 +674,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "O_DIRECT wants the offset, the length and the buffer address aligned, and every violation is the same EINVAL. Work out whether the kernel takes the write, and which requirement stopped it.",
       href: "/odirect",
       outOf: ODIRECT.length,
+    });
+  }
+
+  const oneport = pickFor(REUSEPORT, day, OFFSET.reuseport);
+  if (oneport) {
+    out.push({
+      surface: "reuseport",
+      eyebrow: "Predict",
+      title: oneport.name,
+      blurb: "SO_REUSEPORT spreads connections across the listeners evenly at every worker count, and moves a large share of them the moment that count changes. Work out how many stay put.",
+      href: "/reuseport",
+      outOf: REUSEPORT.length,
     });
   }
 

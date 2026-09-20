@@ -35,6 +35,7 @@ import { CASES as APPEND_CASES, asAppend as apLines, asBytes as apBytes, asHow a
 import { CASES as MAPPED_CASES, asKind as mpKind, asMapped as mpLines, asOutcome as mpSignal, backed as mpBacked, correctOption as mpCorrect, covers as mpCovers, lastSafe as mpLastSafe, outcome as mpOutcome, persists as mpPersists, reads as mpReads, resized as mpResized } from "../client/src/lib/mapped/index";
 import { CASES as FDSET_CASES, asFdset as fsLines, asFortify as fsFortify, asHex as fsHex, bitFor as fsBit, bitValue as fsValue, byteFor as fsByte, correctOption as fsCorrect, inTheSet as fsInSet, landsIn as fsLands, outcome as fsOutcome, reported as fsReported, setBytes as fsSetBytes, watched as fsWatched } from "../client/src/lib/fdset/index";
 import { CASES as ODIRECT_CASES, accepted as odOk, asAddress as odAddress, asBytes as odSize, asOdirect as odLines, blame as odBlame, correctOption as odCorrect, largest as odLargest, memAligned as odMemOk, outcome as odOutcome } from "../client/src/lib/odirect/index";
+import { CASES as REUSEPORT_CASES, after as rpAfter, asChange as rpChange, asCount as rpCount, asReuseport as rpLines, binds as rpBinds, correctOption as rpCorrect, each as rpEach, movedPercent as rpMoved, stable as rpStable } from "../client/src/lib/reuseport/index";
 import { CASES as PAGECACHE_CASES, after as pcAfter, asAttempt as pcAttempt, asSize as pcSize, asStore as pcStore, availableCostKb as pcCost, buffCache as pcColumn, cached as pcCached, correctOption as pcCorrect, costKb as pcWrote, freed as pcFreed, asPagecache as pcLines, pinned as pcPinned, shared as pcShared, survives as pcSurvives } from "../client/src/lib/pagecache/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
@@ -935,6 +936,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/fdset">One descriptor too many</a>, why FD_SET past 1023 writes into the next member of your own struct.</li>
     <li><a href="${SITE_URL}/pagecache">The cache you cannot drop</a>, why a gibibyte of tmpfs and a gibibyte of page cache read the same in free.</li>
     <li><a href="${SITE_URL}/odirect">Three alignments, one errno</a>, why an O_DIRECT write returns EINVAL and nothing says which requirement it was.</li>
+    <li><a href="${SITE_URL}/reuseport">Even is not stable</a>, why SO_REUSEPORT spreads connections evenly and still moves them when the worker count changes.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2265,6 +2267,7 @@ ${JSON.stringify({
     ["One descriptor too many", "/fdset"],
     ["The cache you cannot drop", "/pagecache"],
     ["Three alignments, one errno", "/odirect"],
+    ["Even is not stable", "/reuseport"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5885,6 +5888,135 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/three-alignments-and-one-errno", "Three alignments and one errno"], ["/pagecache", "The cache you cannot drop"], ["/writeback", "Not written down"]])}
+</main>`,
+  });
+
+  // ── port sharing ──
+  /*
+    The static body carries the two halves of the measurement, because the
+    search that brings people here is a rolling restart that dropped
+    connections while every worker stayed healthy. The even spread is the half
+    everybody has already measured; the table of which client went where, at
+    three different worker counts, is the half that explains the outage.
+  */
+  const rpRehash = REUSEPORT_CASES.filter((item) => rpBinds(item.setup) && !rpStable(item.setup)).length;
+  const rpDescription =
+    "SO_REUSEPORT lets several listeners bind one port and spreads connections evenly across them " +
+    "at every worker count. It does not keep a client on the listener it had: the kernel hashes the " +
+    "four tuple across the current set, so changing the count re-routes a large share of the hash " +
+    "space. Measured, 4 of 8 fixed clients moved when one listener left and 3 of 8 when two joined. " +
+    `${REUSEPORT_CASES.length} pools here, ${rpRehash} of them rehash.`;
+
+  await writePage("reuseport", base, {
+    title: "Even Is Not Stable: SO_REUSEPORT And Where Connections Land | Max Doubin",
+    description: rpDescription,
+    canonical: `${SITE_URL}/reuseport`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Even is not stable",
+  description: rpDescription,
+  url: `${SITE_URL}/reuseport`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "What SO_REUSEPORT actually guarantees and what it does not: that without it a second bind to the same address and port returns EADDRINUSE, and that with it on every listener the kernel spreads incoming connections evenly across the whole set at three, four and five listeners alike; that the evenness people measure says nothing about stability, because the listener is chosen by hashing the connection's four tuple over the current set rather than by a consistent hash, so a client whose own address and port never changed lands on a different worker the moment somebody else's process count changes; that the share of clients displaced by a resize is one minus the smaller count over the least common multiple of the two counts, which is most of them; and that this is why a rolling restart loses handshakes, since a retransmitted SYN hashes to a listener that holds no half open state for it",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Even is not stable</h1>
+  <p>
+    ${REUSEPORT_CASES.length} pools of listeners sharing one port, one question each. ${rpRehash} of them send a client
+    somewhere it was not going before, and not one of those clients changed anything about itself.
+  </p>
+  <h2>What the option is for</h2>
+  <pre><code>the first bind to 127.0.0.1:18080    succeeded
+the second bind to the same port     EADDRINUSE, "Address already in use"</code></pre>
+  <p>
+    With SO_REUSEPORT set on every listener before it binds, they all bind. That is the whole of
+    what the name promises, and it is the part that works exactly as advertised.
+  </p>
+  <h2>The half everybody measures</h2>
+  <pre><code>400 connections, counted per listener
+
+  four listeners        [0] 107  [1]  99  [2]  97  [3]  97
+  the same four again   [0]  90  [1]  97  [2] 103  [3] 110
+  three listeners       [0] 127  [1] 141  [2] 132
+  five listeners        [0]  76  [1]  65  [2]  90  [3]  71  [4]  98</code></pre>
+  <p>
+    Even at every count, and even again on a second run. Nothing here is wrong, and nothing here
+    tells you what happens next.
+  </p>
+  <h2>The half that causes the outage</h2>
+  <p>
+    The same eight clients, each connecting from a fixed source port so the four tuple never
+    changes and the only thing that moves is the size of the listener set:
+  </p>
+  <pre><code>source port   four listeners   three   five
+  40001              0             0       0
+  40002              2             2       3     moved
+  40003              2             1       3     moved
+  40004              1             1       2     moved
+  40005              2             1       2     moved
+  40006              3             2       3     moved
+  40007              1             0       1     moved
+  40008              1             1       1
+
+  4 of 8 moved when one listener left
+  3 of 8 moved when two joined</code></pre>
+  <p>
+    The kernel picks a listener by hashing the connection's four tuple across the set that exists
+    at that moment. A client keeps its worker only when its hash falls in the same slot in both
+    sets, which happens for min(n, m) values out of every lcm(n, m), so going from four listeners
+    to three displaces 92 percent of the hash space and four to six displaces 66. SO_REUSEPORT
+    distributes. It does not consistently hash.
+  </p>
+  <h2>Which is why a rolling restart drops connections</h2>
+  <p>
+    A SYN that arrived at a listener which then closed has nobody to finish its handshake: the
+    retransmitted SYN hashes somewhere else in the new set, and the half open state does not travel
+    with it. The fix is not to restart more slowly. It is SO_ATTACH_REUSEPORT_CBPF or the eBPF
+    variant, which replaces the hash with a program you control.
+  </p>
+  <h2>Every pool here</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Listeners</th><th>SO_REUSEPORT</th><th>What changes</th><th>Serving after</th><th>Each gets</th><th>Share that moves</th></tr>
+    </thead>
+    <tbody>
+${REUSEPORT_CASES.map((item) => {
+  const s2 = item.setup;
+  return `      <tr><td>${esc(s2.host)}</td><td>${s2.before}</td><td>${s2.reusePort ? "set" : "not set"}</td>` +
+    `<td>${esc(rpChange(s2.change))}</td><td>${rpBinds(s2) ? rpAfter(s2) : 0}</td>` +
+    `<td>${rpBinds(s2) ? esc(rpCount(rpEach(s2), "connection")) : "nothing binds"}</td>` +
+    `<td>${rpBinds(s2) ? `${rpMoved(s2)}%` : "none arrive"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${REUSEPORT_CASES.map((item) => {
+  const right = rpCorrect(item);
+  const s2 = item.setup;
+  const lines = rpLines(s2).map((line) => `${line.name.padEnd(14)} ${line.value.padStart(20)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>${rpBinds(s2) ? `${rpAfter(s2)} listeners serve afterwards, ${esc(rpCount(rpEach(s2), "connection"))} each, and ${rpMoved(s2)} percent of the clients land somewhere new.` : "The second bind fails with EADDRINUSE, so there is nothing to spread across."}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/even-is-not-stable", "Even is not stable"], ["/backlog", "The server is idle and the connections are timing out"], ["/timewait", "Still a minute"]])}
 </main>`,
   });
 
@@ -10337,6 +10469,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/fdset`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/pagecache`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/odirect`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/reuseport`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

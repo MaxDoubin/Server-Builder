@@ -222,8 +222,14 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 728 KB, raised from 727 by /odirect at 726.3. Nine tenths for the fourth
  * time, so the estimate holds and the raise is bookkeeping rather than news.
+ *
+ * 729 KB, raised from 728 by /reuseport at 727.2. Nine tenths for the fifth
+ * time running. Five surfaces, five identical increments, which is a strong
+ * enough pattern that a surface costing materially more than nine tenths of a
+ * kilobyte is now itself worth looking at: it would mean something that ought
+ * to be lazy was not.
  */
-const BUDGET_BYTES = 728 * 1024;
+const BUDGET_BYTES = 729 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
