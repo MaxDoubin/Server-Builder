@@ -264,6 +264,9 @@ const CinematicPss = lazyWithRetry(() =>
 const CinematicSparse = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicSparse").then((m) => ({ default: m.CinematicSparse })),
 );
+const CinematicAppend = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicAppend").then((m) => ({ default: m.CinematicAppend })),
+);
 const CinematicOvercommit = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicOvercommit").then((m) => ({ default: m.CinematicOvercommit })),
 );
@@ -1118,6 +1121,11 @@ function AnimatedRoutes() {
           <Route path="/sparse">
             <Suspense fallback={<RouteLoading />}>
               <CinematicSparse />
+            </Suspense>
+          </Route>
+          <Route path="/append">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicAppend />
             </Suspense>
           </Route>
           <Route path="/overcommit">

@@ -60,6 +60,7 @@ import { CASES as EXIT } from "@/lib/exit/index";
 import { CASES as UMASK } from "@/lib/umask/index";
 import { CASES as PSS } from "@/lib/pss/index";
 import { CASES as SPARSE } from "@/lib/sparse/index";
+import { CASES as APPEND } from "@/lib/append/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -144,6 +145,7 @@ const OFFSET = {
   umask: 283,
   pss: 293,
   sparse: 307,
+  append: 311,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -602,6 +604,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A file can be a gigabyte long and occupy one block, because a hole is a range nobody wrote. Work out what ls says, what du says, and what a copy does to the difference.",
       href: "/sparse",
       outOf: SPARSE.length,
+    });
+  }
+
+  const appended = pickFor(APPEND, day, OFFSET.append);
+  if (appended) {
+    out.push({
+      surface: "append",
+      eyebrow: "Predict",
+      title: appended.name,
+      blurb: "Four processes hand a log 51200 bytes and the file comes out 12800 long, with no error anywhere. Work out how much of what the writers sent is actually in the file.",
+      href: "/append",
+      outOf: APPEND.length,
     });
   }
 

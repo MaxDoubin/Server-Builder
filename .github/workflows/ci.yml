@@ -769,6 +769,13 @@ jobs:
       - name: Sparse files
         run: npx tsx scripts-ci/check-sparse.ts
 
+      # Concurrent appenders. Whether a file loses writes is not a property of
+      # a flag, it is what happens when you run the writes one at a time and
+      # watch where each lands, so the gate replays them over a simulated file
+      # under four interleavings that all have to agree.
+      - name: Concurrent appenders
+        run: npx tsx scripts-ci/check-append.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

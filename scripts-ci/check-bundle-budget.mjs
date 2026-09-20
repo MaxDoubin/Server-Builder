@@ -199,8 +199,11 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 723 KB, raised from 722 by /sparse at 721.7. Three tenths of a kilobyte is
  * the narrowest any of these has ever landed, and it is not a margin.
+ *
+ * 724 KB, raised from 723 by /append at 722.6. Twenty six surfaces and
+ * twenty five raises: the rate has not changed in a year of this.
  */
-const BUDGET_BYTES = 723 * 1024;
+const BUDGET_BYTES = 724 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

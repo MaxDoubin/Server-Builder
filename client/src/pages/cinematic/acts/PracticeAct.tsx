@@ -69,6 +69,7 @@ import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index"
 import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
+import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -243,6 +244,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/append",
+    eyebrow: "Predict",
+    title: "Two writers, one offset",
+    blurb:
+      "A file offset belongs to an open file description, not to a file and not to a process. Two processes that each open one log walk their own offsets from zero and write over each other, and every call returns success.",
+    count: `${APPEND_CASES.length} logs, ${APPEND_CASES.filter((item) => !apSafe(item.setup)).length} lose writes`,
   },
   {
     href: "/sparse",
