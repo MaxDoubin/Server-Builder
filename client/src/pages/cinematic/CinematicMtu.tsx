@@ -174,7 +174,7 @@ export function CinematicMtu() {
                       type="button"
                       onClick={() => setSize(Math.min(value, path.senderMtu))}
                       data-testid={`mark-${label.replace(/\s+/g, "-")}`}
-                      className="font-mono-tight text-[0.6875rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
+                      className="tap-target font-mono-tight text-[0.6875rem] uppercase tracking-[0.14em] text-[hsl(var(--brand-ash))] hover:text-[hsl(var(--brand-bone))]"
                     >
                       <span
                         aria-hidden="true"

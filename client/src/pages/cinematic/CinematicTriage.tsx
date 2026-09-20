@@ -154,7 +154,7 @@ export function CinematicTriage() {
                 type="button"
                 onClick={reset}
                 data-testid="triage-reset"
-                className="uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] underline-offset-4 hover:text-[hsl(var(--brand-bone))] hover:underline"
+                className="tap-target uppercase tracking-[0.2em] text-[hsl(var(--brand-ash))] underline-offset-4 hover:text-[hsl(var(--brand-bone))] hover:underline"
               >
                 Start over
               </button>

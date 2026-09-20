@@ -738,6 +738,13 @@ jobs:
       - name: Range sliders
         run: node scripts-ci/check-range-sliders.mjs
 
+      # A button with no padding is as tall as its own text. /glossary had 160
+      # targets under 24px at 390px, a hundred of them the one field chip
+      # beside every term, at 15px. Resolves same-file class helpers, because
+      # /gear and /ask build theirs in one and already pad them.
+      - name: Tap targets
+        run: node scripts-ci/check-tap-targets.mjs
+
       # A grid whose only grid-cols sits behind a breakpoint has no columns
       # below it, so its implicit track is auto sized and a child that cannot
       # shrink widens it past the container. /patch was clipped by 110px on a
