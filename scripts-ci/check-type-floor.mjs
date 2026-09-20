@@ -58,7 +58,7 @@
  * neither.
  */
 import { readFileSync } from "fs";
-import { execFileSync } from "child_process";
+import { sourceFiles } from "./lib/source-files.mjs";
 import { cameraScaledRanges, isCameraScaled } from "./lib/camera-scaled.mjs";
 
 const FLOOR_REM = 0.625;
@@ -80,8 +80,7 @@ const lengthsIn = (value) =>
     text: `${n}${unit}`,
   }));
 
-const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8" })
-  .split("\n")
+const files = sourceFiles(["client/src"])
   .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"));
 
 let sizes = 0;

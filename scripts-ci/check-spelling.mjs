@@ -38,7 +38,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { sourceFiles } from "./lib/source-files.mjs";
 
 /** British on the left. Whole words: `\borganis` would also match "organism". */
 const BRITISH = {
@@ -219,12 +219,16 @@ function bareProseOf(line) {
  */
 const SELF = "scripts-ci/check-spelling.mjs";
 
-const files = execSync(
-  "git ls-files 'client/src/**/*.md' 'client/src/**/*.ts' 'client/src/**/*.tsx' " +
-    "'client/src/*.css' 'client/src/**/*.css' " +
-    "'scripts-ci/*.ts' 'scripts-ci/*.mjs' 'script/*.ts'",
-  { encoding: "utf8" },
-).trim().split("\n").filter(Boolean).filter((f) => f !== SELF);
+const files = sourceFiles([
+  "client/src/**/*.md",
+  "client/src/**/*.ts",
+  "client/src/**/*.tsx",
+  "client/src/*.css",
+  "client/src/**/*.css",
+  "scripts-ci/*.ts",
+  "scripts-ci/*.mjs",
+  "script/*.ts",
+]).filter((f) => f !== SELF);
 
 const found = [];
 let scanned = 0;

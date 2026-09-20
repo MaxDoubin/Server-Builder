@@ -27,10 +27,9 @@
  * is the worst kind of bug to find by looking.
  */
 import { readFileSync } from "fs";
-import { execFileSync } from "child_process";
+import { sourceFiles } from "./lib/source-files.mjs";
 
-const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8" })
-  .split("\n")
+const files = sourceFiles(["client/src"])
   .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"));
 
 /* className="…", className={`…`} and className={"…"}. */
