@@ -142,8 +142,11 @@ const INDEX = path.join(DIST, "index.html");
  * are both lazy, and the only thing reaching the static entry is the command
  * palette row, which is the whole reason a surface costs a kilobyte rather
  * than the twenty its code weighs.
+ *
+ * 709 KB, raised from 708 by /fds, measured at 707.8. Eleven surfaces, ten
+ * raises, and the eleventh is the same kilobyte as the other ten.
  */
-const BUDGET_BYTES = 708 * 1024;
+const BUDGET_BYTES = 709 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

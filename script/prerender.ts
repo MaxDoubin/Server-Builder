@@ -29,6 +29,7 @@ import { PATHS as VLAN_PATHS, accessVlanOf, canonical as vlanAnswer, carry, nati
 import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassing, spanText as clockSpan, toleranceSpread as clockToleranceSpread, tolerances as clockToleranceList } from "../client/src/lib/clock/index";
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
+import { CASES as FDS_CASES, asLimits as fdLimits, binding as fdBinding, correctOption as fdCorrect, count as fdCount, effectiveHard as fdHard, effectiveSoft as fdSoft, frozen as fdFrozen, outcome as fdOutcome } from "../client/src/lib/fds/index";
 import { CASES as WRITEBACK_CASES, asMiB as wbMiB, asSysctl as wbSysctl, backgroundThresholdBytes as wbBackground, correctOption as wbCorrect, dirtyableBytes as wbDirtyable, hardThresholdBytes as wbHard, human as wbHuman, isThrottled as wbThrottled, liveKnob as wbLive, maxAgeSeconds as wbAge, settledDirtyBytes as wbSettled } from "../client/src/lib/writeback/index";
 import { CASES as CONNTRACK_CASES, asCounters as ctCounters, asSysctl as ctSysctl, buckets as ctBuckets, correctOption as ctCorrect, count as ctCount, earlyDropHelps as ctEarly, entriesHeld as ctHeld, human as ctHuman, maxEntries as ctMax, maxFactor as ctFactor, overflows as ctOverflows, timeoutSeconds as ctTimeout } from "../client/src/lib/conntrack/index";
 import { CASES as RETRANS_CASES, asSysctl as retransSysctl, asTrace as retransTrace, budgetSeconds as retransBudget, correctOption as retransCorrect, countMatchesSysctl as retransMatches, ending as retransEnding, human as retransHuman, retransmissions as retransCount } from "../client/src/lib/retrans/index";
@@ -897,6 +898,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/shm">Bus error</a>, why a container with gigabytes free dies on a 64 MiB filesystem.</li>
     <li><a href="${SITE_URL}/maxstartups">Connection refused</a>, why sshd turns you away on a host that is doing nothing.</li>
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
+    <li><a href="${SITE_URL}/fds">Too many open files</a>, which of the four descriptor limits is the smallest.</li>
     <li><a href="${SITE_URL}/writeback">Not written down</a>, which dirty page threshold runs and what it is a percentage of.</li>
     <li><a href="${SITE_URL}/conntrack">Table full</a>, why the kernel says so when it could not evict anything.</li>
     <li><a href="${SITE_URL}/cache">The page that showed somebody else's name</a>, what a shared cache keys on and what it does not.</li>
@@ -2206,6 +2208,7 @@ ${JSON.stringify({
     ["Bus error", "/shm"],
     ["Connection refused", "/maxstartups"],
     ["Fifteen, and there were four", "/retrans"],
+    ["Too many open files", "/fds"],
     ["Not written down", "/writeback"],
     ["Table full", "/conntrack"],
     ["The page that showed somebody else's name", "/cache"],
@@ -3977,6 +3980,126 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/bus-error-with-sixty-four-gigabytes-free", "Bus error, with sixty four gigabytes free"], ["/throttle", "Thirty percent, and stalling"], ["/oom", "Something has to die"]])}
+</main>`,
+  });
+
+  // ── the descriptor limits ──
+  /*
+    The static body carries the limits table, because the search that brings
+    people here is EMFILE with a ulimit that already looks generous, and what
+    they need is the four numbers side by side for a host shaped like theirs.
+    The columns put them in the order the kernel checks them, which is the
+    order the diagnosis goes in.
+  */
+  const fdFrozenCount = FDS_CASES.filter((item) => fdFrozen(item.setup)).length;
+  const fdDescription =
+    "Four limits cap an open file and they are checked in different places with different " +
+    "permissions: the RLIMIT_NOFILE soft limit in alloc_fd, the hard limit as the ceiling the " +
+    "process may raise the soft one to, fs.nr_open as the ceiling on any hard limit, and " +
+    "fs.file-max across the whole machine. Raising a hard limit needs CAP_SYS_RESOURCE, which " +
+    "uid 0 does not imply, so a container running as root can be unable to move its own limit. " +
+    "A request over fs.nr_open is refused rather than reduced, and because every setrlimit call " +
+    "restates the hard limit, lowering fs.nr_open freezes every process already above it in both " +
+    `directions. ${FDS_CASES.length} processes here, ${fdFrozenCount} of them frozen outright.`;
+
+  await writePage("fds", base, {
+    title: "Too Many Open Files, and Which of the Four Limits It Was | Max Doubin",
+    description: fdDescription,
+    canonical: `${SITE_URL}/fds`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Too many open files",
+  description: fdDescription,
+  url: `${SITE_URL}/fds`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Which of the four open file limits is the binding one and why the others are not: that the RLIMIT_NOFILE soft limit is what alloc_fd checks and the hard limit is only the ceiling a process may raise it to, so a generous hard limit beside a small soft one is the normal shape of this failure; that any process may raise its soft limit to its hard limit with no privilege at all; that raising the hard limit needs CAP_SYS_RESOURCE rather than uid 0, which containers commonly drop while keeping every other capability; that fs.nr_open caps every hard limit including a privileged one and refuses rather than reduces a request over it; that because setrlimit carries both values, lowering fs.nr_open freezes every process already holding more, including calls that would only lower a limit; that lowering a hard limit is a one way door inherited across exec; and that EMFILE names the per process limit while ENFILE names fs.file-max, which on a normal machine is never close",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Too many open files</h1>
+  <p>
+    ${FDS_CASES.length} processes, one question each. ${fdFrozenCount} of them cannot move their limits at all,
+    and on most of the rest the number somebody raised was not the one that was stopping them.
+  </p>
+  <p>
+    Four limits, in the order the kernel checks them:
+  </p>
+  <pre><code>RLIMIT_NOFILE soft   what this process may open now      (alloc_fd)
+RLIMIT_NOFILE hard   what it may raise the soft limit to
+fs.nr_open           what ANY process may raise its hard limit to
+fs.file-max          open files across the whole machine  (__alloc_file)</code></pre>
+  <p>
+    And above them a capability. Raising a hard limit needs <code>CAP_SYS_RESOURCE</code>, and uid 0
+    does not imply it. The container these measurements were taken on runs as root with forty of the
+    forty one capabilities:
+  </p>
+  <pre><code>Uid:    0  0  0  0
+CapEff: 000001fffeffffff</code></pre>
+  <p>
+    The single zero is bit 24, <code>CAP_SYS_RESOURCE</code>. That process can write sysctls, create
+    network namespaces and load nftables rules, and it cannot raise its own hard limit by one:
+    <code>setrlimit(NOFILE, (20000, 1048577))</code> came back with not allowed to raise maximum
+    limit, and the pair stayed at 20000. Note refused, not reduced. From <code>kernel/sys.c</code>
+    the fs.nr_open test returns EPERM, and it runs before the capability test and consults no
+    credentials, so it binds a privileged process too.
+  </p>
+  <p>
+    Because every <code>setrlimit</code> call carries both values, a call that only means to lower
+    the soft limit still restates the hard one. Measured, holding a hard limit of 20000 with
+    fs.nr_open lowered to 4096: a call setting soft to 5000 was refused, naming the limit it was
+    not trying to change. Lowering fs.nr_open system wide freezes every process already above it,
+    in both directions, and nothing reports it.
+  </p>
+  <p>
+    The machine wide number is almost never the one you hit. With the soft limit at 200, the two
+    hundredth open gave EMFILE and the highest descriptor handed out was 199, while
+    <code>fs.file-nr</code> read 563 of 1,645,588, which is 0.034 percent. Its middle column,
+    documented as the number of free file handles, read 0 before, 0 at the peak and 0 after.
+  </p>
+  <h2>What each process is allowed, and what stops it</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>fs.file-max</th><th>fs.nr_open</th><th>Soft</th><th>Hard</th><th>CAP_SYS_RESOURCE</th><th>Wants</th><th>Ends at soft</th><th>Frozen</th><th>Result</th><th>Binding</th></tr>
+    </thead>
+    <tbody>
+${FDS_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${fdCount(s.fileMax)}</td><td>${fdCount(s.nrOpen)}</td>` +
+    `<td>${fdCount(s.soft)}</td><td>${fdCount(s.hard)}</td><td>${s.sysResource ? "held" : "not held"}</td>` +
+    `<td>${fdCount(s.needFds)}</td><td>${fdCount(fdSoft(s))}</td><td>${fdFrozen(s) ? "yes" : "no"}</td>` +
+    `<td>${fdOutcome(s).toUpperCase()}</td><td>${esc(fdBinding(s))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${FDS_CASES.map((item) => {
+  const right = fdCorrect(item);
+  const s = item.setup;
+  const limits = fdLimits(s).map((line) => `${line.name.padEnd(22)} ${line.value.padStart(9)}   # ${line.note}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(limits)}
+
+# the workload needs ${fdCount(s.needFds)} descriptors, and the machine already holds ${fdCount(s.systemOpen)}</code></pre>
+    <p>It ends with a soft limit of ${fdCount(fdSoft(s))} against a hard limit of ${fdCount(fdHard(s))}, and opening gives ${fdOutcome(s).toUpperCase()}. The binding number is ${esc(fdBinding(s))}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/too-many-open-files-and-which-of-the-four-limits-it-was", "Too many open files, and which of the four limits it was"], ["/writeback", "Not written down"], ["/ports", "Out of ports"]])}
 </main>`,
   });
 
@@ -7530,7 +7653,8 @@ async function writeSitemap(
     { loc: `${SITE_URL}/shm`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/maxstartups`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
-    { loc: `${SITE_URL}/writeback`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/fds`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+  { loc: `${SITE_URL}/writeback`, lastmod: today, changefreq: "monthly", priority: "0.8" },
   { loc: `${SITE_URL}/conntrack`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/route`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/restore`, lastmod: today, changefreq: "monthly", priority: "0.8" },

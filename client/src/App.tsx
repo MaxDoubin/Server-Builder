@@ -228,6 +228,9 @@ const CinematicMaxstartups = lazyWithRetry(() =>
 const CinematicRetrans = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicRetrans").then((m) => ({ default: m.CinematicRetrans })),
 );
+const CinematicFds = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicFds").then((m) => ({ default: m.CinematicFds })),
+);
 const CinematicWriteback = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicWriteback").then((m) => ({ default: m.CinematicWriteback })),
 );
@@ -1010,6 +1013,11 @@ function AnimatedRoutes() {
           <Route path="/retrans">
             <Suspense fallback={<RouteLoading />}>
               <CinematicRetrans />
+            </Suspense>
+          </Route>
+          <Route path="/fds">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicFds />
             </Suspense>
           </Route>
           <Route path="/writeback">

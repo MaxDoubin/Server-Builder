@@ -662,6 +662,13 @@ jobs:
       - name: TCP retransmission budget
         run: npx tsx scripts-ci/check-retrans.ts
 
+      # Four limits cap an open file and the one everybody raises is rarely
+      # the binding one. Every setrlimit call is walked in the kernel's own
+      # order and every open is counted one at a time, against a container
+      # that is uid 0 and still cannot raise its own hard limit.
+      - name: Descriptor limits
+        run: npx tsx scripts-ci/check-fds.ts
+
       # The dirty page thresholds are percentages of dirtyable memory, not of
       # RAM, and the queue settles at the background one rather than at
       # dirty_ratio. Both are re-derived here, the second by running the
