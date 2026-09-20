@@ -50,6 +50,7 @@ import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
+import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -97,6 +98,7 @@ import { loadSolvedAtime } from "@/lib/atime/progress";
 import { loadSolvedNagle } from "@/lib/nagle/progress";
 import { loadSolvedArgmax } from "@/lib/argmax/progress";
 import { loadSolvedEloop } from "@/lib/eloop/progress";
+import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -262,6 +264,13 @@ export function readProgress(): Line[] {
       href: "/eloop",
       done: loadSolvedEloop().filter((slug) => ELOOP.some((item) => item.slug === slug)).length,
       total: ELOOP.length,
+      noun: "called right",
+    },
+    {
+      label: "Two writers, one line",
+      href: "/pipebuf",
+      done: loadSolvedPipebuf().filter((slug) => PIPEBUF.some((item) => item.slug === slug)).length,
+      total: PIPEBUF.length,
       noun: "called right",
     },
     {

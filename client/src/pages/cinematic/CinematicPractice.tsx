@@ -56,6 +56,7 @@ import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index
 import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
+import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -440,6 +441,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/pipebuf",
+      eyebrow: "Predict",
+      title: "Two writers, one line",
+      blurb:
+        "A write at or under 4096 bytes is never interleaved, and that held even beside writers tearing themselves apart. Above it there is no promise: four writers at 8192 tore nothing, and adding one 5000 byte writer made all four tear.",
+      reachFor: "a log line came out with another log line inside it",
+      stats: [
+        `${PIPEBUF_CASES.length} pipes`,
+        `${PIPEBUF_CASES.filter((item) => pbTears(item.setup)).length} that tear`,
+        "4096 B",
       ],
       progress: null,
     },

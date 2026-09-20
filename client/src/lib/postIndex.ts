@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 301 of them. Regenerate with script/generatePostIndex.ts.
+ * 302 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-log-line-with-another-log-line-inside-it",
+    title: "The Log Line With Another Log Line Inside It",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","observability"],
+    excerpt: "A write of 4096 bytes or fewer to a pipe is never interleaved with another writer's, and that held even beside writers fifty times the size tearing themselves apart. Above it there is no guarantee at all: four writers at 8192 tore nothing because 8192 divides the pipe capacity, and adding one 5000 byte writer made all four tear without a line of their code changing.",
+    coverImage: "/images/blog/the-log-line-with-another-log-line-inside-it.jpg",
+    wordCount: 1176,
+  },
   {
     slug: "eloop-does-not-mean-there-is-a-loop",
     title: "ELOOP Does Not Mean There Is a Loop",
@@ -2942,10 +2951,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 301;
+export const POST_COUNT = 302;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and one";
+export const POST_COUNT_SPELLED = "three hundred and two";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2954,10 +2963,10 @@ export const POST_COUNT_SPELLED = "three hundred and one";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1158;
+export const CITATION_COUNT = 1161;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1317;
+export const CHECKED_URL_COUNT = 1320;

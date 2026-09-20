@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as PIPEBUF_CASES, PIPE_BUF as PB_BUF, alignsWithCapacity as pbAligns, asSetup as pbSetup, atRisk as pbRisk, because as pbBecause, correctOption as pbCorrect, granted as pbGranted, guaranteed as pbGuaranteed, refused as pbRefused, tears as pbTearsAt, tearsHere as pbTears, uniform as pbUniform } from "../client/src/lib/pipebuf/index";
 import { CASES as ELOOP_CASES, MAX_TRAVERSALS as EL_MAX, asWalk as elWalk, correctOption as elCorrect, demanded as elAsked, followsFinal as elFollows, headroom as elLeft, reason as elReason, result as elResult, spent as elSpent, succeeds as elOk } from "../client/src/lib/eloop/index";
 import { CASES as ARGMAX_CASES, MAX_ARG_STRLEN as AM_CAP, POINTER as AM_PTR, asLimits as amLimits, budget as amBudget, correctOption as amCorrect, costPerArg as amPerArg, envCost as amEnv, fits as amFits, headroom as amSpare, humanBytes as amBytes, maxArgs as amMax, pointerShare as amShare, programCost as amProg, refusedBy as amRefused, textBytes as amText, totalCost as amTotal } from "../client/src/lib/argmax/index";
 import { CASES as NAGLE_CASES, applying as ngApplying, asSocket as ngSocket, bytesBeforeRead as ngBytes, correctOption as ngCorrect, humanUs as ngUs, requestsPerSecond as ngRps, roundTripUs as ngUsTrip, slowdown as ngSlow, stalls as ngStalls, stallsPerRequest as ngTimers, totalMs as ngTotal } from "../client/src/lib/nagle/index";
@@ -911,6 +912,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/nagle">Eight bytes, forty four milliseconds</a>, why two small writes cost a local round trip forty four milliseconds.</li>
     <li><a href="${SITE_URL}/argmax">Argument list too long</a>, why a command line under ARG_MAX is refused anyway.</li>
     <li><a href="${SITE_URL}/eloop">There is no loop</a>, why a path with no cycle in it reports too many levels of symbolic links.</li>
+    <li><a href="${SITE_URL}/pipebuf">Two writers, one line</a>, why a log line comes out with another log line inside it.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2229,6 +2231,7 @@ ${JSON.stringify({
     ["Eight bytes, forty four milliseconds", "/nagle"],
     ["Argument list too long", "/argmax"],
     ["There is no loop", "/eloop"],
+    ["Two writers, one line", "/pipebuf"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4665,6 +4668,145 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/eloop-does-not-mean-there-is-a-loop", "ELOOP does not mean there is a loop"], ["/argmax", "Argument list too long"], ["/permissions", "Permission denied"]])}
+</main>`,
+  });
+
+  // ── the atomic write size ──
+  /*
+    The static body leads with the number, because the search that brings
+    people here is a log line with another log line inside it and the thing
+    they need is 4096 and what it does and does not cover.
+  */
+  const pbTorn = PIPEBUF_CASES.filter((item) => pbTears(item.setup)).length;
+  const pbDescription =
+    "A write of PIPE_BUF bytes or fewer, which is 4096 on Linux, is never interleaved with another " +
+    "writer's, and that held here even beside writers three and fifty times the size tearing " +
+    "themselves apart. Above it there is no guarantee and what happens depends on the company: " +
+    "four writers at 8192 on a 65536 byte pipe tore nothing because 8192 divides the capacity, and " +
+    "adding one 5000 byte writer made all four of them tear without a line of their code changing. " +
+    `${PIPEBUF_CASES.length} pipes here, ${pbTorn} where the writer in question can be torn.`;
+
+  await writePage("pipebuf", base, {
+    title: "Two Writers, One Line: PIPE_BUF and Interleaved Writes | Max Doubin",
+    description: pbDescription,
+    canonical: `${SITE_URL}/pipebuf`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Two writers, one line",
+  description: pbDescription,
+  url: `${SITE_URL}/pipebuf`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a log line comes out with another log line inside it when several processes write to one pipe: that a write of PIPE_BUF bytes or fewer, 4096 on Linux, is never interleaved with another and that this holds regardless of what else is on the pipe, measured with 512 and 4096 byte writers beside 20000 byte ones that were tearing constantly; that above PIPE_BUF there is no guarantee at all, so 4097 bytes is not marginally worse than 4096 but categorically different; that records which divide the pipe capacity exactly happen not to tear, because the pipe never fills part way through one, and that this is arithmetic rather than a promise and is destroyed by a single writer using any other size; that F_SETPIPE_SZ rounds a request up to a power of two and refuses anything over fs.pipe-max-size with EPERM, so the capacity your alignment depends on may not be the one you asked for; and that a regular file opened O_APPEND did not interleave at any size measured, because Linux holds the inode lock for a buffered write, which is why redirecting to a file behaves where piping through tee does not",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Two writers, one line</h1>
+  <p>
+    ${PIPEBUF_CASES.length} pipes, one writer in question each. On ${pbTorn} of them that writer's records can come out
+    with somebody else's bytes in the middle.
+  </p>
+  <p>
+    The number is <strong>${PB_BUF}</strong>. A write of PIPE_BUF bytes or fewer is never interleaved with
+    another writer's, and that is a guarantee rather than an observation. Measured, with four
+    writers on one pipe sending 200 records each:
+  </p>
+  <pre><code>three at 4096 with one at 5000    the 4096 writers: 200 of 200 whole, every run
+two at 4096 with two at 20000     the 4096 writers: 200 of 200 whole, every run
+one at 512 with three at 20000    the 512 writer:   200 of 200 whole, every run</code></pre>
+  <p>
+    The large writers in those runs were losing records constantly. It made no difference to the
+    small ones. The guarantee is per write, not per pipe.
+  </p>
+  <h2>Above it there is nothing gradual</h2>
+  <pre><code>size 4096    0, 0, 0 torn        divides 65536
+size 4097    84, 81, 76
+size 5000    103, 78, 72
+size 8192    0, 0, 0 torn        divides 65536
+size 8193    125, 125, 139
+size 12288   146, 136, 132
+size 16384   0, 0, 0 torn        divides 65536
+size 20000   354, 311, 354
+size 32768   0, 0, 0 torn        divides 65536</code></pre>
+  <p>
+    One byte over the limit is not one byte worse. And look at the pattern in the clean rows: every
+    size that divides the 65536 capacity exactly tore nothing, three runs out of three. A writer is
+    only interrupted part way through a record if the pipe fills part way through one, and if the
+    capacity is a whole number of records it never does.
+  </p>
+  <h2>That safety survives nothing</h2>
+  <pre><code>four writers at 8192                 0, 0, 0 torn
+three at 8192 and one at 5000        the 8192 writers lost 6, 6 and 14</code></pre>
+  <p>
+    Not a line of the 8192 writers' code changed. The thing keeping them whole was that the pipe
+    always filled on a record boundary, and one writer with a different size means it no longer
+    does. This is the shape of the real bug: it works in testing, it works in staging, and it breaks
+    the week somebody adds a second logger.
+  </p>
+  <h2>And the capacity may not be the one you asked for</h2>
+  <pre><code>asked      granted
+    1         4096
+ 4097         8192
+40000        65536
+65537       131072
+1048576    1048576
+2097152    refused, EPERM</code></pre>
+  <p>
+    F_SETPIPE_SZ rounds up to a power of two and refuses anything over fs.pipe-max-size. Since the
+    capacity is what your record sizes have to divide into, an operator who asks for one number and
+    gets another has changed the alignment without knowing it.
+  </p>
+  <h2>A file is not a pipe</h2>
+  <p>
+    On a regular file opened O_APPEND, nothing tore at any size measured, including 200000 byte
+    records beside 512 byte ones: every writer, 200 of 200 whole. Linux holds the inode lock for the
+    length of a buffered write. That is a measurement of this kernel and this filesystem rather than
+    a promise, and it is not true over NFS, but it is the difference between
+  </p>
+  <pre><code>myapp &gt;&gt; app.log            one file, and it held here
+myapp 2&gt;&amp;1 | tee app.log    a pipe, and above 4096 it does not</code></pre>
+  <h2>What each pipe does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Target</th><th>Capacity</th><th>Writers</th><th>In question</th><th>Under PIPE_BUF</th><th>All one size</th><th>Divides</th><th>Torn</th><th>At risk</th></tr>
+    </thead>
+    <tbody>
+${PIPEBUF_CASES.map((item) => {
+  const s = item.setup;
+  const mine = s.writers[s.underTest];
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(s.target)}</td><td>${s.target === "pipe" ? s.capacity : "n/a"}</td>` +
+    `<td>${esc(s.writers.join(", "))}</td><td>${mine}</td><td>${pbGuaranteed(mine) ? "yes" : "no"}</td>` +
+    `<td>${pbUniform(s) ? "yes" : "no"}</td><td>${s.target === "pipe" ? (pbAligns(s) ? "yes" : "no") : "n/a"}</td>` +
+    `<td>${pbTears(s) ? "can be torn" : "whole"}</td><td>${pbRisk(s)} of ${s.writers.length}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${PIPEBUF_CASES.map((item) => {
+  const right = pbCorrect(item);
+  const s = item.setup;
+  const lines = pbSetup(s).map((line) => `${line.name.padEnd(21)} ${line.value.padStart(20)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>${pbTears(s) ? "This writer's records can be torn" : "This writer's records come out whole"}, because ${esc(pbBecause(s))}. ${s.target === "pipe" ? `${pbRisk(s)} of the ${s.writers.length} writers on this pipe are at risk${s.writers.map((size, i) => pbTearsAt(s, i) ? `${i}` : null).filter(Boolean).length ? ` (writer${pbRisk(s) === 1 ? " " : "s "}${s.writers.map((_, i) => pbTearsAt(s, i) ? i : null).filter((v) => v !== null).join(", ")})` : ""}.` : "Nothing on a file tore at any size measured here."} ${pbRefused(s.requested) ? `The resize to ${s.requested} was refused with EPERM and the pipe stayed at ${s.capacity}.` : s.requested !== pbGranted(s.requested) ? `A request for ${s.requested} was rounded up to ${pbGranted(s.requested)}.` : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-log-line-with-another-log-line-inside-it", "The log line with another log line inside it"], ["/writeback", "Not written down"], ["/nagle", "Eight bytes, forty four milliseconds"]])}
 </main>`,
   });
 
@@ -8708,6 +8850,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/nagle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/argmax`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/eloop`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/pipebuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

@@ -62,6 +62,7 @@ import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index
 import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
+import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -236,6 +237,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/pipebuf",
+    eyebrow: "Predict",
+    title: "Two writers, one line",
+    blurb:
+      "Under 4096 bytes a write is never interleaved, and that is a guarantee. Above it, what keeps your records whole is arithmetic that the next person to join the pipe can undo without touching your code.",
+    count: `${PIPEBUF_CASES.length} pipes, ${PIPEBUF_CASES.filter((item) => pbTears(item.setup)).length} that tear`,
   },
   {
     href: "/overcommit",
