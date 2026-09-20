@@ -175,8 +175,11 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 717 KB, raised from 716 by /eloop, measured at 715.4. Nineteen surfaces,
  * eighteen raises, still a kilobyte each.
+ *
+ * 718 KB, raised from 717 by /pipebuf, measured at 716.3. Twenty surfaces,
+ * nineteen raises, a kilobyte each and no sign of drift.
  */
-const BUDGET_BYTES = 717 * 1024;
+const BUDGET_BYTES = 718 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

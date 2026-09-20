@@ -718,6 +718,14 @@ jobs:
       - name: Symlink traversal budget
         run: npx tsx scripts-ci/check-eloop.ts
 
+      # The atomic write size. The hard part is not the guarantee, it is that
+      # records dividing the pipe capacity are safe by arithmetic and that one
+      # writer of any other size destroys it for everybody: the gate fills a
+      # pipe record by record, driven by a seeded generator rather than a
+      # rotation, because a rotation makes three of four writers look safe.
+      - name: Atomic write size
+        run: npx tsx scripts-ci/check-pipebuf.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

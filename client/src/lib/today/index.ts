@@ -54,6 +54,7 @@ import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
+import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -130,6 +131,7 @@ const OFFSET = {
   nagle: 251,
   argmax: 257,
   eloop: 263,
+  pipebuf: 269,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -540,6 +542,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Forty symlink traversals for the whole path, not per chain, and the kernel never checks for a loop. Work out whether this call resolves and which of three things the error is reporting.",
       href: "/eloop",
       outOf: ELOOP.length,
+    });
+  }
+
+  const interleaved = pickFor(PIPEBUF, day, OFFSET.pipebuf);
+  if (interleaved) {
+    out.push({
+      surface: "pipebuf",
+      eyebrow: "Predict",
+      title: interleaved.name,
+      blurb: "A write at or under PIPE_BUF is never interleaved and above it there is no promise at all. Work out whether this writer's records can come out with somebody else's inside them.",
+      href: "/pipebuf",
+      outOf: PIPEBUF.length,
     });
   }
 
