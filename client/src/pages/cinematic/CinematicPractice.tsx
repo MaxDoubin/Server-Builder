@@ -51,6 +51,7 @@ import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
+import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -365,6 +366,20 @@ export function CinematicPractice() {
         `${SHM_CASES.length} containers`,
         `${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
         "64m",
+      ],
+      progress: null,
+    },
+    {
+      href: "/inotify",
+      eyebrow: "Read",
+      title: "No space left",
+      blurb:
+        "A file watcher reports ENOSPC with nineteen gigabytes free, and EMFILE with six descriptors open. Both inotify limits are charged to the user, so the program that fails is rarely the one that spent them.",
+      reachFor: "a watcher died and the error names a resource that is not short",
+      stats: [
+        `${INOTIFY_CASES.length} hosts`,
+        `${INOTIFY_CASES.filter((item) => !inoFits(item.setup)).length} that fail`,
+        "2 wrong messages",
       ],
       progress: null,
     },

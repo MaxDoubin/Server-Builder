@@ -57,6 +57,7 @@ import { CASES as FDS_CASES, frozen as fdsFrozen } from "@/lib/fds/index";
 import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
+import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -191,6 +192,14 @@ const SURFACES: Surface[] = [
     blurb:
       "The mmap succeeded, every return value was checked, and the process died anyway. A tmpfs that cannot back a page sends a signal rather than returning an error.",
     count: `${SHM_CASES.length} containers, ${SHM_CASES.filter((item) => !shmFits(item.setup)).length} that do not fit`,
+  },
+  {
+    href: "/inotify",
+    eyebrow: "Read",
+    title: "No space left",
+    blurb:
+      "Three inotify failures and three error messages, none of which says inotify and two of which name a resource that is not short. Both limits are per user, not per process.",
+    count: `${INOTIFY_CASES.length} hosts, ${INOTIFY_CASES.filter((item) => !inoFits(item.setup)).length} that fail`,
   },
   {
     href: "/overcommit",
