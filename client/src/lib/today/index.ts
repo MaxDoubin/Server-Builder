@@ -58,6 +58,7 @@ import { CASES as LOCKS } from "@/lib/locks/index";
 import { CASES as SIGNALS } from "@/lib/signals/index";
 import { CASES as EXIT } from "@/lib/exit/index";
 import { CASES as UMASK } from "@/lib/umask/index";
+import { CASES as PSS } from "@/lib/pss/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -140,6 +141,7 @@ const OFFSET = {
   signals: 277,
   exit: 281,
   umask: 283,
+  pss: 293,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -574,6 +576,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "The mode a program passes to open is a maximum the umask lowers and nothing raises, and a umask is nine bits where a mode is twelve. Work out what it actually comes out as.",
       href: "/umask",
       outOf: UMASK.length,
+    });
+  }
+
+  const charged = pickFor(PSS, day, OFFSET.pss);
+  if (charged) {
+    out.push({
+      surface: "pss",
+      eyebrow: "Read",
+      title: charged.name,
+      blurb: "RSS counts a page shared by four processes four times, so adding the column up gives memory that does not exist. Work out what each process is charged and what the machine has to find.",
+      href: "/pss",
+      outOf: PSS.length,
     });
   }
 

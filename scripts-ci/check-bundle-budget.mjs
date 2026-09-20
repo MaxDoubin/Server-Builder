@@ -192,8 +192,12 @@ const INDEX = path.join(DIST, "index.html");
  * 721 KB, raised from 720 by /umask, which measured 720.0 exactly. It passed on
  * the nose, and a budget with no headroom at all is not a budget: one byte of
  * difference between this build and CI's would have failed it.
+ *
+ * 722 KB, raised from 721 by /pss at 720.9, for the same reason: a tenth of a
+ * kilobyte is not headroom either. Twenty five surfaces and twenty three
+ * raises, which is still a kilobyte per surface over the whole run.
  */
-const BUDGET_BYTES = 721 * 1024;
+const BUDGET_BYTES = 722 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

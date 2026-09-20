@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 307 of them. Regenerate with script/generatePostIndex.ts.
+ * 308 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-sum-of-rss-is-not-an-amount-of-memory",
+    title: "The Sum Of RSS Is Not An Amount Of Memory",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","performance"],
+    excerpt: "Four processes share one 64 MiB mapping and ps reports 64 MiB of RSS for each of them. Add the column up and you get 258 MiB on a machine holding 64. RSS is not wrong about any single process; it is wrong about any two, because the same page frame appears in both at full price. PSS is the same measurement with a divisor, and it is the one that adds up.",
+    coverImage: "/images/blog/the-sum-of-rss-is-not-an-amount-of-memory.jpg",
+    wordCount: 1486,
+  },
   {
     slug: "a-ceiling-and-not-a-request",
     title: "A Ceiling And Not A Request",
@@ -2997,10 +3006,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 307;
+export const POST_COUNT = 308;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and seven";
+export const POST_COUNT_SPELLED = "three hundred and eight";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3009,10 +3018,10 @@ export const POST_COUNT_SPELLED = "three hundred and seven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1180;
+export const CITATION_COUNT = 1182;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1339;
+export const CHECKED_URL_COUNT = 1341;

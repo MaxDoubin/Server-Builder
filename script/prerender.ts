@@ -31,6 +31,7 @@ import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
 import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, correctOption as umCorrect, created as umCreated, executable as umExec, gid as umGid, masked as umMasked, mode as umMode, modeText as umText, removed as umRemoved, special as umSpecial } from "../client/src/lib/umask/index";
+import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
 import { CASES as SIGNALS_CASES, accepted as sgAccepted, asSignals as sgLines, correctOption as sgCorrect, delivered as sgDelivered, dequeueOrder as sgDequeue, handlerOrder as sgHandlers, lost as sgLost, nameOf as sgName, queueDepth as sgDepth, queues as sgQueues, refused as sgRefused } from "../client/src/lib/signals/index";
 import { CASES as LOCKS_CASES, asLocks as lkLines, bothShared as lkShared, callOf as lkCall, correctOption as lkCorrect, granted as lkGranted, humanRange as lkRange, identity as lkWho, lostBecause as lkLost, overlaps as lkOverlaps, ownerOf as lkOwner, sameOwner as lkSame, stillHeld as lkHeld, why as lkWhy, world as lkWorld } from "../client/src/lib/locks/index";
@@ -921,6 +922,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/signals">A thousand sent, one arrived</a>, why a standard signal sent a thousand times runs the handler once.</li>
     <li><a href="${SITE_URL}/exit">One byte, two kinds of news</a>, why an exit of 137 and a kill by SIGKILL are the same number.</li>
     <li><a href="${SITE_URL}/umask">A ceiling, not a request</a>, why the mode your program passes to open is a maximum.</li>
+    <li><a href="${SITE_URL}/pss">Four processes, one copy</a>, why adding up a column of RSS gives memory that does not exist.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2244,6 +2246,7 @@ ${JSON.stringify({
     ["A thousand sent, one arrived", "/signals"],
     ["One byte, two kinds of news", "/exit"],
     ["A ceiling, not a request", "/umask"],
+    ["Four processes, one copy", "/pss"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4934,6 +4937,129 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/a-ceiling-and-not-a-request", "A ceiling and not a request"], ["/permissions", "The bits that decide"], ["/locks", "Three locks, one file"]])}
+</main>`,
+  });
+
+  // ── proportional set size ──
+  /*
+    The static body carries the two columns, because the search that brings
+    people here is a dashboard adding up RSS and reporting more memory than the
+    machine has. The answer is a table of the same processes measured twice, and
+    the second table is the one that surprises: a child of a shared mapping with
+    an RSS of zero for a region it maps in full.
+  */
+  const pssGrown = PSS_CASES.filter((item) => pssGrew(item.setup)).length;
+  const pssDescription =
+    "Four processes sharing one 64 MiB private anonymous mapping report 64 MiB of RSS each, and ps " +
+    "adds the column up to 258.2 MiB for 64 MiB of memory, because a page shared four ways is in " +
+    "four of those rows at full price. PSS is the same measurement with each page divided by the " +
+    "number of processes that map it, and the same four add up to 64.3 MiB. " +
+    `${PSS_CASES.length} forks here, ${pssGrown} of which cost a page frame.`;
+
+  await writePage("pss", base, {
+    title: "Four Processes, One Copy: RSS, PSS And fork | Max Doubin",
+    description: pssDescription,
+    canonical: `${SITE_URL}/pss`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Four processes, one copy",
+  description: pssDescription,
+  url: `${SITE_URL}/pss`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why adding up a column of RSS reports more memory than a machine has: that RSS counts a shared page in full for every process that maps it, so four processes sharing 64 MiB report 256 MiB between them, while PSS divides each page by the number of processes holding it and adds up to the frames that exist; that a read after fork costs nothing at all because fork already put the page in the child's page table, while a write to a private page costs one frame per writing child; that Linux does not copy the page tables of a shared anonymous mapping on fork, so a child's RSS there records what it has touched rather than what it can reach; that which pages the children write moves the charge between processes without changing the total; and that killing one of four sharers raises the survivors' PSS with nothing allocated and nothing freed",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Four processes, one copy</h1>
+  <p>
+    ${PSS_CASES.length} mappings, one question each. On ${pssGrown} of them something that happened after the fork cost the
+    machine a page frame, and on the rest nothing did.
+  </p>
+  <h2>The same four processes, measured twice</h2>
+  <pre><code>  PID    RSS    PSS COMMAND
+ 3295  66948  16492 hold
+ 3297  65828  16435 hold
+ 3298  65828  16435 hold
+ 3299  65828  16435 hold
+
+sum of RSS   264432 kB   258.2 MiB
+sum of PSS    65794 kB    64.3 MiB</code></pre>
+  <p>
+    One 64 MiB private anonymous mapping, touched in full by the parent and then forked three ways.
+    RSS is not wrong about any one of those rows: each of those processes really can reach 64 MiB
+    of resident pages. It is wrong the moment you add two of them together, because the same page
+    frame is in both at full price. PSS is the same measurement with each page divided by the
+    number of processes that map it, which is the only reason it exists.
+  </p>
+  <h2>A read costs nothing and a write costs a page</h2>
+  <pre><code>what each child did          RSS each   PSS each   anonymous pages
+nothing                         65536      16384             65536
+read 16 MiB                     65536      16384             65536
+wrote 16 MiB                    65536      28672            114688</code></pre>
+  <p>
+    Reading changed nothing, because fork had already put those pages in the child's page table and
+    there was nothing left to fault. Writing copied them, once per child, and the 48 MiB that
+    appeared is the only new memory in the exercise. RSS reports 64 MiB in all three rows and
+    cannot tell them apart.
+  </p>
+  <h2>A shared mapping forks differently</h2>
+  <pre><code>children touched nothing     parent 65536 /  65536    child     0 /    0
+children read 16 MiB each    parent 65536 /  53248    child 16384 / 4096</code></pre>
+  <p>
+    A child that touched nothing has an RSS of zero for a region it maps in full. Linux does not
+    copy the page tables of a shared anonymous mapping on fork, because a fault can fill them in
+    correctly later, so a child's RSS here records what it has touched since rather than what it
+    can reach.
+  </p>
+  <h2>Killing a process raises everybody else's</h2>
+  <pre><code>before   16384 kB each, four processes
+after    21845 kB each, three processes</code></pre>
+  <p>
+    Nothing was allocated and nothing was freed. The divisor changed. A graph of one process's PSS
+    during a rolling restart steps up as the old workers exit, and nothing leaked.
+  </p>
+  <h2>What each fork costs</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Mapping</th><th>Flags</th><th>Processes</th><th>Parent RSS</th><th>Child RSS</th><th>Parent PSS</th><th>Child PSS</th><th>RSS summed</th><th>PSS summed</th><th>Frames</th></tr>
+    </thead>
+    <tbody>
+${PSS_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${pssMib(pssPagesMib(s.pages))}</td><td>${s.kind === "private" ? "MAP_PRIVATE" : "MAP_SHARED"}</td>` +
+    `<td>${1 + pssAlive(s)}</td><td>${pssMib(pssPagesMib(pssRssParent(s)))}</td><td>${pssMib(pssPagesMib(pssRssChild(s)))}</td>` +
+    `<td>${pssMib(pssKibMib(pssParentKib(s)))}</td><td>${pssMib(pssKibMib(pssChildKib(s)))}</td>` +
+    `<td>${pssMib(pssPagesMib(pssRssSum(s)))}</td><td>${pssMib(pssKibMib(pssSumKib(s)))}</td><td>${pssMib(pssPagesMib(pssFrames(s)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${PSS_CASES.map((item) => {
+  const right = pssCorrect(item);
+  const s = item.setup;
+  const lines = pssLines(s).map((line) => `${line.name.padEnd(18)} ${line.value.padStart(29)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>The RSS column adds up to ${pssMib(pssPagesMib(pssRssSum(s)))}, the PSS column to ${pssMib(pssKibMib(pssSumKib(s)))}, and ${pssMib(pssPagesMib(pssFrames(s)))} of page frames exist. ${pssGrew(s) ? `The ${pssMib(pssPagesMib(pssFrames(s)) - pssPagesMib(s.pages))} above the mapping is what the writes copied.` : "Nothing that happened after the fork cost a single frame."}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-sum-of-rss-is-not-an-amount-of-memory", "The sum of RSS is not an amount of memory"], ["/free", "Two hundred megabytes free"], ["/overcommit", "Half a machine"]])}
 </main>`,
   });
 
@@ -9379,6 +9505,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/signals`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/exit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/umask`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/pss`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

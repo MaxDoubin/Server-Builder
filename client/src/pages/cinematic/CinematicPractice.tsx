@@ -61,6 +61,7 @@ import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
 import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
+import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -445,6 +446,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/pss",
+      eyebrow: "Read",
+      title: "Four processes, one copy",
+      blurb:
+        "Four processes sharing one 64 MiB mapping report 64 MiB of RSS each, and the column adds up to 258 MiB of memory that is not there. PSS is the same pages divided by the number of processes holding them.",
+      reachFor: "the dashboard says the box is out of memory and the box disagrees",
+      stats: [
+        `${PSS_CASES.length} forks`,
+        `${PSS_CASES.filter((item) => pssGrew(item.setup)).length} cost a frame`,
+        "1 copy",
       ],
       progress: null,
     },
