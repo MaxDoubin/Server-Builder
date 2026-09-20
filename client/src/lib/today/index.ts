@@ -50,6 +50,7 @@ import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as INOTIFY } from "@/lib/inotify/index";
+import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -122,6 +123,7 @@ const OFFSET = {
   timewait: 229,
   overcommit: 233,
   inotify: 239,
+  atime: 241,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -484,6 +486,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A file watcher reports that the disk is full, on a disk with nineteen gigabytes free. Work out what ran out, who spent it, and whether the message names any part of it.",
       href: "/inotify",
       outOf: INOTIFY.length,
+    });
+  }
+
+  const accessed = pickFor(ATIME, day, OFFSET.atime);
+  if (accessed) {
+    out.push({
+      surface: "atime",
+      eyebrow: "Predict",
+      title: accessed.name,
+      blurb: "On a relatime mount most reads write nothing and some read writes an inode. Work out whether this one does, and what the access time is worth to anyone reading it afterwards.",
+      href: "/atime",
+      outOf: ATIME.length,
     });
   }
 

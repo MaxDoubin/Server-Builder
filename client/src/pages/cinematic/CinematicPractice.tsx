@@ -52,6 +52,7 @@ import { CASES as RCVBUF_CASES, backfired as rcvBackfired } from "@/lib/rcvbuf/i
 import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
 import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
+import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -380,6 +381,20 @@ export function CinematicPractice() {
         `${INOTIFY_CASES.length} hosts`,
         `${INOTIFY_CASES.filter((item) => !inoFits(item.setup)).length} that fail`,
         "2 wrong messages",
+      ],
+      progress: null,
+    },
+    {
+      href: "/atime",
+      eyebrow: "Predict",
+      title: "The read that wrote",
+      blurb:
+        "On a relatime mount most reads write nothing, and reading a tree of 1059 files once a day writes 1059 inodes. An access time frozen by noatime does not read as missing; it reads as old, and a cleanup job agrees.",
+      reachFor: "a read-only workload is writing, or an access time will not move",
+      stats: [
+        `${ATIME_CASES.length} filesystems`,
+        `${ATIME_CASES.filter((item) => atimeUpdates(item.setup)).length} where the read writes`,
+        "3 rules",
       ],
       progress: null,
     },

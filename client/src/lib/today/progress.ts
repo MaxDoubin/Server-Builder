@@ -46,6 +46,7 @@ import { CASES as RCVBUF } from "@/lib/rcvbuf/index";
 import { CASES as TIMEWAIT } from "@/lib/timewait/index";
 import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as INOTIFY } from "@/lib/inotify/index";
+import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -89,6 +90,7 @@ import { loadSolvedRcvbuf } from "@/lib/rcvbuf/progress";
 import { loadSolvedTimewait } from "@/lib/timewait/progress";
 import { loadSolvedOvercommit } from "@/lib/overcommit/progress";
 import { loadSolvedInotify } from "@/lib/inotify/progress";
+import { loadSolvedAtime } from "@/lib/atime/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -226,6 +228,13 @@ export function readProgress(): Line[] {
       href: "/inotify",
       done: loadSolvedInotify().filter((slug) => INOTIFY.some((item) => item.slug === slug)).length,
       total: INOTIFY.length,
+      noun: "called right",
+    },
+    {
+      label: "The read that wrote",
+      href: "/atime",
+      done: loadSolvedAtime().filter((slug) => ATIME.some((item) => item.slug === slug)).length,
+      total: ATIME.length,
       noun: "called right",
     },
     {
