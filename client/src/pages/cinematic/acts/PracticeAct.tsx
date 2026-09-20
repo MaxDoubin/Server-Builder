@@ -71,6 +71,7 @@ import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
 import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
+import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -261,6 +262,14 @@ const SURFACES: Surface[] = [
     blurb:
       "A mapping ends on a page boundary and the file behind it ends wherever it likes, so there are two edges and two signals. Past the mapping is SIGSEGV, past the file's last page is SIGBUS, and the gap between the end of the file and the end of its page is neither.",
     count: `${MAPPED_CASES.length} accesses, ${MAPPED_CASES.filter((item) => mpOutcome(item.setup) !== "ok").length} fault`,
+  },
+  {
+    href: "/fdset",
+    eyebrow: "Predict",
+    title: "One descriptor too many",
+    blurb:
+      "An fd_set is 128 bytes and FD_SET is one division and a store. Descriptor 1024 is byte 128, which is not in the set, and what is there is whichever member of your struct the compiler put next. Nothing returns, nothing checks, and the number came from accept().",
+    count: `${FDSET_CASES.length} calls, ${FDSET_CASES.filter((item) => !fsInSet(item.setup)).length} land outside the set`,
   },
   {
     href: "/sparse",

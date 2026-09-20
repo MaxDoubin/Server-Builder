@@ -783,6 +783,13 @@ jobs:
       - name: What a mapping covers
         run: npx tsx scripts-ci/check-mapped.ts
 
+      # Descriptor sets. Where FD_SET writes is one division, so the gate
+      # paints the object one byte at a time with the member that owns it and
+      # counts descriptors out eight to a byte from zero, which is the same
+      # answer arrived at without dividing anything.
+      - name: Descriptor sets
+        run: npx tsx scripts-ci/check-fdset.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

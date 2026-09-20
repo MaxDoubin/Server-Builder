@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 311 of them. Regenerate with script/generatePostIndex.ts.
+ * 312 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "one-descriptor-too-many",
+    title: "One Descriptor Too Many",
+    date: "2026-09-20",
+    tags: ["linux","programming","troubleshooting","operations"],
+    excerpt: "FD_SET is one division and one store, with no check anywhere in it. An fd_set is 128 bytes, so descriptor 1024 is byte 128, and what is at byte 128 is whatever member of your struct the compiler put after the set. A week of uptime is all it takes.",
+    coverImage: "/images/blog/one-descriptor-too-many.jpg",
+    wordCount: 1542,
+  },
   {
     slug: "three-boundaries-and-two-signals",
     title: "Three Boundaries And Two Signals",
@@ -3033,10 +3042,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 311;
+export const POST_COUNT = 312;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and eleven";
+export const POST_COUNT_SPELLED = "three hundred and twelve";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3045,10 +3054,10 @@ export const POST_COUNT_SPELLED = "three hundred and eleven";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1191;
+export const CITATION_COUNT = 1195;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1350;
+export const CHECKED_URL_COUNT = 1354;

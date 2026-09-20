@@ -62,6 +62,7 @@ import { CASES as PSS } from "@/lib/pss/index";
 import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as APPEND } from "@/lib/append/index";
 import { CASES as MAPPED } from "@/lib/mapped/index";
+import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -148,6 +149,7 @@ const OFFSET = {
   sparse: 307,
   append: 311,
   mapped: 313,
+  fdset: 317,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -630,6 +632,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "A 100 byte file mapped for two pages reads byte 4095 without a signal and takes SIGBUS at 4096. Work out which of the two edges an access falls past, and which signal that is.",
       href: "/mapped",
       outOf: MAPPED.length,
+    });
+  }
+
+  const descriptor = pickFor(FDSET, day, OFFSET.fdset);
+  if (descriptor) {
+    out.push({
+      surface: "fdset",
+      eyebrow: "Predict",
+      title: descriptor.name,
+      blurb: "FD_SET(1024) sets bit 0 of byte 128, which is one past the end of a 128 byte fd_set. Work out which member of the program's own struct ends up with the bit.",
+      href: "/fdset",
+      outOf: FDSET.length,
     });
   }
 

@@ -58,6 +58,7 @@ import { CASES as PSS } from "@/lib/pss/index";
 import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as APPEND } from "@/lib/append/index";
 import { CASES as MAPPED } from "@/lib/mapped/index";
+import { CASES as FDSET } from "@/lib/fdset/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -114,6 +115,7 @@ import { loadSolvedPss } from "@/lib/pss/progress";
 import { loadSolvedSparse } from "@/lib/sparse/progress";
 import { loadSolvedAppend } from "@/lib/append/progress";
 import { loadSolvedMapped } from "@/lib/mapped/progress";
+import { loadSolvedFdset } from "@/lib/fdset/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -315,6 +317,13 @@ export function readProgress(): Line[] {
       href: "/mapped",
       done: loadSolvedMapped().filter((slug) => MAPPED.some((item) => item.slug === slug)).length,
       total: MAPPED.length,
+      noun: "called right",
+    },
+    {
+      label: "One descriptor too many",
+      href: "/fdset",
+      done: loadSolvedFdset().filter((slug) => FDSET.some((item) => item.slug === slug)).length,
+      total: FDSET.length,
       noun: "called right",
     },
     {
