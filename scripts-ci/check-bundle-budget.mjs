@@ -215,8 +215,12 @@ const INDEX = path.join(DIST, "index.html");
  * registrations, which are eager by design: a route, a palette row, a blurb
  * and two cards. The case data is not, and a check that the entry chunk does
  * not grow by the size of a surface's prose is what this budget is really for.
+ *
+ * 727 KB, raised from 726 by /pagecache at 725.3. Nine tenths again, for the
+ * third surface running, which is the number to use when estimating what the
+ * next one costs.
  */
-const BUDGET_BYTES = 726 * 1024;
+const BUDGET_BYTES = 727 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

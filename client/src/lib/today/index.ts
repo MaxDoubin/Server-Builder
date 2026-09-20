@@ -63,6 +63,7 @@ import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as APPEND } from "@/lib/append/index";
 import { CASES as MAPPED } from "@/lib/mapped/index";
 import { CASES as FDSET } from "@/lib/fdset/index";
+import { CASES as PAGECACHE } from "@/lib/pagecache/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -150,6 +151,7 @@ const OFFSET = {
   append: 311,
   mapped: 313,
   fdset: 317,
+  pagecache: 331,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -644,6 +646,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "FD_SET(1024) sets bit 0 of byte 128, which is one past the end of a 128 byte fd_set. Work out which member of the program's own struct ends up with the bit.",
       href: "/fdset",
       outOf: FDSET.length,
+    });
+  }
+
+  const column = pickFor(PAGECACHE, day, OFFSET.pagecache);
+  if (column) {
+    out.push({
+      surface: "pagecache",
+      eyebrow: "Read",
+      title: column.name,
+      blurb: "A gibibyte written to a file and a gibibyte written to tmpfs put the same figure in free's buff/cache column, and dropping caches returns one of them. Work out how much of the column is really yours.",
+      href: "/pagecache",
+      outOf: PAGECACHE.length,
     });
   }
 

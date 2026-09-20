@@ -790,6 +790,13 @@ jobs:
       - name: Descriptor sets
         run: npx tsx scripts-ci/check-fdset.ts
 
+      # The page cache column. Whether memory comes back is not a property of
+      # the figure, so the gate itemizes the column one contributor at a time
+      # and filters it by what each attempt can actually take, which also
+      # proves every kilobyte belongs to exactly one contributor.
+      - name: The page cache column
+        run: npx tsx scripts-ci/check-pagecache.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

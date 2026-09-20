@@ -59,6 +59,7 @@ import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as APPEND } from "@/lib/append/index";
 import { CASES as MAPPED } from "@/lib/mapped/index";
 import { CASES as FDSET } from "@/lib/fdset/index";
+import { CASES as PAGECACHE } from "@/lib/pagecache/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -116,6 +117,7 @@ import { loadSolvedSparse } from "@/lib/sparse/progress";
 import { loadSolvedAppend } from "@/lib/append/progress";
 import { loadSolvedMapped } from "@/lib/mapped/progress";
 import { loadSolvedFdset } from "@/lib/fdset/progress";
+import { loadSolvedPagecache } from "@/lib/pagecache/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -324,6 +326,13 @@ export function readProgress(): Line[] {
       href: "/fdset",
       done: loadSolvedFdset().filter((slug) => FDSET.some((item) => item.slug === slug)).length,
       total: FDSET.length,
+      noun: "called right",
+    },
+    {
+      label: "The cache you cannot drop",
+      href: "/pagecache",
+      done: loadSolvedPagecache().filter((slug) => PAGECACHE.some((item) => item.slug === slug)).length,
+      total: PAGECACHE.length,
       noun: "called right",
     },
     {

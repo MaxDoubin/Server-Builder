@@ -66,6 +66,7 @@ import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/ind
 import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as MAPPED_CASES, outcome as mpOutcome } from "@/lib/mapped/index";
 import { CASES as FDSET_CASES, inTheSet as fsInSet } from "@/lib/fdset/index";
+import { CASES as PAGECACHE_CASES, pinned as pcPinned } from "@/lib/pagecache/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -492,6 +493,20 @@ export function CinematicPractice() {
         `${FDSET_CASES.length} calls`,
         `${FDSET_CASES.filter((item) => !fsInSet(item.setup)).length} land outside the set`,
         "1 division",
+      ],
+      progress: null,
+    },
+    {
+      href: "/pagecache",
+      eyebrow: "Read",
+      title: "The cache you cannot drop",
+      blurb:
+        "A gibibyte written to a file and a gibibyte written to tmpfs put the same figure in free's buff/cache column. Dropping caches returns the first and none of the second, because a tmpfs page has no disk behind it. Shmem is the one column in the output that tells them apart.",
+      reachFor: "free says there is plenty of cache and the machine is still short of memory",
+      stats: [
+        `${PAGECACHE_CASES.length} machines`,
+        `${PAGECACHE_CASES.filter((item) => pcPinned(item.setup)).length} hold memory nothing returns`,
+        "4 columns",
       ],
       progress: null,
     },
