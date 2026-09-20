@@ -36,16 +36,26 @@
  * check written against a syntax rather than against an effect. So this one
  * reads both, and reads the stylesheet too.
  *
- * WHAT IS EXEMPT. A label inside <Html distanceFactor>, where drei ties the
- * element's apparent size to the camera, so growing the type truncates it
- * sooner rather than reading better and the reader's real control is zoom.
- * The exemption is spent only where a size would otherwise fail, so a camera
- * scaled label already written at the floor passes on its own merit and does
- * not consume it. Three sizes need it, and the count is asserted, so it
- * cannot quietly become where small type goes to live. scripts-ci/lib/camera-scaled
- * decides it for this gate and for check-text-scaling together, because two
- * gates disagreeing about one exemption means the size inside it is checked
- * by neither.
+ * WHAT IS EXEMPT, AND WHAT STOPPED BEING. A label inside <Html
+ * distanceFactor> may still be written in px, because drei ties its apparent
+ * size to the camera and moving it with the rem basis truncates it rather
+ * than making it readable. That is check-text-scaling's concern and the
+ * exemption belongs to it.
+ *
+ * The FLOOR used to be exempt there too, and that was wrong. drei scales such
+ * a label by distanceFactor over the distance to the camera, which is a
+ * number this gate cannot know and which goes both ways. Measured on the
+ * facility HUD over the 3D floor, it came to 0.417: the authored 10px labels
+ * reached the screen at 4.2px, and this gate called the page clean because
+ * the exemption said the camera would decide. It did decide, downwards.
+ *
+ * So the floor now applies to the authored value everywhere, which is the
+ * only value a static check has. A camera that shrinks the label makes it
+ * worse than the floor, and a camera that grows it loses nothing by starting
+ * at 0.625rem. scripts-ci/lib/camera-scaled still decides the unit exemption
+ * for this gate and check-text-scaling together, because two gates
+ * disagreeing about one exemption means the size inside it is checked by
+ * neither.
  */
 import { readFileSync } from "fs";
 import { execFileSync } from "child_process";
@@ -90,7 +100,6 @@ for (const file of files) {
       sizes += 1;
       if (length.rem === FLOOR_REM) atFloor += 1;
       if (length.rem >= FLOOR_REM) continue;
-      if (isCameraScaled(scaled, match.index)) { exemptScaled += 1; continue; }
       problems.push(
         `${file}:${lineAt(match.index)} sets ${match[0]}, which is ${(length.rem * ROOT_PX).toFixed(2)}px ` +
           `at the default scale, under the ${FLOOR_REM}rem floor. Label type is already uppercase and tracked; ` +
@@ -118,14 +127,16 @@ for (const file of files) {
     for (const length of lengths) {
       sizes += 1;
       if (length.rem === FLOOR_REM) atFloor += 1;
+      /* The unit is exempt inside a camera scaled <Html>. The floor is not. */
       if (/px/.test(length.text)) {
-        if (scaledHere) { exemptScaled += 1; continue; }
-        problems.push(
-          `${file}:${line} sets fontSize: ${raw} in px. An inline style has the same defect as text-[${length.text}] ` +
-            `and check-text-scaling cannot see it, because that gate reads class names.`,
-        );
-      } else if (length.rem < FLOOR_REM) {
-        if (scaledHere) { exemptScaled += 1; continue; }
+        if (scaledHere) exemptScaled += 1;
+        else
+          problems.push(
+            `${file}:${line} sets fontSize: ${raw} in px. An inline style has the same defect as text-[${length.text}] ` +
+              `and check-text-scaling cannot see it, because that gate reads class names.`,
+          );
+      }
+      if (length.rem < FLOOR_REM) {
         problems.push(
           `${file}:${line} sets fontSize: ${raw}, under the ${FLOOR_REM}rem floor.`,
         );
@@ -176,5 +187,6 @@ if (problems.length) {
 
 console.log(
   `OK  all ${sizes} explicit type sizes are at or above the ${FLOOR_REM}rem floor (${atFloor} sit exactly on it), ` +
-    `in class names, inline styles and the stylesheet alike, with ${exemptScaled} exempt inside <Html distanceFactor>.`,
+    `in class names, inline styles and the stylesheet alike. The floor applies inside a camera scaled <Html> too; ` +
+    `${exemptScaled} px units are exempt there, which is a unit and not a size.`,
 );
