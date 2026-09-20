@@ -176,7 +176,7 @@ exceeding the other is ordinary.
 
 The same figure is also two different percentages depending on the
 denominator. \`Committed_AS\` there is 48.6 percent of \`CommitLimit\` and 24.3
-percent of \`MemTotal\`. A graph labelled "committed memory" without saying
+percent of \`MemTotal\`. A graph labeled "committed memory" without saying
 which is showing a number that is double or half the other one.
 
 ## Strict mode does not retire the killer
