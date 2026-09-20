@@ -218,7 +218,7 @@ export function CinematicGear() {
               data-testid="text-gear-error"
               className="mt-12 rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-6 font-mono-tight text-sm text-[hsl(var(--brand-bone-dim))]"
             >
-              The catalogue did not load. Reload the page to try again.
+              The catalog did not load. Reload the page to try again.
             </p>
           ) : null}
 
@@ -501,7 +501,7 @@ export function CinematicGear() {
             */
             <div className="mt-12 min-h-screen">
               <p role="status" className="font-mono-tight text-sm text-[hsl(var(--brand-ash))]">
-                Loading the catalogue...
+                Loading the catalog...
               </p>
               <ul aria-hidden className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }, (_, i) => (

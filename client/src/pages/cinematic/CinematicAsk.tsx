@@ -93,7 +93,7 @@ export function CinematicAsk() {
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Networking, security, homelab hardware, competition, running a
               club, or what any of this is actually like from inside a high
-              school programme. If the answer is long enough to be useful to
+              school program. If the answer is long enough to be useful to
               other people it usually turns into a post.
             </p>
           </header>

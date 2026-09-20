@@ -1842,13 +1842,13 @@ const wiredRackContent = `
   The hardware is Ubiquiti's own geometry, the same models their store loads
   into its 3D viewer, so the panels are the panels and the ports are where the
   ports are. The build is mine: two PoE switches coming down to surge panels,
-  fibre uplinks to the aggregation switch, storage taking copper straight to
+  fiber uplinks to the aggregation switch, storage taking copper straight to
   the nearest switch, and every power lead running down the side of the frame
   into the distribution unit.</p>
   <h2>What is in it</h2>
   <ul>
     <li>Dream Machine SE, the gateway, at the top of the rack.</li>
-    <li>Pro Aggregation, which every other switch uplinks to on fibre.</li>
+    <li>Pro Aggregation, which every other switch uplinks to on fiber.</li>
     <li>Two 24 port surge protection panels, where the building's cabling lands.</li>
     <li>Switch Pro Max 48 PoE and Switch Pro 24 PoE, the access layer.</li>
     <li>Enterprise Gateway, Network Video Recorder Pro and Network Attached Storage Pro.</li>
@@ -1886,7 +1886,7 @@ const rackBuilderContent = `
   silently pushes it down, and both are wrong, because real hardware does
   neither. It either fits in the gap or it does not go in. So every placement
   asks whether a specific run of units is free, and refuses when it is not,
-  which is why the frame buttons grey out when something in the build would
+  which is why the frame buttons gray out when something in the build would
   hang below a shorter frame.</p>
   <h2>What a build weighs</h2>
   <p>The weight is on screen because this page cannot hide it. A drawn
@@ -2630,7 +2630,7 @@ ${JSON.stringify({
 <main>
   <h1>You have backups, not restores</h1>
   <p>
-    Every organisation that lost data had backups. That is not a paradox and
+    Every organization that lost data had backups. That is not a paradox and
     it is not carelessness: a backup is a job that reports success, and a
     restore is a thing nobody does until the worst day of the year. The gap
     between the two is where the losses live.
@@ -5977,7 +5977,7 @@ ${LOGS.map((item) => `  <article>
   <p>
     Every line above is rendered to real syslog format and parsed back at
     build time, so a line no daemon would emit fails the build rather than
-    teaching you to recognise something you will never see.
+    teaching you to recognize something you will never see.
   </p>
   ${backLinks([["/practice", "All practice material"], ["/capture", "Packet captures"], ["/labs", "Hands-on labs"]])}
 </main>`,
@@ -6286,7 +6286,7 @@ ${plan.requirements
   .join("\n")}
   </ul>
   <p>
-    The exercise is marked by behaviour rather than by matching one answer, so
+    The exercise is marked by behavior rather than by matching one answer, so
     any plan that meets every requirement without overlapping is right. The
     interactive page draws the block to scale as you fill it and there are
     ${plan.hints.length} hints.
@@ -6554,7 +6554,7 @@ ${exercise.expectations
   .join("\n")}
   </ul>
   <p>
-    The exercise is marked by behaviour rather than by shape, so any chain that
+    The exercise is marked by behavior rather than by shape, so any chain that
     produces those verdicts is correct. The interactive page traces any of
     these packets rule by rule and there are ${exercise.hints.length} hints.
   </p>

@@ -127,6 +127,71 @@ function proseOf(line, inBlockComment) {
 }
 
 /**
+ * The reader-facing text on a line that is neither a comment nor a quoted
+ * string: JSX text nodes, and the body of a template literal that spans
+ * lines.
+ *
+ * proseOf did not see either, and they are most of the copy on this site.
+ * A JSX text node is not a string literal, so
+ *
+ *   <p>Colour comes from the equipment in each rack.</p>
+ *
+ * was invisible to a gate whose whole promise is that no British spelling
+ * reaches a reader, and so were nineteen more like it, including several in
+ * the static HTML that prerender writes. The gate reported the site clean the
+ * entire time.
+ *
+ * Still one line at a time, for the reason in the header: a span that cannot
+ * cross a newline cannot run away to the next matching character hundreds of
+ * lines down.
+ *
+ * Conservative on purpose. A declaration line and an object key line are
+ * dropped outright, because `export interface Catalogue` and
+ * `colour: "blue" as LedState` are identifiers, and identifiers are the one
+ * thing this gate has always promised not to touch. Both tests are anchored
+ * so they cannot swallow prose: a declaration has to start the line, and an
+ * annotation has to put a quote, a brace or a digit after the colon, which
+ * leaves "the state at each one: grey inactive" alone.
+ *
+ * Member access is dropped too, because `catalogue.devices.length` is a
+ * reference, and prose puts a space after a full stop. That test runs on the
+ * stripped text rather than the raw line, which matters: testing the raw line
+ * also threw away `{d.vendor} {d.sku}. Modelled here from photographs.`,
+ * where the only dots belong to expressions that have already come out.
+ *
+ * Quoted spans come out next because proseOf
+ * already owns them, and leaving them in made `jacket: "grey" as const` read
+ * as a four word sentence. Tags and `{...}` expressions come out next, and
+ * then anything left holding code punctuation is dropped rather than guessed
+ * at, because the cost of a false positive here is a red build on an
+ * identifier the gate has always promised to leave alone. Three words is the
+ * floor: it clears `colour,` and `colour: LedState;` while keeping the
+ * shortest real caption on the site.
+ */
+const CODEY = /[=;()[\]]/;
+
+/** A declaration: `export interface Catalogue`, `const colour`, `type Grey`. */
+const DECLARES = /^\s*(export|import|declare|abstract|interface|type|enum|class|function|const|let|var|return)\b/;
+
+/** An object key or a type annotation: `colour: "blue"`, `port: 0`, `led: {`. */
+const ANNOTATES = /[\w"']\s*:\s*(["'`{[]|\d|$)/;
+
+/** Member access: `catalogue.devices.length`. Prose puts a space after a stop. */
+const MEMBER = /\w\.\w/;
+
+function bareProseOf(line) {
+  if (DECLARES.test(line) || ANNOTATES.test(line)) return "";
+  const stripped = line
+    .replace(/(["'`])(?:\\.|(?!\1)[^\n])*?\1/g, " ")
+    .replace(/\{[^{}]*\}/g, " ")
+    .replace(/<\/?[^<>]*>/g, " ")
+    .replace(/[<>{}]/g, " ");
+  if (CODEY.test(stripped) || MEMBER.test(stripped)) return "";
+  const words = stripped.match(/[A-Za-z][A-Za-z'\u2019-]+/g) || [];
+  return words.length >= 3 ? stripped : "";
+}
+
+/**
  * This file is the one thing it cannot check.
  *
  * The word list is the British spellings, and the header quotes more of them
@@ -171,9 +236,11 @@ for (const file of files) {
     if (markdown) {
       text = line;
     } else {
+      const wasInBlockComment = inBlockComment;
       text = proseOf(line, inBlockComment);
       if (inBlockComment && line.includes("*/")) inBlockComment = false;
       else if (line.includes("/*") && !line.includes("*/")) inBlockComment = true;
+      if (!text && !wasInBlockComment) text = bareProseOf(line);
     }
     if (!text) return;
     for (const hit of blankProtected(text).matchAll(MATCH)) {

@@ -378,7 +378,7 @@ export function CinematicPatch() {
           <p className="mt-12 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             The tree is the published deployer decision tree, all seventy-two rows of it,
             transcribed rather than reimplemented: the point of using somebody else's framework is
-            lost if you rewrite its judgements into heuristics of your own on the way in. CI checks
+            lost if you rewrite its judgments into heuristics of your own on the way in. CI checks
             the transcription by a property rather than by fetching the source on every build,
             because a gate that fails when a third party has a bad minute is a gate everybody
             learns to ignore. Worsening any single decision point must never lower the priority,

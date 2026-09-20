@@ -242,7 +242,7 @@ export function CinematicArray() {
               a backup survives you.
             </p>
             <p className="mt-3 font-mono-tight text-[0.8125rem] leading-[1.75] text-[hsl(var(--brand-ash))]">
-              The failure that is not modelled here is correlated failure, and it is the one that
+              The failure that is not modeled here is correlated failure, and it is the one that
               actually takes arrays down. Disks bought together, from the same batch, run at the
               same temperature for the same years, do not fail independently, and a rebuild puts
               every survivor under sustained full read load at exactly the moment you need them to

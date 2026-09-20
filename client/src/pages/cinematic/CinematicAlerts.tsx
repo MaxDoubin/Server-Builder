@@ -314,7 +314,7 @@ ${asYaml(setup.rule)}`}
                   </div>
                   <p className="mt-2 font-mono-tight text-[0.6875rem] leading-relaxed text-[hsl(var(--brand-ash)/0.85)]">
                     Dots are samples and the dashed line is the threshold. The faint verticals are
-                    the evaluations, and the band below is the state at each one: grey inactive,
+                    the evaluations, and the band below is the state at each one: gray inactive,
                     amber pending, red firing.
                     {stale !== null ? ` The series is marked stale at ${clock(stale)} and returns nothing after that.` : ""}
                   </p>

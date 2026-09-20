@@ -261,7 +261,7 @@ export function CinematicRackBuilder() {
             </h1>
             <p className="mt-6 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Seventy five rack mountable devices from six vendors, and an empty frame. Fifty
-              are Ubiquiti's own published geometry and the rest were modelled here from
+              are Ubiquiti's own published geometry and the rest were modeled here from
               photographs and dimensioned drawings. Pick something and it lands in the highest
               free slot that fits it. A 2U will not go into a 1U gap, because a 2U does not go
               into a 1U gap. What you build is saved in your browser and can be shared as a link.
@@ -391,7 +391,7 @@ export function CinematicRackBuilder() {
                 ) : null}
                 {!catalogue ? (
                   <li className="px-3 py-6 text-center font-mono-tight text-[0.6875rem] text-[hsl(var(--brand-ash))]">
-                    Loading the catalogue...
+                    Loading the catalog...
                   </li>
                 ) : null}
               </ul>
@@ -419,7 +419,7 @@ export function CinematicRackBuilder() {
                   </Suspense>
                 ) : (
                   <div className="flex h-full items-center justify-center font-mono-tight text-xs text-[hsl(var(--brand-ash))]">
-                    Loading the catalogue...
+                    Loading the catalog...
                   </div>
                 )}
                 <LoadProgress />
@@ -596,7 +596,7 @@ export function CinematicRackBuilder() {
                           </a>
                         ) : (
                           <span className="mt-2 block font-mono-tight text-[0.625rem] text-[hsl(var(--brand-ash))]">
-                            {d.vendor} {d.sku}. Modelled here from photographs.
+                            {d.vendor} {d.sku}. Modeled here from photographs.
                           </span>
                         )}
                       </div>
@@ -618,7 +618,7 @@ export function CinematicRackBuilder() {
               2U dropped between two 1U devices either overlaps one of them or silently pushes it
               down, and both are wrong, because real hardware does neither. It either fits in the
               gap or it does not go in. So every placement asks whether a specific run of units is
-              free, and refuses when it is not, which is why the frame buttons grey out when
+              free, and refuses when it is not, which is why the frame buttons gray out when
               something in the build would hang below a shorter frame.
             </p>
             <p className="mt-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">

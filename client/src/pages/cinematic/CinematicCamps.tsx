@@ -149,7 +149,7 @@ export function CinematicCamps() {
               </dl>
             ) : (
               <p className="mt-3 max-w-[62ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                Ages, session length, dates, and cost vary by camp and by the organisation hosting
+                Ages, session length, dates, and cost vary by camp and by the organization hosting
                 it, so this page does not publish numbers that would be wrong for the camp you are
                 actually looking at. Email{" "}
                 <a

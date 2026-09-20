@@ -46,7 +46,7 @@ export function CinematicWiredRack() {
               Fourteen units of UniFi, patched the way somebody would actually patch it. The
               hardware is Ubiquiti's own geometry, the same models their store loads into its 3D
               viewer, so the panels are the panels and the ports are where the ports are. The
-              build is mine: two PoE switches coming down to surge panels, fibre uplinks to the
+              build is mine: two PoE switches coming down to surge panels, fiber uplinks to the
               aggregation switch, storage taking copper straight to the nearest switch, and every
               power lead running down the side of the frame into the distribution unit.
             </p>
