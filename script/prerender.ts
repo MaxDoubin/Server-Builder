@@ -7635,7 +7635,7 @@ ${JSON.stringify({
   }
   const gearContent = `
 <main>
-  <h1>Hardware catalogue</h1>
+  <h1>Hardware catalog</h1>
   <p>Every UniFi model this site can draw, ${catalogue.devices.length} of them, with the dimensions read out of each model's own bounding box rather than copied off a datasheet. ${catalogue.devices.filter((d) => d.mount === "rack").length} mount in a nineteen inch frame; the rest go on a wall, a ceiling or a desk.</p>
   ${[...byGroup.entries()]
     .sort((a, b) => b[1].length - a[1].length)
