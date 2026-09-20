@@ -697,6 +697,13 @@ jobs:
       - name: Access times
         run: npx tsx scripts-ci/check-atime.ts
 
+      # Nagle against the receiver's delayed acknowledgement. The property
+      # that matters is that every write after the first joins ONE held
+      # segment, which an expression can get right by accident, so the gate
+      # walks the exchange as a state machine and counts the timers it waits.
+      - name: Nagle and the delayed ACK
+        run: npx tsx scripts-ci/check-nagle.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

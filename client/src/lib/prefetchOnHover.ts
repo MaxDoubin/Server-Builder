@@ -105,6 +105,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/overcommit": { load: () => import("@/pages/cinematic/CinematicOvercommit") },
   "/inotify": { load: () => import("@/pages/cinematic/CinematicInotify") },
   "/atime": { load: () => import("@/pages/cinematic/CinematicAtime") },
+  "/nagle": { load: () => import("@/pages/cinematic/CinematicNagle") },
   "/fds": { load: () => import("@/pages/cinematic/CinematicFds") },
   "/writeback": { load: () => import("@/pages/cinematic/CinematicWriteback") },
   "/conntrack": { load: () => import("@/pages/cinematic/CinematicConntrack") },

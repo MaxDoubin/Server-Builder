@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as NAGLE_CASES, applying as ngApplying, asSocket as ngSocket, bytesBeforeRead as ngBytes, correctOption as ngCorrect, humanUs as ngUs, requestsPerSecond as ngRps, roundTripUs as ngUsTrip, slowdown as ngSlow, stalls as ngStalls, stallsPerRequest as ngTimers, totalMs as ngTotal } from "../client/src/lib/nagle/index";
 import { CASES as ATIME_CASES, asStat as atStat, atimeAgeAfterRead as atAfter, blockedBy as atBlocked, correctOption as atCorrect, ctimeRule as atCtime, dayRule as atDay, humanAge as atAge, inodesDirtied as atDirtied, mtimeRule as atMtime, reason as atReason, rulesFiring as atFiring, selectedByCleanup as atSelected, updates as atUpdates } from "../client/src/lib/atime/index";
 import { CASES as OVERCOMMIT_CASES, asSysctl as ocSysctl, commitLimitKb as ocLimit, committedPercentOfLimit as ocPctLimit, committedPercentOfRam as ocPctRam, correctOption as ocCorrect, headroomKb as ocHeadroom, human as ocHuman, limitPercentOfRam as ocLimitPct, modeName as ocMode, oomPossible as ocOom, refuses as ocRefuses, refusesWithMemoryFree as ocWasteful } from "../client/src/lib/overcommit/index";
 import { CASES as TIMEWAIT_CASES, TIME_WAIT_SECONDS as TW_LEN, asSysctl as twSysctl, closerState as twState, correctOption as twCorrect, ephemeralPorts as twPorts, exhausts as twExhausts, human as twHuman, overflowsBuckets as twOverflows, reuseHelps as twReuse, stateSeconds as twSeconds, sustainableRate as twRate, tupleCapacity as twTuples } from "../client/src/lib/timewait/index";
@@ -905,6 +906,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/retrans">Fifteen, and there were four</a>, why tcp_retries2 is a length of time and not a count.</li>
     <li><a href="${SITE_URL}/inotify">No space left</a>, why a file watcher says the disk is full when it is not.</li>
     <li><a href="${SITE_URL}/atime">The read that wrote</a>, when reading a file writes an inode and when it does not.</li>
+    <li><a href="${SITE_URL}/nagle">Eight bytes, forty four milliseconds</a>, why two small writes cost a local round trip forty four milliseconds.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2220,6 +2222,7 @@ ${JSON.stringify({
     ["Fifteen, and there were four", "/retrans"],
     ["No space left", "/inotify"],
     ["The read that wrote", "/atime"],
+    ["Eight bytes, forty four milliseconds", "/nagle"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4249,6 +4252,140 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-read-that-wrote-a-thousand-inodes", "The read that wrote a thousand inodes"], ["/free", "Two hundred megabytes free"], ["/space", "No space left on device"]])}
+</main>`,
+  });
+
+  // ── Nagle and the delayed acknowledgement ──
+  /*
+    The static body carries the four fixes and which one does nothing,
+    because the search that brings people here is a flat 40 ms floor on a
+    local call, and the thing they need is the list of changes with the
+    popular wrong one crossed off.
+  */
+  const ngStalling = NAGLE_CASES.filter((item) => ngStalls(item.setup)).length;
+  const ngDescription =
+    "Splitting one eight byte write into two took a loopback round trip from 0.05 ms to 44.48 ms, " +
+    "measured. Nagle will not send a segment smaller than one MSS while anything is " +
+    "unacknowledged, so the second write is held; the receiver will not acknowledge straight away, " +
+    "because an acknowledgement on its own carries nothing; and the two of them deadlock until a " +
+    "timer fires. Both ends are behaving correctly. TCP_NODELAY on the end that reads, which is the " +
+    `first thing people try, changed nothing: 44.05 ms. ${NAGLE_CASES.length} connections here, ` +
+    `${ngStalling} of them stalling.`;
+
+  await writePage("nagle", base, {
+    title: "Eight Bytes, Forty Four Milliseconds: Nagle and the Delayed ACK | Max Doubin",
+    description: ngDescription,
+    canonical: `${SITE_URL}/nagle`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Eight bytes, forty four milliseconds",
+  description: ngDescription,
+  url: `${SITE_URL}/nagle`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why an application that writes a small header and then a small body before reading the reply hits a fixed latency floor of tens of milliseconds even over loopback: that Nagle's algorithm holds any segment smaller than one MSS while there is unacknowledged data outstanding, so the first write leaves and the second waits; that the receiver has only part of a request, cannot answer, and delays its acknowledgement because an acknowledgement on its own carries no data; that both ends are therefore behaving correctly and the pair deadlocks until the delayed acknowledgement timer fires, measured at 40.89 to 49.89 ms with a median of 44.03 on one host rather than the 40 ms everybody quotes; that the cost is one timer per round trip however many writes follow the first, because they all join the same held segment, measured at 44.35, 44.15 and 44.02 ms for two, three and eight writes; that TCP_NODELAY on the socket that is reading does nothing, because the option governs that socket's own sends, measured at 44.05 ms with it set; that TCP_NODELAY on the sender, TCP_QUICKACK on the receiver, or simply handing the socket everything in one call each remove it; and that the damage is the ratio between the timer and the link, so the bug is worst exactly where the network is fastest",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Eight bytes, forty four milliseconds</h1>
+  <p>
+    ${NAGLE_CASES.length} connections, one round trip each. ${ngStalling} of them wait on a timer, and on none of
+    them is anything wrong with the network, the server, or the amount of data.
+  </p>
+  <p>
+    Here is the whole of it, measured over loopback with a client and a server in one process. Each
+    figure is the median of at least thirty round trips:
+  </p>
+  <pre><code>one write of 8 bytes, then read       0.05 ms    stalled  0/40
+two writes of 4 bytes, then read     44.48 ms    stalled 39/40
+the same two writes, TCP_NODELAY      0.05 ms    stalled  0/40
+the same 8 bytes in one write         0.05 ms    stalled  0/40</code></pre>
+  <p>
+    The same eight bytes, to the same process, over no network at all, nine hundred times slower
+    because the application called <code>send</code> twice instead of once.
+  </p>
+  <p>
+    Nagle's algorithm will not send a segment smaller than one MSS while there is unacknowledged
+    data outstanding. The first write has nothing outstanding and leaves at once. The second is
+    small, and now something is outstanding, so the sender holds it. Meanwhile the receiver has half
+    a request, cannot answer it, and delays its acknowledgement, because an acknowledgement on its
+    own carries nothing and there may be data along shortly to carry it. Each side is correct. The
+    pair is deadlocked.
+  </p>
+  <h2>One timer, not one per write</h2>
+  <p>
+    This is the part people get wrong when they estimate what it costs. Every write after the first
+    is appended to the same held segment, so the price is one timer however many there are:
+  </p>
+  <pre><code>two writes     44.35 ms
+three writes   44.15 ms
+eight writes   44.02 ms</code></pre>
+  <h2>Which changes work, and the one that does not</h2>
+  <pre><code>TCP_NODELAY on the SENDER              0.05 ms    stalled  0/30
+TCP_QUICKACK on the receiver           0.05 ms    stalled  0/30
+one write instead of two               0.05 ms    stalled  0/30
+TCP_NODELAY on the RECEIVER           44.05 ms    stalled 29/30</code></pre>
+  <p>
+    The last line is the one worth keeping. <code>TCP_NODELAY</code> is per socket and governs that
+    socket's own sends, so setting it on the end that is reading does nothing about the end that is
+    holding data, and it is the first thing almost everybody tries. If the sender is a binary you
+    cannot change, <code>TCP_QUICKACK</code> on your own socket breaks the other half of the
+    deadlock, and it has to be set again before every read because Linux clears it on its own.
+  </p>
+  <h2>Worst where the network is fastest</h2>
+  <p>
+    The timer is a fixed forty four milliseconds and the link is not, so the damage is the ratio
+    between them. On loopback that is 881 times. Thirty milliseconds away it is 2 times, which is
+    slow but not obviously broken. That is why this survives testing against a remote service and
+    only bites once something moves next door.
+  </p>
+  <h2>What the timer actually is</h2>
+  <p>
+    Everybody writes forty milliseconds. Over fifty nine stalls on this host the timer ran 40.89 ms
+    at its shortest, 44.03 ms at the median and 49.89 ms at its longest.
+  </p>
+  <h2>What each connection does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Connection</th><th>Writes</th><th>Bytes</th><th>Sender NODELAY</th><th>Receiver NODELAY</th><th>Receiver QUICKACK</th><th>Timers</th><th>Round trip</th><th>Per second</th><th>Slower by</th></tr>
+    </thead>
+    <tbody>
+${NAGLE_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(s.writes.join(" + "))}</td><td>${ngBytes(s)}</td>` +
+    `<td>${s.nodelaySender ? "on" : "off"}</td><td>${s.nodelayReceiver ? "on" : "off"}</td><td>${s.quickackReceiver ? "on" : "off"}</td>` +
+    `<td>${ngTimers(s)}</td><td>${esc(ngUs(ngUsTrip(s)))}</td><td>${ngRps(s)}</td><td>${ngSlow(s)}x</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${NAGLE_CASES.map((item) => {
+  const right = ngCorrect(item);
+  const s = item.setup;
+  const sock = ngSocket(s).map((line) => `${line.name.padEnd(24)} ${line.value.padStart(18)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(sock)}
+
+# the delayed acknowledgement on this host: ${s.delayedAckMs} ms</code></pre>
+    <p>${ngStalls(s) ? `This round trip waits one timer: ${esc(ngUs(s.baseUs))} of work and ${s.delayedAckMs} ms of nothing, so ${esc(ngUs(ngUsTrip(s)))} in total, ${ngSlow(s)} times what the link can do and ${ngRps(s)} round trips a second against ${ngRps(ngApplying(s, "one-write"))} unheld.` : `This round trip waits no timer: ${esc(ngUs(ngUsTrip(s)))}, which is the link on its own.`} Over ${s.requests} of them that is ${ngTotal(s)} ms against ${ngTotal(ngApplying(s, "one-write"))} ms.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/eight-bytes-forty-four-milliseconds", "Eight bytes, forty four milliseconds"], ["/rcvbuf", "Tuned smaller"], ["/transfer", "Why the transfer is slow"]])}
 </main>`,
   });
 
@@ -8289,6 +8426,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/retrans`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/inotify`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/atime`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/nagle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

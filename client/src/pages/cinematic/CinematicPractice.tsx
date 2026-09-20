@@ -53,6 +53,7 @@ import { CASES as TIMEWAIT_CASES, exhausts as twExhausts } from "@/lib/timewait/
 import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "@/lib/overcommit/index";
 import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index";
+import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -395,6 +396,20 @@ export function CinematicPractice() {
         `${ATIME_CASES.length} filesystems`,
         `${ATIME_CASES.filter((item) => atimeUpdates(item.setup)).length} where the read writes`,
         "3 rules",
+      ],
+      progress: null,
+    },
+    {
+      href: "/nagle",
+      eyebrow: "Predict",
+      title: "Eight bytes, forty four milliseconds",
+      blurb:
+        "The same eight bytes took 0.05 ms as one write and 44.48 ms as two, over loopback. Nagle holds the second, the receiver delays the acknowledgement that would release it, and both are behaving correctly.",
+      reachFor: "a local round trip has a latency floor nothing explains",
+      stats: [
+        `${NAGLE_CASES.length} connections`,
+        `${NAGLE_CASES.filter((item) => nagleStalls(item.setup)).length} that stall`,
+        "881x",
       ],
       progress: null,
     },
