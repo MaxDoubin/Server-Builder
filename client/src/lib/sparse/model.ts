@@ -58,7 +58,7 @@ function paint(runs: Run[], from: number, to: number, next: (state: Block) => Bl
 
 /** Grow the map so it covers a file of this many bytes, with holes. */
 function cover(file: File, bytes: number, blockBytes: number): File {
-  if (bytes < file.apparentBytes) return file;
+  if (bytes <= file.apparentBytes) return file;
   const was = blocksFor(file.apparentBytes, blockBytes);
   const now = blocksFor(bytes, blockBytes);
   return {

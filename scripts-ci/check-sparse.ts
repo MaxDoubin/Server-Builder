@@ -209,6 +209,30 @@ function compare(where: string, setup: Setup): void {
     }
   }
 
+  /*
+    And the copy block for block as well.
+
+    Comparing only the totals let a copy that turned every block of data into
+    a block of zeros through, because both count as allocated and du cannot
+    tell them apart. du is not the only thing that reads this: the page draws
+    the strip.
+  */
+  {
+    let cursor = 0;
+    for (let index = 0; index < after.length; index += 1) {
+      while (cursor < modelCopy.runs.length && modelCopy.runs[cursor].to <= index) cursor += 1;
+      const run = modelCopy.runs[cursor];
+      if (!run || run.from > index) {
+        fail(`${where}: after ${setup.copiedWith} the model has no run covering block ${index}`);
+        break;
+      }
+      if (run.state !== after[index]) {
+        fail(`${where}: after ${setup.copiedWith} block ${index} is ${after[index]} in the ledger and ${run.state} in the model`);
+        break;
+      }
+    }
+  }
+
   if (asKib(held(before.blocks), setup.blockBytes) !== allocatedKib(setup)) fail(`${where}: allocatedKib disagrees`);
   if (asKib(held(after), setup.blockBytes) !== copiedKib(setup)) fail(`${where}: copiedKib disagrees`);
   if (before.apparent / 1024 !== apparentKib(setup)) fail(`${where}: apparentKib disagrees`);
@@ -304,11 +328,16 @@ const POOL: Op[] = [
   { do: "punch", at: 100, bytes: 8000 },
   { do: "punch", at: 4096, bytes: 8192 },
   { do: "punch", at: 0, bytes: 0 },
+  /* Zero length, and not on a block boundary: nothing may be allocated for it. */
+  { do: "write", at: 100, bytes: 0 },
+  { do: "zeros", at: 5000, bytes: 0 },
 ];
 const TOOLS: Tool[] = ["none", "cp", "cp-never", "cp-always", "cat", "tar", "tar-sparse", "dd-sparse", "dd"];
 
 for (const blockBytes of [1024, 4096]) {
-  for (const ddBytes of [1024, 4096, 16384]) {
+  /* 6144 is a buffer and a half of a 4096 byte block, which is where rounding
+     the buffer up rather than down stops agreeing with rounding it down. */
+  for (const ddBytes of [1024, 4096, 6144, 16384]) {
     for (const first of POOL) {
       for (const second of POOL) {
         for (const tool of TOOLS) {
@@ -327,6 +356,25 @@ for (const a of POOL) {
       const setup: Setup = { host: "h", job: "a probe", blockBytes: 4096, ops: [a, b, c], copiedWith: "cp-always", ddBytes: 8192, freeKib: 64 };
       exhaustive += 1;
       compare(`three: ${asOp(a)}; ${asOp(b)}; ${asOp(c)}`, setup);
+    }
+  }
+}
+
+/*
+  Fitting is a comparison, so it is checked on the boundary rather than near it.
+
+  Every setup above carries a fixed amount of free space, which never happens
+  to be exactly what the copy needs, and a copy that exactly fills the
+  destination does fit.
+*/
+for (const blockBytes of [1024, 4096]) {
+  for (const first of POOL) {
+    for (const tool of TOOLS) {
+      const base: Setup = { host: "h", job: "a probe", blockBytes, ops: [first], copiedWith: tool, ddBytes: 4096, freeKib: 0 };
+      const needs = copiedKib(base);
+      exhaustive += 2;
+      if (!fits({ ...base, freeKib: needs })) fail(`a copy of ${needs} KiB into exactly ${needs} KiB should fit`);
+      if (needs > 0 && fits({ ...base, freeKib: needs - 1 })) fail(`a copy of ${needs} KiB into ${needs - 1} KiB should not`);
     }
   }
 }
