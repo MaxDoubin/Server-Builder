@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as ARGMAX_CASES, MAX_ARG_STRLEN as AM_CAP, POINTER as AM_PTR, asLimits as amLimits, budget as amBudget, correctOption as amCorrect, costPerArg as amPerArg, envCost as amEnv, fits as amFits, headroom as amSpare, humanBytes as amBytes, maxArgs as amMax, pointerShare as amShare, programCost as amProg, refusedBy as amRefused, textBytes as amText, totalCost as amTotal } from "../client/src/lib/argmax/index";
 import { CASES as NAGLE_CASES, applying as ngApplying, asSocket as ngSocket, bytesBeforeRead as ngBytes, correctOption as ngCorrect, humanUs as ngUs, requestsPerSecond as ngRps, roundTripUs as ngUsTrip, slowdown as ngSlow, stalls as ngStalls, stallsPerRequest as ngTimers, totalMs as ngTotal } from "../client/src/lib/nagle/index";
 import { CASES as ATIME_CASES, asStat as atStat, atimeAgeAfterRead as atAfter, blockedBy as atBlocked, correctOption as atCorrect, ctimeRule as atCtime, dayRule as atDay, humanAge as atAge, inodesDirtied as atDirtied, mtimeRule as atMtime, reason as atReason, rulesFiring as atFiring, selectedByCleanup as atSelected, updates as atUpdates } from "../client/src/lib/atime/index";
 import { CASES as OVERCOMMIT_CASES, asSysctl as ocSysctl, commitLimitKb as ocLimit, committedPercentOfLimit as ocPctLimit, committedPercentOfRam as ocPctRam, correctOption as ocCorrect, headroomKb as ocHeadroom, human as ocHuman, limitPercentOfRam as ocLimitPct, modeName as ocMode, oomPossible as ocOom, refuses as ocRefuses, refusesWithMemoryFree as ocWasteful } from "../client/src/lib/overcommit/index";
@@ -907,6 +908,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/inotify">No space left</a>, why a file watcher says the disk is full when it is not.</li>
     <li><a href="${SITE_URL}/atime">The read that wrote</a>, when reading a file writes an inode and when it does not.</li>
     <li><a href="${SITE_URL}/nagle">Eight bytes, forty four milliseconds</a>, why two small writes cost a local round trip forty four milliseconds.</li>
+    <li><a href="${SITE_URL}/argmax">Argument list too long</a>, why a command line under ARG_MAX is refused anyway.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2223,6 +2225,7 @@ ${JSON.stringify({
     ["No space left", "/inotify"],
     ["The read that wrote", "/atime"],
     ["Eight bytes, forty four milliseconds", "/nagle"],
+    ["Argument list too long", "/argmax"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4386,6 +4389,146 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/eight-bytes-forty-four-milliseconds", "Eight bytes, forty four milliseconds"], ["/rcvbuf", "Tuned smaller"], ["/transfer", "Why the transfer is slow"]])}
+</main>`,
+  });
+
+  // ── the exec argument budget ──
+  /*
+    The static body carries the formula and the per-string cap, because the
+    search that brings people here is "argument list too long" next to a byte
+    count that looks like it should fit, and what answers it is the nine bytes
+    an argument costs beyond its length.
+  */
+  const amRefusedCount = ARGMAX_CASES.filter((item) => !amFits(item.setup)).length;
+  const amDescription =
+    "getconf ARG_MAX reports two megabytes and it is not a constant: it is a quarter of " +
+    "RLIMIT_STACK, and lowering the stack lowers it. Every string in argv and envp costs eight " +
+    "bytes of pointer and a terminator on top of its own bytes, so a two megabyte budget carries " +
+    "about four hundred kilobytes of short filenames. The environment is charged to the same " +
+    "budget, and the program path is charged twice. A single string of 32 pages or more is " +
+    `refused whatever the total. ${ARGMAX_CASES.length} command lines here, ${amRefusedCount} refused, ` +
+    "against twenty three measurements on one host.";
+
+  await writePage("argmax", base, {
+    title: "Argument List Too Long, and the Limit Is Not ARG_MAX | Max Doubin",
+    description: amDescription,
+    canonical: `${SITE_URL}/argmax`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Argument list too long",
+  description: amDescription,
+  url: `${SITE_URL}/argmax`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why execve returns E2BIG on a command line whose bytes are well inside ARG_MAX: that getconf ARG_MAX reports a quarter of RLIMIT_STACK rather than a constant, so raising or lowering the stack limit moves it, measured across four stack limits; that every string in argv and in envp costs eight bytes of pointer and a NUL terminator on top of its own length, so a forty byte path costs forty nine and a two megabyte budget carries only about four hundred kilobytes of short filenames; that the environment is copied onto the same new stack and charged to the same budget, so a build runner exporting a megabyte of variables halves the command line for everything it runs and env -i really does help; that the program path is charged twice, once as the filename execve copies in its own right and once as argv[0]; that a single string of 131072 bytes or more is refused on its own whatever the total, bisected to the byte; and how to size batches from the cost of an argument rather than from the length of the text",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Argument list too long</h1>
+  <p>
+    ${ARGMAX_CASES.length} command lines, one exec each. ${amRefusedCount} of them are refused, and on none of them is the
+    number people check the number that matters.
+  </p>
+  <p>
+    Start with what the system reports. On the host these were measured on:
+  </p>
+  <pre><code>getconf ARG_MAX      2097152
+RLIMIT_STACK soft    8388608   (8 MiB)
+page size            4096</code></pre>
+  <p>
+    The first is the second divided by four. <code>getconf</code> is not printing a constant, it is
+    printing a quarter of your stack limit, and it follows the limit: 2 MiB of stack fitted 7181
+    arguments of 64 bytes, 4 MiB fitted 14363, 8 MiB fitted 28727 and 16 MiB fitted 57455.
+  </p>
+  <h2>An argument costs more than it is long</h2>
+  <p>
+    Every string costs its own bytes, a NUL, and eight bytes of pointer in the array. On short
+    arguments the pointer is most of the cost:
+  </p>
+  <pre><code>argument size    arguments that fit    bytes of actual text
+            1               208840                  417680
+            8               122847                 1105623
+           64                28608                 1859520
+         1024                 2021                 2069504</code></pre>
+  <p>
+    So a limit advertised as two megabytes carries four hundred kilobytes of short filenames. That
+    is the difference between "my list is only 600 KB, it should fit" and the error you get.
+  </p>
+  <h2>The environment comes out of the same budget</h2>
+  <pre><code>env strings    env vars    64 byte arguments that fit
+         28           2                         28727
+     500074          11                         21876
+    1000144          21                         15024</code></pre>
+  <p>
+    argv and envp are copied onto the same new stack and charged against the same number, which is
+    why <code>env -i</code> really does let a command line through that failed a moment earlier, and
+    why an identical script fails in a build runner and works on a laptop.
+  </p>
+  <h2>One string can fail on its own</h2>
+  <pre><code>longest single argument that execs    131071 bytes
+32 pages                              131072 bytes</code></pre>
+  <p>
+    That is MAX_ARG_STRLEN. It is not tunable, it applies to environment variables too, and it is
+    checked whatever the total is: a single 500 KB variable made every exec fail regardless of how
+    short the command line was.
+  </p>
+  <h2>And the program path is charged twice</h2>
+  <p>
+    This one is not in any documentation I could find. execve copies <code>bprm->filename</code>
+    onto the new stack in its own right, and then copies the caller's argv, which begins with the
+    same path. Both copies are charged. It turned up as a discrepancy: a formula without it fit
+    nineteen measurements and missed four by exactly one argument, and the size of the miss tracked
+    the length of argv[0]. Holding the argument count fixed and lengthening argv[0] a byte at a time
+    put the wall at 175 bytes, where the vector lands on the budget exactly.
+  </p>
+  <h2>The formula</h2>
+  <pre><code>budget = RLIMIT_STACK / 4
+cost   = sum over argv and envp of (8 + length + 1)
+         plus the program path and its NUL, a second time
+E2BIG when cost > budget, or when any one string is 131072 or longer</code></pre>
+  <p>
+    Twenty three measurements reproduce exactly, each leaving less than one more argument of room.
+  </p>
+  <h2>What each command line does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Stack</th><th>Budget</th><th>Arguments</th><th>Each costs</th><th>Environment</th><th>Total</th><th>Result</th><th>Fit at this length</th><th>Text that carries</th></tr>
+    </thead>
+    <tbody>
+${ARGMAX_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(amBytes(s.stackBytes))}</td><td>${amBudget(s)}</td>` +
+    `<td>${s.argCount} x ${s.argBytes} B</td><td>${amPerArg(s)} B</td><td>${amEnv(s)} B</td><td>${amTotal(s)}</td>` +
+    `<td>${amFits(s) ? "execs" : "E2BIG"}</td><td>${amMax(s)}</td><td>${esc(amBytes(amText(s)))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${ARGMAX_CASES.map((item) => {
+  const right = amCorrect(item);
+  const s = item.setup;
+  const limits = amLimits(s).map((line) => `${line.name.padEnd(23)} ${line.value.padStart(16)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(limits)}</code></pre>
+    <p>The vector costs ${amTotal(s)} bytes against a budget of ${amBudget(s)}, of which ${amEnv(s)} is the environment and ${amProg(s)} is the program path charged twice. ${amFits(s) ? `It execs, with ${amSpare(s)} bytes to spare.` : `It is E2BIG, refused by ${esc(amRefused(s))}.`} At ${s.argBytes} bytes an argument the budget holds ${amMax(s)} of them, carrying ${esc(amBytes(amText(s)))} of text, and ${amShare(s)} percent of each argument is the ${AM_PTR} byte pointer. The per-string cap is ${AM_CAP} and the longest string here is ${s.longestStringBytes}.</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/argument-list-too-long-and-the-limit-is-not-arg-max", "Argument list too long, and the limit is not ARG_MAX"], ["/inotify", "No space left"], ["/limits", "Too many open files"]])}
 </main>`,
   });
 
@@ -8427,6 +8570,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/inotify`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/atime`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/nagle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/argmax`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

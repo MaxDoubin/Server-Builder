@@ -237,6 +237,9 @@ const CinematicAtime = lazyWithRetry(() =>
 const CinematicNagle = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicNagle").then((m) => ({ default: m.CinematicNagle })),
 );
+const CinematicArgmax = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicArgmax").then((m) => ({ default: m.CinematicArgmax })),
+);
 const CinematicOvercommit = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicOvercommit").then((m) => ({ default: m.CinematicOvercommit })),
 );
@@ -1046,6 +1049,11 @@ function AnimatedRoutes() {
           <Route path="/nagle">
             <Suspense fallback={<RouteLoading />}>
               <CinematicNagle />
+            </Suspense>
+          </Route>
+          <Route path="/argmax">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicArgmax />
             </Suspense>
           </Route>
           <Route path="/overcommit">

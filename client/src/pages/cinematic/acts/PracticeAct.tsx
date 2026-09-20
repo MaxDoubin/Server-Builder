@@ -60,6 +60,7 @@ import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "
 import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index";
 import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
+import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -218,6 +219,14 @@ const SURFACES: Surface[] = [
     blurb:
       "Two ends of a connection, each behaving correctly, deadlocked until a timer fires. The fix everybody reaches for is on the wrong socket, and the measurement says so.",
     count: `${NAGLE_CASES.length} connections, ${NAGLE_CASES.filter((item) => nagleStalls(item.setup)).length} that stall`,
+  },
+  {
+    href: "/argmax",
+    eyebrow: "Count",
+    title: "Argument list too long",
+    blurb:
+      "The limit is not ARG_MAX, it is a quarter of the stack. Every argument costs eight bytes of pointer, the environment is charged to the same budget, and the program path is in there twice.",
+    count: `${ARGMAX_CASES.length} command lines, ${ARGMAX_CASES.filter((item) => !argmaxFits(item.setup)).length} refused`,
   },
   {
     href: "/overcommit",

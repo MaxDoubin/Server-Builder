@@ -106,6 +106,7 @@ const EXACT_ROUTES: Record<string, RouteChunk> = {
   "/inotify": { load: () => import("@/pages/cinematic/CinematicInotify") },
   "/atime": { load: () => import("@/pages/cinematic/CinematicAtime") },
   "/nagle": { load: () => import("@/pages/cinematic/CinematicNagle") },
+  "/argmax": { load: () => import("@/pages/cinematic/CinematicArgmax") },
   "/fds": { load: () => import("@/pages/cinematic/CinematicFds") },
   "/writeback": { load: () => import("@/pages/cinematic/CinematicWriteback") },
   "/conntrack": { load: () => import("@/pages/cinematic/CinematicConntrack") },
