@@ -55,6 +55,7 @@ import { CASES as SIGNALS } from "@/lib/signals/index";
 import { CASES as EXIT } from "@/lib/exit/index";
 import { CASES as UMASK } from "@/lib/umask/index";
 import { CASES as PSS } from "@/lib/pss/index";
+import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -108,6 +109,7 @@ import { loadSolvedSignals } from "@/lib/signals/progress";
 import { loadSolvedExit } from "@/lib/exit/progress";
 import { loadSolvedUmask } from "@/lib/umask/progress";
 import { loadSolvedPss } from "@/lib/pss/progress";
+import { loadSolvedSparse } from "@/lib/sparse/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -288,6 +290,13 @@ export function readProgress(): Line[] {
       href: "/pss",
       done: loadSolvedPss().filter((slug) => PSS.some((item) => item.slug === slug)).length,
       total: PSS.length,
+      noun: "called right",
+    },
+    {
+      label: "A gigabyte in one block",
+      href: "/sparse",
+      done: loadSolvedSparse().filter((slug) => SPARSE.some((item) => item.slug === slug)).length,
+      total: SPARSE.length,
       noun: "called right",
     },
     {

@@ -62,6 +62,7 @@ import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
 import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
+import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -446,6 +447,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/sparse",
+      eyebrow: "Read",
+      title: "A gigabyte in one block",
+      blurb:
+        "A file can be a gigabyte long and occupy four kilobytes, because a hole is a range nobody wrote. What it cannot survive is a tool that reads it, gets zeros, and writes them out, which is most of them.",
+      reachFor: "the backup filled a disk the original fitted on twice over",
+      stats: [
+        `${SPARSE_CASES.length} files`,
+        `${SPARSE_CASES.filter((item) => spSparse(item.setup)).length} still have holes`,
+        "2 numbers",
       ],
       progress: null,
     },

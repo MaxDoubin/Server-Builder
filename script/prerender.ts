@@ -31,6 +31,7 @@ import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
 import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, correctOption as umCorrect, created as umCreated, executable as umExec, gid as umGid, masked as umMasked, mode as umMode, modeText as umText, removed as umRemoved, special as umSpecial } from "../client/src/lib/umask/index";
+import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
 import { CASES as SIGNALS_CASES, accepted as sgAccepted, asSignals as sgLines, correctOption as sgCorrect, delivered as sgDelivered, dequeueOrder as sgDequeue, handlerOrder as sgHandlers, lost as sgLost, nameOf as sgName, queueDepth as sgDepth, queues as sgQueues, refused as sgRefused } from "../client/src/lib/signals/index";
@@ -923,6 +924,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/exit">One byte, two kinds of news</a>, why an exit of 137 and a kill by SIGKILL are the same number.</li>
     <li><a href="${SITE_URL}/umask">A ceiling, not a request</a>, why the mode your program passes to open is a maximum.</li>
     <li><a href="${SITE_URL}/pss">Four processes, one copy</a>, why adding up a column of RSS gives memory that does not exist.</li>
+    <li><a href="${SITE_URL}/sparse">A gigabyte in one block</a>, why ls and du disagree about a file and which copy makes it real.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2247,6 +2249,7 @@ ${JSON.stringify({
     ["One byte, two kinds of news", "/exit"],
     ["A ceiling, not a request", "/umask"],
     ["Four processes, one copy", "/pss"],
+    ["A gigabyte in one block", "/sparse"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5060,6 +5063,133 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-sum-of-rss-is-not-an-amount-of-memory", "The sum of RSS is not an amount of memory"], ["/free", "Two hundred megabytes free"], ["/overcommit", "Half a machine"]])}
+</main>`,
+  });
+
+  // ── sparse files ──
+  /*
+    The static body carries the tool table, because the search that brings
+    people here is a backup that filled a disk the original fitted on, and the
+    answer is which of six tools preserves a hole. The second table is the one
+    that surprises: dd conv=sparse gives the holes back at its own block size.
+  */
+  const spHoled = SPARSE_CASES.filter((item) => spSparse(item.setup)).length;
+  const spDescription =
+    "A file can be a gigabyte long and occupy four kilobytes, because a hole is a range nobody " +
+    "wrote: ls reports the length and du reports the blocks, and on a preallocated image those " +
+    "differ by a factor of a quarter of a million. cp and tar -S preserve that; cp --sparse=never, " +
+    "cat, plain tar and plain dd turn four kilobytes into a gigabyte. " +
+    `${SPARSE_CASES.length} files here, ${spHoled} of which still have holes after the copy.`;
+
+  await writePage("sparse", base, {
+    title: "A Gigabyte In One Block: Sparse Files, du And ls | Max Doubin",
+    description: spDescription,
+    canonical: `${SITE_URL}/sparse`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "A gigabyte in one block",
+  description: spDescription,
+  url: `${SITE_URL}/sparse`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why ls and du report different sizes for the same file and why a backup of it can fill a disk the original fitted on: that the apparent size is the offset of the last byte written plus one while du counts the blocks the filesystem allocated, and a range nobody wrote is a hole that costs nothing and reads as zeros; that allocation is in whole blocks so one byte at offset 4096 costs a block and four more bytes in a block already allocated cost nothing; that writing zeros allocates exactly as much as writing anything else, because a hole is made by not writing rather than by writing nothing; that cp and tar -S preserve holes while cp --sparse=never, cat, plain tar and plain dd write every one of them out; that dd conv=sparse gives holes back only at its own buffer size; that cp --sparse=always can make a dense file sparse by reading it; and that punching a hole frees only the blocks entirely inside the range and never changes the length",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>A gigabyte in one block</h1>
+  <p>
+    ${SPARSE_CASES.length} files, one question each. On ${spHoled} of them there are still holes in the file when the copy is
+    finished, and on the rest there are not.
+  </p>
+  <h2>Two numbers, and they answer different questions</h2>
+  <pre><code>$ ls -l data
+-rw-r--r-- 1 root root 1073741824 Sep 20 13:07 data
+$ du -k data
+4	data</code></pre>
+  <p>
+    A gigabyte long and four kilobytes on disk. Both are right. ls reports the offset of the last
+    byte written plus one; du reports the blocks the filesystem handed out. A database that
+    preallocates its file by seeking to the end and writing one byte produces exactly this.
+  </p>
+  <h2>What costs a block is touching it</h2>
+  <pre><code>what was written              apparent size    du
+1 byte at offset 0                        1    4K
+1 byte at offset 4095                  4096    4K
+1 byte at offset 4096                  4097    4K
+1 byte at 0 and 1 at 4096              4097    8K</code></pre>
+  <p>
+    Rows two and three cost the same for a file twice as long. Row four costs twice as much for one
+    more byte, because that byte is the first in a second block. Count blocks touched, not bytes.
+  </p>
+  <h2>Zeros written are zeros stored</h2>
+  <pre><code>10 MiB from /dev/zero      du 10240K
+fallocate -l 10M           du 10240K</code></pre>
+  <p>
+    A hole is made by not writing, not by writing nothing. The filesystem does not read the buffer
+    you handed it, so a provisioning script that reserves space with zeros gets exactly what it
+    asked for and pays for all of it.
+  </p>
+  <h2>Which tool keeps the hole</h2>
+  <pre><code>cp                            4K
+cp --sparse=never       1048580K
+cat src &gt; dst           1048580K
+tar cf then tar xf      1048580K
+tar cSf then tar xf           4K
+dd conv=sparse bs=1M       1024K</code></pre>
+  <p>
+    A read of a hole is a successful read that yields zeros, and a tool that does not go looking
+    for holes cannot tell those zeros from any others. tar is the one that catches people, because
+    taking an archive is what the runbook says.
+  </p>
+  <h2>dd gives holes back one buffer at a time</h2>
+  <pre><code>bs=4096        4K
+bs=65536      64K
+bs=1M       1024K
+bs=8M       8192K</code></pre>
+  <p>
+    conv=sparse skips a buffer that is entirely zero, so the narrowest hole it can make is one
+    buffer wide, and the buffer is dd's rather than the filesystem's.
+  </p>
+  <h2>What each file costs</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Apparent</th><th>du</th><th>Copied with</th><th>du after</th><th>Still sparse</th><th>Fits</th></tr>
+    </thead>
+    <tbody>
+${SPARSE_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${spSize(spApparent(s))}</td><td>${spSize(spAlloc(s))}</td>` +
+    `<td>${esc(spTool(s.copiedWith, s.ddBytes))}</td><td>${spSize(spCopied(s))}</td>` +
+    `<td>${spSparse(s) ? "yes" : "no"}</td><td>${spFits(s) ? "yes" : "no"}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${SPARSE_CASES.map((item) => {
+  const right = spCorrect(item);
+  const s = item.setup;
+  const lines = spLines(s).map((line) => `${line.name.padEnd(20)} ${line.value.padStart(34)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>Made by ${esc(s.ops.map(spOp).join(", "))}. It is ${spSize(spApparent(s))} long and holds ${spSize(spAlloc(s))}. ${s.copiedWith === "none" ? "Nothing copied it." : `After ${esc(spTool(s.copiedWith, s.ddBytes))} the copy holds ${spSize(spCopied(s))}, and it ${spFits(s) ? "fits" : "does not fit"} in the ${spSize(s.freeKib)} free.`}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-copy-filled-the-disk-the-original-never-touched", "The copy filled the disk the original never touched"], ["/space", "No space left on device"], ["/pss", "Four processes, one copy"]])}
 </main>`,
   });
 
@@ -9506,6 +9636,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/exit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/umask`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/pss`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/sparse`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

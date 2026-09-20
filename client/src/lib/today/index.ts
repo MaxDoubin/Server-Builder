@@ -59,6 +59,7 @@ import { CASES as SIGNALS } from "@/lib/signals/index";
 import { CASES as EXIT } from "@/lib/exit/index";
 import { CASES as UMASK } from "@/lib/umask/index";
 import { CASES as PSS } from "@/lib/pss/index";
+import { CASES as SPARSE } from "@/lib/sparse/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
@@ -142,6 +143,7 @@ const OFFSET = {
   exit: 281,
   umask: 283,
   pss: 293,
+  sparse: 307,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -588,6 +590,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "RSS counts a page shared by four processes four times, so adding the column up gives memory that does not exist. Work out what each process is charged and what the machine has to find.",
       href: "/pss",
       outOf: PSS.length,
+    });
+  }
+
+  const holed = pickFor(SPARSE, day, OFFSET.sparse);
+  if (holed) {
+    out.push({
+      surface: "sparse",
+      eyebrow: "Read",
+      title: holed.name,
+      blurb: "A file can be a gigabyte long and occupy one block, because a hole is a range nobody wrote. Work out what ls says, what du says, and what a copy does to the difference.",
+      href: "/sparse",
+      outOf: SPARSE.length,
     });
   }
 

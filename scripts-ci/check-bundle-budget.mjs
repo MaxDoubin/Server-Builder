@@ -196,8 +196,11 @@ const INDEX = path.join(DIST, "index.html");
  * 722 KB, raised from 721 by /pss at 720.9, for the same reason: a tenth of a
  * kilobyte is not headroom either. Twenty five surfaces and twenty three
  * raises, which is still a kilobyte per surface over the whole run.
+ *
+ * 723 KB, raised from 722 by /sparse at 721.7. Three tenths of a kilobyte is
+ * the narrowest any of these has ever landed, and it is not a margin.
  */
-const BUDGET_BYTES = 722 * 1024;
+const BUDGET_BYTES = 723 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.
