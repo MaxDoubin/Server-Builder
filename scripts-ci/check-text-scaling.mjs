@@ -37,7 +37,7 @@
  * become where new px type goes.
  */
 import { readFileSync } from "fs";
-import { execFileSync } from "child_process";
+import { sourceFiles } from "./lib/source-files.mjs";
 import { cameraScaledRanges, isCameraScaled } from "./lib/camera-scaled.mjs";
 
 const EXEMPT_CAP = 4;
@@ -45,8 +45,7 @@ const CSS = "client/src/index.css";
 
 const problems = [];
 
-const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8" })
-  .split("\n")
+const files = sourceFiles(["client/src"])
   .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"));
 
 const PX = /text-\[\d+(?:\.\d+)?px\]/g;

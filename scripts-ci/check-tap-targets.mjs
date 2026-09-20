@@ -56,7 +56,7 @@
  * bare and is then taught to ignore two real files.
  */
 import { readFileSync } from "fs";
-import { execFileSync } from "child_process";
+import { sourceFiles } from "./lib/source-files.mjs";
 
 const CSS = "client/src/index.css";
 const CLASS = "tap-target";
@@ -86,8 +86,7 @@ const BLOCKY = /\b(flex|grid|block|inline-flex|inline-grid|inline-block)\b/;
 */
 const OWN_SMALL_TYPE = /text-\[0\.[0-9]+rem\]|\btext-(xs|sm|base)\b/;
 
-const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8" })
-  .split("\n")
+const files = sourceFiles(["client/src"])
   .filter((f) => f.endsWith(".tsx"));
 
 let buttons = 0;

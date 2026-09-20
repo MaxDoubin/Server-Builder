@@ -26,7 +26,7 @@
  * unstyled control in every browser at once.
  */
 import { readFileSync } from "fs";
-import { execFileSync } from "child_process";
+import { sourceFiles } from "./lib/source-files.mjs";
 
 const CSS = "client/src/index.css";
 const CLASS = "range-slider";
@@ -36,8 +36,7 @@ const problems = [];
 
 /* ------------------------------------------------------- every input */
 
-const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8" })
-  .split("\n")
+const files = sourceFiles(["client/src"])
   .filter((f) => f.endsWith(".tsx"));
 
 let sliders = 0;
