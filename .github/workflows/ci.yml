@@ -704,6 +704,13 @@ jobs:
       - name: Nagle and the delayed ACK
         run: npx tsx scripts-ci/check-nagle.ts
 
+      # The exec argument budget. The subject is that an argument costs more
+      # than it is long, so a multiplication can carry the wrong per-argument
+      # figure and still look self-consistent: the gate lays the vector out
+      # string by string and finds the wall by adding one argument at a time.
+      - name: Exec argument budget
+        run: npx tsx scripts-ci/check-argmax.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 299 of them. Regenerate with script/generatePostIndex.ts.
+ * 300 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "argument-list-too-long-and-the-limit-is-not-arg-max",
+    title: "Argument List Too Long, and the Limit Is Not ARG_MAX",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","tooling"],
+    excerpt: "getconf ARG_MAX says two megabytes. It is not a constant, it is a quarter of your stack limit. Every argument costs eight bytes of pointer on top of its own bytes, so that budget carries four hundred kilobytes of short filenames. The environment comes out of the same budget, and the program path is charged twice, which is not documented anywhere and turned up as a discrepancy. Twenty three measurements on one host, and one formula fits all of them.",
+    coverImage: "/images/blog/argument-list-too-long-and-the-limit-is-not-arg-max.jpg",
+    wordCount: 1063,
+  },
   {
     slug: "eight-bytes-forty-four-milliseconds",
     title: "Eight Bytes, Forty Four Milliseconds",
@@ -2924,10 +2933,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 299;
+export const POST_COUNT = 300;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety nine";
+export const POST_COUNT_SPELLED = "three hundred";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2936,10 +2945,10 @@ export const POST_COUNT_SPELLED = "two hundred and ninety nine";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1152;
+export const CITATION_COUNT = 1154;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1311;
+export const CHECKED_URL_COUNT = 1313;

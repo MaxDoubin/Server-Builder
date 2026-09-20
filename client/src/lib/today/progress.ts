@@ -48,6 +48,7 @@ import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as INOTIFY } from "@/lib/inotify/index";
 import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
+import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
 import { CASES as DNS_CASES } from "@/lib/resolve/index";
@@ -93,6 +94,7 @@ import { loadSolvedOvercommit } from "@/lib/overcommit/progress";
 import { loadSolvedInotify } from "@/lib/inotify/progress";
 import { loadSolvedAtime } from "@/lib/atime/progress";
 import { loadSolvedNagle } from "@/lib/nagle/progress";
+import { loadSolvedArgmax } from "@/lib/argmax/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
 import { loadSolvedResolves } from "@/lib/resolve/progress";
@@ -244,6 +246,13 @@ export function readProgress(): Line[] {
       href: "/nagle",
       done: loadSolvedNagle().filter((slug) => NAGLE.some((item) => item.slug === slug)).length,
       total: NAGLE.length,
+      noun: "called right",
+    },
+    {
+      label: "Argument list too long",
+      href: "/argmax",
+      done: loadSolvedArgmax().filter((slug) => ARGMAX.some((item) => item.slug === slug)).length,
+      total: ARGMAX.length,
       noun: "called right",
     },
     {

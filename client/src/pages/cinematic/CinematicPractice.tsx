@@ -54,6 +54,7 @@ import { CASES as OVERCOMMIT_CASES, refusesWithMemoryFree as ocWasteful } from "
 import { CASES as INOTIFY_CASES, fits as inoFits } from "@/lib/inotify/index";
 import { CASES as ATIME_CASES, updates as atimeUpdates } from "@/lib/atime/index";
 import { CASES as NAGLE_CASES, stalls as nagleStalls } from "@/lib/nagle/index";
+import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -410,6 +411,20 @@ export function CinematicPractice() {
         `${NAGLE_CASES.length} connections`,
         `${NAGLE_CASES.filter((item) => nagleStalls(item.setup)).length} that stall`,
         "881x",
+      ],
+      progress: null,
+    },
+    {
+      href: "/argmax",
+      eyebrow: "Count",
+      title: "Argument list too long",
+      blurb:
+        "getconf ARG_MAX says two megabytes and a list of short filenames gets four hundred kilobytes of it, because every argument costs eight bytes of pointer. The environment comes out of the same budget, and the program path is in there twice.",
+      reachFor: "a command line is refused and the byte count says it should fit",
+      stats: [
+        `${ARGMAX_CASES.length} command lines`,
+        `${ARGMAX_CASES.filter((item) => !argmaxFits(item.setup)).length} refused`,
+        "23 measurements",
       ],
       progress: null,
     },

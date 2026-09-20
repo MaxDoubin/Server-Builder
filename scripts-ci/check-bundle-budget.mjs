@@ -169,8 +169,11 @@ const INDEX = path.join(DIST, "index.html");
  * 715 KB, raised from 714 by /nagle, measured at 713.5. Seventeen surfaces,
  * sixteen raises, one kilobyte each. Sixteen consecutive raises of the same
  * size is the evidence that the split is doing its job.
+ *
+ * 716 KB, raised from 715 by /argmax, measured at 714.5. Eighteen surfaces,
+ * seventeen raises, one kilobyte apiece and no drift.
  */
-const BUDGET_BYTES = 715 * 1024;
+const BUDGET_BYTES = 716 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

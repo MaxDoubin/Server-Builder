@@ -52,6 +52,7 @@ import { CASES as OVERCOMMIT } from "@/lib/overcommit/index";
 import { CASES as INOTIFY } from "@/lib/inotify/index";
 import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
+import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -126,6 +127,7 @@ const OFFSET = {
   inotify: 239,
   atime: 241,
   nagle: 251,
+  argmax: 257,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -512,6 +514,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "Two small writes then a read, and the round trip takes forty four milliseconds on loopback. Work out whether this one waits on the timer, and which end can stop it.",
       href: "/nagle",
       outOf: NAGLE.length,
+    });
+  }
+
+  const listed = pickFor(ARGMAX, day, OFFSET.argmax);
+  if (listed) {
+    out.push({
+      surface: "argmax",
+      eyebrow: "Count",
+      title: listed.name,
+      blurb: "getconf ARG_MAX says two megabytes and every argument costs eight bytes of pointer on top of itself. Work out whether this command line goes through, and which of the two limits stops it.",
+      href: "/argmax",
+      outOf: ARGMAX.length,
     });
   }
 
