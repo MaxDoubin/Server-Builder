@@ -58,6 +58,7 @@ import { CASES as ARGMAX_CASES, fits as argmaxFits } from "@/lib/argmax/index";
 import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
 import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
+import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -442,6 +443,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/signals",
+      eyebrow: "Predict",
+      title: "A thousand sent, one arrived",
+      blurb:
+        "A signal below SIGRTMIN does not queue: a thousand sends while it was blocked produced one handler call, with no error at the sender and nothing the receiver can inspect. Which signals queue is decided by the number, not by kill against sigqueue.",
+      reachFor: "the handler ran once and the events kept coming",
+      stats: [
+        `${SIGNALS_CASES.length} bursts`,
+        `${SIGNALS_CASES.filter((item) => sgLost(item.setup) > 0).length} that lose sends`,
+        "SIGRTMIN 34",
       ],
       progress: null,
     },

@@ -51,6 +51,7 @@ import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
 import { CASES as ELOOP } from "@/lib/eloop/index";
 import { CASES as LOCKS } from "@/lib/locks/index";
+import { CASES as SIGNALS } from "@/lib/signals/index";
 import { CASES as PIPEBUF } from "@/lib/pipebuf/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { CAPTURES } from "@/lib/capture/index";
@@ -100,6 +101,7 @@ import { loadSolvedNagle } from "@/lib/nagle/progress";
 import { loadSolvedArgmax } from "@/lib/argmax/progress";
 import { loadSolvedEloop } from "@/lib/eloop/progress";
 import { loadSolvedLocks } from "@/lib/locks/progress";
+import { loadSolvedSignals } from "@/lib/signals/progress";
 import { loadSolvedPipebuf } from "@/lib/pipebuf/progress";
 import { loadSolvedCaches } from "@/lib/cache/progress";
 import { loadSolvedCaptures } from "@/lib/capture/progress";
@@ -266,6 +268,13 @@ export function readProgress(): Line[] {
       href: "/eloop",
       done: loadSolvedEloop().filter((slug) => ELOOP.some((item) => item.slug === slug)).length,
       total: ELOOP.length,
+      noun: "called right",
+    },
+    {
+      label: "A thousand sent, one arrived",
+      href: "/signals",
+      done: loadSolvedSignals().filter((slug) => SIGNALS.some((item) => item.slug === slug)).length,
+      total: SIGNALS.length,
       noun: "called right",
     },
     {

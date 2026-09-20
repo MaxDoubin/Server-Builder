@@ -733,6 +733,13 @@ jobs:
       - name: File locking
         run: npx tsx scripts-ci/check-locks.ts
 
+      # Signal delivery. A standard signal is a bit and a realtime one is a
+      # queue entry, and a condition can encode that as one number and still
+      # look right wherever the limit is not binding, so the gate posts each
+      # send into a pending bitmap and a queue with a shared allowance instead.
+      - name: Signal delivery
+        run: npx tsx scripts-ci/check-signals.ts
+
       # Four limits cap an open file and the one everybody raises is rarely
       # the binding one. Every setrlimit call is walked in the kernel's own
       # order and every open is counted one at a time, against a container
