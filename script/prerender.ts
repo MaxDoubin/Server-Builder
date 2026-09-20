@@ -30,6 +30,7 @@ import { CASES as CLOCK_CASES, narrowed as clockNarrowed, passing as clockPassin
 import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt as cacheLeakAt, replay as cacheReplay, varyOn as cacheVaryOn } from "../client/src/lib/cache/index";
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
+import { CASES as ELOOP_CASES, MAX_TRAVERSALS as EL_MAX, asWalk as elWalk, correctOption as elCorrect, demanded as elAsked, followsFinal as elFollows, headroom as elLeft, reason as elReason, result as elResult, spent as elSpent, succeeds as elOk } from "../client/src/lib/eloop/index";
 import { CASES as ARGMAX_CASES, MAX_ARG_STRLEN as AM_CAP, POINTER as AM_PTR, asLimits as amLimits, budget as amBudget, correctOption as amCorrect, costPerArg as amPerArg, envCost as amEnv, fits as amFits, headroom as amSpare, humanBytes as amBytes, maxArgs as amMax, pointerShare as amShare, programCost as amProg, refusedBy as amRefused, textBytes as amText, totalCost as amTotal } from "../client/src/lib/argmax/index";
 import { CASES as NAGLE_CASES, applying as ngApplying, asSocket as ngSocket, bytesBeforeRead as ngBytes, correctOption as ngCorrect, humanUs as ngUs, requestsPerSecond as ngRps, roundTripUs as ngUsTrip, slowdown as ngSlow, stalls as ngStalls, stallsPerRequest as ngTimers, totalMs as ngTotal } from "../client/src/lib/nagle/index";
 import { CASES as ATIME_CASES, asStat as atStat, atimeAgeAfterRead as atAfter, blockedBy as atBlocked, correctOption as atCorrect, ctimeRule as atCtime, dayRule as atDay, humanAge as atAge, inodesDirtied as atDirtied, mtimeRule as atMtime, reason as atReason, rulesFiring as atFiring, selectedByCleanup as atSelected, updates as atUpdates } from "../client/src/lib/atime/index";
@@ -909,6 +910,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/atime">The read that wrote</a>, when reading a file writes an inode and when it does not.</li>
     <li><a href="${SITE_URL}/nagle">Eight bytes, forty four milliseconds</a>, why two small writes cost a local round trip forty four milliseconds.</li>
     <li><a href="${SITE_URL}/argmax">Argument list too long</a>, why a command line under ARG_MAX is refused anyway.</li>
+    <li><a href="${SITE_URL}/eloop">There is no loop</a>, why a path with no cycle in it reports too many levels of symbolic links.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2226,6 +2228,7 @@ ${JSON.stringify({
     ["The read that wrote", "/atime"],
     ["Eight bytes, forty four milliseconds", "/nagle"],
     ["Argument list too long", "/argmax"],
+    ["There is no loop", "/eloop"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -4529,6 +4532,139 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/argument-list-too-long-and-the-limit-is-not-arg-max", "Argument list too long, and the limit is not ARG_MAX"], ["/inotify", "No space left"], ["/limits", "Too many open files"]])}
+</main>`,
+  });
+
+  // ── the symlink traversal budget ──
+  /*
+    The static body leads with "there is no loop", because the search that
+    brings people here is the error next to a path they have already checked
+    by hand for cycles, and the answer is that the kernel never looked.
+  */
+  const elRefused = ELOOP_CASES.filter((item) => !elOk(item.setup)).length;
+  const elDescription =
+    "ELOOP, too many levels of symbolic links, is one budget of forty traversals for the whole " +
+    "path resolution rather than per chain or per component: measured at three separate splits " +
+    "across three symlinked components, every one flipping between exactly 40 and 41. There is no " +
+    "cycle detection at all, so a two link cycle and a forty one link straight chain return the " +
+    "identical error, and O_NOFOLLOW returns it too. readlink and lstat still work past the wall " +
+    `because they do not follow the last component. ${ELOOP_CASES.length} paths here, ${elRefused} refused.`;
+
+  await writePage("eloop", base, {
+    title: "Too Many Levels of Symbolic Links, With No Loop | Max Doubin",
+    description: elDescription,
+    canonical: `${SITE_URL}/eloop`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "There is no loop",
+  description: elDescription,
+  url: `${SITE_URL}/eloop`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a path containing no cycle reports ELOOP, too many levels of symbolic links: that the kernel allows forty symlink traversals for the whole path resolution rather than per chain or per component, so three symlinked components of fourteen, fourteen and thirteen fail while fourteen, thirteen and thirteen succeed, and a deployment that is shallow everywhere can still cross the line; that Linux performs no cycle detection in path resolution at all, so a two link cycle is caught by the same counter as a long chain and is indistinguishable from it in the error; that the walk stops the moment the counter is spent rather than finishing the chain, so a path asking for forty four traversals performs forty one; that O_NOFOLLOW reports the same errno for a third reason entirely, refusing a final component that is a symlink; and that readlink and lstat work past the wall because they do not follow the final component, while still paying for every symlink in the directories leading to it",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>There is no loop</h1>
+  <p>
+    ${ELOOP_CASES.length} paths, one resolution each. ${elRefused} of them fail, and not one of them contains a cycle
+    except the one that is a cycle on purpose.
+  </p>
+  <p>
+    <em>Too many levels of symbolic links</em> is errno 40, and the limit is forty traversals. The
+    two forties are unrelated and remembering one gets you the other.
+  </p>
+  <h2>One budget, for the whole path</h2>
+  <p>
+    This is the part that decides how to think about it. The forty is not per chain and not per
+    component: it is a counter for the entire resolution, and every symlinked component draws on it.
+    Measured across three symlinked components, at three different splits, each flipping between
+    exactly 40 and 41:
+  </p>
+  <pre><code>13 + 13 + 13 = 39   opens
+14 + 13 + 13 = 40   opens
+14 + 14 + 13 = 41   ELOOP
+20 + 10 + 10 = 40   opens
+20 + 11 + 10 = 41   ELOOP
+38 +  1 +  1 = 40   opens
+38 +  2 +  1 = 41   ELOOP</code></pre>
+  <p>
+    So a release path that walks a symlinked mount point, a symlinked data directory inside it and
+    the usual current pointer can be nowhere near forty in any one place and still be over it.
+  </p>
+  <h2>There is no cycle detection</h2>
+  <pre><code>cycA -&gt; cycB -&gt; cycA        errno 40, ELOOP
+a chain of 41, no cycle     errno 40, ELOOP</code></pre>
+  <p>
+    The kernel does not notice it is going round. It counts, and the count runs out, and a cycle is
+    caught for exactly the same reason a long chain is. The name of the error is about the shape it
+    was written for, not the thing that was checked, so ELOOP on a path you are sure has no loop in
+    it is the ordinary case rather than a contradiction.
+  </p>
+  <h2>O_NOFOLLOW returns it too</h2>
+  <pre><code>one link, plain open                opens
+the same link with O_NOFOLLOW       errno 40, ELOOP</code></pre>
+  <p>
+    One errno, three situations: the budget ran out, the walk went round, or you asked not to
+    follow and it was a link. So ELOOP in a log says nothing about depth on its own.
+  </p>
+  <h2>What still works past the wall</h2>
+  <p>
+    At a chain of 45:
+  </p>
+  <pre><code>open()       ELOOP
+stat()       ELOOP
+readlink()   returns the next link
+lstat()      reports a symlink</code></pre>
+  <p>
+    readlink and lstat are about the link rather than what it points at, so they stop at the final
+    component instead of following it. They still resolve every symlink in the directories leading
+    up to it, which is the part that gets missed when lstat is reached for as a workaround: the
+    exemption is one component wide.
+  </p>
+  <h2>What each path does</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Call</th><th>Follows the last</th><th>Leading</th><th>Last component</th><th>Asked for</th><th>Performed</th><th>Left</th><th>Result</th><th>Because</th></tr>
+    </thead>
+    <tbody>
+${ELOOP_CASES.map((item) => {
+  const s = item.setup;
+  const asked = elAsked(s);
+  return `      <tr><td>${esc(s.host)}</td><td>${esc(s.call)}${s.noFollow ? ", O_NOFOLLOW" : ""}</td><td>${elFollows(s) ? "yes" : "no"}</td>` +
+    `<td>${s.leadingHops}</td><td>${s.cyclicFinal ? `${s.finalHops}, a cycle` : String(s.finalHops)}</td>` +
+    `<td>${asked === Number.POSITIVE_INFINITY ? "unbounded" : asked}</td><td>${elSpent(s)}</td><td>${elLeft(s)}</td>` +
+    `<td>${elOk(s) ? "resolves" : "ELOOP"}</td><td>${esc(elReason(s))}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${ELOOP_CASES.map((item) => {
+  const right = elCorrect(item);
+  const s = item.setup;
+  const lines = elWalk(s).map((line) => `${line.name.padEnd(21)} ${line.value.padStart(18)}  # ${line.unit}`).join("\n");
+  const asked = elAsked(s);
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>${esc(elResult(s))}. The path asks for ${asked === Number.POSITIVE_INFINITY ? "an unbounded number of traversals, which is what a cycle is" : `${asked} traversals`} and the walk performs ${elSpent(s)} of a budget of ${EL_MAX}, leaving ${elLeft(s)}. ${elOk(s) ? "" : `The reason is ${esc(elReason(s))}.`}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/eloop-does-not-mean-there-is-a-loop", "ELOOP does not mean there is a loop"], ["/argmax", "Argument list too long"], ["/permissions", "Permission denied"]])}
 </main>`,
   });
 
@@ -8571,6 +8707,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/atime`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/nagle`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/argmax`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/eloop`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },

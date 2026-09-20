@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 300 of them. Regenerate with script/generatePostIndex.ts.
+ * 301 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "eloop-does-not-mean-there-is-a-loop",
+    title: "ELOOP Does Not Mean There Is a Loop",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","storage"],
+    excerpt: "Too many levels of symbolic links is errno 40 and the limit is forty traversals, for the whole path rather than per chain. Measured at three separate splits, each flipping between exactly 40 and 41. The kernel performs no cycle detection at all, so a two link cycle and a forty one link straight chain return the identical error, and O_NOFOLLOW returns it for a third reason again.",
+    coverImage: "/images/blog/eloop-does-not-mean-there-is-a-loop.jpg",
+    wordCount: 1063,
+  },
   {
     slug: "argument-list-too-long-and-the-limit-is-not-arg-max",
     title: "Argument List Too Long, and the Limit Is Not ARG_MAX",
@@ -2933,10 +2942,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 300;
+export const POST_COUNT = 301;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred";
+export const POST_COUNT_SPELLED = "three hundred and one";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2945,10 +2954,10 @@ export const POST_COUNT_SPELLED = "three hundred";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1154;
+export const CITATION_COUNT = 1158;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1313;
+export const CHECKED_URL_COUNT = 1317;

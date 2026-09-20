@@ -53,6 +53,7 @@ import { CASES as INOTIFY } from "@/lib/inotify/index";
 import { CASES as ATIME } from "@/lib/atime/index";
 import { CASES as NAGLE } from "@/lib/nagle/index";
 import { CASES as ARGMAX } from "@/lib/argmax/index";
+import { CASES as ELOOP } from "@/lib/eloop/index";
 import { CASES as CACHES } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -128,6 +129,7 @@ const OFFSET = {
   atime: 241,
   nagle: 251,
   argmax: 257,
+  eloop: 263,
 } as const;
 
 export function picksFor(day: number = dayNumber()): Pick[] {
@@ -526,6 +528,18 @@ export function picksFor(day: number = dayNumber()): Pick[] {
       blurb: "getconf ARG_MAX says two megabytes and every argument costs eight bytes of pointer on top of itself. Work out whether this command line goes through, and which of the two limits stops it.",
       href: "/argmax",
       outOf: ARGMAX.length,
+    });
+  }
+
+  const walked = pickFor(ELOOP, day, OFFSET.eloop);
+  if (walked) {
+    out.push({
+      surface: "eloop",
+      eyebrow: "Count",
+      title: walked.name,
+      blurb: "Forty symlink traversals for the whole path, not per chain, and the kernel never checks for a loop. Work out whether this call resolves and which of three things the error is reporting.",
+      href: "/eloop",
+      outOf: ELOOP.length,
     });
   }
 
