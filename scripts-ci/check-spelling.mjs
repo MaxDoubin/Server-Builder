@@ -164,9 +164,12 @@ function proseOf(line, inBlockComment) {
  * as a four word sentence. Tags and `{...}` expressions come out next, and
  * then anything left holding code punctuation is dropped rather than guessed
  * at, because the cost of a false positive here is a red build on an
- * identifier the gate has always promised to leave alone. Three words is the
- * floor: it clears `colour,` and `colour: LedState;` while keeping the
- * shortest real caption on the site.
+ * identifier the gate has always promised to leave alone. Two words is the
+ * floor. Three was the first guess and it was wrong: it cleared `colour,`
+ * but it also cleared `<h1>Hardware catalogue</h1>` and `The catalogue.`,
+ * which are a page heading and a page title. Dropping to two found those
+ * three and added no false positive, because a one word line is where the
+ * bare identifiers live.
  */
 const CODEY = /[=;()[\]]/;
 
@@ -188,7 +191,7 @@ function bareProseOf(line) {
     .replace(/[<>{}]/g, " ");
   if (CODEY.test(stripped) || MEMBER.test(stripped)) return "";
   const words = stripped.match(/[A-Za-z][A-Za-z'\u2019-]+/g) || [];
-  return words.length >= 3 ? stripped : "";
+  return words.length >= 2 ? stripped : "";
 }
 
 /**

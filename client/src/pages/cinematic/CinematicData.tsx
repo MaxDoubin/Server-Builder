@@ -96,7 +96,7 @@ export function CinematicData() {
             <ul className="mt-4 space-y-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <li>
                 Manufacturer and model name a real product. Everything else is
-                a modelling figure.
+                a modeling figure.
               </li>
               <li>
                 <strong className="text-[hsl(var(--brand-bone))]">powerDraw</strong>{" "}

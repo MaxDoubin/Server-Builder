@@ -184,7 +184,7 @@ export function CinematicGear() {
               · Hardware · Measured
             </div>
             <h1 className="mt-4 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-medium leading-[0.95] tracking-[-0.04em] text-[hsl(var(--brand-bone))]">
-              The catalogue.
+              The catalog.
             </h1>
             {/*
               The counts come from the data rather than the prose. An earlier
