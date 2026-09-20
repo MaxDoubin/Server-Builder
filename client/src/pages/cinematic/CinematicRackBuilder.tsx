@@ -590,7 +590,7 @@ export function CinematicRackBuilder() {
                             href={d.store}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 inline-block font-mono-tight text-[0.625rem] text-[hsl(var(--brand-signal))] underline underline-offset-4"
+                            className="tap-target mt-2 inline-block font-mono-tight text-[0.625rem] text-[hsl(var(--brand-signal))] underline underline-offset-4"
                           >
                             {d.sku} at Ubiquiti
                           </a>

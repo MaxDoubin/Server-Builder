@@ -298,7 +298,7 @@ export function CinematicBlogPost() {
             <Link
               href="/blog"
               data-testid="link-back-to-blog"
-              className="mt-8 inline-flex items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
+              className="tap-target mt-8 inline-flex items-center gap-2 font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))] transition-colors hover:text-[hsl(var(--brand-bone))]"
             >
               ← Back to field notes
             </Link>

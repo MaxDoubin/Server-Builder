@@ -74,7 +74,7 @@ export function CinematicStudySheet() {
             <Link
               href="/study"
               data-testid="link-sheet-not-found-study"
-              className="mt-6 inline-block font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]"
+              className="tap-target mt-6 inline-block font-mono-tight text-[0.6875rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-signal))]"
             >
               ← All exams
             </Link>
@@ -178,7 +178,7 @@ export function CinematicStudySheet() {
                         <li key={t.slug} className="sheet-item">
                           <Link
                             href={`/tools/${t.slug}`}
-                            className="font-mono-tight text-sm text-[hsl(var(--brand-bone))] underline-offset-4 hover:underline"
+                            className="tap-target font-mono-tight text-sm text-[hsl(var(--brand-bone))] underline-offset-4 hover:underline"
                           >
                             {t.name}
                             <span className="sheet-url">
@@ -205,7 +205,7 @@ export function CinematicStudySheet() {
                       <li key={p.slug} className="sheet-item">
                         <Link
                           href={`/blog/${p.slug}`}
-                          className="font-mono-tight text-sm text-[hsl(var(--brand-bone))] underline-offset-4 hover:underline"
+                          className="tap-target font-mono-tight text-sm text-[hsl(var(--brand-bone))] underline-offset-4 hover:underline"
                         >
                           {p.title}
                           <span className="sheet-url">

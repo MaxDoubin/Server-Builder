@@ -84,7 +84,7 @@ export function PracticeThis({ slug }: { slug: string }) {
             <Link
               href={surface.href}
               data-testid={`practice-${surface.href.slice(1)}`}
-              className="font-mono-tight text-[0.84375rem] text-[hsl(var(--brand-bone))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
+              className="tap-target font-mono-tight text-[0.84375rem] text-[hsl(var(--brand-bone))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
             >
               {surface.title}
             </Link>

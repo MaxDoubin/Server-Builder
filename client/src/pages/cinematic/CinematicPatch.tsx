@@ -431,7 +431,7 @@ export function CinematicPatch() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
+                  className="tap-target font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-bone-dim))] underline-offset-4 hover:text-[hsl(var(--brand-signal))] hover:underline"
                 >
                   {label}
                 </a>
