@@ -170,7 +170,7 @@ export function LayoutManager({
     <div className="space-y-3">
       <section className="space-y-2">
         <label
-          className="block text-[10px] uppercase tracking-widest text-white/50"
+          className="block text-[0.625rem] uppercase tracking-widest text-white/50"
           htmlFor="layout-name"
         >
           Save the current floor
@@ -182,19 +182,19 @@ export function LayoutManager({
             onChange={(event) => setName(event.target.value)}
             maxLength={MAX_LAYOUT_NAME_LENGTH}
             placeholder="Layout name"
-            className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/50 px-2 py-1.5 text-[11px] text-white placeholder:text-white/50 focus:border-cyan-400/60 focus:outline-none"
+            className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/50 px-2 py-1.5 text-[0.6875rem] text-white placeholder:text-white/50 focus:border-cyan-400/60 focus:outline-none"
           />
           <Button
             size="sm"
             variant="secondary"
-            className="shrink-0 bg-white/10 text-[10px] uppercase tracking-widest text-white hover:bg-white/20"
+            className="shrink-0 bg-white/10 text-[0.625rem] uppercase tracking-widest text-white hover:bg-white/20"
             onClick={handleSaveNew}
             disabled={!name.trim()}
           >
             Save
           </Button>
         </div>
-        <p className="text-[10px] text-white/50">
+        <p className="text-[0.625rem] text-white/50">
           {racks.length.toLocaleString()} racks in this build. Room for {MAX_NAMED_LAYOUTS} named
           layouts.
         </p>
@@ -203,7 +203,7 @@ export function LayoutManager({
       {message && (
         <p
           role={message.kind === "error" ? "alert" : "status"}
-          className={`rounded-md border px-2 py-1.5 text-[10px] leading-relaxed ${
+          className={`rounded-md border px-2 py-1.5 text-[0.625rem] leading-relaxed ${
             message.kind === "error"
               ? "border-rose-500/50 bg-rose-500/10 text-rose-100"
               : "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
@@ -214,9 +214,9 @@ export function LayoutManager({
       )}
 
       <section className="space-y-1.5">
-        <div className="text-[10px] uppercase tracking-widest text-white/50">Saved layouts</div>
+        <div className="text-[0.625rem] uppercase tracking-widest text-white/50">Saved layouts</div>
         {layouts.length === 0 ? (
-          <p className="text-[10px] text-white/50">Nothing saved yet.</p>
+          <p className="text-[0.625rem] text-white/50">Nothing saved yet.</p>
         ) : (
           <ul className="space-y-1.5">
             {layouts.map((layout) => (
@@ -228,12 +228,12 @@ export function LayoutManager({
                       onChange={(event) => setRenameValue(event.target.value)}
                       maxLength={MAX_LAYOUT_NAME_LENGTH}
                       aria-label={`New name for ${layout.name}`}
-                      className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/50 px-2 py-1 text-[11px] text-white focus:border-cyan-400/60 focus:outline-none"
+                      className="min-w-0 flex-1 rounded-md border border-white/15 bg-black/50 px-2 py-1 text-[0.6875rem] text-white focus:border-cyan-400/60 focus:outline-none"
                     />
                     <Button
                       size="sm"
                       variant="secondary"
-                      className="h-7 shrink-0 bg-white/10 px-2 text-[10px] uppercase text-white hover:bg-white/20"
+                      className="h-7 shrink-0 bg-white/10 px-2 text-[0.625rem] uppercase text-white hover:bg-white/20"
                       onClick={() => handleRename(layout)}
                     >
                       Save
@@ -241,7 +241,7 @@ export function LayoutManager({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-7 shrink-0 px-2 text-[10px] uppercase text-white/60"
+                      className="h-7 shrink-0 px-2 text-[0.625rem] uppercase text-white/60"
                       onClick={() => setRenamingId(null)}
                     >
                       Cancel
@@ -250,27 +250,27 @@ export function LayoutManager({
                 ) : (
                   <>
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="truncate text-[11px] font-medium text-white/90">
+                      <span className="truncate text-[0.6875rem] font-medium text-white/90">
                         {layout.name}
                       </span>
-                      <span className="shrink-0 font-mono text-[9px] text-white/50">
+                      <span className="shrink-0 font-mono text-[0.625rem] text-white/50">
                         {layout.rackCount.toLocaleString()} racks
                       </span>
                     </div>
-                    <div className="text-[9px] text-white/50">
+                    <div className="text-[0.625rem] text-white/50">
                       {timestamp(layout.savedAt)} · {layout.equipmentCount.toLocaleString()} items
                     </div>
 
                     {confirmDelete === layout.id ? (
                       <div className="mt-1.5 rounded-md border border-rose-500/50 bg-rose-500/10 p-1.5">
-                        <p className="text-[10px] text-rose-100">
+                        <p className="text-[0.625rem] text-rose-100">
                           Delete "{layout.name}" permanently?
                         </p>
                         <div className="mt-1 flex gap-1.5">
                           <Button
                             size="sm"
                             variant="secondary"
-                            className="h-7 bg-rose-500/30 px-2 text-[10px] uppercase text-rose-50 hover:bg-rose-500/50"
+                            className="h-7 bg-rose-500/30 px-2 text-[0.625rem] uppercase text-rose-50 hover:bg-rose-500/50"
                             onClick={() => handleDelete(layout)}
                           >
                             Delete
@@ -278,7 +278,7 @@ export function LayoutManager({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 px-2 text-[10px] uppercase text-white/60"
+                            className="h-7 px-2 text-[0.625rem] uppercase text-white/60"
                             onClick={() => setConfirmDelete(null)}
                           >
                             Keep
@@ -287,14 +287,14 @@ export function LayoutManager({
                       </div>
                     ) : confirmOverwrite === layout.id ? (
                       <div className="mt-1.5 rounded-md border border-amber-400/50 bg-amber-400/10 p-1.5">
-                        <p className="text-[10px] text-amber-100">
+                        <p className="text-[0.625rem] text-amber-100">
                           Replace "{layout.name}" with the current floor?
                         </p>
                         <div className="mt-1 flex gap-1.5">
                           <Button
                             size="sm"
                             variant="secondary"
-                            className="h-7 bg-amber-400/25 px-2 text-[10px] uppercase text-amber-50 hover:bg-amber-400/40"
+                            className="h-7 bg-amber-400/25 px-2 text-[0.625rem] uppercase text-amber-50 hover:bg-amber-400/40"
                             onClick={() => handleOverwrite(layout)}
                           >
                             Replace
@@ -302,7 +302,7 @@ export function LayoutManager({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 px-2 text-[10px] uppercase text-white/60"
+                            className="h-7 px-2 text-[0.625rem] uppercase text-white/60"
                             onClick={() => setConfirmOverwrite(null)}
                           >
                             Cancel
@@ -314,7 +314,7 @@ export function LayoutManager({
                         <Button
                           size="sm"
                           variant="secondary"
-                          className="h-7 bg-white/10 px-2 text-[10px] uppercase text-white hover:bg-white/20"
+                          className="h-7 bg-white/10 px-2 text-[0.625rem] uppercase text-white hover:bg-white/20"
                           onClick={() => handleLoad(layout)}
                         >
                           Load
@@ -322,7 +322,7 @@ export function LayoutManager({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 text-[10px] uppercase text-white/60 hover:text-white"
+                          className="h-7 px-2 text-[0.625rem] uppercase text-white/60 hover:text-white"
                           onClick={() => {
                             clearConfirms();
                             setRenamingId(layout.id);
@@ -334,7 +334,7 @@ export function LayoutManager({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 text-[10px] uppercase text-white/60 hover:text-white"
+                          className="h-7 px-2 text-[0.625rem] uppercase text-white/60 hover:text-white"
                           onClick={() => {
                             setConfirmDelete(null);
                             setConfirmOverwrite(layout.id);
@@ -345,7 +345,7 @@ export function LayoutManager({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 text-[10px] uppercase text-rose-300/80 hover:text-rose-200"
+                          className="h-7 px-2 text-[0.625rem] uppercase text-rose-300/80 hover:text-rose-200"
                           onClick={() => {
                             setConfirmOverwrite(null);
                             setConfirmDelete(layout.id);
@@ -364,15 +364,15 @@ export function LayoutManager({
       </section>
 
       <section className="space-y-2 border-t border-white/10 pt-2.5">
-        <div className="text-[10px] uppercase tracking-widest text-white/50">Share by link</div>
-        <p className="text-[10px] leading-relaxed text-white/50">
+        <div className="text-[0.625rem] uppercase tracking-widest text-white/50">Share by link</div>
+        <p className="text-[0.625rem] leading-relaxed text-white/50">
           The link carries the generator seed, the rack count and a list of the racks you changed,
           not a copy of the floor. Opening it rebuilds the same layout.
         </p>
         <Button
           size="sm"
           variant="secondary"
-          className="bg-white/10 text-[10px] uppercase tracking-widest text-white hover:bg-white/20"
+          className="bg-white/10 text-[0.625rem] uppercase tracking-widest text-white hover:bg-white/20"
           onClick={handleBuildShareLink}
         >
           Build share link
@@ -396,28 +396,28 @@ export function LayoutManager({
                   <span>Copy share link</span>
                 </CopyButton>
               </span>
-              <span className="font-mono text-[9px] text-white/50">
+              <span className="font-mono text-[0.625rem] text-white/50">
                 {share.length} of {MAX_HASH_LENGTH} chars
               </span>
             </div>
-            <p className="break-all rounded-md border border-white/10 bg-black/40 px-2 py-1 font-mono text-[9px] text-white/50">
+            <p className="break-all rounded-md border border-white/10 bg-black/40 px-2 py-1 font-mono text-[0.625rem] text-white/50">
               {share.url}
             </p>
-            <p className="text-[10px] text-white/50">
+            <p className="text-[0.625rem] text-white/50">
               {share.deltaCount === 0
                 ? "Nothing differs from the generated floor, so the link is just the recipe."
                 : `${share.deltaCount.toLocaleString()} rack${
                     share.deltaCount === 1 ? "" : "s"
                   } differ from the generated floor and are spelled out in the link.`}
             </p>
-            {share.note && <p className="text-[10px] text-amber-200">{share.note}</p>}
+            {share.note && <p className="text-[0.625rem] text-amber-200">{share.note}</p>}
           </div>
         )}
 
         {share.status === "error" && (
           <p
             role="alert"
-            className="rounded-md border border-rose-500/50 bg-rose-500/10 px-2 py-1.5 text-[10px] leading-relaxed text-rose-100"
+            className="rounded-md border border-rose-500/50 bg-rose-500/10 px-2 py-1.5 text-[0.625rem] leading-relaxed text-rose-100"
           >
             {share.reason}
           </p>

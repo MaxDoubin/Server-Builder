@@ -120,7 +120,7 @@ function MetricCard({ label, value, color }: { label: string; value: string; col
 
   return (
     <div className={`border ${colorClasses[color]} p-2 rounded bg-black/30`}>
-      <div className="text-[10px] text-cyan-600">{label}</div>
+      <div className="text-[0.625rem] text-cyan-600">{label}</div>
       <div className={`text-lg font-bold ${colorClasses[color]}`}>{value}</div>
     </div>
   );

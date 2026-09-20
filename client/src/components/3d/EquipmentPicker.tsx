@@ -526,7 +526,7 @@ export function EquipmentPicker({
                   type="button"
                   variant={active ? "secondary" : "outline"}
                   size="sm"
-                  className="h-7 px-2 text-[10px]"
+                  className="h-7 px-2 text-[0.625rem]"
                   onClick={() =>
                     setSelectedTags((prev) =>
                       prev.includes(tag) ? prev.filter((existing) => existing !== tag) : [...prev, tag]
@@ -640,7 +640,7 @@ export function EquipmentPicker({
                             {equipment.uHeight}U
                           </Badge>
                           {index < 9 && (
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="text-[0.625rem]">
                               {index + 1}
                             </Badge>
                           )}
@@ -653,7 +653,7 @@ export function EquipmentPicker({
                       onPointerDown={(e) => e.stopPropagation()}
                     >
                       {equipment.tags.slice(0, 4).map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-[10px]">
+                        <Badge key={tag} variant="secondary" className="text-[0.625rem]">
                           {tag}
                         </Badge>
                       ))}

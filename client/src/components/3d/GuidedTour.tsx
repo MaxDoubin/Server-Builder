@@ -233,13 +233,13 @@ export function GuidedTour({
         style={{ top: position.top, left: position.left }}
       >
         <div className="flex items-baseline justify-between gap-2">
-          <div className="text-[9px] uppercase tracking-[0.28em] text-cyan-300/80">
+          <div className="text-[0.625rem] uppercase tracking-[0.28em] text-cyan-300/80">
             Step {index + 1} of {STEPS.length}
           </div>
           <button
             type="button"
             onClick={finish}
-            className="min-h-[24px] px-1 text-[10px] uppercase tracking-widest text-white/50 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+            className="min-h-[24px] px-1 text-[0.625rem] uppercase tracking-widest text-white/50 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
           >
             Skip tour
           </button>
@@ -253,13 +253,13 @@ export function GuidedTour({
             level two.
           */}
           <h2 className="mt-1 text-sm font-semibold text-white">{step.title}</h2>
-          <p className="mt-1 text-[11px] leading-relaxed text-white/60">{step.body}</p>
+          <p className="mt-1 text-[0.6875rem] leading-relaxed text-white/60">{step.body}</p>
         </div>
         <div className="mt-2.5 flex items-center justify-between gap-2">
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 px-2 text-[10px] uppercase tracking-widest text-white/60 hover:text-white"
+            className="h-8 px-2 text-[0.625rem] uppercase tracking-widest text-white/60 hover:text-white"
             onClick={() => setIndex((prev) => Math.max(0, prev - 1))}
             disabled={index === 0}
           >
@@ -268,7 +268,7 @@ export function GuidedTour({
           <Button
             size="sm"
             variant="secondary"
-            className="h-8 bg-cyan-500/25 px-3 text-[10px] uppercase tracking-widest text-cyan-50 hover:bg-cyan-500/40"
+            className="h-8 bg-cyan-500/25 px-3 text-[0.625rem] uppercase tracking-widest text-cyan-50 hover:bg-cyan-500/40"
             onClick={() => (isLast ? finish() : setIndex((prev) => prev + 1))}
           >
             {isLast ? "Start building" : "Next"}

@@ -1136,7 +1136,7 @@ export function DatacenterScene({
             <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
             ADMIN MODE ACTIVE
           </div>
-          <div className="text-cyan-600 text-[10px] font-mono mt-1">{displayRacks.length} RACKS VISIBLE</div>
+          <div className="text-cyan-600 text-[0.625rem] font-mono mt-1">{displayRacks.length} RACKS VISIBLE</div>
         </div>
       )}
     </div>

@@ -36,18 +36,24 @@
  * check written against a syntax rather than against an effect. So this one
  * reads both, and reads the stylesheet too.
  *
- * WHAT IS EXEMPT. client/src/components/3d, for the reason check-text-scaling
- * gives: those labels sit in boxes the size of a rack unit with truncate,
- * and growing the text there truncates it sooner rather than reading better.
- * The exemption holds no inline font sizes today and the count is asserted,
- * so it cannot quietly become where small type goes to live.
+ * WHAT IS EXEMPT. A label inside <Html distanceFactor>, where drei ties the
+ * element's apparent size to the camera, so growing the type truncates it
+ * sooner rather than reading better and the reader's real control is zoom.
+ * The exemption is spent only where a size would otherwise fail, so a camera
+ * scaled label already written at the floor passes on its own merit and does
+ * not consume it. Three sizes need it, and the count is asserted, so it
+ * cannot quietly become where small type goes to live. scripts-ci/lib/camera-scaled
+ * decides it for this gate and for check-text-scaling together, because two
+ * gates disagreeing about one exemption means the size inside it is checked
+ * by neither.
  */
 import { readFileSync } from "fs";
 import { execFileSync } from "child_process";
+import { cameraScaledRanges, isCameraScaled } from "./lib/camera-scaled.mjs";
 
 const FLOOR_REM = 0.625;
 const ROOT_PX = 16;
-const EXEMPT_DIR = "client/src/components/3d/";
+const EXEMPT_CAP = 3;
 const CSS = "client/src/index.css";
 
 const problems = [];
@@ -70,11 +76,11 @@ const files = execFileSync("git", ["ls-files", "client/src"], { encoding: "utf8"
 
 let sizes = 0;
 let atFloor = 0;
-let exemptInline = 0;
+let exemptScaled = 0;
 
 for (const file of files) {
   const source = readFileSync(file, "utf8");
-  const exempt = file.startsWith(EXEMPT_DIR);
+  const scaled = cameraScaledRanges(source);
   const lineAt = (index) => source.slice(0, index).split("\n").length;
 
   /* ------------------------------------------------ Tailwind text-[...] */
@@ -83,7 +89,8 @@ for (const file of files) {
     for (const length of lengthsIn(match[1])) {
       sizes += 1;
       if (length.rem === FLOOR_REM) atFloor += 1;
-      if (exempt || length.rem >= FLOOR_REM) continue;
+      if (length.rem >= FLOOR_REM) continue;
+      if (isCameraScaled(scaled, match.index)) { exemptScaled += 1; continue; }
       problems.push(
         `${file}:${lineAt(match.index)} sets ${match[0]}, which is ${(length.rem * ROOT_PX).toFixed(2)}px ` +
           `at the default scale, under the ${FLOOR_REM}rem floor. Label type is already uppercase and tracked; ` +
@@ -96,12 +103,10 @@ for (const file of files) {
 
   for (const match of source.matchAll(/fontSize:\s*("[^"]*"|'[^']*'|[\d.]+)/g)) {
     const raw = match[1].replace(/^["']|["']$/g, "");
-    if (exempt) {
-      exemptInline += 1;
-      continue;
-    }
     const line = lineAt(match.index);
+    const scaledHere = isCameraScaled(scaled, match.index);
     if (/^[\d.]+$/.test(raw)) {
+      if (scaledHere) { exemptScaled += 1; continue; }
       problems.push(
         `${file}:${line} sets fontSize: ${raw} as a bare number, which React writes out as ${raw}px. ` +
           `Write it in rem so the reader's text size preference moves it.`,
@@ -114,11 +119,13 @@ for (const file of files) {
       sizes += 1;
       if (length.rem === FLOOR_REM) atFloor += 1;
       if (/px/.test(length.text)) {
+        if (scaledHere) { exemptScaled += 1; continue; }
         problems.push(
           `${file}:${line} sets fontSize: ${raw} in px. An inline style has the same defect as text-[${length.text}] ` +
             `and check-text-scaling cannot see it, because that gate reads class names.`,
         );
       } else if (length.rem < FLOOR_REM) {
+        if (scaledHere) { exemptScaled += 1; continue; }
         problems.push(
           `${file}:${line} sets fontSize: ${raw}, under the ${FLOOR_REM}rem floor.`,
         );
@@ -153,8 +160,11 @@ if (sizes < 1000) {
 if (atFloor < 500) {
   problems.push(`only ${atFloor} sites sit at the ${FLOOR_REM}rem floor, where the site's own smallest label size is used hundreds of times`);
 }
-if (exemptInline !== 0) {
-  problems.push(`${EXEMPT_DIR} now sets ${exemptInline} inline font sizes; the exemption was written for its Tailwind labels, not as a place to put new ones`);
+if (exemptScaled > EXEMPT_CAP) {
+  problems.push(
+    `${exemptScaled} type sizes sit inside a camera scaled <Html>, over the cap of ${EXEMPT_CAP}. ` +
+      `distanceFactor exempts a label because the zoom already controls its apparent size, which is not a reason to set new type small.`,
+  );
 }
 
 if (problems.length) {
@@ -166,5 +176,5 @@ if (problems.length) {
 
 console.log(
   `OK  all ${sizes} explicit type sizes are at or above the ${FLOOR_REM}rem floor (${atFloor} sit exactly on it), ` +
-    `in class names, inline styles and the stylesheet alike.`,
+    `in class names, inline styles and the stylesheet alike, with ${exemptScaled} exempt inside <Html distanceFactor>.`,
 );

@@ -38,7 +38,7 @@ export function AchievementsPanel({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-baseline justify-between text-[10px] uppercase tracking-widest text-white/50">
+      <div className="flex items-baseline justify-between text-[0.625rem] uppercase tracking-widest text-white/50">
         <span>Unlocked</span>
         <span className="font-mono text-cyan-200">
           {unlockedCount} / {achievements.length}
@@ -68,7 +68,7 @@ export function AchievementsPanel({
               <div className="flex items-start gap-2">
                 <span
                   aria-hidden
-                  className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none ${
+                  className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[0.625rem] leading-none ${
                     isUnlocked
                       ? "border-cyan-300/70 bg-cyan-400/25 text-cyan-100"
                       : "border-white/20 text-white/30"
@@ -79,21 +79,21 @@ export function AchievementsPanel({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <span
-                      className={`text-[11px] font-medium ${
+                      className={`text-[0.6875rem] font-medium ${
                         isUnlocked ? "text-cyan-100" : "text-white/70"
                       }`}
                     >
                       {achievement.title}
                     </span>
-                    <span className="shrink-0 text-[9px] uppercase tracking-widest text-white/50">
+                    <span className="shrink-0 text-[0.625rem] uppercase tracking-widest text-white/50">
                       {isUnlocked ? "Unlocked" : "Locked"}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[10px] leading-relaxed text-white/50">
+                  <p className="mt-0.5 text-[0.625rem] leading-relaxed text-white/50">
                     {isUnlocked ? achievement.description : achievement.requirement}
                   </p>
                   {progress && (
-                    <p className="mt-0.5 font-mono text-[9px] text-white/50">{progress}</p>
+                    <p className="mt-0.5 font-mono text-[0.625rem] text-white/50">{progress}</p>
                   )}
                 </div>
               </div>
@@ -126,11 +126,11 @@ export function AchievementNotice({
           ★
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[9px] uppercase tracking-[0.24em] text-cyan-300/80">
+          <div className="text-[0.625rem] uppercase tracking-[0.24em] text-cyan-300/80">
             Achievement unlocked
           </div>
           <div className="mt-0.5 text-xs font-semibold text-white">{achievement.title}</div>
-          <p className="mt-1 text-[10px] leading-relaxed text-white/60">
+          <p className="mt-1 text-[0.625rem] leading-relaxed text-white/60">
             {achievement.description}
           </p>
         </div>
