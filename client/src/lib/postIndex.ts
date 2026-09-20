@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 309 of them. Regenerate with script/generatePostIndex.ts.
+ * 310 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-log-that-lost-three-quarters-of-itself",
+    title: "The Log That Lost Three Quarters Of Itself",
+    date: "2026-09-20",
+    tags: ["linux","operations","troubleshooting","programming"],
+    excerpt: "Four workers hand a log 51200 bytes. The file comes out 12800 long, which is exactly one writer's worth. Every write returned the full count, nothing logged an error, and the difference between this and a log that works is which side of the fork the open call sits on.",
+    coverImage: "/images/blog/the-log-that-lost-three-quarters-of-itself.jpg",
+    wordCount: 1014,
+  },
   {
     slug: "the-copy-filled-the-disk-the-original-never-touched",
     title: "The Copy Filled The Disk The Original Never Touched",
@@ -3015,10 +3024,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 309;
+export const POST_COUNT = 310;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and nine";
+export const POST_COUNT_SPELLED = "three hundred and ten";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3027,10 +3036,10 @@ export const POST_COUNT_SPELLED = "three hundred and nine";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1187;
+export const CITATION_COUNT = 1189;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1346;
+export const CHECKED_URL_COUNT = 1348;

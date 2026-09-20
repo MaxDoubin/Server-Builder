@@ -63,6 +63,7 @@ import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index"
 import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
 import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as SPARSE_CASES, stillSparse as spSparse } from "@/lib/sparse/index";
+import { CASES as APPEND_CASES, safe as apSafe } from "@/lib/append/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -447,6 +448,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/append",
+      eyebrow: "Predict",
+      title: "Two writers, one offset",
+      blurb:
+        "Four processes hand a log 51200 bytes and the file comes out 12800 long. Every write returned the full count. A file offset belongs to an open file description, and two open calls on one path make two of them.",
+      reachFor: "the log is missing lines and nothing logged an error",
+      stats: [
+        `${APPEND_CASES.length} logs`,
+        `${APPEND_CASES.filter((item) => !apSafe(item.setup)).length} lose writes`,
+        "1 flag",
       ],
       progress: null,
     },

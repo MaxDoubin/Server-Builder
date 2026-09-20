@@ -31,6 +31,7 @@ import { CASES as CACHE_CASES, SHARED as CACHE_SHARED, hits as cacheHits, leakAt
 import { CASES as FREE_CASES, asFree as freeCmd, asMeminfo as freeMeminfo, available as freeAvailable, correctOption as freeCorrect, estimate as freeEstimate, fits as freeFits, human as freeHuman, overstatedBy as freeOverstated, pageCache as freeCache, used as freeUsed } from "../client/src/lib/free/index";
 import { CASES as INOTIFY_CASES, asSysctl as inoSysctl, correctOption as inoCorrect, culprit as inoCulprit, errnoMessage as inoMessage, errnoName as inoErrno, eventsLost as inoLost, fits as inoFits, human as inoHuman, instancesFree as inoInstFree, watchesFree as inoFree, watchesWanted as inoWanted } from "../client/src/lib/inotify/index";
 import { CASES as UMASK_CASES, asLetters as umLetters, asUmask as umLines, correctOption as umCorrect, created as umCreated, executable as umExec, gid as umGid, masked as umMasked, mode as umMode, modeText as umText, removed as umRemoved, special as umSpecial } from "../client/src/lib/umask/index";
+import { CASES as APPEND_CASES, asAppend as apLines, asBytes as apBytes, asHow as apHow, correctOption as apCorrect, honorsOffset as apOffset, lost as apLost, safe as apSafe, size as apSize, survived as apSurvived, written as apWritten } from "../client/src/lib/append/index";
 import { CASES as SPARSE_CASES, allocatedKib as spAlloc, apparentKib as spApparent, asOp as spOp, asSize as spSize, asSparse as spLines, asTool as spTool, copiedKib as spCopied, correctOption as spCorrect, fits as spFits, stillSparse as spSparse } from "../client/src/lib/sparse/index";
 import { CASES as PSS_CASES, alive as pssAlive, asMib as pssMib, asPss as pssLines, correctOption as pssCorrect, grew as pssGrew, mib as pssKibMib, pagesMib as pssPagesMib, physicalPages as pssFrames, pssChildKib, pssParentKib, pssSumKib, rssChildPages as pssRssChild, rssParentPages as pssRssParent, rssSumPages as pssRssSum } from "../client/src/lib/pss/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous, asExit as exLines, asHex as exHex, cored as exCored, correctOption as exCorrect, exitStatus as exStatus, pipeStatus as exPipe, rawStatus as exRaw, reported as exReported, signalName as exSignal, theOtherReading as exOther } from "../client/src/lib/exit/index";
@@ -925,6 +926,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/umask">A ceiling, not a request</a>, why the mode your program passes to open is a maximum.</li>
     <li><a href="${SITE_URL}/pss">Four processes, one copy</a>, why adding up a column of RSS gives memory that does not exist.</li>
     <li><a href="${SITE_URL}/sparse">A gigabyte in one block</a>, why ls and du disagree about a file and which copy makes it real.</li>
+    <li><a href="${SITE_URL}/append">Two writers, one offset</a>, why four processes can hand a log more bytes than it ends up holding.</li>
     <li><a href="${SITE_URL}/overcommit">Half a machine</a>, why CommitLimit is half your memory and strict mode refuses with RAM free.</li>
     <li><a href="${SITE_URL}/timewait">Still a minute</a>, why lowering tcp_fin_timeout does nothing to TIME_WAIT.</li>
     <li><a href="${SITE_URL}/rcvbuf">Tuned smaller</a>, why setting a socket buffer can cap it below where it would have gone.</li>
@@ -2250,6 +2252,7 @@ ${JSON.stringify({
     ["A ceiling, not a request", "/umask"],
     ["Four processes, one copy", "/pss"],
     ["A gigabyte in one block", "/sparse"],
+    ["Two writers, one offset", "/append"],
     ["Half a machine", "/overcommit"],
     ["Still a minute", "/timewait"],
     ["Tuned smaller", "/rcvbuf"],
@@ -5190,6 +5193,123 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   </article>`;
 }).join("\n")}
   ${backLinks([["/practice", "All practice material"], ["/blog/the-copy-filled-the-disk-the-original-never-touched", "The copy filled the disk the original never touched"], ["/space", "No space left on device"], ["/pss", "Four processes, one copy"]])}
+</main>`,
+  });
+
+  // ── concurrent appenders ──
+  /*
+    The static body carries the four arrangements, because the search that
+    brings people here is a log with lines missing and no error anywhere, and
+    the answer is which of four ways of opening the file you used. The second
+    table is the one that surprises: pwrite losing its offset under O_APPEND.
+  */
+  const apLosing = APPEND_CASES.filter((item) => !apSafe(item.setup)).length;
+  const apDescription =
+    "Four processes hand a log 51200 bytes and the file comes out 12800 long, which is one " +
+    "writer's worth, with every write returning the full count and no error anywhere. A file " +
+    "offset belongs to an open file description, so two open() calls on one path make two offsets " +
+    "that know nothing about each other, and O_APPEND is the only thing that makes the seek and " +
+    `the write one operation. ${APPEND_CASES.length} logs here, ${apLosing} of which lose writes.`;
+
+  await writePage("append", base, {
+    title: "Two Writers, One Offset: O_APPEND And Lost Writes | Max Doubin",
+    description: apDescription,
+    canonical: `${SITE_URL}/append`,
+    schema: `<script type="application/ld+json">
+${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Two writers, one offset",
+  description: apDescription,
+  url: `${SITE_URL}/append`,
+  learningResourceType: "Interactive exercise",
+  educationalLevel: "Advanced",
+  teaches:
+    "Why a log can be missing most of what was written to it with no error anywhere: that a file offset belongs to an open file description rather than to a file or a process, so two open() calls on one path give two offsets that each walk from zero and overwrite each other, leaving a file exactly one writer's worth long however many writers there were; that fork and dup share one description and therefore one offset, so inheriting a descriptor is safe where opening the same path is not; that O_APPEND is not a seek to the end followed by a write but one operation under the inode lock; that pwrite at non-overlapping offsets is the other way to be safe and is only safe because of the arithmetic; and that on Linux pwrite on a descriptor opened O_APPEND discards its offset argument and appends anyway",
+  isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
+})}
+</script>`,
+    rootContent: `
+<main>
+  <h1>Two writers, one offset</h1>
+  <p>
+    ${APPEND_CASES.length} logs, one question each. On ${apLosing} of them some of what the writers handed to write() is not in
+    the file, and nothing anywhere reported an error.
+  </p>
+  <h2>Four writers, 51200 bytes, and four different files</h2>
+  <pre><code>how the file was opened                      bytes written   file is
+each writer opens it with O_APPEND                   51200     51200
+each writer opens it without O_APPEND                51200     12800
+the parent opens it once and forks                   51200     51200
+each writer pwrites at its own tiled offset          51200     51200</code></pre>
+  <p>
+    The second row is three quarters of the log gone. 12800 is 200 times 64: exactly one writer's
+    worth. Each writer walked its own offset from zero and wrote over the others, and the file
+    ended up as long as the furthest any single one of them reached.
+  </p>
+  <h2>The figure does not depend on the writer count</h2>
+  <pre><code>eight writers, 50 records of 4096, no flag    204800  of 1638400</code></pre>
+  <p>
+    Again one writer's worth. Adding writers adds loss and leaves the file the same size, which is
+    what makes this hard to notice from the file alone.
+  </p>
+  <h2>Where the offset lives</h2>
+  <p>
+    An offset belongs to an open file description, which is what one <code>open()</code> call
+    creates. Two calls on the same path make two descriptions and two offsets. <code>fork</code>
+    and <code>dup</code> do not: they hand out another descriptor onto the one description, so the
+    offset is shared and every write advances it for everybody. That is the whole difference
+    between rows two and three, and the code differs only in which side of the fork the open sits.
+  </p>
+  <h2>O_APPEND is not a seek and a write</h2>
+  <p>
+    It is one operation the kernel performs under the inode lock, which is why it survives writers
+    that have never heard of each other. Asking for the same thing in two steps is row two.
+  </p>
+  <h2>And it discards the offset pwrite names</h2>
+  <pre><code>plain fd,     pwrite "XX" at 0    size 10   0123456789 becomes XX23456789
+O_APPEND fd,  pwrite "XX" at 0    size 12   0123456789XX
+O_APPEND fd,  lseek 0 then write  size 12   0123456789YY</code></pre>
+  <p>
+    pwrite exists to write at an offset without touching the file offset, and pwrite(2) says POSIX
+    requires O_APPEND to have no effect on where it writes. On Linux it appends regardless. A
+    program that opens with O_APPEND and then pwrites is not doing what it reads as doing.
+  </p>
+  <h2>What each set of writers left behind</h2>
+  <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
+  <table>
+    <thead>
+      <tr><th>Host</th><th>Writers</th><th>Each</th><th>Opened</th><th>Written</th><th>File</th><th>Lost</th><th>Records kept</th></tr>
+    </thead>
+    <tbody>
+${APPEND_CASES.map((item) => {
+  const s = item.setup;
+  return `      <tr><td>${esc(s.host)}</td><td>${s.writers}</td><td>${s.records} of ${s.bytes}</td>` +
+    `<td>${esc(apHow(s.how))}</td><td>${apWritten(s)}</td><td>${apSize(s)}</td>` +
+    `<td>${apLost(s)}</td><td>${apSurvived(s)} of ${s.writers * s.records}</td></tr>`;
+}).join("\n")}
+    </tbody>
+  </table>
+  </div>
+${APPEND_CASES.map((item) => {
+  const right = apCorrect(item);
+  const s = item.setup;
+  const lines = apLines(s).map((line) => `${line.name.padEnd(18)} ${line.value.padStart(44)}  # ${line.unit}`).join("\n");
+  return `  <article>
+    <h2>${esc(item.name)}</h2>
+    <p>${esc(item.brief)}</p>
+    <p><strong>${esc(item.question)}</strong></p>
+    <pre><code>${esc(lines)}</code></pre>
+    <p>${s.writers} writers handed over ${apWritten(s)} bytes, which is ${apBytes(apWritten(s))}, and the file is ${apSize(s)}. ${apSafe(s) ? "Nothing was lost." : `${apLost(s)} bytes are not in it, and nothing reported an error.`} ${apOffset(s) ? "The offset each pwrite names is the offset it gets." : ""}</p>
+    <ol>
+${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === right?.id ? " <strong>(this one)</strong>" : ""}</li>`).join("\n")}
+    </ol>
+    <p>${esc(item.why)}</p>
+    <p>${esc(item.fix.charAt(0).toUpperCase() + item.fix.slice(1))}</p>
+    <p>It breaks the belief ${esc(item.breaks)}</p>
+  </article>`;
+}).join("\n")}
+  ${backLinks([["/practice", "All practice material"], ["/blog/the-log-that-lost-three-quarters-of-itself", "The log that lost three quarters of itself"], ["/pipebuf", "Two writers, one line"], ["/locks", "Three locks, one file"]])}
 </main>`,
   });
 
@@ -9637,6 +9757,7 @@ async function writeSitemap(
     { loc: `${SITE_URL}/umask`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/pss`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/sparse`, lastmod: today, changefreq: "monthly", priority: "0.8" },
+    { loc: `${SITE_URL}/append`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/overcommit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/timewait`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/rcvbuf`, lastmod: today, changefreq: "monthly", priority: "0.8" },
