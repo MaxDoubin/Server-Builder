@@ -184,8 +184,12 @@ const INDEX = path.join(DIST, "index.html");
  *
  * 719 KB, raised from 718 by /signals, measured at 718.2. Twenty two surfaces,
  * twenty raises, still a kilobyte apiece.
+ *
+ * 720 KB, raised from 719 by /exit, measured at 719.1. Twenty three surfaces,
+ * twenty one raises. The last two each landed within a tenth of the ceiling
+ * they were given, which is the closest this has run.
  */
-const BUDGET_BYTES = 719 * 1024;
+const BUDGET_BYTES = 720 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

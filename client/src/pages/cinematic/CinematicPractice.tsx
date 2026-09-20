@@ -59,6 +59,7 @@ import { CASES as ELOOP_CASES, succeeds as eloopOk } from "@/lib/eloop/index";
 import { CASES as PIPEBUF_CASES, tearsHere as pbTears } from "@/lib/pipebuf/index";
 import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
+import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -443,6 +444,20 @@ export function CinematicPractice() {
         `${ELOOP_CASES.length} paths`,
         `${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
         "3 meanings",
+      ],
+      progress: null,
+    },
+    {
+      href: "/exit",
+      eyebrow: "Predict",
+      title: "One byte, two kinds of news",
+      blurb:
+        "An exit code is truncated to a byte, so exit(256) reads as success. A death by signal lands in the other half of the wait status, which is why waitpid can always tell an exit of 137 from a kill by SIGKILL and $? never can.",
+      reachFor: "the job reported 137 and nobody can say why",
+      stats: [
+        `${EXIT_CASES.length} endings`,
+        `${EXIT_CASES.filter((item) => exAmbiguous(item.setup)).length} that read two ways`,
+        "129 to 192",
       ],
       progress: null,
     },

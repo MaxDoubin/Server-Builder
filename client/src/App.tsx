@@ -252,6 +252,9 @@ const CinematicLocks = lazyWithRetry(() =>
 const CinematicSignals = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicSignals").then((m) => ({ default: m.CinematicSignals })),
 );
+const CinematicExit = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicExit").then((m) => ({ default: m.CinematicExit })),
+);
 const CinematicOvercommit = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicOvercommit").then((m) => ({ default: m.CinematicOvercommit })),
 );
@@ -1086,6 +1089,11 @@ function AnimatedRoutes() {
           <Route path="/signals">
             <Suspense fallback={<RouteLoading />}>
               <CinematicSignals />
+            </Suspense>
+          </Route>
+          <Route path="/exit">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicExit />
             </Suspense>
           </Route>
           <Route path="/overcommit">
