@@ -113,6 +113,15 @@ The client has already seen the SYN-ACK, so its `connect()` returned
 successfully some time ago. It believes it is connected, and it writes its
 request into a socket the server has none to match. That segment is dropped too.
 
+That is one of two overflow sites, and it is the one that needs the queue to
+fill between the SYN and the final ACK. There is an earlier one: if the queue is
+already full when the SYN arrives, `tcp_conn_request()` drops the SYN before a
+request sock is allocated, so no SYN-ACK is ever sent and `connect()` does not
+return at all. Measured on 6.18, two hundred simultaneous connects at a listener
+with room for three left 197 clients in SYN_SENT and not one established. Same
+counter, opposite symptom, and it is written up in
+[the client that the server never saw](/blog/the-client-that-the-server-never-saw).
+
 Now two timers are running and neither of them belongs to your application.
 
 The server retransmits the SYN-ACK on the request timer, which is
