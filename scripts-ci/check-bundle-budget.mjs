@@ -149,8 +149,13 @@ const INDEX = path.join(DIST, "index.html");
  * 710 KB, raised from 709 by /rcvbuf, measured at 708.7. Twelve surfaces,
  * eleven raises, every one under a kilobyte, and the static entry still
  * carries nothing from any of them but a command palette row.
+ *
+ * 711 KB, raised from 710 by /timewait, measured at 709.7. Thirteen surfaces,
+ * twelve raises. The page, the model and the ten cases are all behind the
+ * route's lazy import; what lands in the static entry is the palette row and
+ * the practice index card, which is why the step is a kilobyte again.
  */
-const BUDGET_BYTES = 710 * 1024;
+const BUDGET_BYTES = 711 * 1024;
 
 /**
  * Chunks that must never be reachable statically from the entry.

@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 294 of them. Regenerate with script/generatePostIndex.ts.
+ * 295 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,15 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "the-time-wait-knob-everybody-turns-governs-a-different-state",
+    title: "The TIME_WAIT Knob Everybody Turns Governs a Different State",
+    date: "2026-09-20",
+    tags: ["networking","linux","operations","troubleshooting"],
+    excerpt: "Lowering net.ipv4.tcp_fin_timeout does nothing to TIME_WAIT. Measured on one host: with the knob at 5, TIME_WAIT still held for 60.2 seconds, while FIN_WAIT2, the state it does govern, was reaped after 5.3. TIME_WAIT lands on whichever end hung up first, its length is compiled into the kernel, and the ceiling that actually bites is ports times destinations over sixty.",
+    coverImage: "/images/blog/the-time-wait-knob-everybody-turns-governs-a-different-state.jpg",
+    wordCount: 1374,
+  },
   {
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
     title: "The Socket Buffer You Tuned Is Smaller Than the One You Did Not",
@@ -2879,10 +2888,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 294;
+export const POST_COUNT = 295;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and ninety four";
+export const POST_COUNT_SPELLED = "two hundred and ninety five";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2891,10 +2900,10 @@ export const POST_COUNT_SPELLED = "two hundred and ninety four";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1138;
+export const CITATION_COUNT = 1140;
 
 /** Unique cover image attribution and license URLs. */
 export const ATTRIBUTION_URL_COUNT = 159;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1297;
+export const CHECKED_URL_COUNT = 1299;
