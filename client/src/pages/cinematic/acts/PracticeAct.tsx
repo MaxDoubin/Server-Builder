@@ -67,6 +67,7 @@ import { CASES as LOCKS_CASES, granted as lkGranted } from "@/lib/locks/index";
 import { CASES as SIGNALS_CASES, lost as sgLost } from "@/lib/signals/index";
 import { CASES as EXIT_CASES, ambiguous as exAmbiguous } from "@/lib/exit/index";
 import { CASES as UMASK_CASES, masked as umMasked } from "@/lib/umask/index";
+import { CASES as PSS_CASES, grew as pssGrew } from "@/lib/pss/index";
 import { CASES as CACHE_CASES, leakAt as cacheLeakAt } from "@/lib/cache/index";
 import { TABLES as ROUTE_TABLES } from "@/lib/route/index";
 import { SCENARIOS as RESTORES } from "@/lib/restore/index";
@@ -241,6 +242,14 @@ const SURFACES: Surface[] = [
     blurb:
       "One budget of forty symlink traversals for the whole path, and no cycle detection at all. The error names a shape the kernel never looked for, and it means three different things.",
     count: `${ELOOP_CASES.length} paths, ${ELOOP_CASES.filter((item) => !eloopOk(item.setup)).length} refused`,
+  },
+  {
+    href: "/pss",
+    eyebrow: "Read",
+    title: "Four processes, one copy",
+    blurb:
+      "RSS counts a shared page in full for every process that maps it, so a column of it adds up to memory that does not exist. PSS divides each page by the number of processes holding it, and that column adds up to the frames in use.",
+    count: `${PSS_CASES.length} forks, ${PSS_CASES.filter((item) => pssGrew(item.setup)).length} cost a frame`,
   },
   {
     href: "/umask",

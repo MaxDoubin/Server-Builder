@@ -258,6 +258,9 @@ const CinematicExit = lazyWithRetry(() =>
 const CinematicUmask = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicUmask").then((m) => ({ default: m.CinematicUmask })),
 );
+const CinematicPss = lazyWithRetry(() =>
+  import("@/pages/cinematic/CinematicPss").then((m) => ({ default: m.CinematicPss })),
+);
 const CinematicOvercommit = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicOvercommit").then((m) => ({ default: m.CinematicOvercommit })),
 );
@@ -1102,6 +1105,11 @@ function AnimatedRoutes() {
           <Route path="/umask">
             <Suspense fallback={<RouteLoading />}>
               <CinematicUmask />
+            </Suspense>
+          </Route>
+          <Route path="/pss">
+            <Suspense fallback={<RouteLoading />}>
+              <CinematicPss />
             </Suspense>
           </Route>
           <Route path="/overcommit">
