@@ -15,7 +15,6 @@ import { READERS } from "@/lib/subscribeConfig";
 
 const SITE_URL = "https://maxdoubin.com";
 const FEED_URL = `${SITE_URL}/feed.xml`;
-const REPO_URL = "https://github.com/MaxDoubin/Server-Builder";
 
 
 export function CinematicSubscribe() {
@@ -205,11 +204,10 @@ export function CinematicSubscribe() {
               Following on GitHub
             </h2>
             <p className="mt-4 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              The writing goes out over the feed. The work behind the site goes
-              through GitHub, so that is the place to watch if you care about
-              the code more than the posts. Following a profile there puts new
-              repositories and activity in your GitHub feed; watching a
-              repository notifies you about that project specifically.
+              The writing goes out over the feed. Code goes to GitHub, so that
+              is the place to watch if you care about the code more than the
+              posts. Following the profile there puts new public repositories
+              and activity in your GitHub feed.
             </p>
 
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -233,30 +231,6 @@ export function CinematicSubscribe() {
                 </div>
                 <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
                   Everything public, in one place.
-                </p>
-              </a>
-
-              <a
-                href={REPO_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid="link-github-repo"
-                className="group rounded-2xl border border-[hsl(var(--brand-iron))] bg-[hsl(var(--brand-graphite)/0.6)] p-5 backdrop-blur-sm transition-colors hover:border-[hsl(var(--brand-signal)/0.4)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="font-mono-tight text-[0.625rem] uppercase tracking-[0.28em] text-[hsl(var(--brand-ash))]">
-                    This site
-                  </span>
-                  <span aria-hidden className="text-[hsl(var(--brand-ash))]">
-                    ↗
-                  </span>
-                </div>
-                <div className="mt-3 break-all font-display text-lg font-medium tracking-tight text-[hsl(var(--brand-bone))] transition-colors group-hover:text-[hsl(var(--brand-signal))]">
-                  Server-Builder
-                </div>
-                <p className="mt-2 font-mono-tight text-xs leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-                  The source for this site and the data center simulator on it.
-                  Corrections by pull request are welcome.
                 </p>
               </a>
             </div>
