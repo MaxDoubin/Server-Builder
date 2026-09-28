@@ -72,10 +72,10 @@ In NCL competitions, Wireshark challenges typically give you a capture file and 
 
 The key to speed in competitions is knowing your filters cold. If you have to look up filter syntax during a timed challenge, you are losing minutes. I practice by generating my own captures in the lab and querying them until the syntax is automatic.
 
-Here is the credentials question done from the command line, which is faster than the GUI once you know the field names. FTP sends its login in the clear, and the commands are named fields:
+Here is that plaintext-credentials task done from the command line, which is faster than the GUI once you know the field names. FTP sends its login in the clear, and the commands are named fields:
 
 ```bash
-tshark -r ctf.pcap \
+tshark -r ftp-demo.pcap \
   -Y 'ftp.request.command == "USER" || ftp.request.command == "PASS"' \
   -T fields -e frame.number -e ip.src -e ftp.request.command -e ftp.request.arg
 ```
@@ -90,13 +90,13 @@ Frame numbers, the client that sent them, and the arguments. The same shape work
 When you do not know which protocol carried the string, sweep the bytes instead:
 
 ```bash
-tshark -r ctf.pcap -Y 'frame matches "(?i)passw(or)?d"' -T fields -e frame.number -e _ws.col.protocol
+tshark -r ftp-demo.pcap -Y 'frame matches "(?i)passw(or)?d"' -T fields -e frame.number -e _ws.col.protocol
 ```
 
 And to see what is even in the file:
 
 ```bash
-tshark -r ctf.pcap -q -z io,phs
+tshark -r ftp-demo.pcap -q -z io,phs
 ```
 
 ```

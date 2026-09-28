@@ -67,9 +67,9 @@ export const ROADMAP: RoadmapGroup[] = [
       { id: 17, title: "NCL prep guide per category", status: "done" },
       {
         id: 18,
-        title: "Retired CTF challenge write-ups",
+        title: "More original practice problems per category",
         status: "planned",
-        note: "Only retired, publicly released challenges. Live competition questions are under an honour code.",
+        note: "Written from scratch for this site, like the guides. No NCL question, retired or live, is reproduced.",
       },
       { id: 19, title: "How competitive cyber scoring works", status: "done" },
       { id: 20, title: "Competition-day checklist", status: "done" },
