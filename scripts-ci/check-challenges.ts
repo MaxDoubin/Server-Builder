@@ -15,7 +15,7 @@
  */
 
 import { CHALLENGES } from "../client/src/lib/challenges/index";
-import { hashFlag } from "../client/src/lib/challenges/types";
+import { hashFlag, type Challenge } from "../client/src/lib/challenges/types";
 
 /**
  * The answers, kept out of client/src on purpose.
@@ -31,8 +31,131 @@ const FLAGS: Record<string, string> = {
   "a-hash-with-a-name": "acme{ntlm_is_not_a_hash_function_choice}",
 };
 
+/**
+ * Every challenge's flag, re-derived from exactly what the reader is shown.
+ *
+ * The hash comparison below proves the recorded answer is right. It says
+ * nothing about whether the printed artefact produces that answer. "The Key
+ * Was the Year" shipped with a ciphertext that decoded to garbage under its
+ * own key, one byte short of its flag, and this script stayed green because
+ * it only ever compared hashes. Each entry here follows the challenge's own
+ * walkthrough against the artefact, so the artefact and the answer cannot
+ * drift apart again, and a challenge without an entry fails.
+ */
+const artefactLines = (challenge: Challenge, kind: string) =>
+  challenge.artefacts.filter((a) => a.kind === kind).flatMap((a) => a.lines);
+const isBase64 = (s: string) => s.length >= 16 && s.length % 4 === 0 && /^[A-Za-z0-9+/]+={0,2}$/.test(s);
+const fromBase64 = (s: string) => Buffer.from(s, "base64").toString("latin1");
+const rot13 = (s: string) =>
+  s.replace(/[A-Za-z]/g, (ch) => {
+    const base = ch <= "Z" ? 65 : 97;
+    return String.fromCharCode(((ch.charCodeAt(0) - base + 13) % 26) + base);
+  });
+
+/**
+ * MD4, RFC 1320, for the NTLM digest in "A Hash With a Name". Node's crypto
+ * no longer offers it: OpenSSL 3 moved MD4 to the legacy provider, and
+ * createHash("md4") throws. Checked against the RFC's own vectors below.
+ */
+function md4(message: Uint8Array): string {
+  const rotl = (x: number, n: number) => (x << n) | (x >>> (32 - n));
+  const F = (x: number, y: number, z: number) => (x & y) | (~x & z);
+  const G = (x: number, y: number, z: number) => (x & y) | (x & z) | (y & z);
+  const H = (x: number, y: number, z: number) => x ^ y ^ z;
+  const padded = new Uint8Array((((message.length + 8) >> 6) << 6) + 64);
+  padded.set(message);
+  padded[message.length] = 0x80;
+  const view = new DataView(padded.buffer);
+  const bits = message.length * 8;
+  view.setUint32(padded.length - 8, bits >>> 0, true);
+  view.setUint32(padded.length - 4, Math.floor(bits / 2 ** 32), true);
+  let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+  for (let off = 0; off < padded.length; off += 64) {
+    const X = Array.from({ length: 16 }, (_, i) => view.getUint32(off + i * 4, true));
+    const [aa, bb, cc, dd] = [a, b, c, d];
+    for (const i of [0, 4, 8, 12]) {
+      a = rotl((a + F(b, c, d) + X[i]) | 0, 3);
+      d = rotl((d + F(a, b, c) + X[i + 1]) | 0, 7);
+      c = rotl((c + F(d, a, b) + X[i + 2]) | 0, 11);
+      b = rotl((b + F(c, d, a) + X[i + 3]) | 0, 19);
+    }
+    for (const i of [0, 1, 2, 3]) {
+      a = rotl((a + G(b, c, d) + X[i] + 0x5a827999) | 0, 3);
+      d = rotl((d + G(a, b, c) + X[i + 4] + 0x5a827999) | 0, 5);
+      c = rotl((c + G(d, a, b) + X[i + 8] + 0x5a827999) | 0, 9);
+      b = rotl((b + G(c, d, a) + X[i + 12] + 0x5a827999) | 0, 13);
+    }
+    for (const i of [0, 2, 1, 3]) {
+      a = rotl((a + H(b, c, d) + X[i] + 0x6ed9eba1) | 0, 3);
+      d = rotl((d + H(a, b, c) + X[i + 8] + 0x6ed9eba1) | 0, 9);
+      c = rotl((c + H(d, a, b) + X[i + 4] + 0x6ed9eba1) | 0, 11);
+      b = rotl((b + H(c, d, a) + X[i + 12] + 0x6ed9eba1) | 0, 15);
+    }
+    a = (a + aa) | 0;
+    b = (b + bb) | 0;
+    c = (c + cc) | 0;
+    d = (d + dd) | 0;
+  }
+  const out = new DataView(new ArrayBuffer(16));
+  [a, b, c, d].forEach((word, i) => out.setUint32(i * 4, word >>> 0, true));
+  return Array.from(new Uint8Array(out.buffer), (x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+const DERIVATIONS: Record<string, (challenge: Challenge) => string> = {
+  /* The one non-browser User-Agent: base64, then ROT13, then base64 again. */
+  "base64-in-a-user-agent": (challenge) => {
+    const quoted = artefactLines(challenge, "log").flatMap((l) => [...l.matchAll(/"([^"]*)"/g)].map((m) => m[1]));
+    const payload = quoted.find(isBase64);
+    return payload ? fromBase64(rot13(fromBase64(payload))) : "";
+  },
+  /* XOR the hex with the key the crib gives up, 1998, repeating. */
+  "the-key-was-the-year": (challenge) => {
+    const bytes = artefactLines(challenge, "hex").join(" ").trim().split(/\s+/).map((h) => parseInt(h, 16));
+    const key = "1998";
+    return String.fromCharCode(...bytes.map((byte, i) => byte ^ key.charCodeAt(i % key.length)));
+  },
+  /* The only source with both failures and an acceptance. */
+  "count-the-failures": (challenge) => {
+    const rows = artefactLines(challenge, "table").slice(1).map((l) => l.trim().split(/\s+/));
+    const both = rows.filter(([, failed, accepted]) => Number(failed) > 0 && Number(accepted) > 0);
+    return both.length === 1 ? both[0][0] : "";
+  },
+  /* MZ at offset 0 makes it a PE file; the base64 string in its strings is the flag. */
+  "what-is-in-the-hex": (challenge) => {
+    const magic = artefactLines(challenge, "hex")[0]?.trim().split(/\s+/).slice(1, 3).join(" ");
+    const payload = artefactLines(challenge, "text").map((l) => l.trim()).find(isBase64);
+    return magic === "4d 5a" && payload ? fromBase64(payload) : "";
+  },
+  /* The one open port the documentation does not list. */
+  "the-port-nobody-opened": (challenge) => {
+    const documented = new Set(
+      artefactLines(challenge, "table").map((l) => l.trim().split(/\s+/)[0]).filter((p) => /^\d+$/.test(p)),
+    );
+    const open = artefactLines(challenge, "log").flatMap((l) => l.match(/^(\d+)\/tcp\s+open\b/)?.slice(1) ?? []);
+    const extra = open.filter((port) => !documented.has(port));
+    return extra.length === 1 ? extra[0] : "";
+  },
+  /* Digest A must really be NTLM of the walkthrough's password, and the note's template names it. */
+  "a-hash-with-a-name": (challenge) => {
+    const ntlm = md4(Buffer.from("password", "utf16le"));
+    if (!artefactLines(challenge, "table").some((l) => l.includes(ntlm))) return "";
+    const template = artefactLines(challenge, "note").map((l) => l.trim()).find((l) => l.startsWith("acme{"));
+    return template ? template.replace("<lowercase algorithm name>", "ntlm") : "";
+  },
+};
+
 const problems: string[] = [];
 const note = (slug: string, message: string) => problems.push(`${slug}: ${message}`);
+
+/* The MD4 above is only worth trusting if it reproduces RFC 1320's vectors. */
+for (const [input, digest] of [
+  ["", "31d6cfe0d16ae931b73c59d7e0c089c0"],
+  ["abc", "a448017aaf21d8525fc10ae87aa6729d"],
+  ["message digest", "d9130a8164549fe818874806e1c7014b"],
+  ["12345678901234567890123456789012345678901234567890123456789012345678901234567890", "e33b4ddc9c38f2199c3e7b164fcc0536"],
+] as const) {
+  if (md4(Buffer.from(input, "latin1")) !== digest) problems.push(`md4 self-test failed for ${JSON.stringify(input)}`);
+}
 
 for (const challenge of CHALLENGES) {
   const flag = FLAGS[challenge.slug];
@@ -80,6 +203,17 @@ for (const challenge of CHALLENGES) {
     note(challenge.slug, "is marked answerIsInTheData but the answer is not in the artefact");
   }
 
+  /* The artefact has to yield the flag, by the walkthrough's own method. */
+  const derive = DERIVATIONS[challenge.slug];
+  if (!derive) {
+    note(challenge.slug, "has no derivation in this script, so CI cannot replay its solution");
+  } else {
+    const derived = derive(challenge);
+    if (derived !== flag) {
+      note(challenge.slug, `the artefact does not produce the flag; it derives to ${JSON.stringify(derived)}`);
+    }
+  }
+
   /* The walkthrough has to actually resolve it, or it is not a walkthrough. */
   if (challenge.walkthrough.length < 2) note(challenge.slug, "walkthrough is too short to be one");
   if (challenge.hints.length < 2) note(challenge.slug, "needs at least two hints");
@@ -95,6 +229,9 @@ if (slugs.size !== CHALLENGES.length) problems.push("duplicate challenge slug");
 for (const slug of Object.keys(FLAGS)) {
   if (!slugs.has(slug)) problems.push(`a flag is recorded for "${slug}", which is not a challenge`);
 }
+for (const slug of Object.keys(DERIVATIONS)) {
+  if (!slugs.has(slug)) problems.push(`a derivation is recorded for "${slug}", which is not a challenge`);
+}
 
 if (CHALLENGES.length === 0) {
   console.error("FAIL  no challenges are registered, so this check proved nothing.");
@@ -108,5 +245,6 @@ if (problems.length) {
 
 console.log(
   `OK  ${CHALLENGES.length} challenges, every flag hash verified against its answer, ` +
+    `every one re-derived from its artefact, ` +
     `and no flag appears in what the reader is given.`,
 );
