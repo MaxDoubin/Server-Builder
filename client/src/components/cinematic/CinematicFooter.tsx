@@ -45,8 +45,8 @@ export function CinematicFooter() {
 
         It went straight from one to four at md, and at 768px a twelve
         column grid with a 48px gap spends 528px of its 688px on gaps: the
-        Elsewhere column came out 75px wide and clipped
-        MaxDoubin/Server-Builder by 29px, against a card that is
+        Elsewhere column came out 75px wide and clipped its longest link
+        label by 29px, against a card that is
         overflow-hidden, so the link was cut off mid-word rather than merely
         tight. It was still 7px short at 900. Four columns need about 1024px
         here, so that is where they start now.
@@ -199,7 +199,7 @@ export function CinematicFooter() {
           </ScrollReveal>
           <StaggerGroup className="mt-4 grid grid-cols-1 gap-2 font-mono-tight text-sm" staggerDelay={0.08} delayChildren={0.35}>
             {[
-              { href: "https://github.com/MaxDoubin/Server-Builder", label: "GitHub · MaxDoubin/Server-Builder", testId: "link-footer-github" },
+              { href: "https://github.com/MaxDoubin", label: "GitHub · MaxDoubin", testId: "link-footer-github" },
               { href: "https://instagram.com/maxdoubin", label: "Instagram · @maxdoubin", testId: "link-footer-instagram" },
               { href: PRESS.url, label: `${PRESS.outlet} · Press feature`, testId: "link-footer-press" },
               { href: "mailto:max@maxdoubin.com", label: "max@maxdoubin.com", testId: "link-footer-email-2" },

@@ -3,8 +3,8 @@
  *
  * The site is static files on a CDN with nothing running behind it, so a
  * form cannot post anywhere. Instead this page composes the message and
- * hands it to something that can actually deliver it: a mail client, or
- * GitHub. The composed text is shown in full first, because a page that
+ * hands it to something that can actually deliver it: the reader's own mail
+ * client. The composed text is shown in full first, because a page that
  * quietly builds a message and fires it off is worse than no form at all.
  */
 
@@ -18,14 +18,12 @@ import { ANSWERED } from "@/lib/askConfig";
 import { POST_COUNT } from "@/lib/postIndex";
 
 const SITE_URL = "https://maxdoubin.com";
-const DISCUSSIONS_NEW =
-  "https://github.com/MaxDoubin/Server-Builder/discussions/new";
 
 /**
  * Mail clients and the operating systems that hand mailto: links to them
  * have historically truncated long URLs, and the limit is not consistent
- * enough to state. Past this length the page suggests the other route
- * rather than letting a question get silently cut in half.
+ * enough to state. Past this length the page warns, and points at the copy
+ * button, rather than letting a question get silently cut in half.
  */
 const LONG_MESSAGE = 1500;
 
@@ -43,7 +41,7 @@ export function CinematicAsk() {
   useSEO({
     title: "Ask | Max Doubin",
     description:
-      "Ask about networking, security, homelabs or competition. The page composes your question for email or GitHub and shows the text before anything is sent.",
+      "Ask about networking, security, homelabs or competition. The page composes your question as an email and shows the text before anything is sent.",
     canonical: `${SITE_URL}/ask`,
   });
 
@@ -64,10 +62,6 @@ export function CinematicAsk() {
   }, [ready, trimmedQuestion, trimmedName]);
 
   const mailtoHref = `mailto:${siteConfig.email}?subject=${encodeURIComponent(
-    composed.subject,
-  )}&body=${encodeURIComponent(composed.body)}`;
-
-  const discussionHref = `${DISCUSSIONS_NEW}?category=q-a&title=${encodeURIComponent(
     composed.subject,
   )}&body=${encodeURIComponent(composed.body)}`;
 
@@ -120,15 +114,8 @@ export function CinematicAsk() {
                 What the page does instead is write your question out as text
                 and hand it to something that can deliver it. The email button
                 opens your own mail client with the message already filled in,
-                and you press send. The GitHub button opens a new public
-                discussion with the same text in it, and you press post.
-                Either way the last click is yours, and you can see the exact
-                text first.
-              </p>
-              <p>
-                Email is private. GitHub is public and needs a GitHub account,
-                but the answer stays visible for the next person with the same
-                question, which is usually the better outcome.
+                and you press send. The last click is yours, and you can see
+                the exact text first.
               </p>
             </div>
           </section>
@@ -255,7 +242,8 @@ export function CinematicAsk() {
                 <span>
                   That is a long message. Some mail clients cut off long
                   pre-filled emails, so check nothing is missing before you
-                  send, or use the GitHub route, which has no such limit.
+                  send. If something is, copy the text above into a new email
+                  instead.
                 </span>
               </p>
             ) : null}
@@ -280,33 +268,11 @@ export function CinematicAsk() {
                   Open in email
                 </button>
               )}
-
-              {ready ? (
-                <a
-                  href={discussionHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="button-ask-github"
-                  className={`${actionClasses} border border-[hsl(var(--brand-iron))] bg-transparent text-[hsl(var(--brand-bone))] hover:border-[hsl(var(--brand-signal)/0.6)]`}
-                >
-                  Post on GitHub
-                  <span aria-hidden>↗</span>
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  data-testid="button-ask-github"
-                  className={`${actionClasses} cursor-not-allowed border border-[hsl(var(--brand-iron))] bg-transparent text-[hsl(var(--brand-ash))]`}
-                >
-                  Post on GitHub
-                </button>
-              )}
             </div>
 
             {!ready ? (
               <p className="mt-3 font-mono-tight text-[0.625rem] uppercase tracking-[0.24em] text-[hsl(var(--brand-ash))]">
-                Both routes unlock once there is a question to send
+                The button unlocks once there is a question to send
               </p>
             ) : null}
 
@@ -319,9 +285,7 @@ export function CinematicAsk() {
               >
                 {siteConfig.email}
               </a>{" "}
-              by hand. The GitHub route needs discussions to be open on the
-              repository; if that link lands on a not-found page, email is the
-              way through.
+              by hand.
             </p>
           </section>
 

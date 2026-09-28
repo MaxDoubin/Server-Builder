@@ -1160,7 +1160,7 @@ ${JSON.stringify({
       dir: "ask",
       title: "Ask | Max Doubin",
       description:
-        "Ask about networking, security, homelabs or competition. The page composes your question for email or GitHub and shows the text before anything is sent.",
+        "Ask about networking, security, homelabs or competition. The page composes your question as an email and shows the text before anything is sent.",
       canonical: `${SITE_URL}/ask`,
     },
     {
@@ -1624,7 +1624,7 @@ ${JSON.stringify({
   const askContent = `
 <main>
   <h1>Ask</h1>
-  <p>Questions about networking, security, the home lab, competition prep or starting a club. This site is static files on a CDN with nothing running behind it, so the page composes your message and hands it to something that can deliver it: a mail client, or GitHub. You see the full text before anything is sent.</p>
+  <p>Questions about networking, security, the home lab, competition prep or starting a club. This site is static files on a CDN with nothing running behind it, so the page composes your message and hands it to your own mail client. You see the full text before anything is sent.</p>
   <section>
     <h2>Already answered</h2>
     <p>These have a written answer already. Worth checking before asking.</p>
