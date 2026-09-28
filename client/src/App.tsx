@@ -457,9 +457,6 @@ const CinematicResume = lazyWithRetry(() =>
 const CinematicTimeline = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicTimeline").then((m) => ({ default: m.CinematicTimeline })),
 );
-const CinematicCyberClub = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicCyberClub").then((m) => ({ default: m.CinematicCyberClub })),
-);
 const CinematicCamps = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicCamps").then((m) => ({ default: m.CinematicCamps })),
 );
@@ -583,10 +580,6 @@ const CinematicCerts = lazyWithRetry(() =>
 
 const CinematicData = lazyWithRetry(() =>
   import("@/pages/cinematic/CinematicData").then((m) => ({ default: m.CinematicData })),
-);
-
-const CinematicClubKit = lazyWithRetry(() =>
-  import("@/pages/cinematic/CinematicClubKit").then((m) => ({ default: m.CinematicClubKit })),
 );
 
 const CinematicStudy = lazyWithRetry(() =>
@@ -1379,16 +1372,6 @@ function AnimatedRoutes() {
           <Route path="/timeline">
             <Suspense fallback={<RouteLoading />}>
               <CinematicTimeline />
-            </Suspense>
-          </Route>
-          <Route path="/cyber-club/kit">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicClubKit />
-            </Suspense>
-          </Route>
-          <Route path="/cyber-club">
-            <Suspense fallback={<RouteLoading />}>
-              <CinematicCyberClub />
             </Suspense>
           </Route>
           <Route path="/coding-camps">

@@ -168,8 +168,6 @@ export function CinematicFooter() {
               { href: "/resume", label: "Resume", testId: "link-footer-resume" },
               { href: "/timeline", label: "Timeline", testId: "link-footer-timeline" },
               { href: "/certifications", label: "Certifications", testId: "link-footer-certs" },
-              { href: "/cyber-club", label: "Cyber Club", testId: "link-footer-club" },
-              { href: "/cyber-club/kit", label: "Start a cyber club", testId: "link-footer-club-kit" },
               { href: "/coding-camps", label: "Coding camps", testId: "link-footer-camps" },
               { href: "/faq", label: "FAQ", testId: "link-footer-faq" },
               { href: "/uses", label: "Uses", testId: "link-footer-uses" },

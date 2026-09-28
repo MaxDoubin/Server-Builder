@@ -76,8 +76,6 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Flashcards", href: "/flashcards", terms: "spaced repetition anki revision" },
   { kind: "Page", title: "Study timer", href: "/study-timer", terms: "pomodoro focus" },
   { kind: "Page", title: "NCL competition guides", href: "/ncl", terms: "ctf cyber league capture the flag" },
-  { kind: "Page", title: "Cyber club", href: "/cyber-club" },
-  { kind: "Page", title: "Cyber club in a box", href: "/cyber-club/kit", terms: "teaching starter kit" },
   { kind: "Page", title: "Coding camps", href: "/coding-camps" },
   { kind: "Page", title: "Open datasets", href: "/data", terms: "csv json download open data" },
   { kind: "Page", title: "Reading paths", href: "/paths" },

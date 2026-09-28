@@ -26,7 +26,6 @@ const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/study", label: "Certification study pages", note: "one page per published exam domain for Security+ SY0-701, Network+ N10-009 and CCNA 200-301, each listing the archive posts that cover it" },
   { path: "/tools", label: "Browser tools", note: "17 utilities that run entirely client side: subnetting, CIDR, packet headers, hashing, encoding, cron, regex, rack power budgeting" },
   { path: "/data", label: "Open rack hardware dataset", note: "power draw, heat output, rack units, port count and indicative cost for rack-mount equipment, CC BY 4.0, as JSON and CSV" },
-  { path: "/cyber-club/kit", label: "Cyber Club in a Box", note: "a free twelve week plan for starting a high school cybersecurity club, CC BY 4.0, downloadable as markdown" },
   { path: "/ncl", label: "National Cyber League notes", note: "competition write-ups by category" },
   { path: "/resume", label: "Resume", note: "" },
   { path: "/uses", label: "Uses", note: "the software behind the work, with reasons" },
@@ -44,7 +43,6 @@ const MACHINE_READABLE: { path: string; note: string }[] = [
     note: "every device in every rack elevation, with its vendor published figures and the page each came from, CC BY 4.0",
   },
   { path: "/data/rack-library.csv", note: "the same rack data as CSV" },
-  { path: "/data/cyber-club-kit.md", note: "the club plan in full, CC BY 4.0" },
 ];
 
 export async function generateLlmsTxt(): Promise<void> {
@@ -116,8 +114,8 @@ export async function generateLlmsTxt(): Promise<void> {
   push("## License and attribution");
   push();
   push(
-    "The datasets at /data and the club plan at /cyber-club/kit are CC BY " +
-      "4.0: reuse them, credit Max Doubin and maxdoubin.com. Article text is " +
+    "The datasets at /data are CC BY 4.0: reuse them, credit Max Doubin " +
+      "and maxdoubin.com. Article text is " +
       "not openly licensed; quote it with attribution and a link.",
   );
   push();

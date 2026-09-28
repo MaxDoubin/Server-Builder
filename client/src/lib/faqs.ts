@@ -41,10 +41,6 @@ export const FAQS: Faq[] = [
     a: "Max Doubin holds the CompTIA Tech+ certification. He is studying toward CompTIA Security+, CompTIA Network+, and Cisco CCNA. Those three are in progress and are not claimed as earned.",
   },
   {
-    q: "What is the South CTA Cyber Club?",
-    a: "The South CTA Cyber Club is the cybersecurity club at South Career Technical Academy in Las Vegas, and Max Doubin is its president. Members work capture the flag practice sets rather than sitting through lectures, use a lab that is rebuilt between meetings so equipment can be safely misconfigured, and compete in the National Cyber League. No prior experience is required to join, and most members start with none.",
-  },
-  {
     q: "What does Max Doubin build?",
     a: "Max Doubin designed, built, and operates a home data center covering enterprise switching, network segmentation, virtualization, large-scale storage, and the power, cooling, and cabling planning behind it. He also builds software: this website, an interactive 3D data center simulation called Hyperscale, and a set of browser based networking and security tools.",
   },
@@ -78,11 +74,7 @@ export const FAQS: Faq[] = [
   },
   {
     q: "How can someone verify what this site claims about Max Doubin?",
-    a: "The record is public and specific. The press coverage, the National Cyber League placements, the Blue Ribbon Commission appointment, the College Board ambassadorship, and the Nevada Office of Workforce Innovation council seat are all documented by the organizations themselves. The technical work speaks for itself: more than two hundred sourced articles at maxdoubin.com/blog, open source projects on GitHub, and Cyber Club in a Box, a full twelve session curriculum any school can download and run. Anything else can be confirmed by email at max@maxdoubin.com.",
-  },
-  {
-    q: "Can another school use the South CTA Cyber Club materials?",
-    a: "Yes, and they are free. Cyber Club in a Box at maxdoubin.com/cyber-club/kit is the club's whole plan: twelve meeting by meeting sessions from a first meeting where nobody has opened a terminal to a team registered for the National Cyber League, written rules of engagement to put on file with a faculty advisor, a materials list that assumes no budget, and the reasons school clubs fall apart in their second month. It is published under CC BY 4.0 and downloadable as a markdown file, so a club can print it and stop depending on this site.",
+    a: "The record is public and specific. The press coverage, the National Cyber League placements, the Blue Ribbon Commission appointment, the College Board ambassadorship, and the Nevada Office of Workforce Innovation council seat are all documented by the organizations themselves. The technical work speaks for itself: more than two hundred sourced articles at maxdoubin.com/blog and open source projects on GitHub. Anything else can be confirmed by email at max@maxdoubin.com.",
   },
   {
     q: "How do you contact Max Doubin?",

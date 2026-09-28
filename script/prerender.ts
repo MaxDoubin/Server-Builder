@@ -89,9 +89,7 @@ const { TAG_PAGES } = await import("../client/src/lib/tagPages.ts");
 const { TOOLS } = await import("../client/src/lib/toolsRegistry.ts");
 const { formatPostDate } = await import("../client/src/lib/formatDate.ts");
 const { FAQS } = await import("../client/src/lib/faqs.ts");
-const { KIT_SESSIONS, KIT_RULES, KIT_RESOURCES } = await import("../client/src/lib/clubKit.ts");
 const { siteConfig, PRESS } = await import("../client/src/lib/siteConfig.ts");
-const { clubConfig } = await import("../client/src/lib/clubConfig.ts");
 const { nowConfig } = await import("../client/src/lib/nowConfig.ts");
 const { usesConfig } = await import("../client/src/lib/usesConfig.ts");
 const { readingPaths } = await import("../client/src/lib/readingPaths.ts");
@@ -250,8 +248,6 @@ const SITE_NAV = `
   <a href="${SITE_URL}/data">Open data</a>
   <a href="${SITE_URL}/game">Simulator</a>
   <a href="${SITE_URL}/ncl">National Cyber League</a>
-  <a href="${SITE_URL}/cyber-club">Cyber Club</a>
-  <a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>
   <a href="${SITE_URL}/coding-camps">Coding camps</a>
   <a href="${SITE_URL}/certifications">Certifications</a>
   <a href="${SITE_URL}/paths">Paths</a>
@@ -490,7 +486,6 @@ const CRUMB_NAMES: Record<string, string> = {
   racks: "Rack Library",
   ncl: "National Cyber League",
   study: "Study",
-  "cyber-club": "Cyber Club",
   // Derived, so a fourth certification appears in the trail without an edit.
   ...Object.fromEntries(
     EXAMS.map((e: { slug: string; name: string; code: string }) => [
@@ -873,7 +868,6 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/data">Open rack hardware dataset</a>, power, heat, rack units and port counts as JSON and CSV under CC BY 4.0.</li>
     <li><a href="${SITE_URL}/game">Hyperscale</a>, a datacenter simulator running on real power and cooling maths.</li>
     <li><a href="${SITE_URL}/ncl">National Cyber League guides</a> for all nine scored categories.</li>
-    <li><a href="${SITE_URL}/cyber-club/kit">Cyber Club in a Box</a>, a free twelve week plan for starting a school cybersecurity club.</li>
   </ul>
   <h2>Practice, in the browser</h2>
   <p>
@@ -1075,7 +1069,7 @@ ${JSON.stringify({
       dir: "now",
       title: "Now | Max Doubin",
       description:
-        "What Max Doubin is focused on this month: certification study, what he is building, what he is reading, and what the South CTA Cyber Club is working on.",
+        "What Max Doubin is focused on this month: certification study, what he is building, and what he is reading.",
       canonical: `${SITE_URL}/now`,
     },
     {
@@ -1098,20 +1092,6 @@ ${JSON.stringify({
       description:
         "Competitions, awards, and milestones for Max Doubin, from National Cyber League results and certifications to leadership roles and press coverage.",
       canonical: `${SITE_URL}/timeline`,
-    },
-    {
-      dir: "cyber-club",
-      title: "South CTA Cyber Club | Max Doubin",
-      description:
-        "Join the Cyber Club at South Career Technical Academy in Las Vegas: capture the flag practice, a lab built to be broken, and no experience required.",
-      canonical: `${SITE_URL}/cyber-club`,
-    },
-    {
-      dir: "cyber-club/kit",
-      title: "Cyber Club in a Box: a free 12 week plan | Max Doubin",
-      description:
-        "A free twelve week plan for starting a high school cybersecurity club: meeting plans, rules of engagement, a no budget materials list, and what kills clubs.",
-      canonical: `${SITE_URL}/cyber-club/kit`,
     },
     {
       dir: "coding-camps",
@@ -1152,7 +1132,7 @@ ${JSON.stringify({
       dir: "faq",
       title: "Frequently Asked Questions | Max Doubin",
       description:
-        "Answers about Max Doubin: what he studies, his National Cyber League placement, the South CTA Cyber Club, what he builds and teaches, and how to reach him.",
+        "Answers about Max Doubin: what he studies, his National Cyber League placement, what he builds and teaches, and how to reach him.",
       canonical: `${SITE_URL}/faq`,
     },
     {
@@ -1344,39 +1324,6 @@ ${JSON.stringify({
 </main>`;
 
   /*
-    The claim ledger and the club plan are the two pages most likely to be
-    read by something that does not run JavaScript: a crawler deciding
-    whether the site is credible, or an assistant answering "is this real".
-    Both were empty shells on the first response. These mirror what the
-    React pages render.
-  */
-  const kitContent = `
-<main>
-  <h1>Start a cyber club</h1>
-  <p>Twelve meetings, from a room where nobody has opened a terminal to a team registered for the National Cyber League. Free, CC BY 4.0, and downloadable in full at <a href="${SITE_URL}/data/cyber-club-kit.md">cyber-club-kit.md</a>.</p>
-  <section>
-    <h2>Rules of engagement, before week one</h2>
-    <ol>${KIT_RULES.map((rule) => `<li>${esc(rule)}</li>`).join("")}</ol>
-  </section>
-  ${KIT_SESSIONS.map(
-    (session) => `<section>
-    <h2>Week ${session.week}: ${esc(session.title)}</h2>
-    <p>${esc(session.goal)}</p>
-    <p>Before the meeting: ${esc(session.prep)}</p>
-    <ol>${session.run.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
-    <p>How you know it worked: ${esc(session.evidence)}</p>
-  </section>`,
-  ).join("\n  ")}
-  <section>
-    <h2>Tools the plan uses</h2>
-    <ul>${KIT_RESOURCES.map(
-      (r) => `<li><a href="${r.url}">${esc(r.name)}</a> (${esc(r.cost)}): ${esc(r.what)}</li>`,
-    ).join("")}</ul>
-  </section>
-  <nav><a href="${SITE_URL}/cyber-club">South CTA Cyber Club</a> · <a href="${SITE_URL}/ncl">National Cyber League notes</a> · <a href="${SITE_URL}/tools">Browser tools</a></nav>
-</main>`;
-
-  /*
     Static bodies for the pages that had none.
 
     Nineteen routes prerendered the site nav and nothing else: 297 characters,
@@ -1501,32 +1448,6 @@ ${JSON.stringify({
   </section>`,
   ).join("\n  ")}
   ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/resume", "Resume"]])}
-</main>`;
-
-  const cyberClubContent = `
-<main>
-  <h1>${esc(clubConfig.fullName)}</h1>
-  <p>${esc(clubConfig.intro)}</p>
-  <p>${esc(clubConfig.school)}, ${esc(clubConfig.city)}, ${esc(clubConfig.region)}. President: ${esc(clubConfig.president)}.</p>
-  <section>
-    <h2>What the club does</h2>
-    <dl>${dl(clubConfig.whatWeDo)}</dl>
-  </section>
-  <section>
-    <h2>What you learn</h2>
-    <dl>${dl(clubConfig.whatYouLearn)}</dl>
-  </section>
-  <section>
-    <h2>How to join</h2>
-    <ul>${li(clubConfig.howToJoin.map(esc))}</ul>
-  </section>
-  <section>
-    <h2>Questions parents ask</h2>
-    <dl>${clubConfig.parentFaq
-      .map((f: { q: string; a: string }) => `<dt>${esc(f.q)}</dt><dd>${esc(f.a)}</dd>`)
-      .join("\n    ")}</dl>
-  </section>
-  ${backLinks([["/cyber-club/kit", "Cyber Club in a Box"], ["/ncl", "National Cyber League notes"], ["/contact", "Contact"]])}
 </main>`;
 
   const nowContent = `
@@ -1729,7 +1650,7 @@ ${JSON.stringify({
     <dl>${dl(TAKEAWAYS)}</dl>
   </section>
   <p>To ask about a session, email <a href="mailto:${esc(siteConfig.email)}">${esc(siteConfig.email)}</a>.</p>
-  ${backLinks([["/contact", "Contact"], ["/cyber-club", "Cyber Club"], ["/projects", "Projects"]])}
+  ${backLinks([["/contact", "Contact"], ["/projects", "Projects"]])}
 </main>`;
 
   const contactContent = `
@@ -1769,7 +1690,7 @@ ${JSON.stringify({
     <h2>Mistakes worth not repeating</h2>
     <ul>${li(MISTAKES.map(esc))}</ul>
   </section>
-  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/cyber-club", "Cyber Club"], ["/links", "Links"]])}
+  ${backLinks([["/study", "Study guides"], ["/flashcards", "Flashcards"], ["/links", "Links"]])}
 </main>`;
 
 /*
@@ -1994,8 +1915,6 @@ const teardownContent = `
     uses: usesContent,
     resume: resumeContent,
     timeline: timelineContent,
-    "cyber-club": cyberClubContent,
-    "cyber-club/kit": kitContent,
     "coding-camps": campsContent,
     colophon: colophonContent,
     links: linksContent,
@@ -10639,8 +10558,6 @@ async function writeSitemap(
     { loc: `${SITE_URL}/now`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/uses`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/timeline`, lastmod: today, changefreq: "monthly", priority: "0.6" },
-    { loc: `${SITE_URL}/cyber-club`, lastmod: today, changefreq: "monthly", priority: "0.7" },
-    { loc: `${SITE_URL}/cyber-club/kit`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE_URL}/coding-camps`, lastmod: today, changefreq: "monthly", priority: "0.7" },
     { loc: `${SITE_URL}/certifications`, lastmod: today, changefreq: "monthly", priority: "0.6" },
     { loc: `${SITE_URL}/links`, lastmod: today, changefreq: "monthly", priority: "0.5" },

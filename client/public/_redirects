@@ -120,13 +120,14 @@
 /legacy/game     /game         301
 /legacy          /             301
 
-# Retired writing.
+# Removed on request, and deliberately not redirected.
 #
-# A post that was published, indexed and linked cannot simply vanish: the URL
-# is already in Google's index and in anyone's bookmarks. A 301 to the page
-# that covers the same ground keeps those arrivals useful and hands the link
-# equity somewhere sensible, which a bare 404 throws away.
-/blog/running-a-cyber-club  /cyber-club  301
+# /cyber-club, /cyber-club/kit and the older /blog/running-a-cyber-club were
+# taken down in September 2026 at Max's request. A 301 would keep each URL
+# alive and hand its arrivals to another page, which is the right call for a
+# page that moved and the wrong one for a page that should stop existing.
+# With no rule here they return 404, and a 404 is what tells a search engine
+# to drop the URL from its index. Do not add a redirect for any of the three.
 
 # Retired pages.
 #
