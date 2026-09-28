@@ -16,7 +16,7 @@ function build() {
   const HOST = "10.4.2.9";
   const RESOLVER = "10.4.0.53";
   const C2 = "45.63.11.208";
-  const CDN = "151.101.1.140";
+  const CDN = "198.51.100.80";
   const p = [];
   let t = 0;
   const step = (by: number) => (t = Number((t + by).toFixed(3)));

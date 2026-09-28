@@ -26,7 +26,7 @@ const KEY_PAGES: { path: string; label: string; note: string }[] = [
   { path: "/study", label: "Certification study pages", note: "one page per published exam domain for Security+ SY0-701, Network+ N10-009 and CCNA 200-301, each listing the archive posts that cover it" },
   { path: "/tools", label: "Browser tools", note: "17 utilities that run entirely client side: subnetting, CIDR, packet headers, hashing, encoding, cron, regex, rack power budgeting" },
   { path: "/data", label: "Open rack hardware dataset", note: "power draw, heat output, rack units, port count and indicative cost for rack-mount equipment, CC BY 4.0, as JSON and CSV" },
-  { path: "/ncl", label: "National Cyber League notes", note: "competition write-ups by category" },
+  { path: "/ncl", label: "National Cyber League study guides", note: "one guide per competition category, each built around a practice problem written for this site; no NCL question is reproduced" },
   { path: "/resume", label: "Resume", note: "" },
   { path: "/uses", label: "Uses", note: "the software behind the work, with reasons" },
   { path: "/colophon", label: "Colophon", note: "how the site is built and why" },
