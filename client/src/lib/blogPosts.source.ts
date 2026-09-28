@@ -32658,7 +32658,7 @@ This is the beginner trap that costs the most time, and it is worth stating plai
 
 Capture filters use BPF syntax and are set before you start capturing: \`tcp port 80\`, \`host 10.0.0.1\`, \`net 192.168.1.0/24\`. Display filters use Wireshark's own syntax and are typed into the bar above the packet list: \`tcp.port == 80\`, \`ip.addr == 10.0.0.1\`, \`http.request.method == "POST"\`. Type a capture filter into the display bar and the bar turns red, which at least tells you something is wrong.
 
-The worse case is when the bar turns yellow. That is Wireshark warning that your filter is valid but probably not what you meant, and the classic example is \`ip.addr != 10.0.0.5\`. A packet has two address fields, so that expression is true whenever *either* address differs, which is nearly every packet including the ones you were trying to exclude. The correct form is \`!(ip.addr == 10.0.0.5)\`. Yellow bar means read your filter again.
+The worse case is when the bar turns yellow. That is Wireshark warning that your filter is valid but probably not what you meant, and yellow bar means read your filter again. For years the classic example was \`ip.addr != 10.0.0.5\`. A packet has two address fields, and before Wireshark 3.6 that expression was true whenever *either* address differed, which is nearly every packet, including the ones you were trying to exclude. Wireshark 3.6 changed \`!=\` to mean that no address matches, so on a current version it does what it looks like, and the old test is spelled \`!==\`. \`!(ip.addr == 10.0.0.5)\` means the same thing on every version, which is why it is still the form to reach for when you do not know which Wireshark you are sitting at.
 
 Three menu items solve most capture challenges faster than any filter. Statistics then Protocol Hierarchy shows you what is actually in the file in one screen. Statistics then Conversations sorted by bytes finds the interesting flow immediately. And File then Export Objects then HTTP pulls every transferred file out of the capture as an actual file, which beats hand-carving bytes out of the hex pane. Right-clicking a packet and choosing Follow then TCP Stream sets \`tcp.stream eq N\` for you and shows the reassembled conversation.
 
@@ -34769,7 +34769,7 @@ dns.flags.rcode != 0
 
 Two of those deserve a note. \`contains\` searches raw bytes, so it works on any field including \`frame\` itself, which is how you sweep an entire capture for a string without knowing which protocol carried it. \`matches\` takes a PCRE-style regular expression, which is slower but lets you look for patterns rather than literals.
 
-Watch out for one trap that produces wrong answers rather than errors. \`ip.addr != 10.0.20.5\` does not mean what it looks like. A packet has two address fields, so the expression is true whenever *either* one differs, which is almost always. The correct form is \`!(ip.addr == 10.0.20.5)\`. The same applies to every field that occurs more than once in a packet.
+One trap produced wrong answers rather than errors for years, and older guides still warn about it. A packet has two address fields, and before Wireshark 3.6 \`ip.addr != 10.0.20.5\` was true whenever *either* one differed, which is almost always. Since 3.6, released in November 2021, \`!=\` means that no occurrence matches, so on a current version the filter does what it looks like. The old any-occurrence test still exists, spelled \`!==\` or \`any_ne\`, and \`!(ip.addr == 10.0.20.5)\` means the same thing on every version. The same applies to every field that occurs more than once in a packet, such as \`tcp.port\` and \`eth.addr\`.
 
 ## Following streams
 
@@ -34880,7 +34880,7 @@ Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Mas
 
 **Name resolution changing what you see.** With network name resolution enabled, Wireshark issues its own DNS lookups, which appear in a live capture and pollute it. Keep it off unless you specifically want it.
 
-**Filtering with \`!=\` on a repeated field.** Described above and worth restating, because it silently returns almost every packet instead of erroring. Wrap the equality in \`!()\` instead.
+**Filtering with \`!=\` on a repeated field in Wireshark before 3.6.** Described above: on those versions it silently returns almost every packet instead of erroring. Wrapping the equality in \`!()\` behaves the same on every version.
 
 ## Building intuition
 

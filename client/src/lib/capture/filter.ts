@@ -3,8 +3,9 @@
  *
  * Supported, because these are what a filter is actually made of:
  *
- *   ip.addr == 10.0.0.1          equality, on any field
- *   tcp.port != 443              inequality
+ *   ip.addr == 10.0.0.1          equality: true if any occurrence matches
+ *   tcp.port != 443              inequality: true if no occurrence matches
+ *   ip.addr !== 10.0.0.1         true if any occurrence differs
  *   frame.len > 1000             ordering, on numeric fields
  *   http.host contains "example" substring
  *   http.request.method          existence: true when the field is present
@@ -15,10 +16,14 @@
  * half of an expression it did not understand teaches a filter that does not
  * work anywhere else.
  *
- * `ip.addr == x` matching either source or destination is a real Wireshark
- * behavior worth reproducing, and it is the one that surprises people: it is
- * true when ANY ip.addr field on the packet matches, which is why
- * `ip.addr != x` does not mean what most people expect.
+ * Fields that occur twice in one packet are where this gets interesting.
+ * `ip.addr == x` is true when EITHER address is x, which is real Wireshark
+ * behavior worth reproducing. `!=` used to be the same any-occurrence test,
+ * so `ip.addr != x` matched nearly every packet. Wireshark 3.6 (November
+ * 2021) redefined it as "all not equal", true only when no occurrence is x,
+ * and 4.0 gave the old test its own spelling, `!==` (any_ne). This engine
+ * follows the current definitions: a workbench that taught the old one would
+ * be teaching a trap that current Wireshark no longer has.
  */
 
 import { fieldsOf, type Packet } from "./types";
@@ -38,7 +43,7 @@ export interface FilterError {
   error: string;
 }
 
-const OPERATORS = ["==", "!=", ">=", "<=", ">", "<", "contains"];
+const OPERATORS = ["==", "!=", "!==", ">=", "<=", ">", "<", "contains"];
 
 /** Fields that exist twice per packet and match if either side does. */
 const EITHER_SIDE: Record<string, [string, string]> = {
@@ -143,6 +148,11 @@ function tokenise(text: string): { list: string[] } | FilterError {
       i = end + 1;
       continue;
     }
+    if (text.slice(i, i + 3) === "!==") {
+      list.push("!==");
+      i += 3;
+      continue;
+    }
     const two = text.slice(i, i + 2);
     if (["==", "!=", ">=", "<=", "&&", "||"].includes(two)) {
       list.push(two);
@@ -182,11 +192,16 @@ function evaluate(node: Node, packet: Packet): boolean {
       const present = names.filter((name) => fields.has(name));
       if (present.length === 0) return false;
       /*
-        Any side matching is enough. This is what makes `ip.addr != x`
-        counterintuitive in real Wireshark too: a packet from x to y has an
-        ip.addr that is not x, so the filter is true. `!(ip.addr == x)` is
-        the one people mean.
+        Every operator is satisfied by any one occurrence, except != which
+        since Wireshark 3.6 needs all of them: a packet from x to y is kept by
+        ip.addr != z and dropped by ip.addr != x. !== is the old
+        any-occurrence reading, so ip.addr !== x keeps that same packet
+        because its other address is y. A packet without the field fails
+        every comparison (see the return above), which is why ip.addr != x
+        drops an ARP frame that !(ip.addr == x) keeps.
       */
+      if (node.op === "!=") return present.every((name) => compare(fields.get(name)!, "!=", node.value));
+      if (node.op === "!==") return present.some((name) => compare(fields.get(name)!, "!=", node.value));
       return present.some((name) => compare(fields.get(name)!, node.op, node.value));
     }
   }

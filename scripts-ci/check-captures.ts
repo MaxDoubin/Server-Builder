@@ -83,6 +83,12 @@ for (const capture of CAPTURES) {
 
 /* The filter engine, against expressions whose answers are known by hand. */
 const sample = CAPTURES[0];
+const count = (expression: string) => {
+  const compiled = compileFilter(expression);
+  return compiled.error ? -1 : sample.packets.filter(compiled.test).length;
+};
+const ipPackets = count("ip");
+const tcpPackets = count("tcp");
 const CASES: [string, (n: number) => boolean][] = [
   ["", (n) => n === sample.packets.length],
   ["http", (n) => n === 4],
@@ -100,6 +106,17 @@ const CASES: [string, (n: number) => boolean][] = [
   ["ip.addr == 10.20.9.40", (n) => n === 7],
   /* Three of the seven come FROM the server: SYN-ACK, 200, 302. */
   ["ip.src == 10.20.9.40", (n) => n === 3],
+  /*
+    != on a field with two occurrences, as Wireshark 3.6 redefined it: no
+    occurrence may equal the value, so the server's seven packets drop out,
+    and so does anything without the field at all. !== is the old
+    any-occurrence test, which every IP packet here passes because none is
+    addressed from the server to itself. Before this engine followed 3.6,
+    ip.addr != 10.20.9.40 matched every IP packet in the capture.
+  */
+  ["ip.addr != 10.20.9.40", (n) => n === ipPackets - 7],
+  ["ip.addr !== 10.20.9.40", (n) => n === ipPackets],
+  ["tcp.port != 80", (n) => n === tcpPackets - 7],
 ];
 for (const [expression, expected] of CASES) {
   const compiled = compileFilter(expression);
