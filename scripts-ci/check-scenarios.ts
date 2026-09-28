@@ -33,7 +33,7 @@ const KNOWN_TOOLS = new Set(TOOLS.map((tool) => `/tools/${tool.slug}`));
 const KNOWN_PAGES = new Set([
   "/", "/blog", "/tools", "/racks", "/study", "/topics", "/archive", "/paths",
   "/ncl", "/data", "/game", "/gear", "/teardown", "/flashcards", "/scenarios",
-  "/certifications", "/cyber-club", "/coding-camps", "/resume", "/timeline",
+  "/certifications", "/coding-camps", "/resume", "/timeline",
 ]);
 
 /** What a scenario has to satisfy to be worth a reader's time. */

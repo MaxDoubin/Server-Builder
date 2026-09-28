@@ -99,7 +99,6 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
         title: "President, South CTA Cyber Club",
         description:
           "Runs preparation, training, and student engagement for the school's cybersecurity club.",
-        href: "/cyber-club",
       },
       {
         title: "Lead instructor, youth coding camps",

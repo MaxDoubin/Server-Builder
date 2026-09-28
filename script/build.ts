@@ -63,10 +63,6 @@ async function buildAll() {
   const { generateSearchIndex } = await import("./generateSearchIndex.ts");
   await generateSearchIndex();
 
-  console.log("building cyber club kit...");
-  const { generateClubKit } = await import("./generateClubKit.ts");
-  await generateClubKit();
-
   console.log("building llms.txt...");
   const { generateLlmsTxt } = await import("./generateLlmsTxt.ts");
   await generateLlmsTxt();

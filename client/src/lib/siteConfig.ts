@@ -281,16 +281,6 @@ export const siteConfig = {
       coverImage: "/images/projects/youth-coding-camps.jpg",
     },
     {
-      id: "cyber-club",
-      title: "South CTA Cyber Club",
-      description:
-        "President of the school cybersecurity club: running practice sessions, building a lab that resets between meetings, and preparing members for competition.",
-      tech: ["Leadership", "Cybersecurity", "Lab Design"],
-      category: "leadership",
-      link: "/cyber-club",
-      coverImage: "/images/projects/cyber-club.jpg",
-    },
-    {
       id: "competition",
       title: "Competitive Cybersecurity",
       description:

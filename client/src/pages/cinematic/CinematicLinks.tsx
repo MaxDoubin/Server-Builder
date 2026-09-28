@@ -120,15 +120,7 @@ export function CinematicLinks() {
               >
                 Field Notes
               </Link>{" "}
-              works through most of these topics in more depth. If you are in the Las Vegas area and
-              still in school, the{" "}
-              <Link
-                href="/cyber-club"
-                className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
-              >
-                Cyber Club
-              </Link>{" "}
-              is the fastest way in.
+              works through most of these topics in more depth.
             </p>
           </section>
         </div>

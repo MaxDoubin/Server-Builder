@@ -60,7 +60,6 @@ SECTION_EYEBROWS = [
     ("study/security-plus", "COMPTIA SECURITY+"),
     ("study/network-plus", "COMPTIA NETWORK+"),
     ("study/ccna", "CISCO CCNA"),
-    ("cyber-club", "CYBER CLUB"),
     ("coding-camps", "CODING CAMPS"),
     ("topics", "FIELD NOTES · TOPIC"),
     ("racks", "RACK LIBRARY"),

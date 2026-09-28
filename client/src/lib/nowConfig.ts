@@ -48,7 +48,7 @@ export const nowConfig: NowConfig = {
   lastUpdatedDisplay: "August 24, 2026",
   period: "August 2026",
   intro:
-    "A snapshot of what has my attention this month: the certifications I am working through, what I am building, what I am reading, and where the Cyber Club is pointed. It is deliberately short and it goes out of date on purpose.",
+    "A snapshot of what has my attention this month: the certifications I am working through, what I am building, and what I am reading. It is deliberately short and it goes out of date on purpose.",
 
   sections: [
     {
@@ -136,32 +136,6 @@ export const nowConfig: NowConfig = {
           title: "Certification objective lists",
           detail:
             "Security+, Network+, and CCNA blueprints, read as a map of gaps rather than a reading list. Anything I cannot explain out loud becomes the next lab.",
-        },
-      ],
-    },
-
-    {
-      id: "cyber-club",
-      label: "· Now · Cyber Club",
-      heading: "What the Cyber Club is working on",
-      summary:
-        "I am president of the Cyber Club at South Career Technical Academy. Meetings are practice, not lecture.",
-      items: [
-        {
-          title: "Category practice",
-          detail:
-            "Working sets across the categories National Cyber League scores: open source intelligence, cryptography, log analysis, hash cracking, network forensics, and web exploitation.",
-        },
-        {
-          title: "A lab that resets between meetings",
-          detail:
-            "Members should be able to break something on purpose and find it rebuilt the next week. That is the whole point of having a lab instead of a slide deck.",
-        },
-        {
-          title: "Bringing in members with no background",
-          detail:
-            "The club is not an honours track. Most people arrive knowing nothing and the first session assumes that.",
-          href: "/cyber-club",
         },
       ],
     },

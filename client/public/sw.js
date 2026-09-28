@@ -613,8 +613,8 @@ async function fontStylesheet(event, request) {
  * The redirected check is the one that matters most here. A browser refuses a
  * cached response with redirected set when it is used to answer a NAVIGATION,
  * and the symptom is not a stale page, it is a navigation that fails outright
- * with no obvious cause. _redirects sends /blog/running-a-cyber-club to
- * /cyber-club today, so responses like that do exist on this origin.
+ * with no obvious cause. _redirects sends /changelog to /roadmap today, so
+ * responses like that do exist on this origin.
  */
 function isStorable(response) {
   if (!response || !response.ok) return false;

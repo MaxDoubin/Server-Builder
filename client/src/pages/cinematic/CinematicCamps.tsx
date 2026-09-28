@@ -264,14 +264,7 @@ export function CinematicCamps() {
             </h2>
             <p className="mt-3 max-w-[64ch] font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               Max Doubin, a cybersecurity student at South Career Technical Academy in Las Vegas and
-              president of its{" "}
-              <Link
-                href="/cyber-club"
-                className="inline-flex min-h-[24px] items-center py-1 text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
-              >
-                Cyber Club
-              </Link>
-              . He ranks in the top 1 percent of National Cyber League competitors and writes a
+              president of its Cyber Club. He ranks in the top 1 percent of National Cyber League competitors and writes a
               technical journal at{" "}
               <Link
                 href="/blog"
