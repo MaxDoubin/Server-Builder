@@ -93,13 +93,8 @@
   #                             changes the beacon's URL; a path source has to
   #                             match exactly. Cloudflare says it keeps no
   #                             client-side state, no cookies and no
-  #                             localStorage, and documents that an injected
-  #                             beacon reports to this site's own /cdn-cgi/rum
-  #                             endpoint rather than to a Cloudflare origin,
-  #                             which is why connect-src below still names
-  #                             nothing but 'self' and blob:. Without this
-  #                             entry the beacon is refused and the dashboard
-  #                             simply shows no visitors.
+  #                             localStorage. Loading is only half of it: the
+  #                             reports need the connect-src entry below.
   #   style-src                 Tailwind ships a stylesheet, but framer-motion
   #                             and GSAP animate by writing element.style on
   #                             every frame, which counts as inline style. The
@@ -108,10 +103,22 @@
   #                             data: covers any inlined face.
   #   img-src                   own images plus data: (inlined SVG/PNG) and
   #                             blob: (canvas readback, export.ts downloads).
-  #   connect-src               /api/* is answered in-page by lib/local-api,
-  #                             and nothing else calls out to a network origin:
-  #                             'self' only, so any exfiltration attempt to a
-  #                             third party is still refused. blob: is for the
+  #   connect-src               /api/* is answered in-page by lib/local-api.
+  #                             The one network origin named here is
+  #                             https://cloudflareinsights.com, where the
+  #                             analytics beacon posts its reports. The tag
+  #                             Pages injects carries only a token, and
+  #                             beacon.min.js sends to that origin's
+  #                             /cdn-cgi/rum whenever the tag has no version
+  #                             field; only a tag with one reports to this
+  #                             site's own /cdn-cgi/rum. Checked in the
+  #                             beacon's source and in a browser in September
+  #                             2026: without this entry the script loaded and
+  #                             every report was refused, so the dashboard
+  #                             stayed empty. It is a narrow opening, and the
+  #                             price of the dashboard: script-src still
+  #                             decides what can run at all, and every other
+  #                             third party is refused. blob: is for the
   #                             Draco worker, which fetches its own module
   #                             through a blob URL it created; without it that
   #                             page raised 26 refused-to-connect errors. A
@@ -127,7 +134,7 @@
   #                             relative asset URL at an attacker origin.
   #   form-action 'self'        an injected form cannot post credentials away.
   #   upgrade-insecure-requests belt and braces alongside HSTS.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-SwHGuGI0bYRIZC3y4iRrSw2WaPZ2TY6F5J54jws8Hs0=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-SwHGuGI0bYRIZC3y4iRrSw2WaPZ2TY6F5J54jws8Hs0=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' blob: https://cloudflareinsights.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
 
 # ---------------------------------------------------------------------------
