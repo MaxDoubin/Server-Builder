@@ -82,6 +82,24 @@
   #                             new Function stay blocked, which is what the
   #                             note further down about lodash inside recharts
   #                             is asking for.
+  #   script-src  https://static.cloudflareinsights.com
+  #                             Cloudflare Web Analytics, and the only third
+  #                             party script host. The beacon is not in the
+  #                             build: Pages injects a <script src> for it at
+  #                             the edge once Web Analytics is enabled on the
+  #                             project, so no local check can see it and the
+  #                             hash gate above is not involved. Host, not
+  #                             path, so the entry keeps matching if Cloudflare
+  #                             changes the beacon's URL; a path source has to
+  #                             match exactly. Cloudflare says it keeps no
+  #                             client-side state, no cookies and no
+  #                             localStorage, and documents that an injected
+  #                             beacon reports to this site's own /cdn-cgi/rum
+  #                             endpoint rather than to a Cloudflare origin,
+  #                             which is why connect-src below still names
+  #                             nothing but 'self' and blob:. Without this
+  #                             entry the beacon is refused and the dashboard
+  #                             simply shows no visitors.
   #   style-src                 Tailwind ships a stylesheet, but framer-motion
   #                             and GSAP animate by writing element.style on
   #                             every frame, which counts as inline style. The
@@ -109,7 +127,7 @@
   #                             relative asset URL at an attacker origin.
   #   form-action 'self'        an injected form cannot post credentials away.
   #   upgrade-insecure-requests belt and braces alongside HSTS.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-SwHGuGI0bYRIZC3y4iRrSw2WaPZ2TY6F5J54jws8Hs0='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-SwHGuGI0bYRIZC3y4iRrSw2WaPZ2TY6F5J54jws8Hs0=' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' data: blob:; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
 
 
 # ---------------------------------------------------------------------------

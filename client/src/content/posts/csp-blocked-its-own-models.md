@@ -1,7 +1,8 @@
 ## A security header was breaking the feature it protected
 
 This site has a Content Security Policy I am fairly proud of. It is tight:
-no third party script hosts, no `unsafe-eval`, `object-src 'none'`,
+no third party script hosts (one since September 2026: Cloudflare's analytics
+beacon, which sets no cookies), no `unsafe-eval`, `object-src 'none'`,
 `frame-ancestors 'none'`, `base-uri 'self'`, `form-action 'self'`. Every
 directive has a comment above it explaining what it is for.
 
