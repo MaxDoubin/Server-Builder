@@ -68,9 +68,9 @@ export const theKeyWasTheYear: Challenge = {
       kind: "hex",
       title: "config.bin, offset 0x40",
       lines: [
-        "50 5e 5d 55 4a 5f 5c 56 55 42 5b 5c 5f 5a 44 42",
-        "5f 5c 5a 5a 42 51 5f 55 4a 46 51 5f 55 4a 42 42",
-        "55 44 43 5a 5c 42 5e 55",
+        "50 5a 54 5d 4a 57 5c 4e 54 4b 66 4a 5e 55 55 67",
+        "48 56 4c 4a 6e 56 4e 56 6e 58 57 5c 6e 57 5c 4e",
+        "54 4b 66 4a 54 4c 4a 5d 4c",
       ],
     },
     {
@@ -78,7 +78,7 @@ export const theKeyWasTheYear: Challenge = {
       title: "What you know",
       lines: [
         "Plaintext begins:  acme{",
-        "Cipher begins:     50 5e 5d 55 4a",
+        "Cipher begins:     50 5a 54 5d 4a",
         "",
         "XOR is its own inverse: plaintext ^ ciphertext = key.",
       ],
@@ -92,8 +92,8 @@ export const theKeyWasTheYear: Challenge = {
     "Keep going and the key is four digits, and it looks like a year.",
   ],
   walkthrough: [
-    "XOR the crib against the ciphertext, byte by byte. 0x61 ('a') ^ 0x50 = 0x31 ('1'). 0x63 ('c') ^ 0x5e = 0x3d, which is not a digit, so the key is not one character.",
-    "Try it as a repeating key of length 4 and the first four bytes give 1, 9, 9, 8. The key is the ASCII string 1998, and it repeats.",
+    "XOR the crib against the ciphertext, byte by byte. 0x61 ('a') ^ 0x50 = 0x31 ('1'). 0x63 ('c') ^ 0x5a = 0x39 ('9'). The second key byte is not the first, so the key is longer than one character.",
+    "Carry on through the crib and the key bytes come out 1, 9, 9, 8, and then '{' (0x7b) ^ 0x4a = 0x31 gives '1' again. The key is the ASCII string 1998, repeating every four bytes.",
     "XOR the whole blob against 1998 repeating and the plaintext falls out.",
     "Two real lessons in this one. Repeating-key XOR is not encryption: any known plaintext, and 'the flag starts with acme{' is a known plaintext, hands you the key immediately. And a four-digit key that is a year is a key somebody chose because it was memorable, which is the reason key material should never be chosen by a person.",
   ],
@@ -176,10 +176,10 @@ export const whatIsInTheHex: Challenge = {
         "00000010  b8 00 00 00 00 00 00 00  40 00 00 00 00 00 00 00  |........@.......|",
         "00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|",
         "00000030  00 00 00 00 00 00 00 00  00 00 00 00 f0 00 00 00  |................|",
-        "00000040  0e 1f ba 0e 00 b4 09 cd  21 b8 01 4c cd 21 54 68  |........!..L..Th|",
+        "00000040  0e 1f ba 0e 00 b4 09 cd  21 b8 01 4c cd 21 54 68  |........!..L.!Th|",
         "00000050  69 73 20 70 72 6f 67 72  61 6d 20 63 61 6e 6e 6f  |is program canno|",
         "00000060  74 20 62 65 20 72 75 6e  20 69 6e 20 44 4f 53 20  |t be run in DOS |",
-        "00000070  6d 6f 64 65 2e 0d 0d 0a  24 00 00 00 00 00 00 00  |mode............|",
+        "00000070  6d 6f 64 65 2e 0d 0d 0a  24 00 00 00 00 00 00 00  |mode....$.......|",
       ],
     },
     {
