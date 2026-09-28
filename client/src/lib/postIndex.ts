@@ -615,7 +615,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","engineering","operations"],
     excerpt: "The policy was tight, commented line by line, and refusing to compile the WebAssembly decoder the 3D pages depend on: 13 compile errors and 26 refused blob connections on one page. Nothing local sends the header, so production was its only test environment. Fixing it also overturned a careful comment of mine that nobody had ever counted.",
     coverImage: "/images/blog/csp-blocked-its-own-models.jpg",
-    wordCount: 1266,
+    wordCount: 1277,
   },
   {
     slug: "dollar-sign-string-replace",
