@@ -1674,7 +1674,7 @@ ${JSON.stringify({
   const nclHubContent = `
 <main>
   <h1>National Cyber League</h1>
-  <p>What the National Cyber League is, how the scoring works, how to prepare for it, and a written guide to every challenge category. The competition runs capture the flag style challenges on the Cyber Skyline platform, scored on accuracy and completion rather than speed alone.</p>
+  <p>What the National Cyber League is, how the scoring works, how to prepare for it, and a written guide to every challenge category. The competition runs capture the flag style challenges on the Cyber Skyline platform. Players are ranked by points, with accuracy and then the time of the last correct answer breaking ties.</p>
   <section>
     <h2>Category guides</h2>
     <dl>${NCL_GUIDE_DATA.map(

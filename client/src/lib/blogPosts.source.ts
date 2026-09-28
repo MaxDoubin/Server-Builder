@@ -32630,7 +32630,7 @@ The change log is the part people skip and the part that pays off most. When som
 
 The National Cyber League is not about memorizing textbook definitions. It tests practical skills across categories like network traffic analysis, log investigation, scanning and reconnaissance, password cracking, web application security, and cryptography. Every challenge requires you to actually do the work, not just know the theory.
 
-The season has a shape worth knowing before you sign up. There is a Gymnasium for untimed practice, a Preseason Game that calibrates you into a bracket, then the Individual Game and the Team Game. Everything runs on the Cyber Skyline platform, and afterward you get a Scouting Report that breaks your performance down by category with both a completion percentage and an accuracy percentage. Those are two different numbers on purpose. Accuracy is what exposes guessing.
+The season has a shape worth knowing before you sign up. There is a Gymnasium for practice, with guides to past challenges, then a week-long Practice Game that takes the guides away, then the Individual Game and the Team Game. Everything runs on the Cyber Skyline platform, and afterward you get a Scouting Report that breaks your performance down by category with both a completion percentage and an accuracy percentage. Those are two different numbers on purpose. Accuracy is what exposes guessing.
 
 The published category list covers Open Source Intelligence, Cryptography, Password Cracking, Log Analysis, Network Traffic Analysis, Forensics, Scanning and Reconnaissance, Web Application Exploitation, and Enumeration and Exploitation. Nobody is strong in all nine. Knowing which two you are weakest in is more useful than a general study plan.
 

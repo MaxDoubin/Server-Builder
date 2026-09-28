@@ -203,7 +203,7 @@ const crypto: Deck = {
     { id: "cry-sha1", front: "SHA-1: digest size and status?", back: "160-bit digest (40 hex characters). Deprecated: practical collision attacks have been demonstrated." },
     { id: "cry-sha256", front: "SHA-256: digest size and family?", back: "256-bit digest (64 hex characters), part of the SHA-2 family. Currently considered secure." },
     { id: "cry-hmac", front: "What does HMAC provide?", back: "Message integrity and authenticity, using a secret key combined with a hash function (e.g. HMAC-SHA256)." },
-    { id: "cry-signature", front: "How does a digital signature work?", back: "The signer hashes the message and encrypts the hash with their private key. Anyone can verify with the public key." },
+    { id: "cry-signature", front: "How does a digital signature work?", back: "The signer's private key computes a signature over the message's hash. Anyone with the public key can verify it. Nothing is encrypted." },
     { id: "cry-symm-tradeoff", front: "Why use both symmetric and asymmetric crypto together?", back: "Asymmetric solves key distribution but is slow. TLS uses it to exchange a symmetric key, then encrypts data symmetrically." },
     { id: "cry-caesar", front: "What is the Caesar cipher?", back: "A substitution cipher that shifts each letter a fixed number of positions in the alphabet." },
     { id: "cry-rot13", front: "What is ROT13?", back: "A Caesar cipher with a shift of 13. Because 13 is half of 26, applying it twice returns the original text." },

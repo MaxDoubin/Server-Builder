@@ -2019,7 +2019,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "What I learned from reaching the top 1 percent in competitive cybersecurity, and why the process matters more than the ranking.",
     coverImage: "/images/blog/ncl-competition-lessons.jpg",
     coverCredit: {"author":"U.S. Air Force photo by Tech. Sgt. Robert Biermann","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Units_compete_in_NAF-wide_cyber_competition_(5470557).jpg"},
-    wordCount: 1616,
+    wordCount: 1621,
   },
   {
     slug: "mac-pro-rack-mount-homelab",
