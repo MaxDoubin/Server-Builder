@@ -46,7 +46,7 @@ dns.flags.rcode != 0
 
 Two of those deserve a note. `contains` searches raw bytes, so it works on any field including `frame` itself, which is how you sweep an entire capture for a string without knowing which protocol carried it. `matches` takes a PCRE-style regular expression, which is slower but lets you look for patterns rather than literals.
 
-Watch out for one trap that produces wrong answers rather than errors. `ip.addr != 10.0.20.5` does not mean what it looks like. A packet has two address fields, so the expression is true whenever *either* one differs, which is almost always. The correct form is `!(ip.addr == 10.0.20.5)`. The same applies to every field that occurs more than once in a packet.
+One trap produced wrong answers rather than errors for years, and older guides still warn about it. A packet has two address fields, and before Wireshark 3.6 `ip.addr != 10.0.20.5` was true whenever *either* one differed, which is almost always. Since 3.6, released in November 2021, `!=` means that no occurrence matches, so on a current version the filter does what it looks like. The old any-occurrence test still exists, spelled `!==` or `any_ne`, and `!(ip.addr == 10.0.20.5)` means the same thing on every version. The same applies to every field that occurs more than once in a packet, such as `tcp.port` and `eth.addr`.
 
 ## Following streams
 
@@ -157,7 +157,7 @@ Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Mas
 
 **Name resolution changing what you see.** With network name resolution enabled, Wireshark issues its own DNS lookups, which appear in a live capture and pollute it. Keep it off unless you specifically want it.
 
-**Filtering with `!=` on a repeated field.** Described above and worth restating, because it silently returns almost every packet instead of erroring. Wrap the equality in `!()` instead.
+**Filtering with `!=` on a repeated field in Wireshark before 3.6.** Described above: on those versions it silently returns almost every packet instead of erroring. Wrapping the equality in `!()` behaves the same on every version.
 
 ## Building intuition
 

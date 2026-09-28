@@ -471,11 +471,13 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       " combine the results.",
     ],
     [
-      "The one trap worth learning early is negation on fields that can appear more than once in a packet. ",
+      "The one trap worth knowing about is negation on fields that can appear more than once in a packet, because its meaning changed. Before Wireshark 3.6, ",
       { code: "ip.addr != 10.0.0.5" },
-      " reads as \"some occurrence of ip.addr is not 10.0.0.5\", and since every IP packet has both a source and a destination, that is true for almost everything. The expression you want is  ",
+      " read as \"some occurrence of ip.addr is not 10.0.0.5\", and since every IP packet has both a source and a destination, that was true for almost everything. Since 3.6 it means no occurrence is 10.0.0.5, which is what it looks like, and the old any-occurrence test is spelled ",
+      { code: "!==" },
+      ". Writing ",
       { code: "!(ip.addr == 10.0.0.5)" },
-      ", which negates the whole match instead of the comparison. The same applies to tcp.port, eth.addr, and any other field with two occurrences.",
+      " means the same thing on every version, which makes it the habit worth keeping. The same applies to tcp.port, eth.addr, and any other field with two occurrences.",
     ],
     [
       "The tcp.analysis fields are not in the packets at all. Wireshark computes them by tracking sequence numbers across a stream, then attaches the verdict to the frame. That is why  ",

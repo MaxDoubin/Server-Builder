@@ -36,7 +36,7 @@ const GROUPS: Group[] = [
       { filter: "ip.addr == 192.168.1.0/24", what: "Anything touching a whole subnet." },
       {
         filter: "!(ip.addr == 10.0.0.5)",
-        what: "Everything except one host. Written this way deliberately: ip.addr != 10.0.0.5 does not mean this.",
+        what: "Everything except one host, including frames that are not IP at all, and it behaves the same on every version. Before Wireshark 3.6, ip.addr != 10.0.0.5 matched nearly every packet.",
       },
       {
         filter: "eth.addr == 00:1a:2b:3c:4d:5e",
