@@ -145,7 +145,7 @@ export function CinematicChallenges() {
             </Link>{" "}
             give you a shell; the{" "}
             <Link
-              href="/captures"
+              href="/capture"
               className="text-[hsl(var(--brand-signal))] underline-offset-4 hover:underline"
             >
                 packet captures

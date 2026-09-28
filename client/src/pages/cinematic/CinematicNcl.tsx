@@ -93,17 +93,18 @@ export function CinematicNcl() {
               <p>
                 Each challenge is worth points, and harder challenges are worth
                 more. You earn points by submitting correct answers, usually as a
-                flag in a specific format. Your standing on the scoreboard
-                reflects how much you completed and how accurately, and results
-                are commonly reported as a percentile so you can see where you
-                rank against everyone else.
+                flag in a specific format. You are ranked by total points. A tie
+                on points goes to the player with the higher accuracy, and a tie
+                on both goes to whoever submitted their last correct answer
+                first. Results are commonly reported as a percentile so you can
+                see where you rank against everyone else.
               </p>
               <p>
                 I am describing this in durable, general terms on purpose. The
-                precise point values, any accuracy or speed weighting, and how
-                percentiles are calculated are set by the organisers and can
-                change from season to season, so treat the official rules as the
-                source of truth rather than anything here.
+                point values, the tie-break order, and how percentiles are
+                calculated are set by the organizers and can change from season
+                to season, so treat the official rules as the source of truth
+                rather than anything here.
               </p>
             </div>
           </section>
