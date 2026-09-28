@@ -31,7 +31,7 @@ And it taught me that most of the job is not the interesting part. It is labelin
 
 Competing in the National Cyber League has been the third leg, and it teaches something both of the others miss: speed under pressure with incomplete information.
 
-Placing in the top 1 percent individually and seventh nationally as a team was not about knowing more than everyone else. It was about tool fluency, reading a problem quickly enough to decide whether it is worth your remaining time, and not rabbit holing. In a timed event, recognizing "I cannot solve this in the time I have" and moving on is worth more than any single technique.
+Placing in the top 1 percent individually, and helping my school finish seventh among U.S. high schools in the Cyber Power Rankings, was not about knowing more than everyone else. It was about tool fluency, reading a problem quickly enough to decide whether it is worth your remaining time, and not rabbit holing. In a timed event, recognizing "I cannot solve this in the time I have" and moving on is worth more than any single technique.
 
 That skill transfers directly to incident response, which is also a timed event with incomplete information and a cost to going down the wrong path.
 

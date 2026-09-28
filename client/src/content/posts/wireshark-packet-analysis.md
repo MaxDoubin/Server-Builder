@@ -31,6 +31,7 @@ Five operators cover almost everything.
 tcp.port == 443
 ip.ttl < 64
 tcp.port in {80 443 8080}
+dns.flags.rcode != 0
 
 # substring match anywhere in the bytes
 frame contains "password"
@@ -41,7 +42,6 @@ frame matches "(?i)passw(or)?d"
 
 # field presence, with no value test at all
 http.authorization
-dns.flags.rcode != 0
 ```
 
 Two of those deserve a note. `contains` searches raw bytes, so it works on any field including `frame` itself, which is how you sweep an entire capture for a string without knowing which protocol carried it. `matches` takes a PCRE-style regular expression, which is slower but lets you look for patterns rather than literals.
@@ -129,7 +129,7 @@ Coloring rules live in a file called `colorfilters` inside your Wireshark profil
 For large-scale analysis, I use tshark (Wireshark's command-line counterpart) to extract specific fields into CSV format, then process the data with Python. This is much faster than scrolling through millions of packets in the GUI.
 
 ```bash
-tshark -r capture.pcap -T fields -e frame.time -e ip.src -e ip.dst -e tcp.dstport -Y "tcp.flags.syn==1" > connections.csv
+tshark -r capture.pcap -T fields -e frame.time -e ip.src -e ip.dst -e tcp.dstport -Y "tcp.flags.syn==1 && tcp.flags.ack==0" > connections.csv
 ```
 
 Add `-E header=y -E separator=,` when you want a real CSV with a header row rather than tab-separated output. And if a capture is too large to open in the GUI at all, `editcap` will cut it down first: `editcap -c 100000 big.pcap chunk.pcap` splits it into files of 100,000 packets each, and `editcap -A` and `-B` trim by absolute start and stop time.

@@ -62,7 +62,7 @@ That identification picks the hashcat mode, and the mode numbers are in hashcat'
 
 It also tells you whether the challenge is winnable in the time available. MD5 and NTLM are unsalted and fast, and a modern GPU does them in the billions per second. bcrypt is deliberately slow, with a work factor baked into the hash, and the same GPU manages tens of thousands per second. That is six orders of magnitude. A bcrypt challenge is never a brute force challenge. It is a hint that the password is in `rockyou.txt`, which holds roughly 14 million real passwords, or that it is reachable with a small rule set like `best64.rule` applied to a targeted wordlist.
 
-For encoding puzzles, learn to recognize formats on sight. Base64 output is a multiple of four characters and may end in `=` padding. A base64 string starting `eyJ` is almost always a JSON Web Token, because the bytes `{"a` encode to exactly `eyJh`. CyberChef handles the long tail of encodings faster than writing a script, and its Magic operation will often identify the chain for you.
+For encoding puzzles, learn to recognize formats on sight. Base64 output is a multiple of four characters and may end in `=` padding. A base64 string starting `eyJ` is almost certainly JSON, because `{"` followed by a letter encodes to `eyJ`, and three dot-separated chunks that start `eyJhbGciOi` (`{"alg":`) make it a JSON Web Token. CyberChef handles the long tail of encodings faster than writing a script, and its Magic operation will often identify the chain for you.
 
 ## The Mistakes That Cost Me Points
 

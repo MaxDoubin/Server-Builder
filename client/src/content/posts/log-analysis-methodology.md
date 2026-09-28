@@ -36,7 +36,7 @@ journalctl --since "2026-02-10 14:00" --until "2026-02-10 15:00"
 
 The journalctl options I use constantly, beyond the time window:
 
-- `-u sshd.service` restricts to one unit.
+- `-u ssh.service` restricts to one unit. OpenSSH's unit is `ssh.service` on Debian and Ubuntu and `sshd.service` on RHEL, Fedora and Arch.
 - `-p err` filters by priority. The syslog severities defined in RFC 5424 run 0 for emergency through 7 for debug, and `-p err` means severity 3 and anything more severe.
 - `-b` is the current boot, `-b -1` the previous one. That is the fastest way to see what happened before an unexplained reboot.
 - `-f` follows in real time, which is how you watch a failure you can reproduce.
