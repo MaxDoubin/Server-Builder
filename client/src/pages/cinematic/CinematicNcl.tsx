@@ -67,11 +67,16 @@ export function CinematicNcl() {
             <h2 className="font-display text-2xl font-medium tracking-tight text-[hsl(var(--brand-bone))] md:text-3xl">
               How the competition is structured
             </h2>
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <InfoCard title="Gymnasium">
                 An open practice environment with challenges and content you can
                 work through at your own pace before the games. It is the place to
                 learn the categories and fail safely.
+              </InfoCard>
+              <InfoCard title="Practice Game">
+                A week-long event for solving challenges without the guides the
+                Gymnasium gives you, before the games that count. It is the dress
+                rehearsal.
               </InfoCard>
               <InfoCard title="Individual Game">
                 A timed event where you solve challenges on your own across all

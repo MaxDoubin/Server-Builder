@@ -30596,7 +30596,7 @@ And it taught me that most of the job is not the interesting part. It is labelin
 
 Competing in the National Cyber League has been the third leg, and it teaches something both of the others miss: speed under pressure with incomplete information.
 
-Placing in the top 1 percent individually and seventh nationally as a team was not about knowing more than everyone else. It was about tool fluency, reading a problem quickly enough to decide whether it is worth your remaining time, and not rabbit holing. In a timed event, recognizing "I cannot solve this in the time I have" and moving on is worth more than any single technique.
+Placing in the top 1 percent individually, and helping my school finish seventh among U.S. high schools in the Cyber Power Rankings, was not about knowing more than everyone else. It was about tool fluency, reading a problem quickly enough to decide whether it is worth your remaining time, and not rabbit holing. In a timed event, recognizing "I cannot solve this in the time I have" and moving on is worth more than any single technique.
 
 That skill transfers directly to incident response, which is also a timed event with incomplete information and a cost to going down the wrong path.
 
@@ -32689,7 +32689,7 @@ That identification picks the hashcat mode, and the mode numbers are in hashcat'
 
 It also tells you whether the challenge is winnable in the time available. MD5 and NTLM are unsalted and fast, and a modern GPU does them in the billions per second. bcrypt is deliberately slow, with a work factor baked into the hash, and the same GPU manages tens of thousands per second. That is six orders of magnitude. A bcrypt challenge is never a brute force challenge. It is a hint that the password is in \`rockyou.txt\`, which holds roughly 14 million real passwords, or that it is reachable with a small rule set like \`best64.rule\` applied to a targeted wordlist.
 
-For encoding puzzles, learn to recognize formats on sight. Base64 output is a multiple of four characters and may end in \`=\` padding. A base64 string starting \`eyJ\` is almost always a JSON Web Token, because the bytes \`{"a\` encode to exactly \`eyJh\`. CyberChef handles the long tail of encodings faster than writing a script, and its Magic operation will often identify the chain for you.
+For encoding puzzles, learn to recognize formats on sight. Base64 output is a multiple of four characters and may end in \`=\` padding. A base64 string starting \`eyJ\` is almost certainly JSON, because \`{"\` followed by a letter encodes to \`eyJ\`, and three dot-separated chunks that start \`eyJhbGciOi\` (\`{"alg":\`) make it a JSON Web Token. CyberChef handles the long tail of encodings faster than writing a script, and its Magic operation will often identify the chain for you.
 
 ## The Mistakes That Cost Me Points
 
@@ -34754,6 +34754,7 @@ Five operators cover almost everything.
 tcp.port == 443
 ip.ttl < 64
 tcp.port in {80 443 8080}
+dns.flags.rcode != 0
 
 # substring match anywhere in the bytes
 frame contains "password"
@@ -34764,7 +34765,6 @@ frame matches "(?i)passw(or)?d"
 
 # field presence, with no value test at all
 http.authorization
-dns.flags.rcode != 0
 \`\`\`
 
 Two of those deserve a note. \`contains\` searches raw bytes, so it works on any field including \`frame\` itself, which is how you sweep an entire capture for a string without knowing which protocol carried it. \`matches\` takes a PCRE-style regular expression, which is slower but lets you look for patterns rather than literals.
@@ -34852,7 +34852,7 @@ Coloring rules live in a file called \`colorfilters\` inside your Wireshark prof
 For large-scale analysis, I use tshark (Wireshark's command-line counterpart) to extract specific fields into CSV format, then process the data with Python. This is much faster than scrolling through millions of packets in the GUI.
 
 \`\`\`bash
-tshark -r capture.pcap -T fields -e frame.time -e ip.src -e ip.dst -e tcp.dstport -Y "tcp.flags.syn==1" > connections.csv
+tshark -r capture.pcap -T fields -e frame.time -e ip.src -e ip.dst -e tcp.dstport -Y "tcp.flags.syn==1 && tcp.flags.ack==0" > connections.csv
 \`\`\`
 
 Add \`-E header=y -E separator=,\` when you want a real CSV with a header row rather than tab-separated output. And if a capture is too large to open in the GUI at all, \`editcap\` will cut it down first: \`editcap -c 100000 big.pcap chunk.pcap\` splits it into files of 100,000 packets each, and \`editcap -A\` and \`-B\` trim by absolute start and stop time.
@@ -38081,7 +38081,7 @@ journalctl --since "2026-02-10 14:00" --until "2026-02-10 15:00"
 
 The journalctl options I use constantly, beyond the time window:
 
-- \`-u sshd.service\` restricts to one unit.
+- \`-u ssh.service\` restricts to one unit. OpenSSH's unit is \`ssh.service\` on Debian and Ubuntu and \`sshd.service\` on RHEL, Fedora and Arch.
 - \`-p err\` filters by priority. The syslog severities defined in RFC 5424 run 0 for emergency through 7 for debug, and \`-p err\` means severity 3 and anything more severe.
 - \`-b\` is the current boot, \`-b -1\` the previous one. That is the fastest way to see what happened before an unexplained reboot.
 - \`-f\` follows in real time, which is how you watch a failure you can reproduce.

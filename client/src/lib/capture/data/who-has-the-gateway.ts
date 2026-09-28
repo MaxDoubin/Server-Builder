@@ -170,7 +170,7 @@ function build() {
 export const whoHasTheGateway: Capture = {
   slug: "who-has-the-gateway",
   title: "Who Has the Gateway?",
-  tagline: "Two different MAC addresses claim to be 10.50.0.1, four seconds apart.",
+  tagline: "Two different MAC addresses claim to be 10.50.0.1, three seconds apart.",
   difficulty: "medium",
   brief: [
     "A capture from an access switch port. The workstation is 10.50.0.44 and the default gateway is 10.50.0.1.",

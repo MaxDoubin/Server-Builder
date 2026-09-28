@@ -5,7 +5,7 @@ import { eth, http, ip, packet, resetSequence, tcp } from "../builders";
  * A capture from a network with one device still speaking plaintext HTTP.
  *
  * The teaching point is that finding it is a filter, not a search: there are
- * 30 packets and only three carry the answer, and the way to them is
+ * 21 packets and only three carry the answer, and the way to them is
  * `http.request.method == POST`, not scrolling.
  */
 function build() {
@@ -198,10 +198,10 @@ function build() {
 export const credentialsInTheClear: Capture = {
   slug: "credentials-in-the-clear",
   title: "Credentials in the Clear",
-  tagline: "Twenty-three packets from an office VLAN. One of them is a password.",
+  tagline: "Twenty-one packets from an office VLAN. One of them is a password.",
   difficulty: "easy",
   brief: [
-    "This is a two-minute capture from a switch port in an office. Most of it is ordinary HTTPS browsing, which you cannot read and do not need to.",
+    "This is a nine-second capture from a switch port in an office. Most of it is ordinary HTTPS browsing, which you cannot read and do not need to.",
     "One conversation is not encrypted. Find it, and answer the three questions.",
   ],
   packets: build(),
@@ -213,7 +213,7 @@ export const credentialsInTheClear: Capture = {
       hint: "Filter for the http protocol. Two packets carry a Host header.",
       accept: ["printers.office.example"],
       explain: [
-        "`http` on its own filters to packets Wireshark has dissected as HTTP, which here is four packets out of twenty-three.",
+        "`http` on its own filters to packets Wireshark has dissected as HTTP, which here is four packets out of twenty-one.",
         "The Host header is in the request. HTTPS traffic to the same capture shows as TCP on port 443 with nothing readable, which is the contrast worth noticing.",
       ],
     },

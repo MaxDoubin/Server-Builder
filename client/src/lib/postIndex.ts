@@ -1826,7 +1826,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The question I get asked most by other students: should I study for a certification or build something? They teach different things, and the order matters.",
     coverImage: "/images/blog/certifications-vs-projects.jpg",
     coverCredit: {"author":"wyldvision","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/126767021@N06/15882717591"},
-    wordCount: 1211,
+    wordCount: 1220,
   },
   {
     slug: "local-llm-memory-math",
@@ -2019,7 +2019,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "What I learned from reaching the top 1 percent in competitive cybersecurity, and why the process matters more than the ranking.",
     coverImage: "/images/blog/ncl-competition-lessons.jpg",
     coverCredit: {"author":"U.S. Air Force photo by Tech. Sgt. Robert Biermann","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Units_compete_in_NAF-wide_cyber_competition_(5470557).jpg"},
-    wordCount: 1621,
+    wordCount: 1633,
   },
   {
     slug: "mac-pro-rack-mount-homelab",
@@ -2195,7 +2195,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","cybersecurity","tools"],
     excerpt: "How I use Wireshark for real troubleshooting and competitive cybersecurity, not just looking at pretty packets.",
     coverImage: "/images/blog/wireshark-packet-analysis.jpg",
-    wordCount: 1741,
+    wordCount: 1743,
   },
   {
     slug: "nmap-scanning-techniques",
@@ -2437,7 +2437,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "My methodology for analyzing logs to find problems, with examples from real troubleshooting sessions.",
     coverImage: "/images/blog/log-analysis-methodology.jpg",
     coverCredit: {"author":"Hpott","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:OpenBSD_starting_SSH_server.jpg"},
-    wordCount: 1632,
+    wordCount: 1647,
   },
   {
     slug: "apple-t2-security-chip",

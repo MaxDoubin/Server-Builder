@@ -261,12 +261,12 @@ export const thePortNobodyOpened: Challenge = {
   answerIsInTheData: true,
   hints: [
     "Compare the two lists. Six documented, seven open.",
-    "nmap names a port from /etc/services, which is a lookup table, not an observation.",
+    "nmap names a port from its own nmap-services table, which is a lookup, not an observation.",
     "9100 is documented as node_exporter and nmap calls it jetdirect. That is the same lookup table being wrong, and it is not the answer.",
   ],
   walkthrough: [
     "31337. Everything else appears in both lists.",
-    "The trap is 9100, which nmap labels 'jetdirect'. nmap's SERVICE column is a lookup in /etc/services keyed on the port number: it is a guess about what usually runs there, not a statement about what is running there. On this host 9100 is Prometheus node_exporter and the documentation is right.",
+    "The trap is 9100, which nmap labels 'jetdirect'. nmap's SERVICE column is a lookup in its nmap-services file keyed on the port number: it is a guess about what usually runs there, not a statement about what is running there. On this host 9100 is Prometheus node_exporter and the documentation is right.",
     "The same mechanism names 31337 'Elite', which is equally a guess. To find out what is actually listening you need a banner grab or service detection, which is what `nmap -sV` does.",
     "The general point is that a port scan tells you a socket is accepting connections. It does not tell you what is on the other end, and reading the SERVICE column as though it does is one of the most common mistakes in enumeration.",
   ],
