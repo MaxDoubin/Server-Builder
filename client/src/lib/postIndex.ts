@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 278 of them. Regenerate with script/generatePostIndex.ts.
+ * 281 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,36 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "mac-pro-4-1-vs-5-1",
+    title: "Mac Pro 4,1 vs 5,1: What a Firmware Flash Changes (and Doesn't)",
+    date: "2026-10-05",
+    tags: ["mac-pro","hardware","apple"],
+    excerpt: "A Mac Pro 4,1 and 5,1 differ mainly in the CPU tray. See what the 4,1 to 5,1 firmware flash changes and leaves alone, how it is done, and which to buy used.",
+    coverImage: "/images/blog/mac-pro-4-1-vs-5-1.jpg",
+    coverCredit: {"author":"Uadro","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mac_Pro_(2010).jpg"},
+    wordCount: 3176,
+  },
+  {
+    slug: "mac-pro-6-1-latest-os",
+    title: "Mac Pro 6,1 Latest macOS: Monterey Officially, Sequoia With OCLP",
+    date: "2026-10-05",
+    tags: ["mac-pro","apple","security","hardware"],
+    excerpt: "The 2013 Mac Pro officially tops out at macOS Monterey 12.7.6, last patched July 29, 2024. See what OpenCore Legacy Patcher adds after it, what breaks, and what to run.",
+    coverImage: "/images/blog/mac-pro-6-1-latest-os.jpg",
+    coverCredit: {"author":"Uadro","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mac-pro-2013.jpg"},
+    wordCount: 3162,
+  },
+  {
+    slug: "linux-on-mac-pro-6-1",
+    title: "Linux on the 2013 Mac Pro 6,1: GPUs, Wi-Fi and Fans Explained",
+    date: "2026-10-05",
+    tags: ["linux","mac-pro","hardware","homelab"],
+    excerpt: "How to install Linux on the 2013 Mac Pro 6,1: which kernels run the FirePro D300, D500 and D700 on amdgpu, Broadcom Wi-Fi, fan behavior, Thunderbolt 2 and Proxmox.",
+    coverImage: "/images/blog/linux-on-mac-pro-6-1.jpg",
+    coverCredit: {"author":"Paul Hudson","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mac_Pro_desktop.jpeg"},
+    wordCount: 3000,
+  },
   {
     slug: "mac-mini-home-server-setup",
     title: "Mac mini Home Server Setup: macOS Settings That Keep It Running",
@@ -176,7 +206,7 @@ export const postIndex: PostMeta[] = [
     tags: ["mac-pro","hardware","apple"],
     excerpt: "Compare the 2010 to 2012 Mac Pro 5,1 with the 2019 7,1 on speed, memory, PCIe, GPUs, power, macOS support and used prices, using benchmarks from one source.",
     coverImage: "/images/blog/mac-pro-5-1-vs-7-1.jpg",
-    wordCount: 3442,
+    wordCount: 3466,
   },
   {
     slug: "apple-server-hardware",
@@ -2729,10 +2759,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 278;
+export const POST_COUNT = 281;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and seventy eight";
+export const POST_COUNT_SPELLED = "two hundred and eighty one";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2741,10 +2771,10 @@ export const POST_COUNT_SPELLED = "two hundred and seventy eight";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1804;
+export const CITATION_COUNT = 1879;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 151;
+export const ATTRIBUTION_URL_COUNT = 154;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1945;
+export const CHECKED_URL_COUNT = 2022;
