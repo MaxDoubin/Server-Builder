@@ -50,6 +50,1003 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "linux-on-mac-pro-7-1",
+    title: "Linux on the Mac Pro 7,1: What Works and What the T2 Changes",
+    date: "2026-10-05",
+    tags: ["mac-pro", "linux", "apple"],
+    excerpt:
+      "How to run Linux on a 2019 Mac Pro: the Startup Security settings, t2linux kernels, what the SSD, Wi-Fi, 10GbE and AMD GPUs need, and what still breaks.",
+    coverImage: "/images/blog/linux-on-mac-pro-7-1.jpg",
+    coverCredit: {
+      author: "KKPCW",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Pro_Display_XDR_and_Mac_Pro_(2019_model)_-_2.jpg",
+    },
+    content: `
+## The short answer
+
+Linux runs on the Mac Pro 7,1, tower or rack, once you set Secure Boot to No Security and allow external boot media in Startup Security Utility, and only on a kernel with the T2 patches that the [t2linux project](https://wiki.t2linux.org/state/) builds for Ubuntu, Fedora, Arch and others. The internal SSD, USB, Thunderbolt and the two 10GbE ports use mainline kernel drivers, and Wi-Fi works once you extract Apple's firmware from macOS. t2linux rates AMD GPUs and the MacPro7,1 as partially working: GPUs can crash, and PCIe address-space problems may need the Infinity Fabric Link removed. [Apple documents the Afterburner card](https://support.apple.com/en-us/101662) only for macOS, so keep macOS installed as the firmware source and recovery path.
+
+## What does the T2 chip change for Linux?
+
+The T2 chip decides what the Mac Pro will boot and controls its internal SSD, so a stock Linux installer will not start on factory settings. Its Boot ROM verifies iBoot, iBoot checks the T2 kernel, and the T2 then checks the UEFI firmware, which is ["initially available only to the T2 chip"](https://support.apple.com/guide/security/boot-process-for-an-intel-based-mac-sec5d0fab7c6/web). By default, Apple states, "an Intel-based Mac that supports secure boot trust only content signed by Apple."
+
+<figure>
+<img src="/images/blog/linux-on-mac-pro-7-1/t2-chip.jpg" alt="An illustration of the Apple T2 chip on a logic board" width="720" height="739" loading="lazy" decoding="async">
+<figcaption>An illustration of Apple's T2 security chip. Its Secure Boot settings decide whether a Mac Pro 7,1 will start Linux at all. Photo: Henriok, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_T2_APL1027.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+[Phoronix reported on November 5, 2018](https://www.phoronix.com/news/Apple-T2-Blocks-Linux-UEFI) that such Macs "will not be able to boot Linux operating systems" by default, with an update noting that Startup Security Utility might disable Secure Boot, the step t2linux's guide now walks through. The kernel knows this model too: since Linux 5.19 a [quirk list that includes MacPro7,1](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=155ca952c7ca19aa32ecfb7373a32bbc2e1ec6eb) skips reading UEFI certificate variables, because on T2 Macs "a page fault occurs in Apple firmware code and EFI runtime services are disabled." The [T2 article](/blog/apple-t2-security-chip) covers the chip's other jobs.
+
+### Startup Security Utility settings for Linux
+
+Hold Command-R at power on to enter macOS Recovery, choose Utilities, then Startup Security Utility, and sign in with an administrator account, [as Apple describes](https://support.apple.com/en-us/102522). It only runs in Recovery, so attach a display and keyboard.
+
+| Setting | Choices | Pick for Linux |
+|---|---|---|
+| Secure Boot | Full Security (default), Medium Security, No Security | No Security. Medium accepts only an OS "properly signed by Apple (macOS) or Microsoft (Windows)", and [t2linux says](https://wiki.t2linux.org/guides/preinstall/) even shim-signed GRUB will not boot with Secure Boot on. |
+| Allowed boot media | Disallow external or removable media (default), or allow | Allow it for the install, then disallow it again once Linux is on the internal SSD. |
+| Firmware password | Off by default | Optional. It requires a password to boot anything but the default OS. |
+
+Apple says the Mac ["doesn't support booting from network volumes"](https://support.apple.com/en-us/102522), so network installs are out.
+
+## Which distributions and kernels support the Mac Pro 7,1?
+
+Any distribution works if it runs a T2 kernel, and t2linux supplies installers for the common ones. Its [preinstall](https://wiki.t2linux.org/guides/preinstall/) and [post-install](https://wiki.t2linux.org/guides/postinstall/) guides list these:
+
+| Distribution | T2 installer ISO | T2 kernel source |
+|---|---|---|
+| Ubuntu, flavors and Mint | T2-Ubuntu, T2-Mint | T2-Debian-and-Ubuntu-Kernel |
+| Fedora | fedora-iso | fedora-kernel |
+| Arch Linux | archiso-t2 | linux-t2-arch |
+| NixOS | nixos-t2-iso | nixos-hardware |
+
+CachyOS, EndeavourOS and Gentoo have T2 images or pages too. t2linux says a T2 kernel is required to get "the keyboard, trackpad, touch bar, audio, fan, and Wi-Fi working." The Mac Pro has no built-in keyboard or trackpad, so audio, fans and Wi-Fi are what it buys you.
+
+The [Debian and Ubuntu kernel repository](https://github.com/t2linux/T2-Debian-and-Ubuntu-Kernel) covers Ubuntu 22.04, 24.04, 25.10 and 26.04 plus Debian 12, 13 and testing, and says it "will try to keep up with kernel new releases." Its [newest release](https://github.com/t2linux/T2-Debian-and-Ubuntu-Kernel/releases) on October 5, 2026 was v7.2.9-2, dated October 4. Mainline picked up the Mac Pro pieces over time:
+
+| Kernel | What it added |
+|---|---|
+| 5.4 | NVMe quirks for Apple's 2018 and later controllers, so the internal SSD works |
+| 5.19 | MacPro7,1 in the EFI certificate quirk list |
+| 6.3 | brcmfmac firmware selection for BCM4364 B2 and B3, with the Mac Pro listed as B3 |
+
+### What apple-bce and t2bce provide
+
+apple-bce talks to the T2 over its Buffer Copy Engine. Its [README](https://github.com/t2linux/apple-bce-drv) calls it "a driver for MacBook models 2018 and newer, implementing the VHCI (required for mouse/keyboard/etc.) and audio functionality." VHCI is a virtual USB host controller. The driver [binds to PCI ID 106b:1801](https://raw.githubusercontent.com/t2linux/apple-bce-drv/aur/apple_bce.c), which the [PCI ID database](https://pci-ids.ucw.cz/v2.2/pci.ids) names "T2 Bridge Controller".
+
+On a Mac Pro the audio side matters most, since t2linux says the T2 audio device covers [the 3.5mm headphone port and the built in speakers](https://wiki.t2linux.org/guides/audio-config/). t2linux kernels now use [t2bce](https://github.com/deqrocks/t2bce), a replacement split into t2bce_core, t2bce_dma, t2bce_vhci and t2bce_audio. An [Omarchy bug report](https://github.com/omacom/omarchy/issues/10699) from September 7, 2026 says linux-t2 7.1.4 renamed the driver and 7.1.8 has no apple-bce at all, so older guides fail.
+
+## How does Linux see the internal SSD modules?
+
+Linux talks to a T2-based NVMe controller, and the kernel has handled it since 5.4. Apple fits [one or two modules depending on capacity](https://support.apple.com/en-us/101654) that are "paired to and encrypted by the T2 Security Chip", and iFixit found the SSD ["bound to the T2 chip"](https://www.ifixit.com/Teardown/Mac+Pro+2019+Teardown/128922). The PCI ID database lists Apple device 106b:2005 as "ANS2 NVMe Controller".
+
+It is not a normal drive. The [kernel patch](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=66341331ba0d2de4ff421cdc401a1e34de50502a) handles "twice-as-big SQ entries for the IO queues" and only interrupt vector 0 working, and a [follow-up](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d38e9f04ebf667d9cb8185b45bff747485f1d3e9) found it will "blow up (and shut the machine down)" on queue tag collisions. Claims that Linux cannot use this SSD predate 5.4.
+
+t2linux's guides assume the internal EFI partition is \`/dev/nvme0n1p1\`. Apple does not document how two modules are presented, so check with [lsblk](https://man.archlinux.org/man/lsblk.8) and [nvme list](https://man.archlinux.org/man/nvme-list.1) before partitioning, and match by size if you also have a PCIe NVMe card:
+
+\`\`\`bash
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS
+sudo nvme list
+\`\`\`
+
+Linux also ["cannot read the internal SSD's macOS APFS partition's Data and System volume"](https://wiki.t2linux.org/state/). PCIe NVMe cards are a separate case: William Lam found that [only the Apple SSDs are "cryptographically tied to the T2 chip"](https://williamlam.com/2020/01/esxi-on-the-new-2019-apple-mac-pro.html), and the [storage expansion article](/blog/mac-pro-storage-expansion) covers those cards.
+
+## How do Wi-Fi, Bluetooth and the 10GbE ports behave?
+
+Wi-Fi needs Apple firmware that comes out of macOS, Bluetooth needs none, and the 10GbE ports should work with the stock kernel driver.
+
+### Wi-Fi and Bluetooth (BCM4364 firmware)
+
+Apple lists [802.11ac Wi-Fi and Bluetooth 5.0](https://support.apple.com/en-us/118461), and Dortania's guide gives the chip as ["MacPro7,1 - 4364B3(Bluetooth 5.0)"](https://dortania.github.io/Wireless-Buyers-Guide/Airport.html), a Broadcom BCM4364 revision B3. The kernel's [brcmfmac patch](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6a142f70774fd10350a52a10ba1297d52da46780) lists both "Mac Pro (2019)" and "Mac Pro (2019, Rack)" as B3, so tower and rack behave the same.
+
+The firmware is the catch: t2linux says it can be [legally obtained only from macOS](https://wiki.t2linux.org/roadmap/) because it is non-redistributable. Its [firmware guide](https://wiki.t2linux.org/guides/wifi-bluetooth/) offers five methods, and Method 5 downloads a macOS Recovery image from Monterey to Sonoma. The [firmware script](https://wiki.t2linux.org/tools/firmware.sh) says Bluetooth firmware is needed only for MacBookPro15,4, MacBookPro16,3 and MacBookAir9,1, so a Mac Pro needs the Wi-Fi files only. Confirm the load with this command and look for a \`brcmfmac4364b3-pcie\` line:
+
+\`\`\`bash
+sudo journalctl -k --grep=brcmfmac
+\`\`\`
+
+Two regressions matter. t2linux says Arch Linux and EndeavourOS hit a [wpa_supplicant 2.11 bug](https://wiki.t2linux.org/guides/wifi-bluetooth/) that iwd or \`brcmfmac.feature_disable=0x82000\` works around, and kernel 6.13 broke BCM4364 Wi-Fi until [a fix in 6.14](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=0e9724d0f89e8d77fa683e3129cadaed7c6e609d).
+
+### The two 10GbE ports
+
+Apple specifies [two 10Gb Ethernet ports](https://support.apple.com/en-us/118461) that run at 1, 2.5, 5 or 10Gb over RJ-45. iFixit found "2x aQuantia AQtion AQC107-B1-C" controllers, the kernel's [atlantic driver](https://docs.kernel.org/networking/device_drivers/ethernet/aquantia/atlantic.html) is "compatible with AQC-100, AQC-107, AQC-108 based ethernet adapters", and William Lam read the device ID as 0x07b1, the driver's [AQC107 entry](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/net/ethernet/aquantia/atlantic/aq_common.h). Check with [lspci -nn](https://man.archlinux.org/man/lspci.8) and [ethtool -i](https://man.archlinux.org/man/ethtool.8), expecting two devices at 1d6a:07b1 and \`driver: atlantic\`:
+
+\`\`\`bash
+lspci -nn | grep -i 1d6a
+ethtool -i <interface>
+\`\`\`
+
+T2 Macs also expose an internal USB Ethernet interface, which t2linux [renames t2_ncm and tells NetworkManager to ignore](https://wiki.t2linux.org/guides/postinstall/). Do not mistake it for a 10GbE port.
+
+## Which AMD GPUs work, and what about the Afterburner card?
+
+All nine MPX options are AMD parts that amdgpu covers, yet t2linux marks both "AMD GPUs" and "MacPro7,1" as partially working. The [kernel docs](https://docs.kernel.org/gpu/amdgpu/index.html) say the driver supports "all AMD Radeon GPUs based on the Graphics Core Next (GCN), Radeon DNA (RDNA), and Compute DNA (CDNA) architectures."
+
+### The nine GPU options
+
+IDs come from the PCI ID database and the amdgpu source, and link data from Apple's specs:
+
+| Option | Architecture and PCI ID | Infinity Fabric Link |
+|---|---|---|
+| Radeon Pro 580X | Polaris 10, 1002:67df | Not listed |
+| Radeon Pro W5500X | [RDNA](https://9to5mac.com/2020/07/01/apple-begins-offering-new-radeon-pro-w5500x-gpu-option-for-mac-pro/), no named ID | Not listed |
+| Radeon Pro W5700X | Navi 10, 1002:7310 | Not listed |
+| Radeon Pro Vega II | Vega 20, 1002:66a3 | Bridge, two cards |
+| Radeon Pro Vega II Duo | Vega 20 x2, 1002:66a3 | Preinstalled jumper |
+| Radeon Pro W6800X | [RDNA 2](https://ir.amd.com/news-events/press-releases/detail/1016/new-amd-radeon-pro-w6000x-series-gpus-bring-groundbreakinghigh-performance-amd-rdna-2-architecture-to-mac-pro), Navi 21, 1002:73ab | Bridge, two cards |
+| Radeon Pro W6900X | RDNA 2, Navi 21, 1002:73a2 | Bridge, two cards |
+| Radeon Pro W6800X Duo | RDNA 2, Navi 21 x2, 1002:73ab | Jumper, or bridge for two Duos |
+| Radeon Pro W6600X | [RDNA 2](https://www.cined.com/amd-radeon-pro-w6600x-for-apple-mac-pro-available-now/), no named ID | Not listed |
+
+The [t2linux state page](https://wiki.t2linux.org/state/) gives one status for all AMD GPUs: changing resolution, using DRI_PRIME and other actions can cause crashes. This command stops them, as does adding \`amdgpu.dpm=0\` to the kernel command line:
+
+\`\`\`bash
+echo high | sudo tee /sys/bus/pci/drivers/amdgpu/0000:??:??.?/power_dpm_force_performance_level
+\`\`\`
+
+The Mac Pro-specific warning is about address space: "Users have encountered PCIe Address Space issues, with auto remap breaking," and removing the Infinity Fabric Link (bridge or jumper) may help. [Apple says](https://support.apple.com/en-us/101899) the Vega II Duo ships with the link preinstalled, so for it that fix means pulling the jumper.
+
+Owner reports add detail. A [GitHub issue opened June 29, 2026](https://github.com/CachyOS/linux-cachyos/issues/907) describes two Vega II cards that freeze on kernel 7.1.1 and later but ran fine on 7.0.12. A [Proxmox owner](https://github.com/pi0n00r/pve-macpro7-1) passed an "AMD RX 580 / Pro 580X" through to a VM on a T2-patched 6.17 kernel. If Thunderbolt does not work, t2linux suggests [adding \`pcie_ports=native\`](https://wiki.t2linux.org/state/).
+
+### The Afterburner card
+
+Treat it as macOS-only. Apple documents Afterburner for [Final Cut Pro, Motion, Compressor and QuickTime Player](https://support.apple.com/en-us/101662) and says its decode acceleration "is available in macOS and is not available when using Windows with Boot Camp." It accelerates ProRes and ProRes RAW decoding and playback, not encoding. Neither the t2linux state page nor the PCI ID database mentions it, so do not expect Linux to use it. See the [Afterburner article](/blog/mac-pro-afterburner-card) for the card itself.
+
+## What about fans, thermals and rack versus tower?
+
+Fan control works through a small daemon, and tower and rack are the same machine to Linux. The hardware is [three axial fans in the front and a blower in the rear](https://www.macrumors.com/2019/12/12/apple-engineers-explain-mac-pro-cooling-features/).
+
+<figure>
+<img src="/images/blog/linux-on-mac-pro-7-1/mac-pro-on-wheels.jpg" alt="A silver 2019 Mac Pro tower on wheels beside a desk" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A 2019 Mac Pro tower on Apple's optional wheels. The rack model takes the same Linux setup. Photo: Gavin Lckg, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_2019_on_wheels.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+t2linux says on some Macs the fan [works out of the box](https://wiki.t2linux.org/guides/fan/), and the daemon is for forcing speeds. T2 fan support lives in t2linux's kernel patches, such as [3006-applesmc-fan-support-on-T2-Macs.patch](https://github.com/t2linux/linux-t2-patches). Enable the daemon:
+
+\`\`\`bash
+sudo systemctl enable --now t2fanrd
+\`\`\`
+
+Its \`/etc/t2fand.conf\` has \`low_temp\`, \`high_temp\`, \`speed_curve\` and \`always_full_speed\` per fan, per the [T2FanRD readme](https://github.com/GnomedDev/T2FanRD). [Its source](https://raw.githubusercontent.com/GnomedDev/T2FanRD/master/src/main.rs) reads the CPU's coretemp sensor and the first GPU, \`card0\`, and uses the hotter reading, so extra GPUs are ignored. On multi-GPU builds set conservative values or \`always_full_speed\`.
+
+Apple identifies [both enclosures as MacPro7,1](https://support.apple.com/en-us/102887). [The rack](https://support.apple.com/en-us/111907) is 8.67 inches high, 18.98 wide and 21.24 deep at 38.8 pounds, with rails in a separate box and its two Thunderbolt 3 ports on the front instead of the top. Apple rates operation at 10 to 35 C (50 to 95 F), so watch intake temperatures in a closed rack. The [rack-mount homelab article](/blog/mac-pro-rack-mount-homelab) covers fitting one.
+
+## Can you dual boot Linux and macOS?
+
+Yes, and t2linux says you should. Its [roadmap](https://wiki.t2linux.org/roadmap/) says macOS is the only legal source of the Wi-Fi firmware, doubles as a backup, and brings updates: "macOS updates often bring along certain firmware updates, which tend to be useful for Linux as well."
+
+In macOS Disk Utility choose Partition, then Add Partition, not Volume, because [the size cannot change later](https://wiki.t2linux.org/guides/preinstall/). Hold Option at startup to open Startup Manager, which Apple says [lets you choose other startup disks](https://support.apple.com/en-us/102603), and hold Control while you pick your Linux entry to make it the default. After a macOS upgrade, [the default reverts to macOS](https://wiki.t2linux.org/guides/startup-manager/).
+
+Apple lists macOS Tahoe 26 as the [newest compatible release](https://support.apple.com/en-us/102887) for the 2019 Mac Pro, and Production Expert [quotes Apple](https://www.production-expert.com/production-expert-1/intel-mac-users-apple-gives-12-month-countdown) saying Tahoe "will be the last release for Intel-based Mac computers." Keep Tahoe updated while Apple ships it, then let Linux carry the machine.
+
+## How do you install Linux on a Mac Pro 7,1?
+
+This is the Ubuntu route from the [t2linux Ubuntu guide](https://wiki.t2linux.org/distributions/ubuntu/installation/). Fedora and Arch differ at the partitioning step.
+
+1. Update macOS and back up. Create a bootable macOS installer if you may delete macOS later.
+2. In Disk Utility, partition the internal volume with Add Partition, name it Linux, pick exFAT, and choose the final size.
+3. Download the T2-Ubuntu ISO and write it to a USB drive in macOS Terminal, using a USB-A port on the Apple I/O card:
+   \`\`\`bash
+   diskutil list
+   sudo diskutil unmountDisk /dev/diskX
+   sudo dd if=path/to/linux.iso of=/dev/rdiskX bs=1m
+   \`\`\`
+4. Shut down, hold Command-R, open Utilities, then Startup Security Utility. Set Secure Boot to No Security and allow external or removable media.
+5. Restart holding Option and pick the orange EFI Boot entry. If there are two, try the rightmost first.
+6. Install with manual partitioning only. Mount \`/dev/nvme0n1p1\` at \`/boot/efi\` and the partition you made at \`/\` as ext4 or btrfs. Never choose automatic partitioning.
+7. Reboot holding Option and choose EFI Boot. If Ubuntu's GRUB shows a blank screen, install rEFInd.
+8. Run \`get-apple-firmware get_from_macos\` for Wi-Fi, or \`get_from_online\` if macOS is gone (it needs wired internet).
+9. Check the kernel with [uname -r](https://man.archlinux.org/man/uname.1) and the firmware with the journalctl command above.
+10. Install t2fanrd from t2linux's apt repository and enable it as shown above.
+11. If you used a stock ISO or want [LUKS](/blog/luks-at-rest-encryption), follow the post-install guide: add \`intel_iommu=on iommu=pt pm_async=off\` to the kernel command line and load the t2bce modules early.
+
+## What breaks
+
+**The installer says "A software update is required to use this startup disk."** Secure Boot is still enforced, or the ISO sits on an APFS or HFS+ partition, [per t2linux](https://wiki.t2linux.org/guides/preinstall/). Fix: set No Security, allow external media, and try the other EFI Boot entry.
+
+**Ubuntu boots to a blank screen from Startup Manager.** t2linux says [Ubuntu's GRUB does not boot through Startup Manager](https://wiki.t2linux.org/distributions/ubuntu/installation/) for many users. Fix: install rEFInd and boot the kernel from it.
+
+**There is no Wi-Fi.** The firmware is missing, the kernel is 6.13, or broadcom-wl is installed, which t2linux says is not the driver for these Macs. Fix: run the firmware script, move off 6.13, and use only brcmfmac.
+
+**The screen freezes under amdgpu.** t2linux lists crashes on AMD GPUs, and one Vega II owner reports a regression on 7.1.1. Fix: boot with \`amdgpu.dpm=0\`, remove the Infinity Fabric Link if address errors appear, or pin kernel 7.0.12.
+
+**The initramfs build fails or the LUKS keyboard is dead.** Current T2 kernels ship t2bce modules, and the Omarchy report says "mkinitcpio cannot resolve the module." Fix: list \`t2bce_dma t2bce_core t2bce_vhci\` in the initramfs and drop apple-bce.
+
+## Frequently asked questions
+
+### Which Linux distribution should I use on a Mac Pro 7,1?
+
+Pick one with a t2linux ISO. The [roadmap](https://wiki.t2linux.org/roadmap/) says Arch has the most documentation, EndeavourOS needs little configuration, Ubuntu needs less post-configuration, and Fedora mostly works out of the box but needs the Wi-Fi guide.
+
+### Can a Mac Pro 7,1 run Proxmox or ESXi?
+
+An owner reports [Proxmox VE 9.1.2 on a T2-patched 6.17 kernel](https://github.com/pi0n00r/pve-macpro7-1) with [GPU passthrough](/blog/gpu-passthrough-proxmox) working. William Lam installed ESXi with Secure Boot disabled, and notes [VMware will no longer pursue hardware certification](https://williamlam.com/2020/01/esxi-on-the-new-2019-apple-mac-pro.html) for the 7,1.
+
+### Can installing Linux brick the Mac Pro?
+
+t2linux says nobody has broken a machine by installing Linux and following its guides closely, though it takes no responsibility. The real risk is data loss during partitioning, so back up first.
+
+### What happens when macOS drops Intel Macs?
+
+The machine keeps running Tahoe, and Linux keeps working. The T2 kernel repository tracks upstream, with 7.2.9 newest on October 4, 2026, while Apple's Intel support is finite.
+
+## What this means
+
+Use the Mac Pro 7,1 for Linux if you accept the T2 steps: set No Security, install a t2linux image, add the Wi-Fi firmware, and run t2fanrd. Keep macOS Tahoe for firmware and recovery. A single-GPU configuration without the Infinity Fabric Link is the lowest-risk choice, because t2linux's only Mac Pro warning concerns that link and the one detailed multi-GPU failure involves two Vega II cards. Leave the Afterburner card for macOS work.
+
+## References
+
+- [t2linux wiki: Device support and state of features](https://wiki.t2linux.org/state/)
+- [t2linux wiki: Pre install steps](https://wiki.t2linux.org/guides/preinstall/)
+- [t2linux wiki: Installing a kernel for T2 support](https://wiki.t2linux.org/guides/postinstall/)
+- [t2linux wiki: Wi-Fi and Bluetooth](https://wiki.t2linux.org/guides/wifi-bluetooth/)
+- [t2linux wiki: Fan control](https://wiki.t2linux.org/guides/fan/)
+- [t2linux wiki: Roadmap](https://wiki.t2linux.org/roadmap/)
+- [t2linux wiki: Startup Manager](https://wiki.t2linux.org/guides/startup-manager/)
+- [t2linux wiki: Ubuntu and Linux Mint installation](https://wiki.t2linux.org/distributions/ubuntu/installation/)
+- [t2linux wiki: Audio configuration](https://wiki.t2linux.org/guides/audio-config/)
+- [t2linux firmware script](https://wiki.t2linux.org/tools/firmware.sh)
+- [Apple Support: About Startup Security Utility on a Mac with the Apple T2 Security Chip](https://support.apple.com/en-us/102522)
+- [Apple Platform Security: Boot process for an Intel-based Mac](https://support.apple.com/guide/security/boot-process-for-an-intel-based-mac-sec5d0fab7c6/web)
+- [Apple Support: Mac Pro (2019) Technical Specifications](https://support.apple.com/en-us/118461)
+- [Apple Support: Mac Pro (Rack, 2019) Technical Specifications](https://support.apple.com/en-us/111907)
+- [Apple Support: Install or replace SSD modules in your Mac Pro (2019)](https://support.apple.com/en-us/101654)
+- [Apple Support: About the Afterburner accelerator card for Mac Pro (2019)](https://support.apple.com/en-us/101662)
+- [Apple Support: Identify your Mac Pro model](https://support.apple.com/en-us/102887)
+- [Apple Support: Mac startup key combinations](https://support.apple.com/en-us/102603)
+- [Apple Support: Use the Radeon Pro Vega II Duo MPX Module with your Mac Pro (2019)](https://support.apple.com/en-us/101899)
+- [Linux kernel commit: efi: Do not import certificates from UEFI Secure Boot for T2 Macs](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=155ca952c7ca19aa32ecfb7373a32bbc2e1ec6eb)
+- [Linux kernel commit: nvme-pci: Add support for Apple 2018+ models](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=66341331ba0d2de4ff421cdc401a1e34de50502a)
+- [Linux kernel commit: nvme-pci: Support shared tags across queues for Apple 2018 controllers](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=d38e9f04ebf667d9cb8185b45bff747485f1d3e9)
+- [Linux kernel commit: wifi: brcmfmac: pcie: Perform correct BCM4364 firmware selection](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6a142f70774fd10350a52a10ba1297d52da46780)
+- [Linux kernel commit: wifi: brcmfmac: use random seed flag for BCM4355 and BCM4364 firmware](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=0e9724d0f89e8d77fa683e3129cadaed7c6e609d)
+- [Linux kernel source: atlantic driver aq_common.h](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/drivers/net/ethernet/aquantia/atlantic/aq_common.h)
+- [Linux kernel documentation: drm/amdgpu AMDgpu driver](https://docs.kernel.org/gpu/amdgpu/index.html)
+- [Linux kernel documentation: Marvell(Aquantia) AQtion Driver](https://docs.kernel.org/networking/device_drivers/ethernet/aquantia/atlantic.html)
+- [PCI ID Repository](https://pci-ids.ucw.cz/v2.2/pci.ids)
+- [GitHub: t2linux/apple-bce-drv](https://github.com/t2linux/apple-bce-drv)
+- [GitHub: apple_bce.c in t2linux/apple-bce-drv](https://raw.githubusercontent.com/t2linux/apple-bce-drv/aur/apple_bce.c)
+- [GitHub: deqrocks/t2bce](https://github.com/deqrocks/t2bce)
+- [GitHub: t2linux/T2-Debian-and-Ubuntu-Kernel](https://github.com/t2linux/T2-Debian-and-Ubuntu-Kernel)
+- [GitHub: T2-Debian-and-Ubuntu-Kernel releases](https://github.com/t2linux/T2-Debian-and-Ubuntu-Kernel/releases)
+- [GitHub: t2linux/linux-t2-patches](https://github.com/t2linux/linux-t2-patches)
+- [GitHub: GnomedDev/T2FanRD](https://github.com/GnomedDev/T2FanRD)
+- [GitHub: T2FanRD main.rs](https://raw.githubusercontent.com/GnomedDev/T2FanRD/master/src/main.rs)
+- [GitHub: CachyOS linux-cachyos issue 907, Mac Pro 7,1 AMD Radeon Pro Vega II](https://github.com/CachyOS/linux-cachyos/issues/907)
+- [GitHub: pi0n00r/pve-macpro7-1, GPU passthrough on Mac Pro 7,1 with Proxmox VE](https://github.com/pi0n00r/pve-macpro7-1)
+- [GitHub: Omarchy issue 10699, installer still writes apple-bce](https://github.com/omacom/omarchy/issues/10699)
+- [William Lam: ESXi on the new 2019 Apple Mac Pro](https://williamlam.com/2020/01/esxi-on-the-new-2019-apple-mac-pro.html)
+- [Phoronix: Apple's New Hardware With The T2 Security Chip Will Currently Block Linux From Booting](https://www.phoronix.com/news/Apple-T2-Blocks-Linux-UEFI)
+- [iFixit: Mac Pro 2019 Teardown](https://www.ifixit.com/Teardown/Mac+Pro+2019+Teardown/128922)
+- [MacRumors: Apple Engineers Explain New Mac Pro's Innovative Cooling Features](https://www.macrumors.com/2019/12/12/apple-engineers-explain-mac-pro-cooling-features/)
+- [Arch manual pages: lsblk(8)](https://man.archlinux.org/man/lsblk.8)
+- [Arch manual pages: nvme-list(1)](https://man.archlinux.org/man/nvme-list.1)
+- [Arch manual pages: lspci(8)](https://man.archlinux.org/man/lspci.8)
+- [Arch manual pages: ethtool(8)](https://man.archlinux.org/man/ethtool.8)
+- [Arch manual pages: uname(1)](https://man.archlinux.org/man/uname.1)
+- [Dortania: Wireless Buyer's Guide, Airport](https://dortania.github.io/Wireless-Buyers-Guide/Airport.html)
+- [9to5Mac: Apple begins offering new Radeon Pro W5500X GPU option for Mac Pro](https://9to5mac.com/2020/07/01/apple-begins-offering-new-radeon-pro-w5500x-gpu-option-for-mac-pro/)
+- [CineD: AMD Radeon PRO W6600X for Apple Mac Pro Available Now](https://www.cined.com/amd-radeon-pro-w6600x-for-apple-mac-pro-available-now/)
+- [AMD: New AMD Radeon PRO W6000X Series GPUs Bring AMD RDNA 2 Architecture to Mac Pro](https://ir.amd.com/news-events/press-releases/detail/1016/new-amd-radeon-pro-w6000x-series-gpus-bring-groundbreakinghigh-performance-amd-rdna-2-architecture-to-mac-pro)
+- [Production Expert: Intel Macs And macOS Tahoe, What The End Of Support Actually Means](https://www.production-expert.com/production-expert-1/intel-mac-users-apple-gives-12-month-countdown)
+`,
+  },
+  {
+    slug: "windows-11-on-mac-pro-7-1",
+    title: "Windows 11 on the Mac Pro 7,1: Boot Camp, TPM and Drivers",
+    date: "2026-10-05",
+    tags: ["mac-pro", "apple", "troubleshooting"],
+    excerpt:
+      "Windows 11 is not supported on the 2019 Mac Pro, but it installs. What the T2 and TPM mean, which install routes work, the right drivers, and the Windows 10 ESU option.",
+    coverImage: "/images/blog/windows-11-on-mac-pro-7-1.jpg",
+    coverCredit: {
+      author: "KKPCW",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Mac_Pro_(2019_model)_-_1.jpg",
+    },
+    content: `
+## The short answer
+
+Windows 11 is not officially supported on the 2019 Mac Pro (MacPro7,1, tower or rack). Apple's [Boot Camp instructions](https://support.apple.com/en-us/102622), last published December 8, 2025, cover only Windows 10, and Windows 11 Setup requires a TPM 2.0 that the Mac Pro does not show to Windows. The T2 chip is not a TPM.
+
+Windows 11 does install if you bypass Setup's checks, most simply with LabConfig registry values from the Shift+F10 prompt or with Rufus-built media. Microsoft says a PC set up this way ["won't be entitled to receive updates"](https://support.microsoft.com/en-us/windows/installing-windows-11-on-devices-that-don-t-meet-minimum-system-requirements-0b2dc4a2-5933-4ad4-9c09-ef0a331518f1), so the supported alternative is Windows 10 with Extended Security Updates (ESU) through October 12, 2027.
+
+## Does the Mac Pro 7,1 officially support Windows 11?
+
+No. Apple's Boot Camp article is titled "Install Windows 10 on your Mac with Boot Camp Assistant," lists "Mac Pro introduced in 2013 through 2019," and asks for an ISO of "A 64-bit version of Windows 10 Home or Windows 10 Pro." It never mentions Windows 11, and neither do Apple's driver and graphics pages for the Mac Pro. [EveryMac](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.5-xeon-w-silver-tower-workstation-2019-specs.html) lists Windows 10 (64-bit) as both the minimum and maximum Windows for this model, and [AppleInsider](https://appleinsider.com/articles/21/06/25/intel-macs-cant-run-windows-11-without-this-workaround) concluded in June 2021 that "there is no official support for running Windows 11 on a Mac."
+
+Microsoft's [requirements page](https://learn.microsoft.com/en-us/windows/whats-new/windows-11-requirements) sets the bar. Here is how the 2019 Mac Pro measures up:
+
+| Requirement | Microsoft's wording | Mac Pro 7,1 |
+|---|---|---|
+| Processor | "1 gigahertz (GHz) or faster with two or more cores on a compatible 64-bit processor" | Xeon W-3200 family, not named on Microsoft's current Intel list (unsettled) |
+| Memory, storage | 4 GB, 64 GB | Exceeded: [Apple's smallest options](https://support.apple.com/en-us/111907) are 32GB and 256GB |
+| Firmware | "UEFI, Secure Boot capable." | T2 secure boot exists, but Windows does not see UEFI Secure Boot |
+| TPM | "Trusted Platform Module (TPM) version 2.0." | Not exposed to Windows |
+
+The processor row is the unsettled one. Microsoft's [supported Intel list](https://learn.microsoft.com/en-us/windows-hardware/design/minimum/supported/windows-11-supported-intel-processors) names the Xeon W-2100, W-2200, W-3100 and W-3300 series but not W-3200, the family in the Mac Pro according to [Intel's product brief](https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/xeon-w-3200-processors-brief.pdf). Microsoft's pages do not say whether Setup accepts it, so keep the \`BypassCPUCheck\` value below ready.
+
+## Why the T2 chip does not count as a TPM
+
+Windows 11 Setup needs a TPM 2.0 device it can see, and the Mac Pro does not offer one. Microsoft defines a TPM as ["a secure crypto-processor that is designed to carry out cryptographic operations,"](https://www.microsoft.com/en-us/windows/windows-11-specifications) and [The Register](https://www.theregister.com/2025/02/05/windows_11_hardware_requirement_workaround/) notes it is typically a discrete chip or built into the CPU. The [T2 chip](/blog/apple-t2-security-chip) is a different kind of part. [Apple describes](https://support.apple.com/guide/security/boot-process-for-an-intel-based-mac-sec5d0fab7c6/web) it running its own secure boot from Boot ROM, ending with a check of the UEFI firmware that the Intel CPU then fetches from it.
+
+<figure>
+<img src="/images/blog/windows-11-on-mac-pro-7-1/t2-chip.jpg" alt="An illustration of the Apple T2 chip on a logic board" width="720" height="739" loading="lazy" decoding="async">
+<figcaption>An illustration of Apple's T2 chip. It runs the Mac's Secure Boot and storage encryption, but it does not present itself to Windows as a TPM. Photo: Henriok, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_T2_APL1027.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+<figure>
+<img src="/images/blog/windows-11-on-mac-pro-7-1/tpm-chip.jpg" alt="A small plug-in TPM module seated in a motherboard header labeled TPM" width="830" height="705" loading="lazy" decoding="async">
+<figcaption>A plug-in Trusted Platform Module on an Asus motherboard, the kind of chip Windows 11 checks for (it requires version 2.0). The Mac Pro has no TPM for Windows to find. Photo: FxJ, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:TPM_Asus.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+[Twocanoes](https://twocanoes.com/install-windows-11-without-tpm-2-on-boot-camp/), the maker of Winclone, put the result plainly in 2021: most Macs "do not have a Trusted Platform Module (TPM), and those with a TPM do not expose it to the hardware."
+
+Sources disagree about the Xeon silicon. AppleInsider listed the 2019 Mac Pro among Macs with "TPM 2.0 support in the processor," then added that none support it "on the motherboard." Either way Windows sees nothing. One owner of a 2019 Mac Pro reported on [Apple Community](https://discussions.apple.com/thread/256108472) on July 31, 2025 that the upgrade failed on the TPM and Secure Boot checks. That result is what Setup actually reports, so it outweighs the spec-sheet inference.
+
+Secure Boot fails separately. Apple does verify Microsoft's boot loader for Boot Camp, and its guide says Apple "also supports secure booting for Windows." But [Twocanoes found in 2018](https://twocanoes.com/secureboot-imac-pro/) that Windows showed an iMac Pro's Secure Boot as unsupported because Apple's version "is not uEFI compliant."
+
+## Which Windows 11 install routes work without a TPM?
+
+Only unofficial routes work on a Mac Pro, because the one bypass Microsoft documented still needed a TPM.
+
+### Microsoft's documented registry value
+
+For in-place upgrades Microsoft documented \`AllowUpgradesWithUnsupportedTPMOrCPU\`, set to 1 under \`HKEY_LOCAL_MACHINE\\SYSTEM\\Setup\\MoSetup\`. [Tom's Hardware](https://www.tomshardware.com/how-to/bypass-windows-11-tpm-requirement) says it "still requires at least TPM 1.2," so with no TPM visible it is "worthless" on a Mac Pro. The Register reports Microsoft removed the instructions between December 12 and 14, 2024, and could not say whether the value still works. Microsoft's [current page](https://support.microsoft.com/en-us/windows/ways-to-install-windows-11-e0edbbfb-cfc5-4011-868b-2ce77ac7c70e) says it "recommends you roll back to Windows 10 immediately" from an install on unsupported hardware.
+
+### Unofficial routes
+
+| Route | Documented by | Install type | Caveat |
+|---|---|---|---|
+| LabConfig values set at Shift+F10 | Tom's Hardware; a [Microsoft Q&A community answer](https://learn.microsoft.com/en-us/answers/questions/5789086/upgrade-to-windows-11-on-my-mac-i-have-bootcamp), June 24, 2026 | Clean install only | Not documented by Microsoft |
+| [Rufus](https://github.com/pbatard/rufus) "Extended Windows 11 Installation" media | Rufus project | Clean or in-place | Built on a Windows PC; T2 Macs block external boot by default |
+| \`setup.exe /product server\` from Windows 10 | [Apple Community](https://discussions.apple.com/thread/256132098) owner report, October 9, 2025 | In-place | Microsoft tightened this loophole in August 2024, per The Register |
+| Winclone Quick Install | Twocanoes, 2021 | Restores install.wim | Commercial tool |
+
+Start with LabConfig. Boot Camp Assistant handles partitioning and drivers, and you add the values before Setup's checks run. Reports differ on whether Boot Camp Assistant accepts an unmodified Windows 11 ISO: the June 2026 answer says it took 24H2 and 25H2 images, while a [June 2024 Apple Community reply](https://discussions.apple.com/thread/255643628) was unsure. If it refuses, install Windows 10 first, upgrade in place with Rufus media, and reinstall the Boot Camp drivers, as an August 2025 Apple Community answer for a 2019 Mac Pro recommends. No source reviewed confirms any route on 26H2 images.
+
+## Will Windows 11 get updates on a Mac Pro, and what about Windows 10?
+
+Microsoft promises nothing. Its page says that on ineligible hardware "your device won't receive support from Microsoft," that such devices "aren't guaranteed to receive updates, including but not limited to security updates," and that Windows adds a desktop watermark. Rolling back with Go back works only for 10 days after the upgrade.
+
+Servicing dates matter. Per [Microsoft's release table](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information), Home and Pro updates end October 13, 2026 for 24H2, October 12, 2027 for 25H2, and October 10, 2028 for 26H2, which became available September 29, 2026. Microsoft delivers [26H2 as "a small enablement package"](https://learn.microsoft.com/en-us/windows/whats-new/whats-new-windows-11-version-26h2) to eligible 24H2 and 25H2 devices, but nothing says an unsupported Mac Pro is eligible.
+
+Windows 10 is the supported alternative, with limits. [Support ended October 14, 2025](https://support.microsoft.com/en-us/windows/windows-10-support-has-ended-on-october-14-2025-2ca8b313-1946-43d3-b55c-2b95b107f281), but the consumer [ESU program](https://support.microsoft.com/en-us/windows/windows-10-consumer-extended-security-updates-esu-program-33e17de9-36b3-43bb-874d-6c53d2e4bf42) covers Windows 10, version 22H2 Home and Pro through October 12, 2027. Enrollment is free with PC settings sync, 1,000 Microsoft Rewards points, or a $30 one-time purchase, and it includes no technical support.
+
+One more clock affects Boot Camp. Microsoft's [Secure Boot certificates from 2011](https://support.microsoft.com/en-us/servicing/os/secure-boot/2025/06/windows-secure-boot-certificate-expiration-and-ca-updates) begin expiring in June 2026, and the Windows Production PCA 2011 expires October 19, 2026. Devices without the 2023 certificates keep starting but stop getting new boot protections. For Macs, Microsoft's [boot manager notice](https://support.microsoft.com/en-us/topic/how-to-manage-the-windows-boot-manager-revocations-for-secure-boot-changes-associated-with-cve-2023-24932-41a975df-beb2-40c1-99a3-b3ff139f832d) says these variables update "only as part of macOS updates." [macOS 26 Tahoe is the final macOS](https://www.macrumors.com/2026/04/18/macos-27-compatibility-change/) for Intel Macs, so install every Tahoe update.
+
+## Boot Camp drivers or AMD's Radeon Pro drivers?
+
+Use both: Apple's Windows support software for everything except graphics, and AMD's Boot Camp driver for the GPU. Apple's [support software page](https://support.apple.com/en-us/102465) says that if your Mac has an AMD video card and is having graphics issues in Windows, "you might need to update your AMD graphics drivers instead," and [a second page](https://support.apple.com/en-us/102201) sends you to AMD's site.
+
+AMD's [current Mac Pro package](https://www.amd.com/en/resources/support-articles/release-notes/RN-RAD-MAC-BOOTCAMP.html) is the Boot Camp Driver for Windows 10, version 21.30.44.22, released June 17, 2025. It lists the 580X, Vega II, Vega II Duo, W5700X, W5500X, W6600X, W6800X, W6800X Duo and W6900X. AMD's newer Unified Driver R6.4 lists only MacBook Pro, iMac and iMac Pro, so skip it on a Mac Pro. No AMD or Apple driver page mentions Windows 11, which makes this combination unsupported.
+
+Order matters for MPX modules. Apple's [W5700X page](https://support.apple.com/en-us/101893) says to install AMD's drivers "first before you install" the module, and if the screen stays black, to connect a display by HDMI. [Apple also warns](https://support.apple.com/en-us/101835) that an off-the-shelf AMD card may need different drivers in Windows. To check what is installed, open Radeon Settings, then System, Software, and read Driver Packaging Version. If Windows warns that software has not passed Windows Logo testing, Apple says to click Continue Anyway. For the GPU side on macOS, see [GPU compute on the Mac Pro](/blog/mac-pro-gpu-compute).
+
+## Which Startup Security Utility setting should you use?
+
+Full Security, the default, for the install. Apple's [Boot Camp page](https://support.apple.com/en-us/102622) says that if you changed it to No Security, change it back to Full Security before installing Windows, and that afterward "you can use any Secure Boot setting" without affecting Windows startup.
+
+To open the utility, start up in macOS Recovery, choose Startup Security Utility from the Utilities menu, and authenticate. [Apple's utility guide](https://support.apple.com/en-us/102522) describes the three settings:
+
+| Setting | What it checks | If Windows fails |
+|---|---|---|
+| Full Security | OS integrity, possibly via Apple's servers | Alert to install Windows with Boot Camp Assistant |
+| Medium Security | OS is signed by Apple or Microsoft | Same alert |
+| No Security | Nothing | Not applicable |
+
+Allowed boot media is a separate setting. The default disallows external or removable media, so a Rufus USB installer needs it changed. Apple adds that the Mac "doesn't support booting from network volumes," so PXE is out.
+
+Advice conflicts. The Microsoft Q&A answer suggests Medium Security, and Twocanoes reported in 2021 that turning Secure Boot off fixed driver signature checks after a Winclone install. I follow Apple, the primary source, and lower the setting only if a specific install fails.
+
+## What does not work in Windows, and does the rack model differ?
+
+Windows on the Mac Pro loses several Apple-specific features, and the rack differs from the tower only physically.
+
+### Features Windows cannot use
+
+- **Afterburner:** Apple says its decoding acceleration "is not available when using Windows with Boot Camp." The [Afterburner card](/blog/mac-pro-afterburner-card) stays idle.
+- **RAID:** Boot Camp "does not install Microsoft Windows on RAID volumes, including volumes provided by a RAID card," and Windows does not support Apple software RAID volumes.
+- **Mixed AMD cards:** Apple says a Radeon MPX Module plus a third-party AMD card is not supported in Windows, and an NVIDIA card must not go in slot 2.
+- **Infinity Fabric Link:** with the bridge installed, the Thunderbolt 3 ports on Bus 1 and the top cannot connect displays.
+- **BitLocker with a TPM:** [Microsoft says](https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/index) without a TPM, BitLocker needs a startup key or password and loses preboot integrity verification.
+
+### Rack versus tower
+
+Both are MacPro7,1 with the same Boot Camp support and the same drivers. Apple's [tower specs](https://support.apple.com/en-us/118461) put two Thunderbolt 3 ports "on the top of the tower enclosure," while the [rack specs](https://support.apple.com/en-us/111907) put them "on the front of the rack enclosure." The rack is 8.67 by 18.98 by 21.24 inches and 38.8 pounds with rails in the box; the tower weighs 39.7 pounds.
+
+For Windows, the practical difference is access. Switching systems means holding Option at startup with a keyboard and display attached, and the T2 rules out network boot. See [running a rack-mount Mac Pro in a homelab](/blog/mac-pro-rack-mount-homelab) for the hardware side.
+
+## How to install Windows 11 on a Mac Pro 7,1, step by step
+
+These steps combine Apple's procedure with the unofficial bypass. Microsoft recommends against installing Windows 11 on hardware that does not meet its requirements.
+
+1. Install the latest macOS Tahoe update. Confirm at least 64GB of free space (128GB is better); if the Mac Pro has 128GB of RAM or more, Apple says the startup disk needs at least as much free space as the RAM. Back up first, because the partition size cannot be changed later.
+2. Confirm Full Security in Startup Security Utility, as above.
+3. Download the Windows 11 x64 ISO from [Microsoft's download page](https://www.microsoft.com/en-us/software-download/windows11) and use its "Verify your download" option.
+4. Unplug every external device you do not need, as Apple advises.
+5. Open Boot Camp Assistant from Utilities, choose the ISO, set the partition size and continue. A Mac Pro needs no USB flash drive. The Mac restarts into Windows Setup. If the assistant rejects the ISO, use the fallback above.
+6. At the first Setup screen, or at the "This PC can't run Windows 11" error, press Shift+F10 and run:
+
+   \`\`\`
+   reg add HKLM\\System\\Setup\\LabConfig /v BypassTPMCheck /d 1 /t REG_DWORD /f
+   reg add HKLM\\System\\Setup\\LabConfig /v BypassSecureBootCheck /d 1 /t REG_DWORD /f
+   reg add HKLM\\System\\Setup\\LabConfig /v BypassCPUCheck /d 1 /t REG_DWORD /f
+   \`\`\`
+
+   Skip the last line unless Setup complains about the processor. Microsoft's [reg add reference](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/reg-add) says a return value of 0 means success. Close the prompt, go one step back in Setup, and continue.
+7. If asked where to install, pick the BOOTCAMP partition and click Format. Windows 11 Home and Pro ask for internet and a Microsoft account at first setup.
+8. When Windows starts, finish the Boot Camp installer and restart. If it does not open, run Setup from the WindowsSupport or BootCamp folder.
+9. Install AMD's Boot Camp driver for your GPU, then restart.
+10. Restart holding Option to choose macOS or Windows, then run Windows Update.
+
+## What breaks
+
+**Setup stops at "This PC can't run Windows 11."** Setup checks TPM 2.0, Secure Boot and the CPU list, and the Mac Pro fails at least the first two. Fix: set the LabConfig values from step 6, go back one step, and continue, or build Rufus media.
+
+**A Thunderbolt 3 display stays black.** Apple says displays on Thunderbolt 3 ports stay blank for up to 2 minutes during installation, and a Mac with an MPX module and no AMD drivers can stay black afterward. Fix: wait, then plug into the HDMI port of the MPX module and install AMD's driver.
+
+**Keyboard, trackpad, Bluetooth or audio stop working after an upgrade.** In-place upgrades and Rufus installs can replace Boot Camp drivers; Apple lists these symptoms as reasons to reinstall the support software. Fix: use a wired USB keyboard, download Windows Support Software from Boot Camp Assistant to a 16GB FAT USB drive, run Setup, and choose Repair.
+
+**Windows logs Event ID 1795 about Secure Boot variables.** Apple delivers these updates only with macOS updates, and Apple calls Windows not reporting the new certificates "a known issue." Fix: install macOS updates and ignore the event unless boot fails.
+
+**Windows Update stops offering updates, or a watermark appears.** Microsoft guarantees nothing on unsupported hardware. Fix: keep current media and backups, roll back within 10 days if needed, or return to Windows 10 with ESU.
+
+## Frequently asked questions
+
+### Does the 2019 Mac Pro have a TPM?
+
+None that Windows can use. The T2 is not a TPM, Twocanoes says Macs do not expose one, and Parallels says Macs lack a traditional hardware TPM. AppleInsider noted some Intel CPUs have TPM 2.0 support that the motherboard does not use.
+
+### Can I run Windows 11 in a virtual machine instead?
+
+Yes, with a virtual TPM. Microsoft says Windows 11 is supported in a VM, [Parallels](https://www.parallels.com/blogs/windows-11-tpm/) says its Intel Mac VMs include a virtual TPM and Secure Boot, and [Broadcom](https://techdocs.broadcom.com/us/en/vmware-cis/desktop-hypervisors/fusion-pro/13-0/using-vmware-fusion/creating-virtual-machines/create-a-virtual-machine/creating-a-microsoft-windows-virtual-machine/install-windows-11-on-a-virtual-machine.html) says Fusion Pro adds a vTPM. Microsoft adds that the VM host processor must also meet Windows 11 processor requirements.
+
+### Will Apple add Windows 11 to Boot Camp?
+
+Nothing Apple has published suggests it. Its Boot Camp page still covers only Windows 10, and macOS 26 Tahoe is the last macOS that runs on the Mac Pro (2019).
+
+### Is Windows 10 still safe to use?
+
+Only while ESU lasts. Consumer ESU ends October 12, 2027, after which Boot Camp has no supported Windows version left on this Mac.
+
+## What this means
+
+If the Mac Pro runs anything you depend on, use Windows 10 under Boot Camp with ESU until October 12, 2027, or run Windows 11 in a virtual machine. Install Windows 11 under Boot Camp only as an unsupported convenience: back up first, use the LabConfig route, install AMD's Boot Camp driver, and keep macOS Tahoe current for firmware and certificate updates. Do not rely on it for anything that needs a guarantee of security updates.
+
+## References
+
+- [Install Windows 10 on your Mac with Boot Camp Assistant (Apple Support)](https://support.apple.com/en-us/102622)
+- [About Startup Security Utility on a Mac with the Apple T2 Security Chip (Apple Support)](https://support.apple.com/en-us/102522)
+- [Download and install Windows support software on your Mac (Apple Support)](https://support.apple.com/en-us/102465)
+- [Update AMD graphics drivers for Windows in Boot Camp (Apple Support)](https://support.apple.com/en-us/102201)
+- [Use the Radeon Pro W5700X MPX Module with your Mac Pro (2019) (Apple Support)](https://support.apple.com/en-us/101893)
+- [Use the Radeon Pro W6800X MPX Module with your Mac Pro (2019) (Apple Support)](https://support.apple.com/en-us/101835)
+- [Using AMD graphics cards with Microsoft Windows on Mac Pro (2019) (Apple Support)](https://support.apple.com/en-us/101652)
+- [PCIe cards you can install in your Mac Pro (2019) (Apple Support)](https://support.apple.com/en-us/101644)
+- [About the Afterburner accelerator card for Mac Pro (2019) (Apple Support)](https://support.apple.com/en-us/101662)
+- [Boot Camp doesn't support RAID (Apple Support)](https://support.apple.com/en-us/100744)
+- [Mac Pro (2019) technical specifications (Apple Support)](https://support.apple.com/en-us/118461)
+- [Mac Pro (Rack, 2019) technical specifications (Apple Support)](https://support.apple.com/en-us/111907)
+- [Boot process for an Intel-based Mac (Apple Platform Security)](https://support.apple.com/guide/security/boot-process-for-an-intel-based-mac-sec5d0fab7c6/web)
+- [Windows 11 requirements (Microsoft Learn)](https://learn.microsoft.com/en-us/windows/whats-new/windows-11-requirements)
+- [Windows 11 supported Intel processors (Microsoft Learn)](https://learn.microsoft.com/en-us/windows-hardware/design/minimum/supported/windows-11-supported-intel-processors)
+- [Windows 11 specifications (Microsoft)](https://www.microsoft.com/en-us/windows/windows-11-specifications)
+- [Windows 11 on devices that don't meet minimum system requirements (Microsoft Support)](https://support.microsoft.com/en-us/windows/installing-windows-11-on-devices-that-don-t-meet-minimum-system-requirements-0b2dc4a2-5933-4ad4-9c09-ef0a331518f1)
+- [Ways to install Windows 11 (Microsoft Support)](https://support.microsoft.com/en-us/windows/ways-to-install-windows-11-e0edbbfb-cfc5-4011-868b-2ce77ac7c70e)
+- [Download Windows 11 (Microsoft)](https://www.microsoft.com/en-us/software-download/windows11)
+- [Windows 10 support has ended on October 14, 2025 (Microsoft Support)](https://support.microsoft.com/en-us/windows/windows-10-support-has-ended-on-october-14-2025-2ca8b313-1946-43d3-b55c-2b95b107f281)
+- [Windows 10 Consumer Extended Security Updates program (Microsoft Support)](https://support.microsoft.com/en-us/windows/windows-10-consumer-extended-security-updates-esu-program-33e17de9-36b3-43bb-874d-6c53d2e4bf42)
+- [Windows 11 release information (Microsoft Learn)](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information)
+- [What's new in Windows 11, version 26H2 (Microsoft Learn)](https://learn.microsoft.com/en-us/windows/whats-new/whats-new-windows-11-version-26h2)
+- [Windows Secure Boot certificate expiration and CA updates (Microsoft Support)](https://support.microsoft.com/en-us/servicing/os/secure-boot/2025/06/windows-secure-boot-certificate-expiration-and-ca-updates)
+- [How to manage the Windows Boot Manager revocations for CVE-2023-24932 (Microsoft Support)](https://support.microsoft.com/en-us/topic/how-to-manage-the-windows-boot-manager-revocations-for-secure-boot-changes-associated-with-cve-2023-24932-41a975df-beb2-40c1-99a3-b3ff139f832d)
+- [Upgrade to windows 11 on my mac. i have bootcamp (Microsoft Q&A)](https://learn.microsoft.com/en-us/answers/questions/5789086/upgrade-to-windows-11-on-my-mac-i-have-bootcamp)
+- [BitLocker overview (Microsoft Learn)](https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/index)
+- [reg add (Microsoft Learn)](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/reg-add)
+- [AMD Software: Boot Camp Drivers for Windows 10 (AMD)](https://www.amd.com/en/resources/support-articles/release-notes/RN-RAD-MAC-BOOTCAMP.html)
+- [Rufus (GitHub)](https://github.com/pbatard/rufus)
+- [How to Bypass Windows 11's TPM, CPU and RAM Requirements (Tom's Hardware)](https://www.tomshardware.com/how-to/bypass-windows-11-tpm-requirement)
+- [Microsoft quietly erases Windows 11 TPM 2.0 bypass workaround from help page (The Register)](https://www.theregister.com/2025/02/05/windows_11_hardware_requirement_workaround/)
+- [Intel Macs can't run Windows 11 without this workaround (AppleInsider)](https://appleinsider.com/articles/21/06/25/intel-macs-cant-run-windows-11-without-this-workaround)
+- [Install Windows 11 Without TPM 2 on Boot Camp (Twocanoes)](https://twocanoes.com/install-windows-11-without-tpm-2-on-boot-camp/)
+- [SecureBoot & the 2017 iMac Pro (Twocanoes)](https://twocanoes.com/secureboot-imac-pro/)
+- [Windows 11 TPM Requirements on Mac With Parallels Desktop (Parallels)](https://www.parallels.com/blogs/windows-11-tpm/)
+- [Install Windows 11 as the Guest Operating System (Broadcom)](https://techdocs.broadcom.com/us/en/vmware-cis/desktop-hypervisors/fusion-pro/13-0/using-vmware-fusion/creating-virtual-machines/create-a-virtual-machine/creating-a-microsoft-windows-virtual-machine/install-windows-11-on-a-virtual-machine.html)
+- [macOS 27 Will Mark the End of an Era (MacRumors)](https://www.macrumors.com/2026/04/18/macos-27-compatibility-change/)
+- [Mac Pro Eight Core 3.5 (2019) specifications (EveryMac)](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.5-xeon-w-silver-tower-workstation-2019-specs.html)
+- [Workstations powered by Intel Xeon W-3200 processors (Intel)](https://www.intel.com/content/dam/www/public/us/en/documents/product-briefs/xeon-w-3200-processors-brief.pdf)
+- [Upgrading Windows 11 in Bootcamp on Mac Pro 2019 (Apple Community)](https://discussions.apple.com/thread/256108472)
+- [Install Windows 11 24H2 on Intel MacBookPro (Apple Community)](https://discussions.apple.com/thread/256132098)
+- [install windows using boot camp assistant (Apple Community)](https://discussions.apple.com/thread/255643628)
+`,
+  },
+  {
+    slug: "macos-tahoe-on-mac-pro-7-1",
+    title: "macOS Tahoe on the Mac Pro 7,1: The Last macOS for Intel Macs",
+    date: "2026-10-05",
+    tags: ["mac-pro", "apple"],
+    excerpt:
+      "The 2019 Mac Pro runs macOS Tahoe 26 and nothing newer. What Apple has said about security updates, what Tahoe leaves out on Intel, and your options after it.",
+    coverImage: "/images/blog/macos-tahoe-on-mac-pro-7-1.jpg",
+    coverCredit: {
+      author: "FASTILY",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Apple_Mac_Pro_3rd_generation,_from_2019.jpeg",
+    },
+    content: `
+## The short answer
+
+Yes. The 2019 Mac Pro (model identifier MacPro7,1, tower and rack) runs macOS Tahoe 26, and Tahoe is the last macOS that will. macOS 27 "Golden Gate" shipped on September 14, 2026 for Apple silicon only, so no 7,1 can install it. Apple says Intel Macs will get security updates "for three years" but not when that clock started, so plan on fall 2028 and treat anything later as a bonus. If you are still on Sonoma, update now: it has been unsupported since September 14, 2026.
+
+## Does the Mac Pro 7,1 support macOS Tahoe?
+
+Yes, and Apple confirms it twice. [Apple's Tahoe compatibility page](https://support.apple.com/en-us/122867) lists "Mac Pro (2019)", and [Apple's Mac Pro identification page](https://support.apple.com/en-us/102887) shows both the tower and the rack model as MacPro7,1 with macOS Tahoe 26 as the newest compatible system. The OS treats the rack version as the same machine, so this applies to a [rack-mount Mac Pro in a homelab](/blog/mac-pro-rack-mount-homelab) too.
+
+Only four Intel Macs made the Tahoe list:
+
+- MacBook Pro (16-inch, 2019)
+- MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)
+- iMac (Retina 5K, 27-inch, 2020)
+- Mac Pro (2019)
+
+Tahoe shipped on September 15, 2025, and as of early October 2026 the newest release is 26.7.1, from September 28, according to [Apple's security release list](https://support.apple.com/en-us/100100). EveryMac advises that mission-critical computers wait for [at least two or three bug-fix releases](https://everymac.com/mac-answers/macos-26-tahoe-faq/macos-tahoe-macos-26-compatbility-list-system-requirements.html) before adopting a new macOS, and Tahoe is long past that point.
+
+## Is Tahoe really the last macOS for Intel Macs?
+
+Yes, in Apple's own words. [Apple's June 8, 2026 deployment guidance](https://support.apple.com/en-gb/guide/deployment/depd567c9ffa/web) says "macOS 26 is the last macOS release with full support for Intel-based Mac computers." Apple first said so in the Platforms State of the Union at WWDC 2025, [MacRumors recalled](https://www.macrumors.com/2026/04/18/macos-27-compatibility-change/), and [Production Expert](https://www.production-expert.com/production-expert-1/intel-mac-users-apple-gives-12-month-countdown) quoted the Rosetta page of the time: "macOS Tahoe will be the last release for Intel-based Mac computers." The key word is "full": Intel Macs keep security updates, not new features.
+
+The next release is macOS 27 Golden Gate, which [Eclectic Light](https://eclecticlight.co/2026/06/10/crossing-the-golden-gate-intel-support-and-an-update-to-systhist/) calls "the first version of macOS to require an Apple silicon Mac." [Apple's macOS page](https://www.apple.com/os/macos/) lists Apple silicon Macs, the MacBook Neo, and "Mac Pro with Apple silicon (2023)", with no Intel Mac on it, and [MacRumors](https://www.macrumors.com/2026/09/14/apple-releases-macos-golden-gate/) reported on release day that it "is not available on Intel Macs."
+
+| Mac Pro | Model identifier | Newest macOS, per Apple |
+|---|---|---|
+| Mac Pro (2019) and Rack | MacPro7,1 | macOS Tahoe 26 |
+| Mac Pro (2023) and Rack | Mac14,8 | macOS 27 Golden Gate |
+| Mac Pro (Late 2013) | MacPro6,1 | macOS Monterey |
+
+Developer tools are moving the same way. [Apple's Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes) say Xcode 27 "will only install and run on Apple silicon Macs", and Eclectic Light says Rosetta's general Intel translation will be removed in macOS 28. Neither touches a running 7,1, but both show where developers are being pushed: away from Intel builds.
+
+## How long will the 2019 Mac Pro get security updates?
+
+Apple has said "three years" and has not said when that started. The June 2026 deployment page says "Apple will continue providing software security updates for Intel-based Mac computers for three years." The 2025 wording that Production Expert quoted used the same number: "Those systems will continue to receive security updates for 3 years."
+
+Press readings differ, and neither is an Apple date. [Engadget in June 2025](https://www.engadget.com/computing/macos-tahoe-is-the-end-of-the-line-for-intel-macs-113036626.html) put the end at 2028. Eclectic Light read Apple's 2026 repeat as an extension, "rather than the two that we had been expecting." Plan around fall 2028: it matches Apple's past behavior below and costs nothing if Apple goes longer.
+
+[Apple's security release list](https://support.apple.com/en-us/100100) and [endoflife.date](https://endoflife.date/macos) show how the last three retired releases ended:
+
+| macOS | Released | Last update on Apple's list | Dropped when this shipped |
+|---|---|---|---|
+| Monterey 12 | October 25, 2021 | 12.7.6, July 29, 2024 | Sequoia 15, September 16, 2024 |
+| Ventura 13 | October 24, 2022 | 13.7.8, August 20, 2025 | Tahoe 26, September 15, 2025 |
+| Sonoma 14 | September 26, 2023 | 14.8.9, August 6, 2026 | Golden Gate 27, September 14, 2026 |
+
+The pattern in all three rows: when a new macOS shipped, Apple updated the three newest releases, and the fourth had stopped receiving updates weeks earlier. endoflife.date summarizes it with a warning: Apple "usually provides security updates for the latest 3 releases, but this isn't consistently applied and security fixes aren't guaranteed for the non-latest releases." Applied to Tahoe, the pattern points to fall 2028, when two more annual releases will have pushed it out of the newest three. That is a projection from history, not a promise.
+
+Apple's [software update guide](https://support.apple.com/guide/deployment/about-software-updates-depc4c80847a/web) adds a caution: "not all known security issues are addressed in previous versions." And Tahoe is now in maintenance only: Eclectic Light described [26.7](https://eclecticlight.co/2026/09/14/apple-has-released-macos-golden-gate-and-security-updates-to-tahoe-26-7-sequoia-15-8/) as "starting its first two years of security-only support."
+
+## What does Tahoe not do on an Intel Mac?
+
+Anything that needs Apple silicon. The concrete gaps:
+
+- **Apple Intelligence.** Apple's [Tahoe announcement](https://www.apple.com/newsroom/2025/06/macos-tahoe-26-makes-the-mac-more-capable-productive-and-intelligent-than-ever/) limits the Apple Intelligence features it describes (Live Translation, Genmoji, Image Playground, intelligent Shortcuts actions) to "iPad and Mac models with M1 and later." [EveryMac](https://everymac.com/mac-answers/macos-26-tahoe-faq/macos-tahoe-macos-26-compatbility-list-system-requirements.html) confirms that Macs without an M-series chip do not get them.
+- **Metal 4.** [Apple's Metal page](https://support.apple.com/en-us/102894) lists Metal 4 for "Mac with Apple silicon" only.
+- **Pro app features.** [Final Cut Pro's requirements](https://www.apple.com/final-cut-pro/specs/) still allow Intel Macs on macOS 15.6 or later, but "Some features require a Mac with Apple silicon." Per the [release notes](https://support.apple.com/en-us/102825), version 12.3's Generate Captions needs Apple silicon, and 12.4's Cinematic mode editing "Requires macOS 27 Golden Gate."
+- **New displays.** [Apple's Studio Display XDR page](https://support.apple.com/en-us/126323) lists only Apple silicon Macs running Tahoe 26.3.1 or later.
+
+Everything new in Golden Gate, such as Siri AI and Visual Intelligence, is out of reach too.
+
+## Which Mac Pro 7,1 parts matter on Tahoe?
+
+### AMD graphics and Metal
+
+<figure>
+<img src="/images/blog/macos-tahoe-on-mac-pro-7-1/pro-display-xdr-back.jpg" alt="The back of an Apple Pro Display XDR on its stand next to a 2019 Mac Pro on a store table" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>The back of a Pro Display XDR next to a 2019 Mac Pro. Apple introduced the two together in June 2019. Photo: KKPCW, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Back_of_Apple_Pro_Display_XDR.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Apple's Metal page lists Metal 3 for "Mac Pro introduced in 2019 or later*", and the footnote excludes "Intel-based models using AMD Radeon Pro 500 series graphics." The Radeon Pro 580X is the only name in [Apple's MPX module list](https://support.apple.com/en-us/101644) in the 500 series, so a 7,1 on its stock GPU sits outside Metal 3, and the other modules are not excluded. To check yours, open System Information, select Graphics/Displays, and read the Metal Support line.
+
+Owners on the MacRumors forum are comparing notes on Tahoe's performance, including GPU swaps, in threads such as ["2019 Mac Pro 3.5GHz 8-core and Tahoe: A tale of sluggishness"](https://forums.macrumors.com/threads/2019-mac-pro-3-5ghz-8-core-and-tahoe-a-tale-of-sluggishness.2471772/) and ["7,1 bros, how is Tahoe holding up so far?"](https://forums.macrumors.com/threads/7-1-bros-how-is-tahoe-holding-up-so-far.2479791/). Those are anecdotes, not measurements, and Apple does not tie the Metal 3 exclusion to any slowdown.
+
+If you want a different GPU, Apple says the Mac Pro "supports the same GPUs that are supported by external graphics processors (eGPUs)", and [its eGPU page](https://support.apple.com/en-us/102363) recommends the Radeon RX 6800, 6800 XT and 6900 XT. The [GPU compute article](/blog/mac-pro-gpu-compute) covers the Metal side.
+
+### MPX modules and Afterburner
+
+Apple allows up to two MPX modules: "You can install up to two Radeon Pro MPX Modules of any configuration in your Mac Pro." [Apple's Afterburner page](https://support.apple.com/en-us/101662) says the card accelerates ProRes and ProRes RAW decoding and playback in Final Cut Pro, Motion, Compressor and QuickTime Player, and that this "is not available when using Windows with Boot Camp." Apple's pages say nothing that changes this for Tahoe, but that is the absence of a warning, not a guarantee. The [Afterburner card article](/blog/mac-pro-afterburner-card) covers what it does and does not accelerate.
+
+### Pro Display XDR
+
+[Apple's Pro Display XDR specs](https://support.apple.com/en-us/111892) list "Mac Pro (2019) with MPX Module GPUs" running "macOS Catalina 10.15.2 or later", so Tahoe is not a limit. Apple replaced the display in March 2026; its [newsroom post](https://www.apple.com/newsroom/2026/03/apple-unveils-new-studio-display-and-all-new-studio-display-xdr/) says "Studio Display XDR replaces Pro Display XDR." [AppleInsider](https://appleinsider.com/articles/26/03/11/studio-display-xdr-seemingly-works-on-intel-macs-after-all-with-a-caveat) found that Apple's white paper calls the new display "fully compatible with all Mac models featuring Thunderbolt 3 or later ports", and one user got it working on an Intel MacBook Pro. Treat Apple's spec page as the answer for what is supported and any Intel use as unofficial.
+
+## Should you upgrade a Mac Pro 7,1 to Tahoe?
+
+Yes for most owners, and the answer depends on where you are now:
+
+- **On Sonoma 14 or older:** update now. Sonoma's last update was 14.8.9 on August 6, 2026, and it got nothing on September 14 or September 28.
+- **On Sequoia 15:** you are still patched (15.8.1 shipped September 28, 2026), but by the three-release pattern Sequoia drops out a year before Tahoe. Stay only if a specific app needs it.
+- **On Tahoe:** stay current on 26.7.x.
+
+To upgrade:
+
+1. Make a full backup. Eclectic Light calls it ["the one essential preparation for all Macs"](https://eclecticlight.co/2026/09/10/prepare-to-update-or-upgrade-macos/), and a failed update on a T2 Mac can end in a DFU restore, which erases the drive.
+2. Check the apps you depend on. Xcode 27 will not install on an Intel Mac, so developers stay on an older Xcode.
+3. Open Software Update in System Settings. [Apple says](https://support.apple.com/en-us/102662) it "shows only updates that are compatible with your Mac", so macOS 27 will not appear.
+4. Optional: build a bootable installer for recovery. [Apple's bootable installer page](https://support.apple.com/en-us/101578) says a 32GB flash drive is more than enough and must be named MyVolume. The process erases the drive.
+
+\`\`\`
+softwareupdate --list-full-installers
+softwareupdate --fetch-full-installer --full-installer-version 26.6.2
+sudo /Applications/Install\\ macOS\\ Tahoe.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume
+\`\`\`
+
+Correct output: Terminal says the install media is now available, and the drive is renamed Install macOS Tahoe. Replace 26.6.2, Apple's example, with a version from the list. On a T2 Mac, if you cannot start from the drive, allow booting from external media in Startup Security Utility.
+
+## Apple discontinued the Mac Pro on March 26, 2026: what changes for a 7,1?
+
+Apple discontinued the Mac Pro on Thursday, March 26, 2026. [9to5Mac](https://9to5mac.com/2026/03/26/apple-discontinues-the-mac-pro/) reported that Apple "has no plans to offer future Mac Pro hardware." [MacRumors](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) noted the Mac Pro was last updated in 2023 with an M2 Ultra chip, in a chassis unchanged since 2019, at a $6,999 starting price. So the model discontinued that day was the Apple silicon one. Your Intel 7,1 had left sale on June 5, 2023, according to [EveryMac](https://everymac.com/ultimate-mac-lookup/?identify=MacPro7%2C1).
+
+<figure>
+<img src="/images/blog/macos-tahoe-on-mac-pro-7-1/austin-assembly-line.jpg" alt="Rows of Mac Pro towers on a factory assembly line" width="960" height="640" loading="lazy" decoding="async">
+<figcaption>Mac Pro towers on the assembly line at the Flex plant in Austin, Texas, on November 20, 2019. Photo: The White House, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:President_Trump_Tours_the_Apple_Manufacturing_Plant_(49100377491).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+MacRumors says the Mac Studio "offers almost all of the same capabilities as the Mac Pro, with the exception of PCIe expansion slots." So Apple no longer offers a replacement for a workstation full of cards.
+
+Service is the other horizon. Under [Apple's vintage and obsolete policy](https://support.apple.com/en-us/102772), a product is vintage when Apple stopped distributing it "more than 5 and less than 7 years ago", and obsolete after seven, when "Apple discontinues all hardware service." Counting from June 5, 2023, the 7,1 would turn vintage in June 2028 and obsolete in June 2030. That is arithmetic from EveryMac's date, not an Apple statement.
+
+## What are your options after Tahoe?
+
+Four realistic paths, from least to most effort:
+
+| Option | What you get | Main catch |
+|---|---|---|
+| Stay on Tahoe | Security updates for "three years" (start date unstated), plus T2 firmware updates | No new features, and apps will drop Intel builds over time |
+| Linux (t2linux) | T2-aware kernels and install guides | MacPro7,1 is rated "Partially working", and Secure Boot must be set to No Security |
+| Windows 10 via Boot Camp | Apple's documented route, with consumer ESU to October 12, 2027 | Apple's guide covers only Windows 10, and Afterburner does not work in Windows |
+| OpenCore Legacy Patcher | Patches for Macs Apple dropped | Maintainers have "no plans" for macOS 27 |
+
+**Linux.** [t2linux's state page](https://wiki.t2linux.org/state/) rates the MacPro7,1 "Partially working": "Users have encountered PCIe Address Space issues, with auto remap breaking." Apple's Secure Boot "does not allow booting anything other than macOS or Windows when enabled", so [the pre-install guide](https://wiki.t2linux.org/guides/preinstall/) has you set Secure Boot to No Security first. Keep macOS installed: Wi-Fi "Requires macOS firmware", and [Eclectic Light notes](https://eclecticlight.co/2025/09/22/which-firmware-should-your-mac-be-using-version-10-tahoe/) that firmware updaters are "only distributed as part of macOS updates and upgrades." The [T2 chip article](/blog/apple-t2-security-chip) explains the boot chain.
+
+**Windows.** [Apple's Boot Camp guide](https://support.apple.com/en-us/102622) is written for Windows 10 and lists "Mac Pro introduced in 2013 through 2019". [Microsoft's consumer ESU](https://support.microsoft.com/en-us/windows/windows-10-consumer-extended-security-updates-esu-program-33e17de9-36b3-43bb-874d-6c53d2e4bf42) runs until October 12, 2027. Windows 11 is a gray area: [Microsoft's supported Intel processor list](https://learn.microsoft.com/en-us/windows-hardware/design/minimum/supported/windows-11-25h2-supported-intel-processors) names the Xeon W-3300 series but not the W-3200 series that the 7,1's chips belong to, and [Microsoft says](https://support.microsoft.com/en-us/windows/installing-windows-11-on-devices-that-don-t-meet-minimum-system-requirements-0b2dc4a2-5933-4ad4-9c09-ef0a331518f1) a device on ineligible hardware "won't receive support from Microsoft."
+
+**OpenCore Legacy Patcher.** On June 15, 2026 a maintainer [wrote](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1183) that "there are currently no plans to attempt working with Golden Gate." [AppleInsider reported](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing) that donations stopped and the lead developer left for Apple. The [October 4, 2026 release candidates](https://github.com/dortania/OpenCore-Legacy-Patcher/releases) add Tahoe support and warn: "Expect issues resulting in instability, system crashes, and potential data loss." That work mostly helps Macs Tahoe dropped, not a 7,1 that runs Tahoe natively.
+
+## What breaks
+
+**Tahoe feels laggy.** Liquid Glass adds translucency and animation effects, and [OS X Daily](https://osxdaily.com/2025/09/25/macos-tahoe-26-feels-slow-fix/) saw WindowServer and SystemUIServer use more CPU than in earlier releases. Fix: in System Settings, turn on Accessibility > Display > Reduce Transparency and Accessibility > Motion > Reduce Motion ([Macworld](https://www.macworld.com/article/2858361/how-to-reduce-the-liquid-glass-transparency-effect-in-macos-tahoe.html) shows the first switch under Vision). Tahoe 26.1 also added a [Tinted Liquid Glass option](https://www.macrumors.com/2025/11/03/apple-releases-macos-tahoe-26-1/) with more opacity. If it still drags, the hardware lever is the GPU, though that is an owner-reported fix, not a measured one.
+
+**The Mac Pro will not start after a macOS update.** [Apple says](https://support.apple.com/en-us/108900) T2 Macs can rarely need their firmware revived, for example "after a power failure interrupts macOS installation", and a MacRumors thread is titled ["Mac Pro 7,1 will not boot after Tahoe 26.3 update"](https://forums.macrumors.com/threads/mac-pro-7-1-will-not-boot-after-tahoe-26-3-update.2477626/). Fix: use a second Mac running macOS 14 or later and a USB-C to USB-C data cable (not Thunderbolt 3) on the [DFU port](https://support.apple.com/en-us/120694): on the tower, the top USB-C port farthest from the power button; on the rack, the front port closest to it. Unplug the Mac Pro, hold its power button while plugging it back in, and keep holding up to 10 seconds until the host Mac shows a DFU window. Click Revive Mac first, since it "doesn't erase your Mac"; use Restore Mac only if Revive fails, because it erases the drive.
+
+**Software Update never offers macOS 27.** That is by design, since the 7,1 is not on Apple's macOS 27 list. Fix: stay on the latest Tahoe 26.7.x for security fixes, and do not chase installer workarounds, because OpenCore Legacy Patcher has no plans for Golden Gate.
+
+**A Linux installer will not boot, or macOS vanished.** Apple's Secure Boot blocks it, and "Automatic Partitioning" in many installers erases macOS. Fix: in Startup Security Utility set Secure Boot to No Security and allow external media, partition with Disk Utility, and choose manual partitioning in the installer.
+
+**A new app or display says it needs Apple silicon.** The Studio Display XDR and Xcode 27 are examples. Fix: check the vendor's compatibility list before buying, keep the last Intel-compatible version of the app, and keep the Pro Display XDR, which Apple still lists for the 7,1.
+
+## Frequently asked questions
+
+### Will macOS 27 run on a 2019 Mac Pro?
+
+No. Apple's macOS 27 list contains only Apple silicon Macs, including the 2023 Mac Pro, and MacRumors confirmed Golden Gate is not available on Intel Macs. The 7,1 stays on Tahoe 26.
+
+### Can OpenCore Legacy Patcher install macOS 27 on a Mac Pro 7,1?
+
+Not today, and the maintainers say it is not planned. Their June 15, 2026 statement is that "macOS Golden Gate 27 does not support Intel-based Macs" and that they have no plans to attempt it. Their [model list](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) marks the Mac Pro (2019) "Supported by Apple."
+
+### Does Tahoe run on the rack-mount Mac Pro?
+
+Yes. Apple lists the Mac Pro (Rack, 2019) with the same MacPro7,1 identifier and macOS Tahoe 26 as the newest compatible system.
+
+### How long can I keep using a 7,1 safely?
+
+Apple says three years of security updates without a start date, and Apple's history suggests fall 2028 for Tahoe. Third-party apps may drop Intel sooner, so check your key software each year.
+
+## What this means
+
+Update a 7,1 to Tahoe 26.7.1 now if you are on Sonoma or older, and stay on Sequoia only for a specific reason. Treat fall 2028 as the planning date for security updates, and expect some apps to drop Intel before then. Keep a full backup and a bootable installer, and find the DFU port before you need it.
+
+With no new Mac Pro coming and the Mac Studio lacking slots, decide now whether your cards and Afterburner workflow can move. If the 7,1 is a lab or server machine, it can keep that job on Tahoe for as long as its updates last, so plan its replacement around the same date.
+
+## References
+
+- [Apple: macOS Tahoe 26 is compatible with these computers](https://support.apple.com/en-us/122867)
+- [Apple: Identify your Mac Pro model](https://support.apple.com/en-us/102887)
+- [Apple: Apple security releases](https://support.apple.com/en-us/100100)
+- [EveryMac: macOS Tahoe compatibility list and system requirements](https://everymac.com/mac-answers/macos-26-tahoe-faq/macos-tahoe-macos-26-compatbility-list-system-requirements.html)
+- [Apple Platform Deployment: WWDC26 app management updates](https://support.apple.com/en-gb/guide/deployment/depd567c9ffa/web)
+- [MacRumors: macOS 27 Will Mark the End of an Era](https://www.macrumors.com/2026/04/18/macos-27-compatibility-change/)
+- [Production Expert: Intel Macs and macOS Tahoe, what the end of support actually means](https://www.production-expert.com/production-expert-1/intel-mac-users-apple-gives-12-month-countdown)
+- [Eclectic Light Company: Crossing the Golden Gate, Intel support](https://eclecticlight.co/2026/06/10/crossing-the-golden-gate-intel-support-and-an-update-to-systhist/)
+- [Apple: macOS 27 Golden Gate](https://www.apple.com/os/macos/)
+- [MacRumors: macOS Golden Gate now available](https://www.macrumors.com/2026/09/14/apple-releases-macos-golden-gate/)
+- [Apple Developer: Xcode 27 release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27-release-notes)
+- [Engadget: macOS Tahoe is the end of the line for Intel Macs](https://www.engadget.com/computing/macos-tahoe-is-the-end-of-the-line-for-intel-macs-113036626.html)
+- [endoflife.date: Apple macOS release and support dates](https://endoflife.date/macos)
+- [Apple Platform Deployment: About software updates for Apple devices](https://support.apple.com/guide/deployment/about-software-updates-depc4c80847a/web)
+- [Eclectic Light Company: Apple has released macOS Golden Gate and security updates to Tahoe 26.7](https://eclecticlight.co/2026/09/14/apple-has-released-macos-golden-gate-and-security-updates-to-tahoe-26-7-sequoia-15-8/)
+- [Apple Newsroom: macOS Tahoe 26 announcement](https://www.apple.com/newsroom/2025/06/macos-tahoe-26-makes-the-mac-more-capable-productive-and-intelligent-than-ever/)
+- [Apple: Support for Metal on Apple devices](https://support.apple.com/en-us/102894)
+- [Apple: Final Cut Pro tech specs](https://www.apple.com/final-cut-pro/specs/)
+- [Apple: Final Cut Pro release notes](https://support.apple.com/en-us/102825)
+- [Apple: Studio Display XDR tech specs](https://support.apple.com/en-us/126323)
+- [Apple: PCIe cards you can install in your Mac Pro (2019)](https://support.apple.com/en-us/101644)
+- [MacRumors forum: 2019 Mac Pro 3.5GHz 8-core and Tahoe, a tale of sluggishness](https://forums.macrumors.com/threads/2019-mac-pro-3-5ghz-8-core-and-tahoe-a-tale-of-sluggishness.2471772/)
+- [MacRumors forum: 7,1 bros, how is Tahoe holding up so far?](https://forums.macrumors.com/threads/7-1-bros-how-is-tahoe-holding-up-so-far.2479791/)
+- [Apple: Use an external graphics processor with your Mac](https://support.apple.com/en-us/102363)
+- [Apple: About the Afterburner accelerator card for Mac Pro (2019)](https://support.apple.com/en-us/101662)
+- [Apple: Pro Display XDR tech specs](https://support.apple.com/en-us/111892)
+- [Apple Newsroom: Studio Display and Studio Display XDR](https://www.apple.com/newsroom/2026/03/apple-unveils-new-studio-display-and-all-new-studio-display-xdr/)
+- [AppleInsider: Studio Display XDR seemingly works on Intel Macs after all](https://appleinsider.com/articles/26/03/11/studio-display-xdr-seemingly-works-on-intel-macs-after-all-with-a-caveat)
+- [Eclectic Light Company: Prepare to update or upgrade macOS](https://eclecticlight.co/2026/09/10/prepare-to-update-or-upgrade-macos/)
+- [Apple: How to download and install macOS](https://support.apple.com/en-us/102662)
+- [Apple: Create a bootable installer for macOS](https://support.apple.com/en-us/101578)
+- [9to5Mac: Apple discontinues the Mac Pro with no plans for future hardware](https://9to5mac.com/2026/03/26/apple-discontinues-the-mac-pro/)
+- [MacRumors: Apple confirms Mac Pro is dead, no future models planned](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/)
+- [EveryMac: MacPro7,1 model lookup](https://everymac.com/ultimate-mac-lookup/?identify=MacPro7%2C1)
+- [Apple: Vintage and obsolete products](https://support.apple.com/en-us/102772)
+- [t2linux wiki: Device support and state of features](https://wiki.t2linux.org/state/)
+- [t2linux wiki: Pre-install guide](https://wiki.t2linux.org/guides/preinstall/)
+- [Eclectic Light Company: Which firmware should your Mac be using (Tahoe)](https://eclecticlight.co/2025/09/22/which-firmware-should-your-mac-be-using-version-10-tahoe/)
+- [Apple: Install Windows 10 on your Mac with Boot Camp Assistant](https://support.apple.com/en-us/102622)
+- [Microsoft: Windows 10 consumer Extended Security Updates program](https://support.microsoft.com/en-us/windows/windows-10-consumer-extended-security-updates-esu-program-33e17de9-36b3-43bb-874d-6c53d2e4bf42)
+- [Microsoft Learn: Windows 11 25H2 supported Intel processors](https://learn.microsoft.com/en-us/windows-hardware/design/minimum/supported/windows-11-25h2-supported-intel-processors)
+- [Microsoft: Installing Windows 11 on devices that do not meet minimum system requirements](https://support.microsoft.com/en-us/windows/installing-windows-11-on-devices-that-don-t-meet-minimum-system-requirements-0b2dc4a2-5933-4ad4-9c09-ef0a331518f1)
+- [GitHub: OpenCore Legacy Patcher issue 1183, macOS Golden Gate 27 statement](https://github.com/dortania/OpenCore-Legacy-Patcher/issues/1183)
+- [AppleInsider: OpenCore Legacy Patcher faces uncertainty](https://appleinsider.com/articles/26/03/24/opencore-legacy-patcher-faces-uncertainty-with-the-end-of-intel-mac-support-nearing)
+- [GitHub: OpenCore Legacy Patcher releases](https://github.com/dortania/OpenCore-Legacy-Patcher/releases)
+- [Dortania: OpenCore Legacy Patcher supported models](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html)
+- [OS X Daily: macOS Tahoe feels slow, performance tips](https://osxdaily.com/2025/09/25/macos-tahoe-26-feels-slow-fix/)
+- [Macworld: How to reduce the Liquid Glass transparency effect in macOS Tahoe](https://www.macworld.com/article/2858361/how-to-reduce-the-liquid-glass-transparency-effect-in-macos-tahoe.html)
+- [MacRumors: Apple releases macOS Tahoe 26.1](https://www.macrumors.com/2025/11/03/apple-releases-macos-tahoe-26-1/)
+- [Apple: How to revive or restore Mac firmware](https://support.apple.com/en-us/108900)
+- [MacRumors forum: Mac Pro 7,1 will not boot after Tahoe 26.3 update](https://forums.macrumors.com/threads/mac-pro-7-1-will-not-boot-after-tahoe-26-3-update.2477626/)
+- [Apple: How to identify the DFU port on Mac](https://support.apple.com/en-us/120694)
+`,
+  },
+  {
+    slug: "mac-pro-5-1-vs-7-1",
+    title: "Mac Pro 5,1 vs 7,1: Is the 2019 Model Worth the Upgrade?",
+    date: "2026-10-05",
+    tags: ["mac-pro", "hardware", "apple"],
+    excerpt:
+      "Compare the 2010 to 2012 Mac Pro 5,1 with the 2019 7,1 on speed, memory, PCIe, GPUs, power, macOS support and used prices, using benchmarks from one source.",
+    coverImage: "/images/blog/mac-pro-5-1-vs-7-1.jpg",
+    content: `
+## The short answer
+
+The 7,1 is the better machine, but in dealer listings on October 5, 2026 a 5,1 cost a quarter to a third as much. In Geekbench 6 averages, the base 8-core 7,1 scores 1,262 single-core and 7,326 multi-core against 550 and 3,933 for a 12-core 3.06GHz 5,1, about 2.3 and 1.9 times as much. Apple's newest macOS is Mojave 10.14 for the 5,1 and Tahoe 26, the last release for Intel Macs, for the 7,1. Buy a 5,1 as a cheap project or legacy-software machine, and a 7,1 if you need current macOS, Thunderbolt 3 or modern graphics cards.
+
+## Mac Pro 5,1 vs 7,1 at a glance
+
+The table compares the stock 2010 and 2012 Mac Pro 5,1 with the 2019 7,1. Apple used one identifier, MacPro5,1, for both older years, and [EveryMac](https://everymac.com/systems/apple/mac_pro/faq/differences-between-mac-pro-mid-2012-mid-2010-models.html) says they share the same processor architectures, memory, storage and other internal components, so the table treats them as one machine.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-vs-7-1/mac-pro-2010-power-mac-g5-mac-pro-2009.jpg" alt="Three silver aluminum towers side by side: a 2010 Mac Pro, a Power Mac G5 and a 2009 Mac Pro" width="1000" height="734" loading="lazy" decoding="async">
+<figcaption>A Mac Pro from 2010 (left), a Power Mac G5 (center) and a Mac Pro from 2009 (right); the Mac Pro case is based on the G5's, which is why the towers look alike. Photo: Uadro, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_(2010).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| | Mac Pro 5,1 (2010 and 2012) | Mac Pro 7,1 (2019) |
+| :--- | :--- | :--- |
+| Sold | July 27, 2010 to October 22, 2013 | December 10, 2019 to June 5, 2023 |
+| Processors | One or two Xeons, 4 to 12 cores in total | One Xeon W, 8 to 28 cores |
+| Memory | 4 or 8 DDR3 ECC slots, 32GB or 64GB official | 12 DDR4 ECC slots, 1.5TB official |
+| PCIe | 2.0, four slots | 3.0, eight slots, two MPX bays |
+| Graphics as shipped | Radeon HD 5770 or HD 5870 | Radeon Pro MPX modules |
+| Storage | Four 3Gb/s SATA bays, up to 8TB | Apple SSD modules, up to 8TB |
+| Ports | 4 FireWire 800, 5 USB 2.0, 2 Gigabit Ethernet | 2 USB-A, 4 Thunderbolt 3, 2 10Gb Ethernet |
+| Newest macOS from Apple | Mojave 10.14 | Tahoe 26 |
+
+Specs come from Apple's tech specs for the [Mid 2010](https://support.apple.com/en-us/112578), [Mid 2012](https://support.apple.com/en-us/118464) and [2019](https://support.apple.com/en-us/118461) models, and dates from EveryMac's [2019](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.5-xeon-w-silver-tower-workstation-2019-specs.html) and [Mid 2012](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html) pages.
+
+## How much faster is the 7,1?
+
+The 7,1 is more than twice as fast per core as any stock 5,1, and 1.9 to 2.7 times as fast across all cores in Geekbench 6. The scores are EveryMac's averages of user-submitted Geekbench 6 results as read on October 5, 2026; none were measured on this site's hardware.
+
+| Machine | Single-core | Multi-core |
+| :--- | ---: | ---: |
+| 5,1, 8-core 2.4GHz (2010) | 425 | 2,521 |
+| 5,1, 12-core 2.4GHz (2012) | 441 | 3,245 |
+| 5,1, 12-core 3.06GHz (2012) | 550 | 3,933 |
+| 7,1, 8-core 3.5GHz | 1,262 | 7,326 |
+| 7,1, 12-core 3.3GHz | 1,346 | 9,552 |
+| 7,1, 16-core 3.2GHz | 1,356 | 10,557 |
+| 7,1, 28-core 2.5GHz | 1,311 | 10,810 |
+
+Primate Labs says Geekbench 6 uses a "shared task" model that [may not scale as well](https://www.geekbench.com/doc/geekbench6-benchmark-internals.pdf) as Geekbench 5's, which helps explain why the 28-core's 10,810 barely beats the 16-core's 10,557. EveryMac's Geekbench 5 averages show the spread: 19,174 multi-core for the 28-core 7,1 against 5,648 for the 3.06GHz 5,1.
+
+Instruction sets likely explain part of the single-core gap. Geekbench 6 runs the most advanced build a CPU supports, and Dortania's [OpenCore Legacy Patcher FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) lists the 7,1 as the first Mac Pro with AVX2 and the 2013 model as the first with AVX, so no 5,1 has either.
+
+Application tests differ. [Barefeats' December 20, 2019 shootout](https://barefeats.com/mac-pro-2019-versus-2010.html) found an upgraded 12-core 2010 Mac Pro (3.33GHz X5680, Radeon VII) "certainly out-classed" by a 2019 12-core.
+
+## How do the processors, memory and PCIe slots compare?
+
+The 5,1 tops out at two 6-core Westmere Xeons, a reported 128GB of memory and PCIe 2.0, while the 7,1 starts at 8 cores with 12 DIMM slots and PCIe 3.0.
+
+### Processors and memory
+
+A 5,1 takes one or two Xeons on a slide-out tray. Greg Gant's [classic Mac Pro guide](https://blog.greggant.com/posts/2018/05/07/definitive-mac-pro-upgrade-guide.html) says dual-CPU trays often cost nearly as much as a whole used Mac Pro, so the usual upgrade is a faster CPU of the same type: the X5690 is the fastest, and the X5680 costs about half as much. The 7,1's Xeon W sits in an LGA 3647 socket that EveryMac says is removable.
+
+Apple lists 64GB for a dual-CPU 5,1 and 32GB for a single-CPU one. EveryMac, citing OWC's testing, reports [128GB](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html) for dual-CPU Mid 2012 models on OS X 10.9 or later and 48GB for single-CPU ones. Its Mid 2010 pages call 32GB Apple's limit where Apple's page says 64GB, and this article uses Apple's figure.
+
+The 7,1 officially takes [1.5TB](https://support.apple.com/en-us/118461) with a 24- or 28-core CPU. EveryMac lists 1TB for the 8-, 12- and 16-core models, based on OWC's finding that the 8-core takes eight 128GB DIMMs. The 8-core runs memory at 2666MHz and the others at 2933MHz.
+
+### PCIe and MPX
+
+PCIe 2.0 matters less for graphics than it sounds. Greg Gant's guide notes that an x8 PCIe 3.0 slot equals an x16 PCIe 2.0 slot, and cites Puget Systems testing that put the x8 penalty for a GPU at roughly 3 to 4 percent.
+
+The 5,1 has a double-wide x16 graphics slot plus three open slots, one x16 and two x4, sharing [300W](https://support.apple.com/en-us/118464). The 7,1 has eight x16-sized slots, though slots 2, 6 and 7 run up to x8 and slot 8 is an x4 slot holding Apple's I/O card, per [Apple](https://support.apple.com/en-us/101640). Each MPX bay adds x16 gen 3 for graphics, x8 gen 3 for Thunderbolt and up to 500W, and Greg Gant's [7,1 guide](https://blog.greggant.com/posts/2021/12/19/definitive-mac-pro-2019-upgrade-guide.html) says a PEX8796 switch manages the other [PCIe lanes](/blog/pcie-lanes-explained).
+
+## Which graphics cards and boot screens work in each?
+
+The 7,1 takes most PC graphics cards and still shows a boot screen with them, while a 5,1 needs a Metal-capable card for Mojave and loses its boot screen with almost all of them.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-vs-7-1/mac-pro-and-pro-display-xdr.jpg" alt="A 2019 Mac Pro beside an Apple Pro Display XDR" width="1200" height="932" loading="lazy" decoding="async">
+<figcaption>A 2019 Mac Pro beside a Pro Display XDR; Apple's spec sheet lists how many of these displays each MPX module can drive, from one for the W5500X to six for the W6800X Duo. Photo: KKPCW, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_Pro_Display_XDR_and_Mac_Pro_(2019_model)_-_1.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The 5,1 shipped with a Radeon HD 5770 or HD 5870, and [Apple says](https://support.apple.com/en-us/101330) neither supports Metal, so installing Mojave requires a new card. Apple's tested list includes the RX 560, RX 580 and HD 7950 Mac Edition, and other RX 570/580, Vega and WX cards "might also be compatible." Dortania's FAQ adds that AMD Navi cards (RX 5000 and 6000) do not work in a 5,1 on Ventura or newer because the CPU lacks AVX2.
+
+The boot screen is the catch. Greg Gant's guide explains that Apple's EFI used an older graphics protocol that PC cards do not implement, and Apple warns that many third-party cards show nothing at startup, so you cannot log in to FileVault, pick a startup disk or run diagnostics. OpenCore's EnableGop driver can add one, but its [README](https://github.com/acidanthera/OpenCorePkg/blob/master/Staging/EnableGop/README.md) calls it a beta that "may brick your hardware."
+
+The 7,1 uses UEFI, so Greg Gant's 7,1 guide says any UEFI GPU, including current AMD cards, shows a boot screen. Apple says the Mac Pro supports [the same GPUs as eGPUs](https://support.apple.com/en-us/101644), such as the Radeon RX 6800, 6800 XT and 6900 XT, while NVIDIA cards work only outside macOS. Non-MPX cards lack Thunderbolt 3 passthrough, so displays connect to the card. [GPU compute on the Mac Pro](/blog/mac-pro-gpu-compute) covers MPX performance, which Apple rates from 5.6 to 30.2 single-precision teraflops.
+
+Metal is another divider. [Apple's Metal page](https://support.apple.com/en-us/102894) lists the 5,1 under Metal 2 only, and Metal 3 for the 2019 Mac Pro except units with a Radeon Pro 500 series card, which includes the base 580X.
+
+## How do storage and ports compare?
+
+The 5,1 gives you four cheap SATA bays and legacy ports, and the 7,1 gives you faster but locked-down storage and current ports.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-vs-7-1/four-sata-bays.jpg" alt="The open side of a Mac Pro showing four hard drives in their sleds" width="1200" height="720" loading="lazy" decoding="async">
+<figcaption>Four drive sleds with their release tabs in a Mac Pro photographed in 2008; the 2010 and 2012 models also have four bays, each on its own 3Gb/s SATA channel. Photo: Tony Webster, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_-_Four_SATA_Hard_Drives_(2485906684).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+A 5,1 has [four 3.5-inch drive bays](https://support.apple.com/en-us/118464) on separate 3Gb/s SATA channels, for up to 8TB, and that link caps SSDs at 300MB/s according to Greg Gant. NVMe boot needs Boot ROM 140.0.0.0.0 or later and a PCIe adapter. Cheap single-drive adapters top out near 1,500MB/s because they use four lanes, while adapters with a controller that uses more lanes reach about 3GB/s.
+
+<figure>
+<img src="/images/blog/mac-pro-5-1-vs-7-1/mac-pro-rear-connectors.jpg" alt="The rear connector panel of an older Mac Pro tower" width="1200" height="1600" loading="lazy" decoding="async">
+<figcaption>The rear panel of a Mac Pro photographed in 2009, showing three USB 2.0, two FireWire 800, optical audio, audio jacks and two Gigabit Ethernet ports, the same set Apple lists for the Mid 2012 model. Photo: Glenn Batuyong, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Mac_Pro_rear_connectors.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The 7,1's SSD modules read and write at up to 3.4GB/s and are encrypted by the [T2 chip](/blog/apple-t2-security-chip). Apple says they are [paired to the T2](https://support.apple.com/en-us/101654), so replacing them means erasing and restoring with Apple Configurator, and Greg Gant's guide says the Mac will not boot without the Apple SSD.
+
+The 5,1 has no USB 3 or Thunderbolt, so a USB 3 card is one of the most common upgrades. The 7,1 has two USB-A ports at 5Gb/s, four Thunderbolt 3 ports and two 10Gb Ethernet ports that also negotiate 1, 2.5 and 5Gb/s.
+
+## How much power does each draw, and how loud are they?
+
+A base 7,1 idles at 101W, lower than any 5,1 Apple measured, but a fully loaded 7,1 can reach 902W.
+
+Apple's [power consumption page](https://support.apple.com/en-us/102839), published November 30, 2023, measures at the wall, with only Finder open for idle. The Mid 2010 5,1 drew 125W idle and 218W peak as a quad-core 2.8GHz, 162W and 248W as an 8-core 2.4GHz, and 145W and 285W as a 12-core 2.66GHz. The 7,1 drew 101W and 430W as an 8-core with a 580X and 32GB, and 302W and 902W as a 28-core with two Vega II Duo modules, 1.5TB of memory, Afterburner and a 4TB SSD. Apple has no Mid 2012 row.
+
+Every 100W of constant draw is about 876kWh a year, so a 12-core 5,1 idling all year uses roughly 385kWh more than a base 7,1. Apple declares idle sound power of 3.5 to 3.7 bels (1 bel is 10dB) for the Mid 2012 models under ISO 9296 and 2.7 for the 7,1 under ECMA-109. The 5,1 figure is an upper limit, and adding Apple's 0.3 adder to the 7,1's gives 3.0, so the 7,1 is about 5 to 7dB quieter at idle on a like-for-like basis.
+
+## Which macOS can each run in 2026?
+
+The 5,1 officially stops at macOS Mojave 10.14, and the 7,1 runs macOS Tahoe 26, the last version for Intel Macs.
+
+[Apple's model identification page](https://support.apple.com/en-us/102887), published September 14, 2026, lists Mojave as the newest macOS for both 5,1 years and Tahoe 26 for the 2019 Mac Pro. Apple's [security releases page](https://support.apple.com/en-us/100100) shows Tahoe 26.7.1 on September 28, 2026 and lists macOS 27 only for Apple silicon Macs, matching [9to5Mac's report](https://9to5mac.com/2025/06/09/apple-will-end-support-for-intel-macs/) that Tahoe is the last release for Intel Macs. Mojave is the last macOS that [runs 32-bit apps](https://support.apple.com/en-us/103076), and its last security update, [Security Update 2021-005](https://support.apple.com/en-us/103140), shipped on July 21, 2021.
+
+### The OpenCore Legacy Patcher route for the 5,1
+
+OpenCore Legacy Patcher (OCLP) lets a 5,1 run macOS from Big Sur up to Sequoia 15. Its FAQ says it targets Big Sur through Sequoia, while its [README](https://github.com/dortania/OpenCore-Legacy-Patcher) says Big Sur through Tahoe and its [changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md) lists Tahoe support under 3.0.0. On October 5, 2026 the [releases page](https://github.com/dortania/OpenCore-Legacy-Patcher/releases) showed 3.0.0 only as a pre-release, and none of these pages says the 5,1 works on Tahoe, so treat Sequoia as the ceiling. The steps:
+
+1. Update the 5,1 to Mojave first. OCLP's [supported models page](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html) says to run the latest native macOS "to ensure you're on the highest firmware," and Apple says to go through High Sierra 10.13.6.
+2. Install a Metal-capable GPU. OCLP flags the 5,1 as "non-Metal GPU (macOS 11+)" and recommends upgrading.
+3. Create the installer in OCLP on a USB drive. Its [installer guide](https://dortania.github.io/OpenCore-Legacy-Patcher/INSTALLER.html) recommends 32GB for Sonoma and Sequoia.
+4. Build and install OpenCore to the drive, restart holding Option and choose the EFI Boot entry with the OpenCore icon, per the [boot guide](https://dortania.github.io/OpenCore-Legacy-Patcher/BOOT.html).
+5. After installing, put OpenCore on the internal drive and apply root patches, which every macOS update wipes ([post-install guide](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)).
+
+### Why Boot ROM 144.0.0.0.0 matters
+
+144.0.0.0.0 is the last firmware Apple released for the 5,1, and it arrives only through macOS installers. Greg Gant's firmware table, credited to a list kept by MacRumors forum member tsialex in the [BootROM thread](https://forums.macrumors.com/threads/macpro5-1-bootrom-thread-144-0-0-0-0.2132317/), shows 138.0.0.0.0 adding 5GT/s for every PCIe 2.0 card, 140.0.0.0.0 adding NVMe boot and 144.0.0.0.0 bringing "lots of corrections, booting improvements."
+
+Check yours under Apple menu, About This Mac, System Report, Hardware Overview, Boot ROM Version. If you are stuck on 138 or 140, install High Sierra on a spare drive, download Mojave 10.14.6 from it and install that.
+
+## What are they worth used, and what is each still good for?
+
+Dealer asking prices on October 5, 2026 put a 5,1 at $335 to $395 and the cheapest 7,1 at $1,199 to $1,295. These are asking prices, not sold prices, and the pages show no date of their own.
+
+| Machine | Dealer | Asking price |
+| :--- | :--- | ---: |
+| 5,1, 12-core 3.46GHz, 16GB, 1TB | [UsedMac.com](https://usedmac.com/product-category/apple-mac-pro/) | $335 |
+| 5,1, 12-core 3.46GHz, 32GB, 1TB | UsedMac.com | $395 |
+| 7,1, 8-core 3.5GHz, 32GB, 1TB, open box | [iPower Resale](https://ipowerresale.com/collections/mac-pro) | from $1,199 |
+| 7,1, 8-core 3.5GHz, 32GB, 256GB, 580X | UsedMac.com | $1,295 |
+| 7,1, 12-core 3.3GHz, 96GB, 1TB, 580X | UsedMac.com | $1,495 |
+| 7,1, 28-core 2.5GHz, 96GB, 1TB, 580X | UsedMac.com | $3,250 |
+
+A 5,1 is still good as a low-cost project machine: it takes PCIe cards, four drives and swap-in CPUs, and Mojave runs 32-bit apps that no newer macOS can. Under OCLP it runs Sequoia, but some newer apps will not run (see What breaks).
+
+A 7,1 is still good for daily work on a supported macOS, with AVX2, 10Gb Ethernet, Thunderbolt 3 and modern GPUs. Apple also lists a [rack model](https://support.apple.com/en-us/102887), and [running a rack-mount Mac Pro in a homelab](/blog/mac-pro-rack-mount-homelab) covers that use. The catch is the end of the line: macOS 27 skips Intel Macs, and MacRumors reported on [March 26, 2026](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) that Apple discontinued the Mac Pro and plans no new one.
+
+## What breaks
+
+**A PC graphics card gives a black screen until macOS loads (5,1).** Apple's EFI cannot use the startup graphics of PC cards, so you lose the boot picker, FileVault login and diagnostics. Fix: turn off FileVault before installing Mojave, keep an EFI-compatible card for firmware and OS upgrades, and switch systems in the Startup Disk pane because holding Option does not work.
+
+**The Mojave installer refuses the 5,1, or firmware stalls at 138 or 140.** Mojave needs a Metal-capable GPU and a High Sierra 10.13.6 starting point, and firmware only arrives through the installer. Fix: install a Metal card from Apple's list, update to 10.13.6 first, and use the spare-drive method above if the firmware is stuck.
+
+**Keyboard and mouse stop working on Ventura or later (5,1 with OCLP).** Ventura removed the USB 1.1 drivers that the 5,1's controllers use. Fix: put a USB 2.0 or 3.0 hub between the devices and the Mac Pro until OCLP's [root patches](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html) restore the drivers.
+
+**Apps crash with "illegal instruction" (5,1 on newer macOS).** Dortania's [FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html) says newer apps use AVX and AVX2, which no 5,1 CPU has. Fix: install older app versions or run an older macOS, and buy a 7,1 if you need current software.
+
+**A replaced SSD module will not boot the 7,1 until the T2 pairs with it.** The modules are paired to and encrypted by the T2 chip. Fix: back up first, because the old data is unrecoverable once pairing starts, then use Apple Configurator 2.12 or later on another Mac to erase and set up the new modules.
+
+## Frequently asked questions
+
+### What is the difference between the 2010 and 2012 Mac Pro?
+
+Almost nothing. Apple identifies both as MacPro5,1, and Greg Gant's guide says every part is interchangeable regardless of year.
+
+### Can a Mac Pro 5,1 run Sonoma or Sequoia?
+
+Yes, with OCLP, which lists MacPro5,1 as supported. You need a Metal-capable GPU, must reinstall root patches after each update, and may hit apps that need AVX or AVX2.
+
+### Does the 2019 Mac Pro need MPX graphics cards?
+
+No. Greg Gant's guide says MPX is not a requirement for GPUs. MPX adds power delivery plus Thunderbolt 3 passthrough and video support, and standard PCIe cards still show a boot screen.
+
+### Will the 2019 Mac Pro run macOS 27?
+
+No. Apple lists macOS 27 for Apple silicon Macs, and its identification page shows Tahoe 26 as the newest macOS for the 2019 Mac Pro. 9to5Mac wrote that Intel Macs would keep receiving security updates for another three years.
+
+## What this means
+
+Buy the 7,1 if you need current macOS, AVX2 software, Thunderbolt 3 or modern GPUs. Choose the core count for your workload, and prefer a card newer than the 580X, which lacks Metal 3.
+
+Buy a 5,1 only if Mojave or an OCLP-patched Sequoia is enough. It is cheap, runs 32-bit apps and takes inexpensive PCIe upgrades, but budget for a Metal GPU, a USB 3 card and an NVMe adapter. Neither machine has an upgrade path past Tahoe (7,1) or Sequoia (5,1 with OCLP).
+
+## References
+
+- [Apple: Mac Pro (Mid 2010) technical specifications](https://support.apple.com/en-us/112578)
+- [Apple: Mac Pro (Mid 2012) technical specifications](https://support.apple.com/en-us/118464)
+- [Apple: Mac Pro (2019) technical specifications](https://support.apple.com/en-us/118461)
+- [Apple: Mac Pro power consumption and thermal output](https://support.apple.com/en-us/102839)
+- [Apple: Identify your Mac Pro model](https://support.apple.com/en-us/102887)
+- [Apple: Install macOS 10.14 Mojave on Mac Pro (Mid 2010) and Mac Pro (Mid 2012)](https://support.apple.com/en-us/101330)
+- [Apple: Install PCIe cards in your Mac Pro (2019)](https://support.apple.com/en-us/101640)
+- [Apple: PCIe cards you can install in your Mac Pro (2019)](https://support.apple.com/en-us/101644)
+- [Apple: Install or replace SSD modules in your Mac Pro (2019)](https://support.apple.com/en-us/101654)
+- [Apple: Support for Metal on Apple devices](https://support.apple.com/en-us/102894)
+- [Apple: Use an external graphics processor with your Mac](https://support.apple.com/en-us/102363)
+- [Apple: 32-bit app compatibility with macOS](https://support.apple.com/en-us/103076)
+- [Apple: Apple security releases](https://support.apple.com/en-us/100100)
+- [Apple: About the security content of Security Update 2021-005 Mojave](https://support.apple.com/en-us/103140)
+- [EveryMac: Differences between Mid-2012 and Mid-2010 Mac Pro models](https://everymac.com/systems/apple/mac_pro/faq/differences-between-mac-pro-mid-2012-mid-2010-models.html)
+- [EveryMac: Mac Pro Eight Core 3.5 (2019) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-3.5-xeon-w-silver-tower-workstation-2019-specs.html)
+- [EveryMac: Mac Pro 12-Core 3.3 (2019) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-12-core-3.3-xeon-w-silver-tower-workstation-2019-specs.html)
+- [EveryMac: Mac Pro 16-Core 3.2 (2019) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-16-core-3.2-xeon-w-silver-tower-workstation-2019-specs.html)
+- [EveryMac: Mac Pro 28-Core 2.5 (2019) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-28-core-2.5-xeon-w-silver-tower-workstation-2019-specs.html)
+- [EveryMac: Mac Pro Twelve Core 3.06 (Mid 2012) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-3.06-mid-2012-westmere-specs.html)
+- [EveryMac: Mac Pro Twelve Core 2.4 (Mid 2012) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-twelve-core-2.4-mid-2012-westmere-specs.html)
+- [EveryMac: Mac Pro Six Core 3.33 (Mid 2012) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-six-core-3.33-mid-2012-westmere-specs.html)
+- [EveryMac: Mac Pro Eight Core 2.4 (Mid 2010) specs](https://everymac.com/systems/apple/mac_pro/specs/mac-pro-eight-core-2.4-mid-2010-westmere-specs.html)
+- [Greg Gant: The Definitive Classic Mac Pro Upgrade Guide (2006 to 2012)](https://blog.greggant.com/posts/2018/05/07/definitive-mac-pro-upgrade-guide.html)
+- [Greg Gant: The Definitive Mac Pro 2019 7,1 Upgrade Guide](https://blog.greggant.com/posts/2021/12/19/definitive-mac-pro-2019-upgrade-guide.html)
+- [Primate Labs: Geekbench 6 Benchmark Internals](https://www.geekbench.com/doc/geekbench6-benchmark-internals.pdf)
+- [Barefeats: Shootout, 2019 Mac Pro 12-Core versus 2010 Mac Pro 12-Core](https://barefeats.com/mac-pro-2019-versus-2010.html)
+- [OpenCore Legacy Patcher README](https://github.com/dortania/OpenCore-Legacy-Patcher)
+- [OpenCore Legacy Patcher changelog](https://github.com/dortania/OpenCore-Legacy-Patcher/blob/main/CHANGELOG.md)
+- [OpenCore Legacy Patcher releases](https://github.com/dortania/OpenCore-Legacy-Patcher/releases)
+- [OpenCore Legacy Patcher: Supported models](https://dortania.github.io/OpenCore-Legacy-Patcher/MODELS.html)
+- [OpenCore Legacy Patcher: FAQ](https://dortania.github.io/OpenCore-Legacy-Patcher/FAQ.html)
+- [OpenCore Legacy Patcher: Creating macOS installers](https://dortania.github.io/OpenCore-Legacy-Patcher/INSTALLER.html)
+- [OpenCore Legacy Patcher: Booting OpenCore and macOS](https://dortania.github.io/OpenCore-Legacy-Patcher/BOOT.html)
+- [OpenCore Legacy Patcher: Post-installation](https://dortania.github.io/OpenCore-Legacy-Patcher/POST-INSTALL.html)
+- [OpenCore Legacy Patcher: Troubleshooting hardware](https://dortania.github.io/OpenCore-Legacy-Patcher/TROUBLESHOOT-HARDWARE.html)
+- [OpenCorePkg: EnableGop README](https://github.com/acidanthera/OpenCorePkg/blob/master/Staging/EnableGop/README.md)
+- [9to5Mac: Apple will end support for Intel Macs next year](https://9to5mac.com/2025/06/09/apple-will-end-support-for-intel-macs/)
+- [MacRumors: Apple confirms Mac Pro is dead, no future models planned](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/)
+- [MacRumors forums: MacPro5,1 BootROM thread (144.0.0.0.0)](https://forums.macrumors.com/threads/macpro5-1-bootrom-thread-144-0-0-0-0.2132317/)
+- [UsedMac.com: Apple Mac Pro listings](https://usedmac.com/product-category/apple-mac-pro/)
+- [iPower Resale: Mac Pro open box](https://ipowerresale.com/collections/mac-pro)
+`,
+  },
+  {
     slug: "apple-server-hardware",
     title: "Apple Server Hardware: Every Server Apple Has Built Since 1993",
     date: "2026-10-05",
@@ -116,16 +1113,16 @@ The Macintosh Server G4 followed in December 1999, and in May 2001 Apple sold a 
 
 Apple announced the Xserve on [May 14, 2002](https://www.apple.com/newsroom/2002/05/14Apple-Introduces-Xserve-1U-Rack-Mount-Server/): a 1U rack server holding up to 480GB on four hot-plug ATA/100 drives, with Server Monitor for checking its health remotely, at $2,999 for a single 1 GHz G4 and $3,999 for a dual. It shipped on July 1, 2002. Each generation added what a datacenter expects:
 
-<figure>
-<img src="/images/blog/apple-server-hardware/xserve-early-2008.jpg" alt="A one-unit Apple Xserve from early 2008 on a table, with three drive bays and its controls across the front panel" width="1200" height="675" loading="lazy" decoding="async">
-<figcaption>An Xserve (Early 2008): one rack unit, three hot-plug drive bays across the front, and the power button, status lights and a USB port at the left. Photo: htomari, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg">Wikimedia Commons</a>.</figcaption>
-</figure>
-
 - **G4, 2003:** [1.33 GHz processors, FireWire 800 and up to 720GB](https://www.apple.com/newsroom/2003/02/10Apple-Upgrades-Xserve/) of hot-plug storage, plus a cheaper headless cluster node.
 - **G5, 2004:** [up to 8GB of ECC memory and three hot-plug SATA drive modules](https://www.apple.com/newsroom/2004/01/06Apple-Introduces-Xserve-G5/), with a $2,999 cluster node version; dual 2.3 GHz from January 2005.
 - **Intel, 2006:** [two dual-core Xeons up to 3.0 GHz, ECC FB-DIMM memory, an optional 650W redundant power supply and "a new lights out management system"](https://www.apple.com/newsroom/2006/08/07Apple-Introduces-Xserve-with-Quad-64-bit-Xeon-Processors/).
 - **Early 2008:** [two quad-core 3.0 GHz Xeons and an optional 750W redundant supply](https://www.apple.com/newsroom/2008/01/08Apple-Introduces-New-Xserve-Most-Powerful-Apple-Server-Ever/).
 - **Early 2009:** [Nehalem Xeons, a Bonjour-enabled lights-out management processor and an optional 128GB SSD boot drive](https://www.apple.com/newsroom/2009/04/07Apple-Updates-Xserve-with-Twice-the-Performance/).
+
+<figure>
+<img src="/images/blog/apple-server-hardware/xserve-early-2008.jpg" alt="A one-unit Apple Xserve from early 2008 on a table, with three drive bays and its controls across the front panel" width="1200" height="675" loading="lazy" decoding="async">
+<figcaption>An Xserve (Early 2008): one rack unit, three hot-plug drive bays across the front, and the power button, status lights and a USB port at the left. Photo: htomari, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Beside it sat the [Xserve RAID](https://www.apple.com/newsroom/2003/02/10Apple-Introduces-Xserve-RAID-Storage-System-With-Breakthrough-Performance-and-Pricing/), announced on February 10, 2003: a 3U array with 14 drives, dual RAID controllers, redundant hot-swap power and cooling and dual 2Gb Fibre Channel, from $5,999. Apple discontinued it on February 19, 2008 and [pointed buyers to Promise's VTrak E-Class](https://tidbits.com/2008/02/19/apple-releases-xsan-2-discontinues-xserve-raid/).
 

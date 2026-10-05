@@ -51,16 +51,16 @@ The Macintosh Server G4 followed in December 1999, and in May 2001 Apple sold a 
 
 Apple announced the Xserve on [May 14, 2002](https://www.apple.com/newsroom/2002/05/14Apple-Introduces-Xserve-1U-Rack-Mount-Server/): a 1U rack server holding up to 480GB on four hot-plug ATA/100 drives, with Server Monitor for checking its health remotely, at $2,999 for a single 1 GHz G4 and $3,999 for a dual. It shipped on July 1, 2002. Each generation added what a datacenter expects:
 
-<figure>
-<img src="/images/blog/apple-server-hardware/xserve-early-2008.jpg" alt="A one-unit Apple Xserve from early 2008 on a table, with three drive bays and its controls across the front panel" width="1200" height="675" loading="lazy" decoding="async">
-<figcaption>An Xserve (Early 2008): one rack unit, three hot-plug drive bays across the front, and the power button, status lights and a USB port at the left. Photo: htomari, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg">Wikimedia Commons</a>.</figcaption>
-</figure>
-
 - **G4, 2003:** [1.33 GHz processors, FireWire 800 and up to 720GB](https://www.apple.com/newsroom/2003/02/10Apple-Upgrades-Xserve/) of hot-plug storage, plus a cheaper headless cluster node.
 - **G5, 2004:** [up to 8GB of ECC memory and three hot-plug SATA drive modules](https://www.apple.com/newsroom/2004/01/06Apple-Introduces-Xserve-G5/), with a $2,999 cluster node version; dual 2.3 GHz from January 2005.
 - **Intel, 2006:** [two dual-core Xeons up to 3.0 GHz, ECC FB-DIMM memory, an optional 650W redundant power supply and "a new lights out management system"](https://www.apple.com/newsroom/2006/08/07Apple-Introduces-Xserve-with-Quad-64-bit-Xeon-Processors/).
 - **Early 2008:** [two quad-core 3.0 GHz Xeons and an optional 750W redundant supply](https://www.apple.com/newsroom/2008/01/08Apple-Introduces-New-Xserve-Most-Powerful-Apple-Server-Ever/).
 - **Early 2009:** [Nehalem Xeons, a Bonjour-enabled lights-out management processor and an optional 128GB SSD boot drive](https://www.apple.com/newsroom/2009/04/07Apple-Updates-Xserve-with-Twice-the-Performance/).
+
+<figure>
+<img src="/images/blog/apple-server-hardware/xserve-early-2008.jpg" alt="A one-unit Apple Xserve from early 2008 on a table, with three drive bays and its controls across the front panel" width="1200" height="675" loading="lazy" decoding="async">
+<figcaption>An Xserve (Early 2008): one rack unit, three hot-plug drive bays across the front, and the power button, status lights and a USB port at the left. Photo: htomari, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Apple_Xserve_(Early_2008)_(26396570970).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
 
 Beside it sat the [Xserve RAID](https://www.apple.com/newsroom/2003/02/10Apple-Introduces-Xserve-RAID-Storage-System-With-Breakthrough-Performance-and-Pricing/), announced on February 10, 2003: a 3U array with 14 drives, dual RAID controllers, redundant hot-swap power and cooling and dual 2Gb Fibre Channel, from $5,999. Apple discontinued it on February 19, 2008 and [pointed buyers to Promise's VTrak E-Class](https://tidbits.com/2008/02/19/apple-releases-xsan-2-discontinues-xserve-raid/).
 
