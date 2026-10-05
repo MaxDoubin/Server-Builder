@@ -23,7 +23,7 @@ The short version, before the details:
 
 The Mac Pro wins here, and it is not close. The aluminum chassis, the precision machining, the slide-in handles, everything about the physical hardware feels premium. Dell servers are built to be functional and cost-effective. They get the job done, but nobody is going to admire the craftsmanship of a PowerEdge chassis.
 
-That said, the Mac Pro costs five to ten times more than an equivalent PowerEdge, so the build quality better be exceptional.
+That said, the Mac Pro cost five to ten times more than an equivalent PowerEdge when new, so the build quality had better be exceptional.
 
 There is a category of quality the Dell wins outright, though, and it is the one that matters at 2am: serviceability under load. Drives, power supplies, and fans on an R740 are all hot-swap and tool-less. A failed disk is a walk to the rack and a click. A failed power supply does not even take the machine down. Nothing on the Mac Pro is hot-swap. Every repair is a shutdown.
 
@@ -89,7 +89,7 @@ On power, the R740 has two hot-swap supplies you can feed from separate circuits
 
 ## Cost
 
-A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, the Mac Pro is the only option.
+A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, a Mac is the only option, and since Apple [discontinued the Mac Pro](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) on March 26, 2026, that means a used rack-mount Mac Pro or a Mac Studio or Mac mini on a rack shelf.
 
 That "only option" is a license question, not a technical one. Apple's software license permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
 
@@ -107,7 +107,7 @@ That "only option" is a license question, not a technical one. Apple's software 
 
 ## My recommendation
 
-Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific macOS requirement that justifies the cost. In my lab, the PowerEdges do 90% of the work. The Mac Pro handles the 10% that requires macOS or Apple's GPU ecosystem.
+Buy a PowerEdge for server workloads. Buy a used Mac Pro only if you have a specific macOS requirement that justifies the cost; Apple no longer sells new ones. In my lab, the PowerEdges do 90% of the work. The Mac Pro handles the 10% that requires macOS or Apple's GPU ecosystem.
 
 ## References
 
@@ -117,3 +117,4 @@ Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific 
 - https://en.wikipedia.org/wiki/Mac_Pro
 - https://en.wikipedia.org/wiki/Rack_unit
 - https://en.wikipedia.org/wiki/Registered_memory
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/

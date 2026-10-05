@@ -37,7 +37,7 @@ The specifics are worth stating because they set the ceiling on what you can bui
 
 ## Racking Macs today, and what that actually takes
 
-If you need macOS in a rack now, you are choosing between a rack Mac Pro, Mac minis or Mac Studios on shelves, or renting from a provider. Almost everyone doing iOS or macOS CI at scale ends up on the second or third option, because Xcode requires macOS and macOS requires Apple hardware. Apple's own license permits only a limited number of macOS virtual machines per host, and on Apple silicon the Virtualization framework enforces a limit of two macOS VMs running at once, so you cannot solve density with virtualization the way you would on Linux. Cloud providers work around the physical-hardware requirement with dedicated hosts; AWS EC2 Mac instances, for example, allocate a whole Mac to you with a 24-hour minimum.
+If you need macOS in a rack now, you are choosing between a used rack Mac Pro, Mac minis or Mac Studios on shelves, or renting from a provider. Almost everyone doing iOS or macOS CI at scale ends up on the second or third option, because Xcode requires macOS and macOS requires Apple hardware. Apple's own license permits only a limited number of macOS virtual machines per host, and on Apple silicon the Virtualization framework enforces a limit of two macOS VMs running at once, so you cannot solve density with virtualization the way you would on Linux. Cloud providers work around the physical-hardware requirement with dedicated hosts; AWS EC2 Mac instances, for example, allocate a whole Mac to you with a 24-hour minimum.
 
 For a machine you own, the first hour after it goes in the rack should be spent making it survivable without a monitor. These are the settings that matter:
 
@@ -85,7 +85,7 @@ One more thing that only shows up after the machine is installed: a 1U server wi
 
 ## What this means
 
-Apple has effectively exited the server market. If you need macOS in a rack, the Mac Pro is your only option, and it is an expensive, imperfect one. For everything else, Dell, HP, and Supermicro offer better value, better management, and better support.
+Apple has effectively exited the server market, and on March 26, 2026 it [discontinued the Mac Pro](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) as well, saying no new model is planned. If you need macOS in a rack, your choices are a used rack-mount Mac Pro or Mac minis and Mac Studios on shelves, and each is an imperfect fit. For everything else, Dell, HP, and Supermicro offer better value, better management, and better support.
 
 The Xserve was ahead of its time in build quality and design. But it was in a market that Apple was never willing to commit to fully. That tension is the story of Apple in the enterprise. The useful lesson for anyone building a lab is narrower: buy Apple hardware when the workload genuinely requires macOS, build everything else on hardware whose vendor wants to be in the rack, and never plan capacity around a product line that a consumer company keeps alive out of politeness.
 
@@ -97,3 +97,4 @@ The Xserve was ahead of its time in build quality and design. But it was in a ma
 - https://en.wikipedia.org/wiki/Apple_Open_Directory
 - https://en.wikipedia.org/wiki/System_X_(supercomputer)
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/

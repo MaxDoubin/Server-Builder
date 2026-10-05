@@ -57,9 +57,9 @@ Some numbers to plan against. Idle is much better than load: a modestly configur
 
 Power supplies come in 495 W, 750 W, 1100 W, 1600 W, 2000 W, and 2400 W flavors, all 80 PLUS Platinum or Titanium, normally installed as a redundant pair. The gotcha for anyone in North America: the high-wattage units require 200 to 240 V input to deliver their rated output. On a 120 V circuit a 2000 W supply derates to roughly half. If you are on standard household 120 V, the 750 W or 1100 W supplies are the sensible choice and the big ones buy you nothing.
 
-**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to set fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data for it, so it falls back to a conservative high fan baseline and the server howls at idle forever. This is not a fault. A "Third Party PCIe Card Default Cooling Response" setting, exposed through iDRAC and IPMI, turns the baseline back down. Know it exists before concluding the server is broken.
+**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to set fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data for it, so it falls back to a conservative default cooling response and the fans stay high even at idle. This is not a fault. On iDRAC9 you can turn that response off one slot at a time, in the iDRAC's PCIe airflow settings or with racadm (`racadm set system.pcieslotlfm.1.lfmmode disabled` for slot 1). Dell's [PCIe cooling white paper](https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf) says there is "no customer-facing support" for changing it over IPMI, so the IPMI command in older guides belongs to 13th generation servers such as the [R730](/blog/dell-r730-quiet-fans). Disabling it does not always lower the fans, and Dell recommends leaving it on unless you understand the card's cooling needs, so save it for cards with their own fan. Know it exists before concluding the server is broken.
 
-One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
+One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves, and owners report the cutoff at firmware 3.34.34.34. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
 
 Finally, POST is slow. Memory training and controller initialization mean two to four minutes from power button to boot device, and the screen is blank for much of it. It is not dead. It is counting your DIMMs.
 
@@ -85,3 +85,4 @@ The checklist I now run before buying, all of it from the sections above: how ma
 - https://en.wikipedia.org/wiki/Registered_memory
 - https://en.wikipedia.org/wiki/Non-uniform_memory_access
 - https://man.archlinux.org/man/ipmitool.1
+- https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf
