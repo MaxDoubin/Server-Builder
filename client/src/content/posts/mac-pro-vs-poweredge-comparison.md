@@ -79,7 +79,7 @@ For CPU-heavy server workloads, the PowerEdge with dual Xeon Scalable processors
 
 For GPU-accelerated workloads, the Mac Pro's Radeon Pro Vega II cards are better suited for Apple's Metal framework and media processing pipelines. And the Mac Pro's MPX bays feed a high-power GPU through a single blind-mate connector, where the Dell needs cabled auxiliary power and a GPU-capable riser and airflow kit.
 
-Single-threaded performance is closer than the core counts suggest. Xeon W parts clock higher than the equivalent-core Xeon Scalable parts, so a workload that does not parallelise can land in the Mac's favour. That is a narrow window, but it is a real one.
+Single-threaded performance is closer than the core counts suggest. Xeon W parts clock higher than the equivalent-core Xeon Scalable parts, so a workload that does not parallelize can land in the Mac's favor. That is a narrow window, but it is a real one.
 
 ## Noise and power
 
@@ -103,7 +103,7 @@ That "only option" is a license question, not a technical one. Apple's software 
 
 **Calling two power supplies redundant when both are on one circuit.** Dual PSUs protect against a supply failing, not against a breaker tripping. If both cords go to the same PDU on the same circuit, you have bought half the redundancy you think you have.
 
-**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's license terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
+**Planning to virtualize macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's license terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
 
 ## My recommendation
 

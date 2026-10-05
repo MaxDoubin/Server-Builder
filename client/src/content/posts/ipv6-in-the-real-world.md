@@ -19,7 +19,7 @@ The ranges you will actually meet:
 
 - `2000::/3` is global unicast, the routable internet. Anything starting with a 2 or 3 is a real address.
 - `fe80::/10` is link-local. Every interface gets one automatically and it never routes off the link.
-- `fc00::/7` is unique local, the rough analogue of RFC 1918 space. In practice you use `fd00::/8` and generate a random 40-bit global ID rather than picking `fd00::1` like everybody does.
+- `fc00::/7` is unique local, the rough analog of RFC 1918 space. In practice you use `fd00::/8` and generate a random 40-bit global ID rather than picking `fd00::1` like everybody does.
 - `ff00::/8` is multicast. `ff02::1` is all nodes on the link, `ff02::2` is all routers.
 - `2001:db8::/32` is reserved for documentation, which is why it shows up in every example including mine.
 

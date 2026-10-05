@@ -258,7 +258,7 @@ export function CinematicTriage() {
           <p className="mt-14 font-mono-tight text-[0.75rem] leading-relaxed text-[hsl(var(--brand-ash))]">
             Every address and host in this inbox is invented, and the ones that imitate a brand sit
             under reserved names that resolve to nothing. CI derives each message's signals from its
-            own headers and refuses the build if the written analysis and the artefact disagree,
+            own headers and refuses the build if the written analysis and the artifact disagree,
             which is the failure mode that would otherwise teach you something untrue without ever
             looking broken.
           </p>

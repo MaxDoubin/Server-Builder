@@ -35,7 +35,7 @@ interface Rack3DProps {
   showHud?: boolean;
   /**
    * Thermal load of this rack on a 0 to 1 scale, or null when the heatmap is
-   * off. Quantised by the caller so the pooled materials stay countable.
+   * off. Quantized by the caller so the pooled materials stay countable.
    */
   heatLevel?: number | null;
 }

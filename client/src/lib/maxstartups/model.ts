@@ -103,7 +103,7 @@ export function asConfig(setup: Setup): string {
  *
  * The line is drop_connection()'s, which prints the count as it stood and
  * the reason that refused it. The note underneath it is not decoration:
- * that function initialises its limiter with
+ * that function initializes its limiter with
  * log_ratelimit_init(&ratelimit_maxstartups, 4, 60, 20, 5*60) and drops the
  * message to debug3 once it is rate limited, so a daemon dropping steadily
  * writes a handful of lines and then goes quiet at the log level anybody

@@ -439,7 +439,7 @@ export function CinematicRetry() {
                   <p className="font-mono-tight text-[0.78125rem] leading-relaxed text-[hsl(var(--brand-ash))]">
                     {herd.length} {pluralise(herd.length, "layer")} back off without jitter
                     ({herd.map((caller) => caller.name).join(", ")}). Exponential backoff with no
-                    randomisation does not spread retries out, it synchronises them: every client
+                    randomization does not spread retries out, it synchronizes them: every client
                     that failed together comes back together, in tighter formation each round.
                   </p>
                 ) : null}

@@ -52,7 +52,7 @@ export interface Challenge {
   flagShape: string;
   hints: string[];
   /**
-   * True when the answer is one of the values in the artefact rather than
+   * True when the answer is one of the values in the artifact rather than
    * something derived from it.
    *
    * "Which of these six addresses got in" and "decode this blob" are

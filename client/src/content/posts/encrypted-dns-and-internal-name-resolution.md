@@ -89,7 +89,7 @@ server:
     local-zone: "use-application-dns.net" always_nxdomain
 ```
 
-It is a convention Mozilla honours, not a standard, and nothing else is
+It is a convention Mozilla honors, not a standard, and nothing else is
 obliged to check it. It is still the cheapest thing on this list.
 
 **Set policy where the client is managed.** Every major browser exposes secure

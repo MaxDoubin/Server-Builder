@@ -107,7 +107,7 @@ usermod --expiredate 1 olduser
 usermod --shell /usr/sbin/nologin olduser
 ```
 
-Then remove their key from every `authorized_keys` file, which is the step everyone forgets and the reason centralised key management exists.
+Then remove their key from every `authorized_keys` file, which is the step everyone forgets and the reason centralized key management exists.
 
 Sudo rules belong in files under `/etc/sudoers.d/`, edited with `visudo -f`, never by hand. `visudo` refuses to save a file that fails its syntax check, and a broken sudoers file means nobody on the machine can elevate.
 

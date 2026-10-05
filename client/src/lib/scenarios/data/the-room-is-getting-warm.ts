@@ -148,7 +148,7 @@ export const theRoomIsGettingWarm: Scenario = {
       mood: "critical",
       where: "Doors open, pedestal fans running",
       body: [
-        "At 34 degrees outside, opening the doors is importing heat. It moves air around and lowers nothing, and it destroys the hot and cold aisle separation that was the only thing still working in your favour.",
+        "At 34 degrees outside, opening the doors is importing heat. It moves air around and lowers nothing, and it destroys the hot and cold aisle separation that was the only thing still working in your favor.",
         "Inlet rises faster after you do it, not slower.",
       ],
       choices: [

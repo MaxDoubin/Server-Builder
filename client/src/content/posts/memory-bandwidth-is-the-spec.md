@@ -39,7 +39,7 @@ and used in roughly two floating point operations. Intensity is close to the
 worst case possible. Hard memory bound.
 
 **Prompt processing, or prefill.** All the prompt tokens go through at once, so
-the same weight read is amortised across many tokens. Intensity is high.
+the same weight read is amortized across many tokens. Intensity is high.
 Compute bound. This is why a long prompt and a long generation feel like
 completely different workloads on the same model.
 

@@ -22,7 +22,7 @@
  * logs anything except a timeout.
  *
  * The third is the backoff. Exponential backoff without jitter does not spread
- * retries out, it synchronises them: every client that failed at the same
+ * retries out, it synchronizes them: every client that failed at the same
  * instant comes back at the same instant, and again at the same instant, in
  * tighter and tighter formation.
  */
@@ -51,7 +51,7 @@ export interface Caller {
   backoff: number;
   /** Multiplier applied to the delay each retry. 1 is constant, 2 is exponential. */
   factor: number;
-  /** Randomisation as a fraction of the delay. 0 means every client returns together. */
+  /** Randomization as a fraction of the delay. 0 means every client returns together. */
   jitter: number;
   /** Whether repeating this layer's call is safe. Retrying a charge is not. */
   idempotent: boolean;

@@ -102,7 +102,7 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
 
 **It cannot do policy.** There is no equivalent of [BGP](/blog/bgp-for-network-engineers) communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
 
-**It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analogue, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
+**It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analog, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
 
 **It cannot carry IPv6 in v2 form.** OSPFv2 is IPv4 only. IPv6 needs OSPFv3, which is a separate protocol instance with its own database and its own adjacencies, even though RFC 5838 lets one OSPFv3 process carry both address families.
 

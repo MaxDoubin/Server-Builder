@@ -72,7 +72,7 @@ const AIRFLOW_PENALTY_AT_FULL_RESTRICTION = 0.35;
 export interface CapacityOverrides {
   /** CRAH units a scenario has taken out of service. */
   crahUnitsOffline?: number;
-  /** Fraction of the utility feed still energised. 1 is a healthy feed. */
+  /** Fraction of the utility feed still energized. 1 is a healthy feed. */
   powerFeedFraction?: number;
   /** A scenario budget in watts that replaces the utility feed ceiling. */
   powerCeilingOverrideW?: number;
@@ -168,7 +168,7 @@ export function rackHeatW(rack: Rack, catalog: Map<string, Equipment>): number {
 }
 
 /**
- * Rack heat as a 0 to 1 position on the heatmap scale, quantised to twelfths.
+ * Rack heat as a 0 to 1 position on the heatmap scale, quantized to twelfths.
  *
  * Quantising matters: the color feeds a pooled three.js material keyed on its
  * parameters, so a continuous value would mint a new material per rack and

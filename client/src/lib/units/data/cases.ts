@@ -122,7 +122,7 @@ export const CASES: Case[] = [
       { id: "waits", claim: "It waits for memcached to come back and then runs", says: { about: "nothing" } },
     ],
     why:
-      "Wants= and After= are as orthogonal as Requires= and After=. The ordering was honoured: memcached was started first, and it finished, unsuccessfully. The weak requirement then says that a listed unit failing has no impact on the validity of the transaction, so the report runs. This is the recommended shape for anything optional, and the cost is that a silent failure of the optional thing looks exactly like success.",
+      "Wants= and After= are as orthogonal as Requires= and After=. The ordering was honored: memcached was started first, and it finished, unsuccessfully. The weak requirement then says that a listed unit failing has no impact on the validity of the transaction, so the report runs. This is the recommended shape for anything optional, and the cost is that a silent failure of the optional thing looks exactly like success.",
     fix:
       "Nothing, if the report really is fine without a cache. If it is not fine, Wants= is the wrong directive and the incident will be a slow report rather than a failed one, which is harder to notice.",
     breaks: "After= turns a weak requirement into a strong one",
@@ -169,7 +169,7 @@ export const CASES: Case[] = [
     units: [
       {
         name: "signer.service",
-        description: "Artefact signing service",
+        description: "Artifact signing service",
         type: "notify",
         requisite: ["vault.service"],
         after: ["vault.service"],

@@ -123,7 +123,7 @@ So after you report something, the page asks which signal settles it, and marks
 that separately. Citing "SPF did not pass" on a message where SPF passed is
 counted as a correct verdict reached for a reason that is not there.
 
-## Keeping the analysis and the artefact in step
+## Keeping the analysis and the artifact in step
 
 The failure mode for hand-written material like this is silent. Fourteen
 messages, each with headers and a paragraph of analysis, both written by me.

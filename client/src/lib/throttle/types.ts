@@ -10,7 +10,7 @@
  *
  * A group with four runnable threads and one CPU of quota spends 100ms of
  * quota in 25ms of wall clock, and then nothing in it runs for 75ms. Average
- * utilisation over the period is exactly at the limit, and the application
+ * utilization over the period is exactly at the limit, and the application
  * spent three quarters of the time stopped. Take the thread count to forty
  * and it spends its quota in 2.5ms and is stopped for 97.5.
  *
@@ -93,7 +93,7 @@ export interface Stat {
  *
  * Five shapes. The first two are the ones that carry the lesson: when in the
  * period the quota runs out, and how long a piece of work actually takes,
- * which are the two questions a utilisation graph cannot answer.
+ * which are the two questions a utilization graph cannot answer.
  */
 export type Claim =
   /** The quota runs out this many milliseconds into a period at steady state. */

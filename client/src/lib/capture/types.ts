@@ -1,7 +1,7 @@
 /**
  * A packet capture, modeled as fields rather than bytes.
  *
- * The alternative was to synthesise real pcap bytes and dissect them, which
+ * The alternative was to synthesize real pcap bytes and dissect them, which
  * is more honest and is the wrong trade here: it would mean writing a
  * dissector for every protocol a capture uses, and every hour of that is an
  * hour not spent on the thing being taught, which is reading a capture and

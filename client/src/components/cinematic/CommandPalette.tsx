@@ -104,7 +104,7 @@ const PAGES: Entry[] = [
   { kind: "Page", title: "Incident scenarios", href: "/scenarios", terms: "decide branching incident response tabletop" },
   { kind: "Page", title: "Hands-on labs", href: "/labs", detail: "A simulated Linux host with a fault in it", terms: "terminal shell diagnose" },
   { kind: "Page", title: "Packet captures", href: "/capture", detail: "A real display filter bar", terms: "wireshark pcap read tcpdump" },
-  { kind: "Page", title: "Capture the flag", href: "/challenges", terms: "ctf flag artefact forensics" },
+  { kind: "Page", title: "Capture the flag", href: "/challenges", terms: "ctf flag artifact forensics" },
   { kind: "Page", title: "Phishing triage", href: "/triage", detail: "Call it, then say which signal settles it", terms: "email judge headers spf dkim dmarc" },
   { kind: "Page", title: "Firewall exercises", href: "/firewall", detail: "A chain with something wrong with it", terms: "iptables rules order first match" },
   { kind: "Page", title: "DNS resolution", href: "/resolve", detail: "Attribute the fault from the trace", terms: "dns delegation nxdomain lame glue" },

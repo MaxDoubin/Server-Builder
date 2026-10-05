@@ -148,7 +148,7 @@ A container runtime sets rlimits on the process it starts, so the host's
 arrangements for its own units and its own logins are not in scope at all.
 That is why the same image behaves differently under different runtimes and
 different orchestrators, and why "it works on my machine" survives
-containerisation intact.
+containerization intact.
 
 Read `/proc/1/limits` inside the container. It is the only place the answer is
 not a guess.

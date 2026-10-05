@@ -11,7 +11,7 @@ export const fourHundredAndThreeDays: Scenario = {
   clockStart: "Tuesday 09:15",
   brief: [
     "The call is polite and specific. During an unrelated operation they recovered infrastructure containing data that appears to be yours, including drawings dated last September and a directory listing of a share you recognize.",
-    "The earliest artefact they can date is 2 August last year. That is 403 days ago.",
+    "The earliest artifact they can date is 2 August last year. That is 403 days ago.",
   ],
   start: "the-call",
   reading: [

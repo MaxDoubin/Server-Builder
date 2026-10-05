@@ -4,7 +4,7 @@
  * Every figure in the options came out of the model rather than a keyboard,
  * and CI requires exactly one of them to hold. The distractors are the
  * numbers you get by making the assumption the case is about: the limit read
- * as a core count, the utilisation read as a health check, the period
+ * as a core count, the utilization read as a health check, the period
  * ignored, the thread count ignored.
  */
 
@@ -107,9 +107,9 @@ export const CASES: Case[] = [
       " eight threads take the full 100ms of quota in 12.5ms and are stopped for the other 87.5," +
       " twice over, before the third period finishes the work at 212.5ms. Work needing 300ms of" +
       " CPU on eight threads should have taken 37.5ms of wall clock. It took five and a half times" +
-      " that, and the utilisation graph shows a third of the limit.",
+      " that, and the utilization graph shows a third of the limit.",
     fix:
-      "alert on nr_throttled from cpu.stat, not on utilisation. Utilisation over any window longer" +
+      "alert on nr_throttled from cpu.stat, not on utilization. Utilization over any window longer" +
       " than the period cannot show this, and the period is 100ms, so almost every dashboard in" +
       " existence is averaging it away.",
     breaks: "that using less than the limit means the limit is not biting",
@@ -321,7 +321,7 @@ export const CASES: Case[] = [
       " and spends 250 of it in 31.25ms of wall clock, throttled not at all, finishing at 431.25ms." +
       " Without burst the same workload is stopped in two periods and does not finish until" +
       " 606.25ms: 175ms slower for a request that needed 250ms of CPU on a node with eight cores" +
-      " and nothing else to do. The average utilisation is 41 percent either way, which is again a" +
+      " and nothing else to do. The average utilization is 41 percent either way, which is again a" +
       " number that cannot see the difference.",
     fix:
       "set cpu.max.burst for anything whose load is spiky and whose average is comfortably under" +
@@ -364,7 +364,7 @@ export const CASES: Case[] = [
       },
       {
         id: "util",
-        claim: "Utilisation is 60 percent of the limit",
+        claim: "Utilization is 60 percent of the limit",
         says: { about: "utilisation", percent: 60 },
       },
     ],
@@ -491,7 +491,7 @@ export const CASES: Case[] = [
     name: "Two CPUs of quota, and it never stops",
     brief:
       "limits.cpu: 2 with two runnable threads, saturated with work, on an eight core node. The" +
-      " utilisation graph is pinned at 100 percent of the limit and an alert is firing on it.",
+      " utilization graph is pinned at 100 percent of the limit and an alert is firing on it.",
     setup: {
       cores: 8,
       threads: 2,
@@ -528,10 +528,10 @@ export const CASES: Case[] = [
       "Using the whole quota and being throttled are different events. Two threads spend at most" +
       " 200ms of CPU in a 100ms period, and the quota is exactly 200ms, so the group runs flat out" +
       " to the boundary and the next period's quota arrives precisely as it needs it. It never" +
-      " sits idle waiting. An alert on utilisation fires here and there is nothing to fix; an alert" +
+      " sits idle waiting. An alert on utilization fires here and there is nothing to fix; an alert" +
       " on nr_throttled stays quiet, correctly.",
     fix:
-      "alert on nr_throttled and throttled_usec, and use utilisation for capacity planning rather" +
+      "alert on nr_throttled and throttled_usec, and use utilization for capacity planning rather" +
       " than for incidents. A container that is meant to be busy will sit at 100 percent of its" +
       " limit, and that is the limit working.",
     breaks: "that a container at 100 percent of its limit is being throttled",

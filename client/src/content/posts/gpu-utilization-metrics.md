@@ -108,7 +108,7 @@ My order of questions, roughly:
 2. Is power near the board limit? If yes, the device is genuinely working and
    the answer is algorithmic or a different device.
 3. If power is low but utilization is high, look for tiny kernels, launch
-   overhead, and host synchronisation. Many small launches keep the "at least
+   overhead, and host synchronization. Many small launches keep the "at least
    one kernel resident" counter pegged while the machine idles between them.
 4. Is the transfer path the problem? Bytes crossing PCIe at every step will
    dominate anything the device does.

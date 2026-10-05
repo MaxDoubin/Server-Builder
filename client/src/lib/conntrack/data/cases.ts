@@ -39,7 +39,7 @@ export const CASES: Case[] = [
       },
     ],
     why:
-      "nf_conntrack_init_start initialises max_factor to eight and then, inside the branch that " +
+      "nf_conntrack_init_start initializes max_factor to eight and then, inside the branch that " +
       "sizes the table from memory, sets it to one on the last line before computing " +
       "nf_conntrack_max = max_factor * nf_conntrack_htable_size. The eight survives only when the " +
       "hash size was set by hand, because that is the condition the branch tests. Every machine " +
@@ -81,7 +81,7 @@ export const CASES: Case[] = [
     ],
     why:
       "Setting the hash size skips the whole auto-sizing branch, and the line that would have " +
-      "reset max_factor to one is inside it. So the factor stays at the eight it was initialised " +
+      "reset max_factor to one is inside it. So the factor stays at the eight it was initialized " +
       "to and the limit is eight times the buckets. The awkward consequence is that pinning the " +
       "hash size smaller, which people do to save memory, raises the entry limit: 65536 buckets " +
       "here allows 524288 entries where the untouched host allowed 262144.",

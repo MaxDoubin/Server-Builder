@@ -466,7 +466,7 @@ const CONFUSED: { title: string; body: string }[] = [
   },
   {
     title: "422 vs 400",
-    body: "400 is for a request the server cannot parse: broken JSON, a malformed header, a missing required parameter. 422 is for a request that parsed perfectly and is still wrong: the field types are right, the values are not, an end date precedes a start date, an email is well formed but already registered. The distinction matters because it tells the client whether to fix its serialisation or fix the user's input. It is worth noting that 422 came from WebDAV and some teams reject it for a plain JSON API, and 400 with a detailed body is a defensible choice. What is not defensible is using them interchangeably in the same service.",
+    body: "400 is for a request the server cannot parse: broken JSON, a malformed header, a missing required parameter. 422 is for a request that parsed perfectly and is still wrong: the field types are right, the values are not, an end date precedes a start date, an email is well formed but already registered. The distinction matters because it tells the client whether to fix its serialization or fix the user's input. It is worth noting that 422 came from WebDAV and some teams reject it for a plain JSON API, and 400 with a detailed body is a defensible choice. What is not defensible is using them interchangeably in the same service.",
   },
 ];
 

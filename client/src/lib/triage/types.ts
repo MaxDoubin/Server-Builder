@@ -17,7 +17,7 @@
  * HOW THE DATA IS KEPT HONEST. Both lists are derived mechanically from the
  * headers by `detectSignals` in ./signals, and CI asserts that what is written
  * down equals what the detector finds, in both directions. A hand-written
- * analysis that drifts from its own artefact is the failure mode here, and it
+ * analysis that drifts from its own artifact is the failure mode here, and it
  * is invisible in review: the message still renders, the verdict still shows,
  * and the reader is quietly taught something untrue.
  */
@@ -97,7 +97,7 @@ export const TELL_LABEL: Record<TellId, string> = {
 
 export const TELL_NOTE: Record<TellId, string> = {
   "spf-fail":
-    "The envelope sender's domain does not authorize the host that sent this. On its own that is sometimes a forwarding artefact, which is why DMARC exists to say what to do about it.",
+    "The envelope sender's domain does not authorize the host that sent this. On its own that is sometimes a forwarding artifact, which is why DMARC exists to say what to do about it.",
   "dkim-fail":
     "The signature does not verify against the domain's published key. Either the message was altered after signing or it was never signed by that domain.",
   "dmarc-fail":

@@ -882,7 +882,7 @@ async function main(): Promise<void> {
     <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>, the first fifteen minutes of an incident with many endings.</li>
     <li><a href="${SITE_URL}/labs">Hands-on labs</a>, a Linux host simulated in the browser with something wrong with it.</li>
     <li><a href="${SITE_URL}/capture">Packet captures</a>, a real trace and a Wireshark display filter bar.</li>
-    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artefact and a question with one exact answer.</li>
+    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artifact and a question with one exact answer.</li>
     <li><a href="${SITE_URL}/triage">Phishing triage</a>, a morning of mail with every header intact.</li>
     <li><a href="${SITE_URL}/firewall">Firewall exercises</a>, broken iptables chains with a rule-by-rule match trace.</li>
     <li><a href="${SITE_URL}/resolve">DNS resolution</a>, telling a lame delegation from a missing glue record.</li>
@@ -1742,7 +1742,7 @@ const networkDashContent = `
     percent once are different problems.</li>
     <li>A latency heatline, which makes a slow path visible next to a busy
     one.</li>
-    <li>Node and link counts, overall utilisation, and the number of edge
+    <li>Node and link counts, overall utilization, and the number of edge
     servers.</li>
   </ul>
   <p>The topology and the traffic are both modeled. They are shaped to behave
@@ -1759,7 +1759,7 @@ const floorDashContent = `
   <ul>
     <li>Temperature distribution across the floor, so a hot aisle reads as a
     shape rather than as an average.</li>
-    <li>Zone utilisation, which is what decides where the next rack can go.</li>
+    <li>Zone utilization, which is what decides where the next rack can go.</li>
     <li>Total racks, average temperature, airflow balance and active zones.</li>
   </ul>
   <p>The thermal figures come from the simulation. They are modeled to be
@@ -2564,7 +2564,7 @@ ${JSON.stringify({
     <li><a href="${SITE_URL}/scenarios">Incident scenarios</a>, an incident to decide.</li>
     <li><a href="${SITE_URL}/labs">Hands-on labs</a>, a host to diagnose at a prompt.</li>
     <li><a href="${SITE_URL}/capture">Packet captures</a>, a trace to read with display filters.</li>
-    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artefact with one exact answer.</li>
+    <li><a href="${SITE_URL}/challenges">Capture the flag</a>, an artifact with one exact answer.</li>
     <li><a href="${SITE_URL}/triage">Phishing triage</a>, a message to call and a signal to cite.</li>
     <li><a href="${SITE_URL}/firewall">Firewall exercises</a>, a chain with something wrong with it.</li>
     <li><a href="${SITE_URL}/resolve">DNS resolution</a>, a symptom to attribute from the trace.</li>
@@ -3332,7 +3332,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     the body carries the same information as a table: how far into each
     period the quota went and how long the group was stopped. Somebody
     searching "container throttled but cpu usage low" lands here, and the row
-    they need reads 30 percent utilisation next to two throttled periods.
+    they need reads 30 percent utilization next to two throttled periods.
   */
   const thrStalled = THROTTLE_CASES.filter((item) => thrEver(item.setup)).length;
   const thrWorst = [...THROTTLE_CASES]
@@ -3360,7 +3360,7 @@ ${JSON.stringify({
   learningResourceType: "Interactive exercise",
   educationalLevel: "Intermediate",
   teaches:
-    "How CFS bandwidth control actually enforces a CPU limit: that quota is CPU time spent in parallel by every runnable thread, so the thread count decides how far into the period the quota lasts; that average utilisation over any window longer than the period cannot show throttling; that the period matters as much as the ratio; that threads beyond the host's core count do not drain quota faster; what cpu.max.burst changes; and why nr_throttled rather than utilisation is the metric to alert on",
+    "How CFS bandwidth control actually enforces a CPU limit: that quota is CPU time spent in parallel by every runnable thread, so the thread count decides how far into the period the quota lasts; that average utilization over any window longer than the period cannot show throttling; that the period matters as much as the ratio; that threads beyond the host's core count do not drain quota faster; what cpu.max.burst changes; and why nr_throttled rather than utilization is the metric to alert on",
   isPartOf: { "@type": "WebSite", "@id": `${SITE_URL}/#website` },
 })}
 </script>`,
@@ -3384,7 +3384,7 @@ ${JSON.stringify({
   <div class="post-table-scroll" tabindex="0" role="region" aria-label="Table, scrollable">
   <table>
     <thead>
-      <tr><th>Container</th><th>Limit</th><th>Threads</th><th>Cores</th><th>Quota gone at</th><th>Periods throttled</th><th>Utilisation</th></tr>
+      <tr><th>Container</th><th>Limit</th><th>Threads</th><th>Cores</th><th>Quota gone at</th><th>Periods throttled</th><th>Utilization</th></tr>
     </thead>
     <tbody>
 ${THROTTLE_CASES.map((item) => {
@@ -3426,7 +3426,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
   <ol>
     <li><code>cat /sys/fs/cgroup/&lt;path&gt;/cpu.stat</code>. <code>nr_throttled</code> against
     <code>nr_periods</code> is the ratio that matters, and <code>throttled_usec</code> is the wall
-    clock time the group spent stopped. Neither appears on a CPU utilisation graph.</li>
+    clock time the group spent stopped. Neither appears on a CPU utilization graph.</li>
     <li>Compare the thread count against the limit. A runtime that sized its pool from the node
     rather than from the cgroup is the usual cause, so GOMAXPROCS, -XX:ActiveProcessorCount, and
     anything reading nproc directly.</li>
@@ -3434,7 +3434,7 @@ ${item.options.map((option) => `      <li>${esc(option.claim)}${option.id === ri
     at roughly the period length, which is 100ms unless somebody changed it.</li>
     <li><code>cpu.max.burst</code> for workloads whose average is well under the limit and whose
     load is spiky. In the kernel since 5.14.</li>
-    <li>Do not reach for utilisation. Averaged over any window longer than the period it cannot
+    <li>Do not reach for utilization. Averaged over any window longer than the period it cannot
     show throttling at all, and the period is 100 milliseconds.</li>
   </ol>
   ${backLinks([["/practice", "All practice material"], ["/blog/stopped-not-slow", "Stopped, not slow"], ["/load", "Forty, and idle"], ["/oom", "Something has to die"]])}
@@ -7152,7 +7152,7 @@ ${JSON.stringify({
   </p>
   <p>
     The limit itself is <code>nf_conntrack_max = max_factor * nf_conntrack_htable_size</code>, and
-    <code>max_factor</code> is initialised to 8 but set to 1 on the last line of the branch that
+    <code>max_factor</code> is initialized to 8 but set to 1 on the last line of the branch that
     sizes the table from memory. It is 8 only where somebody set the hash size by hand. The host
     these numbers were taken on has 15 GiB, and reports nf_conntrack_max 262144 against
     nf_conntrack_buckets 262144: one to one, not the four or eight that every tuning guide quotes.
@@ -8482,7 +8482,7 @@ ${JSON.stringify({
     the time the layer below needs to exhaust its own retries, the caller
     hangs up and retries while the first request is still running, and nothing
     cancels the work it abandoned. And exponential backoff without jitter does
-    not spread retries out, it synchronises them.
+    not spread retries out, it synchronizes them.
   </p>
   <h2>The call paths</h2>
 ${RETRY_CHAINS.map((chain) => `  <article>
@@ -9401,14 +9401,14 @@ ${TRIAGE_MESSAGES.map(
 
   // ── capture the flag challenges ──
   /*
-    The artefacts are printed into the static body deliberately: a hex dump
+    The artifacts are printed into the static body deliberately: a hex dump
     and a summarized auth.log are exactly the sort of thing someone searches
     for, and a crawler that can read them is a crawler that can rank them.
     What never goes in is the flag, and the walkthrough with it, because the
     static page has no button to hide them behind.
   */
   const challengesIndexDescription =
-    "Small capture-the-flag puzzles with the artefact printed in the page: a log to count, a " +
+    "Small capture-the-flag puzzles with the artifact printed in the page: a log to count, a " +
     "header to decode, a file whose extension lies. Every answer is exact and every method is " +
     "written out.";
 
@@ -9437,7 +9437,7 @@ ${JSON.stringify({
 <main>
   <h1>Challenges</h1>
   <p>
-    An artefact and a question. The log, the hex dump, the scan output and the
+    An artifact and a question. The log, the hex dump, the scan output and the
     digests are all printed in full, because the exercise is reading them, not
     downloading them. Every answer is one exact string.
   </p>
@@ -9462,7 +9462,7 @@ ${CHALLENGES.map(
     const url = `${SITE_URL}/challenges/${challenge.slug}`;
     await writePage(`challenges/${challenge.slug}`, base, {
       title: pageTitle(`${challenge.title} | Challenge`),
-      description: `${challenge.tagline} A ${challenge.difficulty} ${challenge.category.toLowerCase()} challenge with the artefact printed in the page.`,
+      description: `${challenge.tagline} A ${challenge.difficulty} ${challenge.category.toLowerCase()} challenge with the artifact printed in the page.`,
       canonical: url,
       schema: `<script type="application/ld+json">
 ${JSON.stringify({

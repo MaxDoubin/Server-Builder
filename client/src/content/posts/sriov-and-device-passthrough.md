@@ -115,7 +115,7 @@ in software.
 Passthrough is not free, and the losses are all in flexibility.
 
 **Live migration.** A guest with direct hardware assigned has device state the
-hypervisor cannot see or serialise. Some stacks have migration support for
+hypervisor cannot see or serialize. Some stacks have migration support for
 specific devices with driver cooperation, but the general answer is that
 passthrough and live migration do not mix. If your availability plan depends on
 moving guests between hosts without downtime, this is a serious constraint.

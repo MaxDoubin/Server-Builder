@@ -105,8 +105,8 @@ staring at two averages ever will.
 ## Judges, Agreement, And Gates
 
 Grading by hand does not scale, so people use a model as a judge. This works
-better than you would expect and fails in specific ways: judges favour longer
-answers, favour outputs that look like their own style, and are sensitive to the
+better than you would expect and fails in specific ways: judges favor longer
+answers, favor outputs that look like their own style, and are sensitive to the
 order options are presented in. Randomize order, and check for length bias by
 looking at whether the judge's preference correlates with response length.
 

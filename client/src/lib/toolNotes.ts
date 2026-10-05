@@ -37,7 +37,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "Two's complement is how every modern machine stores a signed integer. Take the top bit and give it a negative weight: in eight bits the bits are worth -128, 64, 32, 16, 8, 4, 2, 1 instead of 128, 64, 32 and so on. That single change means addition, subtraction and comparison hardware does not need to know or care whether a value is signed. To negate a number you invert every bit and add one, which is the same as subtracting it from 2^n. All ones is -1, not the largest value, and the sign bit alone, 1000 0000, is the most negative value rather than zero.",
     ],
     [
-      "The asymmetry is worth internalising because it causes real bugs. An n bit signed range runs from -2^(n-1) to 2^(n-1) - 1, so there is one more negative number than positive: -128 to 127 in a byte, -2147483648 to 2147483647 in a 32 bit int. That means the most negative value has no positive counterpart, so negating it overflows and gives you back itself, and taking its absolute value does the same. That is CWE-191, integer underflow, and it is the mechanism behind a long list of memory corruption bugs where a length check passed because a negative number wrapped around into a very large unsigned one.",
+      "The asymmetry is worth internalizing because it causes real bugs. An n bit signed range runs from -2^(n-1) to 2^(n-1) - 1, so there is one more negative number than positive: -128 to 127 in a byte, -2147483648 to 2147483647 in a 32 bit int. That means the most negative value has no positive counterpart, so negating it overflows and gives you back itself, and taking its absolute value does the same. That is CWE-191, integer underflow, and it is the mechanism behind a long list of memory corruption bugs where a length check passed because a negative number wrapped around into a very large unsigned one.",
     ],
     [
       "Width matters as much as signedness. Truncating to a narrower type keeps the low bits and throws the rest away, so 300 stored in a byte becomes 44, and a value that passed a bounds check as a 32 bit integer can fail it as a 16 bit one. This page shows the truncation rather than hiding it: type a number too large for the selected width and it keeps the low bits and says so, which is exactly what the C cast would do.",
@@ -61,7 +61,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       { code: "passwd" },
       " and still gets a write to ",
       { code: "/etc/shadow" },
-      ". It is also the single richest source of local privilege escalation, so a setuid root binary that shells out, honours ",
+      ". It is also the single richest source of local privilege escalation, so a setuid root binary that shells out, honors ",
       { code: "$PATH" },
       ", or is writable by anyone but root is a finding, not a curiosity. setgid does the same trick for the group, and on a directory it does something different and much more useful: files created inside inherit the directory's group, which is the normal way to keep a shared project tree consistently group-owned.",
     ],
@@ -206,7 +206,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       " is Argon2. They also carry their parameters, so you can read the bcrypt cost factor or the PBKDF2 iteration count straight out of the string. Those are the only cases where identification is certain rather than probable.",
     ],
     [
-      "One thing worth internalising while studying for competitions: fast hashes are the wrong tool for passwords. MD5, SHA-1 and SHA-256 are designed to be quick, and a modern GPU computes billions of them per second. bcrypt, scrypt, yescrypt and Argon2 are deliberately slow and, in the later ones, deliberately memory-hungry, which is what makes large-scale guessing expensive rather than merely tedious.",
+      "One thing worth internalizing while studying for competitions: fast hashes are the wrong tool for passwords. MD5, SHA-1 and SHA-256 are designed to be quick, and a modern GPU computes billions of them per second. bcrypt, scrypt, yescrypt and Argon2 are deliberately slow and, in the later ones, deliberately memory-hungry, which is what makes large-scale guessing expensive rather than merely tedious.",
     ],
   ],
   "http-status-codes": [
@@ -214,7 +214,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "A status code is the only part of a response that every piece of infrastructure between the server and the client understands without parsing anything. Caches decide what to store from it, proxies decide what to retry, load balancers decide whether a backend is healthy, and monitoring decides whether to wake somebody up. That is why choosing one carelessly costs more than it looks like it should: an error hidden inside a 200 body is invisible to all of them, and a 500 returned for a client's malformed input sends an engineer to investigate a server that is working perfectly.",
     ],
     [
-      "The class digit carries most of the meaning, and it is what a client should fall back to when it meets a code it does not recognize. RFC 9110 is explicit about this: an unknown 4xx must be treated as a generic 400, an unknown 5xx as a generic 500. That is what makes it safe to introduce a new code. The classes also encode the retry decision. A 4xx will fail the same way if you repeat it unchanged, so retrying is pointless. A 5xx might succeed later, so retrying with exponential backoff and jitter is correct. 429 and 503 are the two that tell you explicitly when to come back, via Retry-After, and honouring that header is the difference between a well behaved client and a participant in an outage.",
+      "The class digit carries most of the meaning, and it is what a client should fall back to when it meets a code it does not recognize. RFC 9110 is explicit about this: an unknown 4xx must be treated as a generic 400, an unknown 5xx as a generic 500. That is what makes it safe to introduce a new code. The classes also encode the retry decision. A 4xx will fail the same way if you repeat it unchanged, so retrying is pointless. A 5xx might succeed later, so retrying with exponential backoff and jitter is correct. 429 and 503 are the two that tell you explicitly when to come back, via Retry-After, and honoring that header is the difference between a well behaved client and a participant in an outage.",
     ],
     [
       "Every code on this page is in the IANA HTTP Status Code Registry. Codes you will meet in the wild that are not include nginx's 499, which it logs when the client closes the connection before a response, and Cloudflare's 520 through 530 range for its own edge conditions. AWS load balancers add 460 and 463. These are useful in a log file and wrong in an API: an unregistered code means every client library falls back to guessing from the class digit, and you have gained nothing over the standard code that already describes the situation.",
@@ -225,7 +225,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
   ],
   "jwt-decoder": [
     [
-      "A JWT is three Base64URL segments with dots between them, and what the issuer actually signed is the text of the first two joined by that dot, not the JSON inside them. Almost every confusing JWT bug comes back to that. Pretty print the payload, reorder its keys, re-serialise it with a different library, and the bytes change while every claim stays identical, so verification fails on a token nobody tampered with. The same detail explains why every token you have ever seen starts with ",
+      "A JWT is three Base64URL segments with dots between them, and what the issuer actually signed is the text of the first two joined by that dot, not the JSON inside them. Almost every confusing JWT bug comes back to that. Pretty print the payload, reorder its keys, re-serialize it with a different library, and the bytes change while every claim stays identical, so verification fails on a token nobody tampered with. The same detail explains why every token you have ever seen starts with ",
       { code: "eyJ" },
       ": that is what an opening brace and a quote encode to. Base64URL is an encoding, not encryption, so the header and the payload are public to anyone holding the token.",
     ],
@@ -233,7 +233,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       { em: "Verifying" },
       " is a different operation from decoding and it needs a key, which is why this page does not attempt it. The classic failures all share one shape: a verifier that lets the token decide how it will be checked. ",
       { code: "alg: none" },
-      " was a legal value in the original specification and real libraries honoured it, so a token with an empty signature verified. Algorithm confusion is the subtler cousin: hand an ",
+      " was a legal value in the original specification and real libraries honored it, so a token with an empty signature verified. Algorithm confusion is the subtler cousin: hand an ",
       { code: "HS256" },
       " token to a service expecting ",
       { code: "RS256" },
@@ -271,7 +271,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "Two bits in the very first octet change the meaning of everything after them. The least significant bit is I/G: zero for a unicast address aimed at one interface, one for a group address. The next bit up is U/L: zero means the address came out of a registered OUI, one means it was made up locally. Both are the low bits of the first octet when the address is written in hex, and both are the first bits on the wire, because Ethernet transmits each octet least significant bit first.",
     ],
     [
-      "A locally administered address is almost never a mystery, it is a hint. It usually means a virtual machine (QEMU and KVM use 52:54:00), a container (Docker's bridge hands out 02:42 followed by the container's IP), a bonded or bridged interface that inherited a synthetic address, or a phone doing MAC randomisation. Every modern mobile operating system now generates a fresh locally administered address per Wi-Fi network by default, which is why MAC-based device tracking and MAC-based access control both stopped working reliably.",
+      "A locally administered address is almost never a mystery, it is a hint. It usually means a virtual machine (QEMU and KVM use 52:54:00), a container (Docker's bridge hands out 02:42 followed by the container's IP), a bonded or bridged interface that inherited a synthetic address, or a phone doing MAC randomization. Every modern mobile operating system now generates a fresh locally administered address per Wi-Fi network by default, which is why MAC-based device tracking and MAC-based access control both stopped working reliably.",
     ],
     [
       "The vendor table on this page holds roughly ninety prefixes chosen for how often they turn up, not for coverage. The IEEE Registration Authority publishes the authoritative list of every assignment, and that is what to check before putting a vendor attribution in a report. A lookup here that comes back empty means the prefix is not in this table, not that it is unassigned.",
@@ -311,7 +311,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       String(Math.log10(FAST_HASH_GUESSES_PER_SECOND)),
       " guesses a second against MD5 or NTLM and around 10^",
       String(Math.log10(SLOW_HASH_GUESSES_PER_SECOND)),
-      " against bcrypt at cost 12. That is eight orders of magnitude for the same password, decided entirely by a choice made in your code. It is the whole purpose of a password hashing function: bcrypt, scrypt, yescrypt and Argon2id are slow deliberately, and the memory hard ones are also awkward to parallelise, which is what removes the GPU's advantage rather than merely taxing it. A salt is a different control and solves a different problem: unique salts stop one precomputed table from covering every account, and they do nothing whatsoever to slow a targeted guess.",
+      " against bcrypt at cost 12. That is eight orders of magnitude for the same password, decided entirely by a choice made in your code. It is the whole purpose of a password hashing function: bcrypt, scrypt, yescrypt and Argon2id are slow deliberately, and the memory hard ones are also awkward to parallelize, which is what removes the GPU's advantage rather than merely taxing it. A salt is a different control and solves a different problem: unique salts stop one precomputed table from covering every account, and they do nothing whatsoever to slow a targeted guess.",
     ],
     [
       "NIST SP 800-63B settled the practical argument years ago and most policies still have not caught up. Length is the control that works, because each extra character multiplies the space while each extra composition rule narrows it. Forced periodic rotation and composition rules are both discouraged now, for the same reason: they push people into predictable transformations of one base they can remember. Screen new passwords against a breach corpus instead, because a password that has already leaked sits at the front of every wordlist no matter how many bits it scores here. And if you want a number you can defend, ",
@@ -327,7 +327,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
       "None of this is enforced by the protocol. A port number is just a 16-bit field in a TCP or UDP header, and nothing stops SSH from listening on 8080 or a backdoor from listening on 443. That is why service detection matters more than the number: nmap's -sV probes the service rather than trusting the port, and Wireshark will happily decode as HTTP whatever you tell it to.",
     ],
     [
-      "The security notes here are the ones worth internalising. A short list of ports should never be reachable from the internet under any circumstances: 445 SMB, 135 MS RPC, 3389 RDP, 23 Telnet, 3306 and 5432 and 27017 for databases, 6379 Redis, 2375 Docker, 623 IPMI, and 11211 Memcached. Several of those had no authentication at all in their default configuration, and every one of them is scanned continuously.",
+      "The security notes here are the ones worth internalizing. A short list of ports should never be reachable from the internet under any circumstances: 445 SMB, 135 MS RPC, 3389 RDP, 23 Telnet, 3306 and 5432 and 27017 for databases, 6379 Redis, 2375 Docker, 623 IPMI, and 11211 Memcached. Several of those had no authentication at all in their default configuration, and every one of them is scanned continuously.",
     ],
     [
       "Ports marked as conventional rather than assigned, 8080, 9000, 4444 and similar, are habits rather than standards. They are still worth knowing, because a scan result is a hypothesis and the conventional meaning is usually the right first guess.",
@@ -438,7 +438,7 @@ export const TOOL_NOTES: Record<string, NotePara[]> = {
   ],
   "vlsm-practice": [
     [
-      "Subnetting questions come in two flavours and it is worth spotting which one you are looking at before you start. If the requirement is a number of ",
+      "Subnetting questions come in two flavors and it is worth spotting which one you are looking at before you start. If the requirement is a number of ",
       { em: "subnets" },
       ", you borrow bits from the host field until 2 to the power of the borrowed bits covers the count. If the requirement is a number of ",
       { em: "hosts" },

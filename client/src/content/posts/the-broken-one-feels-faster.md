@@ -98,7 +98,7 @@ Which is almost never the driver at the bottom, and is usually the outermost
 one.
 
 **Jitter, or they come back together.** Exponential backoff without
-randomisation does not spread retries out. It synchronises them: every client
+randomization does not spread retries out. It synchronizes them: every client
 that failed in the same instant returns in the same instant, and then again,
 in tighter formation each round, because the doubling is the same doubling for
 everybody.

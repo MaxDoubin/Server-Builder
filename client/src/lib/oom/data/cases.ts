@@ -138,7 +138,7 @@ export const CASES: Case[] = [
       { id: "java", claim: "The elasticsearch JVM", names: [1500] },
     ],
     why:
-      "The process that hit the wall is not a term in the expression. It is not weighted, penalised or preferred; the kernel scores every task in the same way and the allocator happens to be one of them, at sixty megabytes. The JVM is three gigabytes of the four, with three hundred more in swap that `top` does not show in RES, and the JVM is what dies. This is why the process that appears in the OOM log as the one that asked is so rarely the process named as the one that was killed, two lines below.",
+      "The process that hit the wall is not a term in the expression. It is not weighted, penalized or preferred; the kernel scores every task in the same way and the allocator happens to be one of them, at sixty megabytes. The JVM is three gigabytes of the four, with three hundred more in swap that `top` does not show in RES, and the JVM is what dies. This is why the process that appears in the OOM log as the one that asked is so rarely the process named as the one that was killed, two lines below.",
     fix:
       "Read both lines of the log. The 'invoked oom-killer' line is a symptom of the machine being full and tells you almost nothing about what filled it; the 'Killed process' line names the biggest thing, which is usually the thing to size or cap. Neither line means the backup was at fault, and rescheduling it will not help.",
     breaks: "the process whose allocation failed is the process that gets killed",

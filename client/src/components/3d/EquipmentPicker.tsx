@@ -91,11 +91,11 @@ const getStoredIds = (key: string): string[] => {
 const storeIds = (key: string, ids: string[]) => {
   if (typeof window === "undefined") return;
   // getStoredIds above is wrapped and this was not, so favouriting a device
-  // threw where reading the favourites had been handled.
+  // threw where reading the favorites had been handled.
   try {
     window.localStorage.setItem(key, JSON.stringify(ids));
   } catch {
-    /* Favourites and recents last as long as the page does. */
+    /* Favorites and recents last as long as the page does. */
   }
 };
 

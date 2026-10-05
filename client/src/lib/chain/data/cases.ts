@@ -284,7 +284,7 @@ export const CHAIN_CASES: ChainCase[] = [
     ],
     explain: [
       "The chain is correct and complete and terminates at Public Root G2, which this device has never heard of because it has not had an update since 2019.",
-      "Nothing the server does fixes this, and that is the part worth internalising. Reissuing the certificate produces another one under the same root. Adding intermediates changes nothing. The missing piece is in the client and only the client can supply it.",
+      "Nothing the server does fixes this, and that is the part worth internalizing. Reissuing the certificate produces another one under the same root. Adding intermediates changes nothing. The missing piece is in the client and only the client can supply it.",
       "In the real world this arrives all at once, when a root reaches its own expiry and a long tail of devices that trusted it stop working on the same day. It looks like a server outage and it is a fleet problem.",
       "The options are: update the device's trust store, replace the device, or serve it a certificate under a root it does have, which usually means an internal CA and a certificate that only that fleet trusts.",
     ],

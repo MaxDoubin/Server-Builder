@@ -61,7 +61,7 @@ directory you can come back after a power loss to find the old file, or in some
 filesystem configurations neither name resolving to your data.
 
 The pattern, write to temp, fsync the file, rename, fsync the directory, is the
-standard recipe for "replace a file durably." It is worth memorising because
+standard recipe for "replace a file durably." It is worth memorizing because
 config management, package managers, and databases all do exactly this.
 
 If you are using buffered I/O in a runtime, flush the runtime buffer before
@@ -105,7 +105,7 @@ choice.
 
 Two things I check on any storage I intend to trust.
 
-**Does the device honour flush?** Consumer drives have historically been caught
+**Does the device honor flush?** Consumer drives have historically been caught
 acknowledging flushes they did not perform. You cannot easily test this without
 pulling power, which is exactly the test: write a known sequence with syncs,
 cut power at the wall, and see what survived. Do it once on a new drive class

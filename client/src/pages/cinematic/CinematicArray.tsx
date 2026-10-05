@@ -75,7 +75,7 @@ export function CinematicArray() {
               which is a warranty bound rather than a measurement, and once with a rate two orders
               of magnitude better, which is a conservative reading of what field studies actually
               find. The conclusion moves a very long way between them, and a page that prints only
-              one of the two is repeating a rumour with a decimal point in it.
+              one of the two is repeating a rumor with a decimal point in it.
             </p>
           </header>
 

@@ -6,7 +6,7 @@ import type { Scenario } from "../types";
  * Three separate caches are involved and they fail in different ways, which
  * is the actual lesson: "DNS has propagated" is not a thing that happens, it
  * is a set of independent TTLs expiring at their own pace, plus at least one
- * resolver that is not honouring them and one client that never asked a
+ * resolver that is not honoring them and one client that never asked a
  * resolver at all.
  */
 export const theDnsThatLied: Scenario = {
@@ -395,7 +395,7 @@ export const theDnsThatLied: Scenario = {
       title: "Sixty tickets in nine minutes",
       grade: "bad",
       body: [
-        "Turning the old host off did stop the data loss, which is the one thing in its favour.",
+        "Turning the old host off did stop the data loss, which is the one thing in its favor.",
         "It also took the application away from 269 people with no warning, in the middle of a Tuesday, including a finance team on a month-end deadline. The resolver caches still held the old address for another eighteen hours, so those people had no route to the application at all until somebody thought to flush them.",
       ],
       lesson: [

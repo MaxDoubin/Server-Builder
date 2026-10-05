@@ -40,7 +40,7 @@ export function badness(task: Process, total: number): number | null {
  *
  * x86-64 and the usual arm64 build both use 4 KiB pages. A kernel built for
  * 16K or 64K pages would move the truncation again, which is a good reminder
- * that this term is an artefact of an implementation rather than a law.
+ * that this term is an artifact of an implementation rather than a law.
  */
 export const PAGES_PER_MIB = 256;
 
@@ -67,8 +67,8 @@ export const inCgroup = (task: Process, path: string): boolean =>
 /**
  * Who is in the running, and what the scores are normalized against.
  *
- * The second half is the part people miss. A system OOM normalises against
- * RAM plus swap; a cgroup OOM normalises against the cgroup's limit. An adj
+ * The second half is the part people miss. A system OOM normalizes against
+ * RAM plus swap; a cgroup OOM normalizes against the cgroup's limit. An adj
  * of -100 on a task in a 512 MiB cgroup is worth 51 MiB, and the same adj on
  * the same task under a system OOM on a 256 GiB host is worth 26 GiB. The
  * setting did not change. What it is a proportion of did.

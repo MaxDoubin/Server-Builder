@@ -102,7 +102,7 @@ DHCP snooping and DAI protect the VLANs you name, on the switches where they are
 
 An attacker on a switch that does not run snooping is unaffected, and if the link from that switch is trusted, their rogue server's replies pass straight through. The trust boundary has to be drawn at the real edge of the network, not at the edge of the switch you happened to configure.
 
-IPv6 is untouched. There is no ARP in IPv6; address resolution and default gateway discovery both run over ICMPv6 Neighbor Discovery, and the equivalent attack is a spoofed Router Advertisement. That needs RA Guard, DHCPv6 Guard, and IPv6 Source Guard, which are separate features. A dual-stack network with DAI and no RA Guard is still trivially man-in-the-middled, and the attacker gets preference because hosts favour the IPv6 path.
+IPv6 is untouched. There is no ARP in IPv6; address resolution and default gateway discovery both run over ICMPv6 Neighbor Discovery, and the equivalent attack is a spoofed Router Advertisement. That needs RA Guard, DHCPv6 Guard, and IPv6 Source Guard, which are separate features. A dual-stack network with DAI and no RA Guard is still trivially man-in-the-middled, and the attacker gets preference because hosts favor the IPv6 path.
 
 Neither feature stops a host from simply sending IPv4 packets with a forged source address once it has an address. That is IP Source Guard, the third feature in the set, which uses the same binding table to filter the data plane rather than just the control messages.
 

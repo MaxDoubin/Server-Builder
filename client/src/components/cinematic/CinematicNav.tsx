@@ -259,7 +259,7 @@ export function CinematicNav({ overHero = false }: { overHero?: boolean }) {
 
           data-nosnippet is the documented fix: text inside it is still
           crawled, indexed and followed, it is simply not eligible to be
-          quoted in a result. Google honours the attribute on div, span and
+          quoted in a result. Google honors the attribute on div, span and
           section only, which is why it sits on the inner containers rather
           than on <header> and <footer> themselves.
         */}

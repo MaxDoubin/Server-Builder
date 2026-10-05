@@ -13,7 +13,7 @@ NTP measures the round-trip delay to the time server and uses statistical algori
 
 The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is `(T4 - T1) - (T3 - T2)` and offset is `((T2 - T1) + (T3 - T4)) / 2`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
 
-Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronised, and a server advertising 16 is telling you it does not know the time. If `chronyc tracking` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. If `chronyc tracking` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -94,7 +94,7 @@ From `chronyc tracking`, the fields to alert on are **System time**, which is th
 
 NTP over a LAN with chrony realistically holds tens of microseconds; over the internet, single digit milliseconds is a good result. That is ample for logs, Kerberos, and certificates.
 
-It is not ample for everything. Financial trade timestamping regimes, telecom synchronisation, and industrial control can require sub-microsecond alignment, and getting there means PTP (IEEE 1588) with hardware timestamping in the NICs and switches, or a local GPS-disciplined clock. If someone hands you a requirement measured in microseconds, NTP over ordinary switches is not the tool, and no amount of tuning will make it one.
+It is not ample for everything. Financial trade timestamping regimes, telecom synchronization, and industrial control can require sub-microsecond alignment, and getting there means PTP (IEEE 1588) with hardware timestamping in the NICs and switches, or a local GPS-disciplined clock. If someone hands you a requirement measured in microseconds, NTP over ordinary switches is not the tool, and no amount of tuning will make it one.
 
 ## Monitoring Time
 

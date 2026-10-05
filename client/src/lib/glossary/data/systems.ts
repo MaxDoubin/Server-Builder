@@ -241,7 +241,7 @@ export const SYSTEMS: Term[] = [
     expansion: "Virtual machine",
     field: "systems",
     definition:
-      "A whole guest operating system running on virtualised hardware, with its own kernel, its own memory, and virtual devices the hypervisor presents to it. It boots, panics and patches like a physical machine because as far as the guest can tell it is one.",
+      "A whole guest operating system running on virtualized hardware, with its own kernel, its own memory, and virtual devices the hypervisor presents to it. It boots, panics and patches like a physical machine because as far as the guest can tell it is one.",
     confusion:
       "A VM is not a container, and the difference is the kernel. A container shares the host's kernel and isolates a process; a VM brings its own, which is why a VM can run a different operating system and why it costs a gigabyte of memory to do nothing. Sizing follows from that: a guest larger than one NUMA node's share of memory pays for every access that crosses the node.",
     see: ["hypervisor", "KVM", "NUMA"],

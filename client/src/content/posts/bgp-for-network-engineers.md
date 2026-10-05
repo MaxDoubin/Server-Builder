@@ -76,7 +76,7 @@ Do not reach for it inside a small network either. In a campus, OSPF converges i
 
 You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start with a simple two-AS topology, peer them, and watch the route tables populate. Then add filters and attributes to see how routing decisions change.
 
-Containerlab with FRR is the lightest way in now: a multi-AS topology defined in a YAML file, running as containers on a laptop, up in seconds. Build the lab, break it deliberately, and read `show bgp summary` and `show bgp ipv4 unicast <prefix>` until best-path selection stops being a list you memorised and becomes something you can see in the output.
+Containerlab with FRR is the lightest way in now: a multi-AS topology defined in a YAML file, running as containers on a laptop, up in seconds. Build the lab, break it deliberately, and read `show bgp summary` and `show bgp ipv4 unicast <prefix>` until best-path selection stops being a list you memorized and becomes something you can see in the output.
 
 ## References
 

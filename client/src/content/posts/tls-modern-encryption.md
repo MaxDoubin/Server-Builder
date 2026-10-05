@@ -107,7 +107,7 @@ That is fine for a GET of a static asset. It is not fine for anything that chang
 
 Disable TLS 1.0 and 1.1 everywhere. These versions have known vulnerabilities (POODLE, BEAST) and no modern client requires them. Check your servers and load balancers for these settings.
 
-For context on those two names: BEAST exploited the predictable CBC initialisation vector in TLS 1.0, and POODLE was originally an SSL 3.0 padding attack that also affected TLS implementations that did not check CBC padding properly. Both are artefacts of the CBC construction that TLS 1.3 removed entirely.
+For context on those two names: BEAST exploited the predictable CBC initialization vector in TLS 1.0, and POODLE was originally an SSL 3.0 padding attack that also affected TLS implementations that did not check CBC padding properly. Both are artifacts of the CBC construction that TLS 1.3 removed entirely.
 
 Monitor your cipher suite usage and set a timeline for deprecating TLS 1.2 once you have confirmed all clients support 1.3.
 

@@ -161,7 +161,7 @@ for (const item of CASES) {
   }
   if (s.utilisation > 1.0001) {
     problems.push(
-      `${item.slug}: utilisation is ${(s.utilisation * 100).toFixed(1)} percent of quota with a` +
+      `${item.slug}: utilization is ${(s.utilisation * 100).toFixed(1)} percent of quota with a` +
         ` burst of ${item.setup.burstMs}ms, which is more than the group is allowed`,
     );
   }
@@ -186,7 +186,7 @@ const properties: [string, () => boolean, string][] = [
       /* Well under the limit on average, and throttled anyway. Both halves. */
       return st.utilisation < 0.5 && st.nrThrottled > 0;
     },
-    "utilisation under half the limit while periods are still being throttled, which is the case",
+    "utilization under half the limit while periods are still being throttled, which is the case",
   ],
   [
     "forty-threads-half-a-cpu",
@@ -272,7 +272,7 @@ const properties: [string, () => boolean, string][] = [
       const s = CASES.find((c) => c.slug === "the-limit-is-not-a-core-count")!.setup;
       return stat(s).utilisation === 1 && !everThrottled(s);
     },
-    "utilisation at exactly 100 percent of the quota with nothing throttled",
+    "utilization at exactly 100 percent of the quota with nothing throttled",
   ],
 ];
 

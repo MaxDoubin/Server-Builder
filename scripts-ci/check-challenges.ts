@@ -35,11 +35,11 @@ const FLAGS: Record<string, string> = {
  * Every challenge's flag, re-derived from exactly what the reader is shown.
  *
  * The hash comparison below proves the recorded answer is right. It says
- * nothing about whether the printed artefact produces that answer. "The Key
+ * nothing about whether the printed artifact produces that answer. "The Key
  * Was the Year" shipped with a ciphertext that decoded to garbage under its
  * own key, one byte short of its flag, and this script stayed green because
  * it only ever compared hashes. Each entry here follows the challenge's own
- * walkthrough against the artefact, so the artefact and the answer cannot
+ * walkthrough against the artifact, so the artifact and the answer cannot
  * drift apart again, and a challenge without an entry fails.
  */
 const artefactLines = (challenge: Challenge, kind: string) =>
@@ -177,7 +177,7 @@ for (const challenge of CHALLENGES) {
 
   /*
     The flag must NOT be findable in what ships.
-    The artefacts and the brief are what the reader is given; if the flag is
+    The artifacts and the brief are what the reader is given; if the flag is
     sitting in one of them the challenge is not a challenge. The walkthrough
     is exempt, because it is the answer and is meant to contain it.
   */
@@ -187,7 +187,7 @@ for (const challenge of CHALLENGES) {
   }
 
   /*
-    For a derivation challenge the flag must not be in the artefact either.
+    For a derivation challenge the flag must not be in the artifact either.
     For a selection challenge it must be: "which of these six addresses got
     in" only works if all six are printed. answerIsInTheData says which.
   */
@@ -197,20 +197,20 @@ for (const challenge of CHALLENGES) {
     .toLowerCase();
   const inArtefacts = artefacts.includes(flag.toLowerCase());
   if (inArtefacts && !challenge.answerIsInTheData) {
-    note(challenge.slug, "the flag is printed in the artefact, so there is nothing to work out");
+    note(challenge.slug, "the flag is printed in the artifact, so there is nothing to work out");
   }
   if (!inArtefacts && challenge.answerIsInTheData) {
-    note(challenge.slug, "is marked answerIsInTheData but the answer is not in the artefact");
+    note(challenge.slug, "is marked answerIsInTheData but the answer is not in the artifact");
   }
 
-  /* The artefact has to yield the flag, by the walkthrough's own method. */
+  /* The artifact has to yield the flag, by the walkthrough's own method. */
   const derive = DERIVATIONS[challenge.slug];
   if (!derive) {
     note(challenge.slug, "has no derivation in this script, so CI cannot replay its solution");
   } else {
     const derived = derive(challenge);
     if (derived !== flag) {
-      note(challenge.slug, `the artefact does not produce the flag; it derives to ${JSON.stringify(derived)}`);
+      note(challenge.slug, `the artifact does not produce the flag; it derives to ${JSON.stringify(derived)}`);
     }
   }
 
@@ -219,7 +219,7 @@ for (const challenge of CHALLENGES) {
   if (challenge.hints.length < 2) note(challenge.slug, "needs at least two hints");
   if (challenge.artefacts.length === 0) note(challenge.slug, "has nothing to work on");
   for (const artefact of challenge.artefacts) {
-    if (artefact.lines.length === 0) note(challenge.slug, "has an empty artefact");
+    if (artefact.lines.length === 0) note(challenge.slug, "has an empty artifact");
   }
 }
 
@@ -245,6 +245,6 @@ if (problems.length) {
 
 console.log(
   `OK  ${CHALLENGES.length} challenges, every flag hash verified against its answer, ` +
-    `every one re-derived from its artefact, ` +
+    `every one re-derived from its artifact, ` +
     `and no flag appears in what the reader is given.`,
 );

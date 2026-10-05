@@ -67,7 +67,7 @@ export function buckets(setup: Setup): number {
 /**
  * max_factor. Eight only when the size was set by hand.
  *
- * This is the whole of the 4x and 8x folklore. The factor is initialised to
+ * This is the whole of the 4x and 8x folklore. The factor is initialized to
  * eight at the top of the function and the auto-sizing branch overwrites it
  * with one on its last line, so the ratio you get depends entirely on whether
  * anybody told the kernel how big the table should be.

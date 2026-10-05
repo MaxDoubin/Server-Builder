@@ -176,7 +176,7 @@ const PORTS: PortEntry[] = [
     port: 123,
     proto: "UDP",
     service: "NTP",
-    description: "Clock synchronisation. Accurate time is a prerequisite for Kerberos and for log correlation.",
+    description: "Clock synchronization. Accurate time is a prerequisite for Kerberos and for log correlation.",
     note: "Older daemons answering monlist were a major amplification source. Restrict queries.",
   },
   {
@@ -250,7 +250,7 @@ const PORTS: PortEntry[] = [
     port: 427,
     proto: "TCP/UDP",
     service: "SLP",
-    description: "Service Location Protocol, used by some storage and virtualisation appliances.",
+    description: "Service Location Protocol, used by some storage and virtualization appliances.",
     note: "A high-factor amplification vector; several vendors shipped it enabled by default.",
   },
   {
@@ -376,7 +376,7 @@ const PORTS: PortEntry[] = [
     port: 593,
     proto: "TCP",
     service: "RPC over HTTP",
-    description: "Windows RPC tunnelled inside HTTP, used by Exchange and DCOM.",
+    description: "Windows RPC tunneled inside HTTP, used by Exchange and DCOM.",
   },
   {
     port: 601,
@@ -420,7 +420,7 @@ const PORTS: PortEntry[] = [
     port: 873,
     proto: "TCP",
     service: "rsync",
-    description: "The rsync daemon, distinct from rsync tunnelled over SSH.",
+    description: "The rsync daemon, distinct from rsync tunneled over SSH.",
     note: "Daemon-mode modules are frequently left world-readable and world-writable.",
   },
   {
@@ -498,7 +498,7 @@ const PORTS: PortEntry[] = [
     port: 1701,
     proto: "UDP",
     service: "L2TP",
-    description: "Layer 2 tunnelling, almost always paired with IPsec for confidentiality.",
+    description: "Layer 2 tunneling, almost always paired with IPsec for confidentiality.",
     note: "L2TP alone provides no encryption whatsoever.",
   },
   {

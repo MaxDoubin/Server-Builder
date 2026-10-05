@@ -123,7 +123,7 @@ Also learn the difference between "connection refused" and "connection timed out
 
 ## What breaks
 
-**Grepping for the wrong word.** Not every failure says "error". Search for `-iE 'error|fail|denied|refused|timeout|panic|fatal'` and use `-i`, because half of the software on any machine capitalises differently from the other half.
+**Grepping for the wrong word.** Not every failure says "error". Search for `-iE 'error|fail|denied|refused|timeout|panic|fatal'` and use `-i`, because half of the software on any machine capitalizes differently from the other half.
 
 **Timezone mismatch between sources.** journalctl prints local time by default, most application logs are UTC, and a firewall may be on a third setting. Two logs of the same incident then appear to describe events hours apart. Force one representation with `-o short-iso` or `--utc`, and prefer RFC 3339 timestamps with an explicit offset wherever you control the format.
 

@@ -492,7 +492,7 @@ const capped: Machine = {
   ],
 };
 const inside = scope(capped, { kind: "cgroup", path: "/system.slice/small.service" });
-if (inside.total !== 1000) problems.push(`a cgroup OOM normalises against ${inside.total}, not its limit`);
+if (inside.total !== 1000) problems.push(`a cgroup OOM normalizes against ${inside.total}, not its limit`);
 if (inside.candidates.length !== 1) problems.push("a cgroup OOM considers tasks outside the cgroup");
 if (badness(capped.processes[0], inside.total) !== 400) {
   problems.push("an adj inside a small cgroup is worth a share of the limit rather than of the machine");

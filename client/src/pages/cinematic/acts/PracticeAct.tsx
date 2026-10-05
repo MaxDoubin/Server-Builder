@@ -120,7 +120,7 @@ const SURFACES: Surface[] = [
     eyebrow: "Find",
     title: "Capture the flag",
     blurb:
-      "An artefact and a question with one exact answer. The flag is behind a hash so ctrl-F cannot spoil it.",
+      "An artifact and a question with one exact answer. The flag is behind a hash so ctrl-F cannot spoil it.",
     count: `${CHALLENGES.length} ${pluralise(CHALLENGES.length, "challenge")}`,
   },
   {

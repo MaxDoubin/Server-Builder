@@ -142,7 +142,7 @@ export function exhaustsAt(setup: Setup): number | null {
 /**
  * When the work that arrived is finally all done, in wall clock.
  *
- * This is the number a user experiences and the one no utilisation graph
+ * This is the number a user experiences and the one no utilization graph
  * shows. It is computed to the millisecond inside the period that finishes
  * it, because finishing 3ms into a 100ms period and finishing at the end of
  * it are not the same answer.

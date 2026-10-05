@@ -82,7 +82,7 @@ Correct output echoes the mount with your options attached:
 10.0.20.10:/storage/media on /Volumes/media (nfs, nodev, nosuid, mounted by max)
 ```
 
-Those options are not decoration. `resvport` makes the client bind a source port below 1024, which most NFS servers require and which is the reason an otherwise correct mount fails with a permission error. `nfc` normalises filenames to composed Unicode form, because macOS historically stored decomposed names and a Linux server stores composed ones, which is how you end up with two directories that look identical. `hard` makes the client retry forever instead of returning errors to applications, which is what you want for data. `soft` will hand an application a partial read during a network blip and let it write the result out.
+Those options are not decoration. `resvport` makes the client bind a source port below 1024, which most NFS servers require and which is the reason an otherwise correct mount fails with a permission error. `nfc` normalizes filenames to composed Unicode form, because macOS historically stored decomposed names and a Linux server stores composed ones, which is how you end up with two directories that look identical. `hard` makes the client retry forever instead of returning errors to applications, which is what you want for data. `soft` will hand an application a partial read during a network blip and let it write the result out.
 
 For a permanent mount I use automount rather than a boot script, with the same options. In `/etc/auto_nfs`:
 

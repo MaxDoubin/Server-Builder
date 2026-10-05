@@ -70,11 +70,11 @@ const networking: Deck = {
 const ports: Deck = {
   id: "ports-and-protocols",
   name: "Ports and protocols",
-  description: "The well-known TCP and UDP port numbers worth memorising.",
+  description: "The well-known TCP and UDP port numbers worth memorizing.",
   cards: [
     { id: "port-ftp", front: "FTP ports and transport?", back: "TCP 21 for control, TCP 20 for active-mode data." },
     { id: "port-ssh", front: "SSH port and transport?", back: "TCP 22. Also used by SFTP and SCP, which run over SSH." },
-    { id: "port-telnet", front: "Telnet port?", back: "TCP 23. Cleartext, so it is deprecated in favour of SSH." },
+    { id: "port-telnet", front: "Telnet port?", back: "TCP 23. Cleartext, so it is deprecated in favor of SSH." },
     { id: "port-smtp", front: "SMTP port for server-to-server mail?", back: "TCP 25. Message submission from clients uses 587 (STARTTLS) or 465 (implicit TLS)." },
     { id: "port-dns", front: "DNS port(s)?", back: "53 on both UDP and TCP. UDP for most queries, TCP for zone transfers and large responses." },
     { id: "port-dhcp", front: "DHCP ports?", back: "UDP 67 on the server, UDP 68 on the client." },

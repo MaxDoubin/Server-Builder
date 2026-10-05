@@ -131,7 +131,7 @@ The mechanism is worth understanding before you reach for it. An SR-IOV capable 
 
 The costs are real. Traffic on a virtual function does not traverse the host bridge, so the host cannot filter it, mirror it, or count it, and none of your `tcpdump` on the bridge will show it. Live migration is difficult or impossible because the guest is bound to a specific piece of hardware. And the VLAN for a VF is set on the physical function rather than in your bridge config, so it is one more place to keep in sync.
 
-For everything short of that, use the paravirtualised driver rather than an emulated one. A `virtio-net` NIC and an emulated `e1000` NIC both work, but the emulated card makes the host simulate a real chipset register by register, and the throughput difference is large. Pick emulation only when the guest is too old to have virtio drivers.
+For everything short of that, use the paravirtualized driver rather than an emulated one. A `virtio-net` NIC and an emulated `e1000` NIC both work, but the emulated card makes the host simulate a real chipset register by register, and the throughput difference is large. Pick emulation only when the guest is too old to have virtio drivers.
 
 ## References
 

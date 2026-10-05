@@ -110,7 +110,7 @@ taken execute away from a file that never had it and left write where the mask
 said to clear it. Masking never touches a bit the mask does not name, and never
 borrows across a digit, which is exactly what subtraction does.
 
-There is one more layer of camouflage here, and it is my favourite detail in
+There is one more layer of camouflage here, and it is my favorite detail in
 the whole subject. `mkdir` never reveals the bug. Directories are born `777`,
 and for a minuend of 7, `7 - d` and `7 & ~d` are the same number for every
 octal digit d. So subtraction and masking agree on all 512 masks for a

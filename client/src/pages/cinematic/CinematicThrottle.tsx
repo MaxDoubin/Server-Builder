@@ -12,7 +12,7 @@
  * spare, which is idle rather than throttled and is a completely different
  * diagnosis.
  *
- * Above them, the utilisation figure a dashboard would show, because the
+ * Above them, the utilization figure a dashboard would show, because the
  * whole point is that a number can read 30 percent over a window where two
  * of ten bars are three quarters red.
  *

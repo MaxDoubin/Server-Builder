@@ -420,7 +420,7 @@ export const HANDSHAKES: Handshake[] = [
         explain: [
           "The port opens because the answer was Accept, and the switch applies its configured default VLAN because it was told nothing else.",
           "This is the failure that looks like a success everywhere you would look. The switch logs an authorized session, RADIUS logs an accept, and the user cannot reach anything.",
-          "Check the attributes on the accept, not the accept itself. Tunnel-Private-Group-ID is the one that carries the VLAN, and it has to arrive with two companion attributes to be honoured at all.",
+          "Check the attributes on the accept, not the accept itself. Tunnel-Private-Group-ID is the one that carries the VLAN, and it has to arrive with two companion attributes to be honored at all.",
         ],
       },
     ],

@@ -363,7 +363,7 @@ export const saveNamedLayout = (
     payloadBytes = JSON.stringify(layout).length;
   } catch (error) {
     logError("Could not measure a layout before saving.", error);
-    return { ok: false, error: "The layout could not be serialised." };
+    return { ok: false, error: "The layout could not be serialized." };
   }
 
   if (payloadBytes > MAX_LAYOUT_BYTES) {

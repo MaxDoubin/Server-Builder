@@ -15,7 +15,7 @@ export const theLogsStoppedInJune: Scenario = {
   ],
   start: "the-gap",
   reading: [
-    { label: "Centralised logging, done so it stays working", href: "/blog/syslog-centralized-logging" },
+    { label: "Centralized logging, done so it stays working", href: "/blog/syslog-centralized-logging" },
     { label: "Log analysis when you do not know what you are looking for", href: "/blog/log-analysis-methodology" },
     { label: "Building a monitoring system that watches itself", href: "/blog/network-monitoring-system-build" },
   ],
