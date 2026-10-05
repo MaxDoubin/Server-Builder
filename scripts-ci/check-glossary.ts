@@ -164,6 +164,7 @@ const NOT_JARGON: Record<string, string> = {
   RAM: "covered by the DIMM and ECC entries",
   GPU: "assumed knowledge for this audience",
   R740: "a specific server model rather than a term; the article that uses it says what it is",
+  AMD: "a company name, not a term",
   BIOS: "defined",
   SYN: "defined",
 };

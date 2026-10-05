@@ -276,4 +276,24 @@ export const SYSTEMS: Term[] = [
       "Because the T2 owns the controller, the internal storage is not a drive another machine can read. Pulling the SSD out of a T2 Mac gets you a module that only pairs with the logic board it was encrypted against, so a dead board is a dead disk unless the data was somewhere else too.",
     see: ["Secure Boot", "SSD", "UEFI"],
   },
+  {
+    term: "TPM",
+    expansion: "Trusted Platform Module",
+    field: "security",
+    definition:
+      "A small security processor, either a separate chip or a firmware module inside the CPU, that stores keys and records measurements of what booted. BitLocker and Windows 11's install checks rely on it, and Windows 11 requires version 2.0.",
+    confusion:
+      "Apple's T2 is not one. It does many of the same jobs, but it does not present the TPM interface Windows looks for, which is why Windows 11 Setup reports no TPM on a 2019 Mac Pro.",
+    see: ["T2", "Secure Boot", "UEFI"],
+  },
+  {
+    term: "MPX",
+    expansion: "Mac Pro Expansion Module",
+    field: "hardware",
+    definition:
+      "Apple's module format for the 2019 Mac Pro: a full-length card that plugs into a standard PCIe x16 slot plus a second connector carrying Thunderbolt and extra power, so a graphics module can drive Thunderbolt displays without cables and draw more power than a slot alone provides.",
+    confusion:
+      "An MPX bay still takes ordinary PCIe cards. It is the module, not the bay, that is Apple-specific, so an MPX graphics module only fits the Mac Pro.",
+    see: ["PCIe", "T2"],
+  },
 ];
