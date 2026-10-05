@@ -50,6 +50,1450 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "idrac-fan-speed-offset",
+    title: "iDRAC Fan Speed Offset: Every Thermal Setting on iDRAC9 Explained",
+    date: "2026-10-05",
+    tags: ["dell", "servers", "homelab", "hardware"],
+    excerpt:
+      "Learn what each iDRAC9 thermal setting does on an R640 or R740, with exact racadm and Redfish commands, per-slot PCIe cooling and the firmware change that ended raw IPMI fan control.",
+    coverImage: "/images/blog/idrac-fan-speed-offset.jpg",
+    coverCredit: {
+      author: "Btrs",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerScale_F600_nodes_in_storage_cluster.jpg",
+    },
+    content: `
+## The short answer
+
+Fan Speed Offset on iDRAC9 can only make an R640 or R740 louder: Low, Medium, High and Max add airflow on top of the baseline that Dell's thermal controller calculates, and Off, the default, adds none. Minimum Fan Speed in PWM percent is a floor, not a setpoint, so no supported setting holds the fans at a fixed 20 percent. What lowers noise is removing a cause, such as a leftover offset, a low exhaust limit or the response to a third-party card, which you can disable one slot at a time. Owner reports say raw [IPMI](/blog/ipmi-remote-management) fan commands stopped working at iDRAC9 3.34.34.34 in June 2019, and Dell says firmware from June 2024 cannot be rolled back to 4.40.10.00 or older.
+
+## Where are the iDRAC9 fan and thermal settings, and what does each one do?
+
+They share one page. In the iDRAC9 web interface open Configuration > System Settings > Hardware Settings > Cooling Configuration, per [Dell KB 000257346](https://www.dell.com/support/kbdoc/en-us/000257346/poweredge-how-to-change-the-fan-speed-offset). On the server, press F2 at boot and open iDRAC Settings > Thermal, per Dell's [custom cooling white paper](https://downloads.dell.com/manuals/common/customcooling_poweredge_idrac9.pdf).
+
+| Setting | What it does | Values | racadm object |
+|---|---|---|---|
+| Thermal Profile Optimization | Base fan algorithm; anything but Default overrides the BIOS System Profile | Default, Maximum Performance, Minimum Power, Sound Cap | \`ThermalProfile\` |
+| Maximum Exhaust Temperature Limit | Adds airflow to hold exhaust air under a limit | Default 70 C, down to 40 C where supported | \`AirExhaustTemp\` |
+| Fan Speed Offset | Adds a fixed step above baseline | Off, Low, Medium, High, Max | \`FanSpeedOffset\` |
+| Minimum Fan Speed in PWM | Floor under all system fans | Default or Custom percent | \`MinimumFanSpeed\` |
+| PCIe Airflow Settings | Per-slot response for third-party cards | Automatic, Custom, Disabled | \`System.PCIeSlotLFM.3\` |
+
+The first four live in \`System.ThermalSettings\`. Dell's paper sets three ground rules: the options "apply to server system fans and do not influence fans that are located in peripheral devices such as power supplies or PCIe cards," the server "does not allow fan speeds to drop below the threshold that is required to cool the server," and settings persist through "system reboot, power cycling, iDRAC, or BIOS updates," so a previous owner's offset stays until you clear it.
+
+The KB says the page "requires an Enterprise or Datacenter license," and Dell's [iDRAC9 User's Guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) makes Express the default on 600-series and higher rack servers, which covers the R640 and R740. A fan-control project maintainer reported an R640 on Express with the whole section editable and [Redfish returning the same attributes](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker/issues/360), so test before assuming either.
+
+## What do Fan Speed Offset and Minimum Fan Speed in PWM do?
+
+Both raise fans and neither lowers them below the baseline, which comes from your hardware and inlet temperature. Dell's [R740 Technical Guide](https://i.dell.com/sites/csdocuments/Merchandizing_Docs/ja/poweredge-r740-r740xd-technical-guide-addcpulist-180912.pdf) says open-loop fan control "uses system configuration to determine fan speed based on system inlet air temperature."
+
+<figure>
+<img src="/images/blog/idrac-fan-speed-offset/server-interior.jpg" alt="The inside of a 1U Dell server, showing its row of system fans" width="1200" height="698" loading="lazy" decoding="async">
+<figcaption>The inside of a 2013 Dell 1U server and its row of system fans. Fan Speed Offset and Minimum Fan Speed act on these system fans, not on fans inside power supplies or PCIe cards. Photo: arichnad, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Inside_of_webserver.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+### Fan Speed Offset adds a step above the baseline
+
+An offset "causes fan speeds to increase by the offset percentage value over baseline fan speeds," in four steps spread between the typical baseline and full speed. The white paper puts them at +25, +50, +75 and +100 percent, but the user guide says the values depend on the system and shows 23, 47, 66 and 100. \`racadm get System.ThermalSettings\` shows yours in \`FanSpeedLowOffsetVal\`, \`FanSpeedMediumOffsetVal\`, \`FanSpeedHighOffsetVal\` and \`FanSpeedMaxOffsetVal\`.
+
+| Option | racadm value | Dell's description |
+|---|---|---|
+| Low | 0 | Drives fan speeds to a moderate fan speed |
+| Medium | 2 | Drives fan speeds close to medium |
+| High | 1 | Drives fan speeds close to full speed |
+| Max | 3 | Drives fan speeds to full speed |
+| Off | 255 | Default: no additional offset |
+
+The numbering is out of order: High is 1 and Medium is 2. Off "should not be construed as the fan is not running or that fan speeds cannot change." For noise, Off is the only useful value.
+
+### Minimum Fan Speed in PWM sets a floor
+
+The option, set in PWM (pulse-width modulation) percent, lets you "stipulate a lowest setting below which fans cannot drop." Fans "can run higher than the fan speed that the MFS option sets unless set to 100-percent, but not lower," and 0% PWM "does not indicate that the fan is off." The web interface offers Default, "determined by the system cooling algorithm," or Custom, and a racadm read of 255 means no custom value is applied.
+
+Custom values run from \`MFSMinimumLimit\` to \`MFSMaximumLimit\`, which depend on the hardware. The December 2020 user guide quotes 9 to 100 and calls the range dynamic. The fan-control project maintainer recorded [5 percent on an R640, 7 percent on an R740 and 35 percent on an R740xd](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker/issues/360), and an R7425 owner reported a range of [100 to 100 after adding a passively cooled Tesla P40](https://www.dell.com/community/en/conversations/power-cooling/r7425-fans-at-100-with-passively-cooled-gpu-installed-idrac9-7x-firmware/689753751739533d7f4d376a), where Dell's moderator suggested the GPU enablement kit. Offset and floor combine: the algorithm "calculates the appropriate fan speed that meets all the customization requests."
+
+## Which thermal profile and exhaust limit suit a quiet server?
+
+Default thermal profile follows the BIOS System Profile. Dell says Maximum Performance gives "Generally, higher fan speeds at idle and stress loads" and Minimum Power gives "Generally, lower fan speeds." Sound Cap, on supported platforms, caps CPU power "to limit fan speed" at a performance cost. A Level1Techs poster [recommends the Performance Per Watt](https://forum.level1techs.com/t/noob-needs-help-with-dell-r640s/252667?page=2) BIOS profile, a report rather than Dell guidance; the [server BIOS settings](/blog/server-bios-configuration) article covers that side.
+
+Reboot after a profile change. Dell's user guide and KB say "You must reboot the system for the settings to take effect," yet the 2019 white paper lists the web interface as "No reboot required." Reboot, then read the fan RPM.
+
+The exhaust limit defaults to 70 C, a lower limit adds airflow, and holding it "cannot be guaranteed under all conditions." One Level1Techs report had an R640 on iDRAC 7.00.00.184 idling at 17 percent under Proxmox after the owner removed two NICs and two NVMe drives, set the minimum to its new floor of 17, and moved the exhaust target from 40 C back to 70 C. That changed several things at once, so treat it as a pointer.
+
+## How do you stop a third-party PCIe card from spinning the fans up?
+
+On an R640 or R740 you switch the response off one slot at a time, and Dell lists the feature under the [Datacenter license](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_release-notes1_en-us.pdf). Dell's [PCIe cooling white paper](https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf) says the server detects cards it cannot identify and gives them "a default cooling response that is based on an estimate of the cooling requirements for the card," set from the slot's power delivery expectations, "not actual card power consumption." The user guide names the log entry PCI3018; the paper calls it "informational only." In the web interface, PCIe Airflow Settings sit below the fan settings on the same Cooling Configuration page, where LFM Mode and Custom LFM, a value in linear feet per minute, set the response.
+
+<figure>
+<img src="/images/blog/idrac-fan-speed-offset/p40-blower.jpg" alt="A Tesla P40 card fitted with an add-on blower fan inside a desktop case" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A Tesla P40, a passively cooled 250 W card, fitted with an add-on blower in a desktop case. Cards without their own fan depend on chassis airflow, so leave the default cooling response on for them. Photo: Tim Sheerman-Chase, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Be_Quiet_PC_Case_Interior_with_GTX_3060_and_P40.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The response "can only be turned off one slot at a time," there is "no universal disable flag," and there is "no customer-facing support" for it over IPMI. Dell advises against disabling it "unless you have a good understanding of the PCIe adapter cooling requirements," and the fans may not slow anyway, because they still run for everything else.
+
+The 13th generation global switch does not work here. Dell's iDRAC9 User's Guide documents a \`ThirdPartyPCIFanResponse\` object, but it returned "ERROR: Invalid object specified" for an R640 owner on iDRAC9 7.00.00.174 in a [February 2025 thread](https://www.dell.com/community/en/conversations/poweredge-hardware-general/set-systemthermalsettingsthirdpartypcifanresponse-0/67b6f243ec3bc06a19e10211), and a Dell Community "Elder" told a T640 owner in 2018 that the [command "is not valid for an iDRAC9"](https://www.dell.com/community/en/conversations/systems-management-general/idrac9-impossible-to-modify-fan-response-for-3rd-party-pci-cards/647f78adf4ccf8a8de6c1b96). Dell's 13G procedure is [KB 000135682](https://www.dell.com/support/kbdoc/en-us/000135682), and [quieting an R730](/blog/dell-r730-quiet-fans) is the 13th generation companion to this article.
+
+Leave the response on for cards that depend on chassis airflow. NVIDIA's [Tesla P40 data sheet](https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/documents/nvidia-p40-datasheet.pdf) lists 250 W with "Passive" cooling. Dell's [fan noise KB](https://www.dell.com/support/kbdoc/en-us/000227912/poweredge-how-to-identify-and-troubleshoot-some-common-causes-of-fan-noise) says unsupported hardware "might cause the system to run the fans higher than normal or even at maximum speed," and drives count: the R640 report above blamed Micron U.3 NVMe drives after fans sat near 61 percent in POST.
+
+## What changed across iDRAC9 firmware, and did Dell remove raw IPMI fan control?
+
+Owner reports, and Dell support replies that owners relay, say yes. Dell's release notes for 3.30.30.30, 3.32.32.32, 3.34.34.34, 3.36.36.36, 3.40.40.40, 4.00.00.00 and 4.20.20.20 do not mention removing fan or IPMI commands, and the [3.34.34.34 notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v33-series_release-notes2_en-us.pdf) list Cascade Lake and DDR4 2933 support plus a few fixes.
+
+The evidence is secondhand. A T440 owner reported ipmitool failing with "Insufficient privilege level" on 3.34.34.34 and quoted Dell support in a [community thread](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-eng-is-taking-away-fan-speed-control-away-from-users-idrac-3343434/647f8593f4ccf8a8de47aa9b): "Going forward access is not going to be allowed as it affects the thermal algorithms and cooling the system." A [Linux-PowerEdge list message](https://www.mail-archive.com/linux-poweredge@dell.com/msg05292.html) from a non-Dell poster relays the same answer, and the [fan-control project README](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker) lists the commands as available up to 3.30.30.30.
+
+| Firmware | Date | What matters for fans |
+|---|---|---|
+| 3.00.00.00 | June 2017 | [First iDRAC9 guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf) already covers offset and floor; Sound Cap is "new in the 14th generation" |
+| 3.30.30.30 | March 2019 | Dell's white paper recommends this or newer; last to accept raw fan commands, per reports |
+| 3.34.34.34 | June 2019 | Raw fan commands refused, per reports |
+| 3.36.36.36 | September 2019 | [Fix 141512](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v33-series_release-notes3_en-us.pdf): fans at 100 percent on some R740xd builds with an HBA330 |
+| 4.00.00.00 | December 2019 | Datacenter license tier added; PCIe airflow customization and custom exhaust listed under it |
+| 7.00.00.172 | June 2024 | New bootloader; no rollback to 4.40.10.00 or older |
+| 7.00.00.185 | August 2026 | Latest 14G release, a security fix |
+
+Dates come from [KB 000178115](https://www.dell.com/support/kbdoc/en-us/000178115/idrac9-versions-and-release-notes) and [KB 000178016](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9), which says 14G feature development "ended on June 30, 2023." One Level1Techs poster reported fans near 12 percent on 3.36.36.36 and near 30 percent on 4.00.00.00 and later.
+
+The old workaround, downgrading to 3.30.30.30, closes once a server takes the June 2024 release. [KB 000225924](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers) says iDRAC9 "cannot downgrade/rollback to iDRAC9 firmware 4.40.10.00 or older" afterward, because the bootloader "is not backward compatible." Guides such as an [April 2024 post](https://kovasky.me/blogs/fan_control/) still say to downgrade.
+
+## What are the exact racadm and Redfish commands?
+
+SSH is on by default, and Dell's guide says firmware RACADM over SSH needs no IP, user name or password on the command line.
+
+\`\`\`
+ssh root@IDRAC_IP
+racadm get System.ThermalSettings
+\`\`\`
+
+A trimmed copy of Dell's 2019 sample output shows the fields to read; your numbers will differ:
+
+\`\`\`
+#FanSpeedLowOffsetVal=25
+#FanSpeedMediumOffsetVal=50
+#FanSpeedHighOffsetVal=75
+FanSpeedOffset=Off
+#MFSMaximumLimit=100
+#MFSMinimumLimit=12
+MinimumFanSpeed=255
+ThermalProfile=Default Thermal Profile Settings
+\`\`\`
+
+\`\`\`
+racadm set System.ThermalSettings.FanSpeedOffset 255   # Off; 0 Low, 2 Medium, 1 High, 3 Max
+racadm set System.ThermalSettings.MinimumFanSpeed 45   # between MFSMinimumLimit and MFSMaximumLimit
+racadm set System.ThermalSettings.ThermalProfile 2     # 0 Default, 1 Max Performance, 2 Min Power, 3 Sound Cap
+racadm set System.ThermalSettings.AirExhaustTemp 255   # 255 is 70 C; 0 to 4 are 40 to 60 C
+racadm get system.pcieslotlfm.3                        # check #3rdPartyCard=Yes and LFMMode
+racadm set system.pcieslotlfm.3.lfmmode disabled       # or automatic, or custom with customlfm
+\`\`\`
+
+A successful set prints "Object value modified successfully," and an unsupported exhaust value fails with "RAC947: Invalid object value specified." To clear a custom floor, choose Default in the web interface. From a management station, Dell's guide says the \`-r\` option runs racadm over the network.
+
+Redfish reaches the same attributes through Dell's \`DellAttributes\` resource, which the [Redfish API Guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_api-guide_en-us.pdf) places under \`/redfish/v1/Managers/System.Embedded.1/Attributes\`, supports \`$select\`, and gates writes behind the SystemControl privilege. A Dell staff answer on the [community forum](https://www.dell.com/community/en/conversations/systems-management-general/redfish-api-for-updating-thermal-prifile-and-fan-speed-offset-in-idrac89/647f8545f4ccf8a8de42bfa1) shows the body format.
+
+\`\`\`
+curl -sk -u root:PASSWORD 'https://IDRAC_IP/redfish/v1/Managers/System.Embedded.1/Attributes?$select=ThermalSettings.1.FanSpeedOffset'
+
+curl -sk -u root:PASSWORD -X PATCH -H 'Content-Type: application/json' \\
+  -d '{"Attributes":{"ThermalSettings.1.FanSpeedOffset":"Off"}}' \\
+  https://IDRAC_IP/redfish/v1/Managers/System.Embedded.1/Attributes
+\`\`\`
+
+Values are the names Off, Low, Medium, High and Max, and \`ThermalSettings.1.MinimumFanSpeed\` takes a number. Dell's [scripting repository](https://github.com/dell/iDRAC-Redfish-Scripting/blob/master/Redfish%20Python/SetIdracLcSystemAttributesREDFISH.py) uses the longer path \`/redfish/v1/Managers/iDRAC.Embedded.1/Oem/Dell/DellAttributes/System.Embedded.1\`, and the maintainer reports 404 on it with 3.x firmware, so try the other path if one fails. Slot attributes should follow the same pattern, such as \`PCIeSlotLFM.3.LFMMode\`; GET first to confirm names. Because \`-k\` skips certificate checks, keep the iDRAC on a management network, as CISA advises for [IPMI traffic](https://www.cisa.gov/news-events/alerts/2013/07/26/risks-using-intelligent-platform-management-interface-ipmi).
+
+Redfish adds no fan control that racadm lacks; the maintainer's summary is that \`MinimumFanSpeed\` "cannot do what \`FAN_SPEED\` does." To watch results, run \`racadm getsensorinfo\`, or \`ipmitool sdr type Fan\`, which uses the sensor type filter in the [ipmitool manual](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in).
+
+## What settings suit a quiet homelab R640 or R740?
+
+Undo changes first, then remove causes. Dell's [R640 Technical Guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf) rates continuous operation at 10 to 35 C, and the baseline follows inlet temperature, so a cooler room helps. The [R740 deep dive](/blog/dell-poweredge-r740-deep-dive) covers the rest of the hardware.
+
+<figure>
+<img src="/images/blog/idrac-fan-speed-offset/hot-aisle.jpg" alt="A long aisle between rows of black server cabinets on a raised floor" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A row of server cabinets. The iDRAC's baseline fan speed follows inlet air temperature, so a cooler room lowers it. Photo: Robert.Harker, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Cabinet_Asile.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+1. Run \`racadm get System.ThermalSettings\`. You want \`FanSpeedOffset=Off\`, \`MinimumFanSpeed=255\`, an exhaust limit of 70 C and a profile of Default or Minimum Power.
+2. Put the BIOS System Profile on Performance Per Watt if it was changed, per the Level1Techs report.
+3. Check the Lifecycle Controller log for PCI3018, and disable the response only for slots holding cards with their own cooling.
+4. Test suspect drives and cards by removing them.
+5. Close the cover, update the iDRAC, and cool the room. The [iDRAC tips](/blog/dell-idrac-tips-tricks) article covers reaching the iDRAC safely.
+6. Reboot, then read RPM with \`racadm getsensorinfo\`.
+
+Reports in the Level1Techs thread run from 12 to about 30 percent at idle, so expect that, not silence.
+
+## What breaks
+
+**Fans run far above idle after you add a drive, NIC or GPU.** The controller gives hardware it cannot identify a precautionary default response. Fix: check for PCI3018, disable the response for that slot only if the card has its own cooling, and test by removing the drive. An offset only makes it louder.
+
+**\`racadm set system.thermalsettings.ThirdPartyPCIFanResponse 0\` returns "Invalid object specified."** That object is a 13th generation feature, and reports say it is absent on 14G. Fix: use the slot's \`LFMMode\` under \`System.PCIeSlotLFM\`.
+
+**ipmitool raw fan commands return "Insufficient privilege level."** Firmware from 3.34.34.34 refuses them, and a non-administrator account gets the same code, 0xd4, which ipmitool's [source](https://raw.githubusercontent.com/ipmitool/ipmitool/master/lib/ipmi_strings.c) defines that way. Fix: confirm the account is an Administrator; if it is, no supported fix exists and the June 2024 bootloader blocks the downgrade, so use the settings above.
+
+**Setting the offset to 1 turns the fans up to High, not Low.** Dell's index order is 0 Low, 1 High, 2 Medium, 3 Max, 255 Off. Fix: read \`FanSpeedOffset\` back after each change, or use the names through Redfish.
+
+**A setting seems to do nothing.** Profile changes want a reboot, the floor range may have collapsed to the hardware's minimum, and the license may block the page. Fix: reboot, read \`MFSMinimumLimit\` and \`MFSMaximumLimit\`, and check Configuration > Licenses.
+
+**Fans run at full speed for no clear reason.** [KB 000140533](https://www.dell.com/support/kbdoc/en-us/000140533/poweredge-14g-one-or-more-system-fans-unexpectedly-running-at-full-speed) says outdated iDRAC firmware causes this on 14G models including the R640, R740 and R740XD, and [KB 000227912](https://www.dell.com/support/kbdoc/en-us/000227912/poweredge-how-to-identify-and-troubleshoot-some-common-causes-of-fan-noise) adds a lost link to the sensors and a removed cover. Fix: update to 7.00.00.185, seat the cover, and read the Lifecycle Controller log.
+
+## Frequently asked questions
+
+### Can I set a fixed fan speed such as 20 percent on iDRAC9?
+
+Not with a supported setting. The offset adds airflow, the minimum is a floor, and per owner reports the raw IPMI commands that set a fixed speed stopped working at 3.34.34.34. Remove the causes of a high baseline and lower the inlet temperature instead.
+
+### Does Fan Speed Offset Off mean the fans are off or at their quietest?
+
+Neither. Off is the default, and the baseline applies with no added offset. The quietest speed is whatever baseline your hardware and inlet temperature produce.
+
+### Do I need an iDRAC Enterprise license for these settings?
+
+Dell's KB says yes, and its user guide lists PCIe airflow customization as Datacenter only. Express is the default on this class of server, yet one R640 owner on Express reported the section editable, so try a racadm write before buying a license.
+
+## What this means
+
+On an R640 or R740, treat iDRAC9's thermal settings as a way to undo noise, not to tune it. Set the offset to Off, the minimum to Default, the exhaust limit to 70 C and the profile to Default or Minimum Power, then fix whatever raises the baseline, usually an unrecognized card or drive. If you wanted a fixed 20 percent, the community route ended with 3.34.34.34 in June 2019, so choose quieter hardware or a cooler room.
+
+## References
+
+- [Dell KB 000257346: How to change the Server Thermal and Fan Settings](https://www.dell.com/support/kbdoc/en-us/000257346/poweredge-how-to-change-the-fan-speed-offset)
+- [Dell white paper: Custom Cooling Fan Options for Dell EMC PowerEdge Servers (October 2019)](https://downloads.dell.com/manuals/common/customcooling_poweredge_idrac9.pdf)
+- [Dell white paper: PCIe Card Cooling with Dell EMC PowerEdge Servers (December 2019)](https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf)
+- [Dell: iDRAC9 User's Guide, December 2020 Rev. A02](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf)
+- [Dell: iDRAC9 3.00.00.00 User's Guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf)
+- [Dell: iDRAC9 Redfish API Guide, firmware 4.20.20.20](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_api-guide_en-us.pdf)
+- [Dell: iDRAC9 3.34.34.34 Release Notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v33-series_release-notes2_en-us.pdf)
+- [Dell: iDRAC9 3.36.36.36 Release Notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v33-series_release-notes3_en-us.pdf)
+- [Dell: iDRAC9 4.00.00.00 Release Notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_release-notes1_en-us.pdf)
+- [Dell KB 000178115: iDRAC9 Versions and Release Notes](https://www.dell.com/support/kbdoc/en-us/000178115/idrac9-versions-and-release-notes)
+- [Dell KB 000178016: iDRAC9 Support and Management Guide](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9)
+- [Dell KB 000225924: RAC0181 firmware downgrade failures on 14G and 15G servers](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers)
+- [Dell KB 000140533: 14G system fans run at full speed unexpectedly](https://www.dell.com/support/kbdoc/en-us/000140533/poweredge-14g-one-or-more-system-fans-unexpectedly-running-at-full-speed)
+- [Dell KB 000227912: Common causes of fan noise](https://www.dell.com/support/kbdoc/en-us/000227912/poweredge-how-to-identify-and-troubleshoot-some-common-causes-of-fan-noise)
+- [Dell KB 000135682: Disable the third-party PCIe card cooling response on 13G servers](https://www.dell.com/support/kbdoc/en-us/000135682)
+- [Dell: PowerEdge R740 and R740xd Technical Guide](https://i.dell.com/sites/csdocuments/Merchandizing_Docs/ja/poweredge-r740-r740xd-technical-guide-addcpulist-180912.pdf)
+- [Dell: PowerEdge R640 Technical Guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r640-technical-guide.pdf)
+- [Dell Community: Dell ENG is taking away fan speed control (iDRAC 3.34.34.34)](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-eng-is-taking-away-fan-speed-control-away-from-users-idrac-3343434/647f8593f4ccf8a8de47aa9b)
+- [Dell Community: set system.thermalsettings.ThirdPartyPCIFanResponse 0](https://www.dell.com/community/en/conversations/poweredge-hardware-general/set-systemthermalsettingsthirdpartypcifanresponse-0/67b6f243ec3bc06a19e10211)
+- [Dell Community: iDRAC9 impossible to modify fan response for 3rd party PCI cards](https://www.dell.com/community/en/conversations/systems-management-general/idrac9-impossible-to-modify-fan-response-for-3rd-party-pci-cards/647f78adf4ccf8a8de6c1b96)
+- [Dell Community: R7425 fans at 100 percent with a passively cooled GPU](https://www.dell.com/community/en/conversations/power-cooling/r7425-fans-at-100-with-passively-cooled-gpu-installed-idrac9-7x-firmware/689753751739533d7f4d376a)
+- [Dell Community: Redfish API for updating thermal profile and fan speed offset](https://www.dell.com/community/en/conversations/systems-management-general/redfish-api-for-updating-thermal-prifile-and-fan-speed-offset-in-idrac89/647f8545f4ccf8a8de42bfa1)
+- [Linux-PowerEdge list: iDRAC9 unable to set manual fan response after 3.34.34.34](https://www.mail-archive.com/linux-poweredge@dell.com/msg05292.html)
+- [GitHub: tigerblue77 Dell iDRAC fan controller README](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker)
+- [GitHub: tigerblue77 issue 360, what Redfish still offers](https://github.com/tigerblue77/Dell_iDRAC_fan_controller_Docker/issues/360)
+- [GitHub: Dell iDRAC-Redfish-Scripting, SetIdracLcSystemAttributesREDFISH.py](https://github.com/dell/iDRAC-Redfish-Scripting/blob/master/Redfish%20Python/SetIdracLcSystemAttributesREDFISH.py)
+- [Level1Techs forum: Noob needs help with Dell R640s](https://forum.level1techs.com/t/noob-needs-help-with-dell-r640s/252667?page=2)
+- [kovasky.me: iDRAC 9 manual fan control on Dell PowerEdge servers](https://kovasky.me/blogs/fan_control/)
+- [ipmitool manual page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [ipmitool source: completion code strings](https://raw.githubusercontent.com/ipmitool/ipmitool/master/lib/ipmi_strings.c)
+- [NVIDIA: Tesla P40 data sheet](https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/documents/nvidia-p40-datasheet.pdf)
+- [CISA: Risks of Using the Intelligent Platform Management Interface (IPMI)](https://www.cisa.gov/news-events/alerts/2013/07/26/risks-using-intelligent-platform-management-interface-ipmi)
+`,
+  },
+  {
+    slug: "perc-h730-hba-mode",
+    title: "PERC H730 HBA Mode: How to Switch It and Why It Is Not IT Mode",
+    date: "2026-10-05",
+    tags: ["storage", "dell", "servers", "homelab"],
+    excerpt:
+      "How to switch a PERC H730, H730P or H330 to HBA mode from System Setup or iDRAC, what it changes for drivers, cache and SMART, and when an HBA330 is the better fix for ZFS.",
+    coverImage: "/images/blog/perc-h730-hba-mode.jpg",
+    coverCredit: {
+      author: "Dmitry Nosachev",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:AOC-S3108L-H8IR.jpg",
+    },
+    content: `
+## The short answer
+
+On a PERC H730, H730P or H330, HBA mode is a [Dell-documented setting](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf) that removes virtual disks and hands every drive to the operating system; you enable it from System Setup or iDRAC after deleting the arrays, then reboot. The card still enumerates as a MegaRAID controller and uses \`megaraid_sas\`, so it is not a Dell HBA330, which runs IT-style firmware with \`mpt3sas\`. Owners report working SMART data and ZFS pools, and the [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) accepts the mode as a fallback, but OpenZFS, Proxmox and TrueNAS forum regulars prefer a true HBA. The H730 has no published crossflash path like the 12th generation H310 and H710, so the clean upgrade is an HBA330 Mini in the same slot.
+
+## What does HBA mode do on the PERC H730, H730P and H330?
+
+HBA mode removes the virtual-disk layer and leaves the same controller, firmware family and driver in place. Dell's [PERC 9 guide](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf) says the series supports "two personality modes." [RAID](/blog/raid-levels-comparison) mode, the factory default, allows virtual disks and non-RAID disks. HBA mode "does not contain virtual disks or the ability to create them," and "all physical disks function as non-RAID disks under operating system control."
+
+<figure>
+<img src="/images/blog/perc-h730-hba-mode/sas-backplane.jpg" alt="The back of a disk backplane with an SFF-8643 SAS connector" width="1200" height="877" loading="lazy" decoding="async">
+<figcaption>The back of a Supermicro disk backplane with an SFF-8643 SAS connector. In HBA mode, every drive behind the controller reaches the operating system as its own disk. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Supermicro_BPN-SAS3-213A_disk_backplane_(back_view,_SFF-8643_connector).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Dell adds that HBA mode lets the operating system control backplane LEDs on supported systems, and that "SMART monitoring is disabled" on the controller. The mode dates to at least [firmware 25.5.0.0018](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=2h45f) (October 31, 2016), which fixes a bug after "converting PERC personality mode to HBA."
+
+The table sets RAID mode beside Dell's documentation and owner reports.
+
+| | RAID mode (default) | HBA mode, per Dell | HBA mode, per owners |
+|---|---|---|---|
+| Drives the OS sees | Virtual disks, plus any non-RAID disks | All physical disks act as non-RAID disks | Each drive shows its own model and serial on [Debian and TrueNAS CORE](https://www.truenas.com/community/threads/raid-controllers-hba-mode.95368/) |
+| Driver | \`megaraid_sas\` | Unchanged: Dell's [PERC 9 Linux steps](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf) use \`megaraid_sas\` | An [H730 owner's lspci](https://forums.truenas.com/t/bare-metal-install-issues/27715) names a "MegaRAID SAS-3 3108" |
+| SMART | Read with [\`smartctl -d megaraid,N\`](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html) | The controller "does not report SMART errors" | Plain \`smartctl --all /dev/sdd\` printed a full SAS report |
+| Cache | Policy set per virtual disk | Not stated | One reply says HBA mode ["deactivates all caches and the BBU"](https://forum.proxmox.com/threads/new-proxmox-box-w-zfs-r730xd-w-perc-h730-mini-in-%E2%80%9Chba-mode%E2%80%9D-big-no-no.135642/) |
+
+The H330 has no cache ("H330 does not support caching"), so cache questions apply to the H730 and H730P. Dell's SMART note describes the controller's own monitoring, while owners read drives from the OS, so run SMART checks there. HBA mode is all or nothing: for a hardware RAID 1 boot mirror beside pass-through data disks, stay in RAID mode and convert the data disks to non-RAID.
+
+## How do you switch a PERC H730 to HBA mode?
+
+Delete every virtual disk, choose Switch to HBA mode in System Setup or iDRAC, and reboot. Dell's [prerequisites](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf) also require removing hot spares, foreign configurations, failed disks and any local security key for self-encrypting drives.
+
+1. Back up everything on the controller's virtual disks, because deleting them destroys the arrays.
+2. Update the PERC firmware first. Dell's [25.5.9.0001 package](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=700gg) (A17, March 5, 2024) lists the R730 and R730xd.
+3. Press F2 at boot for System Setup, choose Device Settings, then Dell PERC 9 Configuration Utility.
+4. Delete the virtual disks under Virtual Disk Management, or use Configuration Management > Clear Configuration, then confirm no hot spares, foreign configurations or failed disks remain.
+5. Choose Controller Management > Advanced Controller Management > Switch to HBA mode and confirm with OK and Yes.
+6. Reboot. Dell says "You must reboot the system for the change to be effected."
+
+iDRAC8 can stage the same change on "PERC 9.1 and later controllers": open Overview > Storage > Controllers, click Setup > Controller Mode, choose HBA and click Apply. [Dell's iDRAC8 guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf) also gives these RACADM commands, where CONTROLLER_FQDD is the controller's fully qualified device descriptor:
+
+\`\`\`bash
+racadm get Storage.Controller.1.RequestedControllerMode[key=CONTROLLER_FQDD]
+racadm set Storage.Controller.1.RequestedControllerMode HBA [Key=CONTROLLER_FQDD]
+\`\`\`
+
+Dell calls this "a staged operation" that "does not occur in real time," so reboot to apply it, and the controller must have no preserved cache. The Ctrl+R utility has a Personality Mode option, but Dell gives no steps for it. To go back, choose Switch to RAID mode; the disks "retain their non-RAID status until converted to Unconfigured Good."
+
+Verify from Linux before you build a pool:
+
+\`\`\`bash
+lspci | grep -i -E "megaraid|fusion-mpt"
+lsblk -d -o NAME,MODEL,SERIAL,SIZE
+sudo smartctl -i /dev/sda
+\`\`\`
+
+Correct output is a controller line, one \`lsblk\` row per physical drive with the maker's model and serial, and drive-level \`smartctl\` fields such as the SEAGATE ST1200MM0099 in an owner's report. A controller name where a drive model belongs is a virtual disk, which fails [jgreco's test](https://www.truenas.com/community/resources/whats-all-the-noise-about-hbas-and-why-cant-i-use-a-raid-controller.139/) that you must "see the type of device." Per [pci.ids](https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids), the controller IDs are \`1000:005d\` (H730, H730P), \`1000:005f\` (H330) and \`1000:0097\` (HBA330).
+
+## Can you flash a PERC H730 to IT mode like an H710?
+
+No supported procedure exists, and the popular crossflash guide does not cover the card. IT mode is separate LSI firmware that, per the [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/), disables "the optional RAID functionality found in the IR firmware"; HBA mode is a switch inside Dell's RAID firmware. The [guide at fohdeesha.com](https://fohdeesha.com/docs/perc.html) is titled "H310/H710/H710P/H810 Mini & Full Size IT Crossflashing" and covers "12th gen Dell Mini Mono & full size cards," with nothing from the 13th generation.
+
+Chip IDs below come from [pci.ids](https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids) and the guide's own output.
+
+| Card | Generation | LSI chip (PCI ID) | Crossflash status |
+|---|---|---|---|
+| PERC H310 | 12th | SAS2008 (1000:0073) | In the guide; [ends as SAS9211-8i IT](https://fohdeesha.com/docs/H310.html), firmware 20.00.07.00 |
+| PERC H710, H710P | 12th | SAS2208 (1000:005b) | In the guide; [reports as SAS2308](https://fohdeesha.com/docs/H710-D1.html), firmware 20.00.07.00 |
+| PERC H330 | 13th | SAS3008 (1000:005f) | Not in the guide; owner guides flash Dell's HBA330 image |
+| PERC H730, H730P | 13th | SAS3108 (1000:005d) | Not in the guide; no IT path in the pages reviewed here |
+
+The 12th generation method replaces the Dell flash with LSI IT firmware, so the card moves from the MegaRAID driver to "the much simpler mpt3sas driver." The guide also warns that iDRAC may then lose drive temperatures and, in some cases, hold the fans near 30 percent.
+
+The H330 is the exception. It shares the SAS3008 chip with the HBA330, and an [owner-written GitHub guide](https://github.com/TubalQ/h330-hba330-it-crossflash) flashes Dell's own \`hba330.fw\` onto an H330 to get the Dell identity 1028:1f45. Dell does not support that.
+
+The H730 has no such route. Its chip is a [3108 RAID-on-chip](https://docs.broadcom.com/doc/LSISAS3108) with a DDR3 cache interface rather than an I/O controller, and none of the Dell, Broadcom or fohdeesha pages reviewed here describe an IT path for it. TrueNAS's [jgreco](https://www.truenas.com/community/resources/whats-all-the-noise-about-hbas-and-why-cant-i-use-a-raid-controller.139/) calls IT-mode conversion of high-end RAID cards "theoretically possible" but warns of "additional components such as cache, flash, and battery circuits that the IT firmware doesn't expect to be there." Dell supports only "Dell certified firmware" on a PERC, so every crossflash is unsupported.
+
+One 2025 [blog post](https://errantminds.net/servers-it/the-dell-h730-minis-hba-mode-is-not-what-you-think/) calls the 3108 "physically INCAPABLE of IT mode" while labeling itself speculation. LSI's brief lists an Integrated RAID personality for the chip, and the kernel's \`mpt3sas\` carries [Fusion-MPT IDs for a 3108](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/mpt3sas/mpt3sas_scsih.c), so the claim that it is impossible is not documented either. Still, do not borrow another card's guide: fohdeesha warns that picking the closest option means "you'll brick your card."
+
+## What is the Dell HBA330 and why do ZFS guides recommend it?
+
+The HBA330 is Dell's plain SAS host bus adapter: the same LSI SAS3008 chip as the LSI 9300-8i, with no RAID, no cache, no battery and the \`mpt3sas\` driver. Dell's [HBA guide](https://dl.dell.com/topicspdf/dell-sas-hba-12gbps_users-guide_en-us.pdf) lists it in adapter and mini monolithic forms with an "LSI 3008 chipset" and pass-through support. A TrueNAS forum post calls it ["a Broadcom SAS3008 with trivially-customized IT mode firmware,"](https://forums.truenas.com/t/dell-hba330-which-underlying-lsi-firmware/3159) and Broadcom's [9300-8i guide](https://docs.broadcom.com/doc/12354877) names the same SAS 3008 controller.
+
+<figure>
+<img src="/images/blog/perc-h730-hba-mode/lsi-hba.jpg" alt="An LSI PCI Express SAS host bus adapter card" width="1200" height="880" loading="lazy" decoding="async">
+<figcaption>An LSI SAS host bus adapter. The HBA330 is Dell's card of this kind: an LSI SAS3008 chip with no RAID, cache or battery, run by the mpt3sas driver. Photo: Antonio Kless, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_PCI-E_SAS_HBA.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The Mini fits where the H730 Mini sits: both Dell guides describe the same "storage-controller card holder on the system board," and the [HBA330 Mini firmware page](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2) lists the R730 and R730xd. That package is 16.17.01.00 (May 18, 2020), marked urgent for Linux because it fixes T10 Protection Information errors. Unlike a PERC flashed with generic LSI firmware, the HBA330 is a card iDRAC supports: Dell's iDRAC8 guide lists the "HBA330 internal controller" among the non-RAID controllers it monitors, including SMART trip status and LED blinking.
+
+ZFS guides recommend it because it matches what OpenZFS asks of a controller: [driver support, stability and no need for "RAID, Battery Backup Units and hardware write caches."](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html) The table compares the four cards using Dell's figures.
+
+| | PERC H330 | PERC H730 | PERC H730P | Dell HBA330 |
+|---|---|---|---|---|
+| Chip (Dell) | LSI 3008 | LSI 3108 | LSI 3108 | LSI 3008 |
+| Linux driver | \`megaraid_sas\` | \`megaraid_sas\` | \`megaraid_sas\` | \`mpt3sas\` |
+| Cache and battery | None | 1 GB NV, battery | 2 GB NV, battery | None |
+| RAID levels | 0, 1, 5, 10, 50 | 0, 1, 5, 6, 10, 50, 60 | 0, 1, 5, 6, 10, 50, 60 | None |
+| Pass-through | HBA mode or non-RAID disks | HBA mode or non-RAID disks | HBA mode or non-RAID disks | Always |
+| Controller SMART monitoring | Disabled in HBA mode | Disabled in HBA mode | Disabled in HBA mode | Real-time, via iDRAC |
+| Queue depth | 895 | 928 | 928 | 9548 |
+
+## What do TrueNAS, ZFS, Proxmox and Unraid say about RAID controllers?
+
+TrueNAS and Unraid both accept a RAID card's HBA mode, while OpenZFS and Proxmox point toward a true HBA. The [TrueNAS hardware guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/) says "You can use a hardware RAID card if it is all you have, but there are limitations," and "do not use their RAID facility if your hardware RAID card supports HBA mode, also known as passthrough or JBOD mode." In that mode it "allows it to perform indistinguishably from a standard HBA."
+
+<figure>
+<img src="/images/blog/perc-h730-hba-mode/lsi-9207.jpg" alt="An LSI 9207-4i4e SAS host bus adapter with internal and external ports" width="1200" height="638" loading="lazy" decoding="async">
+<figcaption>An LSI 9207-4i4e, an IT-mode host bus adapter of the kind OpenZFS and Proxmox point to instead of a RAID controller. Photo: Dmitry Nosachev, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:LSI_9207-4i4e_PCI-E_SAS_HBA.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+The same guide warns that some RAID cards "Mask disk serial number and S.M.A.R.T. health information" and "Cause data loss if using a write cache with a dead battery backup unit (BBU)." [Unraid](https://docs.unraid.net/unraid-os/troubleshooting/faq/) says to set the controller to "HBA/IT mode, not RAID mode."
+
+[OpenZFS](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html) is blunter: "Hardware RAID controllers should not be used with ZFS." [Proxmox VE](https://pve.proxmox.com/pve-docs/chapter-sysadmin.html) says "Do not use ZFS on top of a hardware RAID controller which has its own cache management," and calls an HBA or a controller flashed to IT mode "more appropriate."
+
+TrueNAS forum veterans go further. jgreco's resource says a RAID controller's JBOD or HBA mode "isn't the same" as an HBA because "you are relying on the RAID card driver," and that a working smartctl is "not any sort of proof." In 2021 [HoneyBadger wrote](https://www.truenas.com/community/threads/raid-controllers-hba-mode.95368/) that FreeBSD's \`mrsas\` driver, which he believed an H730 uses in HBA mode, is less well-tested than the HBA drivers but "mostly okay." In 2025 [Protopia replied](https://forums.truenas.com/t/running-truenas-on-dell-r730-with-perc-h730-in-hba-mode-via-proxmox/43926) that it "works just fine until it doesn't."
+
+### Verdict on HBA mode for ZFS
+
+HBA mode on an H730 is a reasonable fallback, not a first choice. For it: Dell documents pass-through with no virtual disks, owners get serial numbers and SMART through, \`megaraid_sas\` is in the [mainline kernel](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/megaraid/Kconfig.megaraid) and [claims the H730's PCI ID](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/megaraid/megaraid_sas.h), and one owner reported [more than a year of flawless use](https://forums.truenas.com/t/bare-metal-install-issues/27715) on TrueNAS SCALE in December 2024.
+
+Against it: the firmware is still RAID firmware, which OpenZFS counts as a layer "that cannot be inspected by arbitrary third parties." Dell does not say what the cache does in this mode, and its driver list stops at RHEL 7.2, SLES 12 and Windows Server 2016, so TrueNAS and Proxmox rely on the in-kernel driver. Use HBA mode with redundancy and backups, and replace the card for data you cannot recreate. The full R730 build is in [TrueNAS on a Dell R730](/blog/truenas-on-dell-r730), and pool layout is in [Running ZFS on Dell Enterprise Hardware](/blog/zfs-on-enterprise-hardware).
+
+## PERC H730 vs H730P: what do the extra cache and battery change?
+
+The H730P has 2 GB of non-volatile cache and the H730 has 1 GB; the rest that matters here is the same. Dell's [H730P spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/PowerEdge-RAID-Controller-H730P-Spec-Sheet.pdf) calls it a "Doubling of NV Cache from 1GB to 2GB," and both use the LSI SAS 3108 with RAID 0, 1, 5, 6, 10, 50 and 60. The [R730 technical guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf) adds that two-controller systems need "both controllers" to be H730P. Dell's documents disagree on the H730's cache speed: its [spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-Poweredge-RAID-Controller-H730.pdf) says 1333 MT/s and the technical guide says 1866 MT/s.
+
+Both Mini cards carry a battery. Dell's guide shows a battery cable and carrier on the "H730/H730P mini monolithic card," and says the battery supplies "a small amount of power" to move cache contents to flash after a power loss. The firmware runs a learn cycle every 90 days, and keeps running them on reboot while the battery is marked failed. The [same guide](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf) has replacement steps for the H730P Mini battery.
+
+In HBA mode neither extra matters for your data as far as Dell documents: write-back and write-through policies belong to virtual disks, and HBA mode has none. Do not pay extra for a P card to run ZFS. If you return to RAID mode, replace a failed battery first.
+
+## What breaks
+
+**The installer or boot menu shows no drives after you switch.** One owner set HBA mode in the BIOS and iDRAC, and the TrueNAS SCALE installer still listed no drives until they [updated the H730 to 25.5.9.0001](https://forums.truenas.com/t/bare-metal-install-issues/27715). Fix: update the PERC firmware before switching, confirm the disks list as non-RAID in the PERC utility, and keep Enable Controller BIOS on if you boot from a controller-attached disk, since Dell says "If the boot device is on the RAID controller, the BIOS must be enabled."
+
+**Single-drive RAID 0 "passthrough" looks right and is not.** TrueNAS tolerates it only for cards with no HBA mode. OpenZFS calls it "not recommended" and warns that when one of several arrays on a controller fails, the identifiers the OS sees "might become inconsistent," which can fault pools imported from the cachefile. Fix: use the H730's HBA mode, or swap in an HBA330.
+
+**Predictive-failure warnings from the controller stop.** The guide says the controller "does not report SMART errors" in HBA mode. Fix: run SMART tests and alerts in the OS, as in [reading SMART data](/blog/smart-data-drive-failure).
+
+**TrueNAS CORE shows 150 MB/s for every disk behind the H730.** On FreeBSD-based CORE, owners [saw "150.000MB/s transfers"](https://www.truenas.com/community/threads/dell-pe-r730xd-and-h730-hba-mode-only-showing-150-00-transfer-mode.87303/) for each drive, against about 1200 MB/s on an HBA330 and a flashed H330. A forum regular called it cosmetic, but one R630 and H730P owner reported reads limited to 150 MB/s that Debian with ZFS did not show. Fix: judge by measured throughput, test on Linux, or swap in an HBA330 Mini, as that regular advised.
+
+**Passing disks, or the whole controller, into a TrueNAS VM goes wrong.** A TrueNAS forum reply warns that Proxmox "will happily import that pool if it feels like it" when disks are passed individually, so pass the whole controller and blacklist it on the host. On an R730xd ([bays compared here](/blog/dell-r730-vs-r730xd)) one owner [found the rear flex-bay cable led to the same HBA330](https://forum.proxmox.com/threads/proxmox-ve-8-3-hba-passthrough-issue-on-r730xd.159587/), so the host's boot drives went with it. Fix: boot the host from elsewhere; that owner rerouted the flex-bay cable to a motherboard SAS port and reported passthrough then worked.
+
+## Frequently asked questions
+
+### Can I flash a PERC H730 to IT mode?
+
+No Dell-supported procedure exists, and the crossflash guide covers only the 12th generation. For IT-style firmware, buy an HBA330 Mini, or flash an H330 as an unsupported owner procedure.
+
+### What is the difference between HBA mode and RAID mode on a PERC?
+
+In RAID mode, the factory default, the card builds virtual disks and can also expose non-RAID disks. In HBA mode no virtual disks can exist, every drive is non-RAID, the OS controls the backplane LEDs and the controller's SMART monitoring is off. A [Dell Community reply](https://www.dell.com/community/en/conversations/rack-servers/perc-h730-raid-or-hba-mode/647f9f85f4ccf8a8de45b1b1) says HBA mode and non-RAID disks in RAID mode have "the same access to the OS," and Dell documents no data-path difference, so choose HBA mode for ZFS because the card then cannot hold a stray virtual disk.
+
+### Is the HBA330 the same as an H330?
+
+Same chip, different firmware. Dell gives both an LSI 3008 chipset, but the H330 runs MegaRAID firmware on \`megaraid_sas\` with a queue depth of 895, while the HBA330 runs "Non-RAID" firmware on \`mpt3sas\` with 9548. Owners flash H330s into HBA330s, which Dell does not support.
+
+### Does the H730P battery matter in HBA mode?
+
+Dell ties write-back caching to virtual disks, which HBA mode lacks, so the battery matters for your data mainly in RAID mode. One forum reply says HBA mode deactivates the cache and the BBU.
+
+## What this means
+
+If an R730 already has an H730 or H730P Mini, update the firmware, back up and delete the virtual disks, switch to HBA mode, verify with \`smartctl\`, and monitor SMART from the OS. That is a documented setup for a redundant pool with backups. If you are buying parts or the data is irreplaceable, swap in an HBA330 Mini: same slot, the same chip family as the 9300 HBAs [TrueNAS names](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/), Dell-published firmware and no RAID layer to wonder about. Skip IT-flashing an H730, since no procedure is published, and treat the H330-to-HBA330 flash as an owner procedure.
+
+## References
+
+- [Dell PowerEdge RAID Controller 9 User's Guide H330, H730 and H830, Rev. A08](https://dl.dell.com/topicspdf/poweredge-rc-h330_users-guide_en-us.pdf)
+- [Dell EMC Host Bus Adapter User's Guide, HBA330 and External 12 Gbps SAS HBA, Rev. A04](https://dl.dell.com/topicspdf/dell-sas-hba-12gbps_users-guide_en-us.pdf)
+- [Dell Integrated Dell Remote Access Controller 8 Version 2.75.75.75 User's Guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf)
+- [Dell PowerEdge RAID Controller H730 spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-Poweredge-RAID-Controller-H730.pdf)
+- [Dell PowerEdge RAID Controller H730P spec sheet](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/PowerEdge-RAID-Controller-H730P-Spec-Sheet.pdf)
+- [Dell PowerEdge R730 and R730xd Technical Guide v1.7](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf)
+- [Dell PERC H730/H730P/H830 firmware 25.5.9.0001](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=700gg)
+- [Dell PERC H730/H730P/H830 firmware 25.5.0.0018](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=2h45f)
+- [Dell HBA330 Mini firmware 16.17.01.00](https://www.dell.com/support/home/en-us/drivers/driversdetails?driverid=124x2)
+- [Dell Community: PERC h730 RAID or HBA mode](https://www.dell.com/community/en/conversations/rack-servers/perc-h730-raid-or-hba-mode/647f9f85f4ccf8a8de45b1b1)
+- [fohdeesha: H310/H710/H710P/H810 Mini and Full Size IT Crossflashing](https://fohdeesha.com/docs/perc.html)
+- [fohdeesha: H310 Mini IT mode flashing](https://fohdeesha.com/docs/H310.html)
+- [fohdeesha: H710 D1 IT mode flashing](https://fohdeesha.com/docs/H710-D1.html)
+- [LSI SAS 3108 product brief](https://docs.broadcom.com/doc/LSISAS3108)
+- [LSI SAS 9300-8i Host Bus Adapter User Guide](https://docs.broadcom.com/doc/12354877)
+- [pci.ids database of PCI vendors and devices](https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids)
+- [Linux kernel megaraid_sas.h PCI device IDs](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/megaraid/megaraid_sas.h)
+- [Linux kernel mpt3sas_scsih.c PCI device table](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/mpt3sas/mpt3sas_scsih.c)
+- [Linux kernel Kconfig for megaraid_sas](https://raw.githubusercontent.com/torvalds/linux/master/drivers/scsi/megaraid/Kconfig.megaraid)
+- [TrueNAS Hardware Guide](https://www.truenas.com/docs/scale/gettingstarted/tnhardwareguide/)
+- [OpenZFS documentation: Hardware](https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Hardware.html)
+- [Proxmox VE Administration Guide: ZFS on Linux](https://pve.proxmox.com/pve-docs/chapter-sysadmin.html)
+- [Unraid documentation: FAQ](https://docs.unraid.net/unraid-os/troubleshooting/faq/)
+- [smartctl(8) manual page](https://manpages.ubuntu.com/manpages/noble/man8/smartctl.8.html)
+- [jgreco: What's all the noise about HBAs, and why can't I use a RAID controller?](https://www.truenas.com/community/resources/whats-all-the-noise-about-hbas-and-why-cant-i-use-a-raid-controller.139/)
+- [TrueNAS forum: RAID controllers HBA mode](https://www.truenas.com/community/threads/raid-controllers-hba-mode.95368/)
+- [TrueNAS forum: Bare Metal Install Issues](https://forums.truenas.com/t/bare-metal-install-issues/27715)
+- [TrueNAS forum: Running TrueNAS on Dell r730 with PERC H730 in HBA mode via Proxmox](https://forums.truenas.com/t/running-truenas-on-dell-r730-with-perc-h730-in-hba-mode-via-proxmox/43926)
+- [TrueNAS forum: Dell HBA330, which underlying LSI firmware?](https://forums.truenas.com/t/dell-hba330-which-underlying-lsi-firmware/3159)
+- [TrueNAS forum: Dell PE R730XD and H730 (HBA mode) only showing 150.00 transfer mode](https://www.truenas.com/community/threads/dell-pe-r730xd-and-h730-hba-mode-only-showing-150-00-transfer-mode.87303/)
+- [Proxmox forum: R730xd with PERC H730 Mini in HBA mode, big no no?](https://forum.proxmox.com/threads/new-proxmox-box-w-zfs-r730xd-w-perc-h730-mini-in-%E2%80%9Chba-mode%E2%80%9D-big-no-no.135642/)
+- [Proxmox forum: HBA passthrough issue on R730xd](https://forum.proxmox.com/threads/proxmox-ve-8-3-hba-passthrough-issue-on-r730xd.159587/)
+- [GitHub: H330 to HBA330 IT-mode crossflash guide](https://github.com/TubalQ/h330-hba330-it-crossflash)
+- [The Dell H730 Mini's HBA Mode is Probably Not What You're Looking For (blog post, July 29, 2025)](https://errantminds.net/servers-it/the-dell-h730-minis-hba-mode-is-not-what-you-think/)
+`,
+  },
+  {
+    slug: "idrac-9-enterprise-license",
+    title: "iDRAC 9 Enterprise License: What It Unlocks, Trial and Cost",
+    date: "2026-10-05",
+    tags: ["dell", "servers", "homelab", "operations"],
+    excerpt:
+      "What each iDRAC9 license tier unlocks, how to check and trial a license, what Dell charges for Enterprise, and how licenses bind to a service tag.",
+    coverImage: "/images/blog/idrac-9-enterprise-license.jpg",
+    coverCredit: {
+      author: "Dell Inc.",
+      license: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg",
+    },
+    content: `
+## The short answer
+
+iDRAC9 Enterprise is the paid license that adds the HTML5 virtual console, virtual media, Remote File Share, Group Manager and directory login to 14th, 15th and 16th generation PowerEdge servers. Rack and tower servers ship with [Basic (100 to 500 series) or Express (600 series and up)](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf), and neither includes the console. Check what you have under Configuration, then Licenses, or with \`racadm license view\`, and try Dell's 30-day Enterprise trial, which can be imported once per product, before you buy. A license is perpetual but bound to one service tag and one server generation, and Dell's own prices for the 14th generation Enterprise upgrade ranged from $492 in its online store on October 5, 2026 to $1,039 in its July 2026 licensing guide.
+
+## What are the iDRAC9 license tiers?
+
+iDRAC9 has four tiers, Basic, Express, Enterprise and Datacenter, and [it spans 14th, 15th and 16th generation PowerEdge servers](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf). Basic is standard on 100 to 500 series rack and tower servers, Express is standard on 600 series and higher, and Enterprise and Datacenter are upgrades for any server. In practice an R740 or R640 ships with Express and an R240 or R440 ships with Basic, unless Enterprise was ordered with the server.
+
+Blades are the exception: the virtual console [is a licensed feature for rack and tower servers and "available by default in blade servers"](https://www.dell.com/support/kbdoc/en-us/000179797/dell-poweredge-idrac-virtual-console), and the guides list those blades under an Express for Blades column. Dell's documents disagree on which models qualify. The licensing guide puts the M640 there but the MX740c under plain Express, while the [4.40 user's guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) calls Express for Blades the default on M6XX and MXXXX systems, so read the Licenses page on the blade itself.
+
+Datacenter is the newest iDRAC9 tier, introduced with [firmware 4.00.00.00 in December 2019](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_release-notes1_en-us.pdf). StorageReview's [February 18, 2020 overview](https://www.storagereview.com/review/dell-emc-idrac9-v4-0-overview) says the Enterprise features are also included in Datacenter.
+
+Dell's support page says an iDRAC9 license is [perpetual, valid for the life of a server and bound to the Service Tag of a unique server](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9), and that [feature development for iDRAC9 on 14th generation servers ended on June 30, 2023](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9). A license bought for an R740 today unlocks a finished feature set; the [R740 end of life dates](/blog/poweredge-r740-end-of-life) cover the rest of the lifecycle.
+
+## What does each iDRAC9 license unlock?
+
+Express adds monitoring extras, Enterprise adds remote presence and fleet features, and Datacenter adds telemetry and thermal controls on top of everything in Enterprise. This table follows the [iDRAC9 7.xx user's guide from June 2024](https://onlineimages.techmikeny.com/CTOPDF/IDRAC9_User_Guide.pdf).
+
+| Feature | Basic | Express | Enterprise | Datacenter |
+|---|---|---|---|---|
+| Web UI, Redfish, IPMI 2.0, RACADM, SSH, SNMP, serial-over-LAN | Yes | Yes | Yes | Yes |
+| NTP, email alerts, power graphs, crash screen capture, remote OS deployment | No | Yes | Yes | Yes |
+| HTML5 virtual console | No | No | Yes | Yes |
+| Virtual media (ISO or USB from your PC) | No | No | Yes | Yes |
+| Virtual folders, Remote File Share | No | No | Yes | Yes |
+| Console collaboration (six users), chat, VNC | No | No | Yes | Yes |
+| Group Manager (up to 250 servers) | No | No | Yes | Yes |
+| Directory login (AD, LDAP), smart-card two-factor, single sign-on, lockdown mode | No | No | Yes | Yes |
+| Remote [syslog](/blog/syslog-centralized-logging), out-of-band performance monitoring, power capping | No | No | Yes | Yes |
+| Crash video capture, boot capture | No | No | Yes | Yes |
+| Telemetry streaming | No | No | No | Yes |
+| PCIe airflow (LFM) customization, custom exhaust and delta-T control | No | No | No | Yes |
+
+Dell's guides change with firmware, and some features moved down the tiers, so read the guide for your version. The 4.40 guide lists SMART logs for storage drives as Datacenter-only and scheduled repository updates as Enterprise and up, while the 7.xx guide lists both for every tier. The 7.xx guide also lists exhaust-temperature settings on every tier for 14th generation servers, but Datacenter-only for 15th and 16th generation.
+
+## What changed with iDRAC10 Core, Enterprise and Datacenter?
+
+iDRAC10 on 17th generation PowerEdge servers has three tiers, Core, Enterprise and Datacenter, with no Basic or Express. Dell describes [a simplified license structure compared with iDRAC9](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf), and Core is free and [included with all Gen17 servers](https://www.itpro.com/infrastructure/servers-and-storage/dell-idrac10-review-the-best-remote-server-management-solution-just-got-even-better).
+
+The console is still the dividing line. In [Dell's iDRAC10 guide](https://gfx3.senetic.com/akeneo-catalog/6/7/d/b/67db6c38029beb8d409a682d5abd9cce384f66f9_1785307_RCYKN_icecat_multimedia_other_digital_assets_6_en_GB.pdf) (1.20.xx, December 2025), virtual console, virtual media and Remote File Share are No on Core and Yes on Enterprise. Three differences from iDRAC9 matter:
+
+- Email alerting, which iDRAC9 Express included, needs Enterprise on iDRAC10, though SNMP traps and gets stay on every tier.
+- Smart-card two-factor login moved up to Datacenter, while Easy Multi Factor Authentication is in Enterprise.
+- Enterprise and Datacenter come [bundled with Secure Enterprise Key Management and Secure Component Verification licenses at point of sale](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf).
+
+| Feature | Core | Enterprise | Datacenter |
+|---|---|---|---|
+| Virtual console, virtual media, Remote File Share | No | Yes | Yes |
+| Directory services (AD, LDAP) | No | Yes | Yes |
+| Email alerting | No | Yes | Yes |
+| Smart-card two-factor | No | No | Yes |
+| Telemetry, PCIe airflow customization | No | No | Yes |
+
+iDRAC10 licenses are [tied to a server generation](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf) just like iDRAC9 licenses, and Dell lists [30-day trials for iDRAC10 Enterprise and Datacenter](https://www.dell.com/support/kbdoc/en-us/000176472/idrac-cmc-openmanage-enterprise-openmanage-integration-with-microsoft-windows-admin-center-openmanage-integration-with-servicenow-and-dpat-trial-licenses).
+
+## How do you check which iDRAC license is installed?
+
+Open Configuration, then Licenses in the iDRAC9 web interface. Dell's guide says [the Licensing page displays the licenses associated with devices](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf). From a shell, run \`racadm license view\`; Dell's [RACADM guide](https://gfx3.senetic.com/akeneo-catalog/f/0/6/a/f06a644a0e48069b7654a11c4af01bdac856ff5d_1747759_CDKHV_icecat_multimedia_other_digital_assets_5_en_GB.pdf) shows output like this (abbreviated):
+
+<figure>
+<img src="/images/blog/idrac-9-enterprise-license/server-row.jpg" alt="Racks of servers in a data center" width="1200" height="800" loading="lazy" decoding="async">
+<figcaption>Racks of servers in a data center. On any iDRAC9 the installed license shows under Configuration, then Licenses, or with racadm license view. Photo: Victor Grigas, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Wikimedia_Foundation_Servers-8055_35.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+\`\`\`
+racadm license view
+iDRAC.Embedded.1
+        Status               = OK
+        Device               = iDRAC.Embedded.1
+        Device Description   = iDRAC
+        Unique Identifier    = H1VGF2S
+                License #1
+                        Status               = OK
+                        License Description  = iDRAC Enterprise License
+                        License Type         = PERPETUAL
+                        License Bound        = H1VGF2S
+                        Expiration           = Not Applicable
+\`\`\`
+
+On your server, License Bound should show your service tag; Dell says that once a license is bound you [see the bound tag with the license details](https://www.dell.com/support/kbdoc/en-us/000353269/lic008-the-license-binding-id-does-not-match-the-device-unique-identifierdge-lic008-the-license-binding-id-does-not-match-the-device-unique-identifier). \`racadm getsvctag\` prints the tag, and the web interface shows it under [System, then Overview](https://www.dell.com/support/contents/en-us/article/product-support/self-support-knowledgebase/locate-service-tag/server-storage).
+
+A missing license shows up as features that are absent, because [only licensed features are available in the interfaces](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf). Launching the virtual console without the license returns [LIC501, "A required license is missing or expired"](https://www.dell.com/support/kbdoc/en-us/000189590/dell-emc-vxrail-error-shown-in-idrac-virtual-console-lic501-a-required-license-is-missing-or-expired).
+
+For several servers, Dell points to [Dell License Manager for one-to-many license management](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf). Dell's [open-source Redfish script](https://github.com/dell/iDRAC-Redfish-Scripting/blob/master/Redfish%20Python/IdracLicenseManagementOemREDFISH.py) lists installed licenses with \`--get\`, can also export, import and delete them, and prompts for the password if you leave out \`-p\`:
+
+\`\`\`
+python3 IdracLicenseManagementOemREDFISH.py -ip IDRAC_IP -u USER --get
+\`\`\`
+
+## How does the iDRAC9 trial license work?
+
+Dell offers [30-day trial licenses for iDRAC9 Enterprise and Datacenter](https://www.dell.com/support/kbdoc/en-us/000176472/idrac-cmc-openmanage-enterprise-openmanage-integration-with-microsoft-windows-admin-center-openmanage-integration-with-servicenow-and-dpat-trial-licenses) on 14th, 15th and 16th generation servers. To use one:
+
+1. Open Dell's trial licenses page and agree to the terms and conditions to download.
+2. Download the row for your generation, such as "14th Generation PowerEdge servers with iDRAC9 Enterprise Trial License (30 days)".
+3. Extract the ZIP to get the XML license file.
+4. In iDRAC9, go to Configuration, then Licenses, and choose Import under License Options.
+
+Dell's two documents describe the clock differently. The trial page says the evaluation period [begins from the date of downloading](https://www.dell.com/support/kbdoc/en-us/000176472/idrac-cmc-openmanage-enterprise-openmanage-integration-with-microsoft-windows-admin-center-openmanage-integration-with-servicenow-and-dpat-trial-licenses), while the iDRAC guide says the [timer runs when power is applied to the system and cannot be extended](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf). Treat the download date as day one and download only when you are ready to test.
+
+You cannot repeat it: [a trial license can only be imported one time per product](https://www.dell.com/support/kbdoc/en-us/000176472/idrac-cmc-openmanage-enterprise-openmanage-integration-with-microsoft-windows-admin-center-openmanage-integration-with-servicenow-and-dpat-trial-licenses). Dell's [trial terms](https://www.dell.com/support/kbdoc/en-us/000176472/idrac-cmc-openmanage-enterprise-openmanage-integration-with-microsoft-windows-admin-center-openmanage-integration-with-servicenow-and-dpat-trial-licenses) also say you may not use it in a production environment. A July 2020 forum post described a Dell [240-day Enterprise offer](https://forums.servethehome.com/index.php?threads/dell-idrac-8-9-enterprise-extended-trial-license-240-days.29653/), and a June 2021 reply in that thread says it was no longer available. Dell's current page lists only 30-day iDRAC trials.
+
+## How are iDRAC licenses bound to a server?
+
+Each license is an XML file issued for one service tag and one server generation. [iDRAC9 licenses differ across 14G, 15G and 16G](https://www.dell.com/support/kbdoc/en-us/000353269/lic008-the-license-binding-id-does-not-match-the-device-unique-identifierdge-lic008-the-license-binding-id-does-not-match-the-device-unique-identifier), and Dell's licensing guide says an [import for a different generation fails](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf). A license bought with the server is installed at the factory. One bought later sits in your Dell account, where the [Digital Locker functions have moved to My Account](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf). To get the file:
+
+<figure>
+<img src="/images/blog/idrac-9-enterprise-license/cable-management.jpg" alt="The back of Dell PowerEdge 1950 servers with cable management arms" width="1200" height="798" loading="lazy" decoding="async">
+<figcaption>The back of Dell PowerEdge 1950 servers. An iDRAC license is bound to one service tag and one server generation, so it stays with the machine. Photo: ShakataGaNai, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Cable_Management_Dell_1950.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+1. Sign in to a Dell account [linked to the service tag](https://www.dell.com/support/kbdoc/en-us/000183997/idrac9-enterprise-license-retrieval-from-dell-digital-locker) and open Software Licenses.
+2. Select the iDRAC license and choose Download Key, after [checking that the Service Tag is correct](https://www.dell.com/support/kbdoc/en-us/000130349/how-to-obtain-idrac-enterprise-licenses-from-dell-digital-locker-ddl).
+3. Extract the ZIP, then import the XML file in the web interface (Configuration, Licenses, Import), with RACADM, or through Redfish.
+
+\`\`\`
+racadm license import -f License.xml -c idrac.embedded.1
+\`\`\`
+
+Import needs [Login, Configure iDRAC and Server Control privileges](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf), and the Redfish ImportLicense action takes [a base-64 encoded string of the XML license file](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_api-guide_en-us.pdf). Dell's iDRAC guide also warns that although you can export the factory-installed license, [you cannot import it](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf), so reinstall from My Account or your purchase email.
+
+A license does not move to a different server, so a used server's license stays with its service tag. In a [July 2024 Dell Community thread](https://www.dell.com/community/en/conversations/poweredge-hardware-general/lost-idrac-enterprise/66a0ff898e75fa46cbe8f1aa) about an iDRAC7 server, a moderator told the new owner to transfer ownership of the tag to their name with Dell's Ownership Transfer form. The moderator added that if Dell's records show Express for the tag, that is what the server was purchased with; in that case Enterprise would be a new purchase.
+
+### Can you use a license file issued for another server?
+
+No. License files are signed and tied to a service tag. Dell License Manager's troubleshooting list includes the error [The digital signature is invalid](https://downloads.dell.com/topicspdf/license-manager_users-guide6_en-us.pdf), and the iDRAC guide says a license is imported [if it passes the validation checks](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf). Using a file issued for another server is outside Dell's terms: the [license agreement](https://dell.com/learn/us/en/tda/terms-conditions/art-software-license-agreements) requires License Keys to come from Dell or an authorized provider, forbids transferring them to anyone else, and forbids circumventing technological use restrictions. This article does not link to or describe sources of unlicensed keys. The legitimate free routes are the license your server shipped with, the 30-day trial, and recovering the license that belongs to your own service tag through My Account.
+
+## How much does an iDRAC9 Enterprise license cost?
+
+Dell's own prices for the 14th generation Enterprise upgrade ranged from [$492 in its online store](https://www.dell.com/en-us/shop/idrac-license-enterprise/apd/385-bbkw/software) to [$1,039 in its licensing guide](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf), and the store price is lower than the guide's in every row below. The guide figures are its after-sale prices from the July 2026 edition, and the store prices were fetched from the public pages on October 5, 2026. Dell's store page says its pricing is for online purchases only, so prices from other channels can differ.
+
+| Item | Dell guide, after sale (July 2026) | Dell US store (October 5, 2026) |
+|---|---|---|
+| [iDRAC9 Enterprise, 14G (385-BBKW)](https://www.dell.com/en-us/shop/idrac-license-enterprise/apd/385-bbkw/software) | $1,039 | $492.00 |
+| [iDRAC9 Enterprise, 15G (385-BBPP)](https://www.dell.com/en-us/shop/idrac-license/apd/385-bbpp/software) | $1,039 | $332.52 |
+| [iDRAC9 Enterprise, 16G (528-CTIE)](https://www.dell.com/en-us/shop/idrac-license/apd/528-ctie/software) | $1,039 | $706.52 |
+| [iDRAC9 Datacenter, 14G (528-CIBH)](https://www.dell.com/en-us/shop/idrac-license/apd/528-cibh/software) | $1,464 | $689.00 |
+| [iDRAC9 Express, 14G, 100 to 500 series (385-BBLB)](https://www.dell.com/en-us/shop/idrac-license/apd/385-bblb/software) | $549 | $249.00 |
+| [iDRAC10 Enterprise, 17G (634-CSHX)](https://www.dell.com/en-us/shop/idrac-license/apd/634-cshx/software) | $1,433 | $974.44 |
+| [iDRAC10 Datacenter, 17G (634-CSHZ)](https://www.dell.com/en-us/shop/idrac-license/apd/634-cshz/software) | $1,911 | $1,299.48 |
+
+The guide also lists $831 for the 14th generation Enterprise license ordered with the server. If you buy from anyone other than Dell, remember that Dell binds each license to one service tag and that its agreement requires License Keys to come from Dell or an authorized provider. Ask how the file will be issued for your tag, then confirm that \`racadm license view\` shows your tag next to License Bound.
+
+## Is Enterprise worth it, and what can you do without it?
+
+Skip Enterprise if the server sits within reach and you mostly need alerts, power control and firmware updates. Buy it, or use the trial for a one-off job, if you need a graphical console or an ISO mounted on a server you cannot walk up to. ServeTheHome's R760 review notes that [iDRAC 9 Enterprise gives "the full HTML5 iKVM functionality"](https://www.servethehome.com/dell-poweredge-r760-review-the-mainstream-2u-dual-intel-xeon-server/3/).
+
+<figure>
+<img src="/images/blog/idrac-9-enterprise-license/nersc-rack.jpg" alt="The back of a server rack with small blue LED screens on each machine" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>The back of a rack at NERSC. Without Enterprise, serial over LAN, PXE boot and a USB stick in the server cover much of what the virtual console and virtual media do. Photo: Derrick Coetzee from Berkeley, CA, USA, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Rear_of_rack_at_NERSC_data_center_-_closeup.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Missing without Enterprise | Documented workaround | What you still miss |
+|---|---|---|
+| Graphical console | IPMI serial-over-LAN | Video, mouse, graphical installers |
+| Virtual media | USB stick in the server, one-time PXE boot, OS deployment from an NFS or CIFS share | Remote rescue ISOs |
+| Group Manager | RACADM or Redfish scripts per server | One screen for a fleet |
+| Directory login | Local iDRAC users with roles | Central accounts |
+| Remote syslog | SNMP traps (every tier), email alerts (Express and up) | A syslog stream |
+
+Serial-over-LAN works on every tier. Dell's guide says it lets you [view the progress of a server during POST and reconfigure the BIOS setup program](https://onlineimages.techmikeny.com/CTOPDF/IDRAC9_User_Guide.pdf), once BIOS serial redirection and the iDRAC SOL setting are on:
+
+\`\`\`
+ipmitool -H IDRAC_IP -I lanplus -U USER -P PASSWORD sol activate
+\`\`\`
+
+Press \`~\` then \`.\` to leave; the [ipmitool manual](https://manpages.debian.org/testing/ipmitool/ipmitool.1.en.html) lists that escape sequence. For installs, the first boot device list in the iDRAC guide includes PXE and can apply to the next boot only, so a [PXE network install](/blog/pxe-network-boot) can start with nobody at the machine, and [OS deployment through Server Configuration Profiles](https://onlineimages.techmikeny.com/CTOPDF/IDRAC9_User_Guide.pdf) pulls the media from an NFS or CIFS share on Express and up. For background see [IPMI and out-of-band management](/blog/ipmi-remote-management), and for day-to-day settings see [Dell iDRAC tips and tricks](/blog/dell-idrac-tips-tricks).
+
+Enterprise is worth the money when the server is remote, when you reinstall often, when a team needs directory login, or when you manage several servers. A single R740 on a shelf rarely needs it, and Datacenter's extras, telemetry streaming and PCIe airflow control, are aimed at [large data centers](https://www.storagereview.com/review/dell-emc-idrac9-v4-0-overview), according to StorageReview.
+
+## What breaks
+
+**The import fails with LIC008, "The license binding ID does not match the device unique identifier."** The license is bound to another service tag or generation, or was never bound to yours. Fix: in My Account choose Download Key, enter your service tag in capitals, and confirm the generation matches your server. If it was bound to the wrong tag, contact Dell Technical Support.
+
+**Launching the console returns LIC501.** The message says a required license is missing or expired, so the server has Basic or Express, the trial ran out, or the Enterprise license was [changed or deleted](https://www.dell.com/support/kbdoc/en-us/000189590/dell-emc-vxrail-error-shown-in-idrac-virtual-console-lic501-a-required-license-is-missing-or-expired). Fix: check Configuration, then Licenses, and import an Enterprise license.
+
+**The console is still unavailable right after a successful import.** The web interface needs a fresh session before it shows licensed features. Fix: log out and back in, as [Dell's guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) says.
+
+**The license stops working after a motherboard replacement.** The new board carries a different service tag until the original is restored, and the license is bound to the old one. In a November 2024 Dell Community thread a moderator told an R740 owner that [the bound license is tied with the service tag](https://www.dell.com/community/en/conversations/rack-servers/the-license-binding-id-does-not-match-the-device-unique-identifier/6733af3a7b3cd535d9749deb), and that once the tag was updated Dell could generate a new license file. Fix: [Easy Restore can restore the service tag and licenses](https://onlineimages.techmikeny.com/CTOPDF/IDRAC9_User_Guide.pdf); otherwise ask Dell to reissue the file.
+
+**Launch Virtual Console is grayed out in OpenManage Enterprise although the iDRAC has Enterprise.** A January 2021 [Dell Community thread](https://www.dell.com/community/en/conversations/dell-openmanage-enterprise/remote-console-launch-virtual-console-button-grayed-out/647f8f65f4ccf8a8de074ced) about OpenManage Enterprise 3.5 reports the console was unavailable for servers discovered in-band over SSH but available when discovered through the iDRAC IP address with Redfish. Fix: rediscover the server that way.
+
+**A second trial import fails.** Dell allows one trial import per product. Fix: buy a perpetual license, or stay on Express and use the workarounds above.
+
+## Frequently asked questions
+
+### Is iDRAC9 Enterprise free?
+
+Not by default. Basic or Express comes with the server unless Enterprise was ordered with it, and Enterprise is otherwise a paid upgrade. The only free route Dell currently lists is the 30-day trial.
+
+### Does the iDRAC9 Enterprise license expire?
+
+No. Dell calls it perpetual and valid for the life of the server. Only the trial expires, after 30 days.
+
+### Can I use a license from another server or generation?
+
+No. The license is bound to one service tag, a 16th generation license will not import on a 14th generation server, and using a file issued for another server is outside Dell's license agreement.
+
+### Where do I download my iDRAC9 license file?
+
+Sign in to My Account with an account linked to your service tag, open Software Licenses, select the iDRAC license and choose Download Key. You get a ZIP containing the XML license file, which you import under Configuration, Licenses. If the server shipped with the license, an export of it cannot be imported again, so use the My Account download or your purchase email.
+
+### Is iDRAC10 Core enough, or do I need Enterprise?
+
+Core keeps the web interface, Redfish, IPMI, RACADM, SSH, serial-over-LAN and SNMP, but not the virtual console, virtual media, directory login or email alerting. Those need Enterprise. For a server you can reach physically, Core is usually enough.
+
+## What this means
+
+For a single homelab server, run the 30-day trial first, then decide. If you only need alerts, power control and firmware updates, Express is enough, and serial-over-LAN plus a USB stick or PXE covers installs. If you need a console on a server you cannot reach, Enterprise is the tier to buy. Dell's price differs between its store and its guide, so compare both, and confirm License Bound after import.
+
+## References
+
+- [OpenManage Portfolio Software Licensing Guide, July 2026 (Dell)](https://www.delltechnologies.com/asset/en-us/products/servers/industry-market/openmanage-portfolio-software-licensing-guide.pdf)
+- [iDRAC9 User's Guide, December 2020, firmware 4.40 (Dell)](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf)
+- [iDRAC9 User's Guide 7.xx Series, June 2024 (Dell PDF copy hosted by TechMikeNY)](https://onlineimages.techmikeny.com/CTOPDF/IDRAC9_User_Guide.pdf)
+- [iDRAC10 Version 1.20.xx User's Guide, December 2025 (Dell PDF copy hosted by Senetic)](https://gfx3.senetic.com/akeneo-catalog/6/7/d/b/67db6c38029beb8d409a682d5abd9cce384f66f9_1785307_RCYKN_icecat_multimedia_other_digital_assets_6_en_GB.pdf)
+- [iDRAC9 RACADM CLI Guide, 2024 (Dell PDF copy hosted by Senetic)](https://gfx3.senetic.com/akeneo-catalog/f/0/6/a/f06a644a0e48069b7654a11c4af01bdac856ff5d_1747759_CDKHV_icecat_multimedia_other_digital_assets_5_en_GB.pdf)
+- [iDRAC9 Version 4.00.00.00 Release Notes (Dell)](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_release-notes1_en-us.pdf)
+- [iDRAC9 Redfish API Guide, firmware 4.20.20.20 (Dell)](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_api-guide_en-us.pdf)
+- [Dell EMC License Manager 1.5 User's Guide (Dell)](https://downloads.dell.com/topicspdf/license-manager_users-guide6_en-us.pdf)
+- [Dell iDRAC9 Support and Management Guide for PowerEdge Servers, KB 000178016](https://www.dell.com/support/kbdoc/en-us/000178016/support-for-integrated-dell-remote-access-controller-9-idrac9)
+- [Trial Licenses for iDRAC, OpenManage Enterprise and DPAT, KB 000176472](https://www.dell.com/support/kbdoc/en-us/000176472/idrac-cmc-openmanage-enterprise-openmanage-integration-with-microsoft-windows-admin-center-openmanage-integration-with-servicenow-and-dpat-trial-licenses)
+- [How to Retrieve an iDRAC9 Enterprise License from Dell Digital Locker, KB 000183997](https://www.dell.com/support/kbdoc/en-us/000183997/idrac9-enterprise-license-retrieval-from-dell-digital-locker)
+- [How to Obtain iDRAC Licenses from My Account, KB 000130349](https://www.dell.com/support/kbdoc/en-us/000130349/how-to-obtain-idrac-enterprise-licenses-from-dell-digital-locker-ddl)
+- [LIC008: The license binding ID does not match the device unique identifier, KB 000353269](https://www.dell.com/support/kbdoc/en-us/000353269/lic008-the-license-binding-id-does-not-match-the-device-unique-identifierdge-lic008-the-license-binding-id-does-not-match-the-device-unique-identifier)
+- [Error Shown in iDRAC Virtual Console LIC501, KB 000189590](https://www.dell.com/support/kbdoc/en-us/000189590/dell-emc-vxrail-error-shown-in-idrac-virtual-console-lic501-a-required-license-is-missing-or-expired)
+- [How to Launch the iDRAC Virtual Console, KB 000179797](https://www.dell.com/support/kbdoc/en-us/000179797/dell-poweredge-idrac-virtual-console)
+- [Locate Your Server's Service Tag (Dell)](https://www.dell.com/support/contents/en-us/article/product-support/self-support-knowledgebase/locate-service-tag/server-storage)
+- [Dell End User License Agreement, revised October 23, 2024](https://dell.com/learn/us/en/tda/terms-conditions/art-software-license-agreements)
+- [Dell store: iDRAC License - Enterprise, part 385-BBKW](https://www.dell.com/en-us/shop/idrac-license-enterprise/apd/385-bbkw/software)
+- [Dell store: iDRAC9 Enterprise 15G, part 385-BBPP](https://www.dell.com/en-us/shop/idrac-license/apd/385-bbpp/software)
+- [Dell store: iDRAC9 Enterprise 16G, part 528-CTIE](https://www.dell.com/en-us/shop/idrac-license/apd/528-ctie/software)
+- [Dell store: iDRAC9 Datacenter 14G upgrade, part 528-CIBH](https://www.dell.com/en-us/shop/idrac-license/apd/528-cibh/software)
+- [Dell store: iDRAC9 Express, PE200-500 series, part 385-BBLB](https://www.dell.com/en-us/shop/idrac-license/apd/385-bblb/software)
+- [Dell store: iDRAC10 Enterprise 17G, part 634-CSHX](https://www.dell.com/en-us/shop/idrac-license/apd/634-cshx/software)
+- [Dell store: iDRAC10 Datacenter 17G, part 634-CSHZ](https://www.dell.com/en-us/shop/idrac-license/apd/634-cshz/software)
+- [Dell Community: the license binding ID does not match the device unique identifier](https://www.dell.com/community/en/conversations/rack-servers/the-license-binding-id-does-not-match-the-device-unique-identifier/6733af3a7b3cd535d9749deb)
+- [Dell Community: lost iDRAC Enterprise license on a used Dell R320](https://www.dell.com/community/en/conversations/poweredge-hardware-general/lost-idrac-enterprise/66a0ff898e75fa46cbe8f1aa)
+- [Dell Community: Remote Console Launch Virtual Console button grayed out](https://www.dell.com/community/en/conversations/dell-openmanage-enterprise/remote-console-launch-virtual-console-button-grayed-out/647f8f65f4ccf8a8de074ced)
+- [Dell iDRAC10 review (ITPro)](https://www.itpro.com/infrastructure/servers-and-storage/dell-idrac10-review-the-best-remote-server-management-solution-just-got-even-better)
+- [Dell EMC iDRAC9 V4.0 Overview (StorageReview)](https://www.storagereview.com/review/dell-emc-idrac9-v4-0-overview)
+- [Dell PowerEdge R760 Review (ServeTheHome)](https://www.servethehome.com/dell-poweredge-r760-review-the-mainstream-2u-dual-intel-xeon-server/3/)
+- [Dell iDRAC (8 and 9) Enterprise Extended Trial License (240 days), ServeTheHome forums](https://forums.servethehome.com/index.php?threads/dell-idrac-8-9-enterprise-extended-trial-license-240-days.29653/)
+- [IdracLicenseManagementOemREDFISH.py, Dell iDRAC-Redfish-Scripting (GitHub)](https://github.com/dell/iDRAC-Redfish-Scripting/blob/master/Redfish%20Python/IdracLicenseManagementOemREDFISH.py)
+- [ipmitool manual page (Debian)](https://manpages.debian.org/testing/ipmitool/ipmitool.1.en.html)
+`,
+  },
+  {
+    slug: "dell-r720-power-consumption",
+    title: "Dell R720 Power Consumption: Idle, Load, Cost and How to Cut It",
+    date: "2026-10-05",
+    tags: ["power", "dell", "servers", "homelab"],
+    excerpt:
+      "Measured idle and full-load watts for the Dell R720 from SPEC, Dell and reviewers, a yearly cost table at the EIA's July 2026 US rate, and how to measure and cut the draw.",
+    coverImage: "/images/blog/dell-r720-power-consumption.jpg",
+    coverCredit: {
+      author: "DYVER",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Stromverbrauchsmesser_-_Strommessger%C3%A4t_f%C3%BCr_Steckdose_-_1.jpg",
+    },
+    content: `
+## The short answer
+
+A Dell PowerEdge R720 idles at about 85 to 150 watts in common two-CPU builds and draws roughly 215 to 410 watts at full load, depending on drives, memory and cards. Dell's [ENERGY STAR data sheet](https://i.dell.com/sites/doccontent/business/large-business/en/Documents/22-Dell-PowerEdge-R720-1100W-E5-2640-Family-Data-Sheet.pdf) measured 85.8 W idle for a minimal build and 144.7 W for a typical one, and Dell's tuned [SPECpower runs](https://open.spec.org/power_ssj2008/results/res2012q2/power_ssj2008-20120417-00452.html) idled at 51 to 54 W with one power supply and one SSD. At the July 2026 [US average residential price](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_3) of 18.31 cents per kilowatt-hour, 100 W around the clock costs about $160 a year. The biggest levers are drive and card count, a Performance Per Watt BIOS profile with C-states enabled, and Hot Spare for the power supplies.
+
+## How many watts does a Dell R720 use?
+
+Every published test used a different build, so the useful answer is a set of reference points from SPEC, Dell, a test lab and a reviewer, all on 2012-era E5-2600 hardware.
+
+<figure>
+<img src="/images/blog/dell-r720-power-consumption/r720xd.jpg" alt="Three Dell PowerEdge R720xd servers stacked in a rack with their drive bays visible" width="1200" height="802" loading="lazy" decoding="async">
+<figcaption>Three PowerEdge R720xd servers, the storage version of the R720. Every published power test used a different build, and drive count is one of the biggest levers. Photo: Dell Inc., <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R720xd_(1).jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Source | Build | Idle (W) | Full load (W) |
+|---|---|---|---|
+| SPECpower_ssj2008, four Dell results ([00435](https://www.spec.org/power_ssj2008/results/res2012q1/power_ssj2008-20120306-00435.html), [00452](https://open.spec.org/power_ssj2008/results/res2012q2/power_ssj2008-20120417-00452.html), [00569](https://www.spec.org/power_ssj2008/results/res2012q4/power_ssj2008-20121030-00569.html), [00578](https://www.spec.org/power_ssj2008/results/res2012q4/power_ssj2008-20121113-00578.html)) | 2 CPUs, 24 GB, one 495 or 750 W supply, one SATA SSD, tuned | 51.0 to 53.8 | 230 to 250 |
+| [Dell ENERGY STAR sheet](https://i.dell.com/sites/doccontent/business/large-business/en/Documents/22-Dell-PowerEdge-R720-1100W-E5-2640-Family-Data-Sheet.pdf), minimum | 2 x E5-2640, 2 x 2 GB, one 10K SAS drive, PERC H310, two 1100 W | 85.8 | 216.8 |
+| [Dell white paper](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/comparing-dell-r720-and-hp-proliant-dl380p-gen8-servers.pdf), July 2012 | 2 x E5-2660, 4 x 8 GB, two 15K SAS drives on PERC H710P, two 750 W | 87.5 | 303 |
+| [Principled Technologies](https://www.principledtechnologies.com/Dell/R720_power_0312.pdf), March 2012 | 2 x E5-2680, 8 x 8 GB, four SAS drives, PERC H710P, two 750 W | 112.0 | 363.3 |
+| [Alphr review](https://www.alphr.com/dell/31827/dell-poweredge-r720-review/), May 1, 2012 | 2 x E5-2680, five 10K SAS drives, PERC H710P, two 750 W | 120 | 358 |
+| Dell ENERGY STAR sheet, typical | 2 x E5-2640, 8 x 8 GB, six 10K SAS drives, PERC H710, two 1100 W | 144.7 | 276.9 |
+| Dell ENERGY STAR sheet, maximum | 2 x E5-2640, 16 x 32 GB, 16 drives, 10GbE and Fibre Channel cards, three PERC controllers, two 1100 W | 263.7 | 409.5 |
+
+Full-load figures are not comparable across rows: SPEC runs a Java server workload, Dell's sheet used SiSoft Sandra Dhrystone, Principled Technologies a SQL Server test, and the review SiSoft Sandra. Dell's sheet also calls its figure sustained average power, not absolute peak.
+
+Owner reports land in the same band, though they are forum reports, not controlled tests. A [2016 Unraid post](https://forums.unraid.net/topic/51733-taming-a-12th-gen-dell-poweredge/) about the 2U 12th-generation PowerEdge line, with two E5-2650 CPUs, four 16 GB 1.35 V DIMMs, a flashed PERC H310 and six 7,200 rpm drives, reported 84 W idle and 120 to 130 W with the drives spun up. A [2021 ServeTheHome thread](https://forums.servethehome.com/index.php?threads/dell-r730-vs-r720-power-usage.31985/) reported an R720xd with two E5-2650 v2 CPUs, 128 GB, four hard drives and two SSDs at about 145 W "at basically idle," and an R720 with 16 SSDs and six VMs at 220 to 260 W.
+
+## Why do R720 power numbers differ so much?
+
+Idle readings run from 51 W to 264 W across these sources, and the build explains most of the gap. Dell's July 2012 white paper and one SPEC result both used two E5-2660 CPUs with prefetchers disabled and System DBPM (DAPC) power management, yet Dell's two-supply build with a PERC H710P, two 15K drives and 32 GB idled at 87.5 W against 52.7 W for the one-supply, one-SSD, 24 GB build. Dell does not split the gap by part, but those are the parts that differ.
+
+Four more things move the number:
+
+- **Line voltage.** SPEC measured at 208 V and Dell's data sheets at 115 V, and Dell's [efficiency guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/power-efficiency-how-to-13g-servers_030216.pdf) says 115 V operation can reduce overall efficiency by about 2%.
+- **Temperature.** Principled Technologies measured 363.3 W peak at 72 F inlet air and 394.2 W at 104 F, an 8.5% increase.
+- **What "idle" means.** SPEC's active idle is an operating system doing nothing, with the disk and display set to sleep after one minute. A host running VMs idles higher.
+- **Anecdotes without a baseline.** A [2019 blog post](https://dan.langille.org/2019/10/12/dell-r720-reducing-power-consumption/) estimated a 120 W saving, but its author wrote "I did not check power consumption before making this change."
+
+## What drives idle and load draw on an R720?
+
+With the CPU model held constant, Dell's three ENERGY STAR builds idled at 85.8, 144.7 and 263.7 W, so memory, drives and cards alone can triple idle draw.
+
+### CPUs
+
+Dell's [final technical guide](https://dl.dell.com/manuals/all-products/esuprt_ser_stor_net/esuprt_poweredge/poweredge-r720_reference-guide_en-us.pdf) lists E5-2600 and E5-2600 v2 processors from 60 W to 135 W TDP. TDP is a cooling target, not a reading: [Intel](https://www.intel.com/content/www/us/en/support/articles/000055611/processors.html) says "Power consumption is less than TDP under lower loads," so CPU choice matters most under sustained load.
+
+<figure>
+<img src="/images/blog/dell-r720-power-consumption/xeon-e5-2670.jpg" alt="An Intel Xeon E5-2670 processor seated in its socket" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A Xeon E5-2670 in its socket, from the E5-2600 family the R720 was built for. Photo: Porsche613, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Intel_Xeon_E5_2670_in_Socket_R_IMG_20180812_010825.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| CPU | Cores | Base clock | TDP |
+|---|---|---|---|
+| E5-2650L | 8 | 1.8 GHz | 70 W |
+| E5-2660 | 8 | 2.2 GHz | 95 W |
+| E5-2670 | 8 | 2.6 GHz | 115 W |
+| E5-2680 | 8 | 2.7 GHz | 130 W |
+| E5-2630L v2 | 6 | 2.4 GHz | 60 W |
+| [E5-2650L v2](https://www.intel.com/content/www/us/en/products/sku/75270/intel-xeon-processor-e52650l-v2-25m-cache-1-70-ghz/specifications.html) | 10 | 1.7 GHz | 70 W |
+| [E5-2670 v2](https://www.intel.com/content/www/us/en/products/sku/75275/intel-xeon-processor-e52670-v2-25m-cache-2-50-ghz/specifications.html) | 10 | 2.5 GHz | 115 W |
+| [E5-2690 v2](https://www.intel.com/content/www/us/en/products/sku/75279/intel-xeon-processor-e52690-v2-25m-cache-3-00-ghz/specifications.html) | 10 | 3.0 GHz | 130 W |
+
+Dell's guide prints 60 W for the E5-2650L v2 while Intel's page says 70 W, so the table uses Intel's figure. A single CPU saves one package's draw, but the [owner's manual](https://dl.dell.com/topicspdf/poweredge-r720_owners-manual_en-us.pdf) says PCIe slots 1 through 4 need both processors, and DIMM sockets B1 to B12 belong to the second.
+
+### Memory
+
+The R720 has 24 DIMM slots and four memory channels per CPU. Dell's efficiency guide says "two 4GB DIMMs will use more power than a single 8GB DIMM," and that x8 DIMMs use less than x4. Dell's [BIOS paper](https://downloads.dell.com/solutions/general-solution-resources/White%20Papers/12g_bios_tuning_for_performance_power.pdf) says 1.35 V low-voltage modules "will reduce overall power consumption."
+
+### Drives and storage controllers
+
+A spinning drive costs watts as long as it spins. [Seagate's data sheet](https://www.seagate.com/www-content/product-content/ironwolf/files/ironwolf-pro-ds1914-3-1701gb.pdf) lists 4.4 to 7.6 W idle and 0.6 to 0.8 W in standby for its 7,200 rpm 3.5-inch drives, so eight spinning drives account for roughly 35 to 61 W. Dell says SSDs typically use less than hard drives, and suggests software [RAID](/blog/raid-levels-comparison) for four drives or fewer to drop the RAID adapter.
+
+### Power supplies
+
+The R720 takes two hot-plug supplies. Dell's technical guide lists these options, with efficiency as targets at four load points:
+
+<figure>
+<img src="/images/blog/dell-r720-power-consumption/psu-pair.jpg" alt="Two hot-swap server power supplies, one pulled partly out of its bay" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A pair of hot-swap power supplies, here in a Fujitsu Primergy. Dell's Hot Spare setting keeps the second supply on standby, one of the levers for cutting R720 idle draw. Photo: Mixabest, <a href="https://creativecommons.org/publicdomain/mark/1.0/">Public domain</a>, via <a href="https://commons.wikimedia.org/wiki/File:FSC_Primergy_TX200_0015.JPG">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Supply | Input | Efficiency at 10 / 20 / 50 / 100% load | Max heat (BTU/hr) |
+|---|---|---|---|
+| 495 W Platinum | 100 to 240 V AC | 82 / 90 / 94 / 91% | 1,908 |
+| 750 W Platinum | 100 to 240 V AC | 82 / 90 / 94 / 91% | 2,891 |
+| 750 W Titanium | 200 to 240 V AC only | 90 / 94 / 96 / 91% | 2,843 |
+| 1100 W Platinum | 100 to 240 V AC | 89 / 93 / 94.5 / 92% | 4,100 |
+| 1100 W DC | -48 to -60 V DC | 80 / 88 / 91 / 88% | 4,416 |
+
+Efficiency is lowest at light load, and two redundant supplies split it equally. With two 495 W units, a 100 W server puts each near 10% of its rating, where Dell's target is 82%. Hot Spare sleeps one supply, so the other carries about 20%, where the target is 90%. For 100 W of internal load, that is 100 / 0.82 = 122 W at the wall against 100 / 0.90 = 111 W, an 11 W gap from targets, not a measurement.
+
+Per the owner's manual, Hot Spare wakes both supplies above 50% load and sleeps one below 20%. Dell's documents disagree on the default: the technical guide says disabled, the [RACADM reference](https://dl.dell.com/topicspdf/idrac7-8-with-lc-v2.20.20.20_reference-guide_en-us.pdf) says enabled, so run \`racadm get System.Power.Hotspare.Enable\`. It is set under Overview, Server, Power/Thermal, Power Configuration. [Redundant Power Supplies](/blog/redundant-power-supplies) covers the mechanics.
+
+### Fans, temperature and add-in cards
+
+Dell's [thermal white paper](https://i.dell.com/sites/content/business/solutions/whitepapers/en/Documents/advanced-thermal-control.pdf) says the Maximum performance setting cools more aggressively "at the expense of increased fan power," and that a fan speed offset "causes fan speeds to increase" over the calculated speed, so an offset only adds watts. Fan power follows the cube of speed: the [U.S. Department of Energy](https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/motor.pdf) notes a 20% speed cut can cut power by about 50%. One ServeTheHome owner on an R730xd reported 165 W rising to 182 W with "no other change than fan speed."
+
+### BIOS system profile
+
+The R720 ships with Performance Per Watt Optimized (DAPC), per the owner's manual. Dell's BIOS paper says disabling C-states in the Performance profile raised Windows idle power by 66% against profiles that enable them, and its chart labels read 1.00 for Performance and 0.34 for the rest, about three to one. In Linux the intel_idle driver forces some C-states on anyway: Performance measured 0.56 against 0.36 for DAPC. Dell tested the highest-TDP CPUs and 128 GB, so ratios will differ on a leaner build.
+
+DAPC kept performance "within 2%" of the Performance profile. Custom has no defaults of its own: its sub-options take the state of the last profile selected, so a used server can arrive with C-states off.
+
+## How much does an R720 cost to run per year?
+
+Yearly kWh is watts x 8,760 hours / 1,000, and cost is kWh x your rate. The table uses the US average residential price for July 2026, 18.31 cents per kWh ([EIA Table 5.3](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_3), released September 24, 2026), and California's 33.61 cents ([Table 5.6.A](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a)) as a high example. Worked row: 145 x 8,760 / 1,000 = 1,270.2 kWh, and 1,270.2 x $0.1831 = $232.57. Prices vary widely and the EIA's rolling 12-month US average is 17.99 cents, so use your own rate.
+
+| Average draw | Matches | kWh per year | At 18.31 cents | At 33.61 cents |
+|---|---|---|---|---|
+| 50 W | Near SPEC's tuned idle | 438 | $80 | $147 |
+| 90 W | Dell minimal build idle | 788 | $144 | $265 |
+| 145 W | Dell typical build idle | 1,270 | $233 | $427 |
+| 220 W | Low end of one owner's VM host | 1,927 | $353 | $648 |
+| 300 W | Between Dell's typical and maximum full load | 2,628 | $481 | $883 |
+
+These figures cover the server only. Dell's data sheets add data-center overhead at a PUE of 2.0 to their kWh-per-year estimates, so do not compare those with this table.
+
+## How do you measure an R720's real power draw?
+
+iDRAC7 already measures it, so check there before buying a meter.
+
+1. **iDRAC web interface.** Open Overview, Server, Power/Thermal, Power Monitoring for present, average, minimum and peak power. Dell's [iDRAC7 guide](https://dl.dell.com/topicspdf/integrated-dell-remote-access-cntrllr-7-v1.50.50_users-guide_en-us.pdf) lists real-time monitoring at every license level, graphing at Express and Enterprise, and capping at Enterprise only, and says Express ships by default on 600 and higher series rack servers such as the R720. History is lost when iDRAC restarts, per the [v2.20.20.20 guide](https://dl.dell.com/topicspdf/idrac7-8-with-lc-v2.20.20.20_users-guide_en-us.pdf). Dell's [data sheet](https://i.dell.com/sites/doccontent/business/large-business/en/Documents/22-Dell-PowerEdge-R720-1100W-E5-2640-Family-Data-Sheet.pdf) gives the accuracy as plus or minus 1% above 125 W, 1.25 W from 50 to 125 W, and 5 W below 50 W.
+2. **Front LCD.** The View menu has a Power entry that shows watts or BTU/hr.
+3. **Command line.** Remote ipmitool needs [IPMI](/blog/ipmi-remote-management) Over LAN enabled under Overview, iDRAC Settings, Network, and RACADM over SSH needs SSH enabled under Services on the same page. These use [ipmitool's Dell extension](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in) and RACADM:
+
+   \`\`\`bash
+   # Present draw in watts
+   ipmitool -I lanplus -H IDRAC_IP -U USER -P 'PASSWORD' delloem powermonitor powerconsumption watt
+
+   # Peak watts and a cumulative kWh counter
+   ipmitool -I lanplus -H IDRAC_IP -U USER -P 'PASSWORD' delloem powermonitor
+
+   # From an SSH session to iDRAC
+   racadm getconfig -g cfgServerPower -o cfgServerActualPowerConsumption
+   \`\`\`
+
+   The second command prints lines such as \`Reading : 1719.3 kWh\` and \`Peak Reading : 370 W\` in the [PowerEdge-IPMItools README](https://github.com/White-Raven/PowerEdge-IPMItools), so kWh divided by hours gives your average draw. If a command returns nothing on Express, use the web interface or the LCD. The generic \`ipmitool dcmi power reading\` is not expected to work here; see What breaks.
+4. **Plug-in meter.** A meter at the wall gives an independent check, and it is how to read standby power, which Dell does not publish for the R720; a [Dell moderator](https://www.dell.com/community/en/conversations/poweredge-hardware-general/typical-poweredge-power-consumption-when-in-standby-mode/647fa041f4ccf8a8de53f241) suggested third-party metering for that. With two supplies, meter both cords and add the readings. [Monitoring and Reducing Server Power Consumption](/blog/power-consumption-monitoring) covers meter limits and the watts-versus-volt-amps trap.
+
+## How do you cut R720 power draw?
+
+Start with the BIOS profile, then drives, fans and power supplies. The table runs from the largest saving the sources support to the smallest, and your own watts depend on your build.
+
+| Change | What the sources show | Trade-off |
+|---|---|---|
+| Set Performance Per Watt (DAPC) with C States and C1E on | Up to two-thirds of idle draw from a Performance profile with C-states off (Dell lab) | Latency jitter in some loads |
+| Spin down or remove unused drives, or use SSDs | 3.6 to 7.0 W per 3.5-inch drive moved from idle to standby | Capacity; spin-up delay |
+| Thermal mode Minimum power, offset Default | 17 W swing from fan speed alone (one R730xd owner) | Hotter parts |
+| Enable Hot Spare, or run one supply | About 11 W at 100 W load on 495 W supplies (Dell targets) | Little gain above 50% load; one supply has no redundancy |
+| Turn Turbo Boost off | 80 to 84% of Turbo-on power under load in three Dell tests | Turbo gave 6 to 14% more performance |
+| L-series CPUs, or remove the second CPU | 60 to 70 W TDP against 95 to 130 W; no measured idle figure found | Lower clocks; one CPU disables PCIe slots 1 to 4 |
+| Cap power (Enterprise) | Lowers peak, not idle: idle stayed 111.6 to 111.9 W at every cap | Throttles CPUs under load |
+| Fewer, larger low-voltage DIMMs; disable unused devices and USB | Dell lists both as savers; no R720 watt figure | Small effect, less room to grow |
+
+## When does replacing an R720 make sense?
+
+Replacement pays off only when a much smaller machine can carry the workload, because a newer server saves less than you might expect.
+
+Dell's [R730 SPECpower result](https://www.spec.org/power_ssj2008/results/res2015q1/power_ssj2008-20150203-00686.html), with two E5-2699 v3 CPUs, 64 GB, one 750 W supply and one SSD, idled at 46.9 W against 52.7 W for the comparable R720 result, and drew 272 W against 250 W at full load while doing about 2.5 times the work. One owner who replaced an R720 and an R720xd with R730xd servers reported about 60 to 70 W less on the busy host (two CPUs down to one) and about 20 W less on the backup host (four more drives), and said the savings "will take a long time to make up the cost difference."
+
+A small machine saves far more. [Apple lists](https://support.apple.com/en-us/103253) 4 W idle for the 2024 Mac mini with the M4 chip, and [ServeTheHome measured](https://www.servethehome.com/intel-core-i3-n305-and-n100-2-port-10g-2-port-2-5gbe-appliance/4/) 14 to 15 W at the wall for an N100 appliance with 10GbE ports and [7.4 to 8 W](https://www.servethehome.com/cwwk-crazy-a-small-6w-tdp-cpu-homelab-super-system/5/) for a smaller one. Replacing a 90 W idle with 4 W saves 86 x 8,760 / 1,000 = 753 kWh a year, or $138 at 18.31 cents and $253 at California's rate.
+
+A $600 replacement (an assumed price) pays back in 4.3 years at the US average and 2.4 years in California. You give up iDRAC, hot-swap bays and 24 DIMM slots, so this suits light workloads only.
+
+## What breaks
+
+**Power capping is missing in iDRAC.** Dell's license table lists capping for iDRAC7 Enterprise only, and the R720 ships with Express. Fix: install an Enterprise license, or skip capping, since in Dell's lab a cap lowered peak power but left idle near 112 W.
+
+**\`ipmitool dcmi power reading\` is not expected to work.** Dell's feature table lists DCMI 1.5 for iDRAC8 but not iDRAC7 at any license level. Fix: use \`delloem powermonitor\`, RACADM or the web interface.
+
+**Idle is far above the 85 to 150 W band.** C-states and C1E may be off, drives may be spinning, or fans may be pinned. Fix: set Performance Per Watt (DAPC), confirm C States and C1E are on, then remove drives and cards one at a time while watching iDRAC.
+
+**Hot Spare changes nothing, or a PDU shows warnings.** Both supplies wake above 50% load, and with supplies on separate circuits the sleeping side carries little current, which Dell says triggers warnings. Fix: judge it at idle, choose the primary supply on the circuit you want loaded, or turn Hot Spare off.
+
+**A replacement supply triggers a mismatch.** Dell requires matching type and maximum output, and says identical supplies on different input voltages can also trigger one. Fix: replace only the supply with the flashing indicator, with a match for the other; Dell warns that swapping the working supply can cause an error and an unexpected shutdown.
+
+**Fans run fast after adding a card or drive.** Dell says high-powered cards raise noise, and one Unraid poster reported firmware that floors fans at 2,000 rpm with any PCIe card or more than one SAS drive, and revisions that floor them at 4,000 rpm or 75% for some cards. Fix: set iDRAC Settings, Thermal to Minimum power with the offset at Default, check firmware revisions, and test with the card removed. [Dell R730 Quiet Fans](/blog/dell-r730-quiet-fans) covers the next generation.
+
+## Frequently asked questions
+
+### How many watts does a Dell R720 use at idle?
+
+Expect 85 to 150 W for a typical two-CPU build with a few drives, matching Dell's 85.8 and 144.7 W and owner reports of 84 to 145 W. A stripped build with one supply and one SSD reached 51 to 54 W in SPEC's tuned runs, and a build full of drives and cards reached 263.7 W.
+
+### What power supply does an R720 need?
+
+The R720 accepts 495, 750 (Platinum or Titanium) and 1100 W AC supplies, plus an 1100 W DC unit. Dell's maximum ENERGY STAR build drew 409.5 W at full load, and a Dell moderator quoted a 605 W maximum from the regulatory datasheet, with no configuration stated. Choose the smallest supply that covers your measured peak with margin, since efficiency is lowest at light load, and install a matched pair.
+
+### Is there an R720 power consumption calculator?
+
+Dell's 12th-generation tool was the Energy Smart Solution Advisor, named in the technical guide. Its newer Enterprise Infrastructure Planning Tool may not model older servers: a [2017 forum reply](https://www.dell.com/community/PowerEdge-Hardware-General/Is-there-an-up-to-date-Dell-Capacity-Planner-or-similar/td-p/4742901) says it "does not include older servers." Build your own estimate: take idle watts from iDRAC, multiply by 8.76 for kWh per year, then by your rate.
+
+### Can an R720 run on one power supply?
+
+Yes. Dell's manual calls one installed supply non-redundant (1 + 0), and the SPEC runs used one. You lose protection against a supply or circuit failure, and the single supply must cover your peak load.
+
+## What this means
+
+A tuned, lightly loaded R720 settles around 85 to 150 W, roughly $135 to $240 a year at the US average price. Measure idle with iDRAC first, confirm the Performance Per Watt (DAPC) profile with C-states on, enable Hot Spare, and remove drives and cards you do not use. Replace the server only when the savings pay for the new machine within the time you will keep it. Size a UPS from the measured watts, as [How to Size a UPS for a Home Server Rack](/blog/ups-sizing-homelab) explains.
+
+## References
+
+- [SPECpower_ssj2008 result 00435, Dell PowerEdge R720 (E5-2670)](https://www.spec.org/power_ssj2008/results/res2012q1/power_ssj2008-20120306-00435.html)
+- [SPECpower_ssj2008 result 00452, Dell PowerEdge R720 (E5-2660)](https://open.spec.org/power_ssj2008/results/res2012q2/power_ssj2008-20120417-00452.html)
+- [SPECpower_ssj2008 result 00569, Dell PowerEdge R720 (E5-2660)](https://www.spec.org/power_ssj2008/results/res2012q4/power_ssj2008-20121030-00569.html)
+- [SPECpower_ssj2008 result 00578, Dell PowerEdge R720 (E5-2660)](https://www.spec.org/power_ssj2008/results/res2012q4/power_ssj2008-20121113-00578.html)
+- [SPECpower_ssj2008 result 00686, Dell PowerEdge R730 (E5-2699 v3)](https://www.spec.org/power_ssj2008/results/res2015q1/power_ssj2008-20150203-00686.html)
+- [Dell ENERGY STAR Power and Performance Data Sheet, PowerEdge R720](https://i.dell.com/sites/doccontent/business/large-business/en/Documents/22-Dell-PowerEdge-R720-1100W-E5-2640-Family-Data-Sheet.pdf)
+- [Dell: Comparing Power Efficiency of the Dell PowerEdge R720 and HP ProLiant DL380p Gen8](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/documents/comparing-dell-r720-and-hp-proliant-dl380p-gen8-servers.pdf)
+- [Principled Technologies: Dell PowerEdge R720 power technologies](https://www.principledtechnologies.com/Dell/R720_power_0312.pdf)
+- [Alphr: Dell PowerEdge R720 review](https://www.alphr.com/dell/31827/dell-poweredge-r720-review/)
+- [Dell: PowerEdge R720 and R720xd Technical Guide](https://dl.dell.com/manuals/all-products/esuprt_ser_stor_net/esuprt_poweredge/poweredge-r720_reference-guide_en-us.pdf)
+- [Dell: PowerEdge R720 and R720xd Owner's Manual](https://dl.dell.com/topicspdf/poweredge-r720_owners-manual_en-us.pdf)
+- [Dell: iDRAC7 Version 1.50.50 User's Guide](https://dl.dell.com/topicspdf/integrated-dell-remote-access-cntrllr-7-v1.50.50_users-guide_en-us.pdf)
+- [Dell: iDRAC8 and iDRAC7 Version 2.20.20.20 User's Guide](https://dl.dell.com/topicspdf/idrac7-8-with-lc-v2.20.20.20_users-guide_en-us.pdf)
+- [Dell: iDRAC8 and iDRAC7 Version 2.20.20.20 RACADM Command Line Interface Reference Guide](https://dl.dell.com/topicspdf/idrac7-8-with-lc-v2.20.20.20_reference-guide_en-us.pdf)
+- [Dell: BIOS Performance and Power Tuning Guidelines for 12th Generation Servers](https://downloads.dell.com/solutions/general-solution-resources/White%20Papers/12g_bios_tuning_for_performance_power.pdf)
+- [Dell: Advanced Thermal Control, Optimizing across Environments and Power Goals](https://i.dell.com/sites/content/business/solutions/whitepapers/en/Documents/advanced-thermal-control.pdf)
+- [Dell: Power Efficiency How To for the Dell PowerEdge Server Portfolio](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/power-efficiency-how-to-13g-servers_030216.pdf)
+- [Dell Community: Is there an up-to-date Dell Capacity Planner or similar?](https://www.dell.com/community/PowerEdge-Hardware-General/Is-there-an-up-to-date-Dell-Capacity-Planner-or-similar/td-p/4742901)
+- [Dell Community: Typical PowerEdge power consumption when in standby mode](https://www.dell.com/community/en/conversations/poweredge-hardware-general/typical-poweredge-power-consumption-when-in-standby-mode/647fa041f4ccf8a8de53f241)
+- [EIA Electric Power Monthly, Table 5.3: Average Price of Electricity to Ultimate Customers](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_3)
+- [EIA Electric Power Monthly, Table 5.6.A: Average Price of Electricity by State](https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a)
+- [Intel: Thermal Design Power (TDP) in Intel Processors](https://www.intel.com/content/www/us/en/support/articles/000055611/processors.html)
+- [Intel: Xeon Processor E5-2650L v2 specifications](https://www.intel.com/content/www/us/en/products/sku/75270/intel-xeon-processor-e52650l-v2-25m-cache-1-70-ghz/specifications.html)
+- [Intel: Xeon Processor E5-2670 v2 specifications](https://www.intel.com/content/www/us/en/products/sku/75275/intel-xeon-processor-e52670-v2-25m-cache-2-50-ghz/specifications.html)
+- [Intel: Xeon Processor E5-2690 v2 specifications](https://www.intel.com/content/www/us/en/products/sku/75279/intel-xeon-processor-e52690-v2-25m-cache-3-00-ghz/specifications.html)
+- [Seagate: IronWolf Pro 3.5-inch HDD data sheet](https://www.seagate.com/www-content/product-content/ironwolf/files/ironwolf-pro-ds1914-3-1701gb.pdf)
+- [U.S. Department of Energy: Improving Motor and Drive System Performance, a Sourcebook for Industry](https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/motor.pdf)
+- [Apple: Mac mini power consumption and thermal output (BTU) information](https://support.apple.com/en-us/103253)
+- [ServeTheHome: Intel Core i3-N305 and N100 2-port 10G 2-port 2.5GbE Appliance](https://www.servethehome.com/intel-core-i3-n305-and-n100-2-port-10g-2-port-2-5gbe-appliance/4/)
+- [ServeTheHome: CWWK Crazy, a Small 6W TDP CPU Homelab Super System](https://www.servethehome.com/cwwk-crazy-a-small-6w-tdp-cpu-homelab-super-system/5/)
+- [ServeTheHome forums: Dell R730 vs R720 power usage](https://forums.servethehome.com/index.php?threads/dell-r730-vs-r720-power-usage.31985/)
+- [Unraid forums: Taming a 12th gen Dell PowerEdge](https://forums.unraid.net/topic/51733-taming-a-12th-gen-dell-poweredge/)
+- [Dan Langille: Dell R720, reducing power consumption](https://dan.langille.org/2019/10/12/dell-r720-reducing-power-consumption/)
+- [ipmitool manual page source (GitHub)](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [PowerEdge-IPMItools README (GitHub)](https://github.com/White-Raven/PowerEdge-IPMItools)
+`,
+  },
+  {
+    slug: "idrac-default-password",
+    title: "iDRAC Default Password: Every Generation and How to Reset It",
+    date: "2026-10-05",
+    tags: ["dell", "security", "servers", "troubleshooting"],
+    excerpt:
+      "Older iDRACs use root and calvin, while iDRAC9 and iDRAC10 print a unique password on the pull-out tag. Find it, the default IP and ports, and every supported way to reset it.",
+    coverImage: "/images/blog/idrac-default-password.jpg",
+    coverCredit: {
+      author: "Acirmandello",
+      license: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:GIP_Servers.jpg",
+    },
+    content: `
+## The short answer
+
+The username is [root on every generation](https://www.dell.com/support/kbdoc/en-us/000133536/dell-poweredge-what-is-the-default-username-and-password-for-idrac). On 11th to 13th generation PowerEdge servers (iDRAC6, iDRAC7, iDRAC8) the password is calvin and the factory IP is 192.168.0.120. On 14th generation and newer (iDRAC9, iDRAC10) the IP comes from DHCP and the password is unique to each server and printed on the pull-out information tag, unless calvin was chosen when the server was ordered. If the tag is missing or the password was changed, set a new one from the host with local racadm, ipmitool or F2 System Setup, and keep the iDRAC on its own management network.
+
+## What are the default iDRAC username and password on each generation?
+
+The username has always been root. The password and the factory IP mode changed, and the break falls between the 13th and 14th generations.
+
+| Generation | Example models | iDRAC | Default password | Factory IP |
+|---|---|---|---|---|
+| 11th | R610, R710 | iDRAC6 | calvin | Static 192.168.0.120 |
+| 12th | R620, R720 | iDRAC7 | calvin | Static 192.168.0.120 |
+| 13th | R630, R730 | iDRAC8 | calvin | Static 192.168.0.120 |
+| 14th to 16th | R640, R740, R650, R750, R660, R760 | iDRAC9 | Unique, on the tag (calvin if ordered) | DHCP |
+| 17th | R670, R770 | iDRAC10 | Unique, on the tag (calvin if ordered) | DHCP, IPv4 and IPv6 |
+
+The calvin rows come from the [iDRAC6 guide](https://dl.dell.com/manuals/all-products/esuprt_electronics/esuprt_software/esuprt_remote_ent_sys_mgmt/integrated-dell-remote-access-cntrllr-6-for-monolithic-srvr-v1.95_user's%20guide_en-us.pdf), the [iDRAC7 and iDRAC8 RACADM guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2818181_cli-guide_en-us.pdf) and the [R730 manual](https://downloads.dell.com/topicspdf/poweredge-r730_owners-manual_en-us.pdf), and generation names follow [Dell's generation list](https://www.dell.com/support/kbdoc/en-us/000137343/how-to-identify-which-generation-your-dell-poweredge-server-belongs-to).
+
+The change arrived with iDRAC9. Firmware [3.00.00.00, released in June 2017](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_release-notes_en-us.pdf), made the default password random and printed on the system information tag unless calvin was selected when ordering. [Dell's iDRAC9 guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf) lists the C6420, M640 and FC640 as exceptions that ship with calvin. [Dell's iDRAC10 security guide](https://www.dell.com/support/manuals/en-us/poweredge-r670/idrac10_1.xx_scg/secure-default-password?guid=guid-57cf489b-3f4a-4b0e-bb62-6af06037edb3&lang=en-us) repeats the unique password and the calvin ordering option.
+
+## Where is the iDRAC9 and iDRAC10 default password?
+
+It is on the pull-out information tag at the front of the chassis, the slide-out panel that also carries the Service Tag. Dell's KB puts the unique password on the [pull-out Service Tag at the front, near the server asset tag](https://www.dell.com/support/kbdoc/en-us/000133536/dell-poweredge-what-is-the-default-username-and-password-for-idrac). The same slide-out label panel is the "information tag" in the [R740 manual](https://downloads.dell.com/topicspdf/poweredge-r740_owners-manual_en-us.pdf), the "luggage tag" in the [R740 technical guide](https://i.dell.com/sites/csdocuments/Merchandizing_Docs/ja/poweredge-r740-r740xd-technical-guide-addcpulist-180912.pdf) and the "Express Service Tag" in the [R770 technical guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r770-technical-guide.pdf).
+
+On an R740 the label shows the iDRAC MAC address and the secure password, and the manual says the information may instead be on a sticker on the chassis. Scanning the tag's QR code with OpenManage Mobile [logs you in only while the credentials are still at their defaults](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf).
+
+If calvin was ordered, the tag shows no password, because Dell says the legacy password is then not available there. On a used server, a tag with no password line therefore points to calvin, while a printed password that fails means someone changed it. A factory reset only restores the shipped value, which you cannot read without the tag, so on a tagless server set a new password instead.
+
+## What is the default iDRAC IP address, and how do you find it?
+
+From the 14th generation on, DHCP is on at the factory, so there is no fixed default; 13th generation and older use 192.168.0.120. The iDRAC9 [release notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_release-notes_en-us.pdf) say DHCP is enabled by default and earlier generations defaulted to a static address, and [Dell's iDRAC10 KB](https://www.dell.com/support/kbdoc/en-us/000374138/set-up-idrac10-ip-address-and-log-in-to-idrac10) says IPv4 and IPv6 both ship with DHCP. The [iDRAC6 guide](https://dl.dell.com/manuals/all-products/esuprt_electronics/esuprt_software/esuprt_remote_ent_sys_mgmt/integrated-dell-remote-access-cntrllr-6-for-monolithic-srvr-v1.95_user's%20guide_en-us.pdf) lists static 192.168.0.120 as its default.
+
+<figure>
+<img src="/images/blog/idrac-default-password/r610-r720-lcd.jpg" alt="Dell PowerEdge R610 and R720 servers in a rack with their front LCD panels lit" width="1200" height="802" loading="lazy" decoding="async">
+<figcaption>A PowerEdge R610 and R720 with their front LCD panels. On servers with an LCD, the panel can show the iDRAC address. Photo: Dell Inc., <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R610_and_R720.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Dell's pages are not consistent here. The default password KB gives both 192.168.0.120 and "DHCP enabled by default" without splitting by generation, and the [iDRAC9 4.40 guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf) still uses 192.168.0.120 in a static-IP racadm example. Trust the release notes and the manual for your generation, because they are tied to a firmware version. The iDRAC6 guide says the address fields become zeros when DHCP finds no server, but no iDRAC9 or iDRAC10 document cited here covers that case, so do not count on a fallback to 192.168.0.120.
+
+Plug into the dedicated iDRAC port, which the iDRAC9 [security guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_administrator-guide_en-us.pdf) lists as the default NIC selection. On an R730 the manual says to use the iDRAC port card or Ethernet connector 1 on the system board.
+
+Ways to find the address:
+
+1. Read the LCD. On an R740 the optional bezel LCD shows it under View, then iDRAC IP, and sets DHCP or static under Setup, then iDRAC.
+2. Open F2 System Setup, then iDRAC Settings, then Network, as [Dell's iDRAC9 network KB](https://www.dell.com/support/kbdoc/en-us/000177212/dell-poweredge-how-to-configure-the-idrac9-and-the-lifecycle-controller-network-ip) describes. On iDRAC10, Dell says POST displays the IPv4 and IPv6 addresses.
+3. Match the iDRAC MAC address from the tag against your DHCP server's lease list.
+4. From the host OS, run the commands below and read the IP Address line.
+5. On servers with a front micro-USB iDRAC Direct port, connect a laptop. The iDRAC9 guide says the laptop acquires 169.254.0.4, the iDRAC takes 169.254.0.3, and Windows may need an RNDIS driver.
+
+\`\`\`
+racadm getniccfg
+ipmitool lan print 1
+\`\`\`
+
+## What are the default iDRAC ports?
+
+The web interface, Redfish and remote racadm use TCP 443, SSH uses TCP 22, and IPMI over LAN uses UDP 623. This table follows the iDRAC9 security guide, which calls them the default ports and says most can be changed.
+
+| Port | Protocol | Function | Changeable |
+|---|---|---|---|
+| 22 | TCP | SSH | Yes |
+| 80 | TCP | HTTP, redirects to HTTPS by default | Yes |
+| 161 | UDP | SNMP agent | Yes |
+| 443 | TCP | HTTPS: web interface, Redfish, remote racadm | Yes |
+| 623 | UDP | IPMI (RMCP and RMCP+) | No |
+| 5900 | TCP | Virtual console and virtual media | Yes |
+| 5901 | TCP | VNC, opens only when VNC is enabled | Yes |
+
+The same guide's defaults table leaves IPMI over LAN disabled on iDRAC9. Telnet also existed on older generations and on iDRAC9 until firmware 4.40.00.00, and the [iDRAC8 guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf) calls it unencrypted and disabled by default.
+
+## How do you reset the iDRAC password?
+
+Use the method that matches what you can reach: a host OS login gets a no-reboot reset, a keyboard and monitor gets F2 System Setup, and a working iDRAC login gets the web interface. Dell's security guide notes that host administrators can use local RACADM and the iDRAC Settings utility without being iDRAC users.
+
+### F2 System Setup (needs a reboot)
+
+1. Restart the server and press F2 during POST to open System Setup.
+2. Open iDRAC Settings, then User Configuration, then Change Password.
+3. Enter the new password, then choose Back, Finish and Yes to save.
+
+The same iDRAC Settings page has Reset iDRAC configurations to defaults, which wipes everything instead of one password.
+
+### Local racadm (no reboot)
+
+Install racadm from Dell's iDRAC Tools in the host OS. [Dell's KB](https://www.dell.com/support/kbdoc/en-uk/000206945/how-to-use-idrac-from-guestos-centos-rhel-esxi-using-racadm-idrac-tools) runs install_racadm.sh for Linux and ESXi. Dell says the default account is index 2, but a user [may have a different index number on each iDRAC](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf), so read the name first.
+
+\`\`\`
+racadm get iDRAC.Users.2.UserName
+racadm set iDRAC.Users.2.Password "NEW-PASSWORD"
+\`\`\`
+
+### ipmitool from the host (no reboot)
+
+ipmitool reaches the controller through the host's IPMI device, so no iDRAC login is needed. [Dell's VxRail KB](https://www.dell.com/support/kbdoc/en-us/000013629/vxrail-how-to) uses these commands to reset the iDRAC root password: list the users on channel 1, read root's ID (2 in Dell's example), then set the password.
+
+\`\`\`
+ipmitool user list 1
+ipmitool user set password 2
+\`\`\`
+
+Leave the password off the second command. The [ipmitool source](https://raw.githubusercontent.com/ipmitool/ipmitool/master/lib/ipmi_user.c) then prompts for it twice, which keeps it out of shell history, and prints the last line below on success. The [man page](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in) still says an omitted password is cleared, so watch for the prompt.
+
+\`\`\`
+Password for user 2:
+Password for user 2:
+Set User Password command successful (user 2)
+\`\`\`
+
+### LCD and Lifecycle Controller
+
+The LCD only shows or sets the address and cannot change a password. Lifecycle Controller (F10 at POST) opens an Initial Setup Wizard on first start, and one page sets the iDRAC network, account name and password, with [DHCP as the default option](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_Users-Guide7_en-us.pdf).
+
+## What does racresetcfg do, and what is the password afterward?
+
+It wipes iDRAC settings back to factory, and the password afterward depends on the generation and the option. On iDRAC7 and iDRAC8 the [RACADM guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2818181_cli-guide_en-us.pdf) says the name and password become root and calvin and the IP becomes 192.168.0.120. The [iDRAC9 CLI guide](https://downloads.dell.com/topicspdf/v4_00_cliguide_en-us.pdf) and the [iDRAC10 page](https://www.dell.com/support/manuals/en-us/poweredge-r7715/idrac10_1.xx_racadm_cli/racresetcfg?guid=guid-6553437b-d19c-4d20-9d6e-b537c62af4eb&lang=en-us) add options.
+
+| Command | Applies to | Password afterward |
+|---|---|---|
+| \`racadm racresetcfg\` | iDRAC7, iDRAC8 | root and calvin, IP 192.168.0.120 |
+| \`racadm racresetcfg -all\` | iDRAC9, iDRAC10 | The shipping value: the tag's unique password, or calvin if ordered |
+| \`racadm racresetcfg -rc\` | iDRAC9, iDRAC10 | root and calvin |
+| \`racadm racresetcfg -f\` | iDRAC9, iDRAC10 | Contradictory in Dell's guide, see below |
+
+The iDRAC9 [user's guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf) says to check the system badge for the default user name and password after racresetcfg, which points to the shipping value, but the CLI guide does not state the bare command's result, so pick -all or -rc. The CLI guide also contradicts itself on -f: the option list says "force", while the example says to preserve user and network settings. The web interface offers [three outcomes under Maintenance, Diagnostics, Reset iDRAC to Default Settings](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf): keep user and network settings, reset to the shipping value, or reset to root and calvin.
+
+\`racadm racreset\` is a different command that restarts the controller and is not described as restoring defaults. Dell also warns that changing the system board jumpers to make calvin the default is permanent, and a factory reset cannot return the unique password.
+
+## How do you keep iDRAC from becoming a security problem?
+
+Change the default password on day one, keep the iDRAC on its own network, and leave IPMI over LAN off unless you need it.
+
+<figure>
+<img src="/images/blog/idrac-default-password/bmc-chip.jpg" alt="An ASPEED AST2400 baseboard management controller chip on a motherboard" width="1200" height="951" loading="lazy" decoding="async">
+<figcaption>An ASPEED AST2400, a common baseboard management controller on other vendors' boards, not an iDRAC. Every BMC runs below the operating system, which is why its default credentials matter. Photo: Phiarc, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:ASPEED_AST2400_BMC_Baseboard_management_controller.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+Default credentials are an easy target. Rapid7's [Metasploit module](https://www.rapid7.com/db/modules/auxiliary/scanner/http/dell_idrac/) attempts logins with the default iDRAC credentials and was tested against iDRAC 6, 7, 8 and 9. iDRAC warns about defaults with Default Password Warning (SEC0701) and Force Change of Password, but Dell's defaults table has Force Change off at the factory.
+
+Dell's [security guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_administrator-guide_en-us.pdf) says iDRAC is not designed or intended to be connected directly to the Internet. It recommends the dedicated port on a separate, firewalled management network, plus IP range filtering and System Lockdown Mode.
+
+The June 2023 [CISA and NSA BMC guidance](https://www.cisa.gov/news-events/alerts/2023/06/14/cisa-and-nsa-release-joint-guidance-hardening-baseboard-management-controllers-bmcs) says hardened credentials, firmware updates and network segmentation options are often overlooked, leading to a vulnerable BMC. [SecurityWeek's summary](https://www.securityweek.com/cisa-nsa-share-guidance-on-hardening-baseboard-management-controllers/) lists changing default credentials and isolating BMC connections with a VLAN, because access to a BMC could let attackers disable the TPM or UEFI Secure Boot. A firewall with a separate management VLAN does that job, and [Running a FortiGate Firewall in a Homelab](/blog/fortigate-firewall-homelab) covers a segmented lab setup.
+
+IPMI over LAN is off by default and should stay off. The IPMI 2.0 handshake returns a password hash to anyone who asks about a valid user, as [Rapid7's IPMI research](https://www.rapid7.com/blog/post/2013/07/02/a-penetration-testers-guide-to-ipmi/) describes and Dell's scanner table lists as CVE-2013-4786 for iDRAC 7, 8 and 9. Dell recommends disabling the service or at least disabling Cipher 0 and segmenting the traffic, and its defaults table gives root no IPMI LAN privilege.
+
+[ServeTheHome's iDRACula report](https://www.servethehome.com/idracula-vulnerability-impacts-millions-of-legacy-dell-emc-servers/) of September 28, 2018 says the firmware-replacement attack is not a vulnerability on 14th generation servers and needs physical access or remote access with a valid login, which an unchanged root and calvin would supply. For why a long password beats complexity rules, see [NIST Password Guidelines: 15 Characters, No Complexity Rules](/blog/nist-password-rules-changed).
+
+## What breaks
+
+**The right password is refused, then every attempt is rejected.** iDRAC blocks a source IP address after repeated failures. Dell's iDRAC9 defaults have blocking on, with three failures in 60 seconds triggering a 60-second penalty. SSH clients may show "Connection closed by remote host", and the counter resets after a successful login. Fix: stop whatever keeps retrying, such as monitoring or a saved password, wait 60 seconds, or sign in from another address.
+
+**A used server has no tag, or the tag's password fails.** The tag is gone or someone changed the password, and resetting to the shipping value only brings back the password you cannot read. Fix: try calvin if the tag shows no password, otherwise set a new password from the host with F2, local racadm or ipmitool, or run \`racadm racresetcfg -rc\` for root and calvin and change it at once. If every host-side change is refused, a previous owner may have disabled local configuration, which Dell says leaves the F2 and local RACADM settings view-only and blocks IPMITool changes; it can be re-enabled under iDRAC Settings, Services, Local Configurations with an administrator login.
+
+<figure>
+<img src="/images/blog/idrac-default-password/dell-server.jpg" alt="A stack of 1U Dell PowerEdge servers in a rack, seen from a low angle" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>A stack of 1U Dell servers. A used server often arrives without its information tag, and the reset methods above are the way back in. Photo: Omnespsx, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Servidor_Dell.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+**racresetcfg drops your session and your address.** iDRAC is unresponsive for about 30 seconds and returns to factory network settings, and Dell's web reset steps say the IP is then not accessible until you set it from the front panel or BIOS. Erasing SEKM settings can also lock storage devices that iDRAC secures. Fix: run it from the console or host OS, run \`racadm sekm disable\` first if you use SEKM, or choose the web option that keeps user and network settings.
+
+**ipmitool cannot open /dev/ipmi0.** The IPMI driver is not loaded, and the [open interface source](https://raw.githubusercontent.com/ipmitool/ipmitool/master/src/plugins/open/open.c) reports "Could not open device at /dev/ipmi0 or /dev/ipmi/0 or /dev/ipmidev/0". Fix: run \`modprobe ipmi_si\` and \`modprobe ipmi_devintf\` (with ipmi_msghandler, the modules the man page lists), then check for /dev/ipmi0. The [kernel documentation](https://docs.kernel.org/driver-api/ipmi.html) says the driver detects the interface itself when SMBIOS describes it. On ESXi use racadm.
+
+**The browser will not load the iDRAC page.** Old iDRAC firmware can offer only old protocols, and the [Mozilla security blog](https://blog.mozilla.org/security/2018/10/15/removing-old-versions-of-tls/) says Firefox would drop TLS 1.0 and 1.1 in March 2020, with Chrome, Edge and Safari planning the same. An IT services blog says modern browsers refuse iDRAC6 until its firmware is [updated to 2.92, the last release](https://falconitservices.com/dell-idrac6-secure-connection-fails/), and that Edge or Internet Explorer in compatibility mode can still reach the old interface to do it. Fix: update the firmware, using the old browser only for that step. Afterward set TLS 1.2 only, which Dell's scanner table recommends (on iDRAC8, \`racadm set idrac.webserver.tlsprotocol 2\`). A certificate warning alone is normal, because iDRAC9 ships with a self-signed certificate.
+
+**A strong new password works in the web interface but not in ipmitool.** ipmitool rejects IPMI 2.0 passwords over 20 characters, and the Lifecycle Controller guide lists 1 to 20 characters while the iDRAC9 guide lists 1 to 40. Fix: use a random password of 20 characters or fewer from Dell's recommended character set.
+
+## Frequently asked questions
+
+### Why is the iDRAC default password not working?
+
+Four causes cover most cases: a 14th generation or newer server with a unique password on its tag, a password someone changed, your IP blocked after failures, or a password longer than one interface accepts. Check the tag, wait out the 60-second block, then reset locally.
+
+### How do I reset the iDRAC password without rebooting the server?
+
+Use local racadm or ipmitool from the host operating system. Neither needs an iDRAC login or a reboot. On ESXi, install racadm from iDRAC Tools first; Dell staff told an owner locked out of several R740s that [racadm is available for ESXi](https://www.dell.com/community/en/conversations/systems-management-general/reset-lost-idrac9-password/647f9115f4ccf8a8de27d813) too (an owner report). For a remote Windows host, Dell's iDRAC9 guide says to log in with a remote desktop client and then use local RACADM.
+
+### Does iDRAC10 use the same default password as iDRAC9?
+
+Yes in practice: a unique password on the tag, calvin as an order-time option, and a reset that returns to the shipped value. The R670 and R770 CSP Editions can run Open Server Manager instead, and [Dell says](https://www.dell.com/support/kbdoc/en-us/000240160/conversion-from-open-server-manager-to-idrac10) its network settings are separate from iDRAC10's, so confirm which controller you have.
+
+### Is iDRAC the same thing as IPMI?
+
+No. Dell's security guide calls IPMI one of iDRAC's management interfaces, which also include the web interface, remote racadm and Redfish. [IPMI and Out-of-Band Management Explained](/blog/ipmi-remote-management) covers the protocol.
+
+## What this means
+
+Treat the password as a property of the generation. Type root and calvin up to the 13th generation, read the tag on anything newer, and expect calvin on the C6420, M640 and FC640 or when the tag shows no password. On a used server, skip the guessing: set a new password from the host with local racadm or ipmitool, put the iDRAC on its own VLAN, leave IPMI over LAN off and use a random password of 20 characters or fewer. After that, [Dell iDRAC Tips and Tricks for Power Users](/blog/dell-idrac-tips-tricks) covers what the controller can do.
+
+## References
+
+- [Dell KB 000133536: PowerEdge iDRAC default username and password guide](https://www.dell.com/support/kbdoc/en-us/000133536/dell-poweredge-what-is-the-default-username-and-password-for-idrac)
+- [Dell KB 000137343: PowerEdge servers by generation](https://www.dell.com/support/kbdoc/en-us/000137343/how-to-identify-which-generation-your-dell-poweredge-server-belongs-to)
+- [iDRAC6 version 1.95 User's Guide](https://dl.dell.com/manuals/all-products/esuprt_electronics/esuprt_software/esuprt_remote_ent_sys_mgmt/integrated-dell-remote-access-cntrllr-6-for-monolithic-srvr-v1.95_user's%20guide_en-us.pdf)
+- [iDRAC7 and iDRAC8 version 2.81.81.81 RACADM CLI Guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2818181_cli-guide_en-us.pdf)
+- [iDRAC8 version 2.75.75.75 User's Guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf)
+- [Dell PowerEdge R730 Owner's Manual](https://downloads.dell.com/topicspdf/poweredge-r730_owners-manual_en-us.pdf)
+- [iDRAC9 with Lifecycle Controller 3.00.00.00 Release Notes](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_release-notes_en-us.pdf)
+- [iDRAC9 version 3.00.00.00 User's Guide](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v30-series_users-guide_en-us.pdf)
+- [iDRAC9 version 4.40.00.00 User's Guide](https://downloads.dell.com/topicspdf/44010ug_en-us.pdf)
+- [iDRAC9 Security Configuration Guide, April 2021](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_administrator-guide_en-us.pdf)
+- [iDRAC9 RACADM CLI Guide, version 4.00](https://downloads.dell.com/topicspdf/v4_00_cliguide_en-us.pdf)
+- [iDRAC10 Security Configuration Guide: Secure default password](https://www.dell.com/support/manuals/en-us/poweredge-r670/idrac10_1.xx_scg/secure-default-password?guid=guid-57cf489b-3f4a-4b0e-bb62-6af06037edb3&lang=en-us)
+- [iDRAC10 RACADM CLI Reference Guide: racresetcfg](https://www.dell.com/support/manuals/en-us/poweredge-r7715/idrac10_1.xx_racadm_cli/racresetcfg?guid=guid-6553437b-d19c-4d20-9d6e-b537c62af4eb&lang=en-us)
+- [Dell KB 000374138: Set up iDRAC10 IP address and log in](https://www.dell.com/support/kbdoc/en-us/000374138/set-up-idrac10-ip-address-and-log-in-to-idrac10)
+- [Dell KB 000177212: Configure iDRAC9 and Lifecycle Controller network settings](https://www.dell.com/support/kbdoc/en-us/000177212/dell-poweredge-how-to-configure-the-idrac9-and-the-lifecycle-controller-network-ip)
+- [Dell KB 000013629: VxRail, reset the root password of the iDRAC](https://www.dell.com/support/kbdoc/en-us/000013629/vxrail-how-to)
+- [Dell KB 000206945: Use racadm in iDRAC Tools from a guest OS](https://www.dell.com/support/kbdoc/en-uk/000206945/how-to-use-idrac-from-guestos-centos-rhel-esxi-using-racadm-idrac-tools)
+- [Dell KB 000240160: Open Server Manager and iDRAC10 conversion](https://www.dell.com/support/kbdoc/en-us/000240160/conversion-from-open-server-manager-to-idrac10)
+- [Dell PowerEdge R740 Installation and Service Manual](https://downloads.dell.com/topicspdf/poweredge-r740_owners-manual_en-us.pdf)
+- [Dell PowerEdge R740 and R740xd Technical Guide](https://i.dell.com/sites/csdocuments/Merchandizing_Docs/ja/poweredge-r740-r740xd-technical-guide-addcpulist-180912.pdf)
+- [Dell PowerEdge R770 Technical Guide](https://www.delltechnologies.com/asset/en-us/products/servers/technical-support/poweredge-r770-technical-guide.pdf)
+- [Dell Lifecycle Controller User's Guide (iDRAC9 v4.x)](https://downloads.dell.com/topicspdf/idrac9-lifecycle-controller-v4x-series_Users-Guide7_en-us.pdf)
+- [Dell Community: Reset lost iDRAC9 password](https://www.dell.com/community/en/conversations/systems-management-general/reset-lost-idrac9-password/647f9115f4ccf8a8de27d813)
+- [ipmitool man page source (GitHub)](https://raw.githubusercontent.com/ipmitool/ipmitool/master/doc/ipmitool.1.in)
+- [ipmitool source: lib/ipmi_user.c (GitHub)](https://raw.githubusercontent.com/ipmitool/ipmitool/master/lib/ipmi_user.c)
+- [ipmitool source: open interface, open.c (GitHub)](https://raw.githubusercontent.com/ipmitool/ipmitool/master/src/plugins/open/open.c)
+- [Linux kernel documentation: The Linux IPMI Driver](https://docs.kernel.org/driver-api/ipmi.html)
+- [CISA: CISA and NSA release joint guidance on hardening BMCs](https://www.cisa.gov/news-events/alerts/2023/06/14/cisa-and-nsa-release-joint-guidance-hardening-baseboard-management-controllers-bmcs)
+- [SecurityWeek: CISA, NSA share guidance on hardening BMCs](https://www.securityweek.com/cisa-nsa-share-guidance-on-hardening-baseboard-management-controllers/)
+- [Rapid7: A Penetration Tester's Guide to IPMI and BMCs](https://www.rapid7.com/blog/post/2013/07/02/a-penetration-testers-guide-to-ipmi/)
+- [Rapid7: Dell iDRAC Default Login (Metasploit module)](https://www.rapid7.com/db/modules/auxiliary/scanner/http/dell_idrac/)
+- [ServeTheHome: iDRACula vulnerability impacts legacy Dell EMC servers](https://www.servethehome.com/idracula-vulnerability-impacts-millions-of-legacy-dell-emc-servers/)
+- [Mozilla Security Blog: Removing old versions of TLS](https://blog.mozilla.org/security/2018/10/15/removing-old-versions-of-tls/)
+- [Falcon IT Services: Dell iDRAC6 secure connection fails](https://falconitservices.com/dell-idrac6-secure-connection-fails/)
+`,
+  },
+  {
+    slug: "dell-r730-gpu-enablement-kit",
+    title: "Dell R730 GPU Enablement Kit: Requirements, Cards and Cable",
+    date: "2026-10-05",
+    tags: ["dell", "servers", "hardware", "power"],
+    excerpt:
+      "What Dell's R730 GPU enablement kit contains, the power, slot and cooling rules, the cards Dell lists, and how to check the riser power cable before you power on.",
+    coverImage: "/images/blog/dell-r730-gpu-enablement-kit.jpg",
+    coverCredit: {
+      author: "Tim Sheerman-Chase",
+      license: "CC BY 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Nvidia_P40_with_Heatsink_Removed.jpg",
+    },
+    content: `
+## The short answer
+
+The Dell R730 GPU enablement kit is the parts bundle Dell requires before any internal GPU: low-profile processor heat sinks, power cables from the riser to the card, and filler brackets for empty slots. Resellers list it as 490-BCDP or 490-BCKS. The server also needs two processors, redundant 1100 W power supplies and inlet air no warmer than 30 C, and it takes at most two 300 W double-wide or four 150 W single-wide passive cards of one model. The risky part is the cable: EPS12V and PCIe 8-pin plugs look alike but assign pins differently, Dell publishes no pin map for the riser end, and a wrong cable can put 12V on ground, so check it with a multimeter before you power on.
+
+## What is in the Dell R730 GPU enablement kit?
+
+Dell's [owner's manual](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/gpu-card-installation-guidelines?guid=guid-c3605f65-c4ae-4beb-9a32-907a90753b81&lang=en-us) lists three items: low-profile heat sinks, power cables for the GPU cards, and filler brackets with a closeout EMI shield for unoccupied PCIe slots. A [December 2025 Dell Community reply](https://www.dell.com/community/en/conversations/rack-servers/dell-poweredge-r730xd-nvidia-tesla-p100-pcie-power-cabling-behavior/6941e991a056e951eeec0698) said the kit "comes with low profile heatsink and two cables."
+
+Dell's manuals print no part numbers. Resellers list the kit as [490-BCDP](https://www.mcac.com/490-bcdp.html) or [490-BCKS](https://www.synigo.com/dell-r730-gpu-installation-kit/cat-p/c36118/p8585019/l_en). The December 2025 reply named the cables as J30DG ("ASSY,CBL,PWR,GRPHC,R730") and N08NH, the "V2" of that assembly, and a [Dell staff reply](https://www.dell.com/community/en/conversations/poweredge-hardware-general/gpu-installation-on-r730/647f6a14f4ccf8a8de729dd2) in April 2024 said four 150 W single-wide cards need "two of the split power cables np#N08NH." A third number, 9H6FV, appears in [reseller listings](https://expresscomputersystems.com/products/9h6fv), but one [third-party guide](https://www.itechguides.com/dell-poweredge-r730-rack-7910-riser-gpu-power-pinout-cables-n08nh-9h6fv-and-safe-verification/) says "the available evidence does not establish that 9H6FV and N08NH are electrically identical." Confirm the part numbers, both cables and the heat sinks before you buy.
+
+## What else does an R730 need before it takes a GPU?
+
+Dell's rules come from the [owner's manual](https://dl.dell.com/topicspdf/poweredge-r730_owners-manual_en-us.pdf) and the [technical guide](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf):
+
+- **Processors:** both sockets filled, with the kit's low-profile heat sinks. The guide caps them at 120 W and the manual at 135 W, so stay at 120 W or less.
+- **Power:** redundant 1100 W supplies. For a K80, both must be 1100 W and set to non-redundant mode.
+- **Temperature:** 30 C maximum inlet, against 35 C normally. Dell's expanded-temperature restrictions say "GPU is not supported."
+- **Airflow:** no special fan part is named, but solid PCIe blanks are required and every bay and fan position must hold a component or a blank.
+- **Cards:** passive only, one type and model, compute only with no video output, no tape backup.
+- **GPU memory:** the guide's "up to 6GB" per GPU is out of date, since it also lists the 12 GB [K40](https://international.download.nvidia.com/tesla/pdf/tesla-k40-passive-board-spec.pdf).
+
+Slots 4 to 7 take full-height, full-length cards, and each supplies 75 W:
+
+| Slot | Riser | Processor | Link |
+|---|---|---|---|
+| 4 | 2 | CPU 2 | x16 |
+| 5 | 2 | CPU 1 | x8 |
+| 6 | 3 | CPU 1 | x8, or x16 on the optional riser 3 |
+| 7 | 3 | CPU 1 | x8, standard riser 3 only |
+
+Two double-wide cards need the optional riser 3 (one x16 slot) and go in slots 6 and 4. Three or four single-wide cards need the standard riser 3 and go in slots 6, 4, 7 and 5.
+
+## Which GPUs does Dell support in the R730?
+
+Dell lists data center cards, mostly NVIDIA Tesla and GRID plus a few AMD FirePro and Intel Xeon Phi parts, and its documents differ, so the table shows where each card appears. The guide's Table 7 lists Xeon Phi coprocessors, K40, K10, GRID K1 and K2, S7000 and S9050. Dell's [March 2020 vSphere white paper](https://downloads.dell.com/manuals/common/dell-emc-poweredge-nvidia-vmware-vsphere.pdf) marks the R730 supported for the Grid K1, Grid K2, Tesla M60 and K40m, and for vGPU on the M10, M60, P4 and P40. The manual adds a K80 rule, a [2016 Dell staff answer](https://dell.com/community/PowerEdge-Hardware-General/GPU-Installation-on-R730/m-p/5148943) adds the M40, S9150, S7150 and Xeon Phi 7120P and 3120P, and [NVIDIA's May 2023 note](https://images.nvidia.com/content/grid/pdf/DA-09018-001_v10.pdf) lists the R730 for the K1, K2, P100, M60, P4, P40 and M10 but not the V100. Dell is not adding to the list: in June 2025 a Dell reply said, "we will not be revalidating anything on 13 Gen servers."
+
+<figure>
+<img src="/images/blog/dell-r730-gpu-enablement-kit/xeon-phi.jpg" alt="An Intel Xeon Phi 5110P coprocessor package" width="1200" height="900" loading="lazy" decoding="async">
+<figcaption>An Intel Xeon Phi 5110P. Dell's R730 guide lists Xeon Phi coprocessors alongside its Tesla and GRID cards. Photo: Poi3212, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via <a href="https://commons.wikimedia.org/wiki/File:Xeon_Phi_5110p_IHS.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Card | Board power | Slot | Listed by |
+|---|---|---|---|
+| [Tesla K80](https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/Tesla-K80-BoardSpec-07317-001-v05.pdf) | 300 W | Dual | Manual, Dell staff |
+| [Tesla K40 or K40m](https://international.download.nvidia.com/tesla/pdf/tesla-k40-passive-board-spec.pdf) | 235 W | Dual | Guide, Dell paper, Dell staff |
+| [Tesla K10](https://international.download.nvidia.com/tesla/pdf/tesla-k10-board-spec.pdf) | 225 W | Dual | Guide |
+| [GRID K1](https://images.nvidia.com/content/grid/pdf/DA-09018-001_v10.pdf) | 130 W | Dual | Guide, Dell paper, Dell staff, NVIDIA |
+| [GRID K2](https://images.nvidia.com/content/grid/pdf/DA-09018-001_v10.pdf) | 225 W | Dual | Guide, Dell paper, Dell staff, NVIDIA |
+| [Tesla M60](https://images.nvidia.com/content/pdf/tesla/tesla-m60-product-brief.pdf) | 300 W | Dual | Dell paper, Dell staff, NVIDIA |
+| [Tesla M40](https://images.nvidia.com/content/tesla/pdf/nvidia-teslam40-datasheet.pdf) | 250 W | Dual | Dell staff |
+| [Tesla M10](https://images.nvidia.com/content/grid/pdf/DA-09018-001_v10.pdf) | 225 W | Dual | Dell paper (vGPU), NVIDIA |
+| [Tesla P40](https://images.nvidia.com/content/pdf/tesla/Tesla-P40-Product-Brief.pdf) | 250 W | Dual | Dell paper (vGPU), NVIDIA |
+| [Tesla P4](https://images.nvidia.com/content/grid/pdf/DA-09018-001_v10.pdf) | 75 W | Single, low profile | Dell paper (vGPU), NVIDIA |
+| [Tesla P100 PCIe](https://images.nvidia.com/content/tesla/pdf/NV-tesla-p100-pcie-PB-08248-001-v01.pdf) | 250 W | Dual | NVIDIA |
+| [FirePro S7000](https://ir.amd.com/news-events/press-releases/detail/244/amd-introduces-industrys-most-powerful-server-graphics-processors) | 150 W | Single | Guide |
+| FirePro S7150 | 150 W | Single | Dell staff |
+| [FirePro S9050 or S9150](https://ir.amd.com/news-events/press-releases/detail/549/amd-unleashes-worlds-most-powerful-server-gpu-for-hpc) | 225 or 235 W | Dual | Guide (S9050), Dell staff (S9150) |
+| [Xeon Phi 3120P, 5110P, 7120P](https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-phi-coprocessor-datasheet.pdf) | 300 W (5110P: 225 W) | Not stated | Guide, Dell staff |
+
+Card names link to the vendor document behind the power and slot figures. "Dell paper" is the white paper and "Dell staff" the forum answers. The P100 rests on NVIDIA's list and owner reports, since Dell's passthrough table marks it "N" for the R730, and V100 and A100 cards are owner reports only, on [ServeTheHome](https://forums.servethehome.com/index.php?threads/looking-for-feedback-on-what-models-of-older-dell-poweredge-servers-people-use-powered-tesla-gpus-in.43523/) and [Dell Community](https://www.dell.com/community/en/conversations/poweredge-hardware-general/gpu-installation-on-r730/647f6a14f4ccf8a8de729dd2).
+
+## Which power cable does the riser need?
+
+Dell labels the riser socket "power connector (for GPU cards)" on risers 2 and 3 and publishes no pin map for it. The kit cable ends in PCIe-style plugs, so a card with a CPU-style 8-pin input needs an adapter or a purpose-built cable.
+
+### What Dell's cable connects
+
+A [reseller listing for N08NH](https://www.itcreations.com/product/74531) describes a 14-inch Y cable: one white 8-pin riser plug to one 6+2-pin and one 6-pin plug. Dell's manual says to plug the cable into "the six-pin and eight-pin connectors on the GPU card," as on the K40.
+
+The K80, P100, P40 and M60 use a CPU-style 8-pin instead. NVIDIA's [K80 specification](https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/Tesla-K80-BoardSpec-07317-001-v05.pdf) says the card "no longer uses the PCI Express auxiliary connectors" and ships a dongle from the CPU 8-pin to two PCIe 8-pin plugs, with both cables from "a common rail" and 225 W in total. The [P100](https://images.nvidia.com/content/tesla/pdf/NV-tesla-p100-pcie-PB-08248-001-v01.pdf), [P40](https://images.nvidia.com/content/pdf/tesla/Tesla-P40-Product-Brief.pdf) and [M60](https://images.nvidia.com/content/pdf/tesla/tesla-m60-product-brief.pdf) briefs list the same input, and a Dell Community reply said the K80 "needed a specific 8-pin cable." Sellers list straight 8-pin to 8-pin cables "For DELL R730 8pin to 8pin Power Cable Nvidia K80/M40/M60/P40/P100 PCIE GPU," but those are seller descriptions, not Dell parts.
+
+### EPS12V and PCIe 8-pin: similar plugs, different pins
+
+Intel's power supply design guide gives both pin maps, and NVIDIA's K80 drawing numbers both housings the same way, so pin n sits in the same place on each. By pin number they conflict:
+
+<figure>
+<img src="/images/blog/dell-r730-gpu-enablement-kit/pcie-8pin-pinout.jpg" alt="Pin map of a PCIe 8-pin power connector with pins 1 to 3 at +12V" width="1200" height="540" loading="lazy" decoding="async">
+<figcaption>The PCIe 8-pin pin map: pins 1 to 3 carry +12V, pins 5, 7 and 8 are ground, and pins 4 and 6 are sense pins. An EPS12V plug puts +12V on pins 5 to 8 instead. Photo: Elmepi, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:PCIe8connector.svg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+| Pin | EPS12V (CPU) | PCIe 2x4 |
+|---|---|---|
+| 1 | Ground | +12V |
+| 2 | Ground | +12V |
+| 3 | Ground | +12V |
+| 4 | Ground | Sense1 |
+| 5 | +12V | Ground |
+| 6 | +12V | Sense0 |
+| 7 | +12V | Ground |
+| 8 | +12V | Ground |
+
+The [EPS table](https://cdrdv2-public.intel.com/613768/613768_2.11.pdf) is Intel's Table 5-6 and the PCIe table is Table 5-8, which matches NVIDIA's K40 table. A PCIe plug grounds both sense pins to signal 150 W.
+
+### Why a wrong cable can put 12V on ground
+
+Following the tables, a straight-through cable joins pin 1 at one end to pin 1 at the other. If one end follows the EPS map and the other the PCIe map, pins 1 to 3 join ground to +12V and pins 5, 7 and 8 join +12V to ground, so the card sees reversed polarity and the supply may see a short. Keying only checks the plug type, not the wiring. NVIDIA's dongle drawing shows a correct converter crossing the wires, from the CPU plug's pins 5 to 8 to pins 1 to 3 of each PCIe socket and from pins 1 to 4 to the grounds and sense pins.
+
+Owners report the results. An R730xd owner said that with a single 8-pin EPS cable "the power supply goes into fault state (amber)." A [P100 owner](https://forums.developer.nvidia.com/t/need-help-with-p100-installation-r730-dell/262245) wrote that "there are a lot of cables that the sellers were selling as if they would work for R730" and fixed a missing GPU with a different cable. An [R720 owner](https://forum.dangerousthings.com/t/r720-riser-card-power-to-rtx-3060-gpus/24554) says the riser has a sensing pin that the cable must tie to ground. None of that is a Dell document for the R730, so treat the riser end as unpublished.
+
+### Check the cable with a multimeter before you power on
+
+This check is a method built on Intel's published pin maps, not a Dell procedure. If any reading does not match what the steps describe, do not power on.
+
+1. Power off and disconnect the system from the electrical outlet (both cords), as Dell's "Before working inside your system" steps require, then unplug the cable from the riser and the card.
+2. On the continuity setting, test the cable alone. Pins 1 to 3 of a PCIe plug and pins 5 to 8 of a CPU-style plug carry +12V, and every other pin is ground or a sense pin tied to ground, so a +12V pin must beep only to other +12V pins.
+3. Repeat on a genuine Dell cable (J30DG or N08NH): its riser-end pins that beep to card-end pins 1 to 3 are +12V. Yours must match, with those pins reaching +12V at the card end (pins 1 to 3 on a PCIe plug, 5 to 8 on a CPU-style plug) and every other riser-end pin going where it goes on the Dell cable.
+4. Plug the cable into the riser only, leave the server unplugged, and measure resistance from a card-end +12V pin to a ground pin. Near zero ohms is a short, so stop. Otherwise connect the card, power on and watch the supply lights, and if one turns amber, power off and unplug.
+
+## Can you use a consumer GPU in an R730?
+
+Dell says no. A Dell moderator wrote in 2024, ["I'm afraid we do not support graphic cards with server models- only GPUs"](https://www.dell.com/community/en/conversations/poweredge-hardware-general/r730-graphics-card/65ed22e9da5d404bffe17308). Owners do it anyway, within limits of power and cooling.
+
+**Power.** Slots supply 75 W, a 6-pin plug adds 75 W and an 8-pin plug 150 W at PCIe ratings, so 75 plus 75 plus 150 reaches Dell's 300 W limit. Intel says the 12V-2x6 connector is "not compatible with the 2x3 or 2x4 auxiliary power connectors," so a card that needs it has no path from Dell's cable.
+
+**Owner reports.** One Dell forum owner said dual RTX 2070 Supers "work just fine." A [2017 poster](https://www.dell.com/community/en/conversations/poweredge-hardware-general/poweredge-r730-gpu-configuration-help/647f727af4ccf8a8de025a94) warned that with a GTX card "the fans will ramp up to 75%." On an R730xd, a [ServeTheHome owner](https://forums.servethehome.com/index.php?threads/does-dell-r730xd-support-gpu.36236/) ran a GTX Titan X on Dell cable 0N08NH and measured "70c" under synthetic load. One owner advised a jumper between pins 5 and 6 on the GPU-side plug because the sense pin was "not sensing"; those are ground and Sense0 in Intel's table, which allows grounding a sense pin "via a jumper to an adjacent ground pin," but test the cable instead of improvising.
+
+## How hot and loud does an R730 get with a GPU?
+
+Dell's guide says any GPGPU card makes the system "significantly louder (about twice as loud)." Third-party cards also get a default cooling response: Dell's [13G knowledge base article](https://www.dell.com/support/kbdoc/en-us/000135682/how-to-disable-the-third-party-pcie-card-default-cooling-response-on-poweredge-13g-servers) says it "provisions airflow based on common industry card requirements" and targets 55 C inlet air at the card region. The commands to turn that off are in [Dell R730 quiet fans](/blog/dell-r730-quiet-fans).
+
+iDRAC8 adds four settings under Overview, Hardware, Fans, Setup: thermal profile, maximum exhaust temperature (default 70 C), fan speed offset (Low, Medium, High, Max or Off) and minimum fan speed. Dell's [iDRAC8 guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf) says the offset's most common use is "non-standard PCIe adapter cooling," and a reboot is required.
+
+## How do you install a GPU in an R730?
+
+Dell's owner's manual procedure is the base, with the cable check added:
+
+<figure>
+<img src="/images/blog/dell-r730-gpu-enablement-kit/pcie-6-plus-2.jpg" alt="A 6+2-pin PCIe power plug beside its detached two-pin section" width="1200" height="663" loading="lazy" decoding="async">
+<figcaption>A 6+2-pin PCIe power plug with its two-pin section detached. Dell's N08NH Y cable ends in one 6+2-pin plug and one 6-pin plug. Photo: Cybercobra, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via <a href="https://commons.wikimedia.org/wiki/File:PCIe_6%2B2_connector.jpg">Wikimedia Commons</a>.</figcaption>
+</figure>
+
+1. Confirm two processors, 1100 W supplies, the kit and, for two double-wide cards, the optional riser 3.
+2. Turn off the system, disconnect it from the electrical outlet, remove the cover and let the heat sinks cool. Remove the cooling shroud and heat sinks, loosening the four screws one at a time in a diagonal pattern.
+3. Fit the kit's heat sinks and refit the shroud. Dell's heat sink steps use thermal grease from the processor kit's syringe, and the GPU steps do not say whether the kit includes any.
+4. Lift the expansion card latch, remove the filler brackets for the GPU and replace the rest with the kit's brackets.
+5. Run the multimeter checks above.
+6. Seat the card in the riser slot, plug the cable into the card and press the card lock down.
+7. Connect the cable to the "power connector (for GPU cards)" on the riser and close the latches.
+8. Refit the cover, power on and confirm Memory Mapped I/O above 4 GB is Enabled.
+9. Install the card's drivers. To pass it to a VM, see [GPU passthrough on Proxmox](/blog/gpu-passthrough-proxmox).
+
+\`\`\`bash
+lspci | grep -i nvidia
+nvidia-smi
+\`\`\`
+
+The card should appear in both. One P100 owner's \`lspci\` line read \`03:00.0 3D controller: NVIDIA Corporation GP100GL [Tesla P100 PCIe 16GB] (rev a1)\`, and \`nvidia-smi\` printed "No devices were found" until the cable was replaced.
+
+## Does the R730xd take the GPU kit?
+
+Not by Dell's documents. The guide says "The R730xd does not support internal or external GPUs," and a 2020 Dell reply said "Internal GPU cards are supported on the PowerEdge R730 and not on the PowerEdge R730xd." Owners [report unsupported cards working there](https://www.dell.com/community/en/conversations/poweredge-hardware-general/gpu-install-in-a-r730xd/647f8334f4ccf8a8de201b2e). [R730 vs R730xd](/blog/dell-r730-vs-r730xd) covers the bay, slot and processor differences.
+
+## What breaks
+
+**A power supply turns amber and the server will not start after you connect the card.** Reports point to a pin map that does not match the riser or the card, or to a single feed that cannot carry the card, and the supply's protection trips. One owner fixed it with two 8-pin feeds from separate outputs, and a Dell reply said a single feed "triggers PSU protection." Fix: unplug, run the multimeter checks, and use a cable verified against a genuine Dell one.
+
+**The card shows in \`lspci\` but \`nvidia-smi\` finds no GPU.** A P100 owner traced it to a seller's cable advertised for the R730 that did not work. Fix: replace it with a verified cable, then reinstall the driver if the error persists.
+
+**Dell's 6-pin plus 6+2-pin cable cannot power a K80, M60, P40 or P100 on its own.** Those cards have a CPU-style 8-pin socket, and a Dell reply said "a standard GPU power connector is not compatible." Fix: use NVIDIA's CPU 8-pin to PCIe 8-pin dongle with Dell's cable, or a cable built for the riser and the card, checked as above.
+
+**A VM with a passed-through M60 shows a blank screen or will not power on.** Dell's white paper lists two R730 causes: compute mode instead of graphics mode, or a hypervisor that cannot map the card's memory. Fix: switch the mode with NVIDIA's gpumodeswitch tool, enable Memory Mapped I/O above 4 GB, and on ESXi add pciPassthru.use64bitMMIO="TRUE" and pciPassthru.64bitMMIOSizeGB = "64" to the VM's VMX file.
+
+## Frequently asked questions
+
+### What is the Dell part number for the R730 GPU power cable?
+
+Dell staff named J30DG and N08NH in December 2025, with N08NH as the "V2" assembly. Resellers also list 9H6FV, and the kit as 490-BCDP or 490-BCKS. Dell's manuals print none of these, so match the cable's ends to your card, not just the listing.
+
+### Is there an official pinout for the R730 riser GPU power connector?
+
+No. Dell's manuals only label the socket "power connector (for GPU cards)," and one third-party guide says they "do not verify one universal numbered riser-side pinout." Intel's design guide has the EPS12V and PCIe 8-pin maps.
+
+### Does Dell still support GPUs in the R730?
+
+Only the cards it already approved. A June 2025 Dell reply said Dell will not revalidate anything on 13th generation servers, and a 2024 reply said Dell had not validated the RTX 4000 Ada. The P40 is in Dell's 2020 white paper for vGPU, and the P100 rests on NVIDIA's certification.
+
+## What this means
+
+Buy the kit and cables as a matched set, fit two processors and 1100 W supplies, and keep the inlet under 30 C. Match the cable to the card: Dell's cable for PCIe-input cards, NVIDIA's dongle for the K80, M60, P40 and P100. For the circuit math behind two 300 W cards, see [GPU power and cooling at home](/blog/gpu-power-and-cooling). Treat any cable that did not come from Dell as untested until the multimeter says otherwise.
+
+## References
+
+- [Dell PowerEdge R730 Owner's Manual: GPU card installation guidelines](https://www.dell.com/support/manuals/en-us/poweredge-r730/r730_ompublication/gpu-card-installation-guidelines?guid=guid-c3605f65-c4ae-4beb-9a32-907a90753b81&lang=en-us)
+- [Dell PowerEdge R730 Owner's Manual (PDF)](https://dl.dell.com/topicspdf/poweredge-r730_owners-manual_en-us.pdf)
+- [Dell PowerEdge R730 and R730xd Technical Guide v1.7](https://i.dell.com/sites/doccontent/shared-content/data-sheets/en/Documents/Dell-PowerEdge-R730-and-R730xd-Technical-Guide-v1-7.pdf)
+- [Dell EMC PowerEdge Servers with NVIDIA GPUs and VMware vSphere (March 2020)](https://downloads.dell.com/manuals/common/dell-emc-poweredge-nvidia-vmware-vsphere.pdf)
+- [Dell KB 000135682: third-party PCIe card cooling response on 13G servers](https://www.dell.com/support/kbdoc/en-us/000135682/how-to-disable-the-third-party-pcie-card-default-cooling-response-on-poweredge-13g-servers)
+- [Dell iDRAC8 Version 2.75.75.75 User's Guide](https://downloads.dell.com/topicspdf/idrac8-lifecycle-controller-v2757575_users-guide_en-us.pdf)
+- [Dell Community: GPU Installation on R730 (replies 2016 to 2026)](https://www.dell.com/community/en/conversations/poweredge-hardware-general/gpu-installation-on-r730/647f6a14f4ccf8a8de729dd2)
+- [Dell Community: GPU Installation on R730 (older URL, June 2025 reply)](https://dell.com/community/PowerEdge-Hardware-General/GPU-Installation-on-R730/m-p/5148943)
+- [Dell Community: R730xd and Tesla P100 power cabling behavior](https://www.dell.com/community/en/conversations/rack-servers/dell-poweredge-r730xd-nvidia-tesla-p100-pcie-power-cabling-behavior/6941e991a056e951eeec0698)
+- [Dell Community: R730 Graphics card?](https://www.dell.com/community/en/conversations/poweredge-hardware-general/r730-graphics-card/65ed22e9da5d404bffe17308)
+- [Dell Community: GPU install in a R730xd](https://www.dell.com/community/en/conversations/poweredge-hardware-general/gpu-install-in-a-r730xd/647f8334f4ccf8a8de201b2e)
+- [Dell Community: PowerEdge R730 + GPU Configuration Help](https://www.dell.com/community/en/conversations/poweredge-hardware-general/poweredge-r730-gpu-configuration-help/647f727af4ccf8a8de025a94)
+- [NVIDIA Tesla K80 board specification BD-07317-001](https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-product-literature/Tesla-K80-BoardSpec-07317-001-v05.pdf)
+- [NVIDIA Tesla K40 passive board specification BD-06902-001](https://international.download.nvidia.com/tesla/pdf/tesla-k40-passive-board-spec.pdf)
+- [NVIDIA Tesla K10 board specification BD-06280-001](https://international.download.nvidia.com/tesla/pdf/tesla-k10-board-spec.pdf)
+- [NVIDIA Tesla P100 PCIe product brief](https://images.nvidia.com/content/tesla/pdf/NV-tesla-p100-pcie-PB-08248-001-v01.pdf)
+- [NVIDIA Tesla P40 product brief](https://images.nvidia.com/content/pdf/tesla/Tesla-P40-Product-Brief.pdf)
+- [NVIDIA Tesla M60 product brief](https://images.nvidia.com/content/pdf/tesla/tesla-m60-product-brief.pdf)
+- [NVIDIA Tesla M40 datasheet](https://images.nvidia.com/content/tesla/pdf/nvidia-teslam40-datasheet.pdf)
+- [NVIDIA application note DA-09018-001: certified OEM platforms](https://images.nvidia.com/content/grid/pdf/DA-09018-001_v10.pdf)
+- [NVIDIA developer forums: P100 installation on a Dell R730](https://forums.developer.nvidia.com/t/need-help-with-p100-installation-r730-dell/262245)
+- [Intel ATX12VO Desktop Power Supply Design Guide, Revision 2.11](https://cdrdv2-public.intel.com/613768/613768_2.11.pdf)
+- [Intel Xeon Phi Coprocessor x100 Product Family Datasheet](https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xeon-phi-coprocessor-datasheet.pdf)
+- [AMD press release: FirePro S9150 and S9050](https://ir.amd.com/news-events/press-releases/detail/549/amd-unleashes-worlds-most-powerful-server-gpu-for-hpc)
+- [AMD press release: FirePro S7000](https://ir.amd.com/news-events/press-releases/detail/244/amd-introduces-industrys-most-powerful-server-graphics-processors)
+- [ServeTheHome forums: Tesla GPUs in older Dell PowerEdge servers](https://forums.servethehome.com/index.php?threads/looking-for-feedback-on-what-models-of-older-dell-poweredge-servers-people-use-powered-tesla-gpus-in.43523/)
+- [ServeTheHome forums: Does Dell R730xd support GPU?](https://forums.servethehome.com/index.php?threads/does-dell-r730xd-support-gpu.36236/)
+- [itechguides: Dell PowerEdge R730 riser GPU power pinout](https://www.itechguides.com/dell-poweredge-r730-rack-7910-riser-gpu-power-pinout-cables-n08nh-9h6fv-and-safe-verification/)
+- [IT Creations: Dell N08NH GPU power cable listing](https://www.itcreations.com/product/74531)
+- [Express Computer Systems: 9H6FV riser to GPU power cable listing](https://expresscomputersystems.com/products/9h6fv)
+- [MCA: Dell R730 GPU installation kit 490-BCDP listing](https://www.mcac.com/490-bcdp.html)
+- [Synigo: Dell R730 GPU installation kit 490-BCKS listing](https://www.synigo.com/dell-r730-gpu-installation-kit/cat-p/c36118/p8585019/l_en)
+- [Dangerous Things forum: R720 riser card power to RTX 3060 GPUs](https://forum.dangerousthings.com/t/r720-riser-card-power-to-rtx-3060-gpus/24554)
+`,
+  },
+  {
     slug: "mac-pro-4-1-vs-5-1",
     title: "Mac Pro 4,1 vs 5,1: What a Firmware Flash Changes (and Doesn't)",
     date: "2026-10-05",

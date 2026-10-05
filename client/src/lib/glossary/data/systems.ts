@@ -336,4 +336,34 @@ export const SYSTEMS: Term[] = [
       "A Mac's EFI is Apple's own implementation, with no PC-style setup screen, and its firmware updates arrive only through macOS installers, never from Linux or Windows.",
     see: ["UEFI", "Secure Boot"],
   },
+  {
+    term: "SAS",
+    expansion: "Serial Attached SCSI",
+    field: "storage",
+    definition:
+      "The server drive interface that succeeded parallel SCSI. A SAS controller or HBA also accepts SATA drives, and SAS adds dual ports, expanders and deeper command queues for chassis full of disks.",
+    confusion:
+      "A SAS connector is not a SAS drive: SATA disks plug into SAS backplanes and run fine, but a SAS disk will not work on a plain SATA port.",
+    see: ["HBA", "SSD"],
+  },
+  {
+    term: "SMART",
+    expansion: "Self-Monitoring, Analysis and Reporting Technology",
+    field: "storage",
+    definition:
+      "The health counters a drive keeps about itself, such as reallocated sectors and error logs, which tools like smartctl read to warn of a failing disk before it dies.",
+    confusion:
+      "A RAID controller can hide SMART data behind its virtual disks, so a clean report through one is not proof the drives are healthy.",
+    see: ["HBA", "SAS"],
+  },
+  {
+    term: "RACADM",
+    expansion: "Remote Access Controller Admin",
+    field: "operations",
+    definition:
+      "Dell's command-line tool for configuring an iDRAC, run over SSH on the iDRAC itself, from the server's own operating system, or remotely from a management station.",
+    confusion:
+      "It talks to the iDRAC, not the host operating system, so a setting changed with racadm can need a reboot of the server to take effect.",
+    see: ["IPMI"],
+  },
 ];

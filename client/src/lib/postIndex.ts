@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 281 of them. Regenerate with script/generatePostIndex.ts.
+ * 287 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,66 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "idrac-fan-speed-offset",
+    title: "iDRAC Fan Speed Offset: Every Thermal Setting on iDRAC9 Explained",
+    date: "2026-10-05",
+    tags: ["dell","servers","homelab","hardware"],
+    excerpt: "Learn what each iDRAC9 thermal setting does on an R640 or R740, with exact racadm and Redfish commands, per-slot PCIe cooling and the firmware change that ended raw IPMI fan control.",
+    coverImage: "/images/blog/idrac-fan-speed-offset.jpg",
+    coverCredit: {"author":"Btrs","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerScale_F600_nodes_in_storage_cluster.jpg"},
+    wordCount: 3270,
+  },
+  {
+    slug: "perc-h730-hba-mode",
+    title: "PERC H730 HBA Mode: How to Switch It and Why It Is Not IT Mode",
+    date: "2026-10-05",
+    tags: ["storage","dell","servers","homelab"],
+    excerpt: "How to switch a PERC H730, H730P or H330 to HBA mode from System Setup or iDRAC, what it changes for drivers, cache and SMART, and when an HBA330 is the better fix for ZFS.",
+    coverImage: "/images/blog/perc-h730-hba-mode.jpg",
+    coverCredit: {"author":"Dmitry Nosachev","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:AOC-S3108L-H8IR.jpg"},
+    wordCount: 3404,
+  },
+  {
+    slug: "idrac-9-enterprise-license",
+    title: "iDRAC 9 Enterprise License: What It Unlocks, Trial and Cost",
+    date: "2026-10-05",
+    tags: ["dell","servers","homelab","operations"],
+    excerpt: "What each iDRAC9 license tier unlocks, how to check and trial a license, what Dell charges for Enterprise, and how licenses bind to a service tag.",
+    coverImage: "/images/blog/idrac-9-enterprise-license.jpg",
+    coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_servers.jpg"},
+    wordCount: 3459,
+  },
+  {
+    slug: "dell-r720-power-consumption",
+    title: "Dell R720 Power Consumption: Idle, Load, Cost and How to Cut It",
+    date: "2026-10-05",
+    tags: ["power","dell","servers","homelab"],
+    excerpt: "Measured idle and full-load watts for the Dell R720 from SPEC, Dell and reviewers, a yearly cost table at the EIA's July 2026 US rate, and how to measure and cut the draw.",
+    coverImage: "/images/blog/dell-r720-power-consumption.jpg",
+    coverCredit: {"author":"DYVER","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Stromverbrauchsmesser_-_Strommessger%C3%A4t_f%C3%BCr_Steckdose_-_1.jpg"},
+    wordCount: 3830,
+  },
+  {
+    slug: "idrac-default-password",
+    title: "iDRAC Default Password: Every Generation and How to Reset It",
+    date: "2026-10-05",
+    tags: ["dell","security","servers","troubleshooting"],
+    excerpt: "Older iDRACs use root and calvin, while iDRAC9 and iDRAC10 print a unique password on the pull-out tag. Find it, the default IP and ports, and every supported way to reset it.",
+    coverImage: "/images/blog/idrac-default-password.jpg",
+    coverCredit: {"author":"Acirmandello","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:GIP_Servers.jpg"},
+    wordCount: 3265,
+  },
+  {
+    slug: "dell-r730-gpu-enablement-kit",
+    title: "Dell R730 GPU Enablement Kit: Requirements, Cards and Cable",
+    date: "2026-10-05",
+    tags: ["dell","servers","hardware","power"],
+    excerpt: "What Dell's R730 GPU enablement kit contains, the power, slot and cooling rules, the cards Dell lists, and how to check the riser power cable before you power on.",
+    coverImage: "/images/blog/dell-r730-gpu-enablement-kit.jpg",
+    coverCredit: {"author":"Tim Sheerman-Chase","license":"CC BY 4.0","licenseUrl":"https://creativecommons.org/licenses/by/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Nvidia_P40_with_Heatsink_Removed.jpg"},
+    wordCount: 3368,
+  },
   {
     slug: "mac-pro-4-1-vs-5-1",
     title: "Mac Pro 4,1 vs 5,1: What a Firmware Flash Changes (and Doesn't)",
@@ -2759,10 +2819,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 281;
+export const POST_COUNT = 287;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and eighty one";
+export const POST_COUNT_SPELLED = "two hundred and eighty seven";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2771,10 +2831,10 @@ export const POST_COUNT_SPELLED = "two hundred and eighty one";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1879;
+export const CITATION_COUNT = 2052;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 154;
+export const ATTRIBUTION_URL_COUNT = 160;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 2022;
+export const CHECKED_URL_COUNT = 2196;

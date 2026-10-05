@@ -184,6 +184,11 @@ const NOT_JARGON: Record<string, string> = {
   HD: "part of product names such as Radeon HD 5770 and Intel HD 3000, not a concept",
   README: "the file name of a project's README, cited as a source document",
   FAQ: "frequently asked questions; the articles cite a project's FAQ page by name",
+  R720: "a Dell server model name, like the R730 and R740",
+  NVIDIA: "a company name",
+  E5: "part of Intel's Xeon E5 processor family name",
+  H330: "a Dell PERC controller model name, like the H730",
+  LSI: "a company name, now part of Broadcom",
 };
 
 const THRESHOLD = 25;
