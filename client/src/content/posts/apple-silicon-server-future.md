@@ -15,11 +15,11 @@ So why not put that efficiency into a server?
 
 Server workloads are different from desktop workloads. Servers need massive memory capacity, ECC support at scale, high-bandwidth I/O, and standardized management interfaces.
 
-Memory is the first wall. The Mac Pro's M2 Ultra tops out at 192 GB of unified memory. The Mac Studio's M3 Ultra later raised the ceiling to 512 GB, which is a real jump, but a single two-socket PowerEdge R740 can hold 3 TB across 24 DIMM slots and a current-generation two-socket box goes higher still. More to the point, Apple's memory is soldered to the package. You cannot add a stick, you cannot replace a failed stick, and the configuration you buy is the configuration you keep for the machine's life.
+Memory is the first wall. The Mac Pro's M2 Ultra topped out at 192 GB of unified memory. The Mac Studio's M3 Ultra later raised the ceiling to 512 GB, which is a real jump, but a single two-socket PowerEdge R740 can hold 3 TB across 24 DIMM slots and a current-generation two-socket box goes higher still. More to the point, Apple's memory is soldered to the package. You cannot add a stick, you cannot replace a failed stick, and the configuration you buy is the configuration you keep for the machine's life.
 
 ECC is the second. Apple does not document ECC on unified memory and macOS exposes no correctable-error counters the way a server BMC does. On a PowerEdge, a DIMM throwing correctable errors shows up in the hardware log weeks before it fails, and you replace it during a maintenance window. There is no equivalent signal on an Apple Silicon Mac. For a laptop that is fine. For a box holding a database it is not.
 
-Servers also need PCIe lanes for network cards, storage controllers, and accelerators. Apple's approach of integrating everything into the SoC is brilliant for laptops but limiting for servers that need to be configured for specific workloads. The 2023 Mac Pro does have six open PCIe slots, which surprised people, but it explicitly does not support third-party GPUs. There is no driver model for them on Apple Silicon at all, and external GPU enclosures that worked on Intel Macs do not work here. The slots are for capture cards, audio interfaces, network adapters, and storage.
+Servers also need PCIe lanes for network cards, storage controllers, and accelerators. Apple's approach of integrating everything into the SoC is brilliant for laptops but limiting for servers that need to be configured for specific workloads. The 2023 Mac Pro had six open PCIe slots, which surprised people, but it explicitly did not support third-party GPUs, and Apple [discontinued it](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) on March 26, 2026 with no successor planned. There is no driver model for them on Apple Silicon at all, and external GPU enclosures that worked on Intel Macs do not work here. The slots were for capture cards, audio interfaces, network adapters, and storage.
 
 ## The management gap
 
@@ -95,3 +95,4 @@ Apple Silicon is incredible technology. It just solves a different problem than 
 - https://asahilinux.org/
 - https://en.wikipedia.org/wiki/Redfish_(specification)
 - https://en.wikipedia.org/wiki/ECC_memory
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/

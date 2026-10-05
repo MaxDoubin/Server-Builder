@@ -1,7 +1,7 @@
 
 ## The problem
 
-You need macOS in a rack. Maybe it is a build machine, maybe it is a transcode node, maybe you just want to know whether Apple hardware can live alongside real servers. The rack-mount Mac Pro is the only first-party answer, and almost everything written about it is either a review of the tower or a price complaint. This is what it is actually like to run one next to PowerEdges.
+You need macOS in a rack. Maybe it is a build machine, maybe it is a transcode node, maybe you just want to know whether Apple hardware can live alongside real servers. The rack-mount Mac Pro is the only first-party answer, and since Apple [discontinued it](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) on March 26, 2026, the used market is the only place to get one. Almost everything written about it is either a review of the tower or a price complaint. This is what it is actually like to run one next to PowerEdges.
 
 ## Why a Mac Pro in a server rack
 
@@ -122,3 +122,4 @@ You are also locked into Apple's hardware ecosystem for upgrades. But for specif
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 - https://en.wikipedia.org/wiki/Virtual_Network_Computing
 - https://developer.apple.com/documentation/virtualization
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/

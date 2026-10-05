@@ -1532,7 +1532,7 @@ Intel lists a [Tcase of 79 degrees C for the E5-2660 v3](https://www.intel.com/c
 
 Community reports agree on the cutoff: iDRAC9 accepts the raw commands up to firmware 3.30.30.30 and refuses them from 3.34.34.34, with 3.31 and 3.32 unreported. In a [Dell community thread](https://www.dell.com/community/en/conversations/poweredge-hardware-general/dell-eng-is-taking-away-fan-speed-control-away-from-users-idrac-3343434/647f8593f4ccf8a8de47aa9b), a T440 owner got "Insufficient privilege level," and a Dell representative answered, "Going forward access is not going to be allowed as it affects the thermal algorithms and cooling the system." Once an iDRAC9 has taken the June 2024 release (7.00.00.172 on 14th generation servers), it cannot be downgraded to 4.40.10.00 or older, according to [KB 000225924](https://www.dell.com/support/kbdoc/en-us/000225924/rac0181-idrac9-firmware-downgrade-failures-on-14-15g-poweredge-servers), so there is no road back to 3.30.30.30.
 
-An [R740](/blog/dell-poweredge-r740-deep-dive) keeps Dell's own options: Minimum Power and, where the platform supports it, Sound Cap, which caps CPU power "to limit fan speed" at a performance cost, per Dell's [custom cooling paper](https://downloads.dell.com/manuals/common/customcooling_poweredge_idrac9.pdf). The third-party response became a per-slot setting with "no customer-facing support" over IPMI:
+An [R740](/blog/dell-poweredge-r740-deep-dive) keeps Dell's own options: Minimum Power and, where the platform supports it, Sound Cap, which caps CPU power "to limit fan speed" at a performance cost, per Dell's [custom cooling paper](https://downloads.dell.com/manuals/common/customcooling_poweredge_idrac9.pdf). The third-party response became a per-slot setting, and Dell's [PCIe cooling paper](https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf) says there is "no customer-facing support" for configuring it over IPMI:
 
 \`\`\`
 racadm get system.pcieslotlfm.1                   # LFMMode=Automatic is the default
@@ -31519,7 +31519,7 @@ The habit that is actively dangerous to carry out of a competition is scope. In 
     content: `
 ## The problem
 
-You need macOS in a rack. Maybe it is a build machine, maybe it is a transcode node, maybe you just want to know whether Apple hardware can live alongside real servers. The rack-mount Mac Pro is the only first-party answer, and almost everything written about it is either a review of the tower or a price complaint. This is what it is actually like to run one next to PowerEdges.
+You need macOS in a rack. Maybe it is a build machine, maybe it is a transcode node, maybe you just want to know whether Apple hardware can live alongside real servers. The rack-mount Mac Pro is the only first-party answer, and since Apple [discontinued it](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) on March 26, 2026, the used market is the only place to get one. Almost everything written about it is either a review of the tower or a price complaint. This is what it is actually like to run one next to PowerEdges.
 
 ## Why a Mac Pro in a server rack
 
@@ -31640,6 +31640,7 @@ You are also locked into Apple's hardware ecosystem for upgrades. But for specif
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 - https://en.wikipedia.org/wiki/Virtual_Network_Computing
 - https://developer.apple.com/documentation/virtualization
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/
 `,
   },
   {
@@ -31715,9 +31716,9 @@ Some numbers to plan against. Idle is much better than load: a modestly configur
 
 Power supplies come in 495 W, 750 W, 1100 W, 1600 W, 2000 W, and 2400 W flavors, all 80 PLUS Platinum or Titanium, normally installed as a redundant pair. The gotcha for anyone in North America: the high-wattage units require 200 to 240 V input to deliver their rated output. On a 120 V circuit a 2000 W supply derates to roughly half. If you are on standard household 120 V, the 750 W or 1100 W supplies are the sensible choice and the big ones buy you nothing.
 
-**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to set fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data for it, so it falls back to a conservative high fan baseline and the server howls at idle forever. This is not a fault. A "Third Party PCIe Card Default Cooling Response" setting, exposed through iDRAC and IPMI, turns the baseline back down. Know it exists before concluding the server is broken.
+**The single biggest cause of an unexpectedly loud R740 is a third-party PCIe card.** The chassis reads thermal telemetry from Dell-branded cards to set fan speed. Install a used Mellanox NIC or an off-brand HBA and the firmware has no thermal data for it, so it falls back to a conservative default cooling response and the fans stay high even at idle. This is not a fault. On iDRAC9 you can turn that response off one slot at a time, in the iDRAC's PCIe airflow settings or with racadm (\`racadm set system.pcieslotlfm.1.lfmmode disabled\` for slot 1). Dell's [PCIe cooling white paper](https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf) says there is "no customer-facing support" for changing it over IPMI, so the IPMI command in older guides belongs to 13th generation servers such as the [R730](/blog/dell-r730-quiet-fans). Disabling it does not always lower the fans, and Dell recommends leaving it on unless you understand the card's cooling needs, so save it for cards with their own fan. Know it exists before concluding the server is broken.
 
-One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
+One more caveat on fan tuning: newer iDRAC9 firmware removed the raw IPMI commands the homelab community used for manual fan curves, and owners report the cutoff at firmware 3.34.34.34. If manual fan control matters to you, check what your current firmware supports before you flash a newer one, because the update is not straightforward to reverse.
 
 Finally, POST is slow. Memory training and controller initialization mean two to four minutes from power button to boot device, and the screen is blank for much of it. It is not dead. It is counting your DIMMs.
 
@@ -31743,6 +31744,7 @@ The checklist I now run before buying, all of it from the sections above: how ma
 - https://en.wikipedia.org/wiki/Registered_memory
 - https://en.wikipedia.org/wiki/Non-uniform_memory_access
 - https://man.archlinux.org/man/ipmitool.1
+- https://downloads.dell.com/manuals/common/poweredge_pcie_cooling.pdf
 `,
   },
   {
@@ -31777,11 +31779,11 @@ So why not put that efficiency into a server?
 
 Server workloads are different from desktop workloads. Servers need massive memory capacity, ECC support at scale, high-bandwidth I/O, and standardized management interfaces.
 
-Memory is the first wall. The Mac Pro's M2 Ultra tops out at 192 GB of unified memory. The Mac Studio's M3 Ultra later raised the ceiling to 512 GB, which is a real jump, but a single two-socket PowerEdge R740 can hold 3 TB across 24 DIMM slots and a current-generation two-socket box goes higher still. More to the point, Apple's memory is soldered to the package. You cannot add a stick, you cannot replace a failed stick, and the configuration you buy is the configuration you keep for the machine's life.
+Memory is the first wall. The Mac Pro's M2 Ultra topped out at 192 GB of unified memory. The Mac Studio's M3 Ultra later raised the ceiling to 512 GB, which is a real jump, but a single two-socket PowerEdge R740 can hold 3 TB across 24 DIMM slots and a current-generation two-socket box goes higher still. More to the point, Apple's memory is soldered to the package. You cannot add a stick, you cannot replace a failed stick, and the configuration you buy is the configuration you keep for the machine's life.
 
 ECC is the second. Apple does not document ECC on unified memory and macOS exposes no correctable-error counters the way a server BMC does. On a PowerEdge, a DIMM throwing correctable errors shows up in the hardware log weeks before it fails, and you replace it during a maintenance window. There is no equivalent signal on an Apple Silicon Mac. For a laptop that is fine. For a box holding a database it is not.
 
-Servers also need PCIe lanes for network cards, storage controllers, and accelerators. Apple's approach of integrating everything into the SoC is brilliant for laptops but limiting for servers that need to be configured for specific workloads. The 2023 Mac Pro does have six open PCIe slots, which surprised people, but it explicitly does not support third-party GPUs. There is no driver model for them on Apple Silicon at all, and external GPU enclosures that worked on Intel Macs do not work here. The slots are for capture cards, audio interfaces, network adapters, and storage.
+Servers also need PCIe lanes for network cards, storage controllers, and accelerators. Apple's approach of integrating everything into the SoC is brilliant for laptops but limiting for servers that need to be configured for specific workloads. The 2023 Mac Pro had six open PCIe slots, which surprised people, but it explicitly did not support third-party GPUs, and Apple [discontinued it](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) on March 26, 2026 with no successor planned. There is no driver model for them on Apple Silicon at all, and external GPU enclosures that worked on Intel Macs do not work here. The slots were for capture cards, audio interfaces, network adapters, and storage.
 
 ## The management gap
 
@@ -31857,6 +31859,7 @@ Apple Silicon is incredible technology. It just solves a different problem than 
 - https://asahilinux.org/
 - https://en.wikipedia.org/wiki/Redfish_(specification)
 - https://en.wikipedia.org/wiki/ECC_memory
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/
 `,
   },
   {
@@ -32668,7 +32671,7 @@ The short version, before the details:
 
 The Mac Pro wins here, and it is not close. The aluminum chassis, the precision machining, the slide-in handles, everything about the physical hardware feels premium. Dell servers are built to be functional and cost-effective. They get the job done, but nobody is going to admire the craftsmanship of a PowerEdge chassis.
 
-That said, the Mac Pro costs five to ten times more than an equivalent PowerEdge, so the build quality better be exceptional.
+That said, the Mac Pro cost five to ten times more than an equivalent PowerEdge when new, so the build quality had better be exceptional.
 
 There is a category of quality the Dell wins outright, though, and it is the one that matters at 2am: serviceability under load. Drives, power supplies, and fans on an R740 are all hot-swap and tool-less. A failed disk is a walk to the rack and a click. A failed power supply does not even take the machine down. Nothing on the Mac Pro is hot-swap. Every repair is a shutdown.
 
@@ -32734,7 +32737,7 @@ On power, the R740 has two hot-swap supplies you can feed from separate circuits
 
 ## Cost
 
-A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, the Mac Pro is the only option.
+A used PowerEdge R740 with 512 GB of RAM costs a fraction of what a similarly-equipped Mac Pro costs. If you are building a lab on a budget, Dell is the only sensible choice. If you specifically need macOS in a rack, a Mac is the only option, and since Apple [discontinued the Mac Pro](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) on March 26, 2026, that means a used rack-mount Mac Pro or a Mac Studio or Mac mini on a rack shelf.
 
 That "only option" is a license question, not a technical one. Apple's software license permits macOS to run only on Apple-branded hardware, including in a virtual machine, and allows at most two additional macOS virtual instances per Mac. So the comparison is not really "which is better value". It is "does this workload require macOS", and if the answer is yes, there is no comparison to make.
 
@@ -32752,7 +32755,7 @@ That "only option" is a license question, not a technical one. Apple's software 
 
 ## My recommendation
 
-Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific macOS requirement that justifies the cost. In my lab, the PowerEdges do 90% of the work. The Mac Pro handles the 10% that requires macOS or Apple's GPU ecosystem.
+Buy a PowerEdge for server workloads. Buy a used Mac Pro only if you have a specific macOS requirement that justifies the cost; Apple no longer sells new ones. In my lab, the PowerEdges do 90% of the work. The Mac Pro handles the 10% that requires macOS or Apple's GPU ecosystem.
 
 ## References
 
@@ -32762,6 +32765,7 @@ Buy a PowerEdge for server workloads. Buy a Mac Pro only if you have a specific 
 - https://en.wikipedia.org/wiki/Mac_Pro
 - https://en.wikipedia.org/wiki/Rack_unit
 - https://en.wikipedia.org/wiki/Registered_memory
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/
 `,
   },
   {
@@ -33070,7 +33074,7 @@ I picked up a FortiGate 60F, which is designed for small office deployments but 
 
 The throughput numbers on the datasheet are worth reading carefully, because they explain how the box actually works. Fortinet rates the 60F at 10 Gbps of raw stateful firewall throughput, 1.4 Gbps with IPS enabled, 1 Gbps in NGFW mode, and 700 Mbps with the full threat protection stack turned on. That is not marketing inconsistency. The 60F's SoC4 processor offloads plain firewall sessions to hardware, but **the moment a policy has any security profile attached, that session can no longer be offloaded and the general-purpose CPU handles every packet.** A fourteen-fold drop between line-rate filtering and full inspection is the price of inspection, and every vendor pays some version of it. For a homelab on a residential connection none of this matters. On a gigabit fiber line with deep inspection on every policy, the 60F is at its limit.
 
-There is one honest downside to buying used Fortinet gear, and it is the thing nobody mentions in the "cheap enterprise firewall" videos. IPS signatures, antivirus definitions, web filtering categories, and application control all come from FortiGuard, which is a paid subscription. A 60F with an expired contract still routes, still does stateful firewalling, still does VPN and [VLANs](/blog/vlan-segmentation-guide) and logging, and still runs the IPS engine, but the signature database is frozen at whatever date the contract lapsed. If you want current threat intel you are paying for it annually. Decide that before you buy.
+There is one honest downside to buying used Fortinet gear, and it is the thing nobody mentions in the "cheap enterprise firewall" videos. IPS signatures, antivirus definitions and web filtering categories come from FortiGuard, which is a paid subscription, and application control signatures come with a FortiCare support contract, which is also paid ([the license breakdown](/blog/fortigate-homelab-license) has the details). A 60F with an expired contract still routes, still does stateful firewalling, still does VPN and [VLANs](/blog/vlan-segmentation-guide) and logging, and still runs the IPS engine, but the signature database is frozen at whatever date the contract lapsed. If you want current threat intel you are paying for it annually. Decide that before you buy.
 
 ## Initial Setup
 
@@ -35590,7 +35594,7 @@ The specifics are worth stating because they set the ceiling on what you can bui
 
 ## Racking Macs today, and what that actually takes
 
-If you need macOS in a rack now, you are choosing between a rack Mac Pro, Mac minis or Mac Studios on shelves, or renting from a provider. Almost everyone doing iOS or macOS CI at scale ends up on the second or third option, because Xcode requires macOS and macOS requires Apple hardware. Apple's own license permits only a limited number of macOS virtual machines per host, and on Apple silicon the Virtualization framework enforces a limit of two macOS VMs running at once, so you cannot solve density with virtualization the way you would on Linux. Cloud providers work around the physical-hardware requirement with dedicated hosts; AWS EC2 Mac instances, for example, allocate a whole Mac to you with a 24-hour minimum.
+If you need macOS in a rack now, you are choosing between a used rack Mac Pro, Mac minis or Mac Studios on shelves, or renting from a provider. Almost everyone doing iOS or macOS CI at scale ends up on the second or third option, because Xcode requires macOS and macOS requires Apple hardware. Apple's own license permits only a limited number of macOS virtual machines per host, and on Apple silicon the Virtualization framework enforces a limit of two macOS VMs running at once, so you cannot solve density with virtualization the way you would on Linux. Cloud providers work around the physical-hardware requirement with dedicated hosts; AWS EC2 Mac instances, for example, allocate a whole Mac to you with a 24-hour minimum.
 
 For a machine you own, the first hour after it goes in the rack should be spent making it survivable without a monitor. These are the settings that matter:
 
@@ -35638,7 +35642,7 @@ One more thing that only shows up after the machine is installed: a 1U server wi
 
 ## What this means
 
-Apple has effectively exited the server market. If you need macOS in a rack, the Mac Pro is your only option, and it is an expensive, imperfect one. For everything else, Dell, HP, and Supermicro offer better value, better management, and better support.
+Apple has effectively exited the server market, and on March 26, 2026 it [discontinued the Mac Pro](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/) as well, saying no new model is planned. If you need macOS in a rack, your choices are a used rack-mount Mac Pro or Mac minis and Mac Studios on shelves, and each is an imperfect fit. For everything else, Dell, HP, and Supermicro offer better value, better management, and better support.
 
 The Xserve was ahead of its time in build quality and design. But it was in a market that Apple was never willing to commit to fully. That tension is the story of Apple in the enterprise. The useful lesson for anyone building a lab is narrower: buy Apple hardware when the workload genuinely requires macOS, build everything else on hardware whose vendor wants to be in the rack, and never plan capacity around a product line that a consumer company keeps alive out of politeness.
 
@@ -35650,6 +35654,7 @@ The Xserve was ahead of its time in build quality and design. But it was in a ma
 - https://en.wikipedia.org/wiki/Apple_Open_Directory
 - https://en.wikipedia.org/wiki/System_X_(supercomputer)
 - https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+- https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/
 `,
   },
   {
