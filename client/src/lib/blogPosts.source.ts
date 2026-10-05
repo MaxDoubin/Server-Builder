@@ -3167,10 +3167,11 @@ Check yours under Apple menu, About This Mac, System Report, Hardware Overview, 
 
 ## What are they worth used, and what is each still good for?
 
-Dealer asking prices on October 5, 2026 put a 5,1 at $335 to $395 and the cheapest 7,1 at $1,199 to $1,295. These are asking prices, not sold prices, and the pages show no date of their own.
+Dealer asking prices on October 5, 2026 ran from $125 for a quad-core 5,1 to $395 for a 12-core one, and the cheapest 7,1 was $1,199 to $1,295. These are asking prices, not sold prices, and the pages show no date of their own.
 
 | Machine | Dealer | Asking price |
 | :--- | :--- | ---: |
+| 5,1, quad-core 3.2GHz, 8GB | [UsedMac.com](https://usedmac.com/product-category/apple-mac-pro/page/2/) | $125 |
 | 5,1, 12-core 3.46GHz, 16GB, 1TB | [UsedMac.com](https://usedmac.com/product-category/apple-mac-pro/) | $335 |
 | 5,1, 12-core 3.46GHz, 32GB, 1TB | UsedMac.com | $395 |
 | 7,1, 8-core 3.5GHz, 32GB, 1TB, open box | [iPower Resale](https://ipowerresale.com/collections/mac-pro) | from $1,199 |
@@ -3261,6 +3262,7 @@ Buy a 5,1 only if Mojave or an OCLP-patched Sequoia is enough. It is cheap, runs
 - [MacRumors: Apple confirms Mac Pro is dead, no future models planned](https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/)
 - [MacRumors forums: MacPro5,1 BootROM thread (144.0.0.0.0)](https://forums.macrumors.com/threads/macpro5-1-bootrom-thread-144-0-0-0-0.2132317/)
 - [UsedMac.com: Apple Mac Pro listings](https://usedmac.com/product-category/apple-mac-pro/)
+- [UsedMac.com: Apple Mac Pro listings, page 2](https://usedmac.com/product-category/apple-mac-pro/page/2/)
 - [iPower Resale: Mac Pro open box](https://ipowerresale.com/collections/mac-pro)
 `,
   },
