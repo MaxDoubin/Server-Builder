@@ -15,7 +15,7 @@ The rack-mount Mac Pro I run has a 28-core Intel Xeon W, 384 GB of ECC DDR4, and
 
 The build quality is on another level compared to typical server hardware. Everything about the chassis feels overengineered. The handles, the mounting rails, the internal PCIe card cages. It is clearly built for a different audience than a PowerEdge, but the precision is impressive.
 
-Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the EIA-310 standard, so at 8.58 inches tall this machine occupies five of them. That is two and a half times the height of a 2U server, which is the first thing to plan for. In a 42U cabinet you fit eight of these where you would fit twenty R740s. Airflow is front-to-back, which is the right direction and lines up correctly with hot and cold aisle layout, so at least it plays well with the rest of the rack thermally.
+Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the EIA-310 standard, so at 8.67 inches tall this machine occupies five of them. That is two and a half times the height of a 2U server, which is the first thing to plan for. In a 42U cabinet you fit eight of these where you would fit twenty one R740s. Airflow is front-to-back, which is the right direction and lines up correctly with hot and cold aisle layout, so at least it plays well with the rest of the rack thermally.
 
 ## Where it fits
 
