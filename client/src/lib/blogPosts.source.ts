@@ -51,7 +51,7 @@ export interface BlogPost {
 export const blogPosts: BlogPost[] = [
   {
     slug: "the-memory-you-freed-and-still-hold",
-    title: "The Memory You Freed And Still Hold",
+    title: "RSS Stays High After free(): glibc Heap Trimming and malloc_trim",
     date: "2026-09-20",
     tags: ["linux", "programming", "performance", "troubleshooting"],
     excerpt:
@@ -283,7 +283,7 @@ same model, one question each.
   },
   {
     slug: "even-is-not-stable",
-    title: "Even Is Not Stable",
+    title: "SO_REUSEPORT Drops Connections on Restart: Not a Consistent Hash",
     date: "2026-09-20",
     tags: ["linux", "networking", "operations", "performance"],
     excerpt:
@@ -438,7 +438,7 @@ question each.
   },
   {
     slug: "three-alignments-and-one-errno",
-    title: "Three Alignments And One Errno",
+    title: "O_DIRECT Write Returns EINVAL: The Three Alignment Rules",
     date: "2026-09-20",
     tags: ["linux", "programming", "storage", "troubleshooting"],
     excerpt:
@@ -622,7 +622,7 @@ one question each.
   },
   {
     slug: "the-cache-you-cannot-drop",
-    title: "The Cache You Cannot Drop",
+    title: "drop_caches Frees Nothing: tmpfs and Shmem Hide in buff/cache",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "performance"],
     excerpt:
@@ -797,7 +797,7 @@ model, one question each.
   },
   {
     slug: "one-descriptor-too-many",
-    title: "One Descriptor Too Many",
+    title: "select() FD_SETSIZE Limit: fd 1024 Silently Corrupts Memory",
     date: "2026-09-20",
     tags: ["linux", "programming", "troubleshooting", "operations"],
     excerpt:
@@ -1021,7 +1021,7 @@ question each.
   },
   {
     slug: "three-boundaries-and-two-signals",
-    title: "Three Boundaries And Two Signals",
+    title: "mmap SIGBUS vs SIGSEGV: Reading Past the End of a Mapped File",
     date: "2026-09-20",
     tags: ["linux", "programming", "troubleshooting", "operations"],
     excerpt:
@@ -1208,7 +1208,7 @@ model, one question each.
   },
   {
     slug: "the-log-that-lost-three-quarters-of-itself",
-    title: "The Log That Lost Three Quarters Of Itself",
+    title: "Multiple Processes, One Log File: Lost Writes Without O_APPEND",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "programming"],
     excerpt:
@@ -1351,7 +1351,7 @@ question each.
   },
   {
     slug: "the-copy-filled-the-disk-the-original-never-touched",
-    title: "The Copy Filled The Disk The Original Never Touched",
+    title: "Sparse Files: Why cat and tar Fill the Disk but cp Does Not",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "storage"],
     excerpt:
@@ -1555,7 +1555,7 @@ question each.
   },
   {
     slug: "the-sum-of-rss-is-not-an-amount-of-memory",
-    title: "The Sum Of RSS Is Not An Amount Of Memory",
+    title: "RSS vs PSS: Why Adding Up RSS Overstates Memory Use",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "performance"],
     excerpt:
@@ -1761,7 +1761,7 @@ question each.
   },
   {
     slug: "a-ceiling-and-not-a-request",
-    title: "A Ceiling And Not A Request",
+    title: "umask Explained: Why the Same Program Creates 0644 or 0600 Files",
     date: "2026-09-20",
     tags: ["linux", "security", "operations", "programming"],
     excerpt:
@@ -1888,7 +1888,7 @@ question each.
   },
   {
     slug: "one-byte-and-two-kinds-of-news",
-    title: "One Byte And Two Kinds Of News",
+    title: "Exit Codes Above 255 Wrap to Zero, and 137 Can Mean Two Things",
     date: "2026-09-20",
     tags: ["linux", "operations", "programming", "troubleshooting"],
     excerpt:
@@ -2037,7 +2037,7 @@ question each.
   },
   {
     slug: "a-thousand-signals-and-one-handler-call",
-    title: "A Thousand Signals And One Handler Call",
+    title: "Do Linux Signals Queue? SIGUSR1 Coalesces, SIGRTMIN Does Not",
     date: "2026-09-20",
     tags: ["linux", "operations", "programming", "troubleshooting"],
     excerpt:
@@ -2213,7 +2213,7 @@ one question each.
   },
   {
     slug: "the-lock-that-two-programs-both-held",
-    title: "The Lock That Two Programs Both Held",
+    title: "flock vs fcntl Locks: Why Both Programs Got the Same File Lock",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "programming"],
     excerpt:
@@ -2409,7 +2409,7 @@ question each.
   },
   {
     slug: "the-log-line-with-another-log-line-inside-it",
-    title: "The Log Line With Another Log Line Inside It",
+    title: "Interleaved Log Lines Over a Pipe: PIPE_BUF and the 4096 Limit",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "observability"],
     excerpt:
@@ -2592,7 +2592,7 @@ question each.
   },
   {
     slug: "eloop-does-not-mean-there-is-a-loop",
-    title: "ELOOP Does Not Mean There Is a Loop",
+    title: "Too Many Levels of Symbolic Links (ELOOP) Without Any Loop",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "storage"],
     excerpt:
@@ -2935,7 +2935,7 @@ one question each.
   },
   {
     slug: "eight-bytes-forty-four-milliseconds",
-    title: "Eight Bytes, Forty Four Milliseconds",
+    title: "TCP 40 ms Stall: Nagle, Delayed ACK, and Where TCP_NODELAY Goes",
     date: "2026-09-20",
     tags: ["linux", "networking", "performance", "troubleshooting"],
     excerpt:
@@ -3127,7 +3127,7 @@ milliseconds](/nagle) are the same model, one question each.
   },
   {
     slug: "the-read-that-wrote-a-thousand-inodes",
-    title: "The Read That Wrote a Thousand Inodes",
+    title: "relatime vs noatime: Why a Read-Only Backup Writes Every Inode",
     date: "2026-09-20",
     tags: ["linux", "operations", "performance", "storage"],
     excerpt:
@@ -3365,7 +3365,7 @@ question each.
   },
   {
     slug: "no-space-left-on-device-with-nineteen-gigabytes-free",
-    title: "No Space Left on Device, With Nineteen Gigabytes Free",
+    title: "System Limit for Number of File Watchers Reached: inotify Limits",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "tooling"],
     excerpt:
@@ -3695,7 +3695,7 @@ question each.
   },
   {
     slug: "the-time-wait-knob-everybody-turns-governs-a-different-state",
-    title: "The TIME_WAIT Knob Everybody Turns Governs a Different State",
+    title: "tcp_fin_timeout Does Not Shorten TIME_WAIT: What It Controls",
     date: "2026-09-20",
     tags: ["networking", "linux", "operations", "troubleshooting"],
     excerpt:
@@ -3900,7 +3900,7 @@ each.
   },
   {
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
-    title: "The Socket Buffer You Tuned Is Smaller Than the One You Did Not",
+    title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
     tags: ["networking", "linux", "operations", "troubleshooting"],
     excerpt:
@@ -4263,7 +4263,7 @@ would have taken the machine with it, so that branch comes from
   },
   {
     slug: "the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end",
-    title: "The Page Cache Is a Buffer and You Tuned the Wrong End",
+    title: "vm.dirty_ratio Is Not a Percentage of RAM: Writeback Tuning",
     date: "2026-09-20",
     tags: ["linux", "operations", "troubleshooting", "storage"],
     excerpt:
@@ -4472,7 +4472,7 @@ memory, and every sysctl was restored afterward.
   },
   {
     slug: "the-table-was-full-and-the-kernel-could-not-shrink-it",
-    title: "The Table Was Full and the Kernel Could Not Shrink It",
+    title: "nf_conntrack Table Full, Dropping Packet: What It Really Means",
     date: "2026-09-19",
     tags: ["networking", "linux", "troubleshooting", "operations"],
     excerpt:
@@ -4927,7 +4927,7 @@ parameter.
   },
   {
     slug: "the-connection-refused-by-a-daemon-doing-nothing",
-    title: "The Connection Refused by a Daemon Doing Nothing",
+    title: "kex_exchange_identification Errors and sshd MaxStartups",
     date: "2026-09-19",
     tags: ["linux", "networking", "security", "operations"],
     excerpt:
@@ -5174,7 +5174,7 @@ quietly, on a machine that by every other measure is doing nothing.
   },
   {
     slug: "bus-error-with-sixty-four-gigabytes-free",
-    title: "Bus Error, With Sixty Four Gigabytes Free",
+    title: "Bus Error in Docker: The 64 MiB /dev/shm Limit and the Fix",
     date: "2026-09-19",
     tags: ["linux", "containers", "troubleshooting", "operations"],
     excerpt:
@@ -5340,7 +5340,7 @@ too. Two changes, because the volume and the limit are separate things.
   },
   {
     slug: "the-arp-cache-holds-a-thousand-and-twenty-four",
-    title: "The ARP Cache Holds A Thousand And Twenty Four",
+    title: "Neighbor Table Overflow: ARP Cache gc_thresh3 and Big Subnets",
     date: "2026-09-19",
     tags: ["networking", "linux", "troubleshooting"],
     excerpt:
@@ -5529,7 +5529,7 @@ not where anybody looks.
   },
   {
     slug: "the-service-that-crashed-faster-is-the-one-that-stopped",
-    title: "The Service That Crashed Faster Is The One That Stopped",
+    title: "systemd start-limit-hit: Why Restart=always Stops Restarting",
     date: "2026-09-19",
     tags: ["linux", "systemd", "operations", "troubleshooting"],
     excerpt:
@@ -5734,7 +5734,7 @@ rate limiter is what collects the bill.
   },
   {
     slug: "it-works-in-chrome",
-    title: "It Works in Chrome",
+    title: "Unable to Get Local Issuer Certificate but It Works in Chrome",
     date: "2026-09-19",
     tags: ["security", "encryption", "troubleshooting"],
     excerpt:
@@ -6300,7 +6300,7 @@ reclaim and the kernel picks a victim, at
   },
   {
     slug: "it-works-in-the-shell",
-    title: "It Works in the Shell",
+    title: "Script Works Manually but Not in Cron: PATH, sh, and % Signs",
     date: "2026-09-19",
     tags: ["linux", "operations", "automation"],
     excerpt:
@@ -6527,7 +6527,7 @@ None of those are about the schedule, and the schedule is the first thing everyb
   },
   {
     slug: "the-first-certificate-in-the-file",
-    title: "The First Certificate in the File",
+    title: "nginx Serves the Wrong SSL Certificate: SNI and default_server",
     date: "2026-09-19",
     tags: ["security", "servers", "operations"],
     excerpt:
@@ -6818,7 +6818,7 @@ wildcard that does not cover the name people type, at
   },
   {
     slug: "fifty-certificates-a-week",
-    title: "Fifty Certificates a Week",
+    title: "Let's Encrypt Rate Limit Hit: It Was Five, Not Fifty a Week",
     date: "2026-09-19",
     tags: ["security", "operations", "automation"],
     excerpt:
@@ -7078,7 +7078,7 @@ certificate is valid and the server is serving the wrong file, at
   },
   {
     slug: "deleted-and-still-growing",
-    title: "Deleted, and Still Growing",
+    title: "Deleted File Still Using Disk Space: Find It With lsof +L1",
     date: "2026-09-19",
     tags: ["linux", "operations", "storage"],
     excerpt:
@@ -7354,7 +7354,7 @@ work through it at [no space left on device](/space).
   },
   {
     slug: "the-first-probe-is-two-hours-late",
-    title: "The First Probe Is Two Hours Late",
+    title: "Idle Connection Reset by Peer: TCP Keepalive Is Two Hours Late",
     date: "2026-09-19",
     tags: ["networking", "linux", "operations"],
     excerpt:
@@ -7604,7 +7604,7 @@ idle connections come from in the first place.
   },
   {
     slug: "the-connection-opened-and-then-nothing-happened",
-    title: "The Connection Opened And Then Nothing Happened",
+    title: "TCP Accept Queue Full: Connections Time Out With Idle CPU",
     date: "2026-09-19",
     updated: "2026-09-20",
     tags: ["networking", "linux", "operations", "troubleshooting"],
@@ -7986,7 +7986,7 @@ proxy](/blog/nginx-reverse-proxy-setup).
   },
   {
     slug: "forty-minutes-dark",
-    title: "Forty Minutes Dark, And A Third Of The Office Fell Off",
+    title: "DHCP Lease Time: Surviving Server Outages and Sizing the Pool",
     date: "2026-09-19",
     tags: ["networking", "operations", "troubleshooting"],
     excerpt:
@@ -8212,7 +8212,7 @@ things that need a fixed address and a finite lease for everything else.
   },
   {
     slug: "ten-queries-for-one-name",
-    title: "Ten Queries for One Name",
+    title: "Kubernetes ndots 5: Why One Lookup Sends Ten DNS Queries",
     date: "2026-09-19",
     tags: ["networking", "dns", "operations"],
     excerpt:
@@ -8444,7 +8444,7 @@ the first question is which resolver the program is actually using.
   },
   {
     slug: "nothing-translates-the-reply",
-    title: "Nothing Translates the Reply",
+    title: "Port Forward Works Outside but Not on LAN: NAT Hairpinning",
     date: "2026-09-08",
     tags: ["networking", "linux", "operations"],
     excerpt:
@@ -8686,7 +8686,7 @@ You can trace ten of these, including the ones where every rule is correct, at
   },
   {
     slug: "minus-one-thousand-is-not-a-hint",
-    title: "Minus One Thousand Is Not a Hint",
+    title: "oom_score_adj Explained: Why -1000 Is Not Just a Low Score",
     date: "2026-09-08",
     tags: ["linux", "operations", "kernel"],
     excerpt:
@@ -8941,7 +8941,7 @@ You can work through ten of these, including the one that panics, at
   },
   {
     slug: "the-alert-was-pending-all-day",
-    title: "The Alert Was Pending All Day",
+    title: "Prometheus Alert Stuck Pending: How the for Clause Works",
     date: "2026-09-08",
     tags: ["monitoring", "prometheus", "operations"],
     excerpt:
@@ -9183,7 +9183,7 @@ at [the graph crossed the line](/alerts).
   },
   {
     slug: "forty-and-nothing-was-running",
-    title: "Forty, and Nothing Was Running",
+    title: "High Load Average, Low CPU: What Linux Load Really Counts",
     date: "2026-09-09",
     tags: ["linux", "operations", "monitoring"],
     excerpt:
@@ -9437,7 +9437,7 @@ on an idle machine and the one where the burst never happened, at
   },
   {
     slug: "stopped-not-slow",
-    title: "Stopped, Not Slow",
+    title: "Kubernetes CPU Throttling With Idle Cores: CFS Quota Explained",
     date: "2026-09-09",
     tags: ["linux", "containers", "operations"],
     excerpt:
@@ -9675,7 +9675,7 @@ one that goes faster with more threads, at
   },
   {
     slug: "it-ran-out-at-four-hundred-and-seventy",
-    title: "It Ran Out at Four Hundred and Seventy",
+    title: "Cannot Assign Requested Address: Ephemeral Port Exhaustion",
     date: "2026-09-09",
     tags: ["networking", "linux", "operations"],
     excerpt:
@@ -9902,7 +9902,7 @@ sockets with nothing wrong and the one that broke at two hundred a second, at
   },
   {
     slug: "the-file-was-right-and-nobody-read-it",
-    title: "The File Was Right and Nobody Read It",
+    title: "limits.conf Ignored by systemd Services: Use LimitNOFILE",
     date: "2026-09-09",
     tags: ["linux", "systemd", "operations"],
     excerpt:
@@ -10114,7 +10114,7 @@ one where the shell was telling the truth, at
   },
   {
     slug: "the-free-column-was-always-going-to-be-zero",
-    title: "The Free Column Was Always Going to Be Zero",
+    title: "Linux Free Memory Near Zero? Read MemAvailable, Not free",
     date: "2026-09-09",
     tags: ["linux", "operations", "monitoring"],
     excerpt:
@@ -10323,7 +10323,7 @@ wrong by six gigabytes and the one where available is less than free, at
   },
   {
     slug: "alignment-is-what-runs-out",
-    title: "Alignment Is What Runs Out",
+    title: "IP Address Planning: Subnets Fail on Alignment, Not Space",
     date: "2026-09-08",
     tags: ["networking", "ipv4", "design"],
     excerpt:
@@ -10471,7 +10471,7 @@ It also caught me asserting that one host needs a /31. One host needs a /32.
   },
   {
     slug: "four-faults-one-sentence",
-    title: "Four Faults, One Sentence",
+    title: "DNS Not Resolving: Lame Delegation, Missing Glue, Bad CNAME",
     date: "2026-09-08",
     tags: ["dns", "networking", "troubleshooting"],
     excerpt:
@@ -10629,7 +10629,7 @@ recognizing as quickly as a fault.
   },
   {
     slug: "first-match-wins",
-    title: "First Match Wins",
+    title: "Firewall Rule Shadowing: Why Your New Rule Never Matches",
     date: "2026-09-08",
     tags: ["networking", "security", "linux"],
     excerpt:
@@ -10765,7 +10765,7 @@ break the thing it is supposed to catch and watch it catch it.
   },
   {
     slug: "the-cache-was-never-told-what-a-user-is",
-    title: "The Cache Was Never Told What a User Is",
+    title: "Shared Cache Leaking User Pages: Cache-Control private and Vary",
     date: "2026-09-08",
     tags: ["security", "networking", "operations"],
     excerpt:
@@ -11007,7 +11007,7 @@ else's name](/cache).
   },
   {
     slug: "the-disk-was-not-full",
-    title: "The Disk Was Not Full",
+    title: "No Space Left on Device but df Shows Space: Six Causes",
     date: "2026-09-08",
     tags: ["linux", "operations", "storage"],
     excerpt:
@@ -11270,7 +11270,7 @@ device](/space).
   },
   {
     slug: "the-clock-is-the-last-thing-anybody-checks",
-    title: "The Clock Is the Last Thing Anybody Checks",
+    title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
     tags: ["security", "operations", "networking"],
     excerpt:
@@ -11523,7 +11523,7 @@ checks](/clock).
   },
   {
     slug: "the-request-arrived-the-reply-did-not",
-    title: "The Request Arrived, the Reply Did Not",
+    title: "Native VLAN Mismatch: Why the Ping Arrives but Not the Reply",
     date: "2026-09-08",
     tags: ["networking", "security", "operations"],
     excerpt:
@@ -11679,7 +11679,7 @@ the VLAN inside each switch drawn.
   },
   {
     slug: "the-broken-one-feels-faster",
-    title: "The Broken One Feels Faster",
+    title: "Retry Amplification: Three Retries at Four Layers Is 81 Calls",
     date: "2026-09-08",
     tags: ["engineering", "operations", "networking"],
     excerpt:
@@ -11843,7 +11843,7 @@ timeline drawn.
   },
   {
     slug: "a-base-score-is-not-a-queue",
-    title: "A Base Score Is Not a Queue",
+    title: "Why a CVSS Base Score Should Not Sort Your Patch Queue",
     date: "2026-09-08",
     tags: ["security", "operations", "engineering"],
     excerpt:
@@ -12021,7 +12021,7 @@ where the two queues part company.
   },
   {
     slug: "permissions-do-not-add-up",
-    title: "Permissions Do Not Add Up",
+    title: "Linux File Permissions Are Not Additive: Owner, Group, Other",
     date: "2026-09-08",
     tags: ["linux", "security", "engineering"],
     excerpt:
@@ -12225,7 +12225,7 @@ you is most of the question.
   },
   {
     slug: "the-authentication-passed-anyway",
-    title: "The Authentication Passed Anyway",
+    title: "Phishing That Passes SPF, DKIM, and DMARC: What the Ticks Mean",
     date: "2026-09-08",
     tags: ["security", "email", "training"],
     excerpt:
@@ -12397,7 +12397,7 @@ in and the reason it is worth running both ways.
   },
   {
     slug: "sixty-five-files-nothing-imported",
-    title: "Sixty-Five Files That Nothing Imported",
+    title: "Finding Unused Files in a Vite Project: 65 That Nothing Imported",
     date: "2026-09-08",
     tags: ["engineering", "tools", "operations"],
     excerpt:
@@ -12790,7 +12790,7 @@ That is enough to fix it without opening the file.
   },
   {
     slug: "a-shell-that-has-to-be-right",
-    title: "A Shell That Has to Be Right",
+    title: "Testing a Teaching Shell Against Real Bash in CI",
     date: "2026-09-08",
     tags: ["engineering", "linux", "tools"],
     excerpt:
@@ -12979,7 +12979,7 @@ signpost.
   },
   {
     slug: "csp-blocked-its-own-models",
-    title: "The Content Security Policy That Blocked Its Own 3D Models",
+    title: "Content Security Policy Blocking WebAssembly: wasm-unsafe-eval",
     date: "2026-09-07",
     tags: ["security", "engineering", "operations"],
     excerpt:
@@ -13181,7 +13181,7 @@ only worth taking with something watching the hash.
   },
   {
     slug: "dollar-sign-string-replace",
-    title: "A Dollar Sign Ate a Third of Five Articles",
+    title: "JavaScript replace() Treats $& as the Match: A Silent Page Bug",
     date: "2026-09-07",
     tags: ["engineering", "tools", "operations"],
     excerpt:
@@ -13353,7 +13353,7 @@ written, which is a step people rarely look at because it usually works.
   },
   {
     slug: "one-tab-no-way-out",
-    title: "One Tab, and There Was No Way Out",
+    title: "Keyboard Trap in a Modal: Why Escape Must Close the Dialog",
     date: "2026-09-07",
     tags: ["engineering", "tools", "operations"],
     excerpt:
@@ -13511,7 +13511,7 @@ copies of a correct implementation sitting a few files away.
   },
   {
     slug: "one-blue-two-jobs",
-    title: "One Blue Cannot Be Both a Button and a Link",
+    title: "One Brand Blue Failing WCAG Contrast as a Button and a Link",
     date: "2026-09-06",
     tags: ["engineering", "tools", "operations"],
     excerpt:
@@ -13662,7 +13662,7 @@ at if it were unreadable.
   },
   {
     slug: "rack-diagram-that-cannot-be-switched-on",
-    title: "The Rack Diagram That Cannot Be Switched On",
+    title: "Rack Elevation Mistakes: A UPS With No PDU and Other Gaps",
     date: "2026-09-06",
     tags: ["servers", "hardware", "operations"],
     excerpt:
@@ -13830,7 +13830,7 @@ one that is missing.
   },
   {
     slug: "ci-gate-blamed-fourteen-innocents",
-    title: "The CI Gate That Blamed Fourteen Innocent Devices",
+    title: "Least Squares Blamed 14 Devices: Robust Fitting for a CI Check",
     date: "2026-09-06",
     tags: ["operations", "tools", "servers"],
     excerpt:
@@ -14038,7 +14038,7 @@ instrument is one you wrote and the subject is one you did not.
   },
   {
     slug: "nist-password-rules-changed",
-    title: "Fifteen Characters, And No Complexity Rules At All",
+    title: "NIST Password Guidelines: 15 Characters, No Complexity Rules",
     date: "2026-09-06",
     tags: ["security", "cybersecurity", "operations"],
     excerpt:
@@ -14214,7 +14214,7 @@ you do.
   },
   {
     slug: "what-an-optic-tells-the-switch",
-    title: "What An Optic Tells The Switch About Itself",
+    title: "SFP DOM Explained: Reading Rx Power, Temperature, and Bias",
     date: "2026-09-05",
     tags: ["networking", "hardware", "operations", "homelab"],
     excerpt:
@@ -14409,7 +14409,7 @@ account for that.
   },
   {
     slug: "certificate-lifetimes-are-200-days-now",
-    title: "Certificates Are 200 Days Now, And 47 By 2029",
+    title: "TLS Certificate Lifetimes Drop to 200 Days, Then 47 by 2029",
     date: "2026-09-06",
     tags: ["security", "cybersecurity", "operations", "networking"],
     excerpt:
@@ -14567,7 +14567,7 @@ step in the table is that argument winning again.
   },
   {
     slug: "post-quantum-tls-handshake-bytes",
-    title: "What Post-Quantum Cost The TLS Handshake",
+    title: "Post-Quantum TLS Handshake Size: What X25519MLKEM768 Adds",
     date: "2026-09-05",
     tags: ["security", "networking", "cybersecurity"],
     excerpt:
@@ -14713,7 +14713,7 @@ anything about cryptography.
   },
   {
     slug: "service-worker-served-a-stale-document",
-    title: "A Service Worker That Served Yesterday's Map Of The Site",
+    title: "Service Worker Serving a Stale index.html After a Deploy",
     date: "2026-09-04",
     tags: ["operations", "engineering", "homelab"],
     excerpt:
@@ -14941,7 +14941,7 @@ nothing else you deploy has happened.
   },
   {
     slug: "why-models-stall-at-eighty-three-percent",
-    title: "Eighty Three Percent, Forever",
+    title: "three.js glTF Loading Stuck on Phones: Too Many Image Decodes",
     date: "2026-09-03",
     tags: ["engineering", "operations", "hardware"],
     excerpt:
@@ -15343,7 +15343,7 @@ A rule with zero packets after a day of traffic is either wrong or unnecessary, 
   },
   {
     slug: "oom-killer-and-swap-sizing",
-    title: "Who Gets Killed When The Server Runs Out Of Memory",
+    title: "Linux OOM Killer and Swap Sizing: How the Victim Is Chosen",
     date: "2026-07-03",
     tags: ["linux", "servers", "operations"],
     excerpt:
@@ -15595,7 +15595,7 @@ That trade is the real design question in any distributed storage system, and it
   },
   {
     slug: "gpu-driver-stack-linux",
-    title: "The Layers Between Your Model And The Silicon",
+    title: "NVIDIA Driver, CUDA, and Container Version Mismatches on Linux",
     date: "2026-07-06",
     tags: ["ai", "linux", "operations"],
     excerpt:
@@ -16021,7 +16021,7 @@ One last point, because it is the reason to do any of this: these records do not
   },
   {
     slug: "flash-caching-tiers",
-    title: "Putting Flash In Front Of Spinning Disks",
+    title: "SSD Caching for HDD Arrays: bcache vs dm-cache and Writeback",
     date: "2026-07-10",
     tags: ["storage", "linux", "hardware"],
     excerpt:
@@ -16116,7 +16116,7 @@ And if your slow tier is already fast enough for the workload, adding a cache is
   },
   {
     slug: "policy-based-routing-linux",
-    title: "Routing By Policy, Not Just Destination",
+    title: "Policy-Based Routing on Linux: ip rule, Marks, and rp_filter",
     date: "2026-07-11",
     tags: ["networking", "routing", "linux"],
     excerpt:
@@ -18388,7 +18388,7 @@ authoritative per segment and write it in the network documentation.
   },
   {
     slug: "mtu-and-jumbo-frames",
-    title: "MTU, Jumbo Frames, and the Path That Silently Drops Your Packets",
+    title: "MTU Black Holes and Jumbo Frames: Why Large Transfers Hang",
     date: "2026-04-11",
     tags: ["networking", "troubleshooting", "operations"],
     excerpt:
@@ -19123,7 +19123,7 @@ Spend your time on ingestion and evaluation. Those two get the least attention a
   },
   {
     slug: "threat-modeling-homelab",
-    title: "How I Threat Model My Own Lab",
+    title: "Threat Modeling a Homelab: Four Questions and STRIDE",
     date: "2026-04-17",
     tags: ["security", "homelab", "cybersecurity"],
     excerpt:
@@ -19753,7 +19753,7 @@ Run the numbers first. If the alert volume is not something a real team can work
   },
   {
     slug: "tcp-congestion-control-basics",
-    title: "TCP Congestion Control for People Who Run Networks",
+    title: "TCP Congestion Control Explained: CUBIC vs BBR and Bufferbloat",
     date: "2026-04-22",
     tags: ["networking", "linux", "troubleshooting"],
     excerpt:
@@ -19902,7 +19902,7 @@ Once you think of it that way, the diagnostic path is obvious. Find out what sig
   },
   {
     slug: "gpu-power-and-cooling",
-    title: "Powering and Cooling Accelerators Is the Real Constraint",
+    title: "GPU Power and Cooling at Home: Circuit Math and Airflow",
     date: "2026-04-23",
     tags: ["hardware", "power", "ai"],
     excerpt:
@@ -20055,7 +20055,7 @@ Every serious infrastructure environment is constrained by power and cooling lon
   },
   {
     slug: "certificate-rotation-automation",
-    title: "Certificates Expire On A Saturday",
+    title: "Certificate Renewal Automation: Why Renewals Fail Silently",
     date: "2026-04-24",
     tags: ["security", "automation", "operations"],
     excerpt:
@@ -20330,7 +20330,7 @@ Focus on the parts that are genuinely different: version the data as carefully a
   },
   {
     slug: "queueing-theory-for-operators",
-    title: "Why Latency Falls Off A Cliff At Eighty Percent",
+    title: "Why Latency Spikes Above 80 Percent Utilization: Queueing Math",
     date: "2026-04-26",
     tags: ["operations", "monitoring", "servers"],
     excerpt:
@@ -22363,7 +22363,7 @@ Almost every ZFS performance complaint I have looked at was answered somewhere i
   },
   {
     slug: "idempotence-and-config-drift",
-    title: "Idempotence Is The Whole Point Of Config Management",
+    title: "Idempotence and Config Drift: Why You Run the Playbook Twice",
     date: "2026-06-28",
     tags: ["automation", "operations", "linux"],
     excerpt:
@@ -22994,7 +22994,7 @@ size.
   },
   {
     slug: "quic-http3-for-operators",
-    title: "QUIC From The Operator's Chair",
+    title: "QUIC and HTTP/3 for Network Operators: Firewalls and Monitoring",
     date: "2026-07-21",
     tags: ["networking", "operations", "security"],
     excerpt:
@@ -23780,7 +23780,7 @@ worse.
   },
   {
     slug: "wifi-channel-planning",
-    title: "Channel Planning Is Most Of Wireless Performance",
+    title: "Wi-Fi Channel Planning: Why Wider Channels Can Be Slower",
     date: "2026-07-29",
     tags: ["networking", "homelab", "hardware"],
     excerpt:
@@ -24085,7 +24085,7 @@ a request id is the usual culprit.
   },
   {
     slug: "restore-drills-that-matter",
-    title: "A Backup You Have Not Restored Is Just Hope",
+    title: "Backup Restore Testing: How to Run a Restore Drill",
     date: "2026-08-03",
     tags: ["operations", "storage", "homelab"],
     excerpt:
@@ -26888,7 +26888,7 @@ If it speaks HTTP and I want observability, retries, and path routing, layer 7. 
   },
   {
     slug: "how-to-read-an-rfc",
-    title: "How I Read an RFC",
+    title: "How to Read an RFC: Reading Order, Keywords, and ABNF",
     date: "2026-05-26",
     tags: ["learning", "networking", "tools"],
     excerpt:
@@ -41237,7 +41237,7 @@ thing it needs](/units).
   },
   {
     slug: "the-invoice-is-not-the-ceiling",
-    title: "The Invoice Is Not the Ceiling",
+    title: "Single TCP Stream Slow on a Fast Link: Bandwidth Delay Product",
     date: "2026-09-08",
     tags: ["networking", "performance", "tcp"],
     excerpt:
@@ -41465,7 +41465,7 @@ worth knowing.
   },
   {
     slug: "the-check-that-tested-nothing",
-    title: "The Check That Tested Nothing",
+    title: "Test Your Tests: Two CI Checks That Passed on Broken Code",
     date: "2026-09-08",
     tags: ["engineering", "testing", "operations"],
     excerpt:
@@ -41714,7 +41714,7 @@ to make it fire on purpose, at least once, before you start trusting it.
   },
   {
     slug: "three-copies-one-credential",
-    title: "Three Copies, One Credential",
+    title: "3-2-1 Backups Are Not Enough: One Credential Can Delete All Three",
     date: "2026-09-08",
     tags: ["operations", "security", "storage"],
     excerpt:

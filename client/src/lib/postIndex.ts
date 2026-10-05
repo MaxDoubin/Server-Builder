@@ -42,7 +42,7 @@ export interface PostMeta {
 export const postIndex: PostMeta[] = [
   {
     slug: "the-memory-you-freed-and-still-hold",
-    title: "The Memory You Freed And Still Hold",
+    title: "RSS Stays High After free(): glibc Heap Trimming and malloc_trim",
     date: "2026-09-20",
     tags: ["linux","programming","performance","troubleshooting"],
     excerpt: "free() returned twenty megabytes to the kernel in one measurement and nothing at all in the next, and the only difference was one surviving kilobyte. Then a sixteen mebibyte allocation at startup switched the automatic trim off for the rest of the process, and a thirty three mebibyte one did not.",
@@ -51,7 +51,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "even-is-not-stable",
-    title: "Even Is Not Stable",
+    title: "SO_REUSEPORT Drops Connections on Restart: Not a Consistent Hash",
     date: "2026-09-20",
     tags: ["linux","networking","operations","performance"],
     excerpt: "SO_REUSEPORT spreads connections evenly across every listener, at every worker count, on every run. That is the half everybody measures. The other half is that changing the worker count sends a large share of clients to a different worker, and it is why a rolling restart drops handshakes while every process looks healthy.",
@@ -60,7 +60,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "three-alignments-and-one-errno",
-    title: "Three Alignments And One Errno",
+    title: "O_DIRECT Write Returns EINVAL: The Three Alignment Rules",
     date: "2026-09-20",
     tags: ["linux","programming","storage","troubleshooting"],
     excerpt: "An O_DIRECT write returns EINVAL. Three separate things have to be aligned and all three failures report the same errno, so the return value tells you nothing. One of the three is not the rule you think it is: a misaligned buffer works until the transfer leaves its page.",
@@ -69,7 +69,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-cache-you-cannot-drop",
-    title: "The Cache You Cannot Drop",
+    title: "drop_caches Frees Nothing: tmpfs and Shmem Hide in buff/cache",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","performance"],
     excerpt: "A gibibyte written to a file and a gibibyte written to tmpfs put the same figure in free's buff/cache column. Dropping caches returns the first and none of the second. The only field in the output that tells them apart is the one labeled shared, which nobody reads.",
@@ -78,7 +78,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "one-descriptor-too-many",
-    title: "One Descriptor Too Many",
+    title: "select() FD_SETSIZE Limit: fd 1024 Silently Corrupts Memory",
     date: "2026-09-20",
     tags: ["linux","programming","troubleshooting","operations"],
     excerpt: "FD_SET is one division and one store, with no check anywhere in it. An fd_set is 128 bytes, so descriptor 1024 is byte 128, and what is at byte 128 is whatever member of your struct the compiler put after the set. A week of uptime is all it takes.",
@@ -87,7 +87,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "three-boundaries-and-two-signals",
-    title: "Three Boundaries And Two Signals",
+    title: "mmap SIGBUS vs SIGSEGV: Reading Past the End of a Mapped File",
     date: "2026-09-20",
     tags: ["linux","programming","troubleshooting","operations"],
     excerpt: "mmap returns an address and checks nothing. The mapping ends on a page boundary, the file behind it ends wherever it likes, and past one of those you get SIGSEGV and past the other SIGBUS. Between the end of the file and the end of its last page is a stretch that reads as zero and throws away everything you store there.",
@@ -96,7 +96,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-log-that-lost-three-quarters-of-itself",
-    title: "The Log That Lost Three Quarters Of Itself",
+    title: "Multiple Processes, One Log File: Lost Writes Without O_APPEND",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","programming"],
     excerpt: "Four workers hand a log 51200 bytes. The file comes out 12800 long, which is exactly one writer's worth. Every write returned the full count, nothing logged an error, and the difference between this and a log that works is which side of the fork the open call sits on.",
@@ -105,7 +105,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-copy-filled-the-disk-the-original-never-touched",
-    title: "The Copy Filled The Disk The Original Never Touched",
+    title: "Sparse Files: Why cat and tar Fill the Disk but cp Does Not",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","storage"],
     excerpt: "A file can be a gigabyte long and occupy four kilobytes. ls reports the length, du reports the blocks, and the gap between them is a hole: a range nobody ever wrote. Then a backup runs, reads the hole, gets the zeros a hole returns, and writes every one of them.",
@@ -114,7 +114,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-sum-of-rss-is-not-an-amount-of-memory",
-    title: "The Sum Of RSS Is Not An Amount Of Memory",
+    title: "RSS vs PSS: Why Adding Up RSS Overstates Memory Use",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","performance"],
     excerpt: "Four processes share one 64 MiB mapping and ps reports 64 MiB of RSS for each of them. Add the column up and you get 258 MiB on a machine holding 64. RSS is not wrong about any single process; it is wrong about any two, because the same page frame appears in both at full price. PSS is the same measurement with a divisor, and it is the one that adds up.",
@@ -123,7 +123,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "a-ceiling-and-not-a-request",
-    title: "A Ceiling And Not A Request",
+    title: "umask Explained: Why the Same Program Creates 0644 or 0600 Files",
     date: "2026-09-20",
     tags: ["linux","security","operations","programming"],
     excerpt: "The mode you pass to open() is a maximum. The umask lowers it and nothing raises it, so a program asking for 0600 produces 0600 on every host and one asking for 0666 produces whatever the environment decides. And a umask is nine bits where a mode is twelve: 6777 under a umask of 0777 leaves a setuid file with no ordinary permissions at all.",
@@ -132,7 +132,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "one-byte-and-two-kinds-of-news",
-    title: "One Byte And Two Kinds Of News",
+    title: "Exit Codes Above 255 Wrap to Zero, and 137 Can Mean Two Things",
     date: "2026-09-20",
     tags: ["linux","operations","programming","troubleshooting"],
     excerpt: "A job reports 137 and somebody writes it up as an out of memory kill. It might be, or the job might simply have called exit(137), and $? cannot tell you which. The kernel can: it puts an exit code and a terminating signal in different halves of one word. The shell has one byte for both, and every status from 129 to 192 means two things.",
@@ -141,7 +141,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "a-thousand-signals-and-one-handler-call",
-    title: "A Thousand Signals And One Handler Call",
+    title: "Do Linux Signals Queue? SIGUSR1 Coalesces, SIGRTMIN Does Not",
     date: "2026-09-20",
     tags: ["linux","operations","programming","troubleshooting"],
     excerpt: "Send SIGUSR1 a thousand times while the receiver has it blocked and the handler runs once. The other 999 are gone, kill returned success for every one of them, and there is no counter anywhere that records it. Realtime signals queue all thousand, and which behavior you get is decided by the signal number rather than by whether you called kill or sigqueue.",
@@ -150,7 +150,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-lock-that-two-programs-both-held",
-    title: "The Lock That Two Programs Both Held",
+    title: "flock vs fcntl Locks: Why Both Programs Got the Same File Lock",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","programming"],
     excerpt: "Linux keeps two lock lists. flock is on one, fcntl and F_OFD_SETLK are on the other, and nothing looks across, so two programs guarding the same file with different calls both hold it and neither is told. Of the three, only fcntl belongs to the process, which is why a second descriptor in your own program is handed the lock and why a library opening the file to read one line silently releases it.",
@@ -159,7 +159,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-log-line-with-another-log-line-inside-it",
-    title: "The Log Line With Another Log Line Inside It",
+    title: "Interleaved Log Lines Over a Pipe: PIPE_BUF and the 4096 Limit",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","observability"],
     excerpt: "A write of 4096 bytes or fewer to a pipe is never interleaved with another writer's, and that held even beside writers fifty times the size tearing themselves apart. Above it there is no guarantee at all: four writers at 8192 tore nothing because 8192 divides the pipe capacity, and adding one 5000 byte writer made all four tear without a line of their code changing.",
@@ -168,7 +168,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "eloop-does-not-mean-there-is-a-loop",
-    title: "ELOOP Does Not Mean There Is a Loop",
+    title: "Too Many Levels of Symbolic Links (ELOOP) Without Any Loop",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","storage"],
     excerpt: "Too many levels of symbolic links is errno 40 and the limit is forty traversals, for the whole path rather than per chain. Measured at three separate splits, each flipping between exactly 40 and 41. The kernel performs no cycle detection at all, so a two link cycle and a forty one link straight chain return the identical error, and O_NOFOLLOW returns it for a third reason again.",
@@ -186,7 +186,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "eight-bytes-forty-four-milliseconds",
-    title: "Eight Bytes, Forty Four Milliseconds",
+    title: "TCP 40 ms Stall: Nagle, Delayed ACK, and Where TCP_NODELAY Goes",
     date: "2026-09-20",
     tags: ["linux","networking","performance","troubleshooting"],
     excerpt: "The same eight bytes took 0.05 ms over loopback as one write and 44.48 ms as two. Nagle holds the second write, the receiver delays the acknowledgement that would release it, and both ends are behaving exactly as specified. Measured on one host, including the fix almost everybody tries first, which is on the wrong socket and changes nothing.",
@@ -195,7 +195,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-read-that-wrote-a-thousand-inodes",
-    title: "The Read That Wrote a Thousand Inodes",
+    title: "relatime vs noatime: Why a Read-Only Backup Writes Every Inode",
     date: "2026-09-20",
     tags: ["linux","operations","performance","storage"],
     excerpt: "On a relatime mount a read updates the access time only if mtime or ctime is at least as new, or the stored atime is a day old. So most reads write nothing, and a backup that reads 1059 files writes 1059 inodes, once. Reading the same 1059 again writes none. And an access time frozen by noatime does not read as missing: it reads as old, which is how a cleanup job deletes a file being read two hundred times a minute. Measured on one host.",
@@ -204,7 +204,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "no-space-left-on-device-with-nineteen-gigabytes-free",
-    title: "No Space Left on Device, With Nineteen Gigabytes Free",
+    title: "System Limit for Number of File Watchers Reached: inotify Limits",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","tooling"],
     excerpt: "A file watcher fails with ENOSPC on a disk with 19.7 GiB free, and with EMFILE on a process holding six descriptors. Neither message says inotify and neither resource is short. Both limits are charged to the user across every process, so the program that reports the error is rarely the one that spent the budget. Measured on one host, including the queue overflow that loses events and returns success.",
@@ -222,7 +222,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-time-wait-knob-everybody-turns-governs-a-different-state",
-    title: "The TIME_WAIT Knob Everybody Turns Governs a Different State",
+    title: "tcp_fin_timeout Does Not Shorten TIME_WAIT: What It Controls",
     date: "2026-09-20",
     tags: ["networking","linux","operations","troubleshooting"],
     excerpt: "Lowering net.ipv4.tcp_fin_timeout does nothing to TIME_WAIT. Measured on one host: with the knob at 5, TIME_WAIT still held for 60.2 seconds, while FIN_WAIT2, the state it does govern, was reaped after 5.3. TIME_WAIT lands on whichever end hung up first, its length is compiled into the kernel, and the ceiling that actually bites is ports times destinations over sixty.",
@@ -231,7 +231,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-socket-buffer-you-tuned-is-smaller-than-the-one-you-did-not",
-    title: "The Socket Buffer You Tuned Is Smaller Than the One You Did Not",
+    title: "SO_RCVBUF Turns Off TCP Autotuning: Linux Socket Buffer Sizing",
     date: "2026-09-20",
     tags: ["networking","linux","operations","troubleshooting"],
     excerpt: "tcp_mem is in pages and the sysctl beside it is in bytes. A socket's default reads back undoubled and the value you set reads back doubled. Asking for too much is clamped with no error. And setting SO_RCVBUF turns autotuning off, which on a stock host pins the buffer at twice net.core.rmem_max, four times below the tcp_rmem maximum autotuning would have been allowed to reach. All four measured on one machine.",
@@ -249,7 +249,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-page-cache-is-a-buffer-and-you-tuned-the-wrong-end",
-    title: "The Page Cache Is a Buffer and You Tuned the Wrong End",
+    title: "vm.dirty_ratio Is Not a Percentage of RAM: Writeback Tuning",
     date: "2026-09-20",
     tags: ["linux","operations","troubleshooting","storage"],
     excerpt: "vm.dirty_ratio is described everywhere as a percentage of RAM that you raise to make writes faster. It is a percentage of dirtyable memory, which excludes every anonymous page in the machine; it is not where the queue settles, because that is dirty_background_ratio; and raising it on a saturated device buys a longer run between stalls paid for in data you have not written down. Measured: holding 9 GiB of anonymous memory moved the ceiling by exactly the factor dirtyable memory moved by, and 64 MiB written to an idle disk sat in volatile memory for thirty five seconds.",
@@ -258,7 +258,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-table-was-full-and-the-kernel-could-not-shrink-it",
-    title: "The Table Was Full and the Kernel Could Not Shrink It",
+    title: "nf_conntrack Table Full, Dropping Packet: What It Really Means",
     date: "2026-09-19",
     tags: ["networking","linux","troubleshooting","operations"],
     excerpt: "nf_conntrack: table full, dropping packet is printed inside if (!early_drop(...)), so it does not mean the table hit its limit: it means the kernel hit the limit, tried to evict, and found nothing it was allowed to take. Measured with the limit lowered to 20 and the table full of established connections: 296 drops against zero evictions. The limit is also not what the guides say, because max_factor is 1 on every host that did not have its hash size forced, and an established entry outlives its connection by five days, so one connection a second is enough to fill a default table.",
@@ -276,7 +276,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-connection-refused-by-a-daemon-doing-nothing",
-    title: "The Connection Refused by a Daemon Doing Nothing",
+    title: "kex_exchange_identification Errors and sshd MaxStartups",
     date: "2026-09-19",
     tags: ["linux","networking","security","operations"],
     excerpt: "sshd refuses connections by counting something no dashboard shows, and it refuses them with a probability rather than at a number, so the same command fails and then works. MaxStartups counts concurrent unauthenticated connections, LoginGraceTime defaults to 120 seconds, and ten connections a minute that never authenticate is twenty slots standing against a default start value of ten. The ramp between the three numbers is a staircase rather than the line its own source comment describes, because every step of the arithmetic is an integer divide, and raising the last of the three lowers the odds without ever reaching zero.",
@@ -285,7 +285,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "bus-error-with-sixty-four-gigabytes-free",
-    title: "Bus Error, With Sixty Four Gigabytes Free",
+    title: "Bus Error in Docker: The 64 MiB /dev/shm Limit and the Fix",
     date: "2026-09-19",
     tags: ["linux","containers","troubleshooting","operations"],
     excerpt: "Docker gives every container a 64 MiB /dev/shm unless told otherwise, and on a host the same path is half of RAM, a factor of five hundred decided by the runtime. Worse, a tmpfs that cannot back a page does not return an error: the mmap succeeds and the process takes SIGBUS at the page fault, so code that checks every return value checks three things that all succeeded. The same full filesystem gives an ordinary ENOSPC to a write, which is why the obvious test never reproduces the crash.",
@@ -294,7 +294,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-arp-cache-holds-a-thousand-and-twenty-four",
-    title: "The ARP Cache Holds A Thousand And Twenty Four",
+    title: "Neighbor Table Overflow: ARP Cache gc_thresh3 and Big Subnets",
     date: "2026-09-19",
     tags: ["networking","linux","troubleshooting"],
     excerpt: "gc_thresh3 is 1024 and an IPv6 host costs at least two entries, so a flat /22 with 900 dual stack machines is over the hard limit before anybody has done anything unusual. But being at the limit is not enough to fail: the kernel tries a forced collection first, and that may only take entries untouched for five seconds, so the same table breaks after a power cut and runs fine all afternoon. Static entries do not help, because NUD_PERMANENT never reaches the counter, and raising gc_thresh3 alone turns a logged failure into an unlogged cost.",
@@ -303,7 +303,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-service-that-crashed-faster-is-the-one-that-stopped",
-    title: "The Service That Crashed Faster Is The One That Stopped",
+    title: "systemd start-limit-hit: Why Restart=always Stops Restarting",
     date: "2026-09-19",
     tags: ["linux","systemd","operations","troubleshooting"],
     excerpt: "Restart=always does not mean the service will always be restarted. systemd rate limits unit starts in a fixed window anchored at the first start, not a sliding one, so a worker dying half a second in fills the window and is failed for good while the same worker dying two seconds in walks past the end of the window, resets the counter, and restarts ten thousand times overnight. The limit trips when burst times cycle fits inside the interval, which makes raising StartLimitBurst useless, widening the interval stricter rather than kinder, and RestartSec of interval over burst the last value that fails.",
@@ -312,7 +312,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "it-works-in-chrome",
-    title: "It Works in Chrome",
+    title: "Unable to Get Local Issuer Certificate but It Works in Chrome",
     date: "2026-09-19",
     tags: ["security","encryption","troubleshooting"],
     excerpt: "The certificate is fine. The server is sending only the leaf, and browsers cover for it by fetching the missing intermediate themselves, which is why curl, Java, Python and every monitoring probe fail while the padlock stays green. RFC 8446 lets a server omit the root, not the chain, and the difference is one filename.",
@@ -330,7 +330,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "it-works-in-the-shell",
-    title: "It Works in the Shell",
+    title: "Script Works Manually but Not in Cron: PATH, sh, and % Signs",
     date: "2026-09-19",
     tags: ["linux","operations","automation"],
     excerpt: "Cron did run your script. It ran it with two directories on PATH, /bin/sh instead of bash, no terminal, and the output mailed to an address with no mail server behind it. Every one of those differences is documented in one man page, and the fix is to print the environment rather than reason about it.",
@@ -339,7 +339,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-first-certificate-in-the-file",
-    title: "The First Certificate in the File",
+    title: "nginx Serves the Wrong SSL Certificate: SNI and default_server",
     date: "2026-09-19",
     tags: ["security","servers","operations"],
     excerpt: "A request that arrives with no name gets the certificate of whichever server block was parsed first, and on a Debian nginx that ordering comes from a glob nobody edited. The monitoring probe connecting by IP address will report that certificate forever, correctly, on every host you own. The fix is one directive in the default vhost and a probe that sends SNI.",
@@ -348,7 +348,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "fifty-certificates-a-week",
-    title: "Fifty Certificates a Week",
+    title: "Let's Encrypt Rate Limit Hit: It Was Five, Not Fifty a Week",
     date: "2026-09-19",
     tags: ["security","operations","automation"],
     excerpt: "Fifty certificates per registered domain every seven days is the number everybody quotes, and almost no homelab gets near it. The limit that takes a site down allows five per identical set of names, and the renewal exemption everyone relies on covers the other one. Staging makes the whole problem free, and the error message already contains the only date worth acting on.",
@@ -357,7 +357,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "deleted-and-still-growing",
-    title: "Deleted, and Still Growing",
+    title: "Deleted File Still Using Disk Space: Find It With lsof +L1",
     date: "2026-09-19",
     tags: ["linux","operations","storage"],
     excerpt: "Deleting a file does not free its blocks. It removes a name, and the space comes back only when the last name and the last open file descriptor are both gone, which is why df keeps climbing hours after the rm. lsof +L1 names the process still holding the inode, and truncating through /proc/PID/fd/N gets the disk back without restarting anything.",
@@ -366,7 +366,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-first-probe-is-two-hours-late",
-    title: "The First Probe Is Two Hours Late",
+    title: "Idle Connection Reset by Peer: TCP Keepalive Is Two Hours Late",
     date: "2026-09-19",
     tags: ["networking","linux","operations"],
     excerpt: "TCP has no idle timeout, so an established connection with nothing to say lives forever. The path is not the protocol: every stateful device in it holds a row with a countdown, and 350 seconds on a Network Load Balancer or four minutes on an Azure Load Balancer is shorter than most quiet periods. TCP keepalive is the usual answer and it is wrong twice, because it is off per socket and because its first probe is due at 7200 seconds. What the next write gets is a reset, or 924.6 seconds of nothing.",
@@ -375,7 +375,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-connection-opened-and-then-nothing-happened",
-    title: "The Connection Opened And Then Nothing Happened",
+    title: "TCP Accept Queue Full: Connections Time Out With Idle CPU",
     date: "2026-09-19",
     updated: "2026-09-20",
     tags: ["networking","linux","operations","troubleshooting"],
@@ -385,7 +385,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "forty-minutes-dark",
-    title: "Forty Minutes Dark, And A Third Of The Office Fell Off",
+    title: "DHCP Lease Time: Surviving Server Outages and Sizing the Pool",
     date: "2026-09-19",
     tags: ["networking","operations","troubleshooting"],
     excerpt: "A DHCP server is rebooted for forty minutes and exactly a third of a 300 machine office loses its address, while the other two hundred never notice. The number follows from two timers RFC 2131 puts in every lease, and the one that decides outage tolerance is the lease less T1, not the lease. The same two numbers decide how large a pool has to be, which is arrivals per hour times lease hours and has nothing to do with how many devices are in the room.",
@@ -394,7 +394,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "ten-queries-for-one-name",
-    title: "Ten Queries for One Name",
+    title: "Kubernetes ndots 5: Why One Lookup Sends Ten DNS Queries",
     date: "2026-09-19",
     tags: ["networking","dns","operations"],
     excerpt: "A program asks for one hostname and the stub resolver sends ten DNS queries, eight of them for names that do not exist. Two lines of resolv.conf decide the order: fewer dots than ndots means every search domain is tried first, and Kubernetes sets ndots to five so that its own names go first. A trailing dot skips the whole list, and a wildcard record inside a search domain answers with the wrong address and no error.",
@@ -403,7 +403,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "nothing-translates-the-reply",
-    title: "Nothing Translates the Reply",
+    title: "Port Forward Works Outside but Not on LAN: NAT Hairpinning",
     date: "2026-09-08",
     tags: ["networking","linux","operations"],
     excerpt: "A port forward is not a rule that rewrites packets. It is a rule that creates a binding, once, and the binding rewrites everything after it in both directions. So the question is never whether the rule matches: it is whether the reply passes back through the box holding the binding. On a LAN client it does not, and the browser hangs while both halves of the system report success.",
@@ -412,7 +412,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "minus-one-thousand-is-not-a-hint",
-    title: "Minus One Thousand Is Not a Hint",
+    title: "oom_score_adj Explained: Why -1000 Is Not Just a Low Score",
     date: "2026-09-08",
     tags: ["linux","operations","kernel"],
     excerpt: "oom_score_adj reads like a nudge and it is a quantity of memory. On a 16 GiB host one point is worth 16.4 MiB, so an adj of 200 adds 3.2 GiB to a process score and -800 subtracts 12.8 GiB. And -1000 is not the bottom of the scale, it is a different code path: set it on every unit and the kernel has no candidate, so a lost process becomes a lost machine.",
@@ -421,7 +421,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-alert-was-pending-all-day",
-    title: "The Alert Was Pending All Day",
+    title: "Prometheus Alert Stuck Pending: How the for Clause Works",
     date: "2026-09-08",
     tags: ["monitoring","prometheus","operations"],
     excerpt: "A for clause is not a stopwatch that pauses, it is a start time that one inactive evaluation clears, so a metric over the line four minutes in every five goes pending thirteen times out of sixteen and never fires. And when a target stops answering, whether the alert resolves or keeps firing for five minutes depends on the exporter rather than the rule.",
@@ -430,7 +430,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "forty-and-nothing-was-running",
-    title: "Forty, and Nothing Was Running",
+    title: "High Load Average, Low CPU: What Linux Load Really Counts",
     date: "2026-09-09",
     tags: ["linux","operations","monitoring"],
     excerpt: "The load average is a count of tasks and not a percentage of anything, and it adds uninterruptible sleep to runnable tasks, so a host with a dead NFS mount reads 41 at two percent CPU. It is also damped: a machine stepping to eight busy tasks reads 4.81 after a minute, not 8, because eleven samples fit in a minute and not twelve.",
@@ -439,7 +439,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "stopped-not-slow",
-    title: "Stopped, Not Slow",
+    title: "Kubernetes CPU Throttling With Idle Cores: CFS Quota Explained",
     date: "2026-09-09",
     tags: ["linux","containers","operations"],
     excerpt: "A CPU limit is a quota per period, not a rate, and every runnable thread spends it at once. Four threads empty a whole CPU's worth in 25ms and the container is stopped for the other 75, on a node with idle cores. And a batch that reads 30 percent of its limit on every graph you have can be throttled in a fifth of its periods, because the quota is enforced per 100ms and every dashboard averages over longer than that.",
@@ -448,7 +448,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "it-ran-out-at-four-hundred-and-seventy",
-    title: "It Ran Out at Four Hundred and Seventy",
+    title: "Cannot Assign Requested Address: Ephemeral Port Exhaustion",
     date: "2026-09-09",
     tags: ["networking","linux","operations"],
     excerpt: "A socket is four values, not one, so the ephemeral port range is not a pool shared between destinations: thirty thousand sockets across ten backends is fine and the same thirty thousand against one is not. TIME_WAIT is a sixty second compile time constant with no sysctl, which puts the real ceiling at 470 connections a second per destination, and tcp_fin_timeout is a different state entirely.",
@@ -457,7 +457,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-file-was-right-and-nobody-read-it",
-    title: "The File Was Right and Nobody Read It",
+    title: "limits.conf Ignored by systemd Services: Use LimitNOFILE",
     date: "2026-09-09",
     tags: ["linux","systemd","operations"],
     excerpt: "limits.conf is read by pam_limits, and pam_limits runs when somebody authenticates, so a unit systemd started at boot never sees it however correct the file is. Five mechanisms can set a descriptor limit and they are not a hierarchy: a cron job on a systemd host gets the kernel's 4096 rather than systemd's 524288, LimitNOFILE replaces both halves so setting it can lower a ceiling, and infinity is 1048576.",
@@ -466,7 +466,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-free-column-was-always-going-to-be-zero",
-    title: "The Free Column Was Always Going to Be Zero",
+    title: "Linux Free Memory Near Zero? Read MemAvailable, Not free",
     date: "2026-09-09",
     tags: ["linux","operations","monitoring"],
     excerpt: "An operating system that leaves memory unused is wasting it, so on any server up for a week the free column has gone to nothing by design. MemAvailable is three additions and two subtractions, and the subtraction is min(half the cache, the low watermark), which means the remembered rule that half the cache is available is the small machine case. It is also an estimate, and tmpfs on a host with no swap makes it optimistic by gigabytes.",
@@ -475,7 +475,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "alignment-is-what-runs-out",
-    title: "Alignment Is What Runs Out",
+    title: "IP Address Planning: Subnets Fail on Alignment, Not Space",
     date: "2026-09-08",
     tags: ["networking","ipv4","design"],
     excerpt: "Address plans do not fail because the space is gone. They fail because the space that is left is in the wrong place. I built six of them as exercises and the arithmetic was never the hard part.",
@@ -484,7 +484,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "four-faults-one-sentence",
-    title: "Four Faults, One Sentence",
+    title: "DNS Not Resolving: Lame Delegation, Missing Glue, Bad CNAME",
     date: "2026-09-08",
     tags: ["dns","networking","troubleshooting"],
     excerpt: "A lame delegation, a missing glue record, a nameserver with no address and an alias pointing at nothing all arrive as \"it does not resolve\". They are four different problems and four different people. Here is how to tell them apart from the trace.",
@@ -493,7 +493,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "first-match-wins",
-    title: "First Match Wins",
+    title: "Firewall Rule Shadowing: Why Your New Rule Never Matches",
     date: "2026-09-08",
     tags: ["networking","security","linux"],
     excerpt: "The rule you added is correct and it does nothing, because a broader rule three lines above already decided. No firewall interface shows you that. I built eight broken chains and counted how often it happens.",
@@ -502,7 +502,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-cache-was-never-told-what-a-user-is",
-    title: "The Cache Was Never Told What a User Is",
+    title: "Shared Cache Leaking User Pages: Cache-Control private and Vary",
     date: "2026-09-08",
     tags: ["security","networking","operations"],
     excerpt: "I built seven request sequences through a shared cache implemented to RFC 9111. Five serve one account's page to another, and in five of the seven three accounts produce one cache key. The finding I did not expect: of seven common Cache-Control values, three switch off the rule protecting authenticated endpoints, so an endpoint with no cache headers is safer than one with must-revalidate.",
@@ -511,7 +511,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-disk-was-not-full",
-    title: "The Disk Was Not Full",
+    title: "No Space Left on Device but df Shows Space: Six Causes",
     date: "2026-09-08",
     tags: ["linux","operations","storage"],
     excerpt: "I built six filesystems that all answer No space left on device. Two are not out of space and one is the filesystem working as designed. On one, df offers 3.7T and the user may write 10G; on another, deleting every named file frees 9G and leaves 41G spent. The diagnosis is never a number, it is which two numbers disagree.",
@@ -520,7 +520,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-clock-is-the-last-thing-anybody-checks",
-    title: "The Clock Is the Last Thing Anybody Checks",
+    title: "Clock Skew Errors: Four Messages That Mean the Time Is Wrong",
     date: "2026-09-08",
     tags: ["security","operations","networking"],
     excerpt: "A wrong clock reports itself under four names and only one of them says so. I built eight cases and counted: of twelve failure messages, five mention time and four of those are the same Kerberos string. The useful finding is which observation does the measuring, and it is always the one with no tolerance at all.",
@@ -529,7 +529,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-request-arrived-the-reply-did-not",
-    title: "The Request Arrived, the Reply Did Not",
+    title: "Native VLAN Mismatch: Why the Ping Arrives but Not the Reply",
     date: "2026-09-08",
     tags: ["networking","security","operations"],
     excerpt: "A native VLAN mismatch is usually described as two VLANs getting bridged. I modeled 802.1Q and asked which VLANs actually reach which: each switch's own native VLAN leaks outbound and works inbound, so the echo request arrives and the reply lands somewhere else. Across every mismatched pair, a quarter of frames go to the wrong VLAN and none are dropped.",
@@ -538,7 +538,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-broken-one-feels-faster",
-    title: "The Broken One Feels Faster",
+    title: "Retry Amplification: Three Retries at Four Layers Is 81 Calls",
     date: "2026-09-08",
     tags: ["engineering","operations","networking"],
     excerpt: "Three attempts at four layers is eighty-one requests and nobody wrote eighty-one. I sampled 200,000 four-layer stacks with every number drawn from what people actually type: ninety per cent abandon work that is still running. Then I split the sample and found the broken ones answer the user twice as fast.",
@@ -547,7 +547,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "a-base-score-is-not-a-queue",
-    title: "A Base Score Is Not a Queue",
+    title: "Why a CVSS Base Score Should Not Sort Your Patch Queue",
     date: "2026-09-08",
     tags: ["security","operations","engineering"],
     excerpt: "Every queue is sorted by the one number the advisory came with, and the specification says that number deliberately knows nothing about you. I enumerated all 2,592 CVSS metric combinations: they produce 84 distinct scores, and 9.5 does not exist. Then I counted the alternative's buckets and found it discriminates to the same degree while admitting it.",
@@ -556,7 +556,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "permissions-do-not-add-up",
-    title: "Permissions Do Not Add Up",
+    title: "Linux File Permissions Are Not Additive: Owner, Group, Other",
     date: "2026-09-08",
     tags: ["linux","security","engineering"],
     excerpt: "The kernel picks one of owner, group and other and ignores the other two, and almost nobody believes it. I checked the additive model against all 512 possible modes and it is wrong for 76% of them. Then I checked it against the 132,720 files on a real install and it is wrong for none.",
@@ -565,7 +565,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-authentication-passed-anyway",
-    title: "The Authentication Passed Anyway",
+    title: "Phishing That Passes SPF, DKIM, and DMARC: What the Ticks Mean",
     date: "2026-09-08",
     tags: ["security","email","training"],
     excerpt: "I built a phishing triage inbox with fourteen messages in it. Eight of the nine hostile ones pass SPF, DKIM and DMARC cleanly. That is not a flaw in the exercise, it is the actual state of email, and it decides what the exercise has to teach.",
@@ -574,7 +574,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "sixty-five-files-nothing-imported",
-    title: "Sixty-Five Files That Nothing Imported",
+    title: "Finding Unused Files in a Vite Project: 65 That Nothing Imported",
     date: "2026-09-08",
     tags: ["engineering","tools","operations"],
     excerpt: "Sixty-five of this site's 343 source files could not run: no path from the entry point, so the bundler never saw them. They held 27 npm packages in place. The first attempt to find them reported zero, because the walk was seeded from a file that imported the very pages it was testing for.",
@@ -592,7 +592,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "a-shell-that-has-to-be-right",
-    title: "A Shell That Has to Be Right",
+    title: "Testing a Teaching Shell Against Real Bash in CI",
     date: "2026-09-08",
     tags: ["engineering","linux","tools"],
     excerpt: "A simulated shell for teaching is only worth anything if what you learn in it is true elsewhere. Every lab ships a transcript that CI replays through the real shell. It found four bugs, and the fourth was a hole in the gate that had been hiding the first two.",
@@ -601,7 +601,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "csp-blocked-its-own-models",
-    title: "The Content Security Policy That Blocked Its Own 3D Models",
+    title: "Content Security Policy Blocking WebAssembly: wasm-unsafe-eval",
     date: "2026-09-07",
     tags: ["security","engineering","operations"],
     excerpt: "The policy was tight, commented line by line, and refusing to compile the WebAssembly decoder the 3D pages depend on: 13 compile errors and 26 refused blob connections on one page. Nothing local sends the header, so production was its only test environment. Fixing it also overturned a careful comment of mine that nobody had ever counted.",
@@ -610,7 +610,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "dollar-sign-string-replace",
-    title: "A Dollar Sign Ate a Third of Five Articles",
+    title: "JavaScript replace() Treats $& as the Match: A Silent Page Bug",
     date: "2026-09-07",
     tags: ["engineering","tools","operations"],
     excerpt: "Five posts shipped with the page shell spliced into the middle of the article and <main> left open, because String.replace reads $& in its replacement as the whole match. The trigger was a grep anchor in a shell snippet, and HTML escaping is what completed the sequence. Eleven checks passed the broken pages.",
@@ -619,7 +619,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "one-tab-no-way-out",
-    title: "One Tab, and There Was No Way Out",
+    title: "Keyboard Trap in a Modal: Why Escape Must Close the Dialog",
     date: "2026-09-07",
     tags: ["engineering","tools","operations"],
     excerpt: "The search palette trapped focus correctly and handled Escape on its text input. Both were deliberate, and together they meant one press of Tab left a keyboard user with no way to close it. Forty more tabs did not help. A WCAG 2.1.2 failure that no static checker can see.",
@@ -628,7 +628,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "one-blue-two-jobs",
-    title: "One Blue Cannot Be Both a Button and a Link",
+    title: "One Brand Blue Failing WCAG Contrast as a Button and a Link",
     date: "2026-09-06",
     tags: ["engineering","tools","operations"],
     excerpt: "The brand blue on this site failed WCAG twice at once: 4.11:1 under a button label and 4.29:1 as link text, both just under the 4.5 floor. Nudging the lightness cannot fix it, because the two jobs pull the same knob in opposite directions. A search over thirty three thousand blues returns no color that does both.",
@@ -637,7 +637,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "rack-diagram-that-cannot-be-switched-on",
-    title: "The Rack Diagram That Cannot Be Switched On",
+    title: "Rack Elevation Mistakes: A UPS With No PDU and Other Gaps",
     date: "2026-09-06",
     tags: ["servers","hardware","operations"],
     excerpt: "Auditing sixteen rack elevations found five that held a UPS and nothing to distribute power with, a blade chassis with no fabric interconnect behind it, a tape library with no host, and eight servers with nowhere to land a management port. None of it was a typo. Every one was a device missing because it is the kind of device nobody puts in a diagram.",
@@ -646,7 +646,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "ci-gate-blamed-fourteen-innocents",
-    title: "The CI Gate That Blamed Fourteen Innocent Devices",
+    title: "Least Squares Blamed 14 Devices: Robust Fitting for a CI Check",
     date: "2026-09-06",
     tags: ["operations","tools","servers"],
     excerpt: "A check that compares a 3D rack model against its device list named sixteen devices as misplaced when two had moved, and reported the rack unit as 37mm instead of 44.45mm. Both statements were arithmetically correct and both were about the fit rather than the rack. What least squares does to a drift check, and what a median does instead.",
@@ -655,7 +655,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "nist-password-rules-changed",
-    title: "Fifteen Characters, And No Complexity Rules At All",
+    title: "NIST Password Guidelines: 15 Characters, No Complexity Rules",
     date: "2026-09-06",
     tags: ["security","cybersecurity","operations"],
     excerpt: "NIST SP 800-63B revision 4 is final, and most of the password policy your organization runs on is now forbidden in normative language. Fifteen characters, no composition rules, no periodic rotation, no security questions, and a breach blocklist instead.",
@@ -664,7 +664,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "what-an-optic-tells-the-switch",
-    title: "What An Optic Tells The Switch About Itself",
+    title: "SFP DOM Explained: Reading Rx Power, Temperature, and Bias",
     date: "2026-09-05",
     tags: ["networking","hardware","operations","homelab"],
     excerpt: "Every SFP carries a live instrument on a second I2C address: temperature, voltage, laser bias, and the light going out and coming in. Receive power is the most useful number in a fiber plant and almost nobody reads it until something breaks.",
@@ -673,7 +673,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "certificate-lifetimes-are-200-days-now",
-    title: "Certificates Are 200 Days Now, And 47 By 2029",
+    title: "TLS Certificate Lifetimes Drop to 200 Days, Then 47 by 2029",
     date: "2026-09-06",
     tags: ["security","cybersecurity","operations","networking"],
     excerpt: "The first step of the CA/Browser Forum reduction landed in March and nobody seems to have noticed. The normative text says 199 SHOULD and 200 MUST, the validation reuse window drops to ten days by 2029, and DNSSEC became mandatory for domain control validation on the same date.",
@@ -682,7 +682,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "post-quantum-tls-handshake-bytes",
-    title: "What Post-Quantum Cost The TLS Handshake",
+    title: "Post-Quantum TLS Handshake Size: What X25519MLKEM768 Adds",
     date: "2026-09-05",
     tags: ["security","networking","cybersecurity"],
     excerpt: "A client key share went from 32 bytes to 1,216. RFC 10024 says exactly where they go, the ML-KEM half comes first despite the name, and the reason this took years is that a great deal of equipment assumed a ClientHello fits in one packet.",
@@ -691,7 +691,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "service-worker-served-a-stale-document",
-    title: "A Service Worker That Served Yesterday's Map Of The Site",
+    title: "Service Worker Serving a Stale index.html After a Deploy",
     date: "2026-09-04",
     tags: ["operations","engineering","homelab"],
     excerpt: "Every fix deployed correctly and the site stayed broken, because the readers reporting it were being served a day old index.html naming bundles that had been deleted. Includes the test that reproduces it, and the control that fails.",
@@ -700,7 +700,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "why-models-stall-at-eighty-three-percent",
-    title: "Eighty Three Percent, Forever",
+    title: "three.js glTF Loading Stuck on Phones: Too Many Image Decodes",
     date: "2026-09-03",
     tags: ["engineering","operations","hardware"],
     excerpt: "Ten glTF files are ten downloads and thirty six image decodes, and past some number of simultaneous decodes a phone finishes neither. Two wrong diagnoses, a sliding window that deadlocked, and the stall timer that fixed it.",
@@ -728,7 +728,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "oom-killer-and-swap-sizing",
-    title: "Who Gets Killed When The Server Runs Out Of Memory",
+    title: "Linux OOM Killer and Swap Sizing: How the Victim Is Chosen",
     date: "2026-07-03",
     tags: ["linux","servers","operations"],
     excerpt: "The OOM killer is not random and swap is not extra RAM. Both make sense once you know what the kernel is actually optimizing for.",
@@ -755,7 +755,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "gpu-driver-stack-linux",
-    title: "The Layers Between Your Model And The Silicon",
+    title: "NVIDIA Driver, CUDA, and Container Version Mismatches on Linux",
     date: "2026-07-06",
     tags: ["ai","linux","operations"],
     excerpt: "Most accelerator problems are not compute problems. They are version mismatches between four layers that all have to agree.",
@@ -792,7 +792,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "flash-caching-tiers",
-    title: "Putting Flash In Front Of Spinning Disks",
+    title: "SSD Caching for HDD Arrays: bcache vs dm-cache and Writeback",
     date: "2026-07-10",
     tags: ["storage","linux","hardware"],
     excerpt: "A cache tier can make a slow array feel fast, but only for the workloads it was designed for, and only if you understand the writeback risk.",
@@ -802,7 +802,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "policy-based-routing-linux",
-    title: "Routing By Policy, Not Just Destination",
+    title: "Policy-Based Routing on Linux: ip rule, Marks, and rp_filter",
     date: "2026-07-11",
     tags: ["networking","routing","linux"],
     excerpt: "Normal routing looks at one field: the destination. Policy routing lets you pick a table based on source, mark, or interface, which solves a whole class of problems cleanly.",
@@ -952,7 +952,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "mtu-and-jumbo-frames",
-    title: "MTU, Jumbo Frames, and the Path That Silently Drops Your Packets",
+    title: "MTU Black Holes and Jumbo Frames: Why Large Transfers Hang",
     date: "2026-04-11",
     tags: ["networking","troubleshooting","operations"],
     excerpt: "Ping works, SSH connects, and then a large file transfer hangs forever. That specific pattern almost always means an MTU mismatch somewhere on the path.",
@@ -1002,7 +1002,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "threat-modeling-homelab",
-    title: "How I Threat Model My Own Lab",
+    title: "Threat Modeling a Homelab: Four Questions and STRIDE",
     date: "2026-04-17",
     tags: ["security","homelab","cybersecurity"],
     excerpt: "Threat modeling sounds like an enterprise process. It is really just asking what you have, who would want it, and what happens when a control fails.",
@@ -1040,7 +1040,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "tcp-congestion-control-basics",
-    title: "TCP Congestion Control for People Who Run Networks",
+    title: "TCP Congestion Control Explained: CUBIC vs BBR and Bufferbloat",
     date: "2026-04-22",
     tags: ["networking","linux","troubleshooting"],
     excerpt: "A link with plenty of spare bandwidth can still deliver terrible throughput. Understanding what TCP is doing explains most of those cases.",
@@ -1049,7 +1049,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "gpu-power-and-cooling",
-    title: "Powering and Cooling Accelerators Is the Real Constraint",
+    title: "GPU Power and Cooling at Home: Circuit Math and Airflow",
     date: "2026-04-23",
     tags: ["hardware","power","ai"],
     excerpt: "Compute is the easy part to buy. Whether your circuit can carry it and your room can reject the heat is what actually decides what you can run.",
@@ -1059,7 +1059,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "certificate-rotation-automation",
-    title: "Certificates Expire On A Saturday",
+    title: "Certificate Renewal Automation: Why Renewals Fail Silently",
     date: "2026-04-24",
     tags: ["security","automation","operations"],
     excerpt: "Issuing a certificate is the easy part. The failure mode is renewal, and it is almost always discovered by an outage rather than by a dashboard.",
@@ -1079,7 +1079,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "queueing-theory-for-operators",
-    title: "Why Latency Falls Off A Cliff At Eighty Percent",
+    title: "Why Latency Spikes Above 80 Percent Utilization: Queueing Math",
     date: "2026-04-26",
     tags: ["operations","monitoring","servers"],
     excerpt: "Utilization and latency are not linearly related. A page of queueing arithmetic explains most capacity surprises before they turn into incidents.",
@@ -1219,7 +1219,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "idempotence-and-config-drift",
-    title: "Idempotence Is The Whole Point Of Config Management",
+    title: "Idempotence and Config Drift: Why You Run the Playbook Twice",
     date: "2026-06-28",
     tags: ["automation","operations","linux"],
     excerpt: "If running your automation twice does something different from running it once, you do not have automation, you have a script with good marketing.",
@@ -1258,7 +1258,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "quic-http3-for-operators",
-    title: "QUIC From The Operator's Chair",
+    title: "QUIC and HTTP/3 for Network Operators: Firewalls and Monitoring",
     date: "2026-07-21",
     tags: ["networking","operations","security"],
     excerpt: "QUIC moved the transport into userspace and encrypted almost all of it. That is good for users and genuinely disruptive to how we monitor and troubleshoot networks.",
@@ -1307,7 +1307,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "wifi-channel-planning",
-    title: "Channel Planning Is Most Of Wireless Performance",
+    title: "Wi-Fi Channel Planning: Why Wider Channels Can Be Slower",
     date: "2026-07-29",
     tags: ["networking","homelab","hardware"],
     excerpt: "Wireless is a shared medium with a listen-before-talk rule. Wider channels and more access points often make it worse. Here is how I plan channels instead.",
@@ -1326,7 +1326,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "restore-drills-that-matter",
-    title: "A Backup You Have Not Restored Is Just Hope",
+    title: "Backup Restore Testing: How to Run a Restore Drill",
     date: "2026-08-03",
     tags: ["operations","storage","homelab"],
     excerpt: "Backup jobs reporting success prove that a backup job ran. Only a restore proves you have a backup. Here is how I design a drill I will actually do.",
@@ -1479,7 +1479,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "how-to-read-an-rfc",
-    title: "How I Read an RFC",
+    title: "How to Read an RFC: Reading Order, Keywords, and ABNF",
     date: "2026-05-26",
     tags: ["learning","networking","tools"],
     excerpt: "RFCs are the actual source of truth for how the internet works, and they are far more readable than their reputation suggests once you know the structure.",
@@ -2544,7 +2544,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-invoice-is-not-the-ceiling",
-    title: "The Invoice Is Not the Ceiling",
+    title: "Single TCP Stream Slow on a Fast Link: Bandwidth Delay Product",
     date: "2026-09-08",
     tags: ["networking","performance","tcp"],
     excerpt: "A gigabit link across an ocean with a default window carries 6.6 Mbps. Three ceilings sit over a single TCP stream, only one of them is on the invoice, and it is almost never the one that is binding.",
@@ -2553,7 +2553,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "the-check-that-tested-nothing",
-    title: "The Check That Tested Nothing",
+    title: "Test Your Tests: Two CI Checks That Passed on Broken Code",
     date: "2026-09-08",
     tags: ["engineering","testing","operations"],
     excerpt: "A green check is evidence only if you have seen it go red. Two checks I wrote this week passed on broken code, and both failed the same way: I asserted a consequence of the rule instead of the rule.",
@@ -2562,7 +2562,7 @@ export const postIndex: PostMeta[] = [
   },
   {
     slug: "three-copies-one-credential",
-    title: "Three Copies, One Credential",
+    title: "3-2-1 Backups Are Not Enough: One Credential Can Delete All Three",
     date: "2026-09-08",
     tags: ["operations","security","storage"],
     excerpt: "Every organization that lost data had backups. 3-2-1 is a good rule stated in the least useful possible way, because the three numbers are proxies for the thing that matters and none of them is it.",
