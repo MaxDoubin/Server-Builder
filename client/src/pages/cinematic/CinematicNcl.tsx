@@ -194,11 +194,13 @@ export function CinematicNcl() {
             <div className="mt-5 space-y-4 font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
               <p>
                 I have competed in the National Cyber League and finished in the
-                top 1 percent of competitors individually. As president of the
+                top 1 percent of competitors individually. In the Fall 2026 season
+                I placed first in the Gymnasium, as the first student to reach 100
+                percent completion with 100 percent accuracy. As president of the
                 South CTA Cyber Club, I also helped the school place 7th nationally
                 among high schools in the Fall 2025 Cyber Power Rankings. That
                 ranking blends a school's top team, its top individual and its
-                participation, so it is not a team result on its own. Those two
+                participation, so it is not a team result on its own. Those
                 results are the honest summary of where I have gotten to so far.
               </p>
               <p>

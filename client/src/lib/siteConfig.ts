@@ -42,6 +42,8 @@ export const siteConfig = {
     {
       category: "Cybersecurity & Competition",
       items: [
+        "1st place in the Clark County School District capture the flag tournament at CyberWeek@UNLV, October 2026",
+        "1st place in the National Cyber League Fall 2026 Gymnasium, the first student to reach 100 percent completion with 100 percent accuracy",
         "Top 1 percent of National Cyber League competitors",
         "Active on Cyber Skyline with CTF experience in OSINT, cryptography, log analysis, hash cracking, network forensics, and web exploitation",
         "Currently pursuing CompTIA Security+, CompTIA Network+, and Cisco CCNA",
@@ -54,6 +56,9 @@ export const siteConfig = {
         "President of the South CTA Music Club for the 2026/2027 school year",
         "Blue Ribbon Commissioner for the City of Henderson, Nevada",
         "Youth Advisory Council Member for Nevada OWINN and Big Future Ambassador for College Board",
+        "Keynote panelist at the 2026 A4LE Southwest Region Conference",
+        "Presented a network risk assessment to the Clark County School District networking team",
+        "Built a server lab for the South CTA cybersecurity program, working on his own",
       ],
     },
     {
@@ -160,6 +165,13 @@ export const siteConfig = {
       ],
     },
     {
+      title: "Server Lab Builder",
+      org: "South CTA Cybersecurity Program",
+      details: [
+        "Set up a server lab for the school's cybersecurity program over the past year, working on his own",
+      ],
+    },
+    {
       title: "President",
       org: "South CTA Music Club",
       details: [
@@ -207,6 +219,26 @@ export const siteConfig = {
   ],
 
   achievements: [
+    {
+      title: "1st Place, CCSD Capture the Flag at CyberWeek@UNLV",
+      description:
+        "Won first place in the Clark County School District capture the flag tournament at CyberWeek@UNLV in October 2026, a competition covering cryptography, forensics, log analysis, OSINT and reverse engineering.",
+    },
+    {
+      title: "1st Place, NCL Fall 2026 Gymnasium",
+      description:
+        "Placed first in the National Cyber League's Fall 2026 Gymnasium as the first student to reach 100 percent completion with 100 percent accuracy.",
+    },
+    {
+      title: "Keynote Panelist, A4LE Southwest Region Conference",
+      description:
+        "The student on the keynote panel at the Association for Learning Environments' 2026 Southwest Region Conference in Las Vegas, Lighting the Way: Shaping the Future of Learning. The keynote, Jeanine Collins's The Architecture of Trust, took place at South Career Technical Academy on April 30, 2026 and featured a panel of a learner, a school leader and a system leader.",
+    },
+    {
+      title: "Network Risk Assessment for CCSD",
+      description:
+        "Presented a network risk assessment to the Clark County School District networking team in May 2026.",
+    },
     {
       title: "Top 1 Percent, National Cyber League",
       description:

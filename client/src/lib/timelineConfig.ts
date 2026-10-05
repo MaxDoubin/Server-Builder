@@ -31,10 +31,14 @@ export interface TimelineGroup {
 /**
  * Drawn from siteConfig only.
  *
- * siteConfig carries a date for three things: the 2024 percussion ranking,
- * the 2026 PBS Varsity Quiz finals, and the press feature. Everything else has no date recorded, so it
- * is grouped as undated. Do not infer a year for an entry from the year next
- * to it: an approximately right date on a portfolio is a wrong date.
+ * siteConfig carries a date for these: the 2024 percussion ranking, the 2026
+ * PBS Varsity Quiz finals, the April 30, 2026 A4LE keynote panel, the May 2026
+ * risk assessment for the CCSD networking team, the press feature, the Fall
+ * 2026 NCL Gymnasium, and the October 2026 CyberWeek@UNLV capture the flag.
+ * The South CTA server lab is dated by Max's own account, "this past year",
+ * as of October 2026. Everything else has no date recorded, so it is grouped
+ * as undated. Do not infer a year for an entry from the year next to it: an
+ * approximately right date on a portfolio is a wrong date.
  */
 export const TIMELINE_GROUPS: TimelineGroup[] = [
   {
@@ -42,10 +46,46 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
     label: "2026",
     entries: [
       {
+        title: "1st place, CCSD capture the flag tournament at CyberWeek@UNLV",
+        when: "October 2026",
+        description:
+          "Won the Clark County School District capture the flag tournament at UNLV's CyberWeek, held for Cybersecurity Awareness Month, across cryptography, forensics, log analysis, OSINT and reverse engineering.",
+        href: "https://www.unlv.edu/cybersecurity/community-outreach/cyberweek",
+        external: true,
+      },
+      {
+        title: "1st place, NCL Fall 2026 Gymnasium",
+        when: "Fall 2026",
+        description:
+          "The first student to reach 100 percent completion with 100 percent accuracy in the National Cyber League's Fall 2026 Gymnasium.",
+        href: "/ncl",
+      },
+      {
         title: "President, South CTA Music Club",
         when: "2026/2027 school year",
         description:
           "Leads club activities, coordination, and student participation for the school year.",
+      },
+      {
+        title: PRESS.headline,
+        when: PRESS.displayDate,
+        description: `Coverage of CCSD magnet programs in ${PRESS.outlet}, reported by ${PRESS.author}.`,
+        href: PRESS.url,
+        external: true,
+      },
+      {
+        title: "Network risk assessment for the CCSD networking team",
+        when: "May 2026",
+        description:
+          "Presented a network risk assessment to the Clark County School District's networking team.",
+      },
+      {
+        title: "Keynote panelist, A4LE Southwest Region Conference",
+        when: "April 30, 2026",
+        description:
+          "The student on the keynote panel at the Association for Learning Environments' Southwest Region Conference in Las Vegas. The keynote, Jeanine Collins's The Architecture of Trust, took place that day at South Career Technical Academy, with a panel of a learner, a school leader and a system leader.",
+        href: "https://www.a4le.org/Southwest/Archives_Past_Events/2026_Region_Conference/Keynote_Speaker.aspx",
+        external: true,
       },
       {
         title: "PBS Varsity Quiz state finalist",
@@ -54,11 +94,10 @@ export const TIMELINE_GROUPS: TimelineGroup[] = [
           "Reached the state finals on a team made up entirely of freshmen.",
       },
       {
-        title: PRESS.headline,
-        when: PRESS.displayDate,
-        description: `Coverage of CCSD magnet programs in ${PRESS.outlet}, reported by ${PRESS.author}.`,
-        href: PRESS.url,
-        external: true,
+        title: "Server lab for the South CTA cybersecurity program",
+        when: "2025 to 2026",
+        description:
+          "Set up a server lab for the school's cybersecurity program over the past year, working on his own.",
       },
     ],
   },
