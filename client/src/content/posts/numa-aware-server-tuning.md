@@ -29,9 +29,17 @@ numactl --hardware | grep -A4 distances
 # which node each CPU belongs to
 lscpu | grep -i numa
 
-# per node allocation and miss counters
+# per node hit and miss counters
+numastat
+
+# per node memory use, laid out like /proc/meminfo
 numastat -m
 ```
+
+A two socket box typically shows 10 for local and 21 for remote. Those are
+relative values from firmware, not measurements, so treat them as a rough hint.
+Do not assume one node per socket either: some processors split a package into
+several nodes.
 
 The `numa_miss` and `numa_foreign` counters in `numastat` are the ones I watch.
 A miss means an allocation wanted one node and got another. A handful is noise.
@@ -41,6 +49,17 @@ memory, and you are paying for it on every access.
 Also check that memory is physically balanced. If someone populated all the
 DIMM slots on one socket and left the other empty, half your cores are remote
 to every single page and no software tuning will fix it.
+
+The cheapest way to find the real penalty is to run the same memory bound
+benchmark twice, once local and once deliberately remote:
+
+```bash
+numactl --cpunodebind=0 --membind=0 ./bench
+numactl --cpunodebind=0 --membind=1 ./bench    # deliberately remote
+```
+
+The gap between those runs tells you how much locality is worth chasing on your
+hardware.
 
 ## Pinning work to where its memory lives
 
@@ -78,6 +97,14 @@ when one process has a working set larger than a node and you would rather
 spread the traffic evenly than have one memory controller saturated while the
 other idles.
 
+To see where a running process's memory actually landed:
+
+```bash
+numastat -p my-service
+```
+
+Memory listed under a node other than the one you bound it to is remote.
+
 ## Virtualization makes it worse and easier
 
 Hypervisors add a layer. A VM with more vCPUs than a single socket has cores,
@@ -91,6 +118,54 @@ can. A VM that fits in a node gets local memory and clean scheduling. A VM that
 spans nodes needs its virtual topology to match the physical layout, otherwise
 the guest kernel optimizes against a map that is wrong.
 
+Crossing that boundary is a step change, not a smooth increase in capacity. The
+classic symptom is a slow VM that gets slower when you give it more vCPUs and
+RAM, because the extra pushed it across a node. So before growing a guest,
+check whether the new size still fits in one node. For a workload that scales
+horizontally, two guests that each fit usually beat one that does not. Most of
+the NUMA problems I have seen were created by someone allocating a guest
+slightly larger than a node because the round number looked nice.
+
+When a guest does land wrong, it is usually one of three ways:
+
+- Split memory. The guest is bigger than one node, so its pages come from both.
+- Split vCPUs. The memory fits in one node, but the host runs vCPU threads on
+  both sockets, and the threads on the far socket pay the remote penalty on
+  every access.
+- Wandering threads. Nothing is pinned, so the host migrates vCPU threads
+  between nodes under load, and their memory lags behind.
+
+All three show up as performance that varies from run to run for no visible
+reason. Memory ballooning works against locality as well, since pages that are
+reclaimed and later handed back do not necessarily return from the same node.
+
+For a guest that genuinely needs more than one node, the KVM recipe is virtual
+NUMA cells sized like the host's nodes, with each cell's memory bound to its
+host node. On Proxmox VE that starts with the guest's `numa` option
+(`qm set 100 --numa 1`), with CPU affinity set separately. With libvirt it is
+the `<numa>` cell configuration inside the CPU definition, plus `numatune` for
+memory placement. Pinning a guest that fits in one node looks like this in
+libvirt, using CPUs that `numactl --hardware` lists under node 0:
+
+```xml
+<vcpu placement='static' cpuset='0-3'>4</vcpu>
+<cputune>
+  <vcpupin vcpu='0' cpuset='0'/>
+  <vcpupin vcpu='1' cpuset='1'/>
+  <vcpupin vcpu='2' cpuset='2'/>
+  <vcpupin vcpu='3' cpuset='3'/>
+</cputune>
+<numatune>
+  <memory mode='strict' nodeset='0'/>
+</numatune>
+```
+
+`mode='strict'` is the important part. `preferred` silently falls back to
+remote memory when the node runs short, which is the slow behavior you were
+trying to avoid, with no error to tell you. The flip side is that a strict
+guest that outgrows its node meets the out of memory killer instead, one more
+reason to size it to fit.
+
 Device locality matters too. A network card or accelerator hangs off the PCIe
 root complex of one specific socket. If a VM pinned to node 1 is pushing packets
 through a NIC attached to node 0, every packet crosses the link. You can see
@@ -100,6 +175,29 @@ which node a device belongs to:
 cat /sys/class/net/eth0/device/numa_node
 lspci -vv -s 0000:41:00.0 | grep -i "NUMA node"
 ```
+
+Interrupts follow the same rule. A NIC on node 0 whose interrupts are handled
+by cores on node 1 is a real and common performance bug.
+
+## Pinning a guest is a trade
+
+Pinning vCPUs to physical cores stops the host scheduler from migrating a guest
+across nodes and taking its cache and locality with it. That is a genuine win
+for a latency sensitive, consistently busy guest, and a loss in three common
+situations:
+
+- A consolidation host running many small, bursty guests. Pinned cores sit idle
+  while other guests queue, so one guest gets slightly better while the whole
+  machine gets worse.
+- A host you live migrate from. Pinning to specific physical CPU numbers
+  assumes a topology the destination may not share.
+- Heavy CPU overcommit. Pinning concentrates contention onto exactly the cores
+  you chose.
+
+I pin when a guest is latency sensitive, has a stable footprint, and owns its
+host. I do not pin general purpose guests, and I never pin as a first response
+to a performance complaint: measure, read the topology, size correctly, and
+only then reach for `vcpupin` and `numatune`.
 
 ## When to bother
 
@@ -130,5 +228,7 @@ paying for a trip you did not need.
 - [Linux NUMA memory policy](https://docs.kernel.org/admin-guide/mm/numa_memory_policy.html)
 - [numactl(8) manual page](https://man7.org/linux/man-pages/man8/numactl.8.html)
 - [Non-uniform memory access](https://en.wikipedia.org/wiki/Non-uniform_memory_access)
+- [Linux kernel NUMA documentation](https://www.kernel.org/doc/html/latest/mm/numa.html)
 - [Linux network scaling documentation](https://docs.kernel.org/networking/scaling.html)
 - [systemd.exec(5) resource and NUMA settings](https://man.archlinux.org/man/systemd.exec.5)
+- [libvirt domain XML format](https://libvirt.org/formatdomain.html)

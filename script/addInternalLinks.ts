@@ -47,7 +47,6 @@ const CANONICAL: Array<{ terms: string[]; slug: string }> = [
   { terms: ["Cisco IOS"], slug: "cisco-ios-fundamentals" },
   { terms: ["syslog"], slug: "syslog-centralized-logging" },
   { terms: ["container networking"], slug: "container-networking-fundamentals" },
-  { terms: ["penetration testing"], slug: "penetration-testing-basics" },
   { terms: ["storage area network"], slug: "storage-area-networks-explained" },
   { terms: ["DNSSEC"], slug: "dns-security-dnssec" },
   { terms: ["DHCP snooping"], slug: "dhcp-snooping-arp-inspection" },
@@ -58,7 +57,7 @@ const CANONICAL: Array<{ terms: string[]; slug: string }> = [
   { terms: ["3-2-1 backup"], slug: "backup-strategy-321-rule" },
   { terms: ["TLS 1.3"], slug: "tls-modern-encryption" },
   { terms: ["Prometheus"], slug: "prometheus-server-monitoring" },
-  { terms: ["quantization"], slug: "model-quantization-by-the-bytes" },
+  { terms: ["quantization"], slug: "local-llm-memory-math" },
 ];
 
 /**

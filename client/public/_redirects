@@ -129,6 +129,74 @@
 # With no rule here they return 404, and a 404 is what tells a search engine
 # to drop the URL from its index. Do not add a redirect for any of the three.
 
+# Duplicate posts merged in October 2026.
+#
+# The archive had grown several posts answering the same question: six on the
+# MTU black hole, five on threat modeling, four on whether a model fits in
+# memory. Each group was folded into its strongest post, and the copies 301
+# there so their links and rankings carry over instead of splitting between
+# near-identical pages. Keep these: other sites still link the old URLs.
+/blog/mtu-mismatch-troubleshooting          /blog/mtu-and-jumbo-frames  301
+/blog/mtu-blackhole-troubleshooting         /blog/mtu-and-jumbo-frames  301
+/blog/mtu-black-hole-troubleshooting        /blog/mtu-and-jumbo-frames  301
+/blog/jumbo-frames-path-mtu                 /blog/mtu-and-jumbo-frames  301
+/blog/mtu-jumbo-frames-pmtud                /blog/mtu-and-jumbo-frames  301
+/blog/vector-search-internals               /blog/vector-databases-explained  301
+/blog/vector-database-indexes               /blog/vector-databases-explained  301
+/blog/vector-databases-infrastructure       /blog/hnsw-index-real-costs  301
+/blog/pxe-network-boot-chain                /blog/pxe-network-boot  301
+/blog/network-boot-chain-pxe                /blog/pxe-network-boot  301
+/blog/pcie-lanes-and-bifurcation            /blog/pcie-lanes-explained  301
+/blog/pcie-lanes-bandwidth-servers          /blog/pcie-lanes-explained  301
+/blog/rag-pipeline-plumbing                 /blog/rag-pipeline-engineering  301
+/blog/rag-chunking-and-evaluation           /blog/rag-pipeline-engineering  301
+/blog/cgroups-resource-limits-debugging     /blog/cgroups-resource-limits  301
+/blog/cgroups-v2-resource-limits            /blog/cgroups-resource-limits  301
+/blog/object-storage-fundamentals           /blog/object-storage-on-prem  301
+/blog/object-storage-on-premises            /blog/object-storage-on-prem  301
+/blog/quantization-memory-math              /blog/local-llm-memory-math  301
+/blog/gpu-memory-math-inference             /blog/local-llm-memory-math  301
+/blog/model-quantization-by-the-bytes       /blog/local-llm-memory-math  301
+/blog/running-llms-locally-hardware         /blog/local-llm-inference-limits  301
+/blog/numa-and-vm-performance               /blog/numa-aware-server-tuning  301
+/blog/numa-and-cpu-pinning                  /blog/numa-aware-server-tuning  301
+/blog/llm-application-attack-surface        /blog/prompt-injection-trust-boundaries  301
+/blog/llm-app-attack-surface                /blog/prompt-injection-trust-boundaries  301
+/blog/the-client-that-the-server-never-saw  /blog/the-connection-opened-and-then-nothing-happened  301
+/blog/spf-dkim-dmarc-email-auth             /blog/spf-dkim-dmarc  301
+/blog/choosing-tcp-congestion-control       /blog/tcp-congestion-control-basics  301
+/blog/http2-http3-quic                      /blog/quic-http3-for-operators  301
+/blog/tokenizers-and-context-budget         /blog/why-token-counts-surprise-you  301
+/blog/model-serving-observability           /blog/serving-models-batching-kv-cache  301
+/blog/inference-vs-training-workloads       /blog/training-vs-inference-profiles  301
+/blog/systemd-units-homelab                 /blog/systemd-units-that-behave  301
+/blog/reading-rfcs-practically              /blog/how-to-read-an-rfc  301
+/blog/kvm-proxmox-esxi-comparison           /blog/proxmox-vs-esxi  301
+/blog/idrac-advanced-features               /blog/dell-idrac-tips-tricks  301
+/blog/threat-modeling-small-networks        /blog/threat-modeling-homelab  301
+/blog/threat-modeling-services-you-run      /blog/threat-modeling-homelab  301
+/blog/threat-modeling-a-project             /blog/threat-modeling-homelab  301
+/blog/threat-modeling-your-own-builds       /blog/threat-modeling-homelab  301
+/blog/power-and-heat-limit-gpus             /blog/gpu-power-and-cooling  301
+/blog/certifications-versus-projects        /blog/certifications-vs-projects  301
+/blog/config-drift-and-idempotence          /blog/idempotence-and-config-drift  301
+/blog/network-monitoring-tools              /blog/network-monitoring-system-build  301
+/blog/network-security-zones-dmz            /blog/secure-network-design-principles  301
+/blog/runbooks-infrastructure-teams         /blog/network-documentation-best-practices  301
+
+# Removed in the same cleanup, and deliberately not redirected.
+#
+# These had no real point (career predictions, generic overviews, opinion
+# with nothing behind it) and no post that answers the same question, so a
+# 404 is the honest answer and the signal that drops them from the index:
+#   /blog/personal-brand-in-tech
+#   /blog/network-engineer-role-2026
+#   /blog/server-consolidation-virtualization
+#   /blog/incident-response-methodology
+#   /blog/penetration-testing-basics
+#   /blog/ai-in-network-operations
+#   /blog/ai-in-security-operations
+
 # Retired pages.
 #
 # The changelog was a list of site edits, which is a thing the person who

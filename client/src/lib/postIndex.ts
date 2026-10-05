@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 316 of them. Regenerate with script/generatePostIndex.ts.
+ * 262 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -156,15 +156,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "Linux keeps two lock lists. flock is on one, fcntl and F_OFD_SETLK are on the other, and nothing looks across, so two programs guarding the same file with different calls both hold it and neither is told. Of the three, only fcntl belongs to the process, which is why a second descriptor in your own program is handed the lock and why a library opening the file to read one line silently releases it.",
     coverImage: "/images/blog/the-lock-that-two-programs-both-held.jpg",
     wordCount: 1403,
-  },
-  {
-    slug: "the-client-that-the-server-never-saw",
-    title: "The Client That The Server Never Saw",
-    date: "2026-09-20",
-    tags: ["networking","linux","operations","troubleshooting"],
-    excerpt: "A full accept queue has two ways to drop a connection and they produce opposite symptoms. If the queue fills mid handshake the client ends up established and stalled, which is the case everybody writes about. If the queue is already full when the SYN arrives, the kernel drops the SYN before a request sock exists, no SYN-ACK is ever sent, and connect() simply does not return. Two hundred clients at a listener with room for three produced 3 established and 197 still in SYN_SENT.",
-    coverImage: "/images/blog/the-client-that-the-server-never-saw.jpg",
-    wordCount: 1638,
   },
   {
     slug: "the-log-line-with-another-log-line-inside-it",
@@ -390,7 +381,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","linux","operations","troubleshooting"],
     excerpt: "listen() does not install the backlog you passed: it is min(backlog, somaxconn), clamped silently, and the queue then holds one more than that because the kernel's test is greater-than rather than greater-or-equal. When it fills, the kernel does not refuse the connection. If it fills part way through a handshake it drops the final ACK and sends nothing back, so connect() has already returned and the client's first request goes into silence until a retransmission finds room. That is how a box at six percent CPU produces seconds of dead air and no error anywhere.",
     coverImage: "/images/blog/the-connection-opened-and-then-nothing-happened.jpg",
-    wordCount: 2000,
+    wordCount: 2788,
   },
   {
     slug: "forty-minutes-dark",
@@ -797,7 +788,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Three records, three different questions, and one concept that ties them together. Alignment is the part most explanations skip.",
     coverImage: "/images/blog/spf-dkim-dmarc.jpg",
     coverCredit: {"author":"RubyGoes","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/61997808@N00/8456755757"},
-    wordCount: 923,
+    wordCount: 1288,
   },
   {
     slug: "flash-caching-tiers",
@@ -836,15 +827,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "A postmortem for an audience of one is still worth writing, because the person you are protecting from the next outage does not remember this one.",
     coverImage: "/images/blog/postmortems-team-of-one.jpg",
     wordCount: 1064,
-  },
-  {
-    slug: "spf-dkim-dmarc-email-auth",
-    title: "SPF, DKIM, and DMARC: Making Your Domain Hard to Forge",
-    date: "2026-07-14",
-    tags: ["security","networking","operations"],
-    excerpt: "SMTP never proved who sent a message. Three DNS records fix that, and they only work when you understand what each one actually checks.",
-    coverImage: "/images/blog/spf-dkim-dmarc-email-auth.jpg",
-    wordCount: 883,
   },
   {
     slug: "gpu-memory-fragmentation",
@@ -976,16 +958,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Ping works, SSH connects, and then a large file transfer hangs forever. That specific pattern almost always means an MTU mismatch somewhere on the path.",
     coverImage: "/images/blog/mtu-and-jumbo-frames.jpg",
     coverCredit: {"author":"David Davies","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/44124390461@N01/5339417741"},
-    wordCount: 1067,
-  },
-  {
-    slug: "pxe-network-boot-chain",
-    title: "Network Boot From Power On To Installer",
-    date: "2026-04-12",
-    tags: ["servers","networking","automation","homelab"],
-    excerpt: "PXE looks like magic until you trace it. It is a DHCP conversation, a file transfer, and a second stage loader that does the actual work.",
-    coverImage: "/images/blog/pxe-network-boot-chain.jpg",
-    wordCount: 936,
+    wordCount: 1919,
   },
   {
     slug: "linux-disk-io-troubleshooting",
@@ -1014,7 +987,8 @@ export const postIndex: PostMeta[] = [
     tags: ["hardware","servers","storage"],
     excerpt: "The slot is physically x16 but the card negotiated x4. That is not a fault, it is a lane budget doing exactly what it was configured to do.",
     coverImage: "/images/blog/pcie-lanes-explained.jpg",
-    wordCount: 1024,
+    coverCredit: {"author":"instaSHINOBI","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/21050065@N06/6114962032"},
+    wordCount: 1760,
   },
   {
     slug: "rag-pipeline-engineering",
@@ -1024,7 +998,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Retrieval augmented generation demos are easy. What makes them work in production is parsing, chunking, hybrid search, and evaluation, none of which are glamorous.",
     coverImage: "/images/blog/rag-pipeline-engineering.jpg",
     coverCredit: {"author":"Barta IV","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/98640399@N08/10030588973"},
-    wordCount: 1089,
+    wordCount: 1707,
   },
   {
     slug: "threat-modeling-homelab",
@@ -1033,7 +1007,7 @@ export const postIndex: PostMeta[] = [
     tags: ["security","homelab","cybersecurity"],
     excerpt: "Threat modeling sounds like an enterprise process. It is really just asking what you have, who would want it, and what happens when a control fails.",
     coverImage: "/images/blog/threat-modeling-homelab.jpg",
-    wordCount: 1090,
+    wordCount: 1955,
   },
   {
     slug: "cgroups-resource-limits",
@@ -1043,7 +1017,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "One runaway process should not take down everything else on the box. Control groups are how Linux enforces that, and you can use them without containers.",
     coverImage: "/images/blog/cgroups-resource-limits.jpg",
     coverCredit: {"author":"barnoid","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/50359335@N00/410484763"},
-    wordCount: 970,
+    wordCount: 1718,
   },
   {
     slug: "rate-limiting-algorithms",
@@ -1053,15 +1027,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "Rate limiting is four small algorithms and one hard question: which identity are you limiting, at which layer, and what happens to the requests you reject.",
     coverImage: "/images/blog/rate-limiting-algorithms.jpg",
     wordCount: 954,
-  },
-  {
-    slug: "object-storage-fundamentals",
-    title: "Object Storage Is Not a Weird Filesystem",
-    date: "2026-04-20",
-    tags: ["storage","servers","operations"],
-    excerpt: "Treating object storage like a filesystem with a strange API is how people end up frustrated by it. The contract it offers is genuinely different, and deliberately so.",
-    coverImage: "/images/blog/object-storage-fundamentals.jpg",
-    wordCount: 1173,
   },
   {
     slug: "ml-network-anomaly-detection",
@@ -1080,7 +1045,7 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","linux","troubleshooting"],
     excerpt: "A link with plenty of spare bandwidth can still deliver terrible throughput. Understanding what TCP is doing explains most of those cases.",
     coverImage: "/images/blog/tcp-congestion-control-basics.jpg",
-    wordCount: 1156,
+    wordCount: 1559,
   },
   {
     slug: "gpu-power-and-cooling",
@@ -1090,7 +1055,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Compute is the easy part to buy. Whether your circuit can carry it and your room can reject the heat is what actually decides what you can run.",
     coverImage: "/images/blog/gpu-power-and-cooling.jpg",
     coverCredit: {"author":"nordique","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/28435100@N00/"},
-    wordCount: 1199,
+    wordCount: 1786,
   },
   {
     slug: "certificate-rotation-automation",
@@ -1129,26 +1094,7 @@ export const postIndex: PostMeta[] = [
     tags: ["ai","hardware","homelab"],
     excerpt: "Local model speed is mostly arithmetic, not vibes. Here is the memory bandwidth math I use to predict tokens per second before buying anything.",
     coverImage: "/images/blog/local-llm-inference-limits.jpg",
-    wordCount: 912,
-  },
-  {
-    slug: "mtu-mismatch-troubleshooting",
-    title: "The MTU Bug That Only Breaks Big Transfers",
-    date: "2026-04-28",
-    tags: ["networking","operations","linux"],
-    excerpt: "SSH connects, the file copy hangs at zero bytes. A walkthrough of diagnosing path MTU black holes and the fixes I apply, in order of preference.",
-    coverImage: "/images/blog/mtu-mismatch-troubleshooting.jpg",
-    wordCount: 950,
-  },
-  {
-    slug: "model-quantization-by-the-bytes",
-    title: "Quantization, Explained By The Bytes",
-    date: "2026-04-29",
-    tags: ["ai","ml","hardware"],
-    excerpt: "Four bit weights are not half a byte each. Here is how quantized model footprints actually add up, and how I decide which precision to run.",
-    coverImage: "/images/blog/model-quantization-by-the-bytes.jpg",
-    coverCredit: {"author":"jurvetson","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/44124348109@N01/48877874981"},
-    wordCount: 913,
+    wordCount: 1329,
   },
   {
     slug: "wireguard-vs-ipsec-tunnels",
@@ -1160,44 +1106,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 947,
   },
   {
-    slug: "vector-search-internals",
-    title: "How Vector Search Actually Finds Things",
-    date: "2026-05-01",
-    tags: ["ai","storage","ml"],
-    excerpt: "A look under the hood of vector databases: why exact search is fine more often than people admit, and what graph and quantized indexes trade away.",
-    coverImage: "/images/blog/vector-search-internals.jpg",
-    wordCount: 958,
-  },
-  {
-    slug: "numa-and-vm-performance",
-    title: "NUMA Is Why Your Big VM Got Slower",
-    date: "2026-05-02",
-    tags: ["virtualization","servers","operations"],
-    excerpt: "Growing a guest past one memory node can make it slower, not faster. How to read your NUMA topology and size virtual machines so they stay on one node.",
-    coverImage: "/images/blog/numa-and-vm-performance.jpg",
-    wordCount: 931,
-  },
-  {
-    slug: "http2-http3-quic",
-    title: "HTTP/2, HTTP/3, And Where Head Of Line Blocking Went",
-    date: "2026-05-03",
-    tags: ["networking","security","operations"],
-    excerpt: "HTTP/3 is not HTTP/2 over UDP. Moving streams down into the transport changes what breaks, what your load balancer sees, and what you can log.",
-    coverImage: "/images/blog/http2-http3-quic.jpg",
-    coverCredit: {"author":"dvanzuijlekom","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/52365139@N05/9276064862"},
-    wordCount: 896,
-  },
-  {
-    slug: "config-drift-and-idempotence",
-    title: "Idempotence Is A Property You Have To Test For",
-    date: "2026-05-04",
-    tags: ["automation","operations","linux","tools"],
-    excerpt: "Running the same playbook twice should change nothing the second time. That is a claim about the code you wrote, not a feature you get from the tool.",
-    coverImage: "/images/blog/config-drift-and-idempotence.jpg",
-    coverCredit: {"author":"DSmous","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/94436653@N00/275375865"},
-    wordCount: 890,
-  },
-  {
     slug: "filesystem-journal-explained",
     title: "What A Filesystem Journal Actually Protects",
     date: "2026-05-05",
@@ -1205,16 +1113,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "A journal keeps filesystem metadata consistent across a crash. It does not promise your file contents survived, and that difference decides your data loss story.",
     coverImage: "/images/blog/filesystem-journal-explained.jpg",
     wordCount: 980,
-  },
-  {
-    slug: "tokenizers-and-context-budget",
-    title: "Tokens Are Not Words, And Your Context Budget Knows It",
-    date: "2026-05-06",
-    tags: ["ai","ml","learning"],
-    excerpt: "Byte pair encoding decides how much of a document fits in a context window. Understanding it turns a mysterious limit into arithmetic you can do in advance.",
-    coverImage: "/images/blog/tokenizers-and-context-budget.jpg",
-    coverCredit: {"author":"Elliot Moore","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/24318458@N00/366179545"},
-    wordCount: 908,
   },
   {
     slug: "model-weights-are-artifacts",
@@ -1233,7 +1131,8 @@ export const postIndex: PostMeta[] = [
     tags: ["ai","ml","tools"],
     excerpt: "A tokenizer is a compression scheme, not a dictionary. Once you understand what it is actually doing, surprising token counts stop being surprising.",
     coverImage: "/images/blog/why-token-counts-surprise-you.jpg",
-    wordCount: 938,
+    coverCredit: {"author":"Elliot Moore","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/24318458@N00/366179545"},
+    wordCount: 1567,
   },
   {
     slug: "secrets-without-a-vault-team",
@@ -1245,15 +1144,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 974,
   },
   {
-    slug: "power-and-heat-limit-gpus",
-    title: "Power And Heat Are The Real Accelerator Limits",
-    date: "2026-05-11",
-    tags: ["hardware","power","ai"],
-    excerpt: "Compute is easy to buy and watts are not. The circuit arithmetic, airflow direction, and power capping I work through before adding an accelerator to a room.",
-    coverImage: "/images/blog/power-and-heat-limit-gpus.jpg",
-    wordCount: 961,
-  },
-  {
     slug: "model-file-formats-and-safetensors",
     title: "What Is Actually Inside A Model File",
     date: "2026-05-12",
@@ -1261,16 +1151,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "A model file is a bag of tensors plus metadata. How that bag is serialized decides whether loading it is a memory copy or a remote code execution.",
     coverImage: "/images/blog/model-file-formats-and-safetensors.jpg",
     wordCount: 988,
-  },
-  {
-    slug: "cgroups-resource-limits-debugging",
-    title: "Cgroups Are Why The Container Stopped",
-    date: "2026-05-13",
-    tags: ["linux","operations","virtualization"],
-    excerpt: "Containers are mostly namespaces plus cgroups. A tour of the memory, CPU, and IO controllers, and how to tell a limit from a bug when something dies.",
-    coverImage: "/images/blog/cgroups-resource-limits-debugging.jpg",
-    coverCredit: {"author":"Sandro Doro","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0/","sourceUrl":"https://www.flickr.com/photos/12205365@N05/2567855136"},
-    wordCount: 952,
   },
   {
     slug: "recursive-resolver-internals",
@@ -1311,15 +1191,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 897,
   },
   {
-    slug: "vector-database-indexes",
-    title: "How Vector Indexes Actually Find Neighbors",
-    date: "2026-06-21",
-    tags: ["ai","storage","tools"],
-    excerpt: "HNSW graphs, inverted file lists, and product quantization are three answers to one question: how do you avoid comparing a query against every vector you own?",
-    coverImage: "/images/blog/vector-database-indexes.jpg",
-    wordCount: 964,
-  },
-  {
     slug: "linux-network-namespaces",
     title: "Building a Network Lab Inside One Linux Box",
     date: "2026-06-22",
@@ -1327,15 +1198,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "Network namespaces and veth pairs give you real interfaces, real routing tables, and real packet captures on a single machine, with no extra hardware to buy.",
     coverImage: "/images/blog/linux-network-namespaces.jpg",
     wordCount: 983,
-  },
-  {
-    slug: "network-boot-chain-pxe",
-    title: "The Network Boot Chain, One Hop At A Time",
-    date: "2026-06-24",
-    tags: ["servers","networking","automation","homelab"],
-    excerpt: "Network boot is a relay race between DHCP, a tiny file transfer, and a real bootloader. Knowing which leg you are on turns most PXE failures into five minute fixes.",
-    coverImage: "/images/blog/network-boot-chain-pxe.jpg",
-    wordCount: 939,
   },
   {
     slug: "constrained-decoding-structured-output",
@@ -1356,15 +1218,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 1027,
   },
   {
-    slug: "threat-modeling-small-networks",
-    title: "Threat Modeling a Network You Actually Own",
-    date: "2026-06-27",
-    tags: ["security","networking","cybersecurity"],
-    excerpt: "A threat model is four honest questions asked in order. Running one against your own network is the cheapest security work available and it changes what you build next.",
-    coverImage: "/images/blog/threat-modeling-small-networks.jpg",
-    wordCount: 938,
-  },
-  {
     slug: "idempotence-and-config-drift",
     title: "Idempotence Is The Whole Point Of Config Management",
     date: "2026-06-28",
@@ -1372,7 +1225,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "If running your automation twice does something different from running it once, you do not have automation, you have a script with good marketing.",
     coverImage: "/images/blog/idempotence-and-config-drift.jpg",
     coverCredit: {"author":"Double--M","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/49879584@N00/4619270851"},
-    wordCount: 968,
+    wordCount: 1707,
   },
   {
     slug: "ceph-distributed-storage-intro",
@@ -1394,15 +1247,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 919,
   },
   {
-    slug: "model-serving-observability",
-    title: "Serving a Model Like It Is a Service",
-    date: "2026-07-01",
-    tags: ["ai","operations","monitoring"],
-    excerpt: "Queue depth, batch size, and time to first token are the three numbers that explain a slow inference endpoint. Treat it as an ordinary latency sensitive service.",
-    coverImage: "/images/blog/model-serving-observability.jpg",
-    wordCount: 1013,
-  },
-  {
     slug: "embedding-changes-and-reindexing",
     title: "Change The Embedding Model, Rebuild The Index",
     date: "2026-07-02",
@@ -1419,16 +1263,8 @@ export const postIndex: PostMeta[] = [
     tags: ["networking","operations","security"],
     excerpt: "QUIC moved the transport into userspace and encrypted almost all of it. That is good for users and genuinely disruptive to how we monitor and troubleshoot networks.",
     coverImage: "/images/blog/quic-http3-for-operators.jpg",
-    wordCount: 1088,
-  },
-  {
-    slug: "mtu-blackhole-troubleshooting",
-    title: "The Failure Where Small Packets Work and Big Ones Vanish",
-    date: "2026-07-22",
-    tags: ["networking","linux","operations"],
-    excerpt: "SSH connects then freezes. Pages load halfway. Ping is fine. This is almost always an MTU black hole, and here is how I find and fix one.",
-    coverImage: "/images/blog/mtu-blackhole-troubleshooting.jpg",
-    wordCount: 893,
+    coverCredit: {"author":"dvanzuijlekom","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/52365139@N05/9276064862"},
+    wordCount: 1431,
   },
   {
     slug: "evaluating-without-a-benchmark",
@@ -1479,15 +1315,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 1045,
   },
   {
-    slug: "certifications-versus-projects",
-    title: "Certifications Versus Projects: How I Split My Time",
-    date: "2026-07-31",
-    tags: ["career","learning"],
-    excerpt: "Certificates and projects prove different things to different audiences. Here is how I decide which one gets my next block of study time.",
-    coverImage: "/images/blog/certifications-versus-projects.jpg",
-    wordCount: 1087,
-  },
-  {
     slug: "caching-model-endpoint",
     title: "Putting A Cache In Front Of A Model Endpoint",
     date: "2026-08-01",
@@ -1496,15 +1323,6 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/caching-model-endpoint.jpg",
     coverCredit: {"author":"dfulmer","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/28376044@N00/4350629792"},
     wordCount: 985,
-  },
-  {
-    slug: "object-storage-on-premises",
-    title: "Object Storage On Premises and What S3 Compatibility Buys You",
-    date: "2026-08-02",
-    tags: ["storage","servers","homelab"],
-    excerpt: "Objects are not files, and treating them as such is where designs go wrong. What the API model gives you, how durability actually works, and when it is the wrong tool.",
-    coverImage: "/images/blog/object-storage-on-premises.jpg",
-    wordCount: 897,
   },
   {
     slug: "restore-drills-that-matter",
@@ -1552,7 +1370,7 @@ export const postIndex: PostMeta[] = [
     tags: ["servers","networking","automation"],
     excerpt: "Network boot is a four-way conversation between firmware, DHCP, TFTP, and a bootloader. Knowing which step failed turns a mystery into a two-minute fix.",
     coverImage: "/images/blog/pxe-network-boot.jpg",
-    wordCount: 1083,
+    wordCount: 1900,
   },
   {
     slug: "numa-aware-server-tuning",
@@ -1562,26 +1380,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A dual socket box is not one big computer. It is two computers that share an address space, and ignoring that costs you real throughput on memory heavy workloads.",
     coverImage: "/images/blog/numa-aware-server-tuning.jpg",
     coverCredit: {"author":"lancefisher","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/61398673@N00/2470856961"},
-    wordCount: 934,
-  },
-  {
-    slug: "quantization-memory-math",
-    title: "Quantization Math: Will The Model Fit The Card You Have",
-    date: "2026-08-09",
-    tags: ["ai","ml","hardware","homelab"],
-    excerpt: "Deciding whether a local model fits is arithmetic, not vibes. Here is the math I run on weights, KV cache, and overhead before I download anything.",
-    coverImage: "/images/blog/quantization-memory-math.jpg",
-    coverCredit: {"author":"Diego3336","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/31018257@N00/24722340467"},
-    wordCount: 978,
-  },
-  {
-    slug: "mtu-black-hole-troubleshooting",
-    title: "The MTU Black Hole: When The Handshake Works And Nothing Else Does",
-    date: "2026-08-10",
-    tags: ["networking","routing","operations"],
-    excerpt: "A connection that opens fine and then hangs on the first large transfer is almost always a path MTU problem. Here is how I isolate it in a few minutes.",
-    coverImage: "/images/blog/mtu-black-hole-troubleshooting.jpg",
-    wordCount: 1030,
+    wordCount: 1659,
   },
   {
     slug: "hnsw-index-real-costs",
@@ -1591,35 +1390,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Approximate nearest neighbor search feels like magic until you size the box. Here is where the memory goes, what the tuning knobs trade against each other, and when a flat scan wins.",
     coverImage: "/images/blog/hnsw-index-real-costs.jpg",
     coverCredit: {"author":"blakespot","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/35448539@N00/2378337709"},
-    wordCount: 901,
-  },
-  {
-    slug: "threat-modeling-services-you-run",
-    title: "Threat Modeling The Services You Actually Run",
-    date: "2026-08-12",
-    tags: ["security","cybersecurity","homelab"],
-    excerpt: "Threat modeling sounds like an enterprise ritual. Done on your own services it is a one page exercise that tells you which controls are worth your time.",
-    coverImage: "/images/blog/threat-modeling-services-you-run.jpg",
-    wordCount: 987,
-  },
-  {
-    slug: "pcie-lanes-and-bifurcation",
-    title: "PCIe Lanes And Bifurcation: The Slot Fits, The Card Is Slow",
-    date: "2026-08-13",
-    tags: ["hardware","servers","homelab"],
-    excerpt: "A physical x16 slot does not mean sixteen electrical lanes, and lanes are a finite budget set by your CPU. Here is how to read what you actually have.",
-    coverImage: "/images/blog/pcie-lanes-and-bifurcation.jpg",
-    coverCredit: {"author":"instaSHINOBI","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/21050065@N06/6114962032"},
-    wordCount: 922,
-  },
-  {
-    slug: "choosing-tcp-congestion-control",
-    title: "CUBIC, BBR, And Choosing Congestion Control On Purpose",
-    date: "2026-08-15",
-    tags: ["networking","linux","operations"],
-    excerpt: "Congestion control is the algorithm deciding how fast your server sends. Most people never touch it. Knowing what the choices assume tells you when the default is wrong.",
-    coverImage: "/images/blog/choosing-tcp-congestion-control.jpg",
-    wordCount: 941,
+    wordCount: 1409,
   },
   {
     slug: "prompt-injection-trust-boundaries",
@@ -1629,7 +1400,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Prompt injection is not a new class of bug. It is the oldest one: mixing untrusted input with instructions. What is new is that there is no escaping function to save you.",
     coverImage: "/images/blog/prompt-injection-trust-boundaries.jpg",
     coverCredit: {"author":"Jemimus","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/12967790@N00/2647290208"},
-    wordCount: 1070,
+    wordCount: 1652,
   },
   {
     slug: "fsync-and-what-saved-means",
@@ -1669,44 +1440,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 960,
   },
   {
-    slug: "running-llms-locally-hardware",
-    title: "What Running a Model Locally Asks of Your Hardware",
-    date: "2026-05-14",
-    tags: ["ai","hardware","homelab"],
-    excerpt: "Local inference is not a mystery box. It comes down to memory capacity, memory bandwidth, and compute, and one of those three is almost always your bottleneck.",
-    coverImage: "/images/blog/running-llms-locally-hardware.jpg",
-    wordCount: 907,
-  },
-  {
-    slug: "pcie-lanes-bandwidth-servers",
-    title: "PCIe Lanes Are the Budget Nobody Checks",
-    date: "2026-05-15",
-    tags: ["hardware","servers","homelab"],
-    excerpt: "Slots are physical, lanes are a budget, and the two do not always match. How to figure out what your cards actually negotiated and why it matters.",
-    coverImage: "/images/blog/pcie-lanes-bandwidth-servers.jpg",
-    coverCredit: {"author":"instaSHINOBI","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/21050065@N06/6114414289"},
-    wordCount: 826,
-  },
-  {
-    slug: "gpu-memory-math-inference",
-    title: "Doing the VRAM Math Before You Buy the Accelerator",
-    date: "2026-05-16",
-    tags: ["ai","hardware","ml"],
-    excerpt: "Weights are the part everyone budgets for. The KV cache is the part that blows the budget. Here is the arithmetic I do first.",
-    coverImage: "/images/blog/gpu-memory-math-inference.jpg",
-    wordCount: 810,
-  },
-  {
-    slug: "jumbo-frames-path-mtu",
-    title: "Jumbo Frames, MTU, and the Ping That Tells the Truth",
-    date: "2026-05-17",
-    tags: ["networking","storage","operations"],
-    excerpt: "Jumbo frames are easy to enable and easy to half enable. One device left at the default turns a performance tweak into an intermittent outage.",
-    coverImage: "/images/blog/jumbo-frames-path-mtu.jpg",
-    coverCredit: {"author":"sampsyo","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/48889110751@N01/8271860"},
-    wordCount: 825,
-  },
-  {
     slug: "training-vs-inference-profiles",
     title: "Training and Inference Want Different Machines",
     date: "2026-05-18",
@@ -1714,25 +1447,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The same model has two completely different infrastructure profiles depending on whether you are teaching it or asking it. Memory, interconnect, and storage all change.",
     coverImage: "/images/blog/training-vs-inference-profiles.jpg",
     coverCredit: {"author":"NeoSpire","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/39131599@N06/3594831417"},
-    wordCount: 876,
-  },
-  {
-    slug: "threat-modeling-a-project",
-    title: "Threat Modeling Without a Whiteboard Full of Buzzwords",
-    date: "2026-05-19",
-    tags: ["security","cybersecurity","learning"],
-    excerpt: "Threat modeling is four questions and a drawing. Here is the lightweight version I run on my own projects before I write the first line of code.",
-    coverImage: "/images/blog/threat-modeling-a-project.jpg",
-    wordCount: 835,
-  },
-  {
-    slug: "vector-databases-infrastructure",
-    title: "Vector Databases From the Operations Side",
-    date: "2026-05-20",
-    tags: ["ai","storage","ml"],
-    excerpt: "Forget the marketing. A vector database is an index with a memory footprint, a build cost, and a recall dial you have to measure yourself.",
-    coverImage: "/images/blog/vector-databases-infrastructure.jpg",
-    wordCount: 876,
+    wordCount: 1260,
   },
   {
     slug: "linux-page-cache-and-io",
@@ -1744,32 +1459,13 @@ export const postIndex: PostMeta[] = [
     wordCount: 910,
   },
   {
-    slug: "rag-pipeline-plumbing",
-    title: "RAG Is Mostly Plumbing",
-    date: "2026-05-22",
-    tags: ["ai","ml","tools"],
-    excerpt: "Retrieval augmented generation is a search system with a language model on the end. Almost every failure I have debugged was in the search half.",
-    coverImage: "/images/blog/rag-pipeline-plumbing.jpg",
-    coverCredit: {"author":"Me in ME","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/12357841@N02/49215624152"},
-    wordCount: 844,
-  },
-  {
     slug: "systemd-units-that-behave",
     title: "Writing systemd Units That Behave",
     date: "2026-05-23",
     tags: ["linux","operations","automation"],
     excerpt: "A service that restarts forever, starts before the network, and runs as root is three unit file directives away from being fixed.",
     coverImage: "/images/blog/systemd-units-that-behave.jpg",
-    wordCount: 861,
-  },
-  {
-    slug: "llm-application-attack-surface",
-    title: "The Attack Surface of an LLM Application",
-    date: "2026-05-24",
-    tags: ["security","ai","cybersecurity"],
-    excerpt: "The model is not a security boundary. Once you accept that, the rest of securing an LLM app looks like ordinary input validation and least privilege.",
-    coverImage: "/images/blog/llm-application-attack-surface.jpg",
-    wordCount: 939,
+    wordCount: 1381,
   },
   {
     slug: "load-balancing-l4-vs-l7",
@@ -1788,7 +1484,8 @@ export const postIndex: PostMeta[] = [
     tags: ["learning","networking","tools"],
     excerpt: "RFCs are the actual source of truth for how the internet works, and they are far more readable than their reputation suggests once you know the structure.",
     coverImage: "/images/blog/how-to-read-an-rfc.jpg",
-    wordCount: 945,
+    coverCredit: {"author":"Jordanhill School D&T Dept","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/42042252@N02/5039920492"},
+    wordCount: 1421,
   },
   {
     slug: "smart-data-drive-failure",
@@ -1798,16 +1495,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "SMART will not reliably tell you a drive is about to die, but a few specific attributes are worth acting on immediately. Here is which ones and why.",
     coverImage: "/images/blog/smart-data-drive-failure.jpg",
     wordCount: 995,
-  },
-  {
-    slug: "ai-in-network-operations",
-    title: "Where I Think AI Actually Helps Network Operations",
-    date: "2026-05-28",
-    tags: ["ai","networking","operations","monitoring"],
-    excerpt: "My opinion, clearly labeled: language models are useful in the ops loop as a reading and drafting tool, and a bad idea anywhere near an unsupervised config push.",
-    coverImage: "/images/blog/ai-in-network-operations.jpg",
-    coverCredit: {"author":"USDAgov","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://www.flickr.com/photos/41284017@N08/49392119033"},
-    wordCount: 1034,
   },
   {
     slug: "live-migration-internals",
@@ -1826,7 +1513,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "The question I get asked most by other students: should I study for a certification or build something? They teach different things, and the order matters.",
     coverImage: "/images/blog/certifications-vs-projects.jpg",
     coverCredit: {"author":"wyldvision","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/126767021@N06/15882717591"},
-    wordCount: 1220,
+    wordCount: 1801,
   },
   {
     slug: "local-llm-memory-math",
@@ -1835,7 +1522,8 @@ export const postIndex: PostMeta[] = [
     tags: ["ai","ml","hardware","homelab"],
     excerpt: "Parameter count is only the first term. Here is the arithmetic I run before I try to load a model on hardware I already have.",
     coverImage: "/images/blog/local-llm-memory-math.jpg",
-    wordCount: 888,
+    coverCredit: {"author":"Diego3336","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/31018257@N00/24722340467"},
+    wordCount: 1581,
   },
   {
     slug: "gpu-basics-for-infrastructure",
@@ -1848,34 +1536,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 813,
   },
   {
-    slug: "numa-and-cpu-pinning",
-    title: "NUMA, CPU Pinning, And Why Your VM Feels Slow",
-    date: "2026-06-02",
-    tags: ["virtualization","servers","hardware"],
-    excerpt: "A guest with plenty of allocated cores and RAM can still crawl if it straddles memory nodes. How NUMA works and when pinning is worth the loss of flexibility.",
-    coverImage: "/images/blog/numa-and-cpu-pinning.jpg",
-    wordCount: 754,
-  },
-  {
-    slug: "inference-vs-training-workloads",
-    title: "Inference And Training Are Not The Same Workload",
-    date: "2026-06-03",
-    tags: ["ai","ml","servers"],
-    excerpt: "Training and inference stress completely different parts of a machine. Confusing the two is how people buy the wrong hardware and size the wrong network.",
-    coverImage: "/images/blog/inference-vs-training-workloads.jpg",
-    wordCount: 832,
-  },
-  {
-    slug: "mtu-jumbo-frames-pmtud",
-    title: "MTU, Jumbo Frames, And The Black Hole In The Middle",
-    date: "2026-06-04",
-    tags: ["networking","switching","operations"],
-    excerpt: "Small packets work, large ones vanish, and ping says everything is fine. That is an MTU problem, and here is how to find and fix it.",
-    coverImage: "/images/blog/mtu-jumbo-frames-pmtud.jpg",
-    coverCredit: {"author":"@felixtriller","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/21480682@N03/2226679393"},
-    wordCount: 828,
-  },
-  {
     slug: "vector-databases-explained",
     title: "How Vector Databases Actually Work",
     date: "2026-06-05",
@@ -1883,7 +1543,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Embeddings, distance metrics, and approximate nearest neighbor indexes, explained without the hand waving. Plus the honest answer to whether you need a dedicated database.",
     coverImage: "/images/blog/vector-databases-explained.jpg",
     coverCredit: {"author":"Eric Fischer","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/24431382@N03/6276642489"},
-    wordCount: 915,
+    wordCount: 1480,
   },
   {
     slug: "storage-benchmarking-fio",
@@ -1896,44 +1556,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 752,
   },
   {
-    slug: "rag-chunking-and-evaluation",
-    title: "Chunking And Evaluation Decide Your RAG Quality",
-    date: "2026-06-07",
-    tags: ["ai","ml","tools"],
-    excerpt: "Retrieval augmented generation is mostly parsing, chunking, and evaluation. The model is the easy part, and it is not where your quality problems come from.",
-    coverImage: "/images/blog/rag-chunking-and-evaluation.jpg",
-    wordCount: 864,
-  },
-  {
-    slug: "cgroups-v2-resource-limits",
-    title: "Cgroups v2: Actually Limiting What A Service Can Take",
-    date: "2026-06-08",
-    tags: ["linux","virtualization","operations"],
-    excerpt: "One runaway process should not take down a host. Cgroups v2 gives you CPU, memory, and IO limits, and systemd exposes all of it in three lines.",
-    coverImage: "/images/blog/cgroups-v2-resource-limits.jpg",
-    coverCredit: {"author":"barnoid","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/50359335@N00/151529520"},
-    wordCount: 821,
-  },
-  {
-    slug: "llm-app-attack-surface",
-    title: "The Attack Surface Of An LLM Application",
-    date: "2026-06-09",
-    tags: ["security","ai","cybersecurity"],
-    excerpt: "A model that reads untrusted text and can call tools is a confused deputy waiting to happen. Where the real trust boundaries are and how I would defend them.",
-    coverImage: "/images/blog/llm-app-attack-surface.jpg",
-    coverCredit: {"author":"Visual Content","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/143601516@N03/29723649810"},
-    wordCount: 850,
-  },
-  {
-    slug: "systemd-units-homelab",
-    title: "Stop Running Services In A Terminal Multiplexer",
-    date: "2026-06-10",
-    tags: ["linux","operations","homelab"],
-    excerpt: "Stop running services in a terminal multiplexer. A good unit file gives you restarts, logging, dependency ordering, and sandboxing for about fifteen lines of config.",
-    coverImage: "/images/blog/systemd-units-homelab.jpg",
-    wordCount: 760,
-  },
-  {
     slug: "serving-models-batching-kv-cache",
     title: "Serving A Model: Batching, KV Cache, And Concurrency",
     date: "2026-06-11",
@@ -1941,7 +1563,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "One request at a time is not a benchmark. What actually determines how many people a single inference host can serve, and which metrics tell you the truth.",
     coverImage: "/images/blog/serving-models-batching-kv-cache.jpg",
     coverCredit: {"author":"letavua","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/42845968@N06/5171684817"},
-    wordCount: 822,
+    wordCount: 1430,
   },
   {
     slug: "object-storage-on-prem",
@@ -1950,17 +1572,7 @@ export const postIndex: PostMeta[] = [
     tags: ["storage","servers","homelab"],
     excerpt: "Object storage is not a file share with a different name. What the API buys you, how durability really works, and where it is the wrong tool.",
     coverImage: "/images/blog/object-storage-on-prem.jpg",
-    wordCount: 907,
-  },
-  {
-    slug: "ai-in-security-operations",
-    title: "How I Would Evaluate AI In Security Operations",
-    date: "2026-06-13",
-    tags: ["ai","security","monitoring"],
-    excerpt: "My own take on where language models plausibly help a security team, where I would not let them near, and the questions I would ask any vendor making claims.",
-    coverImage: "/images/blog/ai-in-security-operations.jpg",
-    coverCredit: {"author":"ResoluteSupportMedia","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/29456680@N06/4902364107"},
-    wordCount: 987,
+    wordCount: 1577,
   },
   {
     slug: "internal-pki-private-ca",
@@ -1971,25 +1583,6 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/internal-pki-private-ca.jpg",
     coverCredit: {"author":"Ashley Basil","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/28438417@N08/31172894922"},
     wordCount: 964,
-  },
-  {
-    slug: "reading-rfcs-practically",
-    title: "How To Actually Read An RFC",
-    date: "2026-06-15",
-    tags: ["learning","networking","career"],
-    excerpt: "Specifications are the primary source for everything on the network. They are also long and dry. Here is the reading order and the vocabulary that make them usable.",
-    coverImage: "/images/blog/reading-rfcs-practically.jpg",
-    coverCredit: {"author":"Jordanhill School D&T Dept","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/42042252@N02/5039920492"},
-    wordCount: 871,
-  },
-  {
-    slug: "threat-modeling-your-own-builds",
-    title: "Threat Modeling Something You Built Yourself",
-    date: "2026-06-16",
-    tags: ["security","homelab","learning"],
-    excerpt: "Four questions, one honest diagram, and a written record. Threat modeling your own projects is the highest value security work you can do for free.",
-    coverImage: "/images/blog/threat-modeling-your-own-builds.jpg",
-    wordCount: 841,
   },
   {
     slug: "building-hyperscale",
@@ -2102,7 +1695,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "I have run both Proxmox and VMware ESXi in my lab. Here is how they compare for real workloads.",
     coverImage: "/images/blog/proxmox-vs-esxi.jpg",
     coverCredit: {"author":"Proxmox Server Solutions GmbH","license":"Public domain","licenseUrl":"https://creativecommons.org/publicdomain/mark/1.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Proxmox-VE-8-0-Cluster-Summary.png"},
-    wordCount: 1899,
+    wordCount: 2737,
   },
   {
     slug: "ecc-ram-explained",
@@ -2261,16 +1854,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 1845,
   },
   {
-    slug: "network-monitoring-tools",
-    title: "Network Monitoring Tools I Actually Use",
-    date: "2025-12-08",
-    updated: "2026-08-25",
-    tags: ["networking","tools","homelab"],
-    excerpt: "A practical look at the monitoring tools running in my homelab and what each one tells me about my network.",
-    coverImage: "/images/blog/network-monitoring-tools.jpg",
-    wordCount: 1588,
-  },
-  {
     slug: "thunderbolt-networking",
     title: "Thunderbolt Networking: Apple's Approach to High-Speed Connectivity",
     date: "2025-12-05",
@@ -2299,7 +1882,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Advanced iDRAC features that most people overlook, from virtual console to automated alerts and firmware management.",
     coverImage: "/images/blog/dell-idrac-tips-tricks.jpg",
     coverCredit: {"author":"Dell Inc.","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Dell_PowerEdge_R710_servers.jpg"},
-    wordCount: 1552,
+    wordCount: 2671,
   },
   {
     slug: "mac-pro-storage-expansion",
@@ -2458,7 +2041,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "How I document my network infrastructure in a way that is useful during outages, not just for show.",
     coverImage: "/images/blog/network-documentation-best-practices.jpg",
     coverCredit: {"author":"R. Vogl, University of Münster (Germany), Center for Information Processing","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:WWU-network-structure-v1.png"},
-    wordCount: 1525,
+    wordCount: 2092,
   },
   {
     slug: "power-consumption-monitoring",
@@ -2469,15 +2052,6 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/power-consumption-monitoring.jpg",
     coverCredit: {"author":"Robert.Harker","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:UPS_PDU_Open.jpg"},
     wordCount: 1580,
-  },
-  {
-    slug: "incident-response-methodology",
-    title: "Incident Response: What to Do When Things Break",
-    date: "2025-10-01",
-    tags: ["cybersecurity","networking","servers"],
-    excerpt: "My approach to handling infrastructure incidents, from detection through resolution and documentation.",
-    coverImage: "/images/blog/incident-response-methodology.jpg",
-    wordCount: 1730,
   },
   {
     slug: "mac-pro-gpu-compute",
@@ -2551,16 +2125,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 1555,
   },
   {
-    slug: "kvm-proxmox-esxi-comparison",
-    title: "KVM vs Proxmox vs ESXi: Choosing a Hypervisor",
-    date: "2026-02-23",
-    tags: ["virtualization","servers","homelab"],
-    excerpt: "Three serious hypervisors, three different trade-offs. Here is how to think about choosing between KVM, Proxmox, and VMware ESXi for your environment.",
-    coverImage: "/images/blog/kvm-proxmox-esxi-comparison.jpg",
-    coverCredit: {"author":"Primalmotion","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Diagramme_ArchiHyperviseur.png"},
-    wordCount: 1678,
-  },
-  {
     slug: "nvme-vs-sata-enterprise-storage",
     title: "NVMe vs SATA in Enterprise Storage",
     date: "2026-02-24",
@@ -2579,7 +2143,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "A step-by-step look at building a monitoring system that gives you real visibility into your network's health, traffic, and events.",
     coverImage: "/images/blog/network-monitoring-system-build.jpg",
     coverCredit: {"author":"Masdestructive","license":"CC BY-SA 3.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/3.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Batelco_Network_Operations_Centre_(NOC).JPG"},
-    wordCount: 1760,
+    wordCount: 2566,
   },
   {
     slug: "redundant-power-supplies",
@@ -2662,16 +2226,6 @@ export const postIndex: PostMeta[] = [
     excerpt: "SD-WAN on FortiGate allows you to use multiple WAN links intelligently, routing traffic based on performance metrics rather than static routing tables.",
     coverImage: "/images/blog/fortigate-sdwan-configuration.jpg",
     wordCount: 1591,
-  },
-  {
-    slug: "network-security-zones-dmz",
-    title: "Network Security Zones and DMZ Design",
-    date: "2026-03-06",
-    tags: ["security","networking","firewall"],
-    excerpt: "A well-designed zone architecture is the foundation of network security. Here is how to think about segmenting your network into security zones.",
-    coverImage: "/images/blog/network-security-zones-dmz.jpg",
-    coverCredit: {"author":"Dgondim","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Traditional_Single_Layer_DMZ_with_two_flanking_firewalls.png"},
-    wordCount: 1623,
   },
   {
     slug: "power-over-ethernet-poe",
@@ -2767,16 +2321,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 1696,
   },
   {
-    slug: "runbooks-infrastructure-teams",
-    title: "Writing Runbooks That Actually Get Used",
-    date: "2026-03-16",
-    tags: ["operations","documentation","servers"],
-    excerpt: "A runbook that no one reads is just a box-checking exercise. Here is how to write documentation that engineers actually reach for during incidents.",
-    coverImage: "/images/blog/runbooks-infrastructure-teams.jpg",
-    coverCredit: {"author":"Steve Jurvetson from Los Altos, USA","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apollo_17_Lunar_Surface_Checklist_(4705455692).jpg"},
-    wordCount: 1454,
-  },
-  {
     slug: "ospf-routing-protocol",
     title: "OSPF: The Interior Routing Protocol That Powers Enterprise Networks",
     date: "2026-03-17",
@@ -2785,15 +2329,6 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/ospf-routing-protocol.jpg",
     coverCredit: {"author":"EidenNor","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0","sourceUrl":"https://commons.wikimedia.org/wiki/File:OSPF-NSSA_figur.drawio.png"},
     wordCount: 1677,
-  },
-  {
-    slug: "idrac-advanced-features",
-    title: "Dell iDRAC Advanced Features You Should Be Using",
-    date: "2026-03-18",
-    tags: ["dell","servers","hardware"],
-    excerpt: "Most people use iDRAC for basic console access and power control. Here are the features that make it genuinely powerful for server management.",
-    coverImage: "/images/blog/idrac-advanced-features.jpg",
-    wordCount: 1611,
   },
   {
     slug: "syslog-centralized-logging",
@@ -2914,7 +2449,7 @@ export const postIndex: PostMeta[] = [
     excerpt: "Security is most effective when it is built into network architecture from the start, not added on top afterward. Here are the foundational principles.",
     coverImage: "/images/blog/secure-network-design-principles.jpg",
     coverCredit: {"author":"istolethetv","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/44124401641@N01/8746385789"},
-    wordCount: 1580,
+    wordCount: 2534,
   },
   {
     slug: "scaling-homelab-lessons",
@@ -2959,26 +2494,6 @@ export const postIndex: PostMeta[] = [
     wordCount: 1438,
   },
   {
-    slug: "network-engineer-role-2026",
-    title: "The Network Engineer Role in 2026: What Has Changed",
-    date: "2026-04-04",
-    tags: ["networking","career","technology"],
-    excerpt: "Networking has changed significantly in the last few years. Here is what the role looks like now and what skills matter most going forward.",
-    coverImage: "/images/blog/network-engineer-role-2026.jpg",
-    coverCredit: {"author":"cogdogblog","license":"CC0","licenseUrl":"https://creativecommons.org/publicdomain/zero/1.0/","sourceUrl":"https://www.flickr.com/photos/37996646802@N01/537486932"},
-    wordCount: 1332,
-  },
-  {
-    slug: "penetration-testing-basics",
-    title: "Penetration Testing Basics: A Defensive Perspective",
-    date: "2026-04-05",
-    tags: ["cybersecurity","security","networking"],
-    excerpt: "Understanding how penetration testing works helps defenders build better controls. Here is what pen testers actually do and what it means for defense.",
-    coverImage: "/images/blog/penetration-testing-basics.jpg",
-    coverCredit: {"author":"gaudiramone","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/31112252@N00/14096358745"},
-    wordCount: 1487,
-  },
-  {
     slug: "tls-modern-encryption",
     title: "TLS 1.3 and Modern Encryption: What Changed and Why It Matters",
     date: "2026-04-06",
@@ -2988,27 +2503,6 @@ export const postIndex: PostMeta[] = [
     coverImage: "/images/blog/tls-modern-encryption.jpg",
     coverCredit: {"author":"Halub3","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/w/index.php?curid=113054252"},
     wordCount: 1607,
-  },
-  {
-    slug: "server-consolidation-virtualization",
-    title: "Server Consolidation with Virtualization: A Practical Guide",
-    date: "2026-04-07",
-    tags: ["virtualization","servers","operations"],
-    excerpt: "Server consolidation using virtualization reduces hardware costs, power consumption, and management complexity. Here is how to plan and execute it.",
-    coverImage: "/images/blog/server-consolidation-virtualization.jpg",
-    coverCredit: {"author":"e53","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://www.flickr.com/photos/12149418@N00/2367945536"},
-    wordCount: 1654,
-  },
-  {
-    slug: "personal-brand-in-tech",
-    title: "Building a Personal Brand in Tech: What Actually Works",
-    date: "2026-04-08",
-    updated: "2026-08-25",
-    tags: ["career","community","technology"],
-    excerpt: "A genuine personal brand opens doors that credentials alone do not. Here is how to build one that reflects real expertise rather than manufactured content.",
-    coverImage: "/images/blog/personal-brand-in-tech.jpg",
-    coverCredit: {"author":"jurvetson","license":"CC BY 2.0","licenseUrl":"https://creativecommons.org/licenses/by/2.0/","sourceUrl":"https://www.flickr.com/photos/44124348109@N01/18279271865"},
-    wordCount: 1468,
   },
   {
     slug: "teaching-youth-to-code",
@@ -3078,10 +2572,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 316;
+export const POST_COUNT = 262;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "three hundred and sixteen";
+export const POST_COUNT_SPELLED = "two hundred and sixty two";
 
 /**
  * Unique external reference URLs in the article text.
@@ -3090,10 +2584,10 @@ export const POST_COUNT_SPELLED = "three hundred and sixteen";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1209;
+export const CITATION_COUNT = 1175;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 159;
+export const ATTRIBUTION_URL_COUNT = 140;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1368;
+export const CHECKED_URL_COUNT = 1315;

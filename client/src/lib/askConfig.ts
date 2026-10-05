@@ -21,7 +21,7 @@ export const ANSWERED: Answered[] = [
   },
   {
     question: "Should I chase certifications or build projects?",
-    href: "/blog/certifications-versus-projects",
+    href: "/blog/certifications-vs-projects",
     answer: "Certifications versus projects, and how I split my time",
   },
   {

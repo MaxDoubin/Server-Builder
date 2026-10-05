@@ -2771,7 +2771,7 @@ ${path.hops.map((hop) => `      <li>${esc(hop.name)}, MTU ${hop.mtu}${hop.blocks
     correct one and costs nothing, or to clamp the MSS on the tunnel
     interface, which fixes TCP and does nothing for UDP.
   </p>
-  ${backLinks([["/practice", "All practice material"], ["/blog/mtu-mismatch-troubleshooting", "The MTU bug that only breaks big transfers"], ["/capture", "Packet captures"]])}
+  ${backLinks([["/practice", "All practice material"], ["/blog/mtu-and-jumbo-frames", "MTU black holes and jumbo frames"], ["/capture", "Packet captures"]])}
 </main>`,
   });
 

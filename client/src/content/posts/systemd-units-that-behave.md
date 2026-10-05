@@ -17,16 +17,21 @@ A unit file is a contract with the init system: here is how to start me, here is
 
 If a dependent service intermittently fails at boot but works fine when you start it by hand, this directive is where to look.
 
-The other high value directive is the restart policy. `Restart=always` on a service with a config error gives you an infinite crash loop that fills the journal. Use `on-failure`, and set rate limits so systemd gives up and tells you instead of hammering forever.
+The other high value directive is the restart policy. `Restart=always` on a service with a config error gives you an infinite crash loop that fills the journal. Use `on-failure`, which restarts after a non-zero exit, a fatal signal or a timeout but leaves a clean exit alone, so it also suits jobs that legitimately finish. Then set rate limits so systemd gives up and tells you instead of hammering forever. The limits are what actually end the loop: a config error exits non-zero, so `on-failure` alone would retry it just as tirelessly, and a service that crashes because a dependency is down would keep hammering that dependency.
 
 ```ini
-Restart=on-failure
-RestartSec=5s
+[Unit]
 StartLimitIntervalSec=300
 StartLimitBurst=5
+
+[Service]
+Restart=on-failure
+RestartSec=5s
 ```
 
 That means: five failures in five minutes and the unit goes into a failed state and stays there. Which is what you want, because a service flapping silently is worse than a service that is clearly down.
+
+Mind the section. The `StartLimit` settings belong in `[Unit]`. Put `StartLimitIntervalSec=` under `[Service]` and systemd logs "Unknown key name 'StartLimitIntervalSec' in section 'Service', ignoring", keeps the default 10 second window, and a 5 second `RestartSec` never trips it. The unit loops forever, which is exactly what the limit was there to prevent.
 
 ## Ordering versus requirement
 
@@ -50,6 +55,8 @@ Wants=network-online.target
 After=network-online.target
 Requires=postgresql.service
 After=postgresql.service
+StartLimitIntervalSec=300
+StartLimitBurst=5
 
 [Service]
 Type=exec
@@ -62,8 +69,6 @@ ExecReload=/bin/kill -HUP $MAINPID
 
 Restart=on-failure
 RestartSec=5s
-StartLimitIntervalSec=300
-StartLimitBurst=5
 TimeoutStopSec=30
 
 # Sandboxing: cheap, effective, and almost nobody sets it
@@ -77,6 +82,7 @@ ProtectKernelModules=yes
 ProtectControlGroups=yes
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 RestrictNamespaces=yes
+RestrictSUIDSGID=yes
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 SystemCallFilter=@system-service
@@ -91,7 +97,18 @@ TasksMax=256
 WantedBy=multi-user.target
 ```
 
-Those sandboxing directives are free security. `ProtectSystem=strict` makes the entire filesystem read only except what you list in `ReadWritePaths=`. `SystemCallFilter=@system-service` blocks whole categories of syscalls a normal daemon never needs.
+Create the account it runs as first: a system user with no login shell and no home directory, because nothing should run as root just because that was easier. Then load, enable and watch it:
+
+```bash
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin metrics
+sudo systemctl daemon-reload
+sudo systemctl enable --now metrics-collector
+journalctl -u metrics-collector -f
+```
+
+If the service is a script, turn off output buffering (`python -u`, or the equivalent for your runtime) so log lines reach the journal as they are written instead of in delayed bursts.
+
+Those sandboxing directives are free security. `ProtectSystem=strict` makes the entire filesystem read only except the API filesystems (`/dev`, `/proc` and `/sys`, which the `PrivateDevices=` and `Protect` lines cover) and whatever you list in `ReadWritePaths=`. `SystemCallFilter=@system-service` blocks whole categories of syscalls a normal daemon never needs.
 
 Grade your work:
 
@@ -99,7 +116,7 @@ Grade your work:
 systemd-analyze security metrics-collector.service
 ```
 
-It scores each unit and lists exactly which directive would improve it. It is the fastest security win available on a Linux box.
+It scores each unit and lists exactly which directive would improve it. It is the fastest security win available on a Linux box. Do not chase a perfect score; going from wide open to reasonably locked down is usually ten minutes of work. When you retrofit an existing service, add the directives one at a time and restart between each, because `SystemCallFilter=` in particular will break runtimes that need something you did not anticipate.
 
 ## Timers instead of cron
 
@@ -122,7 +139,28 @@ WantedBy=timers.target
 
 `Persistent=true` runs the job on next boot if the machine was off at the scheduled time. `RandomizedDelaySec` spreads load so twenty machines do not all hit the backup target at 03:30:00 exactly.
 
+A timer starts the service with the same name unless you set `Unit=`, so this one needs a `backup-verify.service`, written as a oneshot:
+
+```ini
+# /etc/systemd/system/backup-verify.service
+[Unit]
+Description=Verify backup integrity
+
+[Service]
+Type=oneshot
+User=backup
+ExecStart=/usr/local/bin/verify-backups.sh
+```
+
+It has no `[Install]` section because nothing but the timer should start it. Enable the timer, not the service: `sudo systemctl enable --now backup-verify.timer`.
+
 Check schedules with `systemctl list-timers --all`, and test a calendar expression before trusting it with `systemd-analyze calendar "*-*-* 03:30:00"`.
+
+## When a unit misbehaves
+
+`systemctl status name` shows the current state and the last few log lines. For more, `journalctl -u name -b` limits the journal to this boot, `-p err` filters by priority, and `--since "10 min ago"` narrows the window.
+
+Two failure patterns cover most of what I hit. When a unit refuses to start and the logs say nothing useful, comment out the sandboxing directives and add them back one by one; that is the answer perhaps four times out of five. When a unit starts fine by hand but fails at boot, it is an ordering problem: something it needs, usually the network or a mounted filesystem, was not ready yet. Either the unit is missing the right `After=` and `Requires=`, or the dependency reports itself started too early (the `Type=` problem above). Fix the dependency declarations rather than adding a sleep to the start script.
 
 ## The habits that stick
 
@@ -130,7 +168,7 @@ Put a `Documentation=` line pointing at the runbook in every unit. Future you, a
 
 Use drop ins rather than editing packaged units: `systemctl edit foo.service` creates an override that survives package upgrades.
 
-Always run `systemd-analyze verify` on a new unit before enabling it, and always `systemctl daemon-reload` after editing. Half of "my change did nothing" is a forgotten reload.
+Always run `systemd-analyze verify` on a new unit before enabling it, and in CI if you keep unit files in a repository. It catches syntax and dependency mistakes, including a setting in the wrong section like the misplaced `StartLimitIntervalSec=` above. And always `systemctl daemon-reload` after editing. Half of "my change did nothing" is a forgotten reload.
 
 There are ten sets of unit files to work through at [it started before the
 thing it needs](/units), including the one where `systemctl start` returns zero
@@ -143,3 +181,5 @@ and the binary does not exist.
 - [systemd.unit(5), dependencies and ordering](https://man.archlinux.org/man/systemd.unit.5)
 - [systemd.timer(5)](https://man.archlinux.org/man/systemd.timer.5)
 - [systemd.resource-control(5)](https://man.archlinux.org/man/systemd.resource-control.5)
+- [systemd-analyze(1)](https://man.archlinux.org/man/systemd-analyze.1)
+- [Control Group v2 kernel documentation](https://docs.kernel.org/admin-guide/cgroup-v2.html)

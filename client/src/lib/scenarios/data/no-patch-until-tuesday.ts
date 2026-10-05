@@ -17,7 +17,7 @@ export const noPatchUntilTuesday: Scenario = {
   reading: [
     { label: "Hardening a Linux server", href: "/blog/linux-server-hardening" },
     { label: "Network access control with 802.1X", href: "/blog/network-access-control-8021x" },
-    { label: "Incident response as a method", href: "/blog/incident-response-methodology" },
+    { label: "Writing the postmortem afterward", href: "/blog/postmortems-team-of-one" },
   ],
   scenes: [
     {

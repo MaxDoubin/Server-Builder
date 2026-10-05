@@ -46,13 +46,13 @@ A power supply sized exactly to the average can trip its overcurrent protection 
 
 The practical response is headroom. Sizing a supply meaningfully above the calculated steady state draw is not waste, it is tolerance for the transient behavior of the load. It also keeps the supply operating in the load band where its efficiency curve is best, which is generally somewhere in the middle of its range rather than near its top.
 
-The same reasoning applies to uninterruptible supplies. A unit sized to the average draw may not ride through a spike, and the volt amp rating on the label is not the same as the watt rating you actually need to compare against. Size on watts, and leave room.
+The same reasoning applies to uninterruptible supplies. A unit sized to the average draw may not ride through a spike, and the volt amp rating on the label is not the same as the watt rating you actually need to compare against. Size on watts, leave room, and test the unit with the real load attached.
 
 ## Airflow Is a Delta-T Problem
 
 Cooling is where intuition fails most often, because people think about temperature when they should be thinking about heat removal rate.
 
-Essentially all the electrical power a computer consumes leaves as heat. A machine drawing 1,000 watts is a 1,000 watt heater. There is no meaningful fraction that becomes something else.
+Essentially all the electrical power a computer consumes leaves as heat. A machine drawing 1,000 watts is a 1,000 watt heater. There is no meaningful fraction that becomes something else. Room cooling is rated in BTU per hour, and the conversion is watts times 3.412, so that machine puts about 3,400 BTU per hour into the room, most of what a small window air conditioner is rated to remove. That is the number to bring to the conversation about whether the room stays habitable.
 
 Removing that heat with air requires moving enough air, and the relationship is:
 
@@ -73,9 +73,37 @@ for w in (500, 1000, 2000):
 
 Run that and the scale becomes clear quickly. This is why dense compute rooms are designed around airflow paths rather than around raw cooling capacity, and why hot and cold separation matters so much. Air that has already picked up heat and gets pulled back into an intake is the same as having no cooling at all, no matter how much capacity the room's cooling equipment has on paper.
 
-Two failure modes worth naming. Recirculation, where exhaust finds a path back to intakes through gaps, over the top of equipment, or around the sides. And a room where the cooling equipment is adequate but the air simply does not travel where it needs to, which is a distribution problem that adding capacity does not solve.
+Two failure modes worth naming. Recirculation, where exhaust finds a path back to intakes through gaps, over the top of equipment, or around the sides. And a room where the cooling equipment is adequate but the air simply does not travel where it needs to, which is a distribution problem that adding capacity does not solve. In a small room, separating intake from exhaust, even crudely, is usually the highest value cooling change available: point the exhaust at a doorway, not at a wall two inches away.
 
 Intake temperature is also what matters, not room temperature. A general room reading tells you very little. The number that predicts component life is the temperature of the air actually entering each machine.
+
+Inside the chassis the same rule applies card by card, and accelerators come in three thermal designs that are easy to mix up.
+
+**Blower style** cards pull air in and push it out through the back of the chassis. They are loud, and they work in dense, poorly ventilated arrangements because each card evicts its own heat.
+
+**Open fan** cards, the common consumer design, dump hot air into the case and rely on chassis airflow to remove it. Put two next to each other in a case with mediocre airflow and the upper one breathes the lower one's exhaust. It throttles, and the symptom looks like inconsistent performance rather than an obvious heat problem.
+
+**Passive** cards, built for server chassis, have no fans at all and depend entirely on high static pressure airflow from the chassis fans. In a quiet desktop case one overheats quickly under load and throttles or shuts itself down.
+
+## Power Capping Is a Legitimate Tool
+
+Accelerators are usually configured to chase maximum clocks, and the last few percent of performance costs a disproportionate share of the power budget. Capping board power is not a hack. It is a normal operational control, and it is how you make a machine fit a circuit.
+
+```bash
+nvidia-smi -q -d POWER                # current, default, min and max limits
+nvidia-smi -q -d TEMPERATURE
+sudo nvidia-smi -pl 250               # set the board power limit, in watts
+nvidia-smi --query-gpu=power.draw,temperature.gpu,clocks.sm \
+           --format=csv --loop-ms=1000
+```
+
+The limit does not survive a reboot, so apply it from a service at boot rather than once by hand. I would rather run a capped accelerator that never trips a breaker or thermally throttles than an uncapped one that does both under load. Capped and steady beats uncapped and inconsistent, and capacity is much easier to reason about when the ceiling is a number you chose.
+
+Set fan curves for sustained load rather than bursts, and graph power, temperature, and clocks continuously alongside utilization. Thermal throttling looks exactly like a software performance regression if you are not graphing the temperature.
+
+## Living with the Noise
+
+The thing nobody puts in the build post: this equipment is loud. Server chassis fans and blower cards under sustained load are not background noise, they are conversation stopping, and in a shared living space that is a real constraint that belongs in the plan rather than in the list of regrets. The mitigations that work are physical: put the machine somewhere with a door, run the noisy workload on a schedule when nobody is nearby, and prefer larger, slower fans over small fast ones where the chassis allows it. Undervolting and power capping help too, because fan speed follows heat.
 
 ## Designing for the Limit You Actually Have
 
@@ -87,7 +115,7 @@ Convert that budget to heat, because it is the same number, and ask honestly whe
 
 Then decide what to run. This ordering feels backwards to most people, who choose hardware and then discover the constraints. Doing it in the correct order occasionally means buying less capable hardware, and it always means the hardware you buy actually runs at full capability instead of throttling.
 
-Measure rather than assume. A power meter at the plug and a couple of temperature probes cost very little and replace a lot of estimation. Nameplate ratings are worst case figures, and the only way to know your real number is to measure your own workload.
+Measure rather than assume. A power meter at the plug and a couple of temperature probes cost very little and replace a lot of estimation. Nameplate ratings are worst case figures, and a power supply's wattage is what it can deliver, not what it draws: at full output, conversion losses mean it pulls more than its rating from the wall. The only way to know your real number is to measure your own workload.
 
 Every serious infrastructure environment is constrained by power and cooling long before it is constrained by rack space or by compute budget, which is why data center capacity is sold in kilowatts per rack. The formulas do not change between a closet and a facility, only the units in front of them.
 
@@ -95,6 +123,11 @@ Every serious infrastructure environment is constrained by power and cooling lon
 
 - [Thermal design power](https://en.wikipedia.org/wiki/Thermal_design_power)
 - [IEC 60320 appliance couplers](https://en.wikipedia.org/wiki/IEC_60320)
-- [Power usage effectiveness](https://en.wikipedia.org/wiki/Power_usage_effectiveness)
 - [NFPA 70: National Electrical Code](https://www.nfpa.org/codes-and-standards/nfpa-70-standard-development/70)
+- [National Electrical Code](https://en.wikipedia.org/wiki/National_Electrical_Code)
+- [British thermal unit](https://en.wikipedia.org/wiki/British_thermal_unit)
+- [nvidia-smi documentation](https://docs.nvidia.com/deploy/nvidia-smi/index.html)
+- [Uninterruptible power supply](https://en.wikipedia.org/wiki/Uninterruptible_power_supply)
+- [Power usage effectiveness](https://en.wikipedia.org/wiki/Power_usage_effectiveness)
+- [Data center](https://en.wikipedia.org/wiki/Data_center)
 - [Uptime Institute tier standard](https://uptimeinstitute.com/tiers)

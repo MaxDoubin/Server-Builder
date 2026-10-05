@@ -43,12 +43,8 @@ export const readingPaths: ReadingPath[] = [
       "For the reader starting from zero: what the field is, how to learn it, and a first server worth being proud of.",
     steps: [
       {
-        slug: "network-engineer-role-2026",
-        why: "Start with the destination. What the role actually involves now, so you know what you are aiming at.",
-      },
-      {
-        slug: "certifications-versus-projects",
-        why: "Knowing the destination, decide how to travel. The split between studying and building shapes every hour after this one.",
+        slug: "certifications-vs-projects",
+        why: "Start by deciding how to learn. The split between studying for certifications and building things shapes every hour after this one.",
       },
       {
         slug: "homelab-network-evolution",
@@ -71,7 +67,7 @@ export const readingPaths: ReadingPath[] = [
         why: "Write down what you built while you still remember why. In six months the diagram is the only colleague you have.",
       },
       {
-        slug: "network-monitoring-tools",
+        slug: "network-monitoring-system-build",
         why: "Documented, now watched. Learn that something broke from a graph, not by discovering it mid-demo.",
       },
       {
@@ -119,7 +115,7 @@ export const readingPaths: ReadingPath[] = [
         why: "Routing gets the packet there. DNS is what turned a name into a destination in the first place.",
       },
       {
-        slug: "mtu-jumbo-frames-pmtud",
+        slug: "mtu-and-jumbo-frames",
         why: "Your first properly confusing failure: everything works until the packets get big.",
       },
       {
@@ -135,16 +131,12 @@ export const readingPaths: ReadingPath[] = [
       "From deciding what you are defending, out to the perimeter, back down to the host, and on to the logs.",
     steps: [
       {
-        slug: "threat-modeling-small-networks",
+        slug: "threat-modeling-homelab",
         why: "Before any control, decide what you are protecting and from whom. Skip this and the rest is shopping.",
       },
       {
         slug: "secure-network-design-principles",
-        why: "The short list of design rules that make your later mistakes survivable.",
-      },
-      {
-        slug: "network-security-zones-dmz",
-        why: "Turning those principles into real zones, and deciding what is allowed to talk to what.",
+        why: "The short list of design rules that make your later mistakes survivable, and how they become zones that decide what is allowed to talk to what.",
       },
       {
         slug: "firewall-policy-design",
@@ -171,8 +163,8 @@ export const readingPaths: ReadingPath[] = [
         why: "Controls without eyes are guesses. Start reading what the firewall has been telling you all along.",
       },
       {
-        slug: "incident-response-methodology",
-        why: "And a plan for the day the logs show something real.",
+        slug: "postmortems-team-of-one",
+        why: "And for the day the logs show something real: how to work out what happened and write it down so it does not happen twice.",
       },
     ],
   },
@@ -180,10 +172,10 @@ export const readingPaths: ReadingPath[] = [
     id: "security-operations",
     title: "Security operations and detection",
     blurb:
-      "Security fundamentals builds the walls. This path watches them: logging, analysis, practice, response, and the write-up.",
+      "Security fundamentals builds the walls. This path watches them: logging, analysis, practice, and the write-up.",
     steps: [
       {
-        slug: "threat-modeling-services-you-run",
+        slug: "threat-modeling-homelab",
         why: "You can only detect what you understand. Inventory what is actually running and how each piece would be abused.",
       },
       {
@@ -196,31 +188,19 @@ export const readingPaths: ReadingPath[] = [
       },
       {
         slug: "log-analysis-methodology",
-        why: "A pile of centralised logs is not visibility. A method for asking them questions, and for noticing what is missing.",
+        why: "A pile of centralized logs is not visibility. A method for asking them questions, and for noticing what is missing.",
       },
       {
         slug: "troubleshooting-packet-captures",
         why: "When the logs disagree or go quiet, the wire is ground truth. Captures settle arguments that log lines start.",
       },
       {
-        slug: "penetration-testing-basics",
-        why: "Now the other side's playbook, read defensively. Knowing the standard moves tells you which of your logs would light up.",
-      },
-      {
         slug: "soc-home-lab-build",
         why: "Put attack and detection in one lab and practice both. Mistakes are free here; the production version of this lesson is not.",
       },
       {
-        slug: "incident-response-methodology",
-        why: "Sooner or later an alert is real. What happens next should be a rehearsed sequence, not a thing you improvise on the day.",
-      },
-      {
         slug: "postmortems-team-of-one",
-        why: "After the incident, the write-up. Done honestly, it is the only part of a bad day that appreciates in value.",
-      },
-      {
-        slug: "ai-in-security-operations",
-        why: "Close with the pitch from every vendor call: what models can genuinely do in a SOC, judged with the skepticism you have earned.",
+        why: "Sooner or later an alert is real. When it is, the write-up afterward is the only part of a bad day that appreciates in value.",
       },
     ],
   },
@@ -228,23 +208,19 @@ export const readingPaths: ReadingPath[] = [
     id: "ai-meets-infrastructure",
     title: "AI meets infrastructure",
     blurb:
-      "Accelerators, memory arithmetic, serving, retrieval, and an honest look at where any of it helps.",
+      "Accelerators, memory arithmetic, serving, retrieval, and where the security problems are.",
     steps: [
       {
         slug: "gpu-basics-for-infrastructure",
         why: "Accelerators from the rack's point of view: what the card is, what it needs, what it costs you.",
       },
       {
-        slug: "inference-vs-training-workloads",
+        slug: "training-vs-inference-profiles",
         why: "The most useful distinction in the whole subject. These two workloads want different machines.",
       },
       {
         slug: "local-llm-memory-math",
-        why: "The arithmetic that decides whether a model fits, done before you spend anything.",
-      },
-      {
-        slug: "model-quantization-by-the-bytes",
-        why: "The main lever for making it fit, explained in bytes rather than in adjectives.",
+        why: "The arithmetic that decides whether a model fits, quantization included, done before you spend anything.",
       },
       {
         slug: "serving-models-batching-kv-cache",
@@ -255,16 +231,12 @@ export const readingPaths: ReadingPath[] = [
         why: "Most applications need retrieval next, so it is worth knowing what a vector index really does.",
       },
       {
-        slug: "rag-chunking-and-evaluation",
+        slug: "rag-pipeline-engineering",
         why: "Retrieval quality is decided by chunking and evaluation, not by which model you picked.",
       },
       {
-        slug: "llm-app-attack-surface",
+        slug: "prompt-injection-trust-boundaries",
         why: "Everything above adds inputs and outputs. This is where they can be abused.",
-      },
-      {
-        slug: "ai-in-network-operations",
-        why: "Close with the honest version: which parts of this actually help operations, and which do not.",
       },
     ],
   },
@@ -272,7 +244,7 @@ export const readingPaths: ReadingPath[] = [
     id: "homelab-and-operations",
     title: "Homelab and operations",
     blurb:
-      "Buy it, rack it, power it, virtualise it, then run it the way you would run something that matters.",
+      "Buy it, rack it, power it, virtualize it, then run it the way you would run something that matters.",
     steps: [
       {
         slug: "why-homelabs-matter",
@@ -295,7 +267,7 @@ export const readingPaths: ReadingPath[] = [
         why: "Pick a hypervisor for reasons you can say out loud.",
       },
       {
-        slug: "systemd-units-homelab",
+        slug: "systemd-units-that-behave",
         why: "Then stop starting services by hand. Units are most of the difference between a lab and a demo.",
       },
       {
@@ -311,7 +283,7 @@ export const readingPaths: ReadingPath[] = [
         why: "And the part everyone skips: proving the backup restores.",
       },
       {
-        slug: "runbooks-infrastructure-teams",
+        slug: "network-documentation-best-practices",
         why: "Finally, write down what you did, so the version of you at 3am can just follow it.",
       },
     ],
@@ -366,24 +338,20 @@ export const readingPaths: ReadingPath[] = [
   },
   {
     id: "virtualisation-and-containers",
-    title: "Virtualisation and containers",
+    title: "Virtualization and containers",
     blurb:
-      "From consolidation economics to hypervisors, passthrough, containers, and the cluster that survives a dead host.",
+      "From choosing a hypervisor to passthrough, containers, and the cluster that survives a dead host.",
     steps: [
       {
-        slug: "server-consolidation-virtualization",
-        why: "Start with why any of this exists. Most servers are idle most of the time, and consolidation is how that stops being waste.",
-      },
-      {
-        slug: "kvm-proxmox-esxi-comparison",
-        why: "With the goal clear, pick the platform. The serious options differ in licensing, tooling and philosophy more than in speed.",
+        slug: "proxmox-vs-esxi",
+        why: "Start by picking the platform. The serious options differ in licensing, tooling and philosophy more than in speed.",
       },
       {
         slug: "virtualization-networking-concepts",
         why: "The first thing every new VM needs is a way out. Bridges, virtual switches, and how a guest reaches the physical wire.",
       },
       {
-        slug: "numa-and-cpu-pinning",
+        slug: "numa-aware-server-tuning",
         why: "Once guests multiply, the first performance mystery arrives. Memory locality is why a big VM can be slower than a small one.",
       },
       {
@@ -391,7 +359,7 @@ export const readingPaths: ReadingPath[] = [
         why: "When virtual devices cost too much, hand the guest real ones. SR-IOV and passthrough are the escape hatch from that overhead.",
       },
       {
-        slug: "cgroups-v2-resource-limits",
+        slug: "cgroups-resource-limits",
         why: "Now the other isolation model. Containers are not small VMs; they are processes with limits, and cgroups are the limits half.",
       },
       {

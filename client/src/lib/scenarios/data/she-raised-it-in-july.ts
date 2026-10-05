@@ -16,7 +16,7 @@ export const sheRaisedItInJuly: Scenario = {
   start: "the-ticket",
   reading: [
     { label: "Prometheus and what to actually measure", href: "/blog/prometheus-server-monitoring" },
-    { label: "Incident response as a method", href: "/blog/incident-response-methodology" },
+    { label: "Writing the postmortem afterward", href: "/blog/postmortems-team-of-one" },
     { label: "Read replicas and replication lag", href: "/blog/read-replicas-replication-lag" },
   ],
   scenes: [
