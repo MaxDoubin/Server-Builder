@@ -1,7 +1,7 @@
 /**
  * The challenges index.
  *
- * Each one is a small artefact and a question with an exact answer. There is
+ * Each one is a small artifact and a question with an exact answer. There is
  * no server, no timer and no scoreboard: the flag is checked against a hash
  * in the page, which stops ctrl-F and stops nothing else, and the method is
  * one click away whenever a reader decides they would rather learn it than
@@ -29,7 +29,7 @@ export function CinematicChallenges() {
   useSEO({
     title: "Challenges | Max Doubin",
     description:
-      "Small capture-the-flag puzzles with the artefact printed in the page: a log to count, a header to decode, a file whose extension lies. Every answer is exact, and every method is written out.",
+      "Small capture-the-flag puzzles with the artifact printed in the page: a log to count, a header to decode, a file whose extension lies. Every answer is exact, and every method is written out.",
     canonical: `${SITE_URL}/challenges`,
   });
 
@@ -67,7 +67,7 @@ export function CinematicChallenges() {
               Challenges.
             </h1>
             <p className="mt-6 max-w-2xl font-mono-tight text-sm leading-relaxed text-[hsl(var(--brand-bone-dim))]">
-              An artefact and a question. The log, the hex dump, the scan output and the digests are
+              An artifact and a question. The log, the hex dump, the scan output and the digests are
               all printed here in full, because the exercise is reading them, not downloading them.
               Every answer is one exact string.
             </p>

@@ -3,7 +3,7 @@
 
 DNS translates domain names to IP addresses. If an attacker can manipulate DNS responses, they can redirect traffic to malicious servers, intercept credentials, or block legitimate services entirely. DNS cache poisoning, DNS hijacking, and DNS-based data exfiltration are all real attack categories.
 
-The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The response to the 2008 Kaminsky attack, described in RFC 5452, was source port randomisation, which pushes the attacker's guessing space from 16 bits to roughly 32. That is a mitigation, not a fix. DNSSEC is the fix.
+The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The response to the 2008 Kaminsky attack, described in RFC 5452, was source port randomization, which pushes the attacker's guessing space from 16 bits to roughly 32. That is a mitigation, not a fix. DNSSEC is the fix.
 
 ## DNSSEC
 
@@ -41,7 +41,7 @@ Read that flag carefully, because this is the detail beginners get wrong. The AD
 
 ## What DNSSEC Does Not Do
 
-DNSSEC provides origin authentication and integrity. It does not provide confidentiality. Every query and every signed answer is still sent in the clear, so an observer learns exactly what you are looking up. It does not tell you whether the address you got back belongs to a good actor, only that the zone's owner really published it: a phishing domain can be perfectly signed. It does nothing about denial of service against the name servers themselves, and it makes DNS a slightly better amplification reflector, since DNSKEY responses are large. That is part of why RFC 8482 replaced sprawling ANY responses with a minimal synthesised answer, and why authoritative servers run response rate limiting.
+DNSSEC provides origin authentication and integrity. It does not provide confidentiality. Every query and every signed answer is still sent in the clear, so an observer learns exactly what you are looking up. It does not tell you whether the address you got back belongs to a good actor, only that the zone's owner really published it: a phishing domain can be perfectly signed. It does nothing about denial of service against the name servers themselves, and it makes DNS a slightly better amplification reflector, since DNSKEY responses are large. That is part of why RFC 8482 replaced sprawling ANY responses with a minimal synthesized answer, and why authoritative servers run response rate limiting.
 
 It also stops at the resolver unless you extend it. The last hop from your machine to the resolver is unprotected by DNSSEC, which is what the next section is for.
 

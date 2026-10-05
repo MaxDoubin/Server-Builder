@@ -102,7 +102,7 @@ loses the ones that only exist to make them work.
 ## Checking it instead of remembering it
 
 The fix for each rack was a device. The fix for the class is a check, and the
-useful realisation was that most of these can be stated as an invariant over
+useful realization was that most of these can be stated as an invariant over
 the device list rather than as knowledge about hardware.
 
 Three now run on every build of this site:

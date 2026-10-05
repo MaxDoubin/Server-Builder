@@ -247,7 +247,7 @@ export const noPatchUntilTuesday: Scenario = {
         "You also destroyed the only copy of the shell, which would have dated the compromise and identified the tooling.",
       ],
       lesson: [
-        "Deleting an artefact on a compromised host removes evidence and rarely removes access, because persistence is the part attackers put effort into.",
+        "Deleting an artifact on a compromised host removes evidence and rarely removes access, because persistence is the part attackers put effort into.",
       ],
     },
     {

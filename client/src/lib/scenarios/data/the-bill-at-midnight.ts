@@ -250,7 +250,7 @@ export const theBillAtMidnight: Scenario = {
       title: "Everything but the certificate",
       grade: "bad",
       body: [
-        "Tokens rotated, workflow fixed, mining stopped. The code signing certificate is kept, because revoking it means re-signing every released artefact and re-establishing the CA relationship, which is a fortnight of work.",
+        "Tokens rotated, workflow fixed, mining stopped. The code signing certificate is kept, because revoking it means re-signing every released artifact and re-establishing the CA relationship, which is a fortnight of work.",
         "Four months later a signed installer appears on a download mirror that is not yours. It validates.",
       ],
       lesson: [

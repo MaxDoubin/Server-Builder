@@ -31,7 +31,7 @@ for and is wrong here for a specific reason.
 
 ## Why least squares was the wrong tool
 
-Least squares minimises the sum of squared residuals, which means every
+Least squares minimizes the sum of squared residuals, which means every
 point pulls the line and a distant point pulls hardest:
 
 > least squares estimates for regression models are highly sensitive to
@@ -195,4 +195,4 @@ instrument is one you wrote and the subject is one you did not.
 - [The Theil-Sen estimator, its construction and its 29.3% breakdown point](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
 - [Pranab K. Sen, Estimates of the Regression Coefficient Based on Kendall's Tau, JASA 63(324), 1968](https://www.jstor.org/stable/2285891)
 - [KHR_mesh_quantization, which permits the normalized short positions this model ships with](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md)
-- [EXT_meshopt_compression, which compresses the already quantised data](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
+- [EXT_meshopt_compression, which compresses the already quantized data](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)

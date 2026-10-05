@@ -26,7 +26,7 @@ A certificate is an X.509 structure, profiled for the internet by RFC 5280. The 
 - **Key Usage** and **Extended Key Usage**: what the key is permitted to do, `serverAuth` being the one a TLS server needs.
 - **Serial number** and the CA's **signature** over everything above.
 
-The name check is the part people get wrong. Hostname verification is done against the SAN extension, not the Common Name. Common Name as an identity field was deprecated by RFC 6125 and browsers stopped honouring it years ago. A certificate with `CN=nas.lab.internal` and no SAN entry will be rejected by every modern client with an error that says nothing about SANs.
+The name check is the part people get wrong. Hostname verification is done against the SAN extension, not the Common Name. Common Name as an identity field was deprecated by RFC 6125 and browsers stopped honoring it years ago. A certificate with `CN=nas.lab.internal` and no SAN entry will be rejected by every modern client with an error that says nothing about SANs.
 
 ## The handshake, briefly
 

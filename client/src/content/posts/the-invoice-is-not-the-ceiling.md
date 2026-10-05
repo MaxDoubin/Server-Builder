@@ -83,7 +83,7 @@ For a 1460 byte MSS, a 60ms round trip, and p of 0.0002:
 That is the whole answer to "we went from 100 Mbps to 1 Gbps and nothing
 changed". Both circuits were above the ceiling. The ceiling was made of loss.
 
-The square root is the part worth internalising. Cutting loss by a factor of
+The square root is the part worth internalizing. Cutting loss by a factor of
 one hundred multiplies throughput by ten, not by one hundred. It is also why
 loss rates that look negligible are not: going from 0.05 per cent to 0.005 per
 cent is worth a factor of three, and nobody would ever describe either figure

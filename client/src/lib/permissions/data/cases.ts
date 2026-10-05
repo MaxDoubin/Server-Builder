@@ -48,7 +48,7 @@ const QUEUE = file(
 export const CASES: Case[] = [
   {
     slug: "owner-loses-to-group",
-    title: "The deploy user cannot write its own artefact",
+    title: "The deploy user cannot write its own artifact",
     brief:
       "A release tarball owned by the deploy user, in a directory the whole deploy group can write, and the deploy user is in the deploy group. The post-install step rewrites the tarball in place and gets permission denied.",
     command: "truncate -s 0 /srv/deploy/release.tar.gz",

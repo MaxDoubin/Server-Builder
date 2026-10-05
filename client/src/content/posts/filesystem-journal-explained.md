@@ -71,7 +71,7 @@ the window you lose in a crash. That is a real dial, not a micro optimization.
 without flushing has handed bytes to the page cache and nothing more. A journal
 guarantees the filesystem structure is sane after a crash. It does not promise
 your file has content. If durability matters, the application has to ask for
-it, and the write path underneath has to honour the flush rather than lying
+it, and the write path underneath has to honor the flush rather than lying
 about it.
 
 **It does not detect corruption.** ext4 checksums its metadata and its journal,

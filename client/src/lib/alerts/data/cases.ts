@@ -325,7 +325,7 @@ export const CASES: Case[] = [
     why:
       "Four consecutive active evaluations is four minutes, and the fifth resets the clock, so the alert reaches four minutes of pending over and over and never reaches five. The metric is over the threshold eighty percent of the time and the alert has never once fired. This is the failure mode of a for clause set just above the flap period, and the graph looks so obviously alarming that people assume the alerting is broken rather than the rule.",
     fix:
-      "Match the rule to the shape of the data. If the dips are real and brief, smooth the input with avg_over_time or max_over_time so that a single evaluation is not the unit of truth. If the dips are measurement artefacts, keep_firing_for after a shorter for gets you a stable alert. Either way, a for clause longer than the flap period is the one option that produces silence.",
+      "Match the rule to the shape of the data. If the dips are real and brief, smooth the input with avg_over_time or max_over_time so that a single evaluation is not the unit of truth. If the dips are measurement artifacts, keep_firing_for after a shorter for gets you a stable alert. Either way, a for clause longer than the flap period is the one option that produces silence.",
     breaks: "a for clause longer than the noise makes an alert more reliable",
   },
 ];

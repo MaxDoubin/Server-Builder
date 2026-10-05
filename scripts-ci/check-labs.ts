@@ -496,7 +496,7 @@ if (sizeOf(file("\u00e9")) !== 2) problems.push(`sizeOf counted characters rathe
   /*
     Output redirection is a feature, not a refusal, which I had backwards
     until this failed: `>` and `>>` are parsed into a redirect the commands
-    honour. Asserted so a change that quietly drops it is noticed.
+    honor. Asserted so a change that quietly drops it is noticed.
   */
   const redirected = parse("echo hi > /tmp/note");
   if ("error" in redirected) problems.push(`parse rejected output redirection: ${redirected.error}`);

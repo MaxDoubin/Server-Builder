@@ -185,7 +185,7 @@ export function chassisLayout(device: RackDevice): ChassisLayout | null {
     Real dense panels break their jacks into groups, a wider gap every six,
     eight or twelve, so a technician can count to port 37 at arm's length
     without reading a single label. `groupsOf` carries that from the
-    datasheet and the elevation already honours it; the 3D face has to as
+    datasheet and the elevation already honors it; the 3D face has to as
     well or the two drawings disagree about where port 13 is.
   */
   const group = device.groupsOf ?? 0;

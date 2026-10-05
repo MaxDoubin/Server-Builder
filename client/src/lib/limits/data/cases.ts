@@ -385,7 +385,7 @@ export const CASES: Case[] = [
       " scope and the host's arrangements for its own units and its own logins are not. The" +
       " request for 1048576 is exactly fs.nr_open and therefore not clamped: a request for one" +
       " more would be. This is why the same image behaves differently under different runtimes and" +
-      " different orchestrators, and why 'it works on my machine' survives containerisation.",
+      " different orchestrators, and why 'it works on my machine' survives containerization.",
     fix:
       "set it explicitly per workload rather than relying on the runtime's default, which differs" +
       " between runtimes and between versions of the same one. And read /proc/1/limits inside the" +

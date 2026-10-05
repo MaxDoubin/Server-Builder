@@ -216,7 +216,7 @@ export const badgeTailgate: Scenario = {
       title: "He was probably a contractor",
       grade: "catastrophic",
       body: [
-        "The device stayed behind the patch panel for four months, tunnelling out over 4G after somebody eventually reused the ethernet port for a printer.",
+        "The device stayed behind the patch panel for four months, tunneling out over 4G after somebody eventually reused the ethernet port for a printer.",
         "It was found during a cabling refresh in January, by an electrician, who mentioned it in passing.",
       ],
       lesson: [

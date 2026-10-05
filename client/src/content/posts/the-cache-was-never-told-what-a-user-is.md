@@ -179,7 +179,7 @@ which is where nobody looks.
 
 ## A blind spot in how I was checking answers
 
-Worth writing down because it generalises past this page.
+Worth writing down because it generalizes past this page.
 
 Each case offers four options and asks which request receives somebody else's
 data. Three requests plus "none of them" is four possible answers, so the four

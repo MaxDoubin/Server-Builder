@@ -170,7 +170,7 @@ observations, the clock is not the whole story: something in that list is
 broken for its own reasons, and treating the set as a measurement will give
 you a confident wrong answer.
 
-That third case is the one worth internalising. "No offset explains this" is
+That third case is the one worth internalizing. "No offset explains this" is
 information, and it is the thing a person diagnosing by feel will never
 notice, because a person diagnosing by feel is looking for a story that fits
 most of the evidence.

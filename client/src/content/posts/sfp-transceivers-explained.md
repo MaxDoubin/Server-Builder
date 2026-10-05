@@ -17,7 +17,7 @@ A transceiver is a small computer in its own right. It contains the laser or the
 
 Two more you will meet. **SFP28** is the same physical cage as SFP+ running a single 25 Gbps lane, and it is the building block that QSFP28 breaks out into. **QSFP+** is the 40 Gbps generation, four lanes of 10 Gbps, which breaks out to 4x10 Gbps the same way.
 
-The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighboring port numbers, so check the platform's documentation before buying the cable.
+The pattern is worth internalizing: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighboring port numbers, so check the platform's documentation before buying the cable.
 
 ## Reading the part number
 
@@ -94,7 +94,7 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
 
 **Transmit and receive swapped on a duplex patch.** LC pairs can be inserted either way round, and one end's transmit must land on the other end's receive. The symptom is both sides reporting healthy transmit power and no receive power at all. Reverse the pair at one end only.
 
-**A DAC that is fine electrically and rejected administratively.** The link stays down and the log complains about an unsupported or unauthorised module. This is the EEPROM check, not the cable. Either use a module coded for the platform, or enable the unsupported-transceiver setting where the vendor provides one.
+**A DAC that is fine electrically and rejected administratively.** The link stays down and the log complains about an unsupported or unauthorized module. This is the EEPROM check, not the cable. Either use a module coded for the platform, or enable the unsupported-transceiver setting where the vendor provides one.
 
 **Dirty connectors that pass a link test and fail under load.** Contamination raises attenuation enough to push receive power toward the sensitivity limit. The link comes up, light traffic works, and a sustained transfer produces CRC errors. Compare the current receive power against what the same link reported when it was new.
 

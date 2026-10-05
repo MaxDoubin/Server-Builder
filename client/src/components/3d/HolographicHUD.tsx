@@ -63,7 +63,7 @@ export function HolographicHUD({ visible = true }: { visible?: boolean }) {
   const warningAlerts = raised.filter((alert) => alert.severity === "warning").length;
 
   /*
-    Guard the number, not the formatted string. facilityMetrics initialises
+    Guard the number, not the formatted string. facilityMetrics initializes
     uptime to 0 and (0).toFixed(2) is the truthy string "0.00", so a fallback
     applied after the formatting could never run, and this panel read
     UPTIME 0.00% while the strip above it read 99.9%.

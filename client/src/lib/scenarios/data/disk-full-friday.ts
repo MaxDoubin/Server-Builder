@@ -25,7 +25,7 @@ export const diskFullFriday: Scenario = {
   ],
   start: "first-look",
   reading: [
-    { label: "Centralised logging, and the rotation that has to happen anyway", href: "/blog/syslog-centralized-logging" },
+    { label: "Centralized logging, and the rotation that has to happen anyway", href: "/blog/syslog-centralized-logging" },
     { label: "Disk I/O troubleshooting on Linux", href: "/blog/linux-disk-io-troubleshooting" },
   ],
   scenes: [

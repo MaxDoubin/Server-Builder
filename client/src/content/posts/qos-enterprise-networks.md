@@ -11,7 +11,7 @@ The main use cases: ensuring voice (VoIP) stays clear even when the network is b
 
 QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behavior through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
 
-QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honour your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
+QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honor your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
 
 ## The QoS model
 

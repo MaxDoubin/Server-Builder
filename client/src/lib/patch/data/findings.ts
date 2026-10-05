@@ -46,7 +46,7 @@ export const FINDINGS: Finding[] = [
     id: "ADV-2026-0388",
     product: "Vellum Hypervisor 8",
     summary:
-      "Guest-to-host escape through the paravirtualised display driver. A compromised guest can execute code in the host kernel.",
+      "Guest-to-host escape through the paravirtualized display driver. A compromised guest can execute code in the host kernel.",
     cvss: 9.9,
     severity: "Critical",
     estate: [

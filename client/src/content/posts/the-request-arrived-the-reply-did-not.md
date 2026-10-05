@@ -126,7 +126,7 @@ VLAN 999, and there is none.
 It closes the other half of the problem at the same time. A host in the native
 VLAN can write its own 802.1Q tag, and because its switch adds nothing on the
 way out, that tag is the outermost one when the frame reaches the next switch,
-which reads it and honours it. That is VLAN hopping, and it needs the
+which reads it and honors it. That is VLAN hopping, and it needs the
 attacker's access VLAN to be the trunk's native VLAN. A native VLAN with no
 hosts in it has no attacker in it either.
 

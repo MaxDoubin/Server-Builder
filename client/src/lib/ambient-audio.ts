@@ -3,7 +3,7 @@
  *
  * A data hall is not silent and it is not musical: it is a low mains hum
  * under a wide band of fan noise. That is two detuned low oscillators and a
- * lowpassed noise buffer, which the Web Audio API can synthesise in a few
+ * lowpassed noise buffer, which the Web Audio API can synthesize in a few
  * lines and which costs nothing to ship.
  *
  * It is OFF by default and only ever starts from a real click. Browsers block

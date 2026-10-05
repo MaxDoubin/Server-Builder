@@ -435,7 +435,7 @@ for (let round = 0; round < ROUNDS; round += 1) {
     }
 
     /*
-      freshness(), characterised directly.
+      freshness(), characterized directly.
 
       Written because a blinding that stopped freshness() reading s-maxage
       passed everything. The reason is that its only caller uses it to ask
@@ -470,7 +470,7 @@ for (let round = 0; round < ROUNDS; round += 1) {
   }
 
   /*
-    keyOf(), characterised directly, because nothing else here can see it.
+    keyOf(), characterized directly, because nothing else here can see it.
 
     Written after a blinding that dropped the Vary-named headers from the key
     produced one complaint, and that complaint was about answer positions. The

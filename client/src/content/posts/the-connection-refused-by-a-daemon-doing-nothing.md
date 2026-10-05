@@ -150,7 +150,7 @@ reason:
 sshd[2411]: drop connection #33 from [198.51.100.24]:52310 on [10.0.4.9]:22 MaxStartups
 ```
 
-But that same function initialises a rate limiter for those messages:
+But that same function initializes a rate limiter for those messages:
 
 ```c
 log_ratelimit_init(&ratelimit_maxstartups, 4, 60, 20, 5*60);
@@ -219,7 +219,7 @@ sshd_config(5):
 > is none.
 
 `drop_connection()` checks `srclimit_penalty_check_allow()` before it consults
-`should_drop_connection()` at all, so a penalised source is refused whatever
+`should_drop_connection()` at all, so a penalized source is refused whatever
 MaxStartups says. If one address is holding your slots, that is the control
 that takes them back without spending anything on everybody else.
 

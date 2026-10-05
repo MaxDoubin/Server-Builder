@@ -3,9 +3,9 @@ import type { Challenge } from "../types";
 /**
  * The first six challenges.
  *
- * Every artefact is real: the encodings decode, the hex is a genuine file
+ * Every artifact is real: the encodings decode, the hex is a genuine file
  * header, the log arithmetic adds up, and the hash is a real NTLM digest of a
- * real password. A challenge whose artefact does not survive being worked on
+ * real password. A challenge whose artifact does not survive being worked on
  * with actual tools is a quiz wearing a costume.
  */
 
@@ -318,7 +318,7 @@ export const aHashWithAName: Challenge = {
   walkthrough: [
     "A is NTLM: 32 hex characters, MD4 of the UTF-16LE password, no salt, no iteration count, nowhere in the format to put either. 8846f7eaee8fb117ad06bdd830b7586c is the NTLM hash of the password 'password', which is why you may recognize it.",
     "B is bcrypt. The $2b$ prefix names it and the 12 is the cost factor, so the salt and the work factor are both carried in the digest.",
-    "C is a bare SHA-256, and this particular value is the digest of the empty string, which is worth memorising because it turns up constantly in logs where something hashed nothing by mistake.",
+    "C is a bare SHA-256, and this particular value is the digest of the empty string, which is worth memorizing because it turns up constantly in logs where something hashed nothing by mistake.",
     "D is sha512crypt, $6$, with an explicit rounds parameter.",
     "So the answer is NTLM. The reason it matters is not that MD4 is broken, though it is. It is that being unsalted means one rainbow table covers every Windows machine in the world, and being fast means a modern GPU tries billions of candidates a second. Both properties are the opposite of what a password hash needs, and neither is fixable without changing the algorithm.",
     "That is also why pass-the-hash works: the NTLM hash is password-equivalent for authentication, so cracking it is often unnecessary.",

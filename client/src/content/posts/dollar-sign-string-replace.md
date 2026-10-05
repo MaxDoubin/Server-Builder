@@ -139,7 +139,7 @@ nowhere for want of four lines of YAML.
 replacement contains anything you did not type yourself, use a function. The
 performance difference is nothing and the class of bug disappears.
 
-**Escaping is not sanitising.** An HTML escaper makes a value safe to put in
+**Escaping is not sanitizing.** An HTML escaper makes a value safe to put in
 HTML. It says nothing about the value being safe to put through a regex
 substitution on the way there, and here it actively created the hazard.
 

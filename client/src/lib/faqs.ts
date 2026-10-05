@@ -4,7 +4,7 @@
  *
  * Google requires the structured data to match what a reader sees, so the
  * answers are plain strings with no markup: the same string is rendered into
- * the paragraph, serialised into the JSON-LD, and escaped into the
+ * the paragraph, serialized into the JSON-LD, and escaped into the
  * prerendered document. Do not add links or emphasis inside an answer.
  *
  * This used to live inside the page component, which meant the schema

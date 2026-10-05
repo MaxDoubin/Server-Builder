@@ -103,7 +103,7 @@ export const LINK_GROUPS: ResourceGroup[] = [
       {
         name: "Nmap reference guide",
         url: "https://nmap.org/book/",
-        why: "The official reference and most of the Nmap Network Scanning book, online. It explains what each scan type puts on the wire, which matters more than memorising flags.",
+        why: "The official reference and most of the Nmap Network Scanning book, online. It explains what each scan type puts on the wire, which matters more than memorizing flags.",
         access: "Free",
       },
       {

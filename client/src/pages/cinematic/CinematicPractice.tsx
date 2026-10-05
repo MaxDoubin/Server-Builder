@@ -188,7 +188,7 @@ export function CinematicPractice() {
       eyebrow: "Find",
       title: "Capture the flag",
       blurb:
-        "An artefact and a question with one exact answer. A log to count, a header to decode, a file whose extension lies, a digest to name.",
+        "An artifact and a question with one exact answer. A log to count, a header to decode, a file whose extension lies, a digest to name.",
       reachFor: "you are training for a competition, or you like a puzzle with a definite end",
       stats: [
         `${CHALLENGES.length} ${pluralise(CHALLENGES.length, "challenge")}`,

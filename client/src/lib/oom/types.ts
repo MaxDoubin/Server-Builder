@@ -103,9 +103,9 @@ export interface Machine {
 /**
  * What ran out.
  *
- * A system OOM considers every task and normalises against RAM plus swap. A
+ * A system OOM considers every task and normalizes against RAM plus swap. A
  * cgroup OOM considers only tasks in that cgroup and its descendants, and
- * normalises against the cgroup's limit, which is usually far smaller and
+ * normalizes against the cgroup's limit, which is usually far smaller and
  * makes every adj in it worth far less.
  */
 export type Trigger = { kind: "system" } | { kind: "cgroup"; path: string };

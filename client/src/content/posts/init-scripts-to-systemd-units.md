@@ -32,7 +32,7 @@ RestartSec=5s
 WantedBy=multi-user.target
 ```
 
-No PID file, no daemonising, no logging setup. If your daemon has a
+No PID file, no daemonizing, no logging setup. If your daemon has a
 `--daemonize` flag, do not use it: systemd wants the process in the
 foreground so it can supervise it directly.
 
@@ -43,7 +43,7 @@ There are eleven, and five carry the weight.
 `.service` is a process. `.socket` is a listening socket systemd holds open
 and hands to a service when a connection arrives, which is how you bind port
 443 without the service ever having the capability to do it. `.target` is a
-grouping and a synchronisation point, and is what replaced runlevels:
+grouping and a synchronization point, and is what replaced runlevels:
 `multi-user.target` is roughly runlevel 3, `graphical.target` roughly
 runlevel 5. `.timer` replaces a crontab entry and logs like everything else.
 `.mount` and `.automount` are generated from `/etc/fstab`, which is why a bad
@@ -174,7 +174,7 @@ online still put them in the wrong section, where they are silently ignored.
 Delete the redirection from the init script. Anything the process writes to
 stdout or stderr is captured, tagged with the unit, the PID, the boot ID and a
 priority, and stored as structured records rather than lines of text. That
-changes what a query looks like. The classic centralised
+changes what a query looks like. The classic centralized
 [syslog](/blog/syslog-centralized-logging) pipeline still has a place, and
 journald can forward into it, but the local first stop is now a query.
 

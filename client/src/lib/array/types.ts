@@ -13,7 +13,7 @@
  * a measured rate, observed rates are considerably better, errors are not
  * independent, and a URE during a rebuild loses a stripe rather than the
  * array on any implementation written this century. A page that prints the
- * scary number without saying that is repeating a rumour with a decimal point
+ * scary number without saying that is repeating a rumor with a decimal point
  * in it.
  *
  * So both numbers are here, side by side, and the page argues about them.

@@ -330,7 +330,7 @@ export const ciscoEnterpriseRack: RackDefinition = {
       u: 1,
       vendor: "Cisco",
       model: "UCS C220 rack server",
-      role: "One rack unit, ten small form factor bays in a single row. The general purpose workhorse: virtualisation hosts, controllers, anything that needs cores rather than disks.",
+      role: "One rack unit, ten small form factor bays in a single row. The general purpose workhorse: virtualization hosts, controllers, anything that needs cores rather than disks.",
       family: "server",
       finish: "dark",
       bays: { count: 10, occupied: 8, label: "2.5 inch bays" },

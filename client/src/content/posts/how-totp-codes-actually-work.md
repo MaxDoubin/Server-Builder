@@ -104,7 +104,7 @@ A window of ten, which I have seen configured to stop support tickets from
 phones with bad clocks, means a code is valid for five minutes. Fix the clocks
 instead: run NTP on the server and let the phone sync from the network.
 
-The better fix for a persistently skewed device is resynchronisation. The
+The better fix for a persistently skewed device is resynchronization. The
 verifier records how far off that user's last successful code was and applies
 the offset next time, which is exactly how HOTP counter resync works.
 

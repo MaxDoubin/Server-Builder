@@ -1,13 +1,13 @@
 ## Two numbers that look like they cannot both be true
 
-A service has a p99 of 400 milliseconds. Its CPU utilisation graph, against
+A service has a p99 of 400 milliseconds. Its CPU utilization graph, against
 its own limit, sits at 30 percent all day. Somebody has already concluded the
 problem is not CPU, because the container is nowhere near its limit, and the
 investigation has moved on to the database.
 
 Both numbers are correct and the conclusion does not follow. The container
 spent most of that second stopped, on a node with idle cores, and no
-utilisation graph in existence can show you that.
+utilization graph in existence can show you that.
 
 The reason is one sentence from
 `Documentation/scheduler/sched-bwc.rst`: within each given period, a task
@@ -35,7 +35,7 @@ they spend four milliseconds of quota per millisecond of wall clock. The
 the group is then stopped until the boundary.
 
 The container runs for 25ms and is stopped for 75ms, ten times a second,
-forever. Average utilisation over that second is exactly 100 percent of the
+forever. Average utilization over that second is exactly 100 percent of the
 limit, which at least is honest. The version that is not honest is what
 happens when the work is intermittent.
 
@@ -49,7 +49,7 @@ which is gone in 12.5ms, and it is stopped for 87.5. Same again the next
 period. It finishes 12.5ms into the third. Work that eight threads should
 have done in 37.5 milliseconds took until 212.5.
 
-And the utilisation graph, over that second, reads 30 percent. Three hundred
+And the utilization graph, over that second, reads 30 percent. Three hundred
 milliseconds of CPU used out of a thousand available. It is the correct
 average and it is useless, because the quota is enforced per period and the
 period is one hundred milliseconds. Any averaging window longer than that,
@@ -68,7 +68,7 @@ throttled_usec 175000
 ```
 
 Two of ten periods, 175 milliseconds spent stopped. Alert on `nr_throttled`
-and stop alerting on utilisation.
+and stop alerting on utilization.
 
 ## The thread count is the multiplier, and the node decides it
 
@@ -107,7 +107,7 @@ people:
 10000 50000      # 10ms every 50ms
 ```
 
-Same fraction, same total CPU per second, same utilisation graph. With four
+Same fraction, same total CPU per second, same utilization graph. With four
 runnable threads, the first runs for 5ms and stops for 95, ten times a second.
 The second runs for 2.5ms and stops for 47.5, twenty times a second.
 
@@ -134,7 +134,7 @@ or near a multiple of it, is worth suspecting before you profile anything.
 of 2 CPUs sits at 100 percent of its quota permanently and is never throttled
 once, because two threads cannot spend two CPUs of quota in a 100 millisecond
 period however hard they try. It runs flat out to each boundary and the next
-period's quota arrives exactly when it needs it. An alert on utilisation fires
+period's quota arrives exactly when it needs it. An alert on utilization fires
 here and there is nothing at all to fix.
 
 **Something fewer threads always fixes.** Take one request needing 200ms of
@@ -159,7 +159,7 @@ milliseconds of CPU arrives and finds 300 available in that single period. It
 runs straight through: no stall, and it finishes at 431ms against 606ms for
 the same workload with burst off.
 
-The average utilisation is 41 percent in both cases, which is the same number
+The average utilization is 41 percent in both cases, which is the same number
 failing to see the same thing for the third time in this article.
 
 Burst is not free. A group bursting is interference for everything else on the

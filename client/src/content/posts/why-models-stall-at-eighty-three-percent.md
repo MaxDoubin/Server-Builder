@@ -157,7 +157,7 @@ Total bytes are unchanged. The rack still fills in visibly, device by device,
 which if anything reads better than everything appearing at once. The browser
 is simply never holding more decodes than it can finish.
 
-## What generalises
+## What generalizes
 
 **A silent failure needs a timeout, not better error handling.** There was no
 error to handle. Any queue whose slots are freed by a callback needs an escape

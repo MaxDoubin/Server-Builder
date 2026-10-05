@@ -157,7 +157,7 @@ const GROUPS: Group[] = [
       { filter: "tcp.flags == 0", what: "NULL scan: a TCP segment with every flag clear." },
       {
         filter: "dns.qry.name.len > 50 && !mdns",
-        what: "Unusually long DNS names, which is the shape of data being tunnelled out over DNS.",
+        what: "Unusually long DNS names, which is the shape of data being tunneled out over DNS.",
       },
       {
         filter: "dns.flags.rcode == 3",

@@ -63,7 +63,7 @@ table inet mangle {
 ip rule add fwmark 0x2 lookup wan_b priority 900
 ```
 
-The division of labour here is the appealing part. The firewall decides classification, which is what firewalls are good at, and routing decides paths, which is what routing is good at. Neither has to grow a hacky version of the other's job.
+The division of labor here is the appealing part. The firewall decides classification, which is what firewalls are good at, and routing decides paths, which is what routing is good at. Neither has to grow a hacky version of the other's job.
 
 Other selectors worth knowing: `iif` matches the incoming interface, `to` matches the destination like an ordinary route but lets you send it to a different table, `ipproto` and `dport` exist in newer kernels, and `suppress_prefixlength` can skip a table's default route while still using its more specific entries, which is the standard trick for VPN split routing.
 

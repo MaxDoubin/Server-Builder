@@ -69,7 +69,7 @@ export function DeviceDetailPanel({
 
   return (
     // Keyed by device id at the call site, so switching devices replays the
-    // slide-out entrance. The animation is pure CSS and honours
+    // slide-out entrance. The animation is pure CSS and honors
     // prefers-reduced-motion in index-level styles by never moving far.
     <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
       <div className="flex items-start justify-between gap-4">

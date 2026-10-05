@@ -21,7 +21,7 @@ Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the 
 
 The Mac Pro handles media-heavy workloads that my Dell servers would struggle with. Video transcoding, Xcode builds, and GPU-accelerated compute tasks all benefit from the hardware. If you are running Final Cut Pro pipelines or Compressor jobs in a production environment, the rack-mount Mac Pro makes a lot of sense.
 
-The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's license permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
+The real justification, though, is licensing rather than performance. macOS may only legally be virtualized on Apple hardware, and Apple's license permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
 
 For general server workloads like virtualization, storage, and networking, Dell wins every time. The PowerEdge line is designed for exactly that, and the price-to-performance ratio is not even close. But the Mac Pro fills a gap that Dell cannot, and having both in the same rack gives me flexibility.
 
@@ -98,7 +98,7 @@ There is no iDRAC equivalent, no [IPMI](/blog/ipmi-remote-management), and remot
 
 The workaround I use is to rebuild the pieces out of separate boxes. A switched PDU gives me remote power cycling per outlet, which covers the single most common recovery action. A KVM-over-IP appliance on the Mac's HDMI output and a USB port gives me console access at boot. Neither is as good as a BMC and together they cost rack space and money, but they turn "drive to the rack" into "open a browser".
 
-The other thing to internalise is that the power supply is single and not hot-swappable. Every server in the rack next to it has two supplies fed from two different circuits. The Mac Pro has one. If that supply dies, the machine is down until a part arrives.
+The other thing to internalize is that the power supply is single and not hot-swappable. Every server in the rack next to it has two supplies fed from two different circuits. The Mac Pro has one. If that supply dies, the machine is down until a part arrives.
 
 You are also locked into Apple's hardware ecosystem for upgrades. But for specific use cases, the rack-mount Mac Pro is hard to beat. It is the best way to run macOS workloads in a rack, and if you need that, nothing else really competes.
 

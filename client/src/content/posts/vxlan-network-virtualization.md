@@ -24,7 +24,7 @@ An encapsulated frame carries an outer Ethernet header (14 bytes), an outer IPv4
 
 So on a standard 1500 byte underlay, the largest inner frame that fits without fragmentation is 1450 bytes. Either raise the underlay MTU to at least 1550 and leave the overlay at 1500, which is what datacenter fabrics do, or drop the overlay MTU to 1450 and accept it.
 
-Two fields in the outer headers do useful work. The UDP destination port identifies the traffic as VXLAN; IANA assigned 4789 for it. The UDP source port is not meaningful as a port at all: the sending VTEP fills it with a hash of the inner frame's headers, purely so that ECMP hashing in the underlay spreads different inner flows across different physical paths. Without it, every tunnelled flow between two VTEPs would look like one conversation and pin to a single link.
+Two fields in the outer headers do useful work. The UDP destination port identifies the traffic as VXLAN; IANA assigned 4789 for it. The UDP source port is not meaningful as a port at all: the sending VTEP fills it with a hash of the inner frame's headers, purely so that ECMP hashing in the underlay spreads different inner flows across different physical paths. Without it, every tunneled flow between two VTEPs would look like one conversation and pin to a single link.
 
 ## How VTEPs work
 

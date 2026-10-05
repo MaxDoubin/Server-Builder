@@ -24,7 +24,7 @@
  *
  * Every case here is a real shape: a home directory somebody chmod'd, a
  * shared project directory that is not shared, a deploy user that cannot
- * read its own artefact.
+ * read its own artifact.
  */
 
 /** Which of the three sets of bits the kernel picks. It picks exactly one. */

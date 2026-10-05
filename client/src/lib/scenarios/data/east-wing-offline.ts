@@ -182,7 +182,7 @@ export const eastWingOffline: Scenario = {
           cost: 10,
         },
         {
-          label: "Also add an alert for scope utilisation over 85 percent",
+          label: "Also add an alert for scope utilization over 85 percent",
           to: "end-fixed-and-monitored",
           cost: 20,
         },
@@ -347,11 +347,11 @@ export const eastWingOffline: Scenario = {
       title: "Fixed, with a warning next time",
       grade: "good",
       body: [
-        "VLAN corrected, leases released, and an alert at 85 percent scope utilisation, which is the thing that would have caught this on Wednesday evening instead of Monday morning.",
+        "VLAN corrected, leases released, and an alert at 85 percent scope utilization, which is the thing that would have caught this on Wednesday evening instead of Monday morning.",
         "The eight-day guest lease is still eight days, so the alert will fire again after the next big event. At least somebody will see it coming.",
       ],
       lesson: [
-        "Scope utilisation is one of the highest-value, least-monitored numbers on a school network: it goes from fine to total outage with no intermediate symptoms.",
+        "Scope utilization is one of the highest-value, least-monitored numbers on a school network: it goes from fine to total outage with no intermediate symptoms.",
         "An alert is worth more than a widened scope, because it survives the next thing that consumes addresses unexpectedly.",
       ],
     },

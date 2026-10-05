@@ -70,7 +70,7 @@ For a homelab, create your own Certificate Authority. Add its certificate to you
 openssl req -x509 -nodes -newkey rsa:4096 -keyout ca.key   -out ca.crt -days 3650 -subj "/CN=Lab CA"
 ```
 
-That gives you the CA. The certificate you actually serve is a separate one, signed by it, and here is where nearly everyone gets stuck: a `/CN=grafana.lab.internal` subject is not enough. Chrome stopped honouring Common Name for hostname matching in 2017 and every current browser requires a `subjectAltName` extension. A certificate without SAN produces `ERR_CERT_COMMON_NAME_INVALID` no matter how correctly you installed the CA.
+That gives you the CA. The certificate you actually serve is a separate one, signed by it, and here is where nearly everyone gets stuck: a `/CN=grafana.lab.internal` subject is not enough. Chrome stopped honoring Common Name for hostname matching in 2017 and every current browser requires a `subjectAltName` extension. A certificate without SAN produces `ERR_CERT_COMMON_NAME_INVALID` no matter how correctly you installed the CA.
 
 ```bash
 # Server key and CSR

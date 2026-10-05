@@ -112,7 +112,7 @@ rack that will tell you it is dying before it dies.
 
 ## Calibration, and why two identical optics disagree
 
-There are two flavours of this, and byte 92 of the A0h page says which one
+There are two flavors of this, and byte 92 of the A0h page says which one
 you have.
 
 **Internally calibrated** modules do the arithmetic themselves and hand you

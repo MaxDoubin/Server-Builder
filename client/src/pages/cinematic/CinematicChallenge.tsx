@@ -1,5 +1,5 @@
 /**
- * One challenge: an artefact, an answer box, hints, and the method.
+ * One challenge: an artifact, an answer box, hints, and the method.
  *
  * The flag is checked by hashing what you type and comparing against a stored
  * SHA-256, so it cannot be found with ctrl-F. The page says out loud that this

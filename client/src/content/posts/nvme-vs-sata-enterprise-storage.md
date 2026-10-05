@@ -29,7 +29,7 @@ The result is that the interesting number is not throughput, it is latency under
 
 **Live migrations:** Moving a running VM between hosts over NVMe-backed storage is smoother and faster than SATA.
 
-The common thread is concurrency. Ten VMs each doing modest random I/O do not add up to a nice sequential stream at the drive; they add up to a blender. That is the exact case where the queueing model matters more than the headline bandwidth, and it is why a single NVMe drive can replace a small shelf of SATA SSDs in a virtualisation host.
+The common thread is concurrency. Ten VMs each doing modest random I/O do not add up to a nice sequential stream at the drive; they add up to a blender. That is the exact case where the queueing model matters more than the headline bandwidth, and it is why a single NVMe drive can replace a small shelf of SATA SSDs in a virtualization host.
 
 ## Where SATA is still fine
 
@@ -109,7 +109,7 @@ media_errors                        : 0
 
 **Consumer drives fall off a cliff after the SLC cache fills.** Client NVMe drives write incoming data into a fast pseudo-SLC region and fold it into denser cells later. Benchmarks under a minute never leave that cache, so the drive looks fantastic. Write 200 GB continuously and throughput can collapse to well below SATA speeds. Always run sustained-write tests long enough to exhaust the cache before you believe a number.
 
-**Discard is never issued, so the drive slowly gets slower.** Without TRIM the controller does not know which blocks are free and garbage collection has to relocate data it could have thrown away, driving up write amplification. Confirm the path works end to end: `lsblk --discard` should show non-zero discard granularity and maximum, and a periodic `fstrim -av` should report bytes trimmed. On thin-provisioned or virtualised storage, discard also has to be enabled at every layer in between or it stops at the first one that ignores it.
+**Discard is never issued, so the drive slowly gets slower.** Without TRIM the controller does not know which blocks are free and garbage collection has to relocate data it could have thrown away, driving up write amplification. Confirm the path works end to end: `lsblk --discard` should show non-zero discard granularity and maximum, and a periodic `fstrim -av` should report bytes trimmed. On thin-provisioned or virtualized storage, discard also has to be enabled at every layer in between or it stops at the first one that ignores it.
 
 **Mixing a SATA SSD into an NVMe pool and wondering why the pool is slow.** A striped or mirrored set runs at the pace of its slowest member for anything that has to touch all members. This shows up most painfully when someone adds a leftover SATA drive as a mirror partner for an NVMe device.
 

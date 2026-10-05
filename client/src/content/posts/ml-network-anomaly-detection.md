@@ -1,7 +1,7 @@
 
 ## The Pitch and the Catch
 
-The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterised. A model that learns normal behavior could flag the unusual without knowing in advance what unusual looks like.
+The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterized. A model that learns normal behavior could flag the unusual without knowing in advance what unusual looks like.
 
 The catch is arithmetic, and it is the first thing I would check on any such system. Everything else, the model architecture, the feature engineering, the training pipeline, is downstream of whether the numbers can work at all.
 

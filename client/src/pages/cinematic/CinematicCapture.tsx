@@ -6,7 +6,7 @@
  * what it cannot do rather than silently ignoring half an expression, which
  * would teach a filter that works nowhere else.
  *
- * The list is a table with real rows rather than a virtualised canvas: these
+ * The list is a table with real rows rather than a virtualized canvas: these
  * captures are around a hundred packets, and a real table can be read by a
  * screen reader, searched with the browser's own find, and copied out.
  */

@@ -3,7 +3,7 @@
  * guides.
  *
  * These are the real NCL categories. The walkthroughs are representative
- * examples invented for this site: NCL challenges are covered by an honour
+ * examples invented for this site: NCL challenges are covered by an honor
  * code, so no actual competition question is reproduced here. Every
  * technical claim is meant to be correct and, where useful, tied to a
  * canonical reference (an RFC, tool documentation, OWASP, or NIST).
@@ -117,7 +117,7 @@ const osint: NclGuide = {
     "Treating a shared username or a lookalike profile as proof of identity without a second corroborating source.",
     "Assuming a photo has no location data. Many platforms strip EXIF on upload, so try the original file, not a re-shared copy.",
     "Converting GPS wrong: forgetting the negative sign for South and West, or mixing up minutes and seconds.",
-    "Straying outside the target scope into active probing, which is neither OSINT nor within the honour code of practice challenges.",
+    "Straying outside the target scope into active probing, which is neither OSINT nor within the honor code of practice challenges.",
   ],
   resources: [
     { label: "OSINT Framework", detail: "A categorized directory of OSINT tools and sources.", url: "https://osintframework.com/" },
@@ -590,7 +590,7 @@ const forensics: NclGuide = {
   ],
   mentalModel: [
     "Start with identity and content, not the name. Run the file command, which reads the leading magic bytes to determine the real type. Learn the common signatures: a PNG begins with the bytes 89 50 4E 47, a JPEG with FF D8 FF, a PDF with 25 50 44 46 (the ASCII %PDF), and a ZIP or any format built on it, such as a docx, with 50 4B 03 04 (the ASCII PK). When the magic bytes and the extension disagree, believe the bytes.",
-    "Then look inside. Run strings first, because flags are often sitting in plain text. Run binwalk to detect files embedded or appended inside the target, since a valid file can carry another one past its own end marker. Check metadata with exiftool, whose comment fields are a favourite hiding place. For images with real steganography, try steghide or stegseek with a wordlist; for memory dumps, use the Volatility framework with the correct profile.",
+    "Then look inside. Run strings first, because flags are often sitting in plain text. Run binwalk to detect files embedded or appended inside the target, since a valid file can carry another one past its own end marker. Check metadata with exiftool, whose comment fields are a favorite hiding place. For images with real steganography, try steghide or stegseek with a wordlist; for memory dumps, use the Volatility framework with the correct profile.",
   ],
   tools: [
     { name: "file", use: "Reports the true file type from its magic bytes, regardless of the extension." },
@@ -1011,7 +1011,7 @@ const enumerationExploitation: NclGuide = {
       choices: [
         "The stack is non-executable, so shellcode placed on it will not run",
         "The binary is stripped of symbols",
-        "Address space layout is randomised",
+        "Address space layout is randomized",
         "The binary is statically linked",
       ],
       correctIndex: 0,

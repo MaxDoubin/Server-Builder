@@ -149,7 +149,7 @@ The default recovery interval is 300 seconds. Leave the cause disabled entirely 
 
 ## What breaks
 
-**An err-disabled port that nobody investigates.** BPDU Guard did its job, someone finds the port dead, and the fix applied is `shutdown` followed by `no shutdown` without ever asking what sent the BPDU. The unauthorised switch is still there and the port dies again on the next reboot. Always read the log entry that accompanies the err-disable.
+**An err-disabled port that nobody investigates.** BPDU Guard did its job, someone finds the port dead, and the fix applied is `shutdown` followed by `no shutdown` without ever asking what sent the BPDU. The unauthorized switch is still there and the port dies again on the next reboot. Always read the log entry that accompanies the err-disable.
 
 **A hypervisor bridging two physical NICs.** A virtual switch with two uplinks into the same VLAN and no loop prevention is a loop, and it is invisible from the physical switch's point of view because the host does not send BPDUs. The MAC flap message will name two switch ports that both lead to the same server, which is the tell.
 

@@ -144,7 +144,7 @@ const CLAIM_NOTES: Record<string, string> = {
   jti: "JWT ID. Unique per token, so a replay can be detected and a token can be revoked by id.",
   azp: "Authorized party. The client the token was issued to, when that differs from the audience.",
   scope: "OAuth scopes, space separated. What the bearer is permitted to ask for.",
-  scp: "OAuth scopes as an array. Same meaning as scope, different serialisation.",
+  scp: "OAuth scopes as an array. Same meaning as scope, different serialization.",
   client_id: "The OAuth client this token was issued to.",
   nonce: "Replay guard from the authentication request. Must match what the client sent.",
   auth_time: "When the user actually authenticated, which can be much earlier than iat.",
@@ -252,7 +252,7 @@ function review(header: Part, payload: Part, signature: string, nowMs: number): 
   if (alg !== null && alg.toLowerCase() === "none") {
     findings.push({
       tone: "danger",
-      text: "The header asks for alg: none, an unsecured JWT. Any library that honours it accepts a token anybody can write. Every verifier should pin the algorithms it will accept and reject this outright.",
+      text: "The header asks for alg: none, an unsecured JWT. Any library that honors it accepts a token anybody can write. Every verifier should pin the algorithms it will accept and reject this outright.",
     });
   } else if (signature === "") {
     findings.push({

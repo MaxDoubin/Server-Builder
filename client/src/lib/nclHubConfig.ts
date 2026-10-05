@@ -12,10 +12,10 @@ export const DAY_CHECKLIST = [
   "Have a working analysis environment ready in advance: a Linux VM (Kali or similar) with Wireshark, hashcat or John, binwalk, exiftool, strings, and sqlmap already installed and updated.",
   "Download wordlists like rockyou beforehand, so you are not fetching them when the clock is running.",
   "Keep a scratch file open for notes: where each clue came from, partial answers, and things to come back to.",
-  "Read the rules and the honour code first, and confirm the exact flag format the platform expects.",
+  "Read the rules and the honor code first, and confirm the exact flag format the platform expects.",
   "Check power and connectivity: charger plugged in, a stable connection, and a backup plan if it drops.",
   "Read every question in a category before you start, then triage by confidence and point value rather than going top to bottom.",
-  "Watch the clock and avoid tunnelling. If a challenge stalls you, bank an easier one and return with fresh eyes.",
+  "Watch the clock and avoid tunneling. If a challenge stalls you, bank an easier one and return with fresh eyes.",
   "Double-check each submission against the required format before you send it.",
 ];
 

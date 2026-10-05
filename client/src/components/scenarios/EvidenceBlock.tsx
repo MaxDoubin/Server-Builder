@@ -1,5 +1,5 @@
 /**
- * The verbatim artefacts a scene shows you: a terminal, a log, an email.
+ * The verbatim artifacts a scene shows you: a terminal, a log, an email.
  *
  * These are the part of a scenario that carries the actual technical content,
  * so they are rendered as what they are rather than as prose. A log excerpt

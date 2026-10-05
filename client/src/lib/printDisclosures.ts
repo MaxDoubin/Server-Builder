@@ -43,7 +43,7 @@ export function installPrintDisclosures(): () => void {
   window.addEventListener("afterprint", restore);
 
   // Safari fires no print events. It does flip this media query, which is
-  // the documented stand-in, and Chrome and Firefox honour it too, so both
+  // the documented stand-in, and Chrome and Firefox honor it too, so both
   // paths can fire for a single print. That is why expand() accumulates and
   // restore() clears: whichever fires first opens and records, whichever
   // fires second finds nothing to add, and the first restore puts them back.

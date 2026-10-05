@@ -66,7 +66,7 @@
  * Not modeled: PerSourceMaxStartups and PerSourceNetBlockSize, which apply a
  * second limit per source address, and PerSourcePenalties, which is a
  * different mechanism with its own timers. drop_connection() checks the
- * penalty first and MaxStartups second, so a penalised source is refused
+ * penalty first and MaxStartups second, so a penalized source is refused
  * whatever these numbers say.
  */
 

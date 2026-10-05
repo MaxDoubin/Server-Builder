@@ -11,7 +11,7 @@ Enterprise servers typically support 1+1 or 2+1 redundancy. In a 1+1 configurati
 
 The PSUs connect to the server's power distribution board, which handles the load sharing and failover automatically. Modern enterprise PSUs support hot-swap, meaning you can remove the failed unit and install a replacement while the server is running.
 
-The load sharing is not literally a switchover. Both supplies are energised and each carries roughly half the current, so when one dies there is nothing to switch: the remaining unit simply sees its share double, and the bulk capacitance on the distribution board covers the microseconds while its regulation loop catches up. That is why the transition is invisible to the operating system.
+The load sharing is not literally a switchover. Both supplies are energized and each carries roughly half the current, so when one dies there is nothing to switch: the remaining unit simply sees its share double, and the bulk capacitance on the distribution board covers the microseconds while its regulation loop catches up. That is why the transition is invisible to the operating system.
 
 There is a subtlety in the word "redundant" that catches people. **Two power supplies are only redundant if one of them can carry the entire load on its own.** A server with two 495 W supplies drawing 600 W is not redundant, it is load-shared, and losing one drops the machine. Dell and HPE both report this: iDRAC will show the power supply state as "Redundancy Lost" or "Redundancy Degraded" rather than an outright fault, and that warning is easy to scroll past. Check it after any upgrade that adds GPUs, drives, or CPUs, because the configuration that was comfortably redundant last year may not be now.
 

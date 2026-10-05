@@ -22,7 +22,7 @@ http.request
 tcp.analysis.retransmission
 ```
 
-## The syntax worth memorising
+## The syntax worth memorizing
 
 Five operators cover almost everything.
 
@@ -145,7 +145,7 @@ export SSLKEYLOGFILE=/tmp/keys.log
 firefox &
 ```
 
-Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Master-Secret log filename. HTTPS in that capture becomes readable HTTP. Firefox, Chrome, and curl all honour the variable. This is the legitimate way to debug your own TLS traffic, and it only works for traffic whose client cooperated.
+Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Master-Secret log filename. HTTPS in that capture becomes readable HTTP. Firefox, Chrome, and curl all honor the variable. This is the legitimate way to debug your own TLS traffic, and it only works for traffic whose client cooperated.
 
 ## What breaks
 

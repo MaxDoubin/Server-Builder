@@ -5,7 +5,7 @@ You are staring at a used server listing, or a configurator, and trying to work 
 
 ## Three questions before you look at any part number
 
-**How does your workload parallelise?** If it splits cleanly across many independent tasks, cores win. If it is one long dependency chain, clock speed and per-core cache win, and buying 64 cores just gets you 63 idle ones.
+**How does your workload parallelize?** If it splits cleanly across many independent tasks, cores win. If it is one long dependency chain, clock speed and per-core cache win, and buying 64 cores just gets you 63 idle ones.
 
 **How much memory bandwidth does it need?** This is the one people skip. Cores share memory channels, so a high-core-count part with the same channel count feeds each core less bandwidth. A streaming workload can saturate the memory controller long before it saturates the cores.
 
@@ -120,7 +120,7 @@ Pick your CPU based on your actual workload:
 
 **Ignoring NUMA when sizing VMs.** A VM with more vCPUs than one socket has cores, or more RAM than one node has, gets scheduled across both and pays the remote memory penalty on a large fraction of its accesses. Size guests to fit a node, or configure vNUMA so the guest OS at least knows the topology.
 
-**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behavior, not a fault.
+**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorized benchmark can slow every other VM on the host. This is documented behavior, not a fault.
 
 **Assuming TDP is power draw.** TDP is a thermal design figure for sizing a cooler, not a wattmeter reading. Real draw depends on the power limits configured in firmware and on the workload. Size your UPS and your circuit from measured wall power, not from adding up TDP numbers.
 

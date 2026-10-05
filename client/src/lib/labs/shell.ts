@@ -23,7 +23,7 @@ export interface OutLine {
   text: string;
   stream: "out" | "err";
   /**
-   * Milliseconds to wait before showing this line. Only the terminal honours
+   * Milliseconds to wait before showing this line. Only the terminal honors
    * it; the gate concatenates and ignores it. ping and traceroute set it so
    * they feel like themselves rather than dumping five lines at once.
    */

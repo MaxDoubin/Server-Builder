@@ -64,7 +64,7 @@ If you cannot produce that manifest for a model currently serving traffic, you c
 
 Reproducibility in machine learning is harder than in ordinary software, and it is worth being honest about how far you can actually get.
 
-Random seeds must be set for every source of randomness: data shuffling, weight initialisation, dropout, augmentation. Setting one library's seed and assuming that covers it is a common mistake.
+Random seeds must be set for every source of randomness: data shuffling, weight initialization, dropout, augmentation. Setting one library's seed and assuming that covers it is a common mistake.
 
 Environments must be pinned exactly, and that means the container image by digest rather than by tag, because a tag is a moving pointer.
 

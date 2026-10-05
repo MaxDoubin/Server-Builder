@@ -11,7 +11,7 @@ One thing to fix in your head before anything else: RAID gives you availability,
 
 RAID 0 stripes data across all drives with no redundancy. You get the combined capacity and performance of all drives, but if any single drive fails, all data is lost. I use RAID 0 for temporary scratch space where speed matters and the data is expendable.
 
-Worth internalising how the risk scales: RAID 0 is less reliable than a single drive, and it gets worse with every drive you add, because the array dies if any member dies. Four drives in RAID 0 have roughly four times the annual failure probability of one drive.
+Worth internalizing how the risk scales: RAID 0 is less reliable than a single drive, and it gets worse with every drive you add, because the array dies if any member dies. Four drives in RAID 0 have roughly four times the annual failure probability of one drive.
 
 ## RAID 1: simple mirror
 
@@ -41,7 +41,7 @@ RAID 10 combines mirroring and striping. Pairs of drives are mirrored, and the m
 
 I use RAID 10 for VM storage where I/O performance is the priority. Random read and write performance on RAID 10 is significantly better than RAID 5 or 6.
 
-Note the "at least" carefully. A RAID 10 across six drives can survive three failures if they land in three different mirror pairs, or die from two failures if both hit the same pair. It is not a guaranteed two drive tolerance, it is luck weighted in your favour. The upside is that rebuilds only read one drive, the surviving partner, so they are fast and they do not stress the whole array.
+Note the "at least" carefully. A RAID 10 across six drives can survive three failures if they land in three different mirror pairs, or die from two failures if both hit the same pair. It is not a guaranteed two drive tolerance, it is luck weighted in your favor. The upside is that rebuilds only read one drive, the surviving partner, so they are fast and they do not stress the whole array.
 
 ## The comparison in one place
 

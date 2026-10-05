@@ -114,7 +114,7 @@ export const EXAMS: Exam[] = [
         name: "Security Architecture",
         weight: 18,
         summary:
-          "Compare where infrastructure can live (cloud, on-premises, containers, IoT, ICS and SCADA) and what each model costs you in risk. Place devices and zones deliberately: firewalls, IPS, proxies, jump servers, VPN and tunnelling choices, fail-open against fail-closed. Protect data by state, at rest, in transit and in use. Then design for failure: load balancing, clustering, backups you have actually restored, UPS and generators, and capacity planning.",
+          "Compare where infrastructure can live (cloud, on-premises, containers, IoT, ICS and SCADA) and what each model costs you in risk. Place devices and zones deliberately: firewalls, IPS, proxies, jump servers, VPN and tunneling choices, fail-open against fail-closed. Protect data by state, at rest, in transit and in use. Then design for failure: load balancing, clustering, backups you have actually restored, UPS and generators, and capacity planning.",
         keywords: [
           "segmentation",
           "vlan",
@@ -146,7 +146,7 @@ export const EXAMS: Exam[] = [
         name: "Security Operations",
         weight: 28,
         summary:
-          "The largest domain by a distance, and the closest to a day job. Establish secure baselines and harden what runs, track assets from acquisition to sanitised disposal, run vulnerability management with scans, CVSS and remediation, and monitor through log aggregation, SIEM and alert tuning. Expect to adjust defenses: firewall rules, IDS signatures, DNS and web filtering, email authentication with SPF, DKIM and DMARC. Identity from provisioning to MFA and privileged access, then incident response and the forensics that follows it.",
+          "The largest domain by a distance, and the closest to a day job. Establish secure baselines and harden what runs, track assets from acquisition to sanitized disposal, run vulnerability management with scans, CVSS and remediation, and monitor through log aggregation, SIEM and alert tuning. Expect to adjust defenses: firewall rules, IDS signatures, DNS and web filtering, email authentication with SPF, DKIM and DMARC. Identity from provisioning to MFA and privileged access, then incident response and the forensics that follows it.",
         keywords: [
           "hardening",
           "log",

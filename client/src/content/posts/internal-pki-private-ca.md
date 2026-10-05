@@ -67,7 +67,7 @@ openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:P-256 \
 
 ## Short lifetimes beat revocation
 
-Revocation on internal networks barely works. Certificate revocation lists need to be published, fetched, and honoured, and clients are inconsistent about all three. OCSP needs a responder that is reachable and available, which is another service to run and another thing to break.
+Revocation on internal networks barely works. Certificate revocation lists need to be published, fetched, and honored, and clients are inconsistent about all three. OCSP needs a responder that is reachable and available, which is another service to run and another thing to break.
 
 The practical alternative is short lived certificates issued automatically. If a leaf certificate lives for weeks rather than years, a compromised key expires on its own before revocation would have propagated anyway.
 

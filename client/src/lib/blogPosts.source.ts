@@ -7998,7 +7998,7 @@ reason:
 sshd[2411]: drop connection #33 from [198.51.100.24]:52310 on [10.0.4.9]:22 MaxStartups
 \`\`\`
 
-But that same function initialises a rate limiter for those messages:
+But that same function initializes a rate limiter for those messages:
 
 \`\`\`c
 log_ratelimit_init(&ratelimit_maxstartups, 4, 60, 20, 5*60);
@@ -8067,7 +8067,7 @@ sshd_config(5):
 > is none.
 
 \`drop_connection()\` checks \`srclimit_penalty_check_allow()\` before it consults
-\`should_drop_connection()\` at all, so a penalised source is refused whatever
+\`should_drop_connection()\` at all, so a penalized source is refused whatever
 MaxStartups says. If one address is holding your slots, that is the control
 that takes them back without spending anything on everybody else.
 
@@ -12358,14 +12358,14 @@ on an idle machine and the one where the burst never happened, at
     coverImage: "/images/blog/stopped-not-slow.jpg",
     content: `## Two numbers that look like they cannot both be true
 
-A service has a p99 of 400 milliseconds. Its CPU utilisation graph, against
+A service has a p99 of 400 milliseconds. Its CPU utilization graph, against
 its own limit, sits at 30 percent all day. Somebody has already concluded the
 problem is not CPU, because the container is nowhere near its limit, and the
 investigation has moved on to the database.
 
 Both numbers are correct and the conclusion does not follow. The container
 spent most of that second stopped, on a node with idle cores, and no
-utilisation graph in existence can show you that.
+utilization graph in existence can show you that.
 
 The reason is one sentence from
 \`Documentation/scheduler/sched-bwc.rst\`: within each given period, a task
@@ -12393,7 +12393,7 @@ they spend four milliseconds of quota per millisecond of wall clock. The
 the group is then stopped until the boundary.
 
 The container runs for 25ms and is stopped for 75ms, ten times a second,
-forever. Average utilisation over that second is exactly 100 percent of the
+forever. Average utilization over that second is exactly 100 percent of the
 limit, which at least is honest. The version that is not honest is what
 happens when the work is intermittent.
 
@@ -12407,7 +12407,7 @@ which is gone in 12.5ms, and it is stopped for 87.5. Same again the next
 period. It finishes 12.5ms into the third. Work that eight threads should
 have done in 37.5 milliseconds took until 212.5.
 
-And the utilisation graph, over that second, reads 30 percent. Three hundred
+And the utilization graph, over that second, reads 30 percent. Three hundred
 milliseconds of CPU used out of a thousand available. It is the correct
 average and it is useless, because the quota is enforced per period and the
 period is one hundred milliseconds. Any averaging window longer than that,
@@ -12426,7 +12426,7 @@ throttled_usec 175000
 \`\`\`
 
 Two of ten periods, 175 milliseconds spent stopped. Alert on \`nr_throttled\`
-and stop alerting on utilisation.
+and stop alerting on utilization.
 
 ## The thread count is the multiplier, and the node decides it
 
@@ -12465,7 +12465,7 @@ people:
 10000 50000      # 10ms every 50ms
 \`\`\`
 
-Same fraction, same total CPU per second, same utilisation graph. With four
+Same fraction, same total CPU per second, same utilization graph. With four
 runnable threads, the first runs for 5ms and stops for 95, ten times a second.
 The second runs for 2.5ms and stops for 47.5, twenty times a second.
 
@@ -12492,7 +12492,7 @@ or near a multiple of it, is worth suspecting before you profile anything.
 of 2 CPUs sits at 100 percent of its quota permanently and is never throttled
 once, because two threads cannot spend two CPUs of quota in a 100 millisecond
 period however hard they try. It runs flat out to each boundary and the next
-period's quota arrives exactly when it needs it. An alert on utilisation fires
+period's quota arrives exactly when it needs it. An alert on utilization fires
 here and there is nothing at all to fix.
 
 **Something fewer threads always fixes.** Take one request needing 200ms of
@@ -12517,7 +12517,7 @@ milliseconds of CPU arrives and finds 300 available in that single period. It
 runs straight through: no stall, and it finishes at 431ms against 606ms for
 the same workload with burst off.
 
-The average utilisation is 41 percent in both cases, which is the same number
+The average utilization is 41 percent in both cases, which is the same number
 failing to see the same thing for the third time in this article.
 
 Burst is not free. A group bursting is interference for everything else on the
@@ -12971,7 +12971,7 @@ A container runtime sets rlimits on the process it starts, so the host's
 arrangements for its own units and its own logins are not in scope at all.
 That is why the same image behaves differently under different runtimes and
 different orchestrators, and why "it works on my machine" survives
-containerisation intact.
+containerization intact.
 
 Read \`/proc/1/limits\` inside the container. It is the only place the answer is
 not a guess.
@@ -13865,7 +13865,7 @@ which is where nobody looks.
 
 ## A blind spot in how I was checking answers
 
-Worth writing down because it generalises past this page.
+Worth writing down because it generalizes past this page.
 
 Each case offers four options and asks which request receives somebody else's
 data. Three requests plus "none of them" is four possible answers, so the four
@@ -14361,7 +14361,7 @@ observations, the clock is not the whole story: something in that list is
 broken for its own reasons, and treating the set as a measurement will give
 you a confident wrong answer.
 
-That third case is the one worth internalising. "No offset explains this" is
+That third case is the one worth internalizing. "No offset explains this" is
 information, and it is the thing a person diagnosing by feel will never
 notice, because a person diagnosing by feel is looking for a story that fits
 most of the evidence.
@@ -14570,7 +14570,7 @@ VLAN 999, and there is none.
 It closes the other half of the problem at the same time. A host in the native
 VLAN can write its own 802.1Q tag, and because its switch adds nothing on the
 way out, that tag is the outermost one when the frame reaches the next switch,
-which reads it and honours it. That is VLAN hopping, and it needs the
+which reads it and honors it. That is VLAN hopping, and it needs the
 attacker's access VLAN to be the trunk's native VLAN. A native VLAN with no
 hosts in it has no attacker in it either.
 
@@ -14698,7 +14698,7 @@ Which is almost never the driver at the bottom, and is usually the outermost
 one.
 
 **Jitter, or they come back together.** Exponential backoff without
-randomisation does not spread retries out. It synchronises them: every client
+randomization does not spread retries out. It synchronizes them: every client
 that failed in the same instant returns in the same instant, and then again,
 in tighter formation each round, because the doubling is the same doubling for
 everybody.
@@ -15052,7 +15052,7 @@ taken execute away from a file that never had it and left write where the mask
 said to clear it. Masking never touches a bit the mask does not name, and never
 borrows across a digit, which is exactly what subtraction does.
 
-There is one more layer of camouflage here, and it is my favourite detail in
+There is one more layer of camouflage here, and it is my favorite detail in
 the whole subject. \`mkdir\` never reveals the bug. Directories are born \`777\`,
 and for a minuend of 7, \`7 - d\` and \`7 & ~d\` are the same number for every
 octal digit d. So subtraction and masking agree on all 512 masks for a
@@ -15269,7 +15269,7 @@ So after you report something, the page asks which signal settles it, and marks
 that separately. Citing "SPF did not pass" on a message where SPF passed is
 counted as a correct verdict reached for a reason that is not there.
 
-## Keeping the analysis and the artefact in step
+## Keeping the analysis and the artifact in step
 
 The failure mode for hand-written material like this is silent. Fourteen
 messages, each with headers and a paragraph of analysis, both written by me.
@@ -16241,7 +16241,7 @@ nowhere for want of four lines of YAML.
 replacement contains anything you did not type yourself, use a function. The
 performance difference is nothing and the class of bug disappears.
 
-**Escaping is not sanitising.** An HTML escaper makes a value safe to put in
+**Escaping is not sanitizing.** An HTML escaper makes a value safe to put in
 HTML. It says nothing about the value being safe to put through a regex
 substitution on the way there, and here it actively created the hazard.
 
@@ -16685,7 +16685,7 @@ loses the ones that only exist to make them work.
 ## Checking it instead of remembering it
 
 The fix for each rack was a device. The fix for the class is a check, and the
-useful realisation was that most of these can be stated as an invariant over
+useful realization was that most of these can be stated as an invariant over
 the device list rather than as knowledge about hardware.
 
 Three now run on every build of this site:
@@ -16782,7 +16782,7 @@ for and is wrong here for a specific reason.
 
 ## Why least squares was the wrong tool
 
-Least squares minimises the sum of squared residuals, which means every
+Least squares minimizes the sum of squared residuals, which means every
 point pulls the line and a distant point pulls hardest:
 
 > least squares estimates for regression models are highly sensitive to
@@ -16946,7 +16946,7 @@ instrument is one you wrote and the subject is one you did not.
 - [The Theil-Sen estimator, its construction and its 29.3% breakdown point](https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator)
 - [Pranab K. Sen, Estimates of the Regression Coefficient Based on Kendall's Tau, JASA 63(324), 1968](https://www.jstor.org/stable/2285891)
 - [KHR_mesh_quantization, which permits the normalized short positions this model ships with](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Khronos/KHR_mesh_quantization/README.md)
-- [EXT_meshopt_compression, which compresses the already quantised data](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
+- [EXT_meshopt_compression, which compresses the already quantized data](https://raw.githubusercontent.com/KhronosGroup/glTF/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
 `,
   },
   {
@@ -17247,7 +17247,7 @@ rack that will tell you it is dying before it dies.
 
 ## Calibration, and why two identical optics disagree
 
-There are two flavours of this, and byte 92 of the A0h page says which one
+There are two flavors of this, and byte 92 of the A0h page says which one
 you have.
 
 **Internally calibrated** modules do the arithmetic themselves and hand you
@@ -18019,7 +18019,7 @@ Total bytes are unchanged. The rack still fills in visibly, device by device,
 which if anything reads better than everything appearing at once. The browser
 is simply never holding more decodes than it can finish.
 
-## What generalises
+## What generalizes
 
 **A silent failure needs a timeout, not better error handling.** There was no
 error to handle. Any queue whose slots are freed by a callback needs an escape
@@ -19100,7 +19100,7 @@ table inet mangle {
 ip rule add fwmark 0x2 lookup wan_b priority 900
 \`\`\`
 
-The division of labour here is the appealing part. The firewall decides classification, which is what firewalls are good at, and routing decides paths, which is what routing is good at. Neither has to grow a hacky version of the other's job.
+The division of labor here is the appealing part. The firewall decides classification, which is what firewalls are good at, and routing decides paths, which is what routing is good at. Neither has to grow a hacky version of the other's job.
 
 Other selectors worth knowing: \`iif\` matches the incoming interface, \`to\` matches the destination like an ordinary route but lets you send it to a different table, \`ipproto\` and \`dport\` exist in newer kernels, and \`suppress_prefixlength\` can skip a table's default route while still using its more specific entries, which is the standard trick for VPN split routing.
 
@@ -21696,7 +21696,7 @@ My order of questions, roughly:
 2. Is power near the board limit? If yes, the device is genuinely working and
    the answer is algorithmic or a different device.
 3. If power is low but utilization is high, look for tiny kernels, launch
-   overhead, and host synchronisation. Many small launches keep the "at least
+   overhead, and host synchronization. Many small launches keep the "at least
    one kernel resident" counter pegged while the machine idles between them.
 4. Is the transfer path the problem? Bytes crossing PCIe at every step will
    dominate anything the device does.
@@ -22564,7 +22564,7 @@ probes is the day the dashboard goes green during an outage.
     content: `
 ## The Pitch and the Catch
 
-The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterised. A model that learns normal behavior could flag the unusual without knowing in advance what unusual looks like.
+The pitch for machine learning on network telemetry is appealing. Signatures only catch what someone has already characterized. A model that learns normal behavior could flag the unusual without knowing in advance what unusual looks like.
 
 The catch is arithmetic, and it is the first thing I would check on any such system. Everything else, the model architecture, the feature engineering, the training pipeline, is downstream of whether the numbers can work at all.
 
@@ -23191,7 +23191,7 @@ If you cannot produce that manifest for a model currently serving traffic, you c
 
 Reproducibility in machine learning is harder than in ordinary software, and it is worth being honest about how far you can actually get.
 
-Random seeds must be set for every source of randomness: data shuffling, weight initialisation, dropout, augmentation. Setting one library's seed and assuming that covers it is a common mistake.
+Random seeds must be set for every source of randomness: data shuffling, weight initialization, dropout, augmentation. Setting one library's seed and assuming that covers it is a common mistake.
 
 Environments must be pinned exactly, and that means the container image by digest rather than by tag, because a tag is a moving pointer.
 
@@ -23714,7 +23714,7 @@ the window you lose in a crash. That is a real dial, not a micro optimization.
 without flushing has handed bytes to the page cache and nothing more. A journal
 guarantees the filesystem structure is sane after a crash. It does not promise
 your file has content. If durability matters, the application has to ask for
-it, and the write path underneath has to honour the flush rather than lying
+it, and the write path underneath has to honor the flush rather than lying
 about it.
 
 **It does not detect corruption.** ext4 checksums its metadata and its journal,
@@ -26204,8 +26204,8 @@ staring at two averages ever will.
 ## Judges, Agreement, And Gates
 
 Grading by hand does not scale, so people use a model as a judge. This works
-better than you would expect and fails in specific ways: judges favour longer
-answers, favour outputs that look like their own style, and are sensitive to the
+better than you would expect and fails in specific ways: judges favor longer
+answers, favor outputs that look like their own style, and are sensitive to the
 order options are presented in. Randomize order, and check for length bias by
 looking at whether the judge's preference correlates with response length.
 
@@ -28678,7 +28678,7 @@ directory you can come back after a power loss to find the old file, or in some
 filesystem configurations neither name resolving to your data.
 
 The pattern, write to temp, fsync the file, rename, fsync the directory, is the
-standard recipe for "replace a file durably." It is worth memorising because
+standard recipe for "replace a file durably." It is worth memorizing because
 config management, package managers, and databases all do exactly this.
 
 If you are using buffered I/O in a runtime, flush the runtime buffer before
@@ -28722,7 +28722,7 @@ choice.
 
 Two things I check on any storage I intend to trust.
 
-**Does the device honour flush?** Consumer drives have historically been caught
+**Does the device honor flush?** Consumer drives have historically been caught
 acknowledging flushes they did not perform. You cannot easily test this without
 pulling power, which is exactly the test: write a known sequence with syncs,
 cut power at the wall, and see what survived. Do it once on a new drive class
@@ -28810,7 +28810,7 @@ and used in roughly two floating point operations. Intensity is close to the
 worst case possible. Hard memory bound.
 
 **Prompt processing, or prefill.** All the prompt tokens go through at once, so
-the same weight read is amortised across many tokens. Intensity is high.
+the same weight read is amortized across many tokens. Intensity is high.
 Compute bound. This is why a long prompt and a long generation feel like
 completely different workloads on the same model.
 
@@ -29214,7 +29214,7 @@ in software.
 Passthrough is not free, and the losses are all in flexibility.
 
 **Live migration.** A guest with direct hardware assigned has device state the
-hypervisor cannot see or serialise. Some stacks have migration support for
+hypervisor cannot see or serialize. Some stacks have migration support for
 specific devices with driver cooperation, but the general answer is that
 passthrough and live migration do not mix. If your availability plan depends on
 moving guests between hosts without downtime, this is a serious constraint.
@@ -31066,7 +31066,7 @@ openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:P-256 \\
 
 ## Short lifetimes beat revocation
 
-Revocation on internal networks barely works. Certificate revocation lists need to be published, fetched, and honoured, and clients are inconsistent about all three. OCSP needs a responder that is reachable and available, which is another service to run and another thing to break.
+Revocation on internal networks barely works. Certificate revocation lists need to be published, fetched, and honored, and clients are inconsistent about all three. OCSP needs a responder that is reachable and available, which is another service to run and another thing to break.
 
 The practical alternative is short lived certificates issued automatically. If a leaf certificate lives for weeks rather than years, a compromised key expires on its own before revocation would have propagated anyway.
 
@@ -31539,7 +31539,7 @@ Physically it is a 5U unit in a 19-inch rack. A rack unit is 1.75 inches by the 
 
 The Mac Pro handles media-heavy workloads that my Dell servers would struggle with. Video transcoding, Xcode builds, and GPU-accelerated compute tasks all benefit from the hardware. If you are running Final Cut Pro pipelines or Compressor jobs in a production environment, the rack-mount Mac Pro makes a lot of sense.
 
-The real justification, though, is licensing rather than performance. macOS may only legally be virtualised on Apple hardware, and Apple's license permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
+The real justification, though, is licensing rather than performance. macOS may only legally be virtualized on Apple hardware, and Apple's license permits at most two additional macOS virtual instances per Mac. If you need to build and sign iOS or macOS software in CI, there is no cloud shortcut around owning Apple hardware, and this is the densest first-party way to own it in a rack. That constraint, not the GPU, is why these machines exist in datacenters.
 
 For general server workloads like virtualization, storage, and networking, Dell wins every time. The PowerEdge line is designed for exactly that, and the price-to-performance ratio is not even close. But the Mac Pro fills a gap that Dell cannot, and having both in the same rack gives me flexibility.
 
@@ -31616,7 +31616,7 @@ There is no iDRAC equivalent, no [IPMI](/blog/ipmi-remote-management), and remot
 
 The workaround I use is to rebuild the pieces out of separate boxes. A switched PDU gives me remote power cycling per outlet, which covers the single most common recovery action. A KVM-over-IP appliance on the Mac's HDMI output and a USB port gives me console access at boot. Neither is as good as a BMC and together they cost rack space and money, but they turn "drive to the rack" into "open a browser".
 
-The other thing to internalise is that the power supply is single and not hot-swappable. Every server in the rack next to it has two supplies fed from two different circuits. The Mac Pro has one. If that supply dies, the machine is down until a part arrives.
+The other thing to internalize is that the power supply is single and not hot-swappable. Every server in the rack next to it has two supplies fed from two different circuits. The Mac Pro has one. If that supply dies, the machine is down until a part arrives.
 
 You are also locked into Apple's hardware ecosystem for upgrades. But for specific use cases, the rack-mount Mac Pro is hard to beat. It is the best way to run macOS workloads in a rack, and if you need that, nothing else really competes.
 
@@ -31799,7 +31799,7 @@ Even if Apple built the perfect server chip, the software ecosystem is not ready
 
 That said, the ARM64 argument itself is settled. Graviton has been in production at scale since 2018 and its current generation runs 96 Neoverse cores per socket. Ampere ships parts with well over a hundred cores. Debian, Ubuntu, RHEL, and Alpine all publish first-class arm64 builds, and the container registries carry arm64 images for essentially everything mainstream. The problem is not the instruction set. The problem is that Apple's implementation of it is a closed platform with a consumer operating system on top.
 
-Where Apple Silicon does run server-shaped work today, it runs it through Apple's own Virtualization framework. That gives you fast ARM64 Linux guests with paravirtualised devices, plus Rosetta available inside the Linux guest so an x86-64 binary can run in an ARM VM. It also lets you run macOS guests, but Apple's license terms permit at most two additional macOS virtual instances per Mac. That limit is the whole business model of the macOS CI hosting industry, and it is why Apple hardware in datacenters is almost always a build farm rather than a general-purpose fleet.
+Where Apple Silicon does run server-shaped work today, it runs it through Apple's own Virtualization framework. That gives you fast ARM64 Linux guests with paravirtualized devices, plus Rosetta available inside the Linux guest so an x86-64 binary can run in an ARM VM. It also lets you run macOS guests, but Apple's license terms permit at most two additional macOS virtual instances per Mac. That limit is the whole business model of the macOS CI hosting industry, and it is why Apple hardware in datacenters is almost always a build farm rather than a general-purpose fleet.
 
 ## Where it actually shows up in racks
 
@@ -32727,7 +32727,7 @@ For CPU-heavy server workloads, the PowerEdge with dual Xeon Scalable processors
 
 For GPU-accelerated workloads, the Mac Pro's Radeon Pro Vega II cards are better suited for Apple's Metal framework and media processing pipelines. And the Mac Pro's MPX bays feed a high-power GPU through a single blind-mate connector, where the Dell needs cabled auxiliary power and a GPU-capable riser and airflow kit.
 
-Single-threaded performance is closer than the core counts suggest. Xeon W parts clock higher than the equivalent-core Xeon Scalable parts, so a workload that does not parallelise can land in the Mac's favour. That is a narrow window, but it is a real one.
+Single-threaded performance is closer than the core counts suggest. Xeon W parts clock higher than the equivalent-core Xeon Scalable parts, so a workload that does not parallelize can land in the Mac's favor. That is a narrow window, but it is a real one.
 
 ## Noise and power
 
@@ -32751,7 +32751,7 @@ That "only option" is a license question, not a technical one. Apple's software 
 
 **Calling two power supplies redundant when both are on one circuit.** Dual PSUs protect against a supply failing, not against a breaker tripping. If both cords go to the same PDU on the same circuit, you have bought half the redundancy you think you have.
 
-**Planning to virtualise macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's license terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
+**Planning to virtualize macOS on the Dell.** It will not activate, it is not supported, and it is outside Apple's license terms. The macOS requirement is exactly the thing that cannot be solved by throwing PowerEdge at it.
 
 ## My recommendation
 
@@ -33182,7 +33182,7 @@ You are staring at a used server listing, or a configurator, and trying to work 
 
 ## Three questions before you look at any part number
 
-**How does your workload parallelise?** If it splits cleanly across many independent tasks, cores win. If it is one long dependency chain, clock speed and per-core cache win, and buying 64 cores just gets you 63 idle ones.
+**How does your workload parallelize?** If it splits cleanly across many independent tasks, cores win. If it is one long dependency chain, clock speed and per-core cache win, and buying 64 cores just gets you 63 idle ones.
 
 **How much memory bandwidth does it need?** This is the one people skip. Cores share memory channels, so a high-core-count part with the same channel count feeds each core less bandwidth. A streaming workload can saturate the memory controller long before it saturates the cores.
 
@@ -33297,7 +33297,7 @@ Pick your CPU based on your actual workload:
 
 **Ignoring NUMA when sizing VMs.** A VM with more vCPUs than one socket has cores, or more RAM than one node has, gets scheduled across both and pays the remote memory penalty on a large fraction of its accesses. Size guests to fit a node, or configure vNUMA so the guest OS at least knows the topology.
 
-**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorised benchmark can slow every other VM on the host. This is documented behavior, not a fault.
+**AVX-512 frequency offset.** On Skylake and Cascade Lake, sustained AVX-512 work drops the all-core turbo for the whole package, not just the thread doing vector math. One tenant running a vectorized benchmark can slow every other VM on the host. This is documented behavior, not a fault.
 
 **Assuming TDP is power draw.** TDP is a thermal design figure for sizing a cooler, not a wattmeter reading. Real draw depends on the power limits configured in firmware and on the workload. Size your UPS and your circuit from measured wall power, not from adding up TDP numbers.
 
@@ -33382,7 +33382,7 @@ The end of that loop is thermal throttling, and then a shutdown. What makes it d
 
 The number that matters is inlet temperature, measured at the front of the equipment, not the room temperature and not the temperature somewhere in the middle of the rack.
 
-Modern equipment tolerates far more than people assume. ASHRAE's thermal guidelines for data processing environments put the recommended inlet range at 18 to 27 degrees C, which is 64 to 81 degrees F, and the allowable range for the common Class A2 equipment at 10 to 35 degrees C. Recommended is where you want to live. Allowable is where the manufacturer still honours the warranty. The gap between them is your margin, and it is much wider than the folklore about keeping a server room cold suggests.
+Modern equipment tolerates far more than people assume. ASHRAE's thermal guidelines for data processing environments put the recommended inlet range at 18 to 27 degrees C, which is 64 to 81 degrees F, and the allowable range for the common Class A2 equipment at 10 to 35 degrees C. Recommended is where you want to live. Allowable is where the manufacturer still honors the warranty. The gap between them is your margin, and it is much wider than the folklore about keeping a server room cold suggests.
 
 Running a room at 18 C to be safe is mostly wasted money: raising the setpoint is the single largest efficiency lever in a data hall, and it is why free cooling works in climates that sound too warm for it. In a homelab the practical version is simpler. Put a probe at the front of the top server and one at the front of the bottom server, because the spread between them tells you more than either number alone. A large spread means recirculation. A small spread at a high temperature means you need more cooling, not better airflow.
 
@@ -33567,7 +33567,7 @@ http.request
 tcp.analysis.retransmission
 \`\`\`
 
-## The syntax worth memorising
+## The syntax worth memorizing
 
 Five operators cover almost everything.
 
@@ -33690,7 +33690,7 @@ export SSLKEYLOGFILE=/tmp/keys.log
 firefox &
 \`\`\`
 
-Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Master-Secret log filename. HTTPS in that capture becomes readable HTTP. Firefox, Chrome, and curl all honour the variable. This is the legitimate way to debug your own TLS traffic, and it only works for traffic whose client cooperated.
+Then point Wireshark at the file under Preferences > Protocols > TLS > (Pre)-Master-Secret log filename. HTTPS in that capture becomes readable HTTP. Firefox, Chrome, and curl all honor the variable. This is the legitimate way to debug your own TLS traffic, and it only works for traffic whose client cooperated.
 
 ## What breaks
 
@@ -34094,7 +34094,7 @@ usermod --expiredate 1 olduser
 usermod --shell /usr/sbin/nologin olduser
 \`\`\`
 
-Then remove their key from every \`authorized_keys\` file, which is the step everyone forgets and the reason centralised key management exists.
+Then remove their key from every \`authorized_keys\` file, which is the step everyone forgets and the reason centralized key management exists.
 
 Sudo rules belong in files under \`/etc/sudoers.d/\`, edited with \`visudo -f\`, never by hand. \`visudo\` refuses to save a file that fails its syntax check, and a broken sudoers file means nobody on the machine can elevate.
 
@@ -34287,7 +34287,7 @@ A transceiver is a small computer in its own right. It contains the laser or the
 
 Two more you will meet. **SFP28** is the same physical cage as SFP+ running a single 25 Gbps lane, and it is the building block that QSFP28 breaks out into. **QSFP+** is the 40 Gbps generation, four lanes of 10 Gbps, which breaks out to 4x10 Gbps the same way.
 
-The pattern is worth internalising: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighboring port numbers, so check the platform's documentation before buying the cable.
+The pattern is worth internalizing: SFP-family cages carry one lane, QSFP-family cages carry four. A QSFP port's total speed is just its lane rate times four, and breakout cables exist because four lanes can be split apart into four independent links when the switch supports it. Not every port supports breakout, and on many switches enabling it consumes neighboring port numbers, so check the platform's documentation before buying the cable.
 
 ## Reading the part number
 
@@ -34364,7 +34364,7 @@ In my homelab, I use Mellanox ConnectX-3 NICs with generic DAC cables. Everythin
 
 **Transmit and receive swapped on a duplex patch.** LC pairs can be inserted either way round, and one end's transmit must land on the other end's receive. The symptom is both sides reporting healthy transmit power and no receive power at all. Reverse the pair at one end only.
 
-**A DAC that is fine electrically and rejected administratively.** The link stays down and the log complains about an unsupported or unauthorised module. This is the EEPROM check, not the cable. Either use a module coded for the platform, or enable the unsupported-transceiver setting where the vendor provides one.
+**A DAC that is fine electrically and rejected administratively.** The link stays down and the log complains about an unsupported or unauthorized module. This is the EEPROM check, not the cable. Either use a module coded for the platform, or enable the unsupported-transceiver setting where the vendor provides one.
 
 **Dirty connectors that pass a link test and fail under load.** Contamination raises attenuation enough to push receive power toward the sensitivity limit. The link comes up, light traffic works, and a sustained transfer produces CRC errors. Compare the current receive power against what the same link reported when it was new.
 
@@ -34554,7 +34554,7 @@ For direct Mac-to-Mac file transfers, it is the fastest option available. Thunde
 
 ## How it works underneath
 
-Thunderbolt is a tunnelling protocol, not a network protocol. The link carries PCIe, DisplayPort, and since Thunderbolt 3 also USB packets, each in its own tunnel over the same wire. Host-to-host is the awkward case. Normally one side is a host and the other is a PCIe endpoint, but when you join two Macs neither is willing to be the peripheral. Instead the two controllers negotiate a direct DMA path between host memory on each side, and each operating system presents that path to its network stack as an ordinary Ethernet NIC. Apple's protocol for this is called ThunderboltIP, which is why the link shows up with a MAC address and an MTU like any other interface. macOS then wraps it in a real layer 2 bridge, \`bridge0\`, whose members are the machine's Thunderbolt ports. That detail matters later.
+Thunderbolt is a tunneling protocol, not a network protocol. The link carries PCIe, DisplayPort, and since Thunderbolt 3 also USB packets, each in its own tunnel over the same wire. Host-to-host is the awkward case. Normally one side is a host and the other is a PCIe endpoint, but when you join two Macs neither is willing to be the peripheral. Instead the two controllers negotiate a direct DMA path between host memory on each side, and each operating system presents that path to its network stack as an ordinary Ethernet NIC. Apple's protocol for this is called ThunderboltIP, which is why the link shows up with a MAC address and an MTU like any other interface. macOS then wraps it in a real layer 2 bridge, \`bridge0\`, whose members are the machine's Thunderbolt ports. That detail matters later.
 
 The link rates: 10 Gbps per channel for Thunderbolt 1 in 2011, 20 Gbps aggregated for Thunderbolt 2 in 2013, 40 Gbps on USB-C for Thunderbolt 3 in 2015 and Thunderbolt 4 in 2020, and 80 Gbps bidirectional for Thunderbolt 5, with an asymmetric mode reaching 120 Gbps one way. Do not expect any of that to be your transfer rate. The link is shared with display and USB tunnels, and IP traffic crosses the ThunderboltIP path with the host CPU in the loop on both ends.
 
@@ -35059,7 +35059,7 @@ Correct output echoes the mount with your options attached:
 10.0.20.10:/storage/media on /Volumes/media (nfs, nodev, nosuid, mounted by max)
 \`\`\`
 
-Those options are not decoration. \`resvport\` makes the client bind a source port below 1024, which most NFS servers require and which is the reason an otherwise correct mount fails with a permission error. \`nfc\` normalises filenames to composed Unicode form, because macOS historically stored decomposed names and a Linux server stores composed ones, which is how you end up with two directories that look identical. \`hard\` makes the client retry forever instead of returning errors to applications, which is what you want for data. \`soft\` will hand an application a partial read during a network blip and let it write the result out.
+Those options are not decoration. \`resvport\` makes the client bind a source port below 1024, which most NFS servers require and which is the reason an otherwise correct mount fails with a permission error. \`nfc\` normalizes filenames to composed Unicode form, because macOS historically stored decomposed names and a Linux server stores composed ones, which is how you end up with two directories that look identical. \`hard\` makes the client retry forever instead of returning errors to applications, which is what you want for data. \`soft\` will hand an application a partial read during a network blip and let it write the result out.
 
 For a permanent mount I use automount rather than a boot script, with the same options. In \`/etc/auto_nfs\`:
 
@@ -35685,7 +35685,7 @@ One thing to fix in your head before anything else: RAID gives you availability,
 
 RAID 0 stripes data across all drives with no redundancy. You get the combined capacity and performance of all drives, but if any single drive fails, all data is lost. I use RAID 0 for temporary scratch space where speed matters and the data is expendable.
 
-Worth internalising how the risk scales: RAID 0 is less reliable than a single drive, and it gets worse with every drive you add, because the array dies if any member dies. Four drives in RAID 0 have roughly four times the annual failure probability of one drive.
+Worth internalizing how the risk scales: RAID 0 is less reliable than a single drive, and it gets worse with every drive you add, because the array dies if any member dies. Four drives in RAID 0 have roughly four times the annual failure probability of one drive.
 
 ## RAID 1: simple mirror
 
@@ -35715,7 +35715,7 @@ RAID 10 combines mirroring and striping. Pairs of drives are mirrored, and the m
 
 I use RAID 10 for VM storage where I/O performance is the priority. Random read and write performance on RAID 10 is significantly better than RAID 5 or 6.
 
-Note the "at least" carefully. A RAID 10 across six drives can survive three failures if they land in three different mirror pairs, or die from two failures if both hit the same pair. It is not a guaranteed two drive tolerance, it is luck weighted in your favour. The upside is that rebuilds only read one drive, the surviving partner, so they are fast and they do not stress the whole array.
+Note the "at least" carefully. A RAID 10 across six drives can survive three failures if they land in three different mirror pairs, or die from two failures if both hit the same pair. It is not a guaranteed two drive tolerance, it is luck weighted in your favor. The upside is that rebuilds only read one drive, the surviving partner, so they are fast and they do not stress the whole array.
 
 ## The comparison in one place
 
@@ -36297,7 +36297,7 @@ The default recovery interval is 300 seconds. Leave the cause disabled entirely 
 
 ## What breaks
 
-**An err-disabled port that nobody investigates.** BPDU Guard did its job, someone finds the port dead, and the fix applied is \`shutdown\` followed by \`no shutdown\` without ever asking what sent the BPDU. The unauthorised switch is still there and the port dies again on the next reboot. Always read the log entry that accompanies the err-disable.
+**An err-disabled port that nobody investigates.** BPDU Guard did its job, someone finds the port dead, and the fix applied is \`shutdown\` followed by \`no shutdown\` without ever asking what sent the BPDU. The unauthorized switch is still there and the port dies again on the next reboot. Always read the log entry that accompanies the err-disable.
 
 **A hypervisor bridging two physical NICs.** A virtual switch with two uplinks into the same VLAN and no loop prevention is a loop, and it is invisible from the physical switch's point of view because the host does not send BPDUs. The MAC flap message will name two switch ports that both lead to the same server, which is the tell.
 
@@ -36702,7 +36702,7 @@ The mechanism is worth understanding before you reach for it. An SR-IOV capable 
 
 The costs are real. Traffic on a virtual function does not traverse the host bridge, so the host cannot filter it, mirror it, or count it, and none of your \`tcpdump\` on the bridge will show it. Live migration is difficult or impossible because the guest is bound to a specific piece of hardware. And the VLAN for a VF is set on the physical function rather than in your bridge config, so it is one more place to keep in sync.
 
-For everything short of that, use the paravirtualised driver rather than an emulated one. A \`virtio-net\` NIC and an emulated \`e1000\` NIC both work, but the emulated card makes the host simulate a real chipset register by register, and the throughput difference is large. Pick emulation only when the guest is too old to have virtio drivers.
+For everything short of that, use the paravirtualized driver rather than an emulated one. A \`virtio-net\` NIC and an emulated \`e1000\` NIC both work, but the emulated card makes the host simulate a real chipset register by register, and the throughput difference is large. Pick emulation only when the guest is too old to have virtio drivers.
 
 ## References
 
@@ -36854,7 +36854,7 @@ Also learn the difference between "connection refused" and "connection timed out
 
 ## What breaks
 
-**Grepping for the wrong word.** Not every failure says "error". Search for \`-iE 'error|fail|denied|refused|timeout|panic|fatal'\` and use \`-i\`, because half of the software on any machine capitalises differently from the other half.
+**Grepping for the wrong word.** Not every failure says "error". Search for \`-iE 'error|fail|denied|refused|timeout|panic|fatal'\` and use \`-i\`, because half of the software on any machine capitalizes differently from the other half.
 
 **Timezone mismatch between sources.** journalctl prints local time by default, most application logs are UTC, and a firewall may be on a third setting. Two logs of the same incident then appear to describe events hours apart. Force one representation with \`-o short-iso\` or \`--utc\`, and prefer RFC 3339 timestamps with an explicit offset wherever you control the format.
 
@@ -37486,7 +37486,7 @@ A certificate is an X.509 structure, profiled for the internet by RFC 5280. The 
 - **Key Usage** and **Extended Key Usage**: what the key is permitted to do, \`serverAuth\` being the one a TLS server needs.
 - **Serial number** and the CA's **signature** over everything above.
 
-The name check is the part people get wrong. Hostname verification is done against the SAN extension, not the Common Name. Common Name as an identity field was deprecated by RFC 6125 and browsers stopped honouring it years ago. A certificate with \`CN=nas.lab.internal\` and no SAN entry will be rejected by every modern client with an error that says nothing about SANs.
+The name check is the part people get wrong. Hostname verification is done against the SAN extension, not the Common Name. Common Name as an identity field was deprecated by RFC 6125 and browsers stopped honoring it years ago. A certificate with \`CN=nas.lab.internal\` and no SAN entry will be rejected by every modern client with an error that says nothing about SANs.
 
 ## The handshake, briefly
 
@@ -38067,7 +38067,7 @@ Do not reach for it inside a small network either. In a campus, OSPF converges i
 
 You can run BGP labs in GNS3 or EVE-NG using virtual Cisco or FRR routers. Start with a simple two-AS topology, peer them, and watch the route tables populate. Then add filters and attributes to see how routing decisions change.
 
-Containerlab with FRR is the lightest way in now: a multi-AS topology defined in a YAML file, running as containers on a laptop, up in seconds. Build the lab, break it deliberately, and read \`show bgp summary\` and \`show bgp ipv4 unicast <prefix>\` until best-path selection stops being a list you memorised and becomes something you can see in the output.
+Containerlab with FRR is the lightest way in now: a multi-AS topology defined in a YAML file, running as containers on a laptop, up in seconds. Build the lab, break it deliberately, and read \`show bgp summary\` and \`show bgp ipv4 unicast <prefix>\` until best-path selection stops being a list you memorized and becomes something you can see in the output.
 
 ## References
 
@@ -38265,7 +38265,7 @@ The result is that the interesting number is not throughput, it is latency under
 
 **Live migrations:** Moving a running VM between hosts over NVMe-backed storage is smoother and faster than SATA.
 
-The common thread is concurrency. Ten VMs each doing modest random I/O do not add up to a nice sequential stream at the drive; they add up to a blender. That is the exact case where the queueing model matters more than the headline bandwidth, and it is why a single NVMe drive can replace a small shelf of SATA SSDs in a virtualisation host.
+The common thread is concurrency. Ten VMs each doing modest random I/O do not add up to a nice sequential stream at the drive; they add up to a blender. That is the exact case where the queueing model matters more than the headline bandwidth, and it is why a single NVMe drive can replace a small shelf of SATA SSDs in a virtualization host.
 
 ## Where SATA is still fine
 
@@ -38345,7 +38345,7 @@ media_errors                        : 0
 
 **Consumer drives fall off a cliff after the SLC cache fills.** Client NVMe drives write incoming data into a fast pseudo-SLC region and fold it into denser cells later. Benchmarks under a minute never leave that cache, so the drive looks fantastic. Write 200 GB continuously and throughput can collapse to well below SATA speeds. Always run sustained-write tests long enough to exhaust the cache before you believe a number.
 
-**Discard is never issued, so the drive slowly gets slower.** Without TRIM the controller does not know which blocks are free and garbage collection has to relocate data it could have thrown away, driving up write amplification. Confirm the path works end to end: \`lsblk --discard\` should show non-zero discard granularity and maximum, and a periodic \`fstrim -av\` should report bytes trimmed. On thin-provisioned or virtualised storage, discard also has to be enabled at every layer in between or it stops at the first one that ignores it.
+**Discard is never issued, so the drive slowly gets slower.** Without TRIM the controller does not know which blocks are free and garbage collection has to relocate data it could have thrown away, driving up write amplification. Confirm the path works end to end: \`lsblk --discard\` should show non-zero discard granularity and maximum, and a periodic \`fstrim -av\` should report bytes trimmed. On thin-provisioned or virtualized storage, discard also has to be enabled at every layer in between or it stops at the first one that ignores it.
 
 **Mixing a SATA SSD into an NVMe pool and wondering why the pool is slow.** A striped or mirrored set runs at the pace of its slowest member for anything that has to touch all members. This shows up most painfully when someone adds a leftover SATA drive as a mirror partner for an NVMe device.
 
@@ -38564,7 +38564,7 @@ Enterprise servers typically support 1+1 or 2+1 redundancy. In a 1+1 configurati
 
 The PSUs connect to the server's power distribution board, which handles the load sharing and failover automatically. Modern enterprise PSUs support hot-swap, meaning you can remove the failed unit and install a replacement while the server is running.
 
-The load sharing is not literally a switchover. Both supplies are energised and each carries roughly half the current, so when one dies there is nothing to switch: the remaining unit simply sees its share double, and the bulk capacitance on the distribution board covers the microseconds while its regulation loop catches up. That is why the transition is invisible to the operating system.
+The load sharing is not literally a switchover. Both supplies are energized and each carries roughly half the current, so when one dies there is nothing to switch: the remaining unit simply sees its share double, and the bulk capacitance on the distribution board covers the microseconds while its regulation loop catches up. That is why the transition is invisible to the operating system.
 
 There is a subtlety in the word "redundant" that catches people. **Two power supplies are only redundant if one of them can carry the entire load on its own.** A server with two 495 W supplies drawing 600 W is not redundant, it is load-shared, and losing one drops the machine. Dell and HPE both report this: iDRAC will show the power supply state as "Redundancy Lost" or "Redundancy Degraded" rather than an outright fault, and that warning is easy to scroll past. Check it after any upgrade that adds GPUs, drives, or CPUs, because the configuration that was comfortably redundant last year may not be now.
 
@@ -38985,7 +38985,7 @@ The ranges you will actually meet:
 
 - \`2000::/3\` is global unicast, the routable internet. Anything starting with a 2 or 3 is a real address.
 - \`fe80::/10\` is link-local. Every interface gets one automatically and it never routes off the link.
-- \`fc00::/7\` is unique local, the rough analogue of RFC 1918 space. In practice you use \`fd00::/8\` and generate a random 40-bit global ID rather than picking \`fd00::1\` like everybody does.
+- \`fc00::/7\` is unique local, the rough analog of RFC 1918 space. In practice you use \`fd00::/8\` and generate a random 40-bit global ID rather than picking \`fd00::1\` like everybody does.
 - \`ff00::/8\` is multicast. \`ff02::1\` is all nodes on the link, \`ff02::2\` is all routers.
 - \`2001:db8::/32\` is reserved for documentation, which is why it shows up in every example including mine.
 
@@ -39641,7 +39641,7 @@ The thresholds are the part people misunderstand. \`latency-threshold 150\` and 
 
 \`failtime\` being exceeded is different. When a member fails the health check outright, the FortiGate withdraws every static route associated with that interface. That is the mechanism by which failover actually happens, and it is also why an unrelated static route out that interface will disappear during a WAN blip.
 
-Now the honest part about \`8.8.8.8\`. Probing a public DNS resolver tells you whether the general internet is reachable, and nothing about whether your application is. If the SaaS app your users need is having a bad day, the SLA stays green and SD-WAN keeps sending traffic into the problem. Public resolvers also deprioritise ICMP under load, so you can see phantom loss that has nothing to do with your circuit. Better options, in rough order: probe the actual far end of your overlay tunnel with \`protocol ping\`, probe the application with \`protocol http\` and \`set http-get\`, or use \`protocol twamp\` against a TWAMP responder, which is RFC 5357 and is designed for exactly this measurement rather than borrowed from a diagnostic tool.
+Now the honest part about \`8.8.8.8\`. Probing a public DNS resolver tells you whether the general internet is reachable, and nothing about whether your application is. If the SaaS app your users need is having a bad day, the SLA stays green and SD-WAN keeps sending traffic into the problem. Public resolvers also deprioritize ICMP under load, so you can see phantom loss that has nothing to do with your circuit. Better options, in rough order: probe the actual far end of your overlay tunnel with \`protocol ping\`, probe the application with \`protocol http\` and \`set http-get\`, or use \`protocol twamp\` against a TWAMP responder, which is RFC 5357 and is designed for exactly this measurement rather than borrowed from a diagnostic tool.
 
 ## Rules
 
@@ -40217,7 +40217,7 @@ The way that works is worth spelling out, because it is the answer to the sharin
 
 DNS translates domain names to IP addresses. If an attacker can manipulate DNS responses, they can redirect traffic to malicious servers, intercept credentials, or block legitimate services entirely. DNS cache poisoning, DNS hijacking, and DNS-based data exfiltration are all real attack categories.
 
-The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The response to the 2008 Kaminsky attack, described in RFC 5452, was source port randomisation, which pushes the attacker's guessing space from 16 bits to roughly 32. That is a mitigation, not a fix. DNSSEC is the fix.
+The reason cache poisoning was ever practical is worth understanding. Classic DNS runs over UDP with no session state, so a resolver matches a response to its question using only the 16-bit query ID, the source port, and the question itself. Get those right before the real server answers and the resolver believes you. The response to the 2008 Kaminsky attack, described in RFC 5452, was source port randomization, which pushes the attacker's guessing space from 16 bits to roughly 32. That is a mitigation, not a fix. DNSSEC is the fix.
 
 ## DNSSEC
 
@@ -40255,7 +40255,7 @@ Read that flag carefully, because this is the detail beginners get wrong. The AD
 
 ## What DNSSEC Does Not Do
 
-DNSSEC provides origin authentication and integrity. It does not provide confidentiality. Every query and every signed answer is still sent in the clear, so an observer learns exactly what you are looking up. It does not tell you whether the address you got back belongs to a good actor, only that the zone's owner really published it: a phishing domain can be perfectly signed. It does nothing about denial of service against the name servers themselves, and it makes DNS a slightly better amplification reflector, since DNSKEY responses are large. That is part of why RFC 8482 replaced sprawling ANY responses with a minimal synthesised answer, and why authoritative servers run response rate limiting.
+DNSSEC provides origin authentication and integrity. It does not provide confidentiality. Every query and every signed answer is still sent in the clear, so an observer learns exactly what you are looking up. It does not tell you whether the address you got back belongs to a good actor, only that the zone's owner really published it: a phishing domain can be perfectly signed. It does nothing about denial of service against the name servers themselves, and it makes DNS a slightly better amplification reflector, since DNSKEY responses are large. That is part of why RFC 8482 replaced sprawling ANY responses with a minimal synthesized answer, and why authoritative servers run response rate limiting.
 
 It also stops at the resolver unless you extend it. The last hop from your machine to the resolver is unprotected by DNSSEC, which is what the next section is for.
 
@@ -40470,7 +40470,7 @@ Do not debug this from the log files. Stop the service and run \`freeradius -X\`
 
 Take the shared secret seriously. RADIUS is defined in RFC 2865, and its only protection is that secret: the \`User-Password\` attribute is obscured with an MD5 keystream derived from the secret and the request authenticator, and every other attribute, including the username and the VLAN assignment coming back, travels in cleartext UDP. A short or reused secret undoes the whole design. Use a long random string, a different one per switch, and put the RADIUS traffic on a management VLAN.
 
-Two more RADIUS numbers worth memorising. The modern ports are UDP 1812 for authentication and 1813 for accounting (RFC 2866); the legacy 1645 and 1646 still appear in old documentation and in the defaults of some ancient gear, and a mismatch there is a silent timeout. And a RADIUS packet maxes out at 4096 octets, with any single attribute capped at 253 bytes of data. EAP messages larger than that get split across multiple \`EAP-Message\` attributes. This is why EAP-TLS with a long certificate chain fails when smaller methods work: the fragmented exchange is more sensitive to MTU problems and to intermediate devices that do not reassemble properly.
+Two more RADIUS numbers worth memorizing. The modern ports are UDP 1812 for authentication and 1813 for accounting (RFC 2866); the legacy 1645 and 1646 still appear in old documentation and in the defaults of some ancient gear, and a mismatch there is a silent timeout. And a RADIUS packet maxes out at 4096 octets, with any single attribute capped at 253 bytes of data. EAP messages larger than that get split across multiple \`EAP-Message\` attributes. This is why EAP-TLS with a long certificate chain fails when smaller methods work: the fragmented exchange is more sensitive to MTU problems and to intermediate devices that do not reassemble properly.
 
 ## Cisco Switch Configuration
 
@@ -40582,7 +40582,7 @@ An encapsulated frame carries an outer Ethernet header (14 bytes), an outer IPv4
 
 So on a standard 1500 byte underlay, the largest inner frame that fits without fragmentation is 1450 bytes. Either raise the underlay MTU to at least 1550 and leave the overlay at 1500, which is what datacenter fabrics do, or drop the overlay MTU to 1450 and accept it.
 
-Two fields in the outer headers do useful work. The UDP destination port identifies the traffic as VXLAN; IANA assigned 4789 for it. The UDP source port is not meaningful as a port at all: the sending VTEP fills it with a hash of the inner frame's headers, purely so that ECMP hashing in the underlay spreads different inner flows across different physical paths. Without it, every tunnelled flow between two VTEPs would look like one conversation and pin to a single link.
+Two fields in the outer headers do useful work. The UDP destination port identifies the traffic as VXLAN; IANA assigned 4789 for it. The UDP source port is not meaningful as a port at all: the sending VTEP fills it with a hash of the inner frame's headers, purely so that ECMP hashing in the underlay spreads different inner flows across different physical paths. Without it, every tunneled flow between two VTEPs would look like one conversation and pin to a single link.
 
 ## How VTEPs work
 
@@ -40991,7 +40991,7 @@ OSPFv3 is a different story. As originally published in RFC 5340 it dropped its 
 
 **It cannot do policy.** There is no equivalent of [BGP](/blog/bgp-for-network-engineers) communities, local preference, or AS path manipulation. Cost is the only lever, and cost is a single 16-bit number per interface. If your requirement is "prefer this path for this customer's traffic," OSPF is not the protocol, and bending costs until it works produces a topology nobody can reason about.
 
-**It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analogue, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
+**It cannot do unequal cost load balancing.** OSPF installs equal-cost paths only. EIGRP's variance has no OSPF analog, and neither does anything resembling traffic engineering without adding MPLS-TE on top.
 
 **It cannot carry IPv6 in v2 form.** OSPFv2 is IPv4 only. IPv6 needs OSPFv3, which is a separate protocol instance with its own database and its own adjacencies, even though RFC 5838 lets one OSPFv3 process carry both address families.
 
@@ -41572,7 +41572,7 @@ NTP measures the round-trip delay to the time server and uses statistical algori
 
 The measurement itself is four timestamps in a 48 byte packet on UDP port 123. The client records when it sent the request (T1), the server records when it arrived (T2) and when it replied (T3), and the client records the arrival of the reply (T4). From those, round-trip delay is \`(T4 - T1) - (T3 - T2)\` and offset is \`((T2 - T1) + (T3 - T4)) / 2\`. The subtraction of the server's own processing time is why NTP tolerates a slow server, and the halving of the remainder is why it assumes the network is symmetric. That assumption is the protocol's main weakness: an asymmetric path, such as a congested uplink with an idle downlink, produces an offset error of roughly half the asymmetry, and no amount of averaging removes it.
 
-Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronised, and a server advertising 16 is telling you it does not know the time. If \`chronyc tracking\` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
+Stratum is a 8-bit field with meaningful values 1 through 15. Stratum 16 means unsynchronized, and a server advertising 16 is telling you it does not know the time. If \`chronyc tracking\` reports stratum 16 on a machine you believe is working, that is the whole diagnosis right there.
 
 ## Deploying NTP in an Enterprise Network
 
@@ -41653,7 +41653,7 @@ From \`chronyc tracking\`, the fields to alert on are **System time**, which is 
 
 NTP over a LAN with chrony realistically holds tens of microseconds; over the internet, single digit milliseconds is a good result. That is ample for logs, Kerberos, and certificates.
 
-It is not ample for everything. Financial trade timestamping regimes, telecom synchronisation, and industrial control can require sub-microsecond alignment, and getting there means PTP (IEEE 1588) with hardware timestamping in the NICs and switches, or a local GPS-disciplined clock. If someone hands you a requirement measured in microseconds, NTP over ordinary switches is not the tool, and no amount of tuning will make it one.
+It is not ample for everything. Financial trade timestamping regimes, telecom synchronization, and industrial control can require sub-microsecond alignment, and getting there means PTP (IEEE 1588) with hardware timestamping in the NICs and switches, or a local GPS-disciplined clock. If someone hands you a requirement measured in microseconds, NTP over ordinary switches is not the tool, and no amount of tuning will make it one.
 
 ## Monitoring Time
 
@@ -41754,7 +41754,7 @@ For a homelab, create your own Certificate Authority. Add its certificate to you
 openssl req -x509 -nodes -newkey rsa:4096 -keyout ca.key   -out ca.crt -days 3650 -subj "/CN=Lab CA"
 \`\`\`
 
-That gives you the CA. The certificate you actually serve is a separate one, signed by it, and here is where nearly everyone gets stuck: a \`/CN=grafana.lab.internal\` subject is not enough. Chrome stopped honouring Common Name for hostname matching in 2017 and every current browser requires a \`subjectAltName\` extension. A certificate without SAN produces \`ERR_CERT_COMMON_NAME_INVALID\` no matter how correctly you installed the CA.
+That gives you the CA. The certificate you actually serve is a separate one, signed by it, and here is where nearly everyone gets stuck: a \`/CN=grafana.lab.internal\` subject is not enough. Chrome stopped honoring Common Name for hostname matching in 2017 and every current browser requires a \`subjectAltName\` extension. A certificate without SAN produces \`ERR_CERT_COMMON_NAME_INVALID\` no matter how correctly you installed the CA.
 
 \`\`\`bash
 # Server key and CSR
@@ -42167,7 +42167,7 @@ DHCP snooping and DAI protect the VLANs you name, on the switches where they are
 
 An attacker on a switch that does not run snooping is unaffected, and if the link from that switch is trusted, their rogue server's replies pass straight through. The trust boundary has to be drawn at the real edge of the network, not at the edge of the switch you happened to configure.
 
-IPv6 is untouched. There is no ARP in IPv6; address resolution and default gateway discovery both run over ICMPv6 Neighbor Discovery, and the equivalent attack is a spoofed Router Advertisement. That needs RA Guard, DHCPv6 Guard, and IPv6 Source Guard, which are separate features. A dual-stack network with DAI and no RA Guard is still trivially man-in-the-middled, and the attacker gets preference because hosts favour the IPv6 path.
+IPv6 is untouched. There is no ARP in IPv6; address resolution and default gateway discovery both run over ICMPv6 Neighbor Discovery, and the equivalent attack is a spoofed Router Advertisement. That needs RA Guard, DHCPv6 Guard, and IPv6 Source Guard, which are separate features. A dual-stack network with DAI and no RA Guard is still trivially man-in-the-middled, and the attacker gets preference because hosts favor the IPv6 path.
 
 Neither feature stops a host from simply sending IPv4 packets with a forged source address once it has an address. That is IP Source Guard, the third feature in the set, which uses the same binding table to filter the data plane rather than just the control messages.
 
@@ -42796,7 +42796,7 @@ Allowed traffic is mostly expected. Denied traffic is interesting. Start your an
 grep "action=deny" /var/log/fortigate/traffic.log |   awk '{print $6, $7, $8}' | sort | uniq -c | sort -rn | head -50
 \`\`\`
 
-There is a caveat that took me a while to internalise. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
+There is a caveat that took me a while to internalize. Denies tell you what did not happen. A compromised host does not generate denies, it generates perfectly ordinary allowed sessions to a destination you never thought to question. Denies are where you start because they are cheap and high signal. Egress allow logs are where you find the thing that actually got in.
 
 ## Reducing a day of logs to something readable
 
@@ -42921,7 +42921,7 @@ The main use cases: ensuring voice (VoIP) stays clear even when the network is b
 
 QoS does not create bandwidth. If a link is saturated for hours, QoS decides who suffers, not whether anyone suffers. It buys you good behavior through bursts of congestion measured in milliseconds and seconds. If your 1 Gbps uplink is pinned at 100 percent all afternoon, the answer is a bigger uplink, not a cleverer policy.
 
-QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honour your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
+QoS also only applies where you control the queue. Marking a packet does nothing once it leaves your network: the internet at large has no obligation to honor your DSCP values, and most providers rewrite or ignore them. QoS is for links you own.
 
 ## The QoS model
 
@@ -43333,7 +43333,7 @@ That is fine for a GET of a static asset. It is not fine for anything that chang
 
 Disable TLS 1.0 and 1.1 everywhere. These versions have known vulnerabilities (POODLE, BEAST) and no modern client requires them. Check your servers and load balancers for these settings.
 
-For context on those two names: BEAST exploited the predictable CBC initialisation vector in TLS 1.0, and POODLE was originally an SSL 3.0 padding attack that also affected TLS implementations that did not check CBC padding properly. Both are artefacts of the CBC construction that TLS 1.3 removed entirely.
+For context on those two names: BEAST exploited the predictable CBC initialization vector in TLS 1.0, and POODLE was originally an SSL 3.0 padding attack that also affected TLS implementations that did not check CBC padding properly. Both are artifacts of the CBC construction that TLS 1.3 removed entirely.
 
 Monitor your cipher suite usage and set a timeline for deprecating TLS 1.2 once you have confirmed all clients support 1.3.
 
@@ -43607,7 +43607,7 @@ server:
     local-zone: "use-application-dns.net" always_nxdomain
 \`\`\`
 
-It is a convention Mozilla honours, not a standard, and nothing else is
+It is a convention Mozilla honors, not a standard, and nothing else is
 obliged to check it. It is still the cheapest thing on this list.
 
 **Set policy where the client is managed.** Every major browser exposes secure
@@ -43820,7 +43820,7 @@ A window of ten, which I have seen configured to stop support tickets from
 phones with bad clocks, means a code is valid for five minutes. Fix the clocks
 instead: run NTP on the server and let the phone sync from the network.
 
-The better fix for a persistently skewed device is resynchronisation. The
+The better fix for a persistently skewed device is resynchronization. The
 verifier records how far off that user's last successful code was and applies
 the offset next time, which is exactly how HOTP counter resync works.
 
@@ -43937,7 +43937,7 @@ RestartSec=5s
 WantedBy=multi-user.target
 \`\`\`
 
-No PID file, no daemonising, no logging setup. If your daemon has a
+No PID file, no daemonizing, no logging setup. If your daemon has a
 \`--daemonize\` flag, do not use it: systemd wants the process in the
 foreground so it can supervise it directly.
 
@@ -43948,7 +43948,7 @@ There are eleven, and five carry the weight.
 \`.service\` is a process. \`.socket\` is a listening socket systemd holds open
 and hands to a service when a connection arrives, which is how you bind port
 443 without the service ever having the capability to do it. \`.target\` is a
-grouping and a synchronisation point, and is what replaced runlevels:
+grouping and a synchronization point, and is what replaced runlevels:
 \`multi-user.target\` is roughly runlevel 3, \`graphical.target\` roughly
 runlevel 5. \`.timer\` replaces a crontab entry and logs like everything else.
 \`.mount\` and \`.automount\` are generated from \`/etc/fstab\`, which is why a bad
@@ -44079,7 +44079,7 @@ online still put them in the wrong section, where they are silently ignored.
 Delete the redirection from the init script. Anything the process writes to
 stdout or stderr is captured, tagged with the unit, the PID, the boot ID and a
 priority, and stored as structured records rather than lines of text. That
-changes what a query looks like. The classic centralised
+changes what a query looks like. The classic centralized
 [syslog](/blog/syslog-centralized-logging) pipeline still has a place, and
 journald can forward into it, but the local first stop is now a query.
 
@@ -44246,7 +44246,7 @@ For a 1460 byte MSS, a 60ms round trip, and p of 0.0002:
 That is the whole answer to "we went from 100 Mbps to 1 Gbps and nothing
 changed". Both circuits were above the ceiling. The ceiling was made of loss.
 
-The square root is the part worth internalising. Cutting loss by a factor of
+The square root is the part worth internalizing. Cutting loss by a factor of
 one hundred multiplies throughput by ten, not by one hundred. It is also why
 loss rates that look negligible are not: going from 0.05 per cent to 0.005 per
 cent is worth a factor of three, and nobody would ever describe either figure
