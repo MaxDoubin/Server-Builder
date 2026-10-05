@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 264 of them. Regenerate with script/generatePostIndex.ts.
+ * 268 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,45 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "linux-on-mac-pro-7-1",
+    title: "Linux on the Mac Pro 7,1: What Works and What the T2 Changes",
+    date: "2026-10-05",
+    tags: ["mac-pro","linux","apple"],
+    excerpt: "How to run Linux on a 2019 Mac Pro: the Startup Security settings, t2linux kernels, what the SSD, Wi-Fi, 10GbE and AMD GPUs need, and what still breaks.",
+    coverImage: "/images/blog/linux-on-mac-pro-7-1.jpg",
+    coverCredit: {"author":"KKPCW","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_Pro_Display_XDR_and_Mac_Pro_(2019_model)_-_2.jpg"},
+    wordCount: 3350,
+  },
+  {
+    slug: "windows-11-on-mac-pro-7-1",
+    title: "Windows 11 on the Mac Pro 7,1: Boot Camp, TPM and Drivers",
+    date: "2026-10-05",
+    tags: ["mac-pro","apple","troubleshooting"],
+    excerpt: "Windows 11 is not supported on the 2019 Mac Pro, but it installs. What the T2 and TPM mean, which install routes work, the right drivers, and the Windows 10 ESU option.",
+    coverImage: "/images/blog/windows-11-on-mac-pro-7-1.jpg",
+    coverCredit: {"author":"KKPCW","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Mac_Pro_(2019_model)_-_1.jpg"},
+    wordCount: 3275,
+  },
+  {
+    slug: "macos-tahoe-on-mac-pro-7-1",
+    title: "macOS Tahoe on the Mac Pro 7,1: The Last macOS for Intel Macs",
+    date: "2026-10-05",
+    tags: ["mac-pro","apple"],
+    excerpt: "The 2019 Mac Pro runs macOS Tahoe 26 and nothing newer. What Apple has said about security updates, what Tahoe leaves out on Intel, and your options after it.",
+    coverImage: "/images/blog/macos-tahoe-on-mac-pro-7-1.jpg",
+    coverCredit: {"author":"FASTILY","license":"CC BY-SA 4.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/4.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Apple_Mac_Pro_3rd_generation,_from_2019.jpeg"},
+    wordCount: 3439,
+  },
+  {
+    slug: "mac-pro-5-1-vs-7-1",
+    title: "Mac Pro 5,1 vs 7,1: Is the 2019 Model Worth the Upgrade?",
+    date: "2026-10-05",
+    tags: ["mac-pro","hardware","apple"],
+    excerpt: "Compare the 2010 to 2012 Mac Pro 5,1 with the 2019 7,1 on speed, memory, PCIe, GPUs, power, macOS support and used prices, using benchmarks from one source.",
+    coverImage: "/images/blog/mac-pro-5-1-vs-7-1.jpg",
+    wordCount: 3442,
+  },
   {
     slug: "apple-server-hardware",
     title: "Apple Server Hardware: Every Server Apple Has Built Since 1993",
@@ -2591,10 +2630,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 264;
+export const POST_COUNT = 268;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty four";
+export const POST_COUNT_SPELLED = "two hundred and sixty eight";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2603,10 +2642,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty four";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1277;
+export const CITATION_COUNT = 1449;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 141;
+export const ATTRIBUTION_URL_COUNT = 144;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1414;
+export const CHECKED_URL_COUNT = 1586;
