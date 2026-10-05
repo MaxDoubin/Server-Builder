@@ -3,7 +3,7 @@
  *
  * Bodies live one file per post in client/src/content/posts and load on
  * demand, so a reader downloads the article they asked for instead of all
- * 262 of them. Regenerate with script/generatePostIndex.ts.
+ * 264 of them. Regenerate with script/generatePostIndex.ts.
  */
 
 export interface CoverCredit {
@@ -40,6 +40,25 @@ export interface PostMeta {
 }
 
 export const postIndex: PostMeta[] = [
+  {
+    slug: "apple-server-hardware",
+    title: "Apple Server Hardware: Every Server Apple Has Built Since 1993",
+    date: "2026-10-05",
+    tags: ["apple","servers","hardware"],
+    excerpt: "From the 1993 Workgroup Server through the Xserve, the rack Mac Pro and the Apple silicon servers Apple now builds for itself: every Apple server line, with dates and what each one could do.",
+    coverImage: "/images/blog/apple-server-hardware.jpg",
+    coverCredit: {"author":"Christopher Bowns","license":"CC BY-SA 2.0","licenseUrl":"https://creativecommons.org/licenses/by-sa/2.0/","sourceUrl":"https://commons.wikimedia.org/wiki/File:Virginia_tech_xserve_cluster.jpg"},
+    wordCount: 2507,
+  },
+  {
+    slug: "macos-server-versions",
+    title: "macOS Server Versions: Every Release From 1.0 to 5.12.2",
+    date: "2026-10-05",
+    tags: ["apple","servers","operations"],
+    excerpt: "Every macOS Server release from Mac OS X Server 1.0 in 1999 to the final 5.12.2, which macOS each version needs, what Apple removed along the way, and what replaces it.",
+    coverImage: "/images/blog/macos-server-versions.jpg",
+    wordCount: 2134,
+  },
   {
     slug: "the-memory-you-freed-and-still-hold",
     title: "RSS Stays High After free(): glibc Heap Trimming and malloc_trim",
@@ -2572,10 +2591,10 @@ export const postIndex: PostMeta[] = [
 ];
 
 /** How many posts are published. A literal, so importing it costs nothing. */
-export const POST_COUNT = 262;
+export const POST_COUNT = 264;
 
 /** The same number spelled out, for copy that reads better in words. */
-export const POST_COUNT_SPELLED = "two hundred and sixty two";
+export const POST_COUNT_SPELLED = "two hundred and sixty four";
 
 /**
  * Unique external reference URLs in the article text.
@@ -2584,10 +2603,10 @@ export const POST_COUNT_SPELLED = "two hundred and sixty two";
  * Pages quote these, and a number that goes stale on a page about
  * not making stale claims would be the worst possible place for one.
  */
-export const CITATION_COUNT = 1175;
+export const CITATION_COUNT = 1277;
 
 /** Unique cover image attribution and license URLs. */
-export const ATTRIBUTION_URL_COUNT = 140;
+export const ATTRIBUTION_URL_COUNT = 141;
 
 /** Everything script/checkPostLinks.mjs requests: the two sets above, deduplicated. */
-export const CHECKED_URL_COUNT = 1315;
+export const CHECKED_URL_COUNT = 1414;
