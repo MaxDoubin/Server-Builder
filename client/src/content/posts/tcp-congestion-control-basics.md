@@ -22,6 +22,8 @@ This is why window scaling exists, and it is why long fat networks were a proble
 
 Classical congestion control treats packet loss as the signal that the network is full. The sender increases its window until something drops, backs off sharply, and climbs again. That sawtooth is the behavior underneath Reno and, with a different growth curve tuned for high bandwidth paths, CUBIC, which has been the Linux default for a long time.
 
+CUBIC sets its window as a cubic function of the time since the last loss. After backing off, the window grows quickly, flattens out near the size where loss last happened, then probes past that point if nothing breaks. The design goal was to fill high bandwidth, high latency paths faster than Reno while staying fair to it.
+
 The assumption is that loss means congestion. That was reasonable when buffers were small. It causes two problems now.
 
 On links with any physical loss that is not congestion, such as some wireless paths, the sender misreads random loss as a full network and backs off when it should not.
@@ -32,9 +34,9 @@ That is bufferbloat, and it is the reason a single large upload can make an enti
 
 ## BBR Models the Path Instead
 
-BBR takes a different approach: rather than waiting for loss, it estimates the path's available bandwidth and minimum round trip time, and paces sending to match. The goal is to operate at the point where the pipe is full but the queue is not.
+BBR takes a different approach: rather than waiting for loss, it estimates the path's available bandwidth and minimum round trip time, and paces sending to match. The goal is to operate at the point where the pipe is full but the queue is not, which means keeping roughly one bandwidth delay product in flight.
 
-In practice it behaves well on paths with non congestive loss and it avoids filling deep buffers, which keeps latency low under load. The tradeoffs are real and worth knowing: its fairness when sharing a bottleneck with loss based flows depends on conditions and buffer sizing, and it is not a universal improvement in every topology. It is a tool with a profile, not a strictly better algorithm.
+In practice it behaves well on paths with non congestive loss and it avoids filling deep buffers, which keeps latency low under load. Pacing also smooths bursts, which is friendlier to switches with shallow buffers. The tradeoffs are real and worth knowing: its fairness when sharing a bottleneck with loss based flows depends on conditions, buffer sizing, and BBR version; its estimates can be wrong on paths with variable capacity or aggressive traffic shaping; and it is not a universal improvement in every topology. It is a tool with a profile, not a strictly better algorithm.
 
 Switching it on Linux is trivial, which makes it easy to test honestly:
 
@@ -42,6 +44,9 @@ Switching it on Linux is trivial, which makes it easy to test honestly:
 # What is available and what is in use.
 sysctl net.ipv4.tcp_available_congestion_control
 sysctl net.ipv4.tcp_congestion_control
+
+# If bbr is not listed, it is usually a module that is not loaded yet.
+sudo modprobe tcp_bbr
 
 # Try BBR, paired with a fair-queueing qdisc for pacing.
 sudo sysctl -w net.core.default_qdisc=fq
@@ -54,7 +59,19 @@ net.ipv4.tcp_congestion_control = bbr
 EOF
 ```
 
-Change it on the sender. Congestion control governs how fast a host transmits, so the machine sending the bulk of the data is the one whose setting matters.
+The `fq` pairing is the efficient way to pace rather than a hard requirement: since kernel 4.13, TCP paces internally when the qdisc does not, so BBR still works without it.
+
+Change it on the sender. Congestion control governs how fast a host transmits, so the machine sending the bulk of the data is the one whose setting matters. Nothing else has to change: clients, routers, and everything in the middle stay as they are.
+
+## Deciding Whether to Switch
+
+I do not switch defaults reflexively. CUBIC is a good algorithm and the default exists for a reason.
+
+The clearest case for a change is a server sending large amounts of data over long or lossy paths: media, backups to another site, downloads to distant clients. A long fat path with even a small random loss rate is where loss based algorithms underperform most visibly.
+
+Short, clean paths are the opposite. Inside a data center or a single site, round trip times are under a millisecond and loss is near zero, so the algorithm is rarely what limits throughput.
+
+Either way, measure before and after with the same tool, on the same path, at the same time of day. Congestion control interacts with everything else on the network, so a change that helps one flow can hurt a neighbor. If you cannot measure the difference, you did not need to make the change.
 
 ## Buffers, AQM, and Where the Latency Lives
 
@@ -86,7 +103,12 @@ Measure the round trip time and compute the bandwidth delay product. Compare it 
 ss -tin
 
 # Look for: cwnd:<N> rtt:<ms>/<var> retrans:<x/y> bytes_retrans:<n>
+
+# Narrow it to what a server is sending, here from local port 443.
+ss -tin state established '( sport = :443 )'
 ```
+
+The same output names the algorithm and the delivery rate for each socket, which makes it the fastest way to check whether a change did anything. Read it under real load, which tells you far more than a synthetic test.
 
 A small congestion window with no retransmissions points at a window or buffer limit, not congestion. A window that grows then collapses repeatedly points at real loss. Rising round trip time under load with no loss at all is the bufferbloat signature.
 
@@ -107,8 +129,11 @@ Once you think of it that way, the diagnostic path is obvious. Find out what sig
 ## References
 
 - [RFC 5681: TCP Congestion Control](https://www.rfc-editor.org/rfc/rfc5681.html)
+- [RFC 9438: CUBIC for Fast and Long-Distance Networks](https://www.rfc-editor.org/rfc/rfc9438.html)
 - [RFC 9293: Transmission Control Protocol](https://www.rfc-editor.org/rfc/rfc9293.html)
 - [RFC 8290: The FlowQueue-CoDel Packet Scheduler and AQM](https://www.rfc-editor.org/rfc/rfc8290.html)
+- [RFC 3168: Explicit Congestion Notification](https://www.rfc-editor.org/rfc/rfc3168.html)
 - [Linux kernel: IP sysctl reference](https://docs.kernel.org/networking/ip-sysctl.html)
+- [Linux network sysctl documentation](https://docs.kernel.org/admin-guide/sysctl/net.html)
 - [Bufferbloat](https://en.wikipedia.org/wiki/Bufferbloat)
 - [TCP congestion control](https://en.wikipedia.org/wiki/TCP_congestion_control)

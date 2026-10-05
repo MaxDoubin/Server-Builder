@@ -19,17 +19,69 @@ tokenizer's training data compresses well. Text that does not looks expensive.
 ## Byte Pair Encoding In One Paragraph
 
 Most modern tokenizers are some variant of byte pair encoding. You start with
-the raw bytes as your alphabet, then repeatedly find the most frequent adjacent
-pair in the corpus and merge it into a new symbol. Do that a few tens of
-thousands of times and you end up with a vocabulary where common English words
-are single tokens, common suffixes are single tokens, and anything unusual
-falls back to smaller pieces or individual bytes.
+the raw bytes as your alphabet, so every possible input is representable and
+nothing is ever out of vocabulary. Then you repeatedly find the most frequent
+adjacent pair in the corpus and merge it into a new symbol. Do that a few tens
+of thousands of times and you end up with a vocabulary where common English
+words are single tokens, common suffixes are single tokens, and anything
+unusual falls back to smaller pieces or individual bytes.
 
 The important property is that the merge list is ordered and fixed. Encoding is
 deterministic and greedy: apply the merges in learned order until nothing more
 merges. There is no semantics involved. The tokenizer does not know that
-`server` and `servers` are related. It knows that the merge for `s` onto
-`server` happened to be learned, so the plural is two tokens and not one.
+`server` and `servers` are related. It only knows whether a merge of `s` onto
+`server` happened to be learned, and if it was not, the plural is two tokens
+and not one.
+
+## The Whole Algorithm Fits On A Page
+
+Training is short enough to read in full:
+
+```python
+from collections import Counter
+
+
+def count_pairs(ids):
+    return Counter(zip(ids, ids[1:]))
+
+
+def merge(ids, pair, new_id):
+    out, i = [], 0
+    while i < len(ids):
+        if i < len(ids) - 1 and (ids[i], ids[i + 1]) == pair:
+            out.append(new_id)
+            i += 2
+        else:
+            out.append(ids[i])
+            i += 1
+    return out
+
+
+def train(text, num_merges):
+    '''Return the encoded ids and the learned merge table.'''
+    ids = list(text.encode("utf-8"))     # start from bytes: 0..255
+    merges = {}
+    for k in range(num_merges):
+        pairs = count_pairs(ids)
+        if not pairs:
+            break
+        best = max(pairs, key=pairs.get)
+        if pairs[best] < 2:
+            break
+        new_id = 256 + k
+        ids = merge(ids, best, new_id)
+        merges[best] = new_id
+    return ids, merges
+
+
+sample = "the theory of the thermostat is the theory of the thing" * 20
+ids, merges = train(sample, num_merges=30)
+print(len(sample.encode("utf-8")), "bytes ->", len(ids), "tokens")
+```
+
+Run it and the compression is visible. Everything else about production
+tokenizers is detail on top of this, chiefly a pre-tokenization step that
+decides where merges are allowed to cross, and special tokens for structure.
 
 ## Where The Surprises Actually Come From
 
@@ -44,17 +96,25 @@ whitespace before you count, changes your number.
 split into groups of one to three digits with no relationship to place value.
 A table of timestamps or IDs costs far more than its character count suggests,
 and it is a real reason arithmetic on long numbers is hard for these models.
+Random strings are worse. UUIDs, hashes, and base64 give the merges no
+structure to exploit, so they cost close to a token for every one or two
+characters, and a log line with three UUIDs in it is not the cheap input it
+looks like.
 
 **Non-English text costs more.** Vocabularies built on web text that skews
 English give English the best compression. The same sentence in a language with
 less representation, or in a script outside Latin, can take several times as
-many tokens for the same meaning. If your application is multilingual, your
+many tokens for the same meaning. Part of that bill arrives before any merging:
+outside ASCII, UTF-8 spends two to four bytes per character, and a script that
+was rare in training gets few merges to win them back, sometimes ending at a
+token or two per character. If your application is multilingual, your
 per-request budget is not uniform across users.
 
 **Structure is expensive.** JSON, XML, and heavily indented code are full of
 punctuation and whitespace runs. Braces, quotes, colons, and newline plus
 indentation sequences all consume tokens. A payload that is 60 percent
-scaffolding pays for that scaffolding on every single request.
+scaffolding pays for that scaffolding on every single request. Minifying JSON
+before you send it is one of the few free wins available.
 
 **Odd Unicode falls back to bytes.** Emoji, unusual symbols, and rare
 characters may not be in the vocabulary at all, so they encode as several raw
@@ -93,6 +153,41 @@ Run that against your own real traffic, not against a sentence you invented.
 The distribution of your production inputs is the only distribution that
 matters, and it usually has a long tail of pathological documents.
 
+## The Context Window Is A Shared Budget
+
+The context window is one fixed budget shared by everything: instructions,
+whatever documents you pasted in, conversation history, and the space the
+output needs. Output space is the one people forget to reserve, and the
+symptom is a response that stops mid sentence.
+
+Truncation is where the real bugs are. Cut a byte buffer at a fixed length and
+you can split a multi byte UTF-8 sequence into something that does not decode.
+Cutting a token list is not automatically safe either, because a character
+that fell back to bytes spans several tokens, and a cut between them decodes
+to a replacement character or an error. Measure in tokens, but cut on
+boundaries you control, such as paragraphs or sentences.
+
+Pin the tokenizer version alongside the model. Change the tokenizer and every
+offset, budget, and cached count you stored is subtly wrong, and nothing
+crashes to tell you.
+
+## The Part With Security Consequences
+
+Tokenization is a text transformation, and text transformations are where
+filters get bypassed. Unicode gives many ways to write things that look
+identical: homoglyphs from different scripts, invisible formatting characters,
+and the same string in several normalization forms. A filter matching on
+characters can be walked around by an input that tokenizes to something the
+filter never saw. Convert input to a single Unicode normalization form before
+you compare, hash, or match on it, and decide deliberately whether to strip
+control and formatting characters.
+
+The general principle is one I keep coming back to across security work: any
+time two components disagree about what a string is, that disagreement is the
+vulnerability. A validator that sees characters and a model that sees tokens
+are two components with different views of the same bytes, and the space
+between them is worth thinking about before somebody else does.
+
 ## What I Changed Once I Understood This
 
 Three things, all cheap.
@@ -120,5 +215,7 @@ packets, tokens versus words. Learn the machine's unit.
 - [Byte pair encoding](https://en.wikipedia.org/wiki/Byte_pair_encoding)
 - [Hugging Face Tokenizers documentation](https://huggingface.co/docs/tokenizers/index)
 - [UTF-8](https://en.wikipedia.org/wiki/UTF-8)
+- [RFC 3629: UTF-8, a transformation format of ISO 10646](https://www.rfc-editor.org/rfc/rfc3629)
+- [Unicode Standard Annex 15: Unicode Normalization Forms](https://www.unicode.org/reports/tr15/)
 - [Unicode Standard Annex 29: Text Segmentation](https://www.unicode.org/reports/tr29/)
 - [Large language model](https://en.wikipedia.org/wiki/Large_language_model)

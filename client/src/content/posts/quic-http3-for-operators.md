@@ -23,7 +23,9 @@ whole connection. So if a segment carrying part of request 3 is lost, the kernel
 holds back everything that arrived after it, including complete data for
 requests 4 through 20, until the retransmission fills the gap. The application
 multiplexed, but the transport did not know that, so a loss affecting one stream
-stalls all of them.
+stalls all of them. On a lossy link that can make HTTP/2 worse than the six
+parallel HTTP/1.1 connections it replaced, since one loss now stalls everything
+instead of one sixth of it.
 
 QUIC gives each stream its own sequence space. A loss on stream 3 delays stream
 3 and nothing else. Data for the other streams is delivered as soon as it
@@ -37,7 +39,9 @@ substantial. Knowing which situation you are in tells you whether to care.
 The handshake is the other win. TLS 1.3 over TCP costs a TCP handshake plus a
 TLS handshake. QUIC combines them, so a fresh connection is one round trip to
 first application data, and a resumed one can send data with the first packet.
-On a high latency path that is a visible difference.
+On a high latency path that is a visible difference. That 0-RTT data has a
+catch: an attacker who captures the first flight can replay it, so only
+idempotent requests belong there.
 
 ## Connection IDs And Migration
 
@@ -64,8 +68,11 @@ This is where operators feel it.
 **It is UDP 443.** Plenty of networks historically treated UDP as suspicious and
 rate limited or blocked it outside DNS. Applications handle that by falling back
 to TCP, which mostly works, which means the failure is invisible: everything
-functions, just on the slower path, and nobody files a ticket. If you want QUIC
-to work, allow UDP 443 explicitly and verify it rather than assuming.
+functions, just on the slower path, and nobody files a ticket. Discovery makes
+it easy to miss: clients learn about HTTP/3 from an `Alt-Svc` response header or
+an HTTPS DNS record, so you can deploy it, advertise it, and serve almost none
+of it. If you want QUIC to work, allow UDP 443 explicitly, in both directions,
+and verify it rather than assuming.
 
 **There are no TCP flags.** No SYN, no FIN, no RST. Every tool, dashboard, and
 mental model built on connection setup and teardown visibility has nothing to
@@ -75,10 +82,11 @@ events are gone.
 
 **Almost the whole header is encrypted.** In TCP plus TLS, an on path observer
 sees sequence numbers, window sizes, and the TLS record layer. In QUIC, packet
-numbers and nearly all of the header are protected. Passive performance
-analysis from a tap is largely over. The information you need has to come from
-the endpoints, which means server side telemetry and client side reporting
-rather than a span port.
+numbers and nearly all of the header are protected, which leaves a tap the UDP
+header, the connection IDs, a few invariant bits, and the size and timing of
+packets. Passive performance analysis from a tap is largely over. The
+information you need has to come from the endpoints, which means server side
+telemetry and client side reporting rather than a span port.
 
 **Middleboxes cannot help, and cannot hurt.** The encryption of transport state
 was a deliberate design goal, motivated by decades of middleboxes ossifying TCP
@@ -90,7 +98,25 @@ middle of the network, you now do at an endpoint or not at all.
 application rather than the kernel, and UDP historically got less offload
 attention than TCP. Generic segmentation and receive offload for UDP help a
 great deal, so check that they are enabled before concluding QUIC is expensive
-on your hardware.
+on your hardware. Raise the UDP socket buffers on a busy endpoint as well: an
+undersized receive buffer drops packets, and the protocol then treats that loss
+as congestion.
+
+## Whether To Turn It On
+
+For a service on a well provisioned wired network with clients that do not
+move, HTTP/3 buys very little, and you pay real CPU and operational complexity
+for it. For anything serving mobile clients, lossy last miles, or long distance
+paths, the case is much stronger: fewer round trips to first byte, per stream
+loss recovery, and connections that survive a network change are exactly what
+those clients need. For an internal service inside one data center, I would not
+bother. The failure modes it solves barely exist there, and the observability
+you give up matters more.
+
+Where it is worth having, run both. Serve HTTP/2 as the reliable baseline,
+advertise HTTP/3 through `Alt-Svc`, and let clients pick. Then check your logs
+for the ratio of protocol versions actually served, because that number is the
+only honest measure of whether the deployment worked.
 
 ## Poking At It Yourself
 
@@ -101,8 +127,12 @@ curl -sv --http3-only https://host-that-serves-h3.example/ -o /dev/null
 curl -sv --http1.1     https://host-that-serves-h3.example/ -o /dev/null
 
 # What does the server advertise? Alt-Svc over TCP is how clients
-# learn that HTTP/3 is available in the first place.
+# learn that HTTP/3 is available in the first place. A typical
+# answer: alt-svc: h3=":443"; ma=86400
 curl -sI https://www.example.com/ | grep -i '^alt-svc'
+
+# Is UDP 443 flowing at all, or is something in the middle eating it?
+tcpdump -ni eth0 'udp port 443'
 
 # Watch UDP sockets on a host that is serving or consuming QUIC.
 ss -u -a -n | head
@@ -110,8 +140,12 @@ ss -u -a -n | head
 # Confirm offload is on; UDP segmentation matters for QUIC throughput.
 ethtool -k eth0 | grep -Ei 'udp|generic-(segmentation|receive)'
 
+# Receive buffer headroom for a busy QUIC endpoint.
+sysctl net.core.rmem_max net.core.rmem_default
+
 # Minimal allow rule. Do this deliberately rather than discovering
 # six months later that everything silently fell back to TCP.
+# Replies match ct state established, which most rulesets accept.
 nft add rule inet filter forward udp dport 443 ct state new,established accept
 ```
 
@@ -127,6 +161,8 @@ not going to reverse.
 - [RFC 9000: QUIC, A UDP-Based Multiplexed and Secure Transport](https://www.rfc-editor.org/rfc/rfc9000.html)
 - [RFC 9001: Using TLS to Secure QUIC](https://www.rfc-editor.org/rfc/rfc9001.html)
 - [RFC 9002: QUIC Loss Detection and Congestion Control](https://www.rfc-editor.org/rfc/rfc9002.html)
+- [RFC 9113: HTTP/2](https://www.rfc-editor.org/rfc/rfc9113)
 - [RFC 9114: HTTP/3](https://www.rfc-editor.org/rfc/rfc9114.html)
 - [RFC 9204: QPACK Field Compression for HTTP/3](https://www.rfc-editor.org/rfc/rfc9204.html)
+- [RFC 7838: HTTP Alternative Services](https://www.rfc-editor.org/rfc/rfc7838)
 - [QUIC](https://en.wikipedia.org/wiki/QUIC)

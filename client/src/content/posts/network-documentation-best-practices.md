@@ -57,15 +57,51 @@ Three failure modes to design around:
 
 **Backups you have never restored.** A configuration file is not a backup until you have proven you can push it onto a replacement device and get a working switch. Do that once, on purpose, on a spare, and write down how long it took.
 
-### Runbooks: every one needs a rollback
+### Runbooks: expected output, a branch, and a way back
 
-A runbook that only describes the forward path is a one-way door. Each procedure should have the exact commands to run, the output you expect to see if it worked, and the specific steps to undo it. Include the "how do I know it worked" line, because that is what turns a procedure into something a stressed person can follow.
+A runbook that only describes the forward path is a one-way door. Each procedure needs the exact commands to run, the output you expect if it worked, and the specific steps to undo it. Around those steps goes a fixed skeleton:
+
+- **Purpose:** one sentence. "Restore an access port that has stopped passing traffic", not "Switch runbook".
+- **When to use it:** the exact alert name, so a search for the alert text finds the page.
+- **Prerequisites:** the exact account or role that grants access, because the person reading at 2 AM may have to request it.
+- **Validation:** a check with a threshold, not a vibe.
+- **Escalation:** a role, never a named person, plus the evidence to collect first.
+
+Background on how the system works belongs in a design document the runbook links to, because nobody reads paragraphs at 2 AM.
+
+Number the steps and end each one in a decision point:
+
+```
+Step 3: Bounce the access port
+
+ssh admin@access-2
+configure terminal
+ interface Gi1/0/12
+ shutdown
+ no shutdown
+ end
+show interfaces Gi1/0/12 status
+
+Expected output:
+Port      Name     Status       Vlan  Duplex  Speed  Type
+Gi1/0/12  desk-14  connected    30    a-full  a-1000 10/100/1000BaseTX
+
+connected     -> Step 5 (validate from the client)
+err-disabled  -> Step 4. Do not bounce it again.
+notconnect    -> layer 1: find the patch panel port on the L1 diagram
+```
+
+The expected output carries the weight. Without it, "bounce the port" is a hope. With it, the operator knows whether to continue or branch, and a stale command that exits cleanly and changes nothing shows up instead of hiding. For the same reason, a step that acts on every access switch should start from the inventory query that lists them, not from hostnames that were right the day it was written.
+
+Write the branches down, because that is where people get stuck. Protection lockouts are the classic case. A port that BPDU guard or port security has err-disabled comes back when bounced and drops again while the cause is still plugged in, and `show interfaces status err-disabled` names the reason. The server equivalent is a systemd unit that fails with `start-limit-hit` after more than five starts in ten seconds: systemd stops restarting it, and `systemctl reset-failed` clears the counter. Neither is broken in a new way. Each is locked out, and the runbook should say so before the operator starts looping.
+
+Put the link where the operator already is. A [Prometheus](/blog/prometheus-server-monitoring) alerting rule can carry a `runbook_url` annotation, which Alertmanager hands to the notification template, so the alert that wakes you up can link to the page that says what to do.
+
+Know when a document should not be a runbook. If a step says "investigate the root cause", it is a diagnostic guide; label it separately. If a runbook has been executed five times and every execution was identical, it should be a script, and if there is a reason it cannot be automated, that reason is its first sentence. A runbook that ends in "open a vendor case" is fine, as long as it says so in the first line.
 
 ## Tools
 
 I use draw.io for topology diagrams because it is free, exports to multiple formats, and runs in a browser. For IPAM, a simple spreadsheet works for my scale. For configuration backups, I use Python scripts that pull configs via SSH and commit them to a git repository.
-
-The git approach for configurations is powerful. When something breaks after a change, I can diff the current configuration against the last known good configuration and see exactly what changed.
 
 Store the draw.io files as `.drawio` XML in the same git repository as the configs rather than exporting a PNG and losing the source. The XML diffs badly but it version-controls fine, and it means the diagram and the configuration it describes move together.
 
@@ -81,11 +117,17 @@ The hardest part of documentation is keeping it updated. I make it a rule: no in
 
 This is the same idea NIST formalizes in SP 800-128 as configuration management: you maintain an approved baseline, every change goes through a defined process, and the baseline is updated as part of that process rather than reconstructed afterward. The reason it is written down as a standard is that "I will document it later" fails universally, in every organization, at every scale. The only version that works is making the documentation update part of the change itself, so that skipping it means the change is not finished.
 
+Runbooks need one more marker: a "last verified" line at the top with a date and the name of whoever last ran or walked through it. Treat one that has not been executed or exercised in a tabletop for a year as untested, and after every incident where one was used, update it to match what actually worked. The quality metric for the whole library is small and slightly uncomfortable: of the runbooks executed this quarter, how many needed correcting mid-incident? If that number is not near zero, the library is decoration.
+
 ## References
 
-- https://csrc.nist.gov/pubs/sp/800/128/upd1/final
-- https://www.rfc-editor.org/rfc/rfc1918
-- https://www.rfc-editor.org/rfc/rfc6890
-- https://netboxlabs.com/docs/netbox/
-- https://www.shrubbery.net/rancid/
-- https://git-scm.com/docs/git-diff
+- [NIST SP 800-128: Guide for Security-Focused Configuration Management of Information Systems](https://csrc.nist.gov/pubs/sp/800/128/upd1/final)
+- [RFC 1918: Address Allocation for Private Internets](https://www.rfc-editor.org/rfc/rfc1918)
+- [RFC 6890: Special-Purpose IP Address Registries](https://www.rfc-editor.org/rfc/rfc6890)
+- [NetBox documentation](https://netboxlabs.com/docs/netbox/)
+- [RANCID](https://www.shrubbery.net/rancid/)
+- [git-diff documentation](https://git-scm.com/docs/git-diff)
+- [Prometheus alerting practices](https://prometheus.io/docs/practices/alerting/)
+- [systemd-system.conf(5), on the default start rate limit](https://man7.org/linux/man-pages/man5/systemd-system.conf.5.html)
+- [Google SRE Book: Managing Incidents](https://sre.google/sre-book/managing-incidents/)
+- [Google SRE Workbook: Postmortem Culture](https://sre.google/workbook/postmortem-culture/)
